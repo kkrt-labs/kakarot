@@ -67,4 +67,4 @@ To manage inputs sent to constructor during the deployment, you can customize th
 
 ## 📄 License
 
-\*zkairvm\*\* is released under the [MIT](LICENSE).
+**zkairvm** is released under the [MIT](LICENSE).
