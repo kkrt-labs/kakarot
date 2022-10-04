@@ -1,0 +1,6 @@
+signers:
+  admin: 1000
+  anyone: 1001
+
+sources:
+  zkairvm: ./src/zkairvm/zkairvm.cairo

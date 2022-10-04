@@ -1,0 +1,29 @@
+["protostar.config"]
+protostar_version = "0.4.2"
+
+["protostar.project"]
+libs_path = "lib"
+
+["protostar.shared_command_configs"]
+cairo_path = [
+     "./lib/cairo_contracts/src",
+    "src"
+]
+
+["protostar.contracts"]
+Zkairvm = [
+    "./src/zkairvm/zkairvm.cairo",
+]
+
+["protostar.test"]
+target = ["tests"]
+
+# https://github.com/Shard-Labs/starknet-devnet
+[profile.devnet.protostar.deploy]
+gateway_url="http://127.0.0.1:5050/"
+
+[profile.testnet.protostar.deploy]
+network="testnet"
+
+[profile.mainnet.protostar.deploy]
+network="mainnet"
