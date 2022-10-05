@@ -1,0 +1,4 @@
+evm_test_case:
+  code: "0x00"
+  calldata: "0x00"
+  expected_return_data: "0x00"
