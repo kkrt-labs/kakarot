@@ -44,6 +44,7 @@ namespace test_utils {
         %{
             import re
             import array as arr
+            from requests import post
 
             MAX_LEN_FELT = 31
              
@@ -73,6 +74,9 @@ namespace test_utils {
              
             def hex_to_felt(val):
                 return int(val, 16)
+
+            def post_debug(json):
+                post(url="http://localhost:8000", json=json)
         %}
         return ();
     }

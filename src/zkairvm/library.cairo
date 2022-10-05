@@ -11,8 +11,8 @@ from starkware.cairo.common.alloc import alloc
 from openzeppelin.access.ownable.library import Ownable
 
 // Internal dependencies
-
 from zkairvm.model import ExecutionContext
+from tests.utils import test_utils
 
 namespace Zkairvm {
     func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(owner: felt) {
@@ -23,6 +23,9 @@ namespace Zkairvm {
     func execute{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         code: felt*, calldata: felt*
     ) {
+        // TODO: remove when stable
+        // for debugging purpose
+        test_utils.setup_python_defs();
         let (ctx: ExecutionContext) = internal.init_execution_context(code, calldata, verbose=TRUE);
         run(ctx);
         return ();
@@ -32,6 +35,9 @@ namespace Zkairvm {
         ctx: ExecutionContext
     ) {
         alloc_locals;
+        // for debugging purpose
+        internal.debug_execution_context(ctx);
+
         // logging
         if (ctx.verbose == TRUE) {
             // internal.dump_execution_context(ctx);
@@ -68,6 +74,17 @@ namespace internal {
     ) {
         alloc_locals;
         %{ print(f"pc: {ids.ctx.pc}") %}
+        return ();
+    }
+
+    func debug_execution_context(ctx: ExecutionContext) {
+        %{
+            code = [memory[ids.ctx.code + i] for i in range(4)]
+            json = {
+                "code": f"{code}"
+            }
+            post_debug(json)
+        %}
         return ();
     }
 }
