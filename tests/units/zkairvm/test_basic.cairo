@@ -28,7 +28,7 @@ func test_basic_stack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 
     // load test case
     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
-        './tests/cases/001.yml'
+        './tests/cases/001.json'
     );
 
     // run EVM execution

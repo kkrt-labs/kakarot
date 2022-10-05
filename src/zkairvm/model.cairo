@@ -8,4 +8,5 @@ struct ExecutionContext {
     pc: felt,
     stopped: felt,
     return_data: felt*,
+    verbose: felt,  // for debug purpose
 }
