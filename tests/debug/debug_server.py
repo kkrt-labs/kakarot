@@ -1,7 +1,7 @@
 import flask
-from flask import request
 import logging
 import os
+import json
 
 log = logging.getLogger("werkzeug")
 log.disabled = True
@@ -13,7 +13,10 @@ counter = 0
 @app.route("/", methods=["POST"])
 def home():
     global counter
-    print(counter, request.json)
+    json_formatted_str = json.dumps(flask.request.json, indent=2)
+    print(f"debug counter: {counter}")
+    print(json_formatted_str)
+
     counter += 1
     return "success"
 

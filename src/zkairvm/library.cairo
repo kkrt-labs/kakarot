@@ -79,9 +79,15 @@ namespace internal {
 
     func debug_execution_context(ctx: ExecutionContext) {
         %{
-            code = [memory[ids.ctx.code + i] for i in range(4)]
+            code = cairo_bytes_to_hex(ids.ctx.code)
+            calldata = cairo_bytes_to_hex(ids.ctx.calldata)
+            return_data = cairo_bytes_to_hex(ids.ctx.return_data)
             json = {
-                "code": f"{code}"
+                "pc": f"{ids.ctx.pc}",
+                "stopped": f"{ids.ctx.stopped}",
+                "code": f"{code}",
+                "calldata": f"{calldata}",
+                "return_data": f"{return_data}",
             }
             post_debug(json)
         %}

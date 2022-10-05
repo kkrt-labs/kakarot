@@ -54,6 +54,18 @@ namespace test_utils {
                     res.append(int(text[i:i+2], 16))
                 return res
 
+            def cairo_bytes_to_hex(input):
+                input_bytes = [val for key, val in memory.items() if key.segment_index == input.segment_index and key >= input]
+                hex_str = byte_array_to_hex_string(input_bytes)
+                return hex_str
+
+            def byte_array_to_hex_string(input):
+                hex_str = ''.join(map(byte_to_hex, input))
+                return hex_str
+
+            def byte_to_hex(b):
+                return f'{b:02x}'
+
             def str_to_felt(text):
                 if len(text) > MAX_LEN_FELT:
                     raise Exception("Text length too long to convert to felt.")
