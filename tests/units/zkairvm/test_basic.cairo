@@ -23,9 +23,6 @@ func test_basic_stack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     // prepare Zkairvm instance
     let (local context) = prepare();
 
-    // run scenario
-    %{ stop=start_prank(context.signers.anyone) %}
-
     // load test case
     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
         './tests/cases/001.json'
@@ -33,8 +30,6 @@ func test_basic_stack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 
     // run EVM execution
     Zkairvm.execute(evm_test_case.code, evm_test_case.calldata);
-
-    %{ stop() %}
 
     return ();
 }
