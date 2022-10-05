@@ -4,6 +4,7 @@ on: [push, pull_request, pull_request_target]
 
 env:
   PROTOSTAR_VERSION: 0.4.2
+  DEBUG: False
 
 jobs:
   protostar-tests:

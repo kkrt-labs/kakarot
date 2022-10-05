@@ -42,11 +42,11 @@ namespace test_utils {
 
     func setup_python_defs() {
         %{
-            import re
+            import re, os, requests
             import array as arr
-            from requests import post
 
             MAX_LEN_FELT = 31
+            os.environ.setdefault('DEBUG', 'True')
              
             def hex_string_to_int_array(text):
                 res = []
@@ -76,7 +76,8 @@ namespace test_utils {
                 return int(val, 16)
 
             def post_debug(json):
-                post(url="http://localhost:8000", json=json)
+                if os.environ.get('DEBUG') == 'True':
+                    requests.post(url="http://localhost:8000", json=json)
         %}
         return ();
     }
