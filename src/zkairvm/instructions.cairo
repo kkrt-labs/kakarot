@@ -20,7 +20,7 @@ namespace EVMInstructions {
         alloc_locals;
         let initial_value = 0;
         // init dict
-        let (local instructions: DictAccess*) = default_dict_new(default_value=initial_value);
+        let (instructions: DictAccess*) = default_dict_new(default_value=initial_value);
 
         // add instructions
 
@@ -46,7 +46,8 @@ namespace EVMInstructions {
         let opcode = ctx.code[ctx.pc];
 
         // read opcode in instruction set
-        let (opcode_function) = dict_read{dict_ptr=instructions}(key=opcode);
+        let (function_ptr_as_felt) = dict_read{dict_ptr=instructions}(key=opcode);
+        let function_ptr = cast(function_ptr_as_felt, felt*);
 
         // prepare arguments
         // TODO: prepare arguments
@@ -63,6 +64,9 @@ namespace EVMInstructions {
         instructions: DictAccess*, opcode: felt, function: codeoffset
     ) {
         alloc_locals;
+        let (function_ptr) = get_label_location(function);
+        let function_ptr_as_felt = cast(function_ptr, felt);
+        dict_write{dict_ptr=instructions}(key=opcode, new_value=function_ptr_as_felt);
         return ();
     }
 
