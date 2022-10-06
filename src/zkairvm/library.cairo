@@ -6,12 +6,14 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.dict_access import DictAccess
 
 // OpenZeppelin dependencies
 from openzeppelin.access.ownable.library import Ownable
 
 // Internal dependencies
 from zkairvm.model import ExecutionContext
+from zkairvm.instructions import EVMInstructions
 from tests.utils import test_utils
 
 namespace Zkairvm {
@@ -23,16 +25,22 @@ namespace Zkairvm {
     func execute{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         code: felt*, calldata: felt*
     ) {
+        alloc_locals;
+
         // TODO: remove when stable
         // for debugging purpose
         test_utils.setup_python_defs();
+
+        // generate instructions set
+        let (instructions: DictAccess*) = EVMInstructions.generate_instructions();
+
         let (ctx: ExecutionContext) = internal.init_execution_context(code, calldata, verbose=TRUE);
-        run(ctx);
+        run(instructions, ctx);
         return ();
     }
 
     func run{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: ExecutionContext
+        instructions: DictAccess*, ctx: ExecutionContext
     ) {
         alloc_locals;
         // for debugging purpose
@@ -43,10 +51,15 @@ namespace Zkairvm {
             // internal.dump_execution_context(ctx);
         }
 
+        // decode and execute
+        EVMInstructions.decode_and_execute(instructions, ctx);
+
         // terminate execution
         if (ctx.stopped == TRUE) {
             // return ();
         }
+
+        run(instructions, ctx);
 
         return ();
     }
