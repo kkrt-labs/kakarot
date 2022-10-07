@@ -1,5 +1,5 @@
 {
-  "code":"010001020304",
+  "code":"0100",
   "calldata":"05060708ABCDFFEFEEAA",
   "expected_return_data":"090A0B0C"
 }

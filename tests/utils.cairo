@@ -4,6 +4,7 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.bool import TRUE, FALSE
 
 // Internal dependencies
 from tests.model import EVMTestCase
@@ -59,6 +60,20 @@ namespace test_utils {
                 hex_str = byte_array_to_hex_string(input_bytes)
                 return hex_str
 
+            def get_len(array):
+                i = 0
+                for key, val in memory.items():
+                    if key.segment_index == array.segment_index and key >= array:
+                        i = i + 1
+                return i
+
+            def has_entries(array):
+                i = 0
+                for key, val in memory.items():
+                    if key.segment_index == array.segment_index and key >= array:
+                            return True
+                return False
+
             def byte_array_to_hex_string(input):
                 hex_str = ''.join(map(byte_to_hex, input))
                 return hex_str
@@ -92,5 +107,43 @@ namespace test_utils {
                     requests.post(url="http://localhost:8000", json=json)
         %}
         return ();
+    }
+}
+
+namespace Helpers {
+    func has_entries(array: felt*) -> (res: felt) {
+        alloc_locals;
+        local res;
+        %{
+            if has_entries(ids.array):
+                ids.res = 1
+            else:
+                ids.res = 0
+        %}
+        return (res=res);
+    }
+
+    func get_len(array: felt*) -> (res: felt) {
+        alloc_locals;
+        local res;
+        %{ ids.res = get_len(array) %}
+        return (res=res);
+    }
+
+    func get_last(array: felt*) -> (res: felt) {
+        return get_last_or_default(array, 0);
+    }
+
+    func get_last_or_default(array: felt*, default_value: felt) -> (res: felt) {
+        alloc_locals;
+        local res;
+        %{
+            if has_entries(ids.array):
+                last_idx = get_len(ids.array) - 1
+                ids.res = memory[ids.array + last_idx]
+            else:
+                ids.res = ids.default_value
+        %}
+        return (res=res);
     }
 }

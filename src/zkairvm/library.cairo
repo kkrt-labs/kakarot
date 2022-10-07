@@ -11,7 +11,7 @@ from starkware.cairo.common.alloc import alloc
 from openzeppelin.access.ownable.library import Ownable
 
 // Internal dependencies
-from zkairvm.model import ExecutionContext
+from zkairvm.model import ExecutionContext, ExecutionContextModel
 from zkairvm.instructions import EVMInstructions
 from tests.utils import test_utils
 
@@ -26,8 +26,7 @@ namespace Zkairvm {
     ) {
         alloc_locals;
 
-        // TODO: remove when stable
-        // for debugging purpose
+        // load helper hints
         test_utils.setup_python_defs();
 
         // generate instructions set
@@ -43,18 +42,14 @@ namespace Zkairvm {
     ) {
         alloc_locals;
         // for debugging purpose
-        internal.debug_execution_context(ctx);
-
-        // logging
-        if (ctx.verbose == TRUE) {
-            // internal.dump_execution_context(ctx);
-        }
+        ExecutionContextModel.dump(ctx);
 
         // decode and execute
         EVMInstructions.decode_and_execute(instructions, ctx);
 
+        let (stopped) = ExecutionContextModel.is_stopped(ctx);
         // terminate execution
-        if (ctx.stopped == TRUE) {
+        if (stopped == TRUE) {
             // return ();
         }
 
@@ -70,11 +65,15 @@ namespace internal {
     ) -> (ctx: ExecutionContext) {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
+        let (empty_stopped: felt*) = alloc();
+        let initial_pc = 0;
+        let (pc: felt*) = alloc();
+        assert [pc] = initial_pc;
         let ctx: ExecutionContext = ExecutionContext(
             code=code,
             calldata=calldata,
-            pc=0,
-            stopped=FALSE,
+            pc=pc,
+            stopped=empty_stopped,
             return_data=empty_return_data,
             verbose=verbose,
         );
@@ -86,23 +85,6 @@ namespace internal {
     ) {
         alloc_locals;
         %{ print(f"pc: {ids.ctx.pc}") %}
-        return ();
-    }
-
-    func debug_execution_context(ctx: ExecutionContext) {
-        %{
-            code = cairo_bytes_to_hex(ids.ctx.code)
-            calldata = cairo_bytes_to_hex(ids.ctx.calldata)
-            return_data = cairo_bytes_to_hex(ids.ctx.return_data)
-            json = {
-                "pc": f"{ids.ctx.pc}",
-                "stopped": f"{ids.ctx.stopped}",
-                "code": f"{code}",
-                "calldata": f"{calldata}",
-                "return_data": f"{return_data}",
-            }
-            post_debug(json)
-        %}
         return ();
     }
 }

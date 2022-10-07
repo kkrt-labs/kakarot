@@ -7,10 +7,11 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.invoke import invoke
+from starkware.cairo.common.math import assert_nn
 from starkware.cairo.common.registers import get_label_location
 
 // Internal dependencies
-from zkairvm.model import ExecutionContext
+from zkairvm.model import ExecutionContext, ExecutionContextModel
 
 namespace EVMInstructions {
     // Define constants
@@ -65,11 +66,18 @@ namespace EVMInstructions {
     ) {
         alloc_locals;
 
+        // let (pc) = ExecutionContextModel.get_pc(ctx);
+        let pc = 0;
+
+        // revert if pc < 0
+        with_attr error_message("Zkairvm: InvalidCodeOffset") {
+            assert_nn(pc);
+        }
         // TODO: check if pc < 0 and revert with InvalidCodeOffset
         // TODO: check if pc > len(code) and process it as a STOP if true
 
         // read current opcode
-        let opcode = ctx.code[ctx.pc];
+        let opcode = ctx.code[pc];
 
         local opcode_exist;
 
