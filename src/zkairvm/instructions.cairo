@@ -4,14 +4,17 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.invoke import invoke
 from starkware.cairo.common.math import assert_nn
+from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.registers import get_label_location
 
 // Internal dependencies
 from zkairvm.model import ExecutionContext, ExecutionContextModel
+from tests.utils import Helpers
 
 namespace EVMInstructions {
     // Define constants
@@ -19,6 +22,7 @@ namespace EVMInstructions {
     const OPCODE_MAX_VALUE = BYTE_MAX_VALUE;
     const UNKNOWN_OPCODE_VALUE = OPCODE_MAX_VALUE + 1;
     const INSTRUCTIONS_LEN = OPCODE_MAX_VALUE + 1;
+    const STOP_OPCODE = 0;
 
     // Generates the instructions set for the EVM
     func generate_instructions{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -65,19 +69,36 @@ namespace EVMInstructions {
         instructions: felt*, ctx: ExecutionContext
     ) {
         alloc_locals;
-
-        // let (pc) = ExecutionContextModel.get_pc(ctx);
-        let pc = 0;
+        let (pc) = ExecutionContextModel.get_pc(ctx);
 
         // revert if pc < 0
         with_attr error_message("Zkairvm: InvalidCodeOffset") {
             assert_nn(pc);
         }
-        // TODO: check if pc < 0 and revert with InvalidCodeOffset
-        // TODO: check if pc > len(code) and process it as a STOP if true
 
+        local opcode;
+
+        // <START CAIRO VERSION>
+        // check if pc > len(code) and process it as a STOP if true
+        // let is_pc_gt_code_len = is_le(ctx.code_len, pc);
+        // if (is_pc_gt_code_len == TRUE) {
+        // opcode = STOP_OPCODE;
+        // } else {
         // read current opcode
-        let opcode = ctx.code[pc];
+        // TODO: find a workaround re: Expected a constant offset in the range [-2^15, 2^15).
+        // opcode = [ctx.code + pc]
+        // }
+        // <END  CAIRO VERSION>
+
+        // <START HINT VERSION
+        %{
+            # check if pc > len(code) and process it as a STOP if true
+            if ids.pc > ids.ctx.code_len:
+                ids.opcode = 0
+            else:
+                ids.opcode = memory[ids.ctx.code + ids.pc]
+        %}
+        // <END  HINT VERSION
 
         local opcode_exist;
 
@@ -100,11 +121,10 @@ namespace EVMInstructions {
         let (function_ptr) = get_label_location(function_codeoffset);
 
         // prepare arguments
-        let (args: ExecutionContext*) = alloc();
+        let (local args: ExecutionContext*) = alloc();
         assert [args] = ctx;
 
-        // execute the function
-        invoke(function_ptr, 1, args);
+        invoke(function_ptr, ExecutionContext.SIZE, args);
 
         return ();
     }
@@ -138,6 +158,7 @@ namespace EVMInstructions {
     ) {
         alloc_locals;
         %{ print("0x00 - STOP") %}
+        ExecutionContextModel.stop(ctx);
         return ();
     }
 
@@ -150,6 +171,7 @@ namespace EVMInstructions {
     ) {
         alloc_locals;
         %{ print("0x01 - ADD") %}
+        ExecutionContextModel.inc_pc(ctx, 1);
         return ();
     }
 }

@@ -13,7 +13,7 @@ from openzeppelin.access.ownable.library import Ownable
 // Internal dependencies
 from zkairvm.model import ExecutionContext, ExecutionContextModel
 from zkairvm.instructions import EVMInstructions
-from tests.utils import test_utils
+from tests.utils import test_utils, Helpers
 
 namespace Zkairvm {
     func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(owner: felt) {
@@ -32,8 +32,12 @@ namespace Zkairvm {
         // generate instructions set
         let instructions: felt* = EVMInstructions.generate_instructions();
 
+        // prepare execution context
         let (ctx: ExecutionContext) = internal.init_execution_context(code, calldata, verbose=TRUE);
+
+        // start execution
         run(instructions, ctx);
+
         return ();
     }
 
@@ -41,19 +45,23 @@ namespace Zkairvm {
         instructions: felt*, ctx: ExecutionContext
     ) {
         alloc_locals;
-        // for debugging purpose
-        ExecutionContextModel.dump(ctx);
 
         // decode and execute
         EVMInstructions.decode_and_execute(instructions, ctx);
 
+        // for debugging purpose
+        ExecutionContextModel.dump(ctx);
+
+        // check if execution should be stopped
         let (stopped) = ExecutionContextModel.is_stopped(ctx);
+
         // terminate execution
         if (stopped == TRUE) {
-            // return ();
+            return ();
         }
 
-        // run(instructions, ctx);
+        // continue execution
+        run(instructions, ctx);
 
         return ();
     }
@@ -69,8 +77,11 @@ namespace internal {
         let initial_pc = 0;
         let (pc: felt*) = alloc();
         assert [pc] = initial_pc;
+
+        let (code_len) = Helpers.get_len(code);
         let ctx: ExecutionContext = ExecutionContext(
             code=code,
+            code_len=code_len,
             calldata=calldata,
             pc=pc,
             stopped=empty_stopped,
@@ -84,7 +95,6 @@ namespace internal {
         ctx: ExecutionContext
     ) {
         alloc_locals;
-        %{ print(f"pc: {ids.ctx.pc}") %}
         return ();
     }
 }

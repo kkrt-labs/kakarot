@@ -10,6 +10,7 @@ from tests.utils import Helpers
 
 struct ExecutionContext {
     code: felt*,
+    code_len: felt,
     calldata: felt*,
     pc: felt*,
     stopped: felt*,
@@ -18,17 +19,38 @@ struct ExecutionContext {
 }
 
 struct ExecutionStep {
+    pc: felt,
+    opcode: felt,
+    gas: felt,
 }
 
 namespace ExecutionContextModel {
     func get_pc(ctx: ExecutionContext) -> (pc: felt) {
+        alloc_locals;
         let (pc) = Helpers.get_last(ctx.pc);
         return (pc=pc);
+    }
+
+    func set_pc(ctx: ExecutionContext, pc: felt) {
+        let (pc_len) = Helpers.get_len(ctx.pc);
+        assert [ctx.pc + pc_len] = pc;
+        return ();
+    }
+
+    func inc_pc(ctx: ExecutionContext, inc_value: felt) {
+        let (pc) = get_pc(ctx);
+        set_pc(ctx, pc + inc_value);
+        return ();
     }
 
     func is_stopped(ctx: ExecutionContext) -> (stopped: felt) {
         let (stopped) = Helpers.has_entries(ctx.stopped);
         return (stopped=stopped);
+    }
+
+    func stop(ctx: ExecutionContext) {
+        assert [ctx.stopped] = TRUE;
+        return ();
     }
 
     func dump(ctx: ExecutionContext) {
@@ -41,8 +63,6 @@ namespace ExecutionContextModel {
             json = {
                 "pc": f"{ids.pc}",
                 "stopped": f"{ids.stopped}",
-                "code": f"{code}",
-                "calldata": f"{calldata}",
                 "return_data": f"{return_data}",
             }
             post_debug(json)

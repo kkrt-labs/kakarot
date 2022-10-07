@@ -60,14 +60,14 @@ namespace test_utils {
                 hex_str = byte_array_to_hex_string(input_bytes)
                 return hex_str
 
-            def get_len(array):
+            def py_get_len(array):
                 i = 0
                 for key, val in memory.items():
                     if key.segment_index == array.segment_index and key >= array:
                         i = i + 1
                 return i
 
-            def has_entries(array):
+            def py_has_entries(array):
                 i = 0
                 for key, val in memory.items():
                     if key.segment_index == array.segment_index and key >= array:
@@ -115,7 +115,7 @@ namespace Helpers {
         alloc_locals;
         local res;
         %{
-            if has_entries(ids.array):
+            if py_has_entries(ids.array):
                 ids.res = 1
             else:
                 ids.res = 0
@@ -126,20 +126,29 @@ namespace Helpers {
     func get_len(array: felt*) -> (res: felt) {
         alloc_locals;
         local res;
-        %{ ids.res = get_len(array) %}
+        %{ ids.res = py_get_len(ids.array) %}
         return (res=res);
     }
 
     func get_last(array: felt*) -> (res: felt) {
-        return get_last_or_default(array, 0);
+        alloc_locals;
+        local res;
+        %{
+            if py_has_entries(ids.array):
+                last_idx = py_get_len(ids.array) - 1
+                ids.res = memory.get(ids.array + last_idx)
+            else:
+                ids.res = 0
+        %}
+        return (res=res);
     }
 
     func get_last_or_default(array: felt*, default_value: felt) -> (res: felt) {
         alloc_locals;
         local res;
         %{
-            if has_entries(ids.array):
-                last_idx = get_len(ids.array) - 1
+            if py_has_entries(ids.array):
+                last_idx = py_get_len(ids.array) - 1
                 ids.res = memory[ids.array + last_idx]
             else:
                 ids.res = ids.default_value
