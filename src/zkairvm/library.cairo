@@ -31,7 +31,7 @@ namespace Zkairvm {
         test_utils.setup_python_defs();
 
         // generate instructions set
-        let instructions: codeoffset* = EVMInstructions.generate_instructions();
+        let instructions: felt* = EVMInstructions.generate_instructions();
 
         let (ctx: ExecutionContext) = internal.init_execution_context(code, calldata, verbose=TRUE);
         run(instructions, ctx);
@@ -39,7 +39,7 @@ namespace Zkairvm {
     }
 
     func run{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        instructions: codeoffset*, ctx: ExecutionContext
+        instructions: felt*, ctx: ExecutionContext
     ) {
         alloc_locals;
         // for debugging purpose
