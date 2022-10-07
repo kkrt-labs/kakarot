@@ -26,11 +26,56 @@ namespace EVMInstructions {
         let (instructions_len, instructions) = new_array_with_default_value(
             OPCODE_MAX_VALUE + 1, unknown_opcode
         );
+        let (local array_test: felt*) = alloc();
+        assert [array_test + 2] = cast(exec_stop, felt);
+        assert [array_test + 4] = cast(exec_add, felt);
+
+        local ex_2;
+        local ex_3;
+        local ex_4;
+
+        %{
+            #print(f"{memory[ids.array_test + 2]}")
+            #print(f"{memory.get(ids.array_test + 3)}")
+            #print(f"{memory[ids.array_test + 4]}")
+            # tip to check if value has been written or not
+            if memory.get(ids.array_test + 2) == None:
+                ids.ex_2 = 1
+            if memory.get(ids.array_test + 3) == None:
+                ids.ex_3 = 1
+            if memory.get(ids.array_test + 4) == None:
+                ids.ex_4 = 1
+        %}
+        assert ex_2 = 0;
+        assert ex_3 = 1;
+        assert ex_4 = 0;
+
+        let fn_2_felt = array_test[2];
+        let fn_2_codeoffset = cast(fn_2_felt, codeoffset);
+        let (fn_2_pc) = get_label_location(fn_2_codeoffset);
+
+        let fn_4_felt = array_test[4];
+        let fn_4_codeoffset = cast(fn_4_felt, codeoffset);
+        let (fn_4_pc) = get_label_location(fn_4_codeoffset);
+        let (empty_return_data: felt*) = alloc();
+
+        let ctx: ExecutionContext = ExecutionContext(
+            code=empty_return_data,
+            calldata=empty_return_data,
+            pc=0,
+            stopped=0,
+            return_data=empty_return_data,
+            verbose=0,
+        );
+        let (args: ExecutionContext*) = alloc();
+        assert [args] = ctx;
+        invoke(fn_2_pc, 1, args);
+        invoke(fn_4_pc, 1, args);
 
         // add instructions
 
         // add 0s: Stop and Arithmetic Operations
-        // add_instruction(instructions, 0, exec_stop);  // 0x00 - STOP
+        add_instruction(instructions, 0, exec_stop);  // 0x00 - STOP
 
         return (instructions=instructions);
     }
