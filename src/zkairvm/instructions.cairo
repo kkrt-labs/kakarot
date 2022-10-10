@@ -13,7 +13,8 @@ from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.registers import get_label_location
 
 // Internal dependencies
-from zkairvm.model import ExecutionContext, ExecutionContextModel
+from zkairvm.model import model
+from zkairvm.execution_context import ExecutionContext
 from utils.utils import Helpers
 
 namespace EVMInstructions {
@@ -66,10 +67,10 @@ namespace EVMInstructions {
     // @param opcode the opcode value
     // @param ctx the execution context
     func decode_and_execute{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        instructions: felt*, ctx: ExecutionContext
+        instructions: felt*, ctx: model.ExecutionContext
     ) {
         alloc_locals;
-        let (pc) = ExecutionContextModel.get_pc(ctx);
+        let (pc) = ExecutionContext.get_pc(ctx);
 
         // revert if pc < 0
         with_attr error_message("Zkairvm: InvalidCodeOffset") {
@@ -121,10 +122,10 @@ namespace EVMInstructions {
         let (function_ptr) = get_label_location(function_codeoffset);
 
         // prepare arguments
-        let (local args: ExecutionContext*) = alloc();
+        let (local args: model.ExecutionContext*) = alloc();
         assert [args] = ctx;
 
-        invoke(function_ptr, ExecutionContext.SIZE, args);
+        invoke(function_ptr, model.ExecutionContext.SIZE, args);
 
         return ();
     }
@@ -142,7 +143,7 @@ namespace EVMInstructions {
 
     // Unknown opcode
     func unknown_opcode{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: ExecutionContext
+        ctx: model.ExecutionContext
     ) {
         alloc_locals;
         // TODO: revert with UnknownOpcode error
@@ -154,11 +155,11 @@ namespace EVMInstructions {
     // Since: Frontier
     // Group: Stop and Arithmetic Operations
     func exec_stop{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: ExecutionContext
+        ctx: model.ExecutionContext
     ) {
         alloc_locals;
         %{ print("0x00 - STOP") %}
-        ExecutionContextModel.stop(ctx);
+        ExecutionContext.stop(ctx);
         return ();
     }
 
@@ -167,11 +168,11 @@ namespace EVMInstructions {
     // Since: Frontier
     // Group: Stop and Arithmetic Operations
     func exec_add{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: ExecutionContext
+        ctx: model.ExecutionContext
     ) {
         alloc_locals;
         %{ print("0x01 - ADD") %}
-        ExecutionContextModel.inc_pc(ctx, 1);
+        ExecutionContext.inc_pc(ctx, 1);
         return ();
     }
 }
