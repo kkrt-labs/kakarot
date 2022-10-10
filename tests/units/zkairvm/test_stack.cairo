@@ -30,12 +30,22 @@ func test_stack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
     let (len) = Stack.len(stack);
     assert len = 3;
 
-    %{ expect_revert("TRANSACTION_FAILED", "Zkairvm: StackUnderflow") %}
-    Stack.peek(stack, 3);
-
     Stack.print_element_at(stack, 0);
     Stack.print_element_at(stack, 1);
     Stack.print_element_at(stack, 2);
 
+    return ();
+}
+
+@external
+func test_stack_underflow{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    alloc_locals;
+    Helpers.setup_python_defs();
+
+    let stack: model.Stack = Stack.init();
+    Stack.push(stack, Uint256(1, 0));
+
+    %{ expect_revert("TRANSACTION_FAILED", "Zkairvm: StackUnderflow") %}
+    Stack.peek(stack, 1);
     return ();
 }

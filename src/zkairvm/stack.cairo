@@ -106,11 +106,9 @@ namespace Stack {
         self: model.Stack, stack_index: felt
     ) {
         let (element) = Stack.peek(self, stack_index);
-        let element_low = element.low;
-        let element_high = element.high;
         %{
-            print(f"low: {ids.element_low}")    
-            print(f"high: {ids.element_high}")
+            element_str = cairo_uint256_to_str(ids.element)
+            print(f"{element_str}")
         %}
         return ();
     }
