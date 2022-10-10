@@ -9,6 +9,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import assert_lt_felt
 from starkware.cairo.common.math_cmp import is_not_zero
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.memcpy import memcpy
 
 // Internal dependencies
 from zkairvm.constants import Constants
@@ -18,7 +19,7 @@ from utils.utils import Helpers
 namespace Stack {
     func init{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> model.Stack {
         alloc_locals;
-        let (local elements: Uint256*) = alloc();
+        let (elements: Uint256*) = alloc();
         let stack: model.Stack = model.Stack(elements=elements, raw_len=0);
         return stack;
     }
@@ -44,11 +45,21 @@ namespace Stack {
 
     func pop{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.Stack
-    ) -> Uint256 {
+    ) -> (new_stack: model.Stack, element: Uint256) {
         alloc_locals;
-        // TODO: implement me
-        let element = Uint256(0, 0);
-        return element;
+        // get last elt
+        let len = Stack.len(self);
+        let element = self.elements[len - 1];
+        // get new segment for next stack copy
+        let (new_elements: Uint256*) = alloc();
+        // get length of new stack copy
+        let element_size = Uint256.SIZE;
+        let new_len = self.raw_len - element_size;
+        // copy stack without last elt
+        memcpy(dst=new_elements, src=self.elements, len=new_len);
+        // create new stack
+        let new_stack = model.Stack(elements=new_elements, raw_len=new_len);
+        return (new_stack=new_stack, element=element);
     }
 
     func peek{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(

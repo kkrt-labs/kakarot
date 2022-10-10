@@ -34,6 +34,10 @@ func test_stack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
     Stack.print_element_at(stack, 1);
     Stack.print_element_at(stack, 2);
 
+    let (stack, element) = Stack.pop(stack);
+    assert element = Uint256(3, 0);
+    assert stack.raw_len = (len - 1) * 2;
+
     return ();
 }
 
