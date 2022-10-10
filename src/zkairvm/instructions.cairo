@@ -14,7 +14,7 @@ from starkware.cairo.common.registers import get_label_location
 
 // Internal dependencies
 from zkairvm.model import ExecutionContext, ExecutionContextModel
-from tests.utils import Helpers
+from utils.utils import Helpers
 
 namespace EVMInstructions {
     // Define constants

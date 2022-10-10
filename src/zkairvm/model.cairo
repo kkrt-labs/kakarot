@@ -6,7 +6,7 @@
 from starkware.cairo.common.bool import TRUE, FALSE
 
 // Internal dependencies
-from tests.utils import Helpers
+from utils.utils import Helpers
 
 struct ExecutionContext {
     code: felt*,

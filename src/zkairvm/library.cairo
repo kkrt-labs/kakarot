@@ -13,7 +13,7 @@ from openzeppelin.access.ownable.library import Ownable
 // Internal dependencies
 from zkairvm.model import ExecutionContext, ExecutionContextModel
 from zkairvm.instructions import EVMInstructions
-from tests.utils import test_utils, Helpers
+from utils.utils import Helpers
 
 namespace Zkairvm {
     func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(owner: felt) {
@@ -27,7 +27,7 @@ namespace Zkairvm {
         alloc_locals;
 
         // load helper hints
-        test_utils.setup_python_defs();
+        Helpers.setup_python_defs();
 
         // generate instructions set
         let instructions: felt* = EVMInstructions.generate_instructions();
