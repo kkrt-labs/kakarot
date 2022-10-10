@@ -12,6 +12,7 @@ from utils.utils import Helpers
 namespace model {
     struct Stack {
         elements: Uint256*,
+        raw_len: felt,
     }
 
     struct ExecutionContext {

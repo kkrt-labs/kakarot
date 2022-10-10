@@ -23,11 +23,11 @@ func test_stack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
     Helpers.setup_python_defs();
 
     let stack: model.Stack = Stack.init();
-    Stack.push(stack, Uint256(1, 0));
-    Stack.push(stack, Uint256(2, 0));
-    Stack.push(stack, Uint256(3, 0));
+    let stack: model.Stack = Stack.push(stack, Uint256(1, 0));
+    let stack: model.Stack = Stack.push(stack, Uint256(2, 0));
+    let stack: model.Stack = Stack.push(stack, Uint256(3, 0));
 
-    let (len) = Stack.len(stack);
+    let len = Stack.len(stack);
     assert len = 3;
 
     Stack.print_element_at(stack, 0);
