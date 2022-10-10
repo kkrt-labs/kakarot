@@ -10,28 +10,29 @@ namespace Helpers {
         %{
             import re, os, requests
             import array as arr
-            import pprint
+            from pprint import pprint
 
             MAX_LEN_FELT = 31
             os.environ.setdefault('DEBUG', 'True')
-             
+
             def dump_array(array):
                 #for key, val in memory.items():
                     #if key.segment_index == array.segment_index and key >= array:
                         #print(f"val: {val}")
-                pprint.pprint(array)
+                pprint(array)
                 return
 
             def hex_string_to_int_array(text):
-                res = []
-                for i in range(0, len(text), 2):
-                    res.append(int(text[i:i+2], 16))
-                return res
+                return [int(text[i:i+2], 16) for i in range(0, len(text), 2)]
 
             def cairo_bytes_to_hex(input):
-                input_bytes = [val for key, val in memory.items() if key.segment_index == input.segment_index and key >= input]
-                hex_str = byte_array_to_hex_string(input_bytes)
-                return hex_str
+                return byte_array_to_hex_string(
+                    [
+                        val
+                        for key, val in memory.items()
+                        if key.segment_index == input.segment_index and key >= input
+                    ]
+                )
 
             def py_get_len(array):
                 i = 0
@@ -41,15 +42,13 @@ namespace Helpers {
                 return i
 
             def py_has_entries(array):
-                i = 0
                 for key, val in memory.items():
                     if key.segment_index == array.segment_index and key >= array:
                             return True
                 return False
 
             def byte_array_to_hex_string(input):
-                hex_str = ''.join(map(byte_to_hex, input))
-                return hex_str
+                return ''.join(map(byte_to_hex, input))
 
             def byte_to_hex(b):
                 return f'{b:02x}'
@@ -58,20 +57,20 @@ namespace Helpers {
                 if len(text) > MAX_LEN_FELT:
                     raise Exception("Text length too long to convert to felt.")
                 return int.from_bytes(text.encode(), "big")
-             
+
             def felt_to_str(felt):
                 length = (felt.bit_length() + 7) // 8
                 return felt.to_bytes(length, byteorder="big").decode("utf-8")
-             
+
             def str_to_felt_array(text):
                 return [str_to_felt(text[i:i+MAX_LEN_FELT]) for i in range(0, len(text), MAX_LEN_FELT)]
-             
+
             def uint256_to_int(uint256):
                 return uint256[0] + uint256[1]*2**128
-             
+
             def uint256(val):
                 return (val & 2**128-1, (val & (2**256-2**128)) >> 128)
-             
+
             def hex_to_felt(val):
                 return int(val, 16)
 
@@ -86,8 +85,7 @@ namespace Helpers {
                 return res
 
             def cairo_uint256_to_str(item):
-                b = cairo_uint256_to_bytes32(item)
-                return byte_array_to_hex_string(b)
+                return cairo_uint256_to_bytes32(item)
         %}
         return ();
     }
