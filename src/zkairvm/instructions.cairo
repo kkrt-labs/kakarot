@@ -175,8 +175,8 @@ namespace EVMInstructions {
         // let (a) = Stack.pop(stack);
         // let (b) = Stack.pop(stack);
 
-        // let (a) = Stack.peek(0);
-        // let (b) = Stack.peek(1);
+        // let (a) = Stack.peek(stack, 0);
+        // let (b) = Stack.peek(stack, 1);
 
         // compute the addition
         // let (result) = SafeUint256.add(a, b);

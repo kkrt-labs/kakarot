@@ -5,7 +5,8 @@
 // StarkWare dependencies
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_not_zero
+from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
 from utils.utils import Helpers
@@ -79,7 +80,7 @@ namespace ExecutionContext {
         local stack: model.Stack;
         let (number_of_steps) = ExecutionContext.get_number_of_steps(self);
 
-        let has_steps = is_le(1, number_of_steps);
+        let has_steps = is_not_zero(number_of_steps);
         if (has_steps == TRUE) {
             let (last_step) = ExecutionContext.get_last_step(self);
             assert stack = last_step.stack;
@@ -89,7 +90,6 @@ namespace ExecutionContext {
             assert stack = initial_stack;
             return (stack=stack);
         }
-        // let (stack) = Stack.init();
     }
 
     func dump(self: model.ExecutionContext) {

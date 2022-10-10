@@ -6,7 +6,8 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math import assert_lt_felt
+from starkware.cairo.common.math_cmp import is_not_zero
 from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
@@ -75,10 +76,9 @@ namespace Stack {
         self: model.Stack
     ) {
         let (stack_len) = Stack.len(self);
-        let is_overflow = is_le(Constants.STACK_MAX_DEPTH, stack_len);
         // revert if stack overflow
         with_attr error_message("Zkairvm: StackOverflow") {
-            assert is_overflow = FALSE;
+            assert_lt_felt(stack_len, Constants.STACK_MAX_DEPTH);
         }
         return ();
     }
@@ -88,9 +88,8 @@ namespace Stack {
     ) {
         alloc_locals;
         let (stack_len) = Stack.len(self);
-        let is_underflow = is_le(stack_len, stack_index);
         with_attr error_message("Zkairvm: StackUnderflow") {
-            assert is_underflow = FALSE;
+            assert_lt_felt(stack_index, stack_len);
         }
         return ();
     }
