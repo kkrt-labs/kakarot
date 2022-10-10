@@ -18,13 +18,6 @@ from zkairvm.execution_context import ExecutionContext
 from utils.utils import Helpers
 
 namespace EVMInstructions {
-    // Define constants
-    const BYTE_MAX_VALUE = 255;
-    const OPCODE_MAX_VALUE = BYTE_MAX_VALUE;
-    const UNKNOWN_OPCODE_VALUE = OPCODE_MAX_VALUE + 1;
-    const INSTRUCTIONS_LEN = OPCODE_MAX_VALUE + 1;
-    const STOP_OPCODE = 0;
-
     // Generates the instructions set for the EVM
     func generate_instructions{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         ) -> (instructions: felt*) {
@@ -83,7 +76,7 @@ namespace EVMInstructions {
         // check if pc > len(code) and process it as a STOP if true
         // let is_pc_gt_code_len = is_le(ctx.code_len, pc);
         // if (is_pc_gt_code_len == TRUE) {
-        // opcode = STOP_OPCODE;
+        // opcode = 0;
         // } else {
         // read current opcode
         // TODO: find a workaround re: Expected a constant offset in the range [-2^15, 2^15).

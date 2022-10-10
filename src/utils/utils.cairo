@@ -2,15 +2,26 @@
 
 %lang starknet
 
+// StarkWare dependencies
+from starkware.cairo.common.uint256 import Uint256
+
 namespace Helpers {
     func setup_python_defs() {
         %{
             import re, os, requests
             import array as arr
+            import pprint
 
             MAX_LEN_FELT = 31
             os.environ.setdefault('DEBUG', 'True')
              
+            def dump_array(array):
+                #for key, val in memory.items():
+                    #if key.segment_index == array.segment_index and key >= array:
+                        #print(f"val: {val}")
+                pprint.pprint(array)
+                return
+
             def hex_string_to_int_array(text):
                 res = []
                 for i in range(0, len(text), 2):
@@ -114,5 +125,9 @@ namespace Helpers {
                 ids.res = ids.default_value
         %}
         return (res=res);
+    }
+
+    func to_uint256(val: felt) -> (res: Uint256) {
+        return (res=Uint256(val, 0));
     }
 }

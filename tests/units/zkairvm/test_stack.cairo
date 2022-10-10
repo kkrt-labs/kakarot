@@ -1,0 +1,34 @@
+// SPDX-License-Identifier: MIT
+
+%lang starknet
+
+// Starkware dependencies
+from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.bool import TRUE, FALSE
+from starkware.cairo.common.uint256 import Uint256
+
+// Local dependencies
+from utils.utils import Helpers
+from zkairvm.model import model
+from zkairvm.stack import Stack
+
+@view
+func __setup__{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    return ();
+}
+
+@external
+func test_stack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    alloc_locals;
+    Helpers.setup_python_defs();
+
+    let stack: model.Stack = Stack.init();
+    Stack.push(stack, Uint256(1, 0));
+    Stack.push(stack, Uint256(2, 0));
+    Stack.push(stack, Uint256(3, 0));
+
+    let (len) = Stack.len(stack);
+    assert len = 3;
+
+    return ();
+}
