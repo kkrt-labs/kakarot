@@ -83,12 +83,13 @@ namespace ExecutionContext {
         if (has_steps == TRUE) {
             let (last_step) = ExecutionContext.get_last_step(self);
             assert stack = last_step.stack;
+            return (stack=stack);
         } else {
             let (initial_stack) = Stack.init();
             assert stack = initial_stack;
+            return (stack=stack);
         }
         // let (stack) = Stack.init();
-        return (stack=stack);
     }
 
     func dump(self: model.ExecutionContext) {
