@@ -17,6 +17,7 @@ from zkairvm.model import model
 from utils.utils import Helpers
 
 namespace Stack {
+    const element_size = Uint256.SIZE;
     func init{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> model.Stack {
         alloc_locals;
         let (elements: Uint256*) = alloc();
@@ -27,7 +28,6 @@ namespace Stack {
     func len{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.Stack
     ) -> felt {
-        let element_size = Uint256.SIZE;
         let actual_len = self.raw_len / element_size;
         return actual_len;
     }
@@ -36,7 +36,6 @@ namespace Stack {
         self: model.Stack, element: Uint256
     ) -> model.Stack {
         alloc_locals;
-        let element_size = Uint256.SIZE;
         Stack.check_overlow(self);
         assert [self.elements + self.raw_len] = element;
         let new_stack = model.Stack(elements=self.elements, raw_len=self.raw_len + element_size);
@@ -53,7 +52,6 @@ namespace Stack {
         // get new segment for next stack copy
         let (new_elements: Uint256*) = alloc();
         // get length of new stack copy
-        let element_size = Uint256.SIZE;
         let new_len = self.raw_len - element_size;
         // copy stack without last elt
         memcpy(dst=new_elements, src=self.elements, len=new_len);
