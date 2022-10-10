@@ -111,6 +111,13 @@ namespace Helpers {
         return (res=res);
     }
 
+    func get_number_of_elements(array: felt*, element_size: felt) -> (res: felt) {
+        alloc_locals;
+        let (raw_len) = get_len(array);
+        let actual_len = raw_len / element_size;
+        return (res=actual_len);
+    }
+
     func get_last(array: felt*) -> (res: felt) {
         alloc_locals;
         local res;

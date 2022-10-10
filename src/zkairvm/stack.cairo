@@ -37,7 +37,7 @@ namespace Stack {
     ) -> (res: felt) {
         let element_size = Uint256.SIZE;
         let (raw_len) = Helpers.get_len(self.elements);
-        let actual_len = raw_len / 2;
+        let actual_len = raw_len / element_size;
         return (res=actual_len);
     }
 
@@ -56,6 +56,7 @@ namespace Stack {
         self: model.Stack
     ) -> (element: Uint256) {
         alloc_locals;
+        // TODO: implement me
         let element = Uint256(0, 0);
         return (element=element);
     }

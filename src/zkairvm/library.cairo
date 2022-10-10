@@ -34,9 +34,7 @@ namespace Zkairvm {
         let instructions: felt* = EVMInstructions.generate_instructions();
 
         // prepare execution context
-        let (ctx: model.ExecutionContext) = internal.init_execution_context(
-            code, calldata, verbose=TRUE
-        );
+        let (ctx: model.ExecutionContext) = internal.init_execution_context(code, calldata);
 
         // start execution
         run(instructions, ctx);
@@ -72,7 +70,7 @@ namespace Zkairvm {
 
 namespace internal {
     func init_execution_context{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        code: felt*, calldata: felt*, verbose: felt
+        code: felt*, calldata: felt*
     ) -> (ctx: model.ExecutionContext) {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
@@ -80,6 +78,7 @@ namespace internal {
         let initial_pc = 0;
         let (pc: felt*) = alloc();
         assert [pc] = initial_pc;
+        let (steps: model.ExecutionStep*) = alloc();
 
         let (code_len) = Helpers.get_len(code);
         let ctx: model.ExecutionContext = model.ExecutionContext(
@@ -89,7 +88,7 @@ namespace internal {
             pc=pc,
             stopped=empty_stopped,
             return_data=empty_return_data,
-            verbose=verbose,
+            steps=steps,
         );
         return (ctx=ctx);
     }

@@ -10,6 +10,10 @@ from starkware.cairo.common.uint256 import Uint256
 from utils.utils import Helpers
 
 namespace model {
+    struct Stack {
+        elements: Uint256*,
+    }
+
     struct ExecutionContext {
         code: felt*,
         code_len: felt,
@@ -17,16 +21,13 @@ namespace model {
         pc: felt*,
         stopped: felt*,
         return_data: felt*,
-        verbose: felt,  // for debug purpose
+        steps: model.ExecutionStep*,
     }
 
     struct ExecutionStep {
         pc: felt,
         opcode: felt,
         gas: felt,
-    }
-
-    struct Stack {
-        elements: Uint256*,
+        stack: model.Stack,
     }
 }
