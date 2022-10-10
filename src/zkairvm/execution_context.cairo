@@ -76,17 +76,18 @@ namespace ExecutionContext {
         self: model.ExecutionContext
     ) -> (stack: model.Stack) {
         alloc_locals;
-        tempvar syscall_ptr: felt* = syscall_ptr;
-        local stack: model.Stack;
-        let (number_of_steps) = ExecutionContext.get_number_of_steps{syscall_ptr=syscall_ptr}(self);
-        let has_steps = is_le(1, number_of_steps);
-        if (has_steps == TRUE) {
-            let (last_step) = ExecutionContext.get_last_step{syscall_ptr=syscall_ptr}(self);
-            assert stack = last_step.stack;
-        } else {
-            let (initial_stack) = Stack.init{syscall_ptr=syscall_ptr}();
-            assert stack = initial_stack;
-        }
+        // local s: model.Stack;
+        // let (number_of_steps) = ExecutionContext.get_number_of_steps(self);
+        // %{ print(f"number_of_steps: {ids.number_of_steps}") %}
+        // let has_steps = is_le(1, number_of_steps);
+        // if (has_steps == TRUE) {
+        // let (last_step) = ExecutionContext.get_last_step(self);
+        // assert stack = last_step.stack;
+        // } else {
+        // let (initial_stack) = Stack.init();
+        // assert stack = initial_stack;
+        // }
+        let (stack) = Stack.init();
         return (stack=stack);
     }
 

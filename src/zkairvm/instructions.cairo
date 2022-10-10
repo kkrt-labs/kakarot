@@ -164,7 +164,7 @@ namespace EVMInstructions {
         // TODO: implement me
 
         // tempvar syscall_ptr: felt* = syscall_ptr;
-        // let (stack) = ExecutionContext.get_stack{syscall_ptr=syscall_ptr}(ctx);
+        let (stack) = ExecutionContext.get_stack(ctx);
 
         // Stack input:
         // 0 - a: first integer value to add.
