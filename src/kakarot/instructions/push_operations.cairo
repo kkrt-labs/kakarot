@@ -30,19 +30,23 @@ namespace PushOperations {
     ) {
         alloc_locals;
         // get stack
-        // let stack: model.Stack = ExecutionContext.get_stack(ctx);
-        let stack: model.Stack = Stack.init();
+        let stack: model.Stack = ExecutionContext.get_stack(ctx);
+
+        // let stack: model.Stack = Stack.init();
 
         // read i bytes
         let (data) = ExecutionContext.read_code(ctx, i);
 
         // convert to Uint256
         let (stack_element: Uint256) = Helpers.bytes_to_uint256(data);
-
         // push to the stack
-        // let stack: model.Stack = Stack.push(stack, stack_element);
+        let stack: model.Stack = Stack.push(stack, stack_element);
 
-        Stack.dump(stack);
+        // update context
+        // TODO: compute actual values
+        let step: model.ExecutionStep = model.ExecutionStep(pc=0, opcode=0, gas=0, stack=stack);
+        ExecutionContext.add_step(ctx, step);
+
         return ();
     }
 

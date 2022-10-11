@@ -158,7 +158,7 @@ namespace Helpers {
         return (res=Uint256(val, 0));
     }
 
-    func bytes_to_uint256(bytes: felt*) -> (res: Uint256){
+    func bytes_to_uint256(bytes: felt*) -> (res: Uint256) {
         alloc_locals;
         local low;
         local high;

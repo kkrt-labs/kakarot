@@ -36,7 +36,7 @@ namespace Stack {
         self: model.Stack, element: Uint256
     ) -> model.Stack {
         alloc_locals;
-        Stack.check_overlow(self);
+        // Stack.check_overlow(self);
         assert [self.elements + self.raw_len] = element;
         let new_stack = model.Stack(elements=self.elements, raw_len=self.raw_len + element_size);
         return new_stack;
@@ -46,6 +46,7 @@ namespace Stack {
         self: model.Stack
     ) -> (new_stack: model.Stack, element: Uint256) {
         alloc_locals;
+        // Stack.check_underlow(self, 0);
         // get last element
         let len = Stack.len(self);
         let element = self.elements[len - 1];
@@ -64,7 +65,7 @@ namespace Stack {
         self: model.Stack, stack_index: felt
     ) -> Uint256 {
         alloc_locals;
-        Stack.check_underlow(self, stack_index);
+        // Stack.check_underlow(self, stack_index);
         let array_index = Stack.get_array_index(self, stack_index);
         let element: Uint256 = self.elements[array_index];
         return element;

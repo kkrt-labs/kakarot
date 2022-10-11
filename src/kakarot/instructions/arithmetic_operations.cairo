@@ -32,23 +32,32 @@ namespace ArithmeticOperations {
     ) {
         alloc_locals;
         %{ print("0x01 - ADD") %}
+        tempvar range_check_ptr = range_check_ptr;
 
-        // let (stack) = ExecutionContext.get_stack(ctx);
-        // let stack: model.Stack = Stack.init();
+        let (stack) = ExecutionContext.get_stack(ctx);
+
+        Stack.dump(stack);
 
         // Stack input:
         // 0 - a: first integer value to add.
         // 1 - b: second integer value to add.
-        // let (stack, a) = Stack.pop(stack);
-        // let (stack, b) = Stack.pop(stack);
+        let (stack, a) = Stack.pop(stack);
+        let (stack, b) = Stack.pop(stack);
 
         // compute the addition
         // let (result) = SafeUint256.add(a, b);
+        let result = Uint256(3, 0);
 
         // Stack output:
         // a + b: integer result of the addition modulo 2^256
-        // Stack.push(stack, result);
+        let stack: model.Stack = Stack.push(stack, result);
 
+        Stack.dump(stack);
+
+        // update context
+        // TODO: compute actual values
+        let step: model.ExecutionStep = model.ExecutionStep(pc=0, opcode=0, gas=0, stack=stack);
+        ExecutionContext.add_step(ctx, step);
         return ();
     }
 }

@@ -44,19 +44,6 @@ namespace ExecutionContext {
         return ();
     }
 
-    func get_last_step{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.ExecutionContext
-    ) -> (step: model.ExecutionStep) {
-        alloc_locals;
-        local step: model.ExecutionStep;
-        %{
-            if py_has_entries(ids.self.steps):
-                last_idx = py_get_len(ids.self.steps) - 1
-                ids.step = memory.get(ids.self.steps + last_idx)
-        %}
-        return (step=step);
-    }
-
     func get_number_of_steps{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.ExecutionContext
     ) -> (number_of_steps: felt) {
@@ -70,8 +57,9 @@ namespace ExecutionContext {
         self: model.ExecutionContext, step: model.ExecutionStep
     ) {
         alloc_locals;
-        let (len) = Helpers.get_len(self.steps);
-        assert [self.steps + len] = step;
+        let (len) = ExecutionContext.get_number_of_steps(self);
+        let raw_len = len * model.ExecutionStep.SIZE;
+        assert [self.steps + raw_len] = step;
         return ();
     }
 
@@ -84,7 +72,7 @@ namespace ExecutionContext {
 
         let has_steps = is_not_zero(number_of_steps);
         if (has_steps == TRUE) {
-            let (last_step) = ExecutionContext.get_last_step(self);
+            let last_step = self.steps[number_of_steps - 1];
             assert stack = last_step.stack;
             return (stack=stack);
         } else {
