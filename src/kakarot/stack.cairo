@@ -46,14 +46,14 @@ namespace Stack {
         self: model.Stack
     ) -> (new_stack: model.Stack, element: Uint256) {
         alloc_locals;
-        // get last elt
+        // get last element
         let len = Stack.len(self);
         let element = self.elements[len - 1];
         // get new segment for next stack copy
         let (new_elements: Uint256*) = alloc();
         // get length of new stack copy
         let new_len = self.raw_len - element_size;
-        // copy stack without last elt
+        // copy stack without last element
         memcpy(dst=new_elements, src=self.elements, len=new_len);
         // create new stack
         let new_stack = model.Stack(elements=new_elements, raw_len=new_len);
@@ -106,8 +106,25 @@ namespace Stack {
         let element = Stack.peek(self, stack_index);
         %{
             element_str = cairo_uint256_to_str(ids.element)
-            print(f"{element_str}")
+            print(f"{ids.stack_index} - {element_str}")
         %}
         return ();
+    }
+
+    func dump{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(self: model.Stack) {
+        let stack_len = Stack.len(self);
+        let last_index = stack_len - 1;
+        inner_dump(self, 0, last_index);
+        return ();
+    }
+
+    func inner_dump{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.Stack, stack_index: felt, last_index: felt
+    ) {
+        Stack.print_element_at(self, stack_index);
+        if (stack_index == last_index) {
+            return ();
+        }
+        return inner_dump(self, stack_index + 1, last_index);
     }
 }
