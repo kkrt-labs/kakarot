@@ -39,6 +39,12 @@ protostar build
 
 ### 🌡️ Test
 
+First, you need to start the debug server
+```bash
+# Start the debug server
+cd tests/debug && python3 debug_server.py
+```
+
 ```bash
 # Run all tests
 protostar test
