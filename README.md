@@ -1,3 +1,6 @@
+<p align="center">
+    <img src="resources/img/logo.png" height="200">
+</p>
 <div align="center">
   <h1 align="center">Kakarot</h1>
   <p align="center">
