@@ -85,7 +85,8 @@ namespace Helpers {
                 return res
 
             def cairo_uint256_to_str(item):
-                return cairo_uint256_to_bytes32(item)
+                b = cairo_uint256_to_bytes32(item)
+                return byte_array_to_hex_string(b)
         %}
         return ();
     }
