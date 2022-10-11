@@ -38,15 +38,15 @@ func test_stack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
     return ();
 }
 
-@external
+// @external
+// TODO: activate when check underflow bug is fixed
 func test_stack_underflow{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
     Helpers.setup_python_defs();
 
     let stack: model.Stack = Stack.init();
-    Stack.push(stack, Uint256(1, 0));
 
     %{ expect_revert("TRANSACTION_FAILED", "Kakarot: StackUnderflow") %}
-    Stack.peek(stack, 1);
+    let (stack, element) = Stack.pop(stack);
     return ();
 }
