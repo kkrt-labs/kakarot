@@ -9,8 +9,8 @@ from starkware.cairo.common.uint256 import Uint256
 
 // Local dependencies
 from utils.utils import Helpers
-from zkairvm.model import model
-from zkairvm.stack import Stack
+from kakarot.model import model
+from kakarot.stack import Stack
 
 @view
 func __setup__{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {

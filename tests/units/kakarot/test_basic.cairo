@@ -7,7 +7,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
 
 // Local dependencies
-from tests.units.zkairvm.library import setup, prepare, Zkairvm
+from tests.units.kakarot.library import setup, prepare, Kakarot
 from tests.model import EVMTestCase
 from tests.utils import test_utils
 
@@ -29,7 +29,7 @@ func test_basic_stop{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
     );
 
     // run EVM execution
-    Zkairvm.execute(evm_test_case.code, evm_test_case.calldata);
+    Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
 
     return ();
 }

@@ -11,8 +11,8 @@ cairo_path = [
 ]
 
 ["protostar.contracts"]
-Zkairvm = [
-    "./src/zkairvm/zkairvm.cairo",
+Kakarot = [
+    "./src/kakarot/kakarot.cairo",
 ]
 
 ["protostar.test"]

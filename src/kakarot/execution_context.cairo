@@ -10,8 +10,8 @@ from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
 from utils.utils import Helpers
-from zkairvm.model import model
-from zkairvm.stack import Stack
+from kakarot.model import model
+from kakarot.stack import Stack
 
 namespace ExecutionContext {
     func get_pc(self: model.ExecutionContext) -> (pc: felt) {

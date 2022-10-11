@@ -17,10 +17,10 @@ from starkware.cairo.common.uint256 import Uint256
 from openzeppelin.security.safemath.library import SafeUint256
 
 // Internal dependencies
-from zkairvm.model import model
+from kakarot.model import model
 from utils.utils import Helpers
-from zkairvm.execution_context import ExecutionContext
-from zkairvm.stack import Stack
+from kakarot.execution_context import ExecutionContext
+from kakarot.stack import Stack
 
 namespace EVMInstructions {
     // Generates the instructions set for the EVM

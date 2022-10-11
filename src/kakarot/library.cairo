@@ -11,12 +11,12 @@ from starkware.cairo.common.alloc import alloc
 from openzeppelin.access.ownable.library import Ownable
 
 // Internal dependencies
-from zkairvm.model import model
-from zkairvm.instructions import EVMInstructions
-from zkairvm.execution_context import ExecutionContext
+from kakarot.model import model
+from kakarot.instructions import EVMInstructions
+from kakarot.execution_context import ExecutionContext
 from utils.utils import Helpers
 
-namespace Zkairvm {
+namespace Kakarot {
     func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(owner: felt) {
         Ownable.initializer(owner);
         return ();

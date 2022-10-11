@@ -1,10 +1,5 @@
 <div align="center">
-  <h1 align="center">Zkairvm</h1>
-  <p align="center">
-    <a href="https://twitter.com/intent/follow?screen_name=dimahledba">
-        <img src="https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white">
-    </a>       
-  </p>
+  <h1 align="center">Kakarot</h1>
   <h3 align="center">EVM interpreter written in Cairo.</h3>
 </div>
 
@@ -51,7 +46,7 @@ protostar test tests/integrations
 
 ```bash
 # On testnet
-./scripts/deploy_zkairvm.sh -p testnet -a admin
+./scripts/deploy_kakarot.sh -p testnet -a admin
 ```
 
 With:
@@ -67,4 +62,4 @@ To manage inputs sent to constructor during the deployment, you can customize th
 
 ## 📄 License
 
-**zkairvm** is released under the [MIT](LICENSE).
+**kakarot** is released under the [MIT](LICENSE).

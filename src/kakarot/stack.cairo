@@ -12,8 +12,8 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.memcpy import memcpy
 
 // Internal dependencies
-from zkairvm.constants import Constants
-from zkairvm.model import model
+from kakarot.constants import Constants
+from kakarot.model import model
 from utils.utils import Helpers
 
 namespace Stack {

@@ -42,15 +42,15 @@ deploy_all_contracts() {
     [ ! -z $PROFILE ] && PROFILE_OPT="--profile $PROFILE"
 
     # Deploy Minter contract
-    if [ -z $ZKAIRVM_ADDRESS ]; then
+    if [ -z $KAKAROT_ADDRESS ]; then
         owner=$ADMIN_ADDRESS
-        log_info "Deploying Zkairvm contract..."
-        ZKAIRVM_ADDRESS=`send_transaction "protostar $PROFILE_OPT deploy ./build/Zkairvm.json --inputs $owner --network "$NETWORK"` || exit_error
+        log_info "Deploying Kakarot contract..."
+        KAKAROT_ADDRESS=`send_transaction "protostar $PROFILE_OPT deploy ./build/Kakarot.json --inputs $owner --network "$NETWORK"` || exit_error
     fi    
 
     # Save values in cache file
     (
-        echo "ZKAIRVM_ADDRESS=$ZKAIRVM_ADDRESS"
+        echo "KAKAROT_ADDRESS=$KAKAROT_ADDRESS"
     ) | tee >&2 $CACHE_FILE
 }
 

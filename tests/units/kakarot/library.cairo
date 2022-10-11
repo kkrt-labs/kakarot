@@ -6,7 +6,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 
 // Local dependencies
-from src.zkairvm.library import Zkairvm
+from kakarot.library import Kakarot
 
 //
 // Structs
@@ -35,7 +35,7 @@ func setup{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
         import sys
         sys.path.append('.')
         from tests import load
-        load("./tests/units/zkaivm/config.yml", context)
+        load("./tests/units/kakarot/config.yml", context)
     %}
 
     return ();
@@ -55,7 +55,7 @@ func prepare{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() 
     %}
 
     // Instantiate yielder
-    Zkairvm.constructor(owner=admin);
+    Kakarot.constructor(owner=admin);
 
     // Instantiate context, useful to avoid many hints in tests
     local signers: Signers = Signers(admin=admin, anyone=anyone);
