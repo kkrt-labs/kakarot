@@ -22,6 +22,7 @@ from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 from kakarot.instructions.push_operations import PushOperations
+from kakarot.instructions.arithmetic_operations import ArithmeticOperations
 
 namespace EVMInstructions {
     // Generates the instructions set for the EVM
@@ -37,7 +38,7 @@ namespace EVMInstructions {
         // 0x00 - STOP
         add_instruction(instructions, 0, exec_stop);
         // 0x01 - ADD
-        add_instruction(instructions, 1, exec_add);
+        add_instruction(instructions, 1, ArithmeticOperations.exec_add);
 
         // add 6s: Push operations
         // 0x60 - PUSH1
@@ -219,42 +220,6 @@ namespace EVMInstructions {
         alloc_locals;
         %{ print("0x00 - STOP") %}
         ExecutionContext.stop(ctx);
-        return ();
-    }
-
-    // 0x00 - ADD
-    // Addition operation
-    // Since: Frontier
-    // Group: Stop and Arithmetic Operations
-    func exec_add{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext
-    ) {
-        alloc_locals;
-        %{ print("0x01 - ADD") %}
-        // TODO: implement me
-
-        // tempvar syscall_ptr: felt* = syscall_ptr;
-        let (stack) = ExecutionContext.get_stack(ctx);
-
-        // Stack input:
-        // 0 - a: first integer value to add.
-        // 1 - b: second integer value to add.
-
-        // We should pop values, pop is not implemented yet
-        // Hence we use peek for testing purpose
-        // let (a) = Stack.pop(stack);
-        // let (b) = Stack.pop(stack);
-
-        // let (a) = Stack.peek(stack, 0);
-        // let (b) = Stack.peek(stack, 1);
-
-        // compute the addition
-        // let (result) = SafeUint256.add(a, b);
-
-        // Stack output:
-        // a + b: integer result of the addition modulo 2^256
-        // Stack.push(stack, result);
-
         return ();
     }
 }
