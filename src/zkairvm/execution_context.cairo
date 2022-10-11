@@ -86,7 +86,7 @@ namespace ExecutionContext {
             assert stack = last_step.stack;
             return (stack=stack);
         } else {
-            let (initial_stack) = Stack.init();
+            let initial_stack = Stack.init();
             assert stack = initial_stack;
             return (stack=stack);
         }
