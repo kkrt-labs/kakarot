@@ -3,7 +3,7 @@ name: TESTS
 on: [push, pull_request, pull_request_target]
 
 env:
-  PROTOSTAR_VERSION: 0.4.2
+  PROTOSTAR_VERSION: 0.5.0
   DEBUG: False
 
 jobs:
