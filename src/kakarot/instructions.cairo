@@ -21,6 +21,7 @@ from kakarot.model import model
 from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
+from kakarot.instructions.push_operations import PushOperations
 
 namespace EVMInstructions {
     // Generates the instructions set for the EVM
@@ -40,7 +41,70 @@ namespace EVMInstructions {
 
         // add 6s: Push operations
         // 0x60 - PUSH1
-        add_instruction(instructions, 96, exec_push1);
+        add_instruction(instructions, 96, PushOperations.exec_push1);
+        // 0x61 - PUSH2
+        add_instruction(instructions, 97, PushOperations.exec_push2);
+        // 0x62 - PUSH3
+        add_instruction(instructions, 98, PushOperations.exec_push3);
+        // 0x63 - PUSH4
+        add_instruction(instructions, 99, PushOperations.exec_push4);
+        // 0x64 - PUSH5
+        add_instruction(instructions, 100, PushOperations.exec_push5);
+        // 0x65 - PUSH6
+        add_instruction(instructions, 101, PushOperations.exec_push6);
+        // 0x66 - PUSH7
+        add_instruction(instructions, 102, PushOperations.exec_push7);
+        // 0x67 - PUSH8
+        add_instruction(instructions, 103, PushOperations.exec_push8);
+        // 0x68 - PUSH9
+        add_instruction(instructions, 104, PushOperations.exec_push9);
+        // 0x69 - PUSH10
+        add_instruction(instructions, 105, PushOperations.exec_push10);
+        // 0x6a - PUSH11
+        add_instruction(instructions, 106, PushOperations.exec_push11);
+        // 0x6b - PUSH12
+        add_instruction(instructions, 107, PushOperations.exec_push12);
+        // 0x6c - PUSH13
+        add_instruction(instructions, 108, PushOperations.exec_push13);
+        // 0x6d - PUSH14
+        add_instruction(instructions, 109, PushOperations.exec_push14);
+        // 0x6e - PUSH15
+        add_instruction(instructions, 110, PushOperations.exec_push15);
+        // 0x6f - PUSH16
+        add_instruction(instructions, 111, PushOperations.exec_push16);
+        // 0x70 - PUSH17
+        add_instruction(instructions, 112, PushOperations.exec_push17);
+        // 0x71 - PUSH18
+        add_instruction(instructions, 113, PushOperations.exec_push18);
+        // 0x72 - PUSH19
+        add_instruction(instructions, 114, PushOperations.exec_push19);
+        // 0x73 - PUSH20
+        add_instruction(instructions, 115, PushOperations.exec_push20);
+        // 0x74 - PUSH21
+        add_instruction(instructions, 116, PushOperations.exec_push21);
+        // 0x75 - PUSH22
+        add_instruction(instructions, 117, PushOperations.exec_push22);
+        // 0x76 - PUSH23
+        add_instruction(instructions, 118, PushOperations.exec_push23);
+        // 0x77 - PUSH24
+        add_instruction(instructions, 119, PushOperations.exec_push24);
+        // 0x78 - PUSH25
+        add_instruction(instructions, 120, PushOperations.exec_push25);
+        // 0x79 - PUSH26
+        add_instruction(instructions, 121, PushOperations.exec_push26);
+        // 0x7a - PUSH27
+        add_instruction(instructions, 122, PushOperations.exec_push27);
+        // 0x7b - PUSH28
+        add_instruction(instructions, 123, PushOperations.exec_push28);
+        // 0x7c - PUSH29
+        add_instruction(instructions, 124, PushOperations.exec_push29);
+        // 0x7d - PUSH30
+        add_instruction(instructions, 125, PushOperations.exec_push30);
+        // 0x7e - PUSH31
+        add_instruction(instructions, 126, PushOperations.exec_push31);
+        // 0x7f - PUSH32
+        add_instruction(instructions, 127, PushOperations.exec_push32);
+
         return (instructions=instructions);
     }
 
@@ -191,33 +255,6 @@ namespace EVMInstructions {
         // a + b: integer result of the addition modulo 2^256
         // Stack.push(stack, result);
 
-        return ();
-    }
-
-    // 0x60 - PUSH1
-    // Place 1 byte item on stack
-    // Since: Frontier
-    // Group: Push operations
-    func exec_push1{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext
-    ) {
-        alloc_locals;
-        %{ print("0x60 - PUSH1") %}
-
-        // get stack
-        // let stack: model.Stack = ExecutionContext.get_stack(ctx);
-        let stack: model.Stack = Stack.init();
-
-        // read 1 byte
-        let (data) = ExecutionContext.read_code(ctx, 1);
-
-        // convert to Uint256
-        let (stack_element: Uint256) = Helpers.bytes_to_uint256(data);
-
-        // push to the stack
-        // let stack: model.Stack = Stack.push(stack, stack_element);
-
-        Stack.dump(stack);
         return ();
     }
 }
