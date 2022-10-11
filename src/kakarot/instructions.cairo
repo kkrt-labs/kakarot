@@ -205,7 +205,8 @@ namespace EVMInstructions {
         %{ print("0x60 - PUSH1") %}
 
         // get stack
-        let stack: model.Stack = ExecutionContext.get_stack(ctx);
+        // let stack: model.Stack = ExecutionContext.get_stack(ctx);
+        let stack: model.Stack = Stack.init();
 
         // read 1 byte
         let (data) = ExecutionContext.read_code(ctx, 1);

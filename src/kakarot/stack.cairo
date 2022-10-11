@@ -74,11 +74,6 @@ namespace Stack {
         self: model.Stack
     ) {
         let stack_len = Stack.len(self);
-        %{
-            #
-            print(f"stack_len: {ids.stack_len}")
-            #
-        %}
         // revert if stack overflow
         with_attr error_message("Kakarot: StackOverflow") {
             assert_lt_felt(stack_len, Constants.STACK_MAX_DEPTH);
