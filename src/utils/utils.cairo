@@ -13,12 +13,10 @@ namespace Helpers {
             from pprint import pprint
 
             MAX_LEN_FELT = 31
+            BYTES32_SIZE = 32
             os.environ.setdefault('DEBUG', 'True')
 
             def dump_array(array):
-                #for key, val in memory.items():
-                    #if key.segment_index == array.segment_index and key >= array:
-                        #print(f"val: {val}")
                 pprint(array)
                 return
 
@@ -87,6 +85,19 @@ namespace Helpers {
             def cairo_uint256_to_str(item):
                 b = cairo_uint256_to_bytes32(item)
                 return byte_array_to_hex_string(b)
+
+            def cairo_bytes_to_uint256(array):
+                byte_values = [0] * BYTES32_SIZE
+                len = py_get_len(array)
+                start_offset = BYTES32_SIZE - len
+                mem_idx = 0
+                for i in range (start_offset, start_offset + len):
+                    byte_values[i] = memory[array + mem_idx]
+                    i = i + 1
+                    mem_idx = mem_idx + 1
+                high = int.from_bytes(byte_values[0:16], 'big')
+                low = int.from_bytes(byte_values[16:32], 'big')
+                return (low, high)
         %}
         return ();
     }
@@ -145,5 +156,17 @@ namespace Helpers {
 
     func to_uint256(val: felt) -> (res: Uint256) {
         return (res=Uint256(val, 0));
+    }
+
+    func bytes_to_uint256(bytes: felt*) -> (res: Uint256){
+        alloc_locals;
+        local low;
+        local high;
+        %{
+            uint256_tuple = cairo_bytes_to_uint256(ids.bytes)
+            ids.low = uint256_tuple[0]
+            ids.high = uint256_tuple[1]
+        %}
+        return (res=Uint256(low, high));
     }
 }

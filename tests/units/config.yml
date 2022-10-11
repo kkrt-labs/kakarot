@@ -3,4 +3,4 @@ signers:
   anyone: 1001
 
 sources:
-  zkairvm: ./src/zkairvm/zkairvm.cairo
+  Kakarot: ./src/zkairvm/zkairvm.cairo

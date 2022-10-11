@@ -74,8 +74,13 @@ namespace Stack {
         self: model.Stack
     ) {
         let stack_len = Stack.len(self);
+        %{
+            #
+            print(f"stack_len: {ids.stack_len}")
+            #
+        %}
         // revert if stack overflow
-        with_attr error_message("Zkairvm: StackOverflow") {
+        with_attr error_message("Kakarot: StackOverflow") {
             assert_lt_felt(stack_len, Constants.STACK_MAX_DEPTH);
         }
         return ();
@@ -86,7 +91,7 @@ namespace Stack {
     ) {
         alloc_locals;
         let stack_len = Stack.len(self);
-        with_attr error_message("Zkairvm: StackUnderflow") {
+        with_attr error_message("Kakarot: StackUnderflow") {
             assert_lt_felt(stack_index, stack_len);
         }
         return ();
@@ -113,6 +118,9 @@ namespace Stack {
 
     func dump{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(self: model.Stack) {
         let stack_len = Stack.len(self);
+        if (stack_len == 0) {
+            return ();
+        }
         let last_index = stack_len - 1;
         inner_dump(self, 0, last_index);
         return ();

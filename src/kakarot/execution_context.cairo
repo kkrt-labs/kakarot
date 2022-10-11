@@ -3,10 +3,12 @@
 %lang starknet
 
 // StarkWare dependencies
+from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math_cmp import is_not_zero
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.memcpy import memcpy
 
 // Internal dependencies
 from utils.utils import Helpers
@@ -90,6 +92,18 @@ namespace ExecutionContext {
             assert stack = initial_stack;
             return (stack=stack);
         }
+    }
+
+    func read_code(self: model.ExecutionContext, len: felt) -> (output: felt*) {
+        alloc_locals;
+        // get current pc value
+        let (pc) = ExecutionContext.get_pc(self);
+        let (local output: felt*) = alloc();
+        // copy code slice
+        memcpy(dst=output, src=self.code + pc, len=len);
+        // move program counter
+        ExecutionContext.inc_pc(self, len);
+        return (output=output);
     }
 
     func dump(self: model.ExecutionContext) {

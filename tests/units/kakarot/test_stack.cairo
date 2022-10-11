@@ -35,7 +35,6 @@ func test_stack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
     let (stack, element) = Stack.pop(stack);
     assert element = Uint256(3, 0);
     assert stack.raw_len = (len - 1) * 2;
-
     return ();
 }
 
@@ -47,7 +46,7 @@ func test_stack_underflow{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
     let stack: model.Stack = Stack.init();
     Stack.push(stack, Uint256(1, 0));
 
-    %{ expect_revert("TRANSACTION_FAILED", "Zkairvm: StackUnderflow") %}
+    %{ expect_revert("TRANSACTION_FAILED", "Kakarot: StackUnderflow") %}
     Stack.peek(stack, 1);
     return ();
 }

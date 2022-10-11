@@ -38,6 +38,9 @@ namespace EVMInstructions {
         // 0x01 - ADD
         add_instruction(instructions, 1, exec_add);
 
+        // add 6s: Push operations
+        // 0x60 - PUSH1
+        add_instruction(instructions, 96, exec_push1);
         return (instructions=instructions);
     }
 
@@ -71,7 +74,7 @@ namespace EVMInstructions {
         let (pc) = ExecutionContext.get_pc(ctx);
 
         // revert if pc < 0
-        with_attr error_message("Zkairvm: InvalidCodeOffset") {
+        with_attr error_message("Kakarot: InvalidCodeOffset") {
             assert_nn(pc);
         }
 
@@ -110,9 +113,12 @@ namespace EVMInstructions {
         %}
 
         // revert if opcode does not exist
-        with_attr error_message("Zkairvm: UnknownOpcode") {
+        with_attr error_message("Kakarot: UnknownOpcode") {
             assert opcode_exist = TRUE;
         }
+
+        // move program counter + 1 after opcode is read
+        ExecutionContext.inc_pc(ctx, 1);
 
         // read opcode in instruction set
         let function_codeoffset_felt = instructions[opcode];
@@ -185,8 +191,32 @@ namespace EVMInstructions {
         // a + b: integer result of the addition modulo 2^256
         // Stack.push(stack, result);
 
-        // move program counter
-        ExecutionContext.inc_pc(ctx, 1);
+        return ();
+    }
+
+    // 0x60 - PUSH1
+    // Place 1 byte item on stack
+    // Since: Frontier
+    // Group: Push operations
+    func exec_push1{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx: model.ExecutionContext
+    ) {
+        alloc_locals;
+        %{ print("0x60 - PUSH1") %}
+
+        // get stack
+        let stack: model.Stack = ExecutionContext.get_stack(ctx);
+
+        // read 1 byte
+        let (data) = ExecutionContext.read_code(ctx, 1);
+
+        // convert to Uint256
+        let (stack_element: Uint256) = Helpers.bytes_to_uint256(data);
+
+        // push to the stack
+        // let stack: model.Stack = Stack.push(stack, stack_element);
+
+        Stack.dump(stack);
         return ();
     }
 }
