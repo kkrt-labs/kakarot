@@ -1,4 +1,4 @@
-name: CI Tests
+name: TESTS
 
 on: [push, pull_request, pull_request_target]
 

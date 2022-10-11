@@ -1,5 +1,10 @@
 <div align="center">
   <h1 align="center">Kakarot</h1>
+  <p align="center">
+    <a href="https://github.com/abdelhamidbakhta/kakarot/actions">
+        <img src="https://github.com/abdelhamidbakhta/kakarot/workflows/TESTS/badge.svg">
+    </a>
+  </p>
   <h3 align="center">EVM interpreter written in Cairo.</h3>
 </div>
 
