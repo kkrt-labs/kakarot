@@ -74,7 +74,6 @@ namespace internal {
     func init_execution_context{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         code: felt*, calldata: felt*
     ) -> model.ExecutionContext* {
-        alloc_locals;
         let (empty_return_data: felt*) = alloc();
         let initial_pc = 0;
 

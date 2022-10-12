@@ -103,8 +103,7 @@ namespace Helpers {
     }
 
     func has_entries(array: felt*) -> felt {
-        alloc_locals;
-        local res;
+        tempvar res;
         %{
             if py_has_entries(ids.array):
                 ids.res = 1
@@ -115,22 +114,19 @@ namespace Helpers {
     }
 
     func get_len(array: felt*) -> felt {
-        alloc_locals;
-        local res;
+        tempvar res;
         %{ ids.res = py_get_len(ids.array) %}
         return res;
     }
 
     func get_number_of_elements(array: felt*, element_size: felt) -> felt {
-        alloc_locals;
         let raw_len = get_len(array);
         let actual_len = raw_len / element_size;
         return actual_len;
     }
 
     func get_last(array: felt*) -> felt {
-        alloc_locals;
-        local res;
+        tempvar res;
         %{
             if py_has_entries(ids.array):
                 last_idx = py_get_len(ids.array) - 1
@@ -142,8 +138,7 @@ namespace Helpers {
     }
 
     func get_last_or_default(array: felt*, default_value: felt) -> (res: felt) {
-        alloc_locals;
-        local res;
+        tempvar res;
         %{
             if py_has_entries(ids.array):
                 last_idx = py_get_len(ids.array) - 1
@@ -160,9 +155,8 @@ namespace Helpers {
     }
 
     func bytes_to_uint256(bytes: felt*) -> Uint256 {
-        alloc_locals;
-        local low;
-        local high;
+        tempvar low;
+        tempvar high;
         %{
             uint256_tuple = cairo_bytes_to_uint256(ids.bytes)
             ids.low = uint256_tuple[0]
