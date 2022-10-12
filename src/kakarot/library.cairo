@@ -34,7 +34,7 @@ namespace Kakarot {
         let instructions: felt* = EVMInstructions.generate_instructions();
 
         // prepare execution context
-        let (ctx: model.ExecutionContext) = internal.init_execution_context(code, calldata);
+        let (ctx: model.ExecutionContext*) = internal.init_execution_context(code, calldata);
 
         // start execution
         run(instructions, ctx);
@@ -43,12 +43,15 @@ namespace Kakarot {
     }
 
     func run{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        instructions: felt*, ctx: model.ExecutionContext
+        instructions: felt*, ctx_ptr: model.ExecutionContext*
     ) {
         alloc_locals;
 
         // decode and execute
-        EVMInstructions.decode_and_execute(instructions, ctx);
+        // let (ctx_ptr) = EVMInstructions.decode_and_execute(instructions, ctx_ptr);
+        EVMInstructions.decode_and_execute(instructions, ctx_ptr);
+
+        let ctx = [ctx_ptr];
 
         // for debugging purpose
         ExecutionContext.dump(ctx);
@@ -62,7 +65,7 @@ namespace Kakarot {
         }
 
         // continue execution
-        run(instructions, ctx);
+        run(instructions, ctx_ptr);
 
         return ();
     }
@@ -71,7 +74,7 @@ namespace Kakarot {
 namespace internal {
     func init_execution_context{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         code: felt*, calldata: felt*
-    ) -> (ctx: model.ExecutionContext) {
+    ) -> (ctx: model.ExecutionContext*) {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
         let (empty_stopped: felt*) = alloc();
@@ -81,7 +84,8 @@ namespace internal {
         let (steps: model.ExecutionStep*) = alloc();
 
         let (code_len) = Helpers.get_len(code);
-        let ctx: model.ExecutionContext = model.ExecutionContext(
+
+        local ctx: model.ExecutionContext* = new model.ExecutionContext(
             code=code,
             code_len=code_len,
             calldata=calldata,
@@ -89,7 +93,7 @@ namespace internal {
             stopped=empty_stopped,
             return_data=empty_return_data,
             steps=steps,
-        );
+            );
         return (ctx=ctx);
     }
 }

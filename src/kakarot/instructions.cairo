@@ -4,12 +4,13 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.registers import get_fp_and_pc
+from starkware.cairo.common.registers import get_fp_and_pc, get_ap
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.invoke import invoke
 from starkware.cairo.common.math import assert_nn
 from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256
 
@@ -43,68 +44,6 @@ namespace EVMInstructions {
         // add 6s: Push operations
         // 0x60 - PUSH1
         add_instruction(instructions, 96, PushOperations.exec_push1);
-        // 0x61 - PUSH2
-        add_instruction(instructions, 97, PushOperations.exec_push2);
-        // 0x62 - PUSH3
-        add_instruction(instructions, 98, PushOperations.exec_push3);
-        // 0x63 - PUSH4
-        add_instruction(instructions, 99, PushOperations.exec_push4);
-        // 0x64 - PUSH5
-        add_instruction(instructions, 100, PushOperations.exec_push5);
-        // 0x65 - PUSH6
-        add_instruction(instructions, 101, PushOperations.exec_push6);
-        // 0x66 - PUSH7
-        add_instruction(instructions, 102, PushOperations.exec_push7);
-        // 0x67 - PUSH8
-        add_instruction(instructions, 103, PushOperations.exec_push8);
-        // 0x68 - PUSH9
-        add_instruction(instructions, 104, PushOperations.exec_push9);
-        // 0x69 - PUSH10
-        add_instruction(instructions, 105, PushOperations.exec_push10);
-        // 0x6a - PUSH11
-        add_instruction(instructions, 106, PushOperations.exec_push11);
-        // 0x6b - PUSH12
-        add_instruction(instructions, 107, PushOperations.exec_push12);
-        // 0x6c - PUSH13
-        add_instruction(instructions, 108, PushOperations.exec_push13);
-        // 0x6d - PUSH14
-        add_instruction(instructions, 109, PushOperations.exec_push14);
-        // 0x6e - PUSH15
-        add_instruction(instructions, 110, PushOperations.exec_push15);
-        // 0x6f - PUSH16
-        add_instruction(instructions, 111, PushOperations.exec_push16);
-        // 0x70 - PUSH17
-        add_instruction(instructions, 112, PushOperations.exec_push17);
-        // 0x71 - PUSH18
-        add_instruction(instructions, 113, PushOperations.exec_push18);
-        // 0x72 - PUSH19
-        add_instruction(instructions, 114, PushOperations.exec_push19);
-        // 0x73 - PUSH20
-        add_instruction(instructions, 115, PushOperations.exec_push20);
-        // 0x74 - PUSH21
-        add_instruction(instructions, 116, PushOperations.exec_push21);
-        // 0x75 - PUSH22
-        add_instruction(instructions, 117, PushOperations.exec_push22);
-        // 0x76 - PUSH23
-        add_instruction(instructions, 118, PushOperations.exec_push23);
-        // 0x77 - PUSH24
-        add_instruction(instructions, 119, PushOperations.exec_push24);
-        // 0x78 - PUSH25
-        add_instruction(instructions, 120, PushOperations.exec_push25);
-        // 0x79 - PUSH26
-        add_instruction(instructions, 121, PushOperations.exec_push26);
-        // 0x7a - PUSH27
-        add_instruction(instructions, 122, PushOperations.exec_push27);
-        // 0x7b - PUSH28
-        add_instruction(instructions, 123, PushOperations.exec_push28);
-        // 0x7c - PUSH29
-        add_instruction(instructions, 124, PushOperations.exec_push29);
-        // 0x7d - PUSH30
-        add_instruction(instructions, 125, PushOperations.exec_push30);
-        // 0x7e - PUSH31
-        add_instruction(instructions, 126, PushOperations.exec_push31);
-        // 0x7f - PUSH32
-        add_instruction(instructions, 127, PushOperations.exec_push32);
 
         return (instructions=instructions);
     }
@@ -133,9 +72,10 @@ namespace EVMInstructions {
     // @param opcode the opcode value
     // @param ctx the execution context
     func decode_and_execute{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        instructions: felt*, ctx: model.ExecutionContext
-    ) {
+        instructions: felt*, ctx_ptr: model.ExecutionContext*
+    ) -> (ctx: model.ExecutionContext*) {
         alloc_locals;
+        let ctx = [ctx_ptr];
         let (pc) = ExecutionContext.get_pc(ctx);
 
         // revert if pc < 0
@@ -145,19 +85,6 @@ namespace EVMInstructions {
 
         local opcode;
 
-        // <START CAIRO VERSION>
-        // check if pc > len(code) and process it as a STOP if true
-        // let is_pc_gt_code_len = is_le(ctx.code_len, pc);
-        // if (is_pc_gt_code_len == TRUE) {
-        // opcode = 0;
-        // } else {
-        // read current opcode
-        // TODO: find a workaround re: Expected a constant offset in the range [-2^15, 2^15).
-        // opcode = [ctx.code + pc]
-        // }
-        // <END  CAIRO VERSION>
-
-        // <START HINT VERSION
         %{
             # check if pc > len(code) and process it as a STOP if true
             if ids.pc > ids.ctx.code_len:
@@ -165,7 +92,6 @@ namespace EVMInstructions {
             else:
                 ids.opcode = memory[ids.ctx.code + ids.pc]
         %}
-        // <END  HINT VERSION
 
         local opcode_exist;
 
@@ -190,14 +116,27 @@ namespace EVMInstructions {
         let function_codeoffset = cast(function_codeoffset_felt, codeoffset);
         let (function_ptr) = get_label_location(function_codeoffset);
 
-        // prepare arguments
-        let (local args: model.ExecutionContext*) = alloc();
-        assert [args] = ctx;
+        let implicit_args_len = decode_and_execute.ImplicitArgs.SIZE;
+        tempvar implicit_args = new decode_and_execute.ImplicitArgs(syscall_ptr, pedersen_ptr, range_check_ptr);
 
-        invoke(function_ptr, model.ExecutionContext.SIZE, args);
+        // Build arguments array
+        let (args_len: felt, args: felt*) = prepare_arguments(
+            ctx_ptr, implicit_args_len, implicit_args
+        );
 
-        return ();
+        invoke(function_ptr, args_len, args);
+
+        // Retrieve results
+        let (ap_val) = get_ap();
+        let implicit_args: decode_and_execute.ImplicitArgs* = cast(ap_val - implicit_args_len - 1, decode_and_execute.ImplicitArgs*);
+        let syscall_ptr = implicit_args.syscall_ptr;
+        let pedersen_ptr = implicit_args.pedersen_ptr;
+        let range_check_ptr = implicit_args.range_check_ptr;
+
+        let ctx_output: model.ExecutionContext* = cast(ap_val - 1, model.ExecutionContext*);
+        return (ctx=ctx_output);
     }
+
     // Adds an instruction in the passed instructions set
     // @param instructions the instruction set
     // @param opcode the opcode value
@@ -215,11 +154,25 @@ namespace EVMInstructions {
     // Since: Frontier
     // Group: Stop and Arithmetic Operations
     func exec_stop{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext
-    ) {
+        ctx_ptr: model.ExecutionContext*
+    ) -> (ctx: model.ExecutionContext*) {
         alloc_locals;
         %{ print("0x00 - STOP") %}
+        let ctx = [ctx_ptr];
         ExecutionContext.stop(ctx);
-        return ();
+        return (ctx=ctx_ptr);
+    }
+
+    func prepare_arguments(ctx: felt*, implicit_args_len: felt, implicit_args: felt*) -> (
+        args_len: felt, args: felt*
+    ) {
+        alloc_locals;
+
+        let (local args: felt*) = alloc();
+        memcpy(args, implicit_args, implicit_args_len);
+        let ctx_value = cast(ctx, felt);
+        assert args[implicit_args_len] = ctx_value;
+
+        return (implicit_args_len + 1, args);
     }
 }
