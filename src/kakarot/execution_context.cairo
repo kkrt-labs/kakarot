@@ -16,11 +16,11 @@ from kakarot.model import model
 from kakarot.stack import Stack
 
 namespace ExecutionContext {
-    func is_stopped(self: model.ExecutionContext) -> (stopped: felt) {
-        return (stopped=self.stopped);
+    func is_stopped(self: model.ExecutionContext) -> felt {
+        return self.stopped;
     }
 
-    func stop(self: model.ExecutionContext*) -> (self: model.ExecutionContext*) {
+    func stop(self: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         let ctx = [self];
         local self_out: model.ExecutionContext* = new model.ExecutionContext(
@@ -32,23 +32,21 @@ namespace ExecutionContext {
             return_data=ctx.return_data,
             steps=ctx.steps
             );
-        return (self=self_out);
+        return self_out;
     }
 
     func get_number_of_steps{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.ExecutionContext
-    ) -> (number_of_steps: felt) {
-        let (number_of_steps) = Helpers.get_number_of_elements(
-            self.steps, model.ExecutionStep.SIZE
-        );
-        return (number_of_steps=number_of_steps);
+    ) -> felt {
+        let number_of_steps = Helpers.get_number_of_elements(self.steps, model.ExecutionStep.SIZE);
+        return number_of_steps;
     }
 
     func add_step{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.ExecutionContext, step: model.ExecutionStep
     ) {
         alloc_locals;
-        let (len) = ExecutionContext.get_number_of_steps(self);
+        let len = ExecutionContext.get_number_of_steps(self);
         let raw_len = len * model.ExecutionStep.SIZE;
         assert [self.steps + raw_len] = step;
         return ();
@@ -56,20 +54,20 @@ namespace ExecutionContext {
 
     func get_stack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.ExecutionContext
-    ) -> (stack: model.Stack) {
+    ) -> model.Stack {
         alloc_locals;
         local stack: model.Stack;
-        let (number_of_steps) = ExecutionContext.get_number_of_steps(self);
+        let number_of_steps = ExecutionContext.get_number_of_steps(self);
 
         let has_steps = is_not_zero(number_of_steps);
         if (has_steps == TRUE) {
             let last_step = self.steps[number_of_steps - 1];
             assert stack = last_step.stack;
-            return (stack=stack);
+            return stack;
         } else {
             let initial_stack = Stack.init();
             assert stack = initial_stack;
-            return (stack=stack);
+            return stack;
         }
     }
 
@@ -84,13 +82,13 @@ namespace ExecutionContext {
         // copy code slice
         memcpy(dst=output, src=self.code + pc, len=len);
         // move program counter
-        let (self_out) = ExecutionContext.increment_program_counter(self, len);
+        let self_out = ExecutionContext.increment_program_counter(self, len);
         return (self=self_out, output=output);
     }
 
-    func increment_program_counter(self: model.ExecutionContext*, inc_value: felt) -> (
-        self: model.ExecutionContext*
-    ) {
+    func increment_program_counter(
+        self: model.ExecutionContext*, inc_value: felt
+    ) -> model.ExecutionContext* {
         alloc_locals;
         let ctx = [self];
         let previous_program_counter = ctx.program_counter;
@@ -104,12 +102,12 @@ namespace ExecutionContext {
             return_data=ctx.return_data,
             steps=ctx.steps
             );
-        return (self=self_out);
+        return self_out;
     }
 
     func dump(self: model.ExecutionContext) {
         let pc = self.program_counter;
-        let (stopped) = is_stopped(self);
+        let stopped = is_stopped(self);
         %{
             import json
             code = cairo_bytes_to_hex(ids.self.code)

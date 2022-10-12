@@ -102,7 +102,7 @@ namespace Helpers {
         return ();
     }
 
-    func has_entries(array: felt*) -> (res: felt) {
+    func has_entries(array: felt*) -> felt {
         alloc_locals;
         local res;
         %{
@@ -111,24 +111,24 @@ namespace Helpers {
             else:
                 ids.res = 0
         %}
-        return (res=res);
+        return res;
     }
 
-    func get_len(array: felt*) -> (res: felt) {
+    func get_len(array: felt*) -> felt {
         alloc_locals;
         local res;
         %{ ids.res = py_get_len(ids.array) %}
-        return (res=res);
+        return res;
     }
 
-    func get_number_of_elements(array: felt*, element_size: felt) -> (res: felt) {
+    func get_number_of_elements(array: felt*, element_size: felt) -> felt {
         alloc_locals;
-        let (raw_len) = get_len(array);
+        let raw_len = get_len(array);
         let actual_len = raw_len / element_size;
-        return (res=actual_len);
+        return actual_len;
     }
 
-    func get_last(array: felt*) -> (res: felt) {
+    func get_last(array: felt*) -> felt {
         alloc_locals;
         local res;
         %{
@@ -138,7 +138,7 @@ namespace Helpers {
             else:
                 ids.res = 0
         %}
-        return (res=res);
+        return res;
     }
 
     func get_last_or_default(array: felt*, default_value: felt) -> (res: felt) {
@@ -151,14 +151,15 @@ namespace Helpers {
             else:
                 ids.res = ids.default_value
         %}
-        return (res=res);
+        return res;
     }
 
-    func to_uint256(val: felt) -> (res: Uint256) {
-        return (res=Uint256(val, 0));
+    func to_uint256(val: felt) -> Uint256 {
+        let res = Uint256(val, 0);
+        return res;
     }
 
-    func bytes_to_uint256(bytes: felt*) -> (res: Uint256) {
+    func bytes_to_uint256(bytes: felt*) -> Uint256 {
         alloc_locals;
         local low;
         local high;
@@ -167,6 +168,7 @@ namespace Helpers {
             ids.low = uint256_tuple[0]
             ids.high = uint256_tuple[1]
         %}
-        return (res=Uint256(low, high));
+        let res = Uint256(low, high);
+        return res;
     }
 }
