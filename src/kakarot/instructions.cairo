@@ -78,7 +78,7 @@ namespace EVMInstructions {
         let ctx = [ctx_ptr];
         let (pc) = ExecutionContext.get_pc(ctx);
 
-        // revert if pc < 0
+        // Revert if pc < 0
         with_attr error_message("Kakarot: InvalidCodeOffset") {
             assert_nn(pc);
         }
@@ -86,7 +86,7 @@ namespace EVMInstructions {
         local opcode;
 
         %{
-            # check if pc > len(code) and process it as a STOP if true
+            # Check if pc > len(code) and process it as a STOP if true
             if ids.pc > ids.ctx.code_len:
                 ids.opcode = 0
             else:
@@ -95,7 +95,7 @@ namespace EVMInstructions {
 
         local opcode_exist;
 
-        // check if opcode exists
+        // Check if opcode exists
         %{
             if memory.get(ids.instructions + ids.opcode) == None:
                 ids.opcode_exist = 0
@@ -103,7 +103,7 @@ namespace EVMInstructions {
                 ids.opcode_exist = 1
         %}
 
-        // revert if opcode does not exist
+        // Revert if opcode does not exist
         with_attr error_message("Kakarot: UnknownOpcode") {
             assert opcode_exist = TRUE;
         }
@@ -111,11 +111,12 @@ namespace EVMInstructions {
         // move program counter + 1 after opcode is read
         ExecutionContext.inc_pc(ctx, 1);
 
-        // read opcode in instruction set
+        // Read opcode in instruction set
         let function_codeoffset_felt = instructions[opcode];
         let function_codeoffset = cast(function_codeoffset_felt, codeoffset);
         let (function_ptr) = get_label_location(function_codeoffset);
 
+        // Prepare implicit arguments
         let implicit_args_len = decode_and_execute.ImplicitArgs.SIZE;
         tempvar implicit_args = new decode_and_execute.ImplicitArgs(syscall_ptr, pedersen_ptr, range_check_ptr);
 
@@ -124,16 +125,19 @@ namespace EVMInstructions {
             ctx_ptr, implicit_args_len, implicit_args
         );
 
+        // Invoke opcode function
         invoke(function_ptr, args_len, args);
 
         // Retrieve results
         let (ap_val) = get_ap();
         let implicit_args: decode_and_execute.ImplicitArgs* = cast(ap_val - implicit_args_len - 1, decode_and_execute.ImplicitArgs*);
+        // Update implicit arguments
         let syscall_ptr = implicit_args.syscall_ptr;
         let pedersen_ptr = implicit_args.pedersen_ptr;
         let range_check_ptr = implicit_args.range_check_ptr;
+        // Get actual return value
+        let ctx_output: model.ExecutionContext* = cast([ap_val - 1], model.ExecutionContext*);
 
-        let ctx_output: model.ExecutionContext* = cast(ap_val - 1, model.ExecutionContext*);
         return (ctx=ctx_output);
     }
 

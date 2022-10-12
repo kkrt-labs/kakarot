@@ -20,6 +20,7 @@ namespace model {
         code_len: felt,
         calldata: felt*,
         pc: felt*,
+        program_counter: felt,
         stopped: felt*,
         return_data: felt*,
         steps: model.ExecutionStep*,
