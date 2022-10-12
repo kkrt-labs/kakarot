@@ -48,8 +48,7 @@ namespace Kakarot {
         alloc_locals;
 
         // decode and execute
-        // let (ctx_ptr) = EVMInstructions.decode_and_execute(instructions, ctx_ptr);
-        EVMInstructions.decode_and_execute(instructions, ctx_ptr);
+        let (ctx_ptr) = EVMInstructions.decode_and_execute(instructions, ctx_ptr);
 
         let ctx = [ctx_ptr];
 
@@ -90,6 +89,7 @@ namespace internal {
             code_len=code_len,
             calldata=calldata,
             pc=pc,
+            program_counter=initial_pc,
             stopped=empty_stopped,
             return_data=empty_return_data,
             steps=steps,
