@@ -37,14 +37,14 @@ namespace Kakarot {
         let (ctx: model.ExecutionContext*) = internal.init_execution_context(code, calldata);
 
         // start execution
-        run(instructions, ctx);
+        let (ctx) = run(instructions, ctx);
 
         return ();
     }
 
     func run{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         instructions: felt*, ctx_ptr: model.ExecutionContext*
-    ) {
+    ) -> (ctx: model.ExecutionContext*) {
         alloc_locals;
 
         // decode and execute
@@ -60,13 +60,11 @@ namespace Kakarot {
 
         // terminate execution
         if (stopped == TRUE) {
-            return ();
+            return (ctx=ctx_ptr);
         }
 
         // continue execution
-        run(instructions, ctx_ptr);
-
-        return ();
+        return run(instructions, ctx_ptr);
     }
 }
 
@@ -76,10 +74,8 @@ namespace internal {
     ) -> (ctx: model.ExecutionContext*) {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
-        let (empty_stopped: felt*) = alloc();
         let initial_pc = 0;
-        let (pc: felt*) = alloc();
-        assert [pc] = initial_pc;
+
         let (steps: model.ExecutionStep*) = alloc();
 
         let (code_len) = Helpers.get_len(code);
@@ -88,9 +84,8 @@ namespace internal {
             code=code,
             code_len=code_len,
             calldata=calldata,
-            pc=pc,
             program_counter=initial_pc,
-            stopped=empty_stopped,
+            stopped=FALSE,
             return_data=empty_return_data,
             steps=steps,
             );

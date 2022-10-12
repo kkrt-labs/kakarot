@@ -16,32 +16,23 @@ from kakarot.model import model
 from kakarot.stack import Stack
 
 namespace ExecutionContext {
-    func get_pc(self: model.ExecutionContext) -> (pc: felt) {
-        alloc_locals;
-        let (pc) = Helpers.get_last(self.pc);
-        return (pc=pc);
-    }
-
-    func set_pc(self: model.ExecutionContext, pc: felt) {
-        let (pc_len) = Helpers.get_len(self.pc);
-        assert [self.pc + pc_len] = pc;
-        return ();
-    }
-
-    func inc_pc(self: model.ExecutionContext, inc_value: felt) {
-        let (pc) = get_pc(self);
-        set_pc(self, pc + inc_value);
-        return ();
-    }
-
     func is_stopped(self: model.ExecutionContext) -> (stopped: felt) {
-        let (stopped) = Helpers.has_entries(self.stopped);
-        return (stopped=stopped);
+        return (stopped=self.stopped);
     }
 
-    func stop(self: model.ExecutionContext) {
-        assert [self.stopped] = TRUE;
-        return ();
+    func stop(self: model.ExecutionContext*) -> (self: model.ExecutionContext*) {
+        alloc_locals;
+        let ctx = [self];
+        local self_out: model.ExecutionContext* = new model.ExecutionContext(
+            code=ctx.code,
+            code_len=ctx.code_len,
+            calldata=ctx.calldata,
+            program_counter=ctx.program_counter,
+            stopped=TRUE,
+            return_data=ctx.return_data,
+            steps=ctx.steps
+            );
+        return (self=self_out);
     }
 
     func get_number_of_steps{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -82,31 +73,56 @@ namespace ExecutionContext {
         }
     }
 
-    func read_code(self: model.ExecutionContext, len: felt) -> (output: felt*) {
+    func read_code(self: model.ExecutionContext*, len: felt) -> (
+        self: model.ExecutionContext*, output: felt*
+    ) {
         alloc_locals;
+        let ctx = [self];
         // get current pc value
-        let (pc) = ExecutionContext.get_pc(self);
+        let pc = ctx.program_counter;
         let (local output: felt*) = alloc();
         // copy code slice
         memcpy(dst=output, src=self.code + pc, len=len);
         // move program counter
-        ExecutionContext.inc_pc(self, len);
-        return (output=output);
+        let (self_out) = ExecutionContext.increment_program_counter(self, len);
+        return (self=self_out, output=output);
+    }
+
+    func increment_program_counter(self: model.ExecutionContext*, inc_value: felt) -> (
+        self: model.ExecutionContext*
+    ) {
+        alloc_locals;
+        let ctx = [self];
+        let previous_program_counter = ctx.program_counter;
+        let new_program_counter = previous_program_counter + inc_value;
+        local self_out: model.ExecutionContext* = new model.ExecutionContext(
+            code=ctx.code,
+            code_len=ctx.code_len,
+            calldata=ctx.calldata,
+            program_counter=new_program_counter,
+            stopped=ctx.stopped,
+            return_data=ctx.return_data,
+            steps=ctx.steps
+            );
+        return (self=self_out);
     }
 
     func dump(self: model.ExecutionContext) {
-        let (pc) = get_pc(self);
+        let pc = self.program_counter;
         let (stopped) = is_stopped(self);
         %{
+            import json
             code = cairo_bytes_to_hex(ids.self.code)
             calldata = cairo_bytes_to_hex(ids.self.calldata)
             return_data = cairo_bytes_to_hex(ids.self.return_data)
-            json = {
+            json_data = {
                 "pc": f"{ids.pc}",
                 "stopped": f"{ids.stopped}",
                 "return_data": f"{return_data}",
             }
-            post_debug(json)
+            json_formatted = json.dumps(json_data, indent=4)
+            # print(json_formatted)
+            post_debug(json_data)
         %}
         return ();
     }

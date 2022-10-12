@@ -33,10 +33,8 @@ namespace PushOperations {
         // get stack
         let stack: model.Stack = ExecutionContext.get_stack(ctx);
 
-        // let stack: model.Stack = Stack.init();
-
         // read i bytes
-        let (data) = ExecutionContext.read_code(ctx, i);
+        let (ctx_ptr, data) = ExecutionContext.read_code(ctx_ptr, i);
 
         // convert to Uint256
         let (stack_element: Uint256) = Helpers.bytes_to_uint256(data);
@@ -61,7 +59,7 @@ namespace PushOperations {
         alloc_locals;
         %{ print("0x60 - PUSH1") %}
 
-        exec_push_i(ctx_ptr, 1);
+        let (ctx_ptr) = exec_push_i(ctx_ptr, 1);
 
         return (ctx=ctx_ptr);
     }

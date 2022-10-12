@@ -76,7 +76,7 @@ namespace EVMInstructions {
     ) -> (ctx: model.ExecutionContext*) {
         alloc_locals;
         let ctx = [ctx_ptr];
-        let (pc) = ExecutionContext.get_pc(ctx);
+        let pc = ctx.program_counter;
 
         // Revert if pc < 0
         with_attr error_message("Kakarot: InvalidCodeOffset") {
@@ -109,7 +109,7 @@ namespace EVMInstructions {
         }
 
         // move program counter + 1 after opcode is read
-        ExecutionContext.inc_pc(ctx, 1);
+        let (ctx_ptr) = ExecutionContext.increment_program_counter(ctx_ptr, 1);
 
         // Read opcode in instruction set
         let function_codeoffset_felt = instructions[opcode];
@@ -162,8 +162,7 @@ namespace EVMInstructions {
     ) -> (ctx: model.ExecutionContext*) {
         alloc_locals;
         %{ print("0x00 - STOP") %}
-        let ctx = [ctx_ptr];
-        ExecutionContext.stop(ctx);
+        let (ctx_ptr) = ExecutionContext.stop(ctx_ptr);
         return (ctx=ctx_ptr);
     }
 
