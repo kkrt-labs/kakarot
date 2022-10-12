@@ -34,21 +34,21 @@ namespace Kakarot {
         let instructions: felt* = EVMInstructions.generate_instructions();
 
         // prepare execution context
-        let (ctx: model.ExecutionContext*) = internal.init_execution_context(code, calldata);
+        let ctx: model.ExecutionContext* = internal.init_execution_context(code, calldata);
 
         // start execution
-        let (ctx) = run(instructions, ctx);
+        let ctx = run(instructions, ctx);
 
         return ();
     }
 
     func run{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         instructions: felt*, ctx_ptr: model.ExecutionContext*
-    ) -> (ctx: model.ExecutionContext*) {
+    ) -> model.ExecutionContext* {
         alloc_locals;
 
         // decode and execute
-        let (ctx_ptr) = EVMInstructions.decode_and_execute(instructions, ctx_ptr);
+        let ctx_ptr = EVMInstructions.decode_and_execute(instructions, ctx_ptr);
 
         let ctx = [ctx_ptr];
 
@@ -56,11 +56,11 @@ namespace Kakarot {
         ExecutionContext.dump(ctx);
 
         // check if execution should be stopped
-        let (stopped) = ExecutionContext.is_stopped(ctx);
+        let stopped = ExecutionContext.is_stopped(ctx);
 
         // terminate execution
         if (stopped == TRUE) {
-            return (ctx=ctx_ptr);
+            return ctx_ptr;
         }
 
         // continue execution
@@ -71,16 +71,16 @@ namespace Kakarot {
 namespace internal {
     func init_execution_context{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         code: felt*, calldata: felt*
-    ) -> (ctx: model.ExecutionContext*) {
+    ) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
         let initial_pc = 0;
 
         let (steps: model.ExecutionStep*) = alloc();
 
-        let (code_len) = Helpers.get_len(code);
+        let code_len = Helpers.get_len(code);
 
-        local ctx: model.ExecutionContext* = new model.ExecutionContext(
+        return new model.ExecutionContext(
             code=code,
             code_len=code_len,
             calldata=calldata,
@@ -89,6 +89,5 @@ namespace internal {
             return_data=empty_return_data,
             steps=steps,
             );
-        return (ctx=ctx);
     }
 }

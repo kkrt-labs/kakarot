@@ -27,7 +27,7 @@ namespace PushOperations {
     // Place i bytes items on stack
     func exec_push_i{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         ctx_ptr: model.ExecutionContext*, i: felt
-    ) -> (ctx: model.ExecutionContext*) {
+    ) -> model.ExecutionContext* {
         alloc_locals;
         let ctx = [ctx_ptr];
         // get stack
@@ -37,7 +37,7 @@ namespace PushOperations {
         let (ctx_ptr, data) = ExecutionContext.read_code(ctx_ptr, i);
 
         // convert to Uint256
-        let (stack_element: Uint256) = Helpers.bytes_to_uint256(data);
+        let stack_element: Uint256 = Helpers.bytes_to_uint256(data);
         // push to the stack
         let stack: model.Stack = Stack.push(stack, stack_element);
 
@@ -46,7 +46,7 @@ namespace PushOperations {
         let step: model.ExecutionStep = model.ExecutionStep(pc=0, opcode=0, gas=0, stack=stack);
         ExecutionContext.add_step(ctx, step);
 
-        return (ctx=ctx_ptr);
+        return ctx_ptr;
     }
 
     // 0x60 - PUSH1
@@ -55,12 +55,12 @@ namespace PushOperations {
     // Group: Push operations
     func exec_push1{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         ctx_ptr: model.ExecutionContext*
-    ) -> (ctx: model.ExecutionContext*) {
+    ) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x60 - PUSH1") %}
 
-        let (ctx_ptr) = exec_push_i(ctx_ptr, 1);
+        let ctx_ptr = exec_push_i(ctx_ptr, 1);
 
-        return (ctx=ctx_ptr);
+        return ctx_ptr;
     }
 }

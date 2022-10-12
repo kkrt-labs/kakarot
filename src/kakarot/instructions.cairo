@@ -28,7 +28,7 @@ from kakarot.instructions.arithmetic_operations import ArithmeticOperations
 namespace EVMInstructions {
     // Generates the instructions set for the EVM
     func generate_instructions{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ) -> (instructions: felt*) {
+        ) -> felt* {
         alloc_locals;
         // init instructions
         let (local instructions: felt*) = alloc();
@@ -45,7 +45,7 @@ namespace EVMInstructions {
         // 0x60 - PUSH1
         add_instruction(instructions, 96, PushOperations.exec_push1);
 
-        return (instructions=instructions);
+        return instructions;
     }
 
     func new_array_with_default_value(array_len: felt, default_value: codeoffset) -> (
@@ -73,7 +73,7 @@ namespace EVMInstructions {
     // @param ctx the execution context
     func decode_and_execute{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         instructions: felt*, ctx_ptr: model.ExecutionContext*
-    ) -> (ctx: model.ExecutionContext*) {
+    ) -> model.ExecutionContext* {
         alloc_locals;
         let ctx = [ctx_ptr];
         let pc = ctx.program_counter;
@@ -109,7 +109,7 @@ namespace EVMInstructions {
         }
 
         // move program counter + 1 after opcode is read
-        let (ctx_ptr) = ExecutionContext.increment_program_counter(ctx_ptr, 1);
+        let ctx_ptr = ExecutionContext.increment_program_counter(ctx_ptr, 1);
 
         // Read opcode in instruction set
         let function_codeoffset_felt = instructions[opcode];
@@ -138,7 +138,7 @@ namespace EVMInstructions {
         // Get actual return value
         let ctx_output: model.ExecutionContext* = cast([ap_val - 1], model.ExecutionContext*);
 
-        return (ctx=ctx_output);
+        return ctx_output;
     }
 
     // Adds an instruction in the passed instructions set
@@ -162,7 +162,7 @@ namespace EVMInstructions {
     ) -> (ctx: model.ExecutionContext*) {
         alloc_locals;
         %{ print("0x00 - STOP") %}
-        let (ctx_ptr) = ExecutionContext.stop(ctx_ptr);
+        let ctx_ptr = ExecutionContext.stop(ctx_ptr);
         return (ctx=ctx_ptr);
     }
 
