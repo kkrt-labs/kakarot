@@ -22,15 +22,15 @@ namespace ExecutionContext {
 
     func stop(self: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        let ctx = [self];
+        // self is a ptr but you can do that self.prop which is eq to [self].prop
         local self_out: model.ExecutionContext* = new model.ExecutionContext(
-            code=ctx.code,
-            code_len=ctx.code_len,
-            calldata=ctx.calldata,
-            program_counter=ctx.program_counter,
+            code=self.code,
+            code_len=self.code_len,
+            calldata=self.calldata,
+            program_counter=self.program_counter,
             stopped=TRUE,
-            return_data=ctx.return_data,
-            steps=ctx.steps
+            return_data=self.return_data,
+            steps=self.steps
             );
         return self_out;
     }
@@ -89,20 +89,17 @@ namespace ExecutionContext {
     func increment_program_counter(
         self: model.ExecutionContext*, inc_value: felt
     ) -> model.ExecutionContext* {
-        alloc_locals;
-        let ctx = [self];
-        let previous_program_counter = ctx.program_counter;
-        let new_program_counter = previous_program_counter + inc_value;
-        local self_out: model.ExecutionContext* = new model.ExecutionContext(
-            code=ctx.code,
-            code_len=ctx.code_len,
-            calldata=ctx.calldata,
+        // self is a ptr but you can do that self.prop which is eq to [self].prop
+        let new_program_counter = self.program_counter + inc_value;
+        return new model.ExecutionContext(
+            code=self.code,
+            code_len=self.code_len,
+            calldata=self.calldata,
             program_counter=new_program_counter,
-            stopped=ctx.stopped,
-            return_data=ctx.return_data,
-            steps=ctx.steps
+            stopped=self.stopped,
+            return_data=self.return_data,
+            steps=self.steps
             );
-        return self_out;
     }
 
     func dump(self: model.ExecutionContext) {

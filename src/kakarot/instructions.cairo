@@ -31,7 +31,7 @@ namespace EVMInstructions {
         ) -> felt* {
         alloc_locals;
         // init instructions
-        let (local instructions: felt*) = alloc();
+        let (instructions: felt*) = alloc();
 
         // add instructions
 
@@ -51,14 +51,12 @@ namespace EVMInstructions {
     func new_array_with_default_value(array_len: felt, default_value: codeoffset) -> (
         array_len: felt, array: codeoffset*
     ) {
-        alloc_locals;
-        let (local array: codeoffset*) = alloc();
+        let (array: codeoffset*) = alloc();
         fill_with_value(array_len, array, default_value);
         return (array_len, array);
     }
 
     func fill_with_value(array_len: felt, array: codeoffset*, value: codeoffset) {
-        alloc_locals;
         if (array_len == 0) {
             return ();
         }
@@ -136,9 +134,9 @@ namespace EVMInstructions {
         let pedersen_ptr = implicit_args.pedersen_ptr;
         let range_check_ptr = implicit_args.range_check_ptr;
         // Get actual return value
-        let ctx_output: model.ExecutionContext* = cast([ap_val - 1], model.ExecutionContext*);
+        // let ctx_output: model.ExecutionContext* = ;
 
-        return ctx_output;
+        return cast([ap_val - 1], model.ExecutionContext*);
     }
 
     // Adds an instruction in the passed instructions set
@@ -148,7 +146,6 @@ namespace EVMInstructions {
     func add_instruction{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         instructions: felt*, opcode: felt, function: codeoffset
     ) {
-        alloc_locals;
         assert [instructions + opcode] = cast(function, felt);
         return ();
     }
@@ -160,7 +157,6 @@ namespace EVMInstructions {
     func exec_stop{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         ctx_ptr: model.ExecutionContext*
     ) -> (ctx: model.ExecutionContext*) {
-        alloc_locals;
         %{ print("0x00 - STOP") %}
         let ctx_ptr = ExecutionContext.stop(ctx_ptr);
         return (ctx=ctx_ptr);
@@ -171,7 +167,7 @@ namespace EVMInstructions {
     ) {
         alloc_locals;
 
-        let (local args: felt*) = alloc();
+        let (args: felt*) = alloc();
         memcpy(args, implicit_args, implicit_args_len);
         let ctx_value = cast(ctx, felt);
         assert args[implicit_args_len] = ctx_value;
