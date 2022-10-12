@@ -85,19 +85,6 @@ namespace EVMInstructions {
 
         local opcode;
 
-        // <START CAIRO VERSION>
-        // check if pc > len(code) and process it as a STOP if true
-        // let is_pc_gt_code_len = is_le(ctx.code_len, pc);
-        // if (is_pc_gt_code_len == TRUE) {
-        // opcode = 0;
-        // } else {
-        // read current opcode
-        // TODO: find a workaround re: Expected a constant offset in the range [-2^15, 2^15).
-        // opcode = [ctx.code + pc]
-        // }
-        // <END  CAIRO VERSION>
-
-        // <START HINT VERSION
         %{
             # check if pc > len(code) and process it as a STOP if true
             if ids.pc > ids.ctx.code_len:
@@ -105,7 +92,6 @@ namespace EVMInstructions {
             else:
                 ids.opcode = memory[ids.ctx.code + ids.pc]
         %}
-        // <END  HINT VERSION
 
         local opcode_exist;
 
