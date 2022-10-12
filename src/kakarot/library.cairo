@@ -37,7 +37,7 @@ namespace Kakarot {
         let ctx: model.ExecutionContext* = internal.init_execution_context(code, calldata);
 
         // start execution
-        let ctx = run(instructions, ctx);
+        let ctx: model.ExecutionContext* = run(instructions, ctx);
 
         return ();
     }
@@ -48,7 +48,9 @@ namespace Kakarot {
         alloc_locals;
 
         // decode and execute
-        let ctx_ptr = EVMInstructions.decode_and_execute(instructions, ctx_ptr);
+        let ctx_ptr: model.ExecutionContext* = EVMInstructions.decode_and_execute(
+            instructions, ctx_ptr
+        );
 
         let ctx = [ctx_ptr];
 
@@ -56,7 +58,7 @@ namespace Kakarot {
         ExecutionContext.dump(ctx);
 
         // check if execution should be stopped
-        let stopped = ExecutionContext.is_stopped(ctx);
+        let stopped: felt = ExecutionContext.is_stopped(ctx);
 
         // terminate execution
         if (stopped == TRUE) {
@@ -78,11 +80,9 @@ namespace internal {
 
         let (steps: model.ExecutionStep*) = alloc();
 
-        let code_len = Helpers.get_len(code);
-
         return new model.ExecutionContext(
             code=code,
-            code_len=code_len,
+            code_len=Helpers.get_len(code),  // lessgooooooo
             calldata=calldata,
             program_counter=initial_pc,
             stopped=FALSE,
