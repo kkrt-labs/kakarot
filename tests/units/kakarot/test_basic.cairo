@@ -16,6 +16,8 @@ from tests.utils import test_utils
 // @title Basic EVM unit tests.
 // @author @abdelhamidbakhta
 
+const PRINT_BANNER = FALSE;
+
 @view
 func __setup__{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     return setup();
@@ -25,6 +27,8 @@ func __setup__{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 func test_basic_add{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
 
+    print_banner();
+
     // Prepare Kakarot instance
     let (local context) = prepare();
 
@@ -32,6 +36,17 @@ func test_basic_add{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
         './tests/cases/001.json'
     );
+
+    // Run EVM execution
+    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+    // Assert value on the top of the stack
+    test_utils.assert_top_stack(ctx, 365);
+
+    return ();
+}
+
+func print_banner() {
     %{
         import time
         __banner__ = '''
@@ -48,15 +63,11 @@ func test_basic_add{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
           / /_| . \_____| |___  \ V / | |  | |
          /____|_|\_\    |_____|  \_/  |_|  |_|                              
         '''
-        print(__banner__)
-        print(__banner_2__)
+
+        if ids.PRINT_BANNER == 1:
+            print(__banner__)
+            print(__banner_2__)
     %}
-
-    // Run EVM execution
-    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
-
-    // Assert value on the top of the stack
-    test_utils.assert_top_stack(ctx, 365);
 
     return ();
 }
