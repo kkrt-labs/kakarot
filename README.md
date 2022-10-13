@@ -14,15 +14,22 @@
 ![GitHub Repo stars](https://img.shields.io/github/stars/abdelhamidbakhta/kakarot?style=social)
 
 <div align="center">
+
+**Kakarot** is an Ethereum Virtual Machine written in Cairo. It means it can be deployed on StarkNet, a layer 2 scaling solution for Ethereum, and run an EVM bytecode program.
+Hence, Kakarot can be used to run Ethereum smart contracts on StarkNet.
+Kakarot is the ultimate ZK-EVM 🫶!
+It is a work in progress, and it is not ready for production.
+
 [Getting started](#%EF%B8%8F-getting-started) •
-[Installation](#-installation) •
+[Installation](#installation) •
 [Build](#%EF%B8%8F-build) •
 [Test](#%EF%B8%8F-test)
+
 </div>
 
 ## ⚙️ Getting started
 
-![Tutorial][resources/img/kakarot.gif]
+![Tutorial](resources/img/kakarot.gif)
 
 ## 🎉 Installation
 
