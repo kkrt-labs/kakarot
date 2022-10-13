@@ -11,17 +11,9 @@
   <h3 align="center">EVM interpreter written in Cairo.</h3>
 </div>
 
-## Usage
+## ⚙️ Development
 
-> ## ⚠️ WARNING! ⚠️
->
-> This is repo contains highly experimental code.
-> Expect rapid iteration.
-> **Use at your own risk.**
-
-### Set up the project
-
-#### 📦 Install the requirements
+### 📦 Install the requirements
 
 - [protostar](https://github.com/software-mansion/protostar)
 
@@ -39,12 +31,6 @@ protostar build
 
 ### 🌡️ Test
 
-First, you need to start the debug server
-```bash
-# Start the debug server
-cd tests/debug && python3 debug_server.py
-```
-
 ```bash
 # Run all tests
 protostar test
@@ -54,6 +40,17 @@ protostar test tests/units
 
 # Run only integration tests
 protostar test tests/integrations
+```
+
+### 🐛 Debug
+
+Start the debug server:
+
+```bash
+python3 tests/debug/debug_server.py
+# then use DEBUG env variable
+# for example:
+DEBUG=True protostar test
 ```
 
 ## 🚀 Deployment
