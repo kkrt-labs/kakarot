@@ -33,11 +33,11 @@ func setup{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     %{
         # Load config
         import sys
+        import time
         sys.path.append('.')
         from tests import load
         load("./tests/units/kakarot/config.yml", context)
     %}
-
     return ();
 }
 

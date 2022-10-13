@@ -32,6 +32,25 @@ func test_basic_add{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
         './tests/cases/001.json'
     );
+    %{
+        import time
+        __banner__ = '''
+          _  __     _                   _                                         
+         | |/ /__ _| | ____ _ _ __ ___ | |_                                       
+         | ' // _` | |/ / _` | '__/ _ \| __|                                      
+         | . \ (_| |   < (_| | | | (_) | |_                                       
+         |_|\_\__,_|_|\_\__,_|_|  \___/ \__|                                      
+        '''
+        __banner_2__ = '''
+          ______  __     _______     ____  __ 
+        |__  / |/ /    | ____\ \   / /  \/  |
+           / /| ' /_____|  _|  \ \ / /| |\/| |
+          / /_| . \_____| |___  \ V / | |  | |
+         /____|_|\_\    |_____|  \_/  |_|  |_|                              
+        '''
+        print(__banner__)
+        print(__banner_2__)
+    %}
 
     // Run EVM execution
     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
