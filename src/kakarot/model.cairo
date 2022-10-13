@@ -15,6 +15,11 @@ namespace model {
         raw_len: felt,
     }
 
+    struct Memory {
+        elements: Uint256*,
+        size: felt,  // The size is counted with the highest address that was accessed.
+    }
+
     struct ExecutionContext {
         code: felt*,
         code_len: felt,
@@ -23,15 +28,8 @@ namespace model {
         stopped: felt,
         return_data: felt*,
         stack: Stack*,
-    }
-
-    struct ExecutionContextTest {
-        code: felt*,
-        code_len: felt,
-        calldata: felt*,
-        program_counter: felt,
-        stopped: felt,
-        return_data: felt*,
-        stack: Stack*,
+        memory: Memory*,
+        gas_used: felt,
+        gas_limit: felt,
     }
 }

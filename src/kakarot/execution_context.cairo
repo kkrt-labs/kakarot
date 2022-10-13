@@ -43,7 +43,10 @@ namespace ExecutionContext {
             program_counter=self.program_counter,
             stopped=TRUE,
             return_data=self.return_data,
-            stack=self.stack
+            stack=self.stack,
+            memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit
             );
     }
 
@@ -81,7 +84,10 @@ namespace ExecutionContext {
             program_counter=self.program_counter,
             stopped=self.stopped,
             return_data=self.return_data,
-            stack=new_stack
+            stack=new_stack,
+            memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit
             );
     }
 
@@ -101,6 +107,9 @@ namespace ExecutionContext {
             stopped=self.stopped,
             return_data=self.return_data,
             stack=self.stack,
+            memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit
             );
     }
 
