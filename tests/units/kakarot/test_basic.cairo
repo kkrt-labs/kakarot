@@ -13,6 +13,9 @@ from tests.units.kakarot.library import setup, prepare, Kakarot
 from tests.model import EVMTestCase
 from tests.utils import test_utils
 
+// @title Basic EVM unit tests.
+// @author @abdelhamidbakhta
+
 @view
 func __setup__{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     return setup();
@@ -33,8 +36,8 @@ func test_basic_add{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     // Run EVM execution
     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
 
-    // Dump the stack
-    Stack.dump(ctx.stack);
+    // Assert value on the top of the stack
+    test_utils.assert_top_stack(ctx, 365);
 
     return ();
 }

@@ -4,7 +4,9 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
+from starkware.cairo.common.uint256 import Uint256, uint256_eq
 
 // Internal dependencies
 from kakarot.execution_context import ExecutionContext
@@ -47,7 +49,17 @@ namespace test_utils {
         return (evm_test_case=evm_test_case);
     }
 
-    func assert_top_stack(expected: felt) {
+    // @notice Assert that the value at the top of the stack is equal to the expected value.
+    // @param ctx The pointer to the execution context.
+    // @param expected_value The expected value.
+    func assert_top_stack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx: model.ExecutionContext*, expected_value: felt
+    ) {
+        alloc_locals;
+        let (stack, actual) = Stack.pop(ctx.stack);
+        let expected_uint256 = Uint256(expected_value, 0);
+        let (are_equal) = uint256_eq(actual, expected_uint256);
+        assert are_equal = TRUE;
         return ();
     }
 }
