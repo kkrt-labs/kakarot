@@ -3,13 +3,15 @@
 </p>
 <div align="center">
   <h1 align="center">Kakarot</h1>
-  <p align="center">
-    <a href="https://github.com/abdelhamidbakhta/kakarot/actions">
-        <img src="https://github.com/abdelhamidbakhta/kakarot/workflows/TESTS/badge.svg">
-    </a>
-  </p>
   <h3 align="center">EVM interpreter written in Cairo.</h3>
 </div>
+
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/abdelhamidbakhta/kakarot/TESTS?style=flat-square&logo=github)
+![GitHub](https://img.shields.io/github/license/abdelhamidbakhta/kakarot?style=flat-square&logo=github)
+![GitHub contributors](https://img.shields.io/github/contributors/abdelhamidbakhta/kakarot?logo=github&style=flat-square)
+![Lines of code](https://img.shields.io/tokei/lines/github/abdelhamidbakhta/kakarot?style=flat-square)
+![Discord](https://img.shields.io/discord/595666850260713488?color=purple&logo=discord&style=flat-square)
+![GitHub Repo stars](https://img.shields.io/github/stars/abdelhamidbakhta/kakarot?style=social)
 
 ## ⚙️ Development
 

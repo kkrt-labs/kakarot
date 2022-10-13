@@ -137,7 +137,9 @@ namespace ExecutionContext {
 
     // @notice Dump the current execution context.
     // @dev The execution context is dumped to the debug server if `DEBUG` environment variable is set to `True`.
-    func dump(self: model.ExecutionContext*) {
+    func dump{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.ExecutionContext*
+    ) {
         let pc = self.program_counter;
         let stopped = is_stopped(self);
         %{
@@ -154,6 +156,18 @@ namespace ExecutionContext {
             json_formatted = json.dumps(json_data, indent=4)
             # print(json_formatted)
             post_debug(json_data)
+        %}
+
+        %{
+            print("===================================")
+            print(f"PC: {ids.pc}")
+            print(f"GAS USED: {ids.self.gas_used}")
+            print("*************STACK*****************")
+        %}
+        Stack.dump(self.stack);
+        %{
+            print("***********************************")
+            print("===================================")
         %}
         return ();
     }
