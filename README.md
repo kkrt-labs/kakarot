@@ -21,7 +21,7 @@ Kakarot is the ultimate ZK-EVM 🫶!
 It is a work in progress, and it is not ready for production.
 
 [Getting started](#%EF%B8%8F-getting-started) •
-[Installation](#installation) •
+[Installation](#%F0%9F%A7%A9-installation) •
 [Build](#%EF%B8%8F-build) •
 [Test](#%EF%B8%8F-test)
 
@@ -31,11 +31,13 @@ It is a work in progress, and it is not ready for production.
 
 ![Tutorial](resources/img/kakarot.gif)
 
-## 🎉 Installation
+## 🧩 Installation
 
-### 📦 Install the requirements
+Install the requirements:
 
 - [protostar](https://github.com/software-mansion/protostar)
+
+Then, install the dependencies:
 
 ```bash
 protostar install
