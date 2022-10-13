@@ -27,6 +27,9 @@ from kakarot.stack import Stack
 // @author @abdelhamidbakhta
 // @custom:namespace PushOperations
 namespace PushOperations {
+    // Define constants.
+    const GAS_COST = 3;
+
     // @notice Generic PUSH operation
     // @dev Place i bytes items on stack
     func exec_push_i{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -38,19 +41,21 @@ namespace PushOperations {
             print(f"0x{opcode_value:02x} - PUSH{ids.i}")
         %}
 
-        // get stack
+        // Get stack from context.
         let stack: model.Stack* = ctx.stack;
 
-        // read i bytes
+        // Read i bytes.
         let (ctx, data) = ExecutionContext.read_code(ctx, i);
 
-        // convert to Uint256
+        // Convert to Uint256.
         let stack_element: Uint256 = Helpers.bytes_to_uint256(data);
-        // push to the stack
+        // Push to the stack.
         let stack: model.Stack* = Stack.push(stack, stack_element);
 
-        // update context
+        // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST);
         return ctx;
     }
 

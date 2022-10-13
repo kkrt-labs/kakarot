@@ -27,6 +27,9 @@ from kakarot.stack import Stack
 // @author @abdelhamidbakhta
 // @custom:namespace ArithmeticOperations
 namespace ArithmeticOperations {
+    // Define constants.
+    const GAS_COST_ADD = 3;
+
     // @notice 0x00 - ADD
     // @dev Addition operation
     // @custom:since Frontier
@@ -57,7 +60,10 @@ namespace ArithmeticOperations {
         // a + b: integer result of the addition modulo 2^256
         let stack: model.Stack* = Stack.push(stack, result);
 
-        // Update context
-        return ExecutionContext.update_stack(ctx, stack);
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_ADD);
+        return ctx;
     }
 }

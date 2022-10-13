@@ -12,6 +12,7 @@ from openzeppelin.access.ownable.library import Ownable
 
 // Internal dependencies
 from kakarot.model import model
+from kakarot.constants import Constants
 from kakarot.instructions import EVMInstructions
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
@@ -49,7 +50,12 @@ namespace Kakarot {
         let ctx: model.ExecutionContext* = internal.init_execution_context(code, calldata);
 
         // Start execution
-        return run(instructions, ctx);
+        let ctx = run(instructions, ctx);
+
+        // For debugging purpose
+        ExecutionContext.dump(ctx);
+
+        return ctx;
     }
 
     // @notice Run the execution of the bytecode.
@@ -63,9 +69,6 @@ namespace Kakarot {
 
         // Decode and execute
         let ctx: model.ExecutionContext* = EVMInstructions.decode_and_execute(instructions, ctx);
-
-        // For debugging purpose
-        ExecutionContext.dump(ctx);
 
         // Check if execution should be stopped
         let stopped: felt = ExecutionContext.is_stopped(ctx);
@@ -86,15 +89,18 @@ namespace internal {
     ) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
+
+        // Define initial program counter
         let initial_pc = 0;
-        let gas_used = 0;
+        // Start with intrisic gas cost
+        let gas_used = Constants.TRANSACTION_INTRINSIC_GAS_COST;
         // TODO: Add support for gas limit
         let gas_limit = 0;
 
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();
 
-        local ctx: model.ExecutionContext* = new model.ExecutionContext(
+        return new model.ExecutionContext(
             code=code,
             code_len=Helpers.get_len(code),
             calldata=calldata,
@@ -104,9 +110,7 @@ namespace internal {
             stack=stack,
             memory=memory,
             gas_used=gas_used,
-            gas_limit=gas_limit,
+            gas_limit=gas_limit
             );
-
-        return ctx;
     }
 }

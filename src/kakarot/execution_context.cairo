@@ -113,6 +113,28 @@ namespace ExecutionContext {
             );
     }
 
+    // @notice Increment the gas used.
+    // @dev The gas used is incremented by the given value.
+    // @param self The pointer to the execution context.
+    // @param inc_value The value to increment the gas used with.
+    // @return The pointer to the updated execution context.
+    func increment_gas_used(
+        self: model.ExecutionContext*, inc_value: felt
+    ) -> model.ExecutionContext* {
+        return new model.ExecutionContext(
+            code=self.code,
+            code_len=self.code_len,
+            calldata=self.calldata,
+            program_counter=self.program_counter,
+            stopped=self.stopped,
+            return_data=self.return_data,
+            stack=self.stack,
+            memory=self.memory,
+            gas_used=self.gas_used + inc_value,
+            gas_limit=self.gas_limit
+            );
+    }
+
     // @notice Dump the current execution context.
     // @dev The execution context is dumped to the debug server if `DEBUG` environment variable is set to `True`.
     func dump(self: model.ExecutionContext*) {
@@ -127,6 +149,7 @@ namespace ExecutionContext {
                 "pc": f"{ids.pc}",
                 "stopped": f"{ids.stopped}",
                 "return_data": f"{return_data}",
+                "gas_used": f"{ids.self.gas_used}",
             }
             json_formatted = json.dumps(json_data, indent=4)
             # print(json_formatted)
