@@ -22,7 +22,6 @@ namespace ExecutionContext {
 
     func stop(self: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        // self is a ptr but you can do that self.prop which is eq to [self].prop
         local self_out: model.ExecutionContext* = new model.ExecutionContext(
             code=self.code,
             code_len=self.code_len,
@@ -89,7 +88,6 @@ namespace ExecutionContext {
     func increment_program_counter(
         self: model.ExecutionContext*, inc_value: felt
     ) -> model.ExecutionContext* {
-        // self is a ptr but you can do that self.prop which is eq to [self].prop
         let new_program_counter = self.program_counter + inc_value;
         return new model.ExecutionContext(
             code=self.code,
