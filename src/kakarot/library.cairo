@@ -17,52 +17,64 @@ from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 from utils.utils import Helpers
 
+// @title Kakarot main library file.
+// @notice This file contains the core EVM execution logic.
+// @author @abdelhamidbakhta
+// @custom:namespace Kakarot
 namespace Kakarot {
+    // @notice The constructor of the contract.
+    // @param _owner The address of the owner of the contract.
     func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(owner: felt) {
         Ownable.initializer(owner);
         return ();
     }
 
+    // @notice Execute an EVM bytecode.
+    // @param _bytecode The bytecode to execute.
+    // @param calldata The calldata to pass to the bytecode.
+    // @return The pointer to the execution context.
     func execute{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         code: felt*, calldata: felt*
-    ) {
+    ) -> model.ExecutionContext* {
         alloc_locals;
 
-        // load helper hints
+        // Load helper hints
         Helpers.setup_python_defs();
 
-        // generate instructions set
+        // Generate instructions set
         let instructions: felt* = EVMInstructions.generate_instructions();
 
-        // prepare execution context
+        // Prepare execution context
         let ctx: model.ExecutionContext* = internal.init_execution_context(code, calldata);
 
-        // start execution
-        let ctx: model.ExecutionContext* = run(instructions, ctx);
-
-        return ();
+        // Start execution
+        return run(instructions, ctx);
     }
 
+    // @notice Run the execution of the bytecode.
+    // @param instructions The instructions set.
+    // @param ctx The pointer to the execution context.
+    // @return The pointer to the updated execution context.
     func run{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         instructions: felt*, ctx: model.ExecutionContext*
     ) -> model.ExecutionContext* {
         alloc_locals;
 
-        // decode and execute
+        // Decode and execute
         let ctx: model.ExecutionContext* = EVMInstructions.decode_and_execute(instructions, ctx);
 
-        // for debugging purpose
+        // For debugging purpose
         ExecutionContext.dump(ctx);
 
-        // check if execution should be stopped
+        // Check if execution should be stopped
         let stopped: felt = ExecutionContext.is_stopped(ctx);
 
-        // terminate execution
+        // Terminate execution
         if (stopped == TRUE) {
             return ctx;
         }
 
-        // continue execution
+        // Continue execution
         return run(instructions, ctx);
     }
 }

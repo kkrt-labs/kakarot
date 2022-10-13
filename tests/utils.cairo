@@ -7,10 +7,15 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 
 // Internal dependencies
+from kakarot.execution_context import ExecutionContext
+from kakarot.stack import Stack
+from kakarot.model import model
 from utils.utils import Helpers
 from tests.model import EVMTestCase
 
 namespace test_utils {
+    // @notice Load Test case from file.
+    // @param file_name The path to the test case file.
     func load_evm_test_case_from_file(file_name: felt) -> (evm_test_case: EVMTestCase) {
         alloc_locals;
         Helpers.setup_python_defs();
@@ -40,5 +45,9 @@ namespace test_utils {
         );
 
         return (evm_test_case=evm_test_case);
+    }
+
+    func assert_top_stack(expected: felt) {
+        return ();
     }
 }

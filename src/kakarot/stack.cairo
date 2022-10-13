@@ -16,6 +16,11 @@ from kakarot.constants import Constants
 from kakarot.model import model
 from utils.utils import Helpers
 
+// @title Stack related functions.
+// @notice This file contains functions related to the stack.
+// @author @abdelhamidbakhta
+// @custom:namespace Stack
+// @custom:model model.Stack
 namespace Stack {
     const element_size = Uint256.SIZE;
 

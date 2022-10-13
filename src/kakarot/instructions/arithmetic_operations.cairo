@@ -22,11 +22,20 @@ from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 
+// @title Arithmetic operations opcodes.
+// @notice This contract contains the functions to execute for arithemetic operations opcodes.
+// @author @abdelhamidbakhta
+// @custom:namespace ArithmeticOperations
 namespace ArithmeticOperations {
-    // 0x00 - ADD
-    // Addition operation
-    // Since: Frontier
-    // Group: Stop and Arithmetic Operations
+    // @notice 0x00 - ADD
+    // @dev Addition operation
+    // @custom:since Frontier
+    // @custom:group Stop and Arithmetic Operations
+    // @custom:gas 3
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context.
+    // @return The pointer to the execution context.
     func exec_add{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         ctx: model.ExecutionContext*
     ) -> model.ExecutionContext* {
@@ -35,25 +44,20 @@ namespace ArithmeticOperations {
 
         let stack = ctx.stack;
 
-        Stack.dump(stack);
-
         // Stack input:
         // 0 - a: first integer value to add.
         // 1 - b: second integer value to add.
         let (stack, a) = Stack.pop(stack);
         let (stack, b) = Stack.pop(stack);
 
-        // compute the addition
+        // Compute the addition
         let (result) = SafeUint256.add(a, b);
 
         // Stack output:
         // a + b: integer result of the addition modulo 2^256
         let stack: model.Stack* = Stack.push(stack, result);
 
-        Stack.dump(stack);
-
-        // update context
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        return ctx;
+        // Update context
+        return ExecutionContext.update_stack(ctx, stack);
     }
 }

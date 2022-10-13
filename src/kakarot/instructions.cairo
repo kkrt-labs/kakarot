@@ -25,15 +25,22 @@ from kakarot.stack import Stack
 from kakarot.instructions.push_operations import PushOperations
 from kakarot.instructions.arithmetic_operations import ArithmeticOperations
 
+// @title EVM instructions processing.
+// @notice This file contains functions related to the processing of EVM instructions.
+// @author @abdelhamidbakhta
+// @custom:namespace EVMInstructions
 namespace EVMInstructions {
-    // Decodes the current opcode and execute associated function
-    // @param instructions the instruction set
-    // @param opcode the opcode value
-    // @param ctx the execution context
+    // @notice Decode the current opcode and execute associated function.
+    // @param instructions The instruction set.
+    // @param opcode The opcode value.
+    // @param ctx The pointer to the execution context.
+    // @return The pointer to the updated execution context.
     func decode_and_execute{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         instructions: felt*, ctx: model.ExecutionContext*
     ) -> model.ExecutionContext* {
         alloc_locals;
+
+        // Retrieve the current program counter.
         let pc = ctx.program_counter;
 
         // Revert if pc < 0
@@ -98,9 +105,9 @@ namespace EVMInstructions {
         return cast([ap_val - 1], model.ExecutionContext*);
     }
 
-    // Adds an instruction in the passed instructions set
+    // @notice Add an instruction in the passed instructions set
     // @param instructions the instruction set
-    // @param opcode the opcode value
+    // @param opcode The opcode value
     // @param function the function to execute for the specified opcode
     func add_instruction{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         instructions: felt*, opcode: felt, function: codeoffset
@@ -109,18 +116,25 @@ namespace EVMInstructions {
         return ();
     }
 
-    // 0x00 - STOP
-    // Halts execution
-    // Since: Frontier
-    // Group: Stop and Arithmetic Operations
+    // @notice 0x00 - STOP
+    // @dev Halts execution
+    // @custom:since Frontier
+    // @custom:group Stop and Arithmetic Operations
+    // @custom:gas 0
+    // @param ctx The pointer to the execution context.
     func exec_stop{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         ctx_ptr: model.ExecutionContext*
-    ) -> (ctx: model.ExecutionContext*) {
+    ) -> model.ExecutionContext* {
         %{ print("0x00 - STOP") %}
-        let ctx_ptr = ExecutionContext.stop(ctx_ptr);
-        return (ctx=ctx_ptr);
+        return ExecutionContext.stop(ctx_ptr);
     }
 
+    // @notice Prepare arguments for the dynamic call.
+    // @param ctx The pointer to the execution context.
+    // @param implicit_args_len The length of the implicit arguments.
+    // @param implicit_args The implicit arguments.
+    // @return The length of the arguments array,
+    // @return The arguments array.
     func prepare_arguments(ctx: felt*, implicit_args_len: felt, implicit_args: felt*) -> (
         args_len: felt, args: felt*
     ) {
@@ -134,86 +148,55 @@ namespace EVMInstructions {
         return (implicit_args_len + 1, args);
     }
 
-    // Generates the instructions set for the EVM
+    // @notice Generate the instructions set for the EVM.
+    // @return The instructions set.
     func generate_instructions{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         ) -> felt* {
         alloc_locals;
-        // init instructions
+        // Init instructions
         let (instructions: felt*) = alloc();
 
-        // add instructions
+        // Add instructions
 
-        // add 0s: Stop and Arithmetic Operations
+        // Add 0s: Stop and Arithmetic Operations
         // 0x00 - STOP
         add_instruction(instructions, 0, exec_stop);
         // 0x01 - ADD
         add_instruction(instructions, 1, ArithmeticOperations.exec_add);
 
-        // add 6s: Push operations
-        // 0x60 - PUSH1
-        add_instruction(instructions, 96, PushOperations.exec_push1);
-        // 0x61 - PUSH2
-        add_instruction(instructions, 97, PushOperations.exec_push2);
-        // 0x62 - PUSH3
-        add_instruction(instructions, 98, PushOperations.exec_push3);
-        // 0x63 - PUSH4
-        add_instruction(instructions, 99, PushOperations.exec_push4);
-        // 0x64 - PUSH5
-        add_instruction(instructions, 100, PushOperations.exec_push5);
-        // 0x65 - PUSH6
-        add_instruction(instructions, 101, PushOperations.exec_push6);
-        // 0x66 - PUSH7
-        add_instruction(instructions, 102, PushOperations.exec_push7);
-        // 0x67 - PUSH8
-        add_instruction(instructions, 103, PushOperations.exec_push8);
-        // 0x68 - PUSH9
-        add_instruction(instructions, 104, PushOperations.exec_push9);
-        // 0x69 - PUSH10
-        add_instruction(instructions, 105, PushOperations.exec_push10);
-        // 0x6a - PUSH11
-        add_instruction(instructions, 106, PushOperations.exec_push11);
-        // 0x6b - PUSH12
-        add_instruction(instructions, 107, PushOperations.exec_push12);
-        // 0x6c - PUSH13
-        add_instruction(instructions, 108, PushOperations.exec_push13);
-        // 0x6d - PUSH14
-        add_instruction(instructions, 109, PushOperations.exec_push14);
-        // 0x6e - PUSH15
-        add_instruction(instructions, 110, PushOperations.exec_push15);
-        // 0x6f - PUSH16
-        add_instruction(instructions, 111, PushOperations.exec_push16);
-        // 0x70 - PUSH17
-        add_instruction(instructions, 112, PushOperations.exec_push17);
-        // 0x71 - PUSH18
-        add_instruction(instructions, 113, PushOperations.exec_push18);
-        // 0x72 - PUSH19
-        add_instruction(instructions, 114, PushOperations.exec_push19);
-        // 0x73 - PUSH20
-        add_instruction(instructions, 115, PushOperations.exec_push20);
-        // 0x74 - PUSH21
-        add_instruction(instructions, 116, PushOperations.exec_push21);
-        // 0x75 - PUSH22
-        add_instruction(instructions, 117, PushOperations.exec_push22);
-        // 0x76 - PUSH23
-        add_instruction(instructions, 118, PushOperations.exec_push23);
-        // 0x77 - PUSH24
-        add_instruction(instructions, 119, PushOperations.exec_push24);
-        // 0x78 - PUSH25
-        add_instruction(instructions, 120, PushOperations.exec_push25);
-        // 0x79 - PUSH26
-        add_instruction(instructions, 121, PushOperations.exec_push26);
-        // 0x7a - PUSH27
-        add_instruction(instructions, 122, PushOperations.exec_push27);
-        // 0x7b - PUSH28
-        add_instruction(instructions, 123, PushOperations.exec_push28);
-        // 0x7c - PUSH29
-        add_instruction(instructions, 124, PushOperations.exec_push29);
-        // 0x7d - PUSH30
-        add_instruction(instructions, 125, PushOperations.exec_push30);
-        // 0x7e - PUSH31
-        add_instruction(instructions, 126, PushOperations.exec_push31);
-        // 0x7f - PUSH32
-        add_instruction(instructions, 127, PushOperations.exec_push32);
+        // Add 6s: Push operations
+        add_instruction(instructions, 0x60, PushOperations.exec_push1);
+        add_instruction(instructions, 0x61, PushOperations.exec_push2);
+        add_instruction(instructions, 0x62, PushOperations.exec_push3);
+        add_instruction(instructions, 0x63, PushOperations.exec_push4);
+        add_instruction(instructions, 0x64, PushOperations.exec_push5);
+        add_instruction(instructions, 0x65, PushOperations.exec_push6);
+        add_instruction(instructions, 0x66, PushOperations.exec_push7);
+        add_instruction(instructions, 0x67, PushOperations.exec_push8);
+        add_instruction(instructions, 0x68, PushOperations.exec_push9);
+        add_instruction(instructions, 0x69, PushOperations.exec_push10);
+        add_instruction(instructions, 0x6a, PushOperations.exec_push11);
+        add_instruction(instructions, 0x6b, PushOperations.exec_push12);
+        add_instruction(instructions, 0x6c, PushOperations.exec_push13);
+        add_instruction(instructions, 0x6d, PushOperations.exec_push14);
+        add_instruction(instructions, 0x6e, PushOperations.exec_push15);
+        add_instruction(instructions, 0x6f, PushOperations.exec_push16);
+        add_instruction(instructions, 0x70, PushOperations.exec_push17);
+        add_instruction(instructions, 0x71, PushOperations.exec_push18);
+        add_instruction(instructions, 0x72, PushOperations.exec_push19);
+        add_instruction(instructions, 0x73, PushOperations.exec_push20);
+        add_instruction(instructions, 0x74, PushOperations.exec_push21);
+        add_instruction(instructions, 0x75, PushOperations.exec_push22);
+        add_instruction(instructions, 0x76, PushOperations.exec_push23);
+        add_instruction(instructions, 0x77, PushOperations.exec_push24);
+        add_instruction(instructions, 0x78, PushOperations.exec_push25);
+        add_instruction(instructions, 0x79, PushOperations.exec_push26);
+        add_instruction(instructions, 0x7a, PushOperations.exec_push27);
+        add_instruction(instructions, 0x7b, PushOperations.exec_push28);
+        add_instruction(instructions, 0x7c, PushOperations.exec_push29);
+        add_instruction(instructions, 0x7d, PushOperations.exec_push30);
+        add_instruction(instructions, 0x7e, PushOperations.exec_push31);
+        add_instruction(instructions, 0x7f, PushOperations.exec_push32);
 
         return instructions;
     }

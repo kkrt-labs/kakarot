@@ -15,14 +15,28 @@ from utils.utils import Helpers
 from kakarot.model import model
 from kakarot.stack import Stack
 
+// @title ExecutionContext related functions.
+// @notice This file contains functions related to the execution context.
+// @author @abdelhamidbakhta
+// @custom:namespace ExecutionContext
+// @custom:model model.ExecutionContext
 namespace ExecutionContext {
+    // @notice Return whether the current execution context is stopped.
+    // @dev When the execution context is stopped, no more instructions can be executed.
+    // @param self The pointer to the execution context.
+    // @return TRUE if the execution context is stopped, FALSE otherwise.
     func is_stopped(self: model.ExecutionContext*) -> felt {
         return self.stopped;
     }
 
-    func stop(self: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-        local self_out: model.ExecutionContext* = new model.ExecutionContext(
+    // @notice Stop the current execution context.
+    // @dev When the execution context is stopped, no more instructions can be executed.
+    // @param self The pointer to the execution context.
+    // @return The pointer to the updated execution context.
+    func stop{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.ExecutionContext*
+    ) -> model.ExecutionContext* {
+        return new model.ExecutionContext(
             code=self.code,
             code_len=self.code_len,
             calldata=self.calldata,
@@ -31,29 +45,36 @@ namespace ExecutionContext {
             return_data=self.return_data,
             stack=self.stack
             );
-        return self_out;
     }
 
+    // @notice Read and return data from bytecode.
+    // @dev The data is read from the bytecode from the current program counter.
+    // @param self The pointer to the execution context.
+    // @param len The size of the data to read.
+    // @return The pointer to the updated execution context.
+    // @return The data read from the bytecode.
     func read_code(self: model.ExecutionContext*, len: felt) -> (
         self: model.ExecutionContext*, output: felt*
     ) {
         alloc_locals;
-        let ctx = [self];
-        // get current pc value
-        let pc = ctx.program_counter;
+        // Get current pc value
+        let pc = self.program_counter;
         let (local output: felt*) = alloc();
-        // copy code slice
+        // Copy code slice
         memcpy(dst=output, src=self.code + pc, len=len);
-        // move program counter
-        let self_out = ExecutionContext.increment_program_counter(self, len);
-        return (self=self_out, output=output);
+        // Move program counter
+        let self = ExecutionContext.increment_program_counter(self, len);
+        return (self=self, output=output);
     }
 
-    func update_stack(
+    // @notice Update the stack of the current execution context.
+    // @dev The stack is updated with the given stack.
+    // @param self The pointer to the execution context.
+    // @param stack The pointer to the new stack.
+    func update_stack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.ExecutionContext*, new_stack: model.Stack*
     ) -> model.ExecutionContext* {
-        alloc_locals;
-        local self_out: model.ExecutionContext* = new model.ExecutionContext(
+        return new model.ExecutionContext(
             code=self.code,
             code_len=self.code_len,
             calldata=self.calldata,
@@ -62,24 +83,29 @@ namespace ExecutionContext {
             return_data=self.return_data,
             stack=new_stack
             );
-        return self_out;
     }
 
+    // @notice Increment the program counter.
+    // @dev The program counter is incremented by the given value.
+    // @param self The pointer to the execution context.
+    // @param inc_value The value to increment the program counter with.
+    // @return The pointer to the updated execution context.
     func increment_program_counter(
         self: model.ExecutionContext*, inc_value: felt
     ) -> model.ExecutionContext* {
-        let new_program_counter = self.program_counter + inc_value;
         return new model.ExecutionContext(
             code=self.code,
             code_len=self.code_len,
             calldata=self.calldata,
-            program_counter=new_program_counter,
+            program_counter=self.program_counter + inc_value,
             stopped=self.stopped,
             return_data=self.return_data,
             stack=self.stack,
             );
     }
 
+    // @notice Dump the current execution context.
+    // @dev The execution context is dumped to the debug server if `DEBUG` environment variable is set to `True`.
     func dump(self: model.ExecutionContext*) {
         let pc = self.program_counter;
         let stopped = is_stopped(self);
