@@ -13,25 +13,34 @@
 ![Discord](https://img.shields.io/discord/595666850260713488?color=purple&logo=discord&style=flat-square)
 ![GitHub Repo stars](https://img.shields.io/github/stars/abdelhamidbakhta/kakarot?style=social)
 
-## ⚙️ Development
+<div align="center">
+[Getting started](#%EF%B8%8F-getting-started) •
+[Installation](#-installation) •
+[Build](#%EF%B8%8F-build) •
+[Test](#%EF%B8%8F-test)
+</div>
+
+## ⚙️ Getting started
+
+![Tutorial][resources/img/kakarot.gif]
+
+## 🎉 Installation
 
 ### 📦 Install the requirements
 
 - [protostar](https://github.com/software-mansion/protostar)
 
-### 🎉 Install
-
 ```bash
 protostar install
 ```
 
-### ⛏️ Compile
+## ⛏️ Build
 
 ```bash
 protostar build
 ```
 
-### 🌡️ Test
+## 🌡️ Test
 
 ```bash
 # Run all tests
@@ -44,7 +53,7 @@ protostar test tests/units
 protostar test tests/integrations
 ```
 
-### 🐛 Debug
+## 🐛 Debug
 
 Start the debug server:
 
