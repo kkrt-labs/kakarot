@@ -39,8 +39,7 @@ func test_stack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
     return ();
 }
 
-// @external
-// TODO: activate when check underflow bug is fixed
+@external
 func test_stack_underflow{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
     Helpers.setup_python_defs();
