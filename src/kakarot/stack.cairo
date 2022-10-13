@@ -18,33 +18,31 @@ from utils.utils import Helpers
 
 namespace Stack {
     const element_size = Uint256.SIZE;
-    func init{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> model.Stack {
+    func init{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> model.Stack* {
         alloc_locals;
         let (elements: Uint256*) = alloc();
-        let stack: model.Stack = model.Stack(elements=elements, raw_len=0);
-        return stack;
+        return new model.Stack(elements=elements, raw_len=0);
     }
 
     func len{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Stack
+        self: model.Stack*
     ) -> felt {
         let actual_len = self.raw_len / element_size;
         return actual_len;
     }
 
     func push{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Stack, element: Uint256
-    ) -> model.Stack {
+        self: model.Stack*, element: Uint256
+    ) -> model.Stack* {
         alloc_locals;
         // Stack.check_overlow(self);
         assert [self.elements + self.raw_len] = element;
-        let new_stack = model.Stack(elements=self.elements, raw_len=self.raw_len + element_size);
-        return new_stack;
+        return new model.Stack(elements=self.elements, raw_len=self.raw_len + element_size);
     }
 
     func pop{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Stack
-    ) -> (new_stack: model.Stack, element: Uint256) {
+        self: model.Stack*
+    ) -> (new_stack: model.Stack*, element: Uint256) {
         alloc_locals;
         // Stack.check_underlow(self, 0);
         // get last element
@@ -57,22 +55,21 @@ namespace Stack {
         // copy stack without last element
         memcpy(dst=new_elements, src=self.elements, len=new_len);
         // create new stack
-        let new_stack = model.Stack(elements=new_elements, raw_len=new_len);
+        local new_stack: model.Stack* = new model.Stack(elements=new_elements, raw_len=new_len);
         return (new_stack=new_stack, element=element);
     }
 
     func peek{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Stack, stack_index: felt
+        self: model.Stack*, stack_index: felt
     ) -> Uint256 {
         alloc_locals;
         // Stack.check_underlow(self, stack_index);
         let array_index = Stack.get_array_index(self, stack_index);
-        let element: Uint256 = self.elements[array_index];
-        return element;
+        return self.elements[array_index];
     }
 
     func check_overlow{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Stack
+        self: model.Stack*
     ) {
         let stack_len = Stack.len(self);
         // revert if stack overflow
@@ -83,7 +80,7 @@ namespace Stack {
     }
 
     func check_underlow{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Stack, stack_index: felt
+        self: model.Stack*, stack_index: felt
     ) {
         alloc_locals;
         let stack_len = Stack.len(self);
@@ -94,7 +91,7 @@ namespace Stack {
     }
 
     func get_array_index{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Stack, stack_index: felt
+        self: model.Stack*, stack_index: felt
     ) -> felt {
         let stack_len = Stack.len(self);
         let array_index = stack_len - 1 - stack_index;
@@ -102,7 +99,7 @@ namespace Stack {
     }
 
     func print_element_at{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Stack, stack_index: felt
+        self: model.Stack*, stack_index: felt
     ) {
         let element = Stack.peek(self, stack_index);
         %{
@@ -112,7 +109,7 @@ namespace Stack {
         return ();
     }
 
-    func dump{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(self: model.Stack) {
+    func dump{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(self: model.Stack*) {
         let stack_len = Stack.len(self);
         if (stack_len == 0) {
             return ();
@@ -123,7 +120,7 @@ namespace Stack {
     }
 
     func inner_dump{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Stack, stack_index: felt, last_index: felt
+        self: model.Stack*, stack_index: felt, last_index: felt
     ) {
         Stack.print_element_at(self, stack_index);
         if (stack_index == last_index) {

@@ -22,13 +22,16 @@ namespace model {
         program_counter: felt,
         stopped: felt,
         return_data: felt*,
-        steps: model.ExecutionStep*,
+        stack: Stack*,
     }
 
-    struct ExecutionStep {
-        pc: felt,
-        opcode: felt,
-        gas: felt,
-        stack: model.Stack,
+    struct ExecutionContextTest {
+        code: felt*,
+        code_len: felt,
+        calldata: felt*,
+        program_counter: felt,
+        stopped: felt,
+        return_data: felt*,
+        stack: Stack*,
     }
 }

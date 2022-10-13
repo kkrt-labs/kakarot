@@ -14,6 +14,7 @@ from openzeppelin.access.ownable.library import Ownable
 from kakarot.model import model
 from kakarot.instructions import EVMInstructions
 from kakarot.execution_context import ExecutionContext
+from kakarot.stack import Stack
 from utils.utils import Helpers
 
 namespace Kakarot {
@@ -43,16 +44,12 @@ namespace Kakarot {
     }
 
     func run{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        instructions: felt*, ctx_ptr: model.ExecutionContext*
+        instructions: felt*, ctx: model.ExecutionContext*
     ) -> model.ExecutionContext* {
         alloc_locals;
 
         // decode and execute
-        let ctx_ptr: model.ExecutionContext* = EVMInstructions.decode_and_execute(
-            instructions, ctx_ptr
-        );
-
-        let ctx = [ctx_ptr];
+        let ctx: model.ExecutionContext* = EVMInstructions.decode_and_execute(instructions, ctx);
 
         // for debugging purpose
         ExecutionContext.dump(ctx);
@@ -62,11 +59,11 @@ namespace Kakarot {
 
         // terminate execution
         if (stopped == TRUE) {
-            return ctx_ptr;
+            return ctx;
         }
 
         // continue execution
-        return run(instructions, ctx_ptr);
+        return run(instructions, ctx);
     }
 }
 
@@ -74,19 +71,22 @@ namespace internal {
     func init_execution_context{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         code: felt*, calldata: felt*
     ) -> model.ExecutionContext* {
+        alloc_locals;
         let (empty_return_data: felt*) = alloc();
         let initial_pc = 0;
 
-        let (steps: model.ExecutionStep*) = alloc();
+        let stack: model.Stack* = Stack.init();
 
-        return new model.ExecutionContext(
+        local ctx: model.ExecutionContext* = new model.ExecutionContext(
             code=code,
-            code_len=Helpers.get_len(code),  // lessgooooooo
+            code_len=Helpers.get_len(code),
             calldata=calldata,
             program_counter=initial_pc,
             stopped=FALSE,
             return_data=empty_return_data,
-            steps=steps,
+            stack=stack,
             );
+
+        return ctx;
     }
 }

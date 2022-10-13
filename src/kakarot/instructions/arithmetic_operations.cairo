@@ -28,13 +28,12 @@ namespace ArithmeticOperations {
     // Since: Frontier
     // Group: Stop and Arithmetic Operations
     func exec_add{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
+        ctx: model.ExecutionContext*
     ) -> model.ExecutionContext* {
         alloc_locals;
-        let ctx = [ctx_ptr];
         %{ print("0x01 - ADD") %}
 
-        let stack = ExecutionContext.get_stack(ctx);
+        let stack = ctx.stack;
 
         Stack.dump(stack);
 
@@ -49,14 +48,12 @@ namespace ArithmeticOperations {
 
         // Stack output:
         // a + b: integer result of the addition modulo 2^256
-        let stack: model.Stack = Stack.push(stack, result);
+        let stack: model.Stack* = Stack.push(stack, result);
 
         Stack.dump(stack);
 
         // update context
-        // TODO: compute actual values
-        let step: model.ExecutionStep = model.ExecutionStep(pc=0, opcode=0, gas=0, stack=stack);
-        ExecutionContext.add_step(ctx, step);
-        return ctx_ptr;
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        return ctx;
     }
 }
