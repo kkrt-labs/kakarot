@@ -84,7 +84,7 @@ Then, install the dependencies:
 protostar install
 ```
 
-## ⛏️ Build
+## Build
 
 ```bash
 protostar build
