@@ -104,7 +104,7 @@ namespace ArithmeticOperations {
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_ADD);
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MUL);
         return ctx;
     }
 

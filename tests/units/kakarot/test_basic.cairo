@@ -24,7 +24,7 @@ func __setup__{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 }
 
 @external
-func test_basic_add{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+func test_arithmetic_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
 
     print_banner();
@@ -41,7 +41,7 @@ func test_basic_add{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
 
     // Assert value on the top of the stack
-    test_utils.assert_top_stack(ctx, (1460 / ((((5 - 1) + 3) + 2 ** 8 + 102) * 2)) / 2);
+    test_utils.assert_top_stack(ctx, 1);
 
     return ();
 }
