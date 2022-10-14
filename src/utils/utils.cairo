@@ -137,7 +137,7 @@ namespace Helpers {
         return res;
     }
 
-    func get_last_or_default(array: felt*, default_value: felt) -> (res: felt) {
+    func get_last_or_default(array: felt*, default_value: felt) -> felt {
         tempvar res;
         %{
             if py_has_entries(ids.array):
