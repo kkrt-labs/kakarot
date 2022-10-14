@@ -15,7 +15,7 @@ This document describes the opcodes supported by Kakarot.
 | 0x05         | SDIV        | Signed integer division operation (truncated)    | ✅          |
 | 0x06         | MOD         | Modulo remainder operation                       | ✅          |
 | 0x07         | SMOD        | Signed modulo remainder operation                | ✅          |
-| 0x08         | ADDMOD      | Modulo addition operation                        |             |
+| 0x08         | ADDMOD      | Modulo addition operation                        | ✅          |
 | 0x09         | MULMOD      | Modulo multiplication operation                  |             |
 | 0x0a         | EXP         | Exponential operation                            |             |
 | 0x0b         | SIGNEXTEND  | Extend length of two's complement signed integer |             |
