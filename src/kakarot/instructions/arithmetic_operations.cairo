@@ -243,7 +243,7 @@ namespace ArithmeticOperations {
         let (stack, a) = Stack.pop(stack);
         let (stack, b) = Stack.pop(stack);
 
-        // Compute the division
+        // Compute the modulo
         let (_result, rem) = SafeUint256.div_rem(a, b);
 
         // Stack output:
@@ -252,7 +252,7 @@ namespace ArithmeticOperations {
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SDIV);
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MOD);
         return ctx;
     }
 }
