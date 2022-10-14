@@ -21,25 +21,25 @@ Hence, Kakarot can be used to run Ethereum smart contracts on StarkNet.
 Kakarot is the ultimate ZK-EVM 🫶!
 It is a work in progress, and it is not ready for production.
 
-[Getting started](#%EF%B8%8F-getting-started) •
-[Supported opced](#%F0%9F%A7%AA-supported-opcodes) •
-[Build](#%EF%B8%8F-build) •
-[Test](#%EF%B8%8F-test)
+[Getting started](#getting-started) •
+[Supported opcodes](#supported-opcodes) •
+[Build](#build) •
+[Test](#test)
 
 </div>
 
-## ⚙️ Getting started
+## Getting started
 
 ![Tutorial](resources/img/kakarot.gif)
 
-## 🧪 Supported opcodes
+## Supported opcodes
 
 Here is the list of supported opcodes: [opcodes](docs/supported_opcodes.md)
 
 For the moment the list is maintained manually, but it will likely be generated automatically in the future. If you want to contribute, you can help us by adding the missing opcodes.
 And if you implement a new opcode, please update the list.
 
-## 📚 Documentation
+## Documentation
 
 Execution of a simple EVM bytecode program on Kakarot.
 
@@ -72,7 +72,7 @@ Here is the execution trace of the program on Kakarot:
 
 ![Tutorial](resources/img/sample_execution.png)
 
-## 🧩 Installation
+## Installation
 
 Install the requirements:
 
@@ -90,7 +90,7 @@ protostar install
 protostar build
 ```
 
-## 🌡️ Test
+## Test
 
 ```bash
 # Run all tests
@@ -103,7 +103,7 @@ protostar test tests/units
 protostar test tests/integrations
 ```
 
-## 🐛 Debug
+## Debug
 
 Start the debug server:
 
@@ -114,7 +114,7 @@ python3 tests/debug/debug_server.py
 DEBUG=True protostar test
 ```
 
-## 🚀 Deployment
+## Deploy
 
 ```bash
 # On testnet
@@ -132,7 +132,7 @@ Contract addresses will be logged into the prompt.
 
 To manage inputs sent to constructor during the deployment, you can customize the [config files](./scripts/configs/).
 
-## 📄 License
+## License
 
 **kakarot** is released under the [MIT](LICENSE).
 
