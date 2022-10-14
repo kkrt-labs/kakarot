@@ -2,7 +2,7 @@
 
 This document describes the opcodes supported by Kakarot.
 
-**Summary: 53 / 142 opcodes supported.**
+**Summary: 55 / 142 opcodes supported.**
 
 ## Arithmetic operations
 
@@ -13,8 +13,8 @@ This document describes the opcodes supported by Kakarot.
 | 0x03         | SUB         | Subtraction operation                            | ✅          |
 | 0x04         | DIV         | Integer division operation                       | ✅          |
 | 0x05         | SDIV        | Signed integer division operation (truncated)    | ✅          |
-| 0x06         | MOD         | Modulo remainder operation                       |             |
-| 0x07         | SMOD        | Signed modulo remainder operation                |             |
+| 0x06         | MOD         | Modulo remainder operation                       | ✅          |
+| 0x07         | SMOD        | Signed modulo remainder operation                | ✅          |
 | 0x08         | ADDMOD      | Modulo addition operation                        |             |
 | 0x09         | MULMOD      | Modulo multiplication operation                  |             |
 | 0x0a         | EXP         | Exponential operation                            |             |
