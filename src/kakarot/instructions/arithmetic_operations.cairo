@@ -23,7 +23,7 @@ from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 
 // @title Arithmetic operations opcodes.
-// @notice This contract contains the functions to execute for arithemetic operations opcodes.
+// @notice This contract contains the functions to execute for arithmetic operations opcodes.
 // @author @abdelhamidbakhta
 // @custom:namespace ArithmeticOperations
 namespace ArithmeticOperations {

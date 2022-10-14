@@ -2,6 +2,8 @@
 
 This document describes the opcodes supported by Kakarot.
 
+**Summary: 53 / 142 opcodes supported.**
+
 ## Arithmetic operations
 
 | Opcode Value | Opcode Name | Description                                      | Implemented |
@@ -136,22 +138,22 @@ This document describes the opcodes supported by Kakarot.
 
 | Opcode Value | Opcode Name | Description               | Implemented |
 | ------------ | ----------- | ------------------------- | ----------- |
-| 0x80         | DUP1        | Duplicate 1st stack item  |             |
-| 0x81         | DUP2        | Duplicate 2nd stack item  |             |
-| 0x82         | DUP3        | Duplicate 3rd stack item  |             |
-| 0x83         | DUP4        | Duplicate 4th stack item  |             |
-| 0x84         | DUP5        | Duplicate 5th stack item  |             |
-| 0x85         | DUP6        | Duplicate 6th stack item  |             |
-| 0x86         | DUP7        | Duplicate 7th stack item  |             |
-| 0x87         | DUP8        | Duplicate 8th stack item  |             |
-| 0x88         | DUP9        | Duplicate 9th stack item  |             |
-| 0x89         | DUP10       | Duplicate 10th stack item |             |
-| 0x8a         | DUP11       | Duplicate 11th stack item |             |
-| 0x8b         | DUP12       | Duplicate 12th stack item |             |
-| 0x8c         | DUP13       | Duplicate 13th stack item |             |
-| 0x8d         | DUP14       | Duplicate 14th stack item |             |
-| 0x8e         | DUP15       | Duplicate 15th stack item |             |
-| 0x8f         | DUP16       | Duplicate 16th stack item |             |
+| 0x80         | DUP1        | Duplicate 1st stack item  | ✅          |
+| 0x81         | DUP2        | Duplicate 2nd stack item  | ✅          |
+| 0x82         | DUP3        | Duplicate 3rd stack item  | ✅          |
+| 0x83         | DUP4        | Duplicate 4th stack item  | ✅          |
+| 0x84         | DUP5        | Duplicate 5th stack item  | ✅          |
+| 0x85         | DUP6        | Duplicate 6th stack item  | ✅          |
+| 0x86         | DUP7        | Duplicate 7th stack item  | ✅          |
+| 0x87         | DUP8        | Duplicate 8th stack item  | ✅          |
+| 0x88         | DUP9        | Duplicate 9th stack item  | ✅          |
+| 0x89         | DUP10       | Duplicate 10th stack item | ✅          |
+| 0x8a         | DUP11       | Duplicate 11th stack item | ✅          |
+| 0x8b         | DUP12       | Duplicate 12th stack item | ✅          |
+| 0x8c         | DUP13       | Duplicate 13th stack item | ✅          |
+| 0x8d         | DUP14       | Duplicate 14th stack item | ✅          |
+| 0x8e         | DUP15       | Duplicate 15th stack item | ✅          |
+| 0x8f         | DUP16       | Duplicate 16th stack item | ✅          |
 
 ## Exchange Operations
 
