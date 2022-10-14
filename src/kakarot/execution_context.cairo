@@ -13,7 +13,9 @@ from starkware.cairo.common.memcpy import memcpy
 // Internal dependencies
 from utils.utils import Helpers
 from kakarot.model import model
+from kakarot.memory import Memory
 from kakarot.stack import Stack
+from kakarot.constants import Constants
 
 // @title ExecutionContext related functions.
 // @notice This file contains functions related to the execution context.
@@ -21,6 +23,63 @@ from kakarot.stack import Stack
 // @custom:namespace ExecutionContext
 // @custom:model model.ExecutionContext
 namespace ExecutionContext {
+    // @notice Initialize the execution context.
+    // @param code The code to execute.
+    // @param calldata The calldata.
+    // @return The initialized execution context.
+    func init{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        code: felt*, calldata: felt*
+    ) -> model.ExecutionContext* {
+        alloc_locals;
+        let (empty_return_data: felt*) = alloc();
+
+        // Define initial program counter
+        let initial_pc = 0;
+        let gas_used = 0;
+        // TODO: Add support for gas limit
+        let gas_limit = 0;
+
+        let stack: model.Stack* = Stack.init();
+        let memory: model.Memory* = Memory.init();
+
+        local ctx: model.ExecutionContext* = new model.ExecutionContext(
+            code=code,
+            code_len=Helpers.get_len(code),
+            calldata=calldata,
+            program_counter=initial_pc,
+            stopped=FALSE,
+            return_data=empty_return_data,
+            stack=stack,
+            memory=memory,
+            gas_used=gas_used,
+            gas_limit=gas_limit,
+            intrinsic_gas_cost=0,
+            );
+        return ctx;
+    }
+
+    // @notice Compute the intrinsic gas cost of the current transaction.
+    // @dev Update the given execution context with the intrinsic gas cost.
+    // @param self The execution context.
+    // @return The updated execution context.
+    func compute_intrinsic_gas_cost(self: model.ExecutionContext*) -> model.ExecutionContext* {
+        let intrinsic_gas_cost = Constants.TRANSACTION_INTRINSIC_GAS_COST;
+        let gas_used = self.gas_used + intrinsic_gas_cost;
+        return new model.ExecutionContext(
+            code=self.code,
+            code_len=self.code_len,
+            calldata=self.calldata,
+            program_counter=self.program_counter,
+            stopped=self.stopped,
+            return_data=self.return_data,
+            stack=self.stack,
+            memory=self.memory,
+            gas_used=gas_used,
+            gas_limit=self.gas_limit,
+            intrinsic_gas_cost=intrinsic_gas_cost,
+            );
+    }
+
     // @notice Return whether the current execution context is stopped.
     // @dev When the execution context is stopped, no more instructions can be executed.
     // @param self The pointer to the execution context.
@@ -46,7 +105,8 @@ namespace ExecutionContext {
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,
-            gas_limit=self.gas_limit
+            gas_limit=self.gas_limit,
+            intrinsic_gas_cost=self.intrinsic_gas_cost,
             );
     }
 
@@ -87,7 +147,8 @@ namespace ExecutionContext {
             stack=new_stack,
             memory=self.memory,
             gas_used=self.gas_used,
-            gas_limit=self.gas_limit
+            gas_limit=self.gas_limit,
+            intrinsic_gas_cost=self.intrinsic_gas_cost,
             );
     }
 
@@ -109,7 +170,8 @@ namespace ExecutionContext {
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,
-            gas_limit=self.gas_limit
+            gas_limit=self.gas_limit,
+            intrinsic_gas_cost=self.intrinsic_gas_cost,
             );
     }
 
@@ -131,7 +193,8 @@ namespace ExecutionContext {
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used + inc_value,
-            gas_limit=self.gas_limit
+            gas_limit=self.gas_limit,
+            intrinsic_gas_cost=self.intrinsic_gas_cost,
             );
     }
 
@@ -160,8 +223,9 @@ namespace ExecutionContext {
 
         %{
             print("===================================")
-            print(f"PC: {ids.pc}")
-            print(f"GAS USED: {ids.self.gas_used}")
+            print(f"PROGRAM COUNTER:\t{ids.pc}")
+            print(f"INTRINSIC GAS:\t\t{ids.self.intrinsic_gas_cost}")
+            print(f"GAS USED:\t\t{ids.self.gas_used}")
             print("*************STACK*****************")
         %}
         Stack.dump(self.stack);

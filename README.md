@@ -31,6 +31,39 @@ It is a work in progress, and it is not ready for production.
 
 ![Tutorial](resources/img/kakarot.gif)
 
+## 📚 Documentation
+
+Execution of a simple EVM bytecode program on Kakarot.
+
+The bytecode is the following:
+
+```
+6001600503600301610166016002026105b40460020500
+```
+
+Which corresponds to the following EVM program:
+
+```
+0x60 - PUSH1
+0x60 - PUSH1
+0x03 - SUB
+0x60 - PUSH1
+0x01 - ADD
+0x61 - PUSH2
+0x01 - ADD
+0x60 - PUSH1
+0x02 - MUL
+0x61 - PUSH2
+0x04 - DIV
+0x60 - PUSH1
+0x05 - SDIV
+0x00 - STOP
+```
+
+Here is the execution trace of the program on Kakarot:
+
+![Tutorial](resources/img/sample_execution.png)
+
 ## 🧩 Installation
 
 Install the requirements:
