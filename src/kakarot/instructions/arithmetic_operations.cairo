@@ -33,6 +33,7 @@ namespace ArithmeticOperations {
     const GAS_COST_SUB = 3;
     const GAS_COST_DIV = 5;
     const GAS_COST_SDIV = 5;
+    const GAS_COST_MOD = 5;
 
     // @notice 0x01 - ADD
     // @dev Addition operation
@@ -212,6 +213,42 @@ namespace ArithmeticOperations {
         // a / b: signed integer result of the division modulo 2^256
         let stack: model.Stack* = Stack.push(stack, result);
 
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SDIV);
+        return ctx;
+    }
+
+    // @notice 0x06 - MOD
+    // @dev Modulo operation
+    // @custom:since Frontier
+    // @custom:group Stop and Arithmetic Operations
+    // @custom:gas 5
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context.
+    // @return The pointer to the execution context.
+    func exec_mod{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx: model.ExecutionContext*
+    ) -> model.ExecutionContext* {
+        alloc_locals;
+        %{ print("0x06 - MOD") %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - a: number.
+        // 1 - b: modulo.
+        let (stack, a) = Stack.pop(stack);
+        let (stack, b) = Stack.pop(stack);
+
+        // Compute the division
+        let (_result, rem) = SafeUint256.div_rem(a, b);
+
+        // Stack output:
+        // a % b:  integer result of the a % b
+        let stack: model.Stack* = Stack.push(stack, rem);
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
