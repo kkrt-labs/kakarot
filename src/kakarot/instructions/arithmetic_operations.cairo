@@ -326,12 +326,12 @@ namespace ArithmeticOperations {
         let (_result, rem) = SafeUint256.div_rem(result, c);
 
         // Stack output:
-        //  integer result of a + b % c
+        // integer result of a + b % c
         let stack: model.Stack* = Stack.push(stack, rem);
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SMOD);
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_ADDMOD);
         return ctx;
     }
 
@@ -363,7 +363,7 @@ namespace ArithmeticOperations {
         // Compute the addition
         let (result) = SafeUint256.mul(a, b);
         // Compute the modulo
-        let (_result, rem) = uint256_signed_div_rem(result, c);
+        let (_result, rem) = SafeUint256.div_rem(result, c);
 
         // Stack output:
         // integer result of the a * b % c
@@ -371,7 +371,7 @@ namespace ArithmeticOperations {
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_ADDMOD);
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MULMOD);
         return ctx;
     }
 }
