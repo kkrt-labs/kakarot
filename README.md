@@ -11,6 +11,7 @@
 ![GitHub contributors](https://img.shields.io/github/contributors/abdelhamidbakhta/kakarot?logo=github&style=flat-square)
 ![Lines of code](https://img.shields.io/tokei/lines/github/abdelhamidbakhta/kakarot?style=flat-square)
 ![Discord](https://img.shields.io/discord/595666850260713488?color=purple&logo=discord&style=flat-square)
+![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
 ![GitHub Repo stars](https://img.shields.io/github/stars/abdelhamidbakhta/kakarot?style=social)
 
 <div align="center">
@@ -30,6 +31,10 @@ It is a work in progress, and it is not ready for production.
 ## ⚙️ Getting started
 
 ![Tutorial](resources/img/kakarot.gif)
+
+## 🧪 Supported opcodes
+
+Here is the list of supported opcodes: [opcodes](docs/supported_opcodes.md)
 
 ## 📚 Documentation
 
