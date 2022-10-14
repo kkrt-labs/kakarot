@@ -11,7 +11,7 @@ from starkware.cairo.common.invoke import invoke
 from starkware.cairo.common.math import assert_nn
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.registers import get_label_location
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, uint256_signed_div_rem
 
 // Project dependencies
 from openzeppelin.security.safemath.library import SafeUint256
@@ -32,6 +32,7 @@ namespace ArithmeticOperations {
     const GAS_COST_MUL = 5;
     const GAS_COST_SUB = 3;
     const GAS_COST_DIV = 5;
+    const GAS_COST_SDIV = 5;
 
     // @notice 0x01 - ADD
     // @dev Addition operation
@@ -130,11 +131,11 @@ namespace ArithmeticOperations {
         let (stack, a) = Stack.pop(stack);
         let (stack, b) = Stack.pop(stack);
 
-        // Compute the addition
+        // Compute the subtraction
         let (result) = SafeUint256.sub_le(a, b);
 
         // Stack output:
-        // a - b: integer result of the addition modulo 2^256
+        // a - b: integer result of the subtraction modulo 2^256
         let stack: model.Stack* = Stack.push(stack, result);
 
         // Update context stack.
@@ -148,7 +149,7 @@ namespace ArithmeticOperations {
     // @dev Division operation
     // @custom:since Frontier
     // @custom:group Stop and Arithmetic Operations
-    // @custom:gas 3
+    // @custom:gas 5
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
@@ -162,22 +163,59 @@ namespace ArithmeticOperations {
         let stack = ctx.stack;
 
         // Stack input:
-        // 0 - a: first integer value to sub.
-        // 1 - b: second integer value to sub.
+        // 0 - a: numerator.
+        // 1 - b: denominator.
         let (stack, a) = Stack.pop(stack);
         let (stack, b) = Stack.pop(stack);
 
-        // Compute the addition
+        // Compute the division
         let (result, _rem) = SafeUint256.div_rem(a, b);
 
         // Stack output:
-        // a - b: integer result of the addition modulo 2^256
+        // a / b: integer result of the division modulo 2^256
         let stack: model.Stack* = Stack.push(stack, result);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SUB);
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_DIV);
+        return ctx;
+    }
+
+    // @notice 0x05 - SDIV
+    // @dev Signed division operation
+    // @custom:since Frontier
+    // @custom:group Stop and Arithmetic Operations
+    // @custom:gas 5
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context.
+    // @return The pointer to the execution context.
+    func exec_sdiv{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx: model.ExecutionContext*
+    ) -> model.ExecutionContext* {
+        alloc_locals;
+        %{ print("0x05 - SDIV") %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - a: numerator.
+        // 1 - b: denominator.
+        let (stack, a) = Stack.pop(stack);
+        let (stack, b) = Stack.pop(stack);
+
+        // Compute the division
+        let (result, _rem) = uint256_signed_div_rem(a, b);
+
+        // Stack output:
+        // a / b: signed integer result of the division modulo 2^256
+        let stack: model.Stack* = Stack.push(stack, result);
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SDIV);
         return ctx;
     }
 }
