@@ -24,6 +24,7 @@ from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 from kakarot.instructions.push_operations import PushOperations
 from kakarot.instructions.arithmetic_operations import ArithmeticOperations
+from kakarot.instructions.duplication_operations import DuplicationOperations
 
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.
@@ -52,7 +53,7 @@ namespace EVMInstructions {
 
         %{
             # Check if pc > len(code) and process it as a STOP if true
-            if ids.pc > ids.ctx.code_len:
+            if ids.pc >= ids.ctx.code_len:
                 ids.opcode = 0
             else:
                 ids.opcode = memory[ids.ctx.code + ids.pc]
@@ -205,6 +206,24 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x7d, PushOperations.exec_push30);
         add_instruction(instructions, 0x7e, PushOperations.exec_push31);
         add_instruction(instructions, 0x7f, PushOperations.exec_push32);
+
+        // Add 8s: Duplication operations
+        add_instruction(instructions, 0x80, DuplicationOperations.exec_dup1);
+        add_instruction(instructions, 0x81, DuplicationOperations.exec_dup2);
+        add_instruction(instructions, 0x82, DuplicationOperations.exec_dup3);
+        add_instruction(instructions, 0x83, DuplicationOperations.exec_dup4);
+        add_instruction(instructions, 0x84, DuplicationOperations.exec_dup5);
+        add_instruction(instructions, 0x85, DuplicationOperations.exec_dup6);
+        add_instruction(instructions, 0x86, DuplicationOperations.exec_dup7);
+        add_instruction(instructions, 0x87, DuplicationOperations.exec_dup8);
+        add_instruction(instructions, 0x88, DuplicationOperations.exec_dup9);
+        add_instruction(instructions, 0x89, DuplicationOperations.exec_dup10);
+        add_instruction(instructions, 0x8a, DuplicationOperations.exec_dup11);
+        add_instruction(instructions, 0x8b, DuplicationOperations.exec_dup12);
+        add_instruction(instructions, 0x8c, DuplicationOperations.exec_dup13);
+        add_instruction(instructions, 0x8d, DuplicationOperations.exec_dup14);
+        add_instruction(instructions, 0x8e, DuplicationOperations.exec_dup15);
+        add_instruction(instructions, 0x8f, DuplicationOperations.exec_dup16);
 
         return instructions;
     }
