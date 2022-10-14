@@ -35,6 +35,7 @@ namespace ArithmeticOperations {
     const GAS_COST_SDIV = 5;
     const GAS_COST_MOD = 5;
     const GAS_COST_SMOD = 5;
+    const GAS_COST_ADDMOD = 8;
 
     // @notice 0x01 - ADD
     // @dev Addition operation
@@ -290,6 +291,46 @@ namespace ArithmeticOperations {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SMOD);
+        return ctx;
+    }
+
+    // @notice 0x08 - ADDMOD
+    // @dev Addition modulo operation
+    // @custom:since Frontier
+    // @custom:group Stop and Arithmetic Operations
+    // @custom:gas 8
+    // @custom:stack_consumed_elements 3
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context.
+    // @return The pointer to the execution context.
+    func exec_addmod{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx: model.ExecutionContext*
+    ) -> model.ExecutionContext* {
+        alloc_locals;
+        %{ print("0x08 - ADDMOD") %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - a: number.
+        // 1 - b: number.
+        // 1 - c: modulo.
+        let (stack, a) = Stack.pop(stack);
+        let (stack, b) = Stack.pop(stack);
+        let (stack, c) = Stack.pop(stack);
+
+        // Compute the addition
+        let (result) = SafeUint256.add(a, b);
+        // Compute the modulo
+        let (_result, rem) = SafeUint256.div_rem(result, c);
+
+        // Stack output:
+        // integer result of a + b % c
+        let stack: model.Stack* = Stack.push(stack, rem);
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_ADDMOD);
         return ctx;
     }
 }
