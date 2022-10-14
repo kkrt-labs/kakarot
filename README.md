@@ -35,6 +35,8 @@ It is a work in progress, and it is not ready for production.
 
 ## Supported opcodes
 
+**Summary: 53 / 142 opcodes supported.**
+
 Here is the list of supported opcodes: [opcodes](docs/supported_opcodes.md)
 
 For the moment the list is maintained manually, but it will likely be generated automatically in the future. If you want to contribute, you can help us by adding the missing opcodes.

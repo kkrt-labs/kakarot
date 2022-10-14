@@ -1,4 +1,4 @@
-# Kakarot supported VM opcodes 🧪
+# Kakarot supported EVM opcodes 🧪
 
 This document describes the opcodes supported by Kakarot.
 
