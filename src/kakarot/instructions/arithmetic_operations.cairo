@@ -29,6 +29,7 @@ from kakarot.stack import Stack
 namespace ArithmeticOperations {
     // Define constants.
     const GAS_COST_ADD = 3;
+    const GAS_COST_MUL = 5;
 
     // @notice 0x00 - ADD
     // @dev Addition operation
@@ -58,6 +59,43 @@ namespace ArithmeticOperations {
 
         // Stack output:
         // a + b: integer result of the addition modulo 2^256
+        let stack: model.Stack* = Stack.push(stack, result);
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_ADD);
+        return ctx;
+    }
+
+    // @notice 0x00 - MUL
+    // @dev Multiplication operation
+    // @custom:since Frontier
+    // @custom:group Stop and Arithmetic Operations
+    // @custom:gas 5
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context.
+    // @return The pointer to the execution context.
+    func exec_mul{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx: model.ExecutionContext*
+    ) -> model.ExecutionContext* {
+        alloc_locals;
+        %{ print("0x02 - MUL") %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - a: first integer value to multiply.
+        // 1 - b: second integer value to multiply.
+        let (stack, a) = Stack.pop(stack);
+        let (stack, b) = Stack.pop(stack);
+
+        // Compute the multiplication
+        let (result) = SafeUint256.mul(a, b);
+
+        // Stack output:
+        // a * b: integer result of the addition modulo 2^256
         let stack: model.Stack* = Stack.push(stack, result);
 
         // Update context stack.

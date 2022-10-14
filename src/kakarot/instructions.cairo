@@ -163,6 +163,7 @@ namespace EVMInstructions {
         add_instruction(instructions, 0, exec_stop);
         // 0x01 - ADD
         add_instruction(instructions, 1, ArithmeticOperations.exec_add);
+        add_instruction(instructions, 2, ArithmeticOperations.exec_mul);
 
         // Add 6s: Push operations
         add_instruction(instructions, 0x60, PushOperations.exec_push1);
