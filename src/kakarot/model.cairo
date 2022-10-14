@@ -31,5 +31,6 @@ namespace model {
         memory: Memory*,
         gas_used: felt,
         gas_limit: felt,
+        intrinsic_gas_cost: felt,
     }
 }
