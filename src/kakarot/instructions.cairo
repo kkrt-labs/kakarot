@@ -178,6 +178,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 7, ArithmeticOperations.exec_smod);
         // 0x08 - ADDMOD
         add_instruction(instructions, 8, ArithmeticOperations.exec_addmod);
+        // 0x09 - MULMOD
+        add_instruction(instructions, 9, ArithmeticOperations.exec_mulmod);
 
         // Add 6s: Push operations
         add_instruction(instructions, 0x60, PushOperations.exec_push1);
