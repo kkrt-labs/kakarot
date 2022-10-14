@@ -22,7 +22,7 @@ Kakarot is the ultimate ZK-EVM 🫶!
 It is a work in progress, and it is not ready for production.
 
 [Getting started](#%EF%B8%8F-getting-started) •
-[Installation](#%F0%9F%A7%A9-installation) •
+[Supported opced](#%F0%9F%A7%AA-supported-opcodes) •
 [Build](#%EF%B8%8F-build) •
 [Test](#%EF%B8%8F-test)
 
