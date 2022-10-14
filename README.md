@@ -24,7 +24,8 @@ It is a work in progress, and it is not ready for production.
 [Getting started](#getting-started) •
 [Supported opcodes](#supported-opcodes) •
 [Build](#build) •
-[Test](#test)
+[Test](#test) .
+[Report a bug](https://github.com/abdelhamidbakhta/kakarot/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+)
 
 </div>
 
@@ -135,6 +136,19 @@ To manage inputs sent to constructor during the deployment, you can customize th
 ## License
 
 **kakarot** is released under the [MIT](LICENSE).
+
+## Security
+
+Kakarot follows good practices of security, but 100% security cannot be assured.
+Kakarot is provided **"as is"** without any **warranty**. Use at your own risk.
+
+_For more information and to report security issues, please refer to our [security documentation](docs/SECURITY.md)._
+
+## Contributing
+
+First off, thanks for taking the time to contribute! Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make will benefit everybody else and are **greatly appreciated**.
+
+Please read [our contribution guidelines](docs/CONTRIBUTING.md), and thank you for being involved!
 
 ## Contributors
 
