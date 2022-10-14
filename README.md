@@ -3,7 +3,7 @@
 </p>
 <div align="center">
   <h1 align="center">Kakarot</h1>
-  <h3 align="center">EVM interpreter written in Cairo.</h3>
+  <h3 align="center">EVM interpreter written in Cairo, a sort of ZK-EVM emulator, leveraging STARK proof system.</h3>
 </div>
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/abdelhamidbakhta/kakarot/TESTS?style=flat-square&logo=github)
