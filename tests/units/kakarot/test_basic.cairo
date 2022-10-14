@@ -40,6 +40,7 @@ func test_arithmetic_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, 
     // Run EVM execution
     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
 
+    // ((1460 / ((((5 - 1) + 3) + 2 ** 8 + 102) * 2)) / 2) * 4 % 3
     // Assert value on the top of the stack
     test_utils.assert_top_stack(ctx, 1);
 
