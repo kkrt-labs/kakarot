@@ -36,6 +36,9 @@ It is a work in progress, and it is not ready for production.
 
 Here is the list of supported opcodes: [opcodes](docs/supported_opcodes.md)
 
+For the moment the list is maintained manually, but it will likely be generated automatically in the future. If you want to contribute, you can help us by adding the missing opcodes.
+And if you implement a new opcode, please update the list.
+
 ## 📚 Documentation
 
 Execution of a simple EVM bytecode program on Kakarot.
