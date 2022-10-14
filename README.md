@@ -35,7 +35,7 @@ It is a work in progress, and it is not ready for production.
 
 ## Supported opcodes
 
-**Summary: 53 / 142 opcodes supported.**
+**Summary: 55 / 142 opcodes supported.**
 
 Here is the list of supported opcodes: [opcodes](docs/supported_opcodes.md)
 
