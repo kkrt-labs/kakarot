@@ -31,6 +31,15 @@
         "code",
         "test"
       ]
+    },
+    {
+      "login": "florian-bellotti",
+      "name": "Florian Bellotti",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7861901?v=4",
+      "profile": "https://github.com/florian-bellotti",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
