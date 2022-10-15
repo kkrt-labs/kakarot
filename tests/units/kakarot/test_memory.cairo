@@ -32,21 +32,5 @@ func test_memory{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     assert len = 3;
 
     Memory.dump(memory);
-
-    let (memory, element) = Memory.pop(memory);
-    assert element = Uint256(3, 0);
-    assert memory.raw_len = (len - 1) * 2;
-    return ();
-}
-
-@external
-func test_memory_underflow{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    alloc_locals;
-    Helpers.setup_python_defs();
-
-    let memory: model.Memory* = Memory.init();
-
-    %{ expect_revert("TRANSACTION_FAILED", "Kakarot: MemoryUnderflow") %}
-    let (memory, element) = Memory.pop(memory);
     return ();
 }

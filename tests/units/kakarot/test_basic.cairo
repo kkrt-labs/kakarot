@@ -101,7 +101,7 @@ func test_memory_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
 
     // Load test case
     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
-        './tests/cases/003.json'
+        './tests/cases/004.json'
     );
 
     // Run EVM execution

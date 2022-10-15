@@ -71,7 +71,8 @@ namespace test_utils {
         ctx: model.ExecutionContext*, expected_value: felt
     ) {
         alloc_locals;
-        let (memory, actual) = Memory.pop(ctx.memory);
+        let len = Memory.len(ctx.memory);
+        let actual = Memory.load(ctx.memory, len - 1);
         let expected_uint256 = Uint256(expected_value, 0);
         let (are_equal) = uint256_eq(actual, expected_uint256);
         assert are_equal = TRUE;

@@ -14,6 +14,7 @@ from kakarot.constants import Constants
 
 namespace MemoryOperations {
     const GAS_COST_MSTORE = 3;
+
     func exec_store{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         ctx: model.ExecutionContext*
     ) -> model.ExecutionContext* {
