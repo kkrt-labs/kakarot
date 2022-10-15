@@ -24,6 +24,7 @@ from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 from kakarot.instructions.push_operations import PushOperations
 from kakarot.instructions.arithmetic_operations import ArithmeticOperations
+from kakarot.instructions.comparison_operations import ComparisonOperations
 from kakarot.instructions.duplication_operations import DuplicationOperations
 
 // @title EVM instructions processing.
@@ -184,6 +185,11 @@ namespace EVMInstructions {
         add_instruction(instructions, 0xA, ArithmeticOperations.exec_exp);
         // 0x0B - SIGNEXTEND
         add_instruction(instructions, 0xB, ArithmeticOperations.exec_signextend);
+
+        // Comparison & bitwise logic operations
+        // 0x10 - LT
+        add_instruction(instructions, 0x10, ComparisonOperations.exec_lt);
+
 
         // Add 6s: Push operations
         add_instruction(instructions, 0x60, PushOperations.exec_push1);
