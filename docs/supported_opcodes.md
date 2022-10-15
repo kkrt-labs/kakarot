@@ -2,7 +2,7 @@
 
 This document describes the opcodes supported by Kakarot.
 
-**Summary: 55 / 142 opcodes supported.**
+**Summary: 56 / 142 opcodes supported.**
 
 ## Arithmetic operations
 
