@@ -76,7 +76,7 @@ namespace EVMInstructions {
         }
 
         // move program counter + 1 after opcode is read
-        local ctx: model.ExecutionContext* = ExecutionContext.increment_program_counter(ctx, 1);
+        let ctx = ExecutionContext.increment_program_counter(ctx, 1);
 
         // Read opcode in instruction set
         let function_codeoffset_felt = instructions[opcode];

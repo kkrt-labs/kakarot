@@ -82,45 +82,6 @@ namespace Memory {
         return element;
     }
 
-    // @notice Pop an element from the memory.
-    // @param self - The pointer to the memory.
-    // @return The new pointer to the memory.
-    // @return The popped element.
-    func pop{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Memory*
-    ) -> (new_memory: model.Memory*, element: Uint256) {
-        alloc_locals;
-        Memory.check_underlow(self, 0);
-        // Get last element
-        let len = Memory.len(self);
-        let element = self.elements[len - 1];
-        // Get new segment for next memory copy
-        let (new_elements: Uint256*) = alloc();
-        // Get length of new memory copy
-        let new_len = self.raw_len - element_size;
-        // Copy memory without last element
-        memcpy(dst=new_elements, src=self.elements, len=new_len);
-        // Create new memory
-        local new_memory: model.Memory* = new model.Memory(elements=new_elements, raw_len=new_len);
-        return (new_memory=new_memory, element=element);
-    }
-
-    // @notice Check memory underflow.
-    // @param self - The pointer to the memory.
-    // @param memory_index - The index of the element.
-    // @custom:revert if memory underflow.
-    func check_underlow{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Memory*, memory_index: felt
-    ) {
-        alloc_locals;
-        let memory_len = Memory.len(self);
-        // Revert if memory underflow
-        with_attr error_message("Kakarot: MemoryUnderflow") {
-            assert_lt_felt(memory_index, memory_len);
-        }
-        return ();
-    }
-
     // @notice Print the memory.
     // @param self - The pointer to the memory.
     func dump{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -156,7 +117,7 @@ namespace Memory {
     func print_element_at{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.Memory*, memory_index: felt
     ) {
-        let element: Uint256 = Memory.load(self, memory_index);
+        let element = Memory.load(self, memory_index);
         %{
             element_str = cairo_uint256_to_str(ids.element)
             print(f"{ids.memory_index} - {element_str}")
