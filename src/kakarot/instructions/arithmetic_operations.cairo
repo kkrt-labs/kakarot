@@ -38,6 +38,7 @@ namespace ArithmeticOperations {
     const GAS_COST_ADDMOD = 8;
     const GAS_COST_MULMOD = 8;
     const GAS_COST_EXP = 10;
+    const GAS_COST_SIGNEXTEND = 5;
 
     // @notice 0x01 - ADD
     // @dev Addition operation
@@ -430,5 +431,37 @@ namespace ArithmeticOperations {
             return res;
         }
         return zero_uint;
+    }
+
+    // @notice 0x0B - SIGNEXTEND
+    // @dev Exp operation
+    // @custom:since Frontier
+    // @custom:group Stop and Arithmetic Operations
+    // @custom:gas 5
+    // @custom:stack_consumed_elements 3
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context.
+    // @return The pointer to the execution context.
+    func exec_signextend{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx: model.ExecutionContext*
+    ) -> model.ExecutionContext* {
+        alloc_locals;
+        %{ print("0x0B - SIGNEXTEND") %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - a: number.
+        // 1 - b: exponent.
+        let (stack, b) = Stack.pop(stack);
+        let (stack, x) = Stack.pop(stack);
+
+        // Value is already a uint256
+        let stack: model.Stack* = Stack.push(stack, x);
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SIGNEXTEND);
+        return ctx;
     }
 }
