@@ -21,12 +21,11 @@ from openzeppelin.security.safemath.library import SafeUint256
 from kakarot.model import model
 from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
-from kakarot.stack import Stack
-from kakarot.memory import Memory
 from kakarot.instructions.push_operations import PushOperations
 from kakarot.instructions.arithmetic_operations import ArithmeticOperations
 from kakarot.instructions.comparison_operations import ComparisonOperations
 from kakarot.instructions.duplication_operations import DuplicationOperations
+from kakarot.instructions.memory_operations import MemoryOperations
 
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.
@@ -77,7 +76,7 @@ namespace EVMInstructions {
         }
 
         // move program counter + 1 after opcode is read
-        let ctx = ExecutionContext.increment_program_counter(ctx, 1);
+        local ctx: model.ExecutionContext* = ExecutionContext.increment_program_counter(ctx, 1);
 
         // Read opcode in instruction set
         let function_codeoffset_felt = instructions[opcode];
@@ -192,7 +191,7 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x10, ComparisonOperations.exec_lt);
 
         // 0x52 - MSTORE
-        add_instruction(instructions, 0x52, Memory.store);
+        add_instruction(instructions, 0x52, MemoryOperations.exec_store);
 
         // Add 6s: Push operations
         add_instruction(instructions, 0x60, PushOperations.exec_push1);
