@@ -22,6 +22,7 @@ from kakarot.model import model
 from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
+from kakarot.memory import Memory
 from kakarot.instructions.push_operations import PushOperations
 from kakarot.instructions.arithmetic_operations import ArithmeticOperations
 from kakarot.instructions.comparison_operations import ComparisonOperations
@@ -190,6 +191,8 @@ namespace EVMInstructions {
         // 0x10 - LT
         add_instruction(instructions, 0x10, ComparisonOperations.exec_lt);
 
+        // 0x52 - MSTORE
+        add_instruction(instructions, 0x52, Memory.store);
 
         // Add 6s: Push operations
         add_instruction(instructions, 0x60, PushOperations.exec_push1);
