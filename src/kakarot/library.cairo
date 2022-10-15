@@ -4,19 +4,15 @@
 
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.bool import TRUE, FALSE
-from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.bool import TRUE
 
 // OpenZeppelin dependencies
 from openzeppelin.access.ownable.library import Ownable
 
 // Internal dependencies
 from kakarot.model import model
-from kakarot.constants import Constants
 from kakarot.instructions import EVMInstructions
 from kakarot.execution_context import ExecutionContext
-from kakarot.stack import Stack
-from kakarot.memory import Memory
 from utils.utils import Helpers
 
 // @title Kakarot main library file.

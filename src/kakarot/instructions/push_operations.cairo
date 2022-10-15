@@ -3,18 +3,10 @@
 %lang starknet
 
 // Starkware dependencies
-from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.registers import get_fp_and_pc
-from starkware.cairo.common.bool import TRUE, FALSE
-from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.invoke import invoke
-from starkware.cairo.common.math import assert_nn
-from starkware.cairo.common.math_cmp import is_le
-from starkware.cairo.common.registers import get_label_location
-from starkware.cairo.common.uint256 import Uint256
 
-// Project dependencies
-from openzeppelin.security.safemath.library import SafeUint256
+from starkware.cairo.common.cairo_builtins import HashBuiltin
+
+from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
 from kakarot.model import model
