@@ -4,22 +4,16 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.registers import get_fp_and_pc, get_ap
-from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.invoke import invoke
 from starkware.cairo.common.math import assert_nn
-from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.bool import TRUE
+from starkware.cairo.common.registers import get_ap
 from starkware.cairo.common.registers import get_label_location
-from starkware.cairo.common.uint256 import Uint256
-
-// Project dependencies
-from openzeppelin.security.safemath.library import SafeUint256
 
 // Internal dependencies
 from kakarot.model import model
-from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.push_operations import PushOperations
 from kakarot.instructions.arithmetic_operations import ArithmeticOperations

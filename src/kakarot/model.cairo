@@ -3,11 +3,7 @@
 %lang starknet
 
 // StarkWare dependencies
-from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.uint256 import Uint256
-
-// Internal dependencies
-from utils.utils import Helpers
 
 namespace model {
     struct Stack {
