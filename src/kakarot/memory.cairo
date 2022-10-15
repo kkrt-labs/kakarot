@@ -7,7 +7,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import assert_lt_felt
-from starkware.cairo.common.math_cmp import is_not_zero
+from starkware.cairo.common.math_cmp import is_not_zero, is_le
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.memcpy import memcpy
 
@@ -32,14 +32,14 @@ namespace Memory {
     func init{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> model.Memory* {
         alloc_locals;
         let (elements: Uint256*) = alloc();
-        return new model.Memory(elements=elements, size=0);
+        return new model.Memory(elements=elements, raw_len=0);
     }
 
-    // @notice Returns the size of the memory.
-    // @dev The size is counted with the highest address that was accessed.
+    // @notice Returns the len of the memory.
+    // @dev The len is counted with the highest address that was accessed.
     // @param self - The pointer to the memory.
-    // @return The size of the memory.
-    func size{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    // @return The len of the memory.
+    func len{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.Memory*
     ) -> felt {
         let actual_len = self.raw_len / element_size;
@@ -57,8 +57,15 @@ namespace Memory {
         alloc_locals;
         let offset = offset * element_size;
         assert [self.elements + offset] = element;
+        let is_size_too_small = is_le(self.raw_len, offset);
+        local new_raw_len: felt;
+        if (is_size_too_small == 1) {
+            assert new_raw_len = offset + element_size;
+        } else {
+            new_raw_len = self.raw_len;
+        }
         // TODO: update size if offset > current size.
-        return new model.Memory(elements=self.elements, size=self.size);
+        return new model.Memory(elements=self.elements, raw_len=new_raw_len);
     }
 
     // @notice Load an element from the memory.
@@ -68,11 +75,78 @@ namespace Memory {
     // @return The loaded element.
     func load{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.Memory*, offset: felt
-    ) -> (memory: model.Memory*, element: Uint256) {
+    ) -> Uint256 {
         alloc_locals;
         // TODO: check that element exists.
         let element = self.elements[offset];
-        return (memory=self, element=element);
+        return element;
+    }
+
+    // @notice Pop an element from the memory.
+    // @param self - The pointer to the memory.
+    // @return The new pointer to the memory.
+    // @return The popped element.
+    func pop{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.Memory*
+    ) -> (new_memory: model.Memory*, element: Uint256) {
+        alloc_locals;
+        Memory.check_underlow(self, 0);
+        // Get last element
+        let len = Memory.len(self);
+        let element = self.elements[len - 1];
+        // Get new segment for next memory copy
+        let (new_elements: Uint256*) = alloc();
+        // Get length of new memory copy
+        let new_len = self.raw_len - element_size;
+        // Copy memory without last element
+        memcpy(dst=new_elements, src=self.elements, len=new_len);
+        // Create new memory
+        local new_memory: model.Memory* = new model.Memory(elements=new_elements, raw_len=new_len);
+        return (new_memory=new_memory, element=element);
+    }
+
+    // @notice Check memory underflow.
+    // @param self - The pointer to the memory.
+    // @param memory_index - The index of the element.
+    // @custom:revert if memory underflow.
+    func check_underlow{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.Memory*, memory_index: felt
+    ) {
+        alloc_locals;
+        let memory_len = Memory.len(self);
+        // Revert if memory underflow
+        with_attr error_message("Kakarot: MemoryUnderflow") {
+            assert_lt_felt(memory_index, memory_len);
+        }
+        return ();
+    }
+
+    // @notice Print the memory.
+    // @param self - The pointer to the memory.
+    func dump{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.Memory*
+    ) {
+        let memory_len = Memory.len(self);
+        if (memory_len == 0) {
+            return ();
+        }
+        let last_index = memory_len - 1;
+        inner_dump(self, 0, last_index);
+        return ();
+    }
+
+    // @notice Recursively print the memory.
+    // @param self - The pointer to the memory.
+    // @param memory_index - The index of the element.
+    // @param last_index - The index of the last element.
+    func inner_dump{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.Memory*, memory_index: felt, last_index: felt
+    ) {
+        Memory.print_element_at(self, memory_index);
+        if (memory_index == last_index) {
+            return ();
+        }
+        return inner_dump(self, memory_index + 1, last_index);
     }
 
     // @notice Print the value of an element at a given memory index.
@@ -82,7 +156,7 @@ namespace Memory {
     func print_element_at{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.Memory*, memory_index: felt
     ) {
-        let element = Memory.load(self, memory_index);
+        let element: Uint256 = Memory.load(self, memory_index);
         %{
             element_str = cairo_uint256_to_str(ids.element)
             print(f"{ids.memory_index} - {element_str}")
