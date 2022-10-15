@@ -84,9 +84,9 @@ This document describes the opcodes supported by Kakarot.
 
 | Opcode Value | Opcode Name | Description                                                                                        | Implemented |
 | ------------ | ----------- | -------------------------------------------------------------------------------------------------- | ----------- |
-| 0x50         | POP         | Remove item from stack                                                                             |             |
-| 0x51         | MLOAD       | Load word from memory                                                                              |             |
-| 0x52         | MSTORE      | Save word to memory                                                                                |             |
+| 0x50         | POP         | Remove item from stack                                                                             | ✅          |
+| 0x51         | MLOAD       | Load word from memory                                                                              | ✅          |
+| 0x52         | MSTORE      | Save word to memory                                                                                | ✅          |
 | 0x53         | MSTORE8     | Save byte to memory                                                                                |             |
 | 0x54         | SLOAD       | Load word from storage                                                                             |             |
 | 0x55         | SSTORE      | Save word to storage                                                                               |             |
