@@ -11,7 +11,7 @@ from starkware.cairo.common.invoke import invoke
 from starkware.cairo.common.math import assert_nn
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.registers import get_label_location
-from starkware.cairo.common.uint256 import Uint256, uint256_signed_div_rem
+from starkware.cairo.common.uint256 import Uint256, uint256_signed_div_rem, uint256_le, uint256_eq
 
 // Project dependencies
 from openzeppelin.security.safemath.library import SafeUint256
@@ -37,6 +37,7 @@ namespace ArithmeticOperations {
     const GAS_COST_SMOD = 5;
     const GAS_COST_ADDMOD = 8;
     const GAS_COST_MULMOD = 8;
+    const GAS_COST_EXP = 10;
 
     // @notice 0x01 - ADD
     // @dev Addition operation
@@ -373,5 +374,61 @@ namespace ArithmeticOperations {
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MULMOD);
         return ctx;
+    }
+
+    // @notice 0x0A - EXP
+    // @dev Exp operation
+    // @custom:since Frontier
+    // @custom:group Stop and Arithmetic Operations
+    // @custom:gas 10
+    // @custom:stack_consumed_elements 3
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context.
+    // @return The pointer to the execution context.
+    func exec_exp{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx: model.ExecutionContext*
+    ) -> model.ExecutionContext* {
+        alloc_locals;
+        %{ print("0x0A - EXP") %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - a: number.
+        // 1 - b: exponent.
+        let (stack, a) = Stack.pop(stack);
+        let (stack, b) = Stack.pop(stack);
+
+        // Compute the addition
+        let result = internal_exp(a, b);
+
+        // Stack output:
+        // integer result of a ** b
+        let stack: model.Stack* = Stack.push(stack, result);
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_EXP);
+        return ctx;
+    }
+
+    func internal_exp{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        a: Uint256, b: Uint256
+    ) -> Uint256 {
+        let one_uint: Uint256 = Uint256(1, 0);
+        let zero_uint: Uint256 = Uint256(0, 0);
+
+        let (is_b_one) = uint256_eq(b, zero_uint);
+        if (is_b_one == 1) {
+            return one_uint;
+        }
+        let (is_b_ge_than_one) = uint256_le(zero_uint, b);
+        if (is_b_ge_than_one == 1) {
+            let (b_minus_one) = SafeUint256.sub_le(b, one_uint);
+            let temp_pow = internal_exp(a, b_minus_one);
+            let (res) = SafeUint256.mul(a, temp_pow);
+            return res;
+        }
+        return zero_uint;
     }
 }

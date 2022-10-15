@@ -41,7 +41,7 @@ func test_arithmetic_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, 
     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
 
     // Assert value on the top of the stack
-    test_utils.assert_top_stack(ctx, 2);
+    test_utils.assert_top_stack(ctx, 16);
 
     return ();
 }
