@@ -1,4 +1,5 @@
 {
+  "name": "Arithmetic operations",
   "code": "6003600401600a02608c036102bc04604605600d066010076005600608601060020960040A60600B00",
   "calldata": "",
   "expected_return_data": ""

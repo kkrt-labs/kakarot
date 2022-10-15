@@ -47,6 +47,29 @@ func test_arithmetic_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, 
 }
 
 @external
+func test_comparison_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    alloc_locals;
+
+    print_banner();
+
+    // Prepare Kakarot instance
+    let (local context) = prepare();
+
+    // Load test case
+    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+        './tests/cases/003.json'
+    );
+
+    // Run EVM execution
+    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+    // Assert value on the top of the stack
+    test_utils.assert_top_stack(ctx, 0);
+
+    return ();
+}
+
+@external
 func test_duplication_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     ) {
     alloc_locals;
