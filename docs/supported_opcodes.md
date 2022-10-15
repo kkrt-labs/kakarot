@@ -24,7 +24,7 @@ This document describes the opcodes supported by Kakarot.
 
 | Opcode Value | Opcode Name | Description                     | Implemented |
 | ------------ | ----------- | ------------------------------- | ----------- |
-| 0x10         | LT          | Less-than comparision           |             |
+| 0x10         | LT          | Less-than comparision           | ✅          |
 | 0x11         | GT          | Greater-than comparision        |             |
 | 0x12         | SLT         | Signed less-than comparision    |             |
 | 0x13         | SGT         | Signed greater-than comparision |             |
