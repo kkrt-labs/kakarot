@@ -18,7 +18,7 @@ This document describes the opcodes supported by Kakarot.
 | 0x08         | ADDMOD      | Modulo addition operation                        | ✅          |
 | 0x09         | MULMOD      | Modulo multiplication operation                  | ✅          |
 | 0x0a         | EXP         | Exponential operation                            | ✅          |
-| 0x0b         | SIGNEXTEND  | Extend length of two's complement signed integer |             |
+| 0x0b         | SIGNEXTEND  | Extend length of two's complement signed integer | ⚠️           |
 
 ## Comparison & bitwise logic operations
 
