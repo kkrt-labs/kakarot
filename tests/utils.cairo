@@ -11,6 +11,7 @@ from starkware.cairo.common.uint256 import Uint256, uint256_eq
 // Internal dependencies
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
+from kakarot.memory import Memory
 from kakarot.model import model
 from utils.utils import Helpers
 from tests.model import EVMTestCase
@@ -57,6 +58,20 @@ namespace test_utils {
     ) {
         alloc_locals;
         let (stack, actual) = Stack.pop(ctx.stack);
+        let expected_uint256 = Uint256(expected_value, 0);
+        let (are_equal) = uint256_eq(actual, expected_uint256);
+        assert are_equal = TRUE;
+        return ();
+    }
+
+    // @notice Assert that the value at the top of the stack is equal to the expected value.
+    // @param ctx The pointer to the execution context.
+    // @param expected_value The expected value.
+    func assert_top_memory{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx: model.ExecutionContext*, expected_value: felt
+    ) {
+        alloc_locals;
+        let (memory, actual) = Memory.pop(ctx.memory);
         let expected_uint256 = Uint256(expected_value, 0);
         let (are_equal) = uint256_eq(actual, expected_uint256);
         assert are_equal = TRUE;
