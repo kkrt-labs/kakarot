@@ -33,25 +33,16 @@ func __setup__{
 }
 
 @external
-func test_arithmetic_operations{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    alloc_locals;
-
-    // Prepare Kakarot instance
-    let (local context) = prepare();
-
+func test_sha3_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     // Load test case
     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
-        './tests/cases/001.json'
+        './tests/cases/sha3.json'
     );
 
     // Run EVM execution
     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
-
-    // Assert value on the top of the stack
-    test_utils.assert_top_stack(ctx, Uint256(16, 0));
-
+    let res = Stack.pop(ctx.stack);
+    %{ print(ids.res.low, ids.res.high) %}
     return ();
 }
 
@@ -254,117 +245,380 @@ func test_environmental_information{
     // Assert value on the top of the stack
     test_utils.assert_top_stack(ctx, Uint256(7, 0));
 
-    // Load test case CALLER
-    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
-        './tests/cases/012.json'
-    );
+// // Prepare Kakarot instance
+//     let (local context) = prepare();
 
-    // Run EVM execution
-    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+// // Load test case
+//     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+//         './tests/cases/001.json'
+//     );
 
-    let (current_caller) = get_caller_address();
-    let (high, low) = split_felt(current_caller);
-    let caller_address = Uint256(low, high);
+// // Run EVM execution
+//     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
 
-    // Assert value on the top of the stack
-    test_utils.assert_top_stack(ctx, caller_address);
+// // Assert value on the top of the stack
+//     test_utils.assert_top_stack(ctx, Uint256(16, 0));
 
-    return ();
-}
+// return ();
+// }
 
-@external
-func test_block_information{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    alloc_locals;
+// func _assert_operation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+//     filename: felt, assert_result: Uint256
+// ) {
+//     // Load test case
+//     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(filename);
 
-    // Prepare Kakarot instance
-    let (local context) = prepare();
+// // Run EVM execution
+//     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
 
-    // ------------------------------------------------------------------------------------------------
-    // Load test case CHAINID
-    // ------------------------------------------------------------------------------------------------
-    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
-        './tests/cases/007.json'
-    );
+// // Assert value on the top of the stack
+//     test_utils.assert_top_stack(ctx, assert_result);
 
-    // Run EVM execution
-    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+// return ();
+// }
 
-    let (high, low) = split_felt(Constants.CHAIN_ID);
-    let chain_id = Uint256(low, high);
+// @external
+// func test_comparison_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+//     alloc_locals;
 
-    // Assert value on the top of the stack
-    test_utils.assert_top_stack(ctx, chain_id);
+// print_banner();
 
-    // Load test case COINBASE
-    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
-        './tests/cases/008.json'
-    );
+// // Prepare Kakarot instance
+//     let (local context) = prepare();
 
-    // Run EVM execution
-    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+// // Load test case
+//     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+//         './tests/cases/003.json'
+//     );
 
-    let (high, low) = split_felt(Constants.COINBASE_ADDRESS);
-    let coinbase_address = Uint256(low, high);
+// // Run EVM execution
+//     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
 
-    // Assert value on the top of the stack
-    test_utils.assert_top_stack(ctx, coinbase_address);
+// // Assert value on the top of the stack
+//     test_utils.assert_top_stack(ctx, 0);
 
-    // ------------------------------------------------------------------------------------------------
-    // Load test case NUMBER
-    // ------------------------------------------------------------------------------------------------
-    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
-        './tests/cases/010.json'
-    );
+// return ();
+// }
 
-    // Run EVM execution
-    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+// @external
+// func test_duplication_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+//     ) {
+//     alloc_locals;
 
-    // Assert value on the top of the stack
-    let (current_block) = get_block_number();
-    let (high, low) = split_felt(current_block);
-    let block_number = Uint256(low, high);
+// // Prepare Kakarot instance
+//     let (local context) = prepare();
 
-    test_utils.assert_top_stack(ctx, block_number);
+// // Load test case
+//     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+//         './tests/cases/002.json'
+//     );
 
-    // ------------------------------------------------------------------------------------------------
-    // Load test case TIMESTAMP
-    // ------------------------------------------------------------------------------------------------
-    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
-        './tests/cases/011.json'
-    );
+// // Run EVM execution
+//     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
 
-    // Run EVM execution
-    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+// // Assert value on the top of the stack
+//     test_utils.assert_top_stack(ctx, 3);
 
-    // Assert value on the top of the stack
-    let (current_timestamp) = get_block_timestamp();
-    let (high, low) = split_felt(current_timestamp);
-    let block_timestamp = Uint256(low, high);
+// return ();
+// }
 
-    test_utils.assert_top_stack(ctx, block_timestamp);
+// @external
+// func test_memory_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+//     alloc_locals;
 
-    return ();
-}
+// // Prepare Kakarot instance
+//     let (local context) = prepare();
 
-@external
-func test_system_operations{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    alloc_locals;
+// // Load test case
+//     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+//         './tests/cases/004.json'
+//     );
 
-    // Prepare Kakarot instance
-    let (local context) = prepare();
+// // Run EVM execution
+//     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
 
-    // Load test case
-    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
-        './tests/cases/009.json'
-    );
+// // Assert value on the top of the memory
+//     test_utils.assert_top_memory(ctx, 10);
 
-    // Run EVM execution
-    %{ expect_revert("TRANSACTION_FAILED", "Kakarot: 0xFE: Invalid Opcode") %}
-    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+// return ();
+// }
 
-    return ();
-}
+// @external
+// func test_comparison_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+//     alloc_locals;
+
+// // Prepare Kakarot instance
+//     let (local context) = prepare();
+
+// // Test for LT
+//     _assert_operation('./tests/cases/003_lt.json', Uint256(0, 0));
+
+// // Test for GT
+//     _assert_operation('./tests/cases/003_gt.json', Uint256(1, 0));
+
+// // Test for SLT
+//     _assert_operation('./tests/cases/003_slt.json', Uint256(1, 0));
+
+// // Test for SGT
+//     _assert_operation('./tests/cases/003_sgt.json', Uint256(0, 0));
+
+// // Test for EQ
+//     _assert_operation('./tests/cases/003_eq.json', Uint256(0, 0));
+
+// // Test for ISZERO
+//     _assert_operation('./tests/cases/003_iszero.json', Uint256(1, 0));
+
+// return ();
+// }
+
+// @external
+// func test_bitwise_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+//     alloc_locals;
+
+// // Prepare Kakarot instance
+//     let (local context) = prepare();
+
+// // Test for SHL (from https://eips.ethereum.org/EIPS/eip-145)
+//     _assert_operation('./tests/cases/003/shl/1.json', Uint256(1, 0));
+//     _assert_operation('./tests/cases/003/shl/2.json', Uint256(2, 0));
+//     _assert_operation(
+//         './tests/cases/003/shl/3.json', Uint256(0, 0x80000000000000000000000000000000)
+//     );
+//     _assert_operation('./tests/cases/003/shl/4.json', Uint256(0, 0));
+//     _assert_operation('./tests/cases/003/shl/5.json', Uint256(0, 0));
+//     _assert_operation(
+//         './tests/cases/003/shl/6.json',
+//         Uint256(0xffffffffffffffffffffffffffffffff, 0xffffffffffffffffffffffffffffffff),
+//     );
+//     _assert_operation(
+//         './tests/cases/003/shl/7.json',
+//         Uint256(0xfffffffffffffffffffffffffffffffe, 0xffffffffffffffffffffffffffffffff),
+//     );
+//     _assert_operation(
+//         './tests/cases/003/shl/8.json', Uint256(0, 0x80000000000000000000000000000000)
+//     );
+//     _assert_operation('./tests/cases/003/shl/9.json', Uint256(0, 0));
+//     _assert_operation('./tests/cases/003/shl/10.json', Uint256(0, 0));
+//     _assert_operation(
+//         './tests/cases/003/shl/11.json',
+//         Uint256(0xfffffffffffffffffffffffffffffffe, 0xffffffffffffffffffffffffffffffff),
+//     );
+
+// // Test for SHR (from https://eips.ethereum.org/EIPS/eip-145)
+//     _assert_operation('./tests/cases/003/shr/1.json', Uint256(1, 0));
+//     _assert_operation('./tests/cases/003/shr/2.json', Uint256(0, 0));
+//     _assert_operation(
+//         './tests/cases/003/shr/3.json', Uint256(0, 0x40000000000000000000000000000000)
+//     );
+//     _assert_operation('./tests/cases/003/shr/4.json', Uint256(1, 0));
+//     _assert_operation('./tests/cases/003/shr/5.json', Uint256(0, 0));
+//     _assert_operation('./tests/cases/003/shr/6.json', Uint256(0, 0));
+//     _assert_operation(
+//         './tests/cases/003/shr/7.json',
+//         Uint256(0xffffffffffffffffffffffffffffffff, 0xffffffffffffffffffffffffffffffff),
+//     );
+//     _assert_operation(
+//         './tests/cases/003/shr/8.json',
+//         Uint256(0xffffffffffffffffffffffffffffffff, 0x7fffffffffffffffffffffffffffffff),
+//     );
+//     _assert_operation('./tests/cases/003/shr/9.json', Uint256(1, 0));
+//     _assert_operation('./tests/cases/003/shr/10.json', Uint256(0, 0));
+//     _assert_operation('./tests/cases/003/shr/11.json', Uint256(0, 0));
+
+// return ();
+// }
+
+// @external
+// func test_duplication_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+//     ) {
+//     alloc_locals;
+
+// // Prepare Kakarot instance
+//     let (local context) = prepare();
+
+// // Load test case
+//     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+//         './tests/cases/002.json'
+//     );
+
+// // Run EVM execution
+//     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+// // Assert value on the top of the stack
+//     test_utils.assert_top_stack(ctx, Uint256(3, 0));
+
+// return ();
+// }
+
+// @external
+// func test_memory_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+//     alloc_locals;
+
+// // Prepare Kakarot instance
+//     let (local context) = prepare();
+
+// // Load test case
+//     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+//         './tests/cases/004.json'
+//     );
+
+// // Run EVM execution
+//     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+// // Assert value on the top of the memory
+//     test_utils.assert_top_memory(ctx, Uint256(10, 0));
+
+// return ();
+// }
+
+// @external
+// func test_exchange_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+//     alloc_locals;
+
+// // Prepare Kakarot instance
+//     let (local context) = prepare();
+
+// // Load test case
+//     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+//         './tests/cases/005.json'
+//     );
+
+// // Run EVM execution
+//     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+// // Assert value on the top of the stack
+//     test_utils.assert_top_stack(ctx, Uint256(4, 0));
+
+// return ();
+// }
+
+// @external
+// func test_environmental_information{
+//     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+// }() {
+//     alloc_locals;
+
+// // Prepare Kakarot instance
+//     let (local context) = prepare();
+
+// // Load test case CODESIZE
+//     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+//         './tests/cases/006.json'
+//     );
+
+// // Run EVM execution
+//     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+// // Assert value on the top of the stack
+//     test_utils.assert_top_stack(ctx, Uint256(7, 0));
+
+// // Load test case CALLER
+//     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+//         './tests/cases/012.json'
+//     );
+
+// // Run EVM execution
+//     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+// let (current_caller) = get_caller_address();
+//     let (high, low) = split_felt(current_caller);
+//     let caller_address = Uint256(low, high);
+
+// // Assert value on the top of the stack
+//     test_utils.assert_top_stack(ctx, caller_address);
+
+// return ();
+// }
+
+// @external
+// func test_block_information{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+//     alloc_locals;
+
+// // Prepare Kakarot instance
+//     let (local context) = prepare();
+
+// // ------------------------------------------------------------------------------------------------
+//     // Load test case CHAINID
+//     // ------------------------------------------------------------------------------------------------
+//     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+//         './tests/cases/007.json'
+//     );
+
+// // Run EVM execution
+//     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+// let (high, low) = split_felt(Constants.CHAIN_ID);
+//     let chain_id = Uint256(low, high);
+
+// // Assert value on the top of the stack
+//     test_utils.assert_top_stack(ctx, chain_id);
+
+// // Load test case COINBASE
+//     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+//         './tests/cases/008.json'
+//     );
+
+// // Run EVM execution
+//     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+// let (high, low) = split_felt(Constants.COINBASE_ADDRESS);
+//     let coinbase_address = Uint256(low, high);
+
+// // Assert value on the top of the stack
+//     test_utils.assert_top_stack(ctx, coinbase_address);
+
+// // ------------------------------------------------------------------------------------------------
+//     // Load test case NUMBER
+//     // ------------------------------------------------------------------------------------------------
+//     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+//         './tests/cases/010.json'
+//     );
+
+// // Run EVM execution
+//     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+// // Assert value on the top of the stack
+//     let (current_block) = get_block_number();
+//     let (high, low) = split_felt(current_block);
+//     let block_number = Uint256(low, high);
+
+// test_utils.assert_top_stack(ctx, block_number);
+
+// // ------------------------------------------------------------------------------------------------
+//     // Load test case TIMESTAMP
+//     // ------------------------------------------------------------------------------------------------
+//     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+//         './tests/cases/011.json'
+//     );
+
+// // Run EVM execution
+//     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+// // Assert value on the top of the stack
+//     let (current_timestamp) = get_block_timestamp();
+//     let (high, low) = split_felt(current_timestamp);
+//     let block_timestamp = Uint256(low, high);
+
+// test_utils.assert_top_stack(ctx, block_timestamp);
+
+// return ();
+// }
+
+// @external
+// func test_system_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+//     alloc_locals;
+
+// // Prepare Kakarot instance
+//     let (local context) = prepare();
+
+// // Load test case
+//     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+//         './tests/cases/009.json'
+//     );
+
+// // Run EVM execution
+//     %{ expect_revert("TRANSACTION_FAILED", "Kakarot: 0xFE: Invalid Opcode") %}
+//     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+// return ();
+// }
