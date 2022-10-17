@@ -13,7 +13,7 @@ from kakarot.stack import Stack
 // @title Duplication operations opcodes.
 // @notice This contract contains the functions to execute for duplication operations opcodes.
 // @author @abdelhamidbakhta
-// @custom:namespace ArithmeticOperations
+// @custom:namespace DuplicationOperations
 namespace DuplicationOperations {
     // Define constants.
     const GAS_COST_DUP = 3;

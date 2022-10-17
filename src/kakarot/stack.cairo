@@ -89,6 +89,71 @@ namespace Stack {
         return self.elements[array_index];
     }
 
+    // @notice Swap two elements in the stack.
+    // @dev stack_index_1 and stack_index_2 are 0-based, 0 is the top of the stack.
+    // @param self - The pointer to the stack.
+    // @param stack_index_1 - The index of the first element to swap.
+    // @param stack_index_2 - The index of the second element to swap.
+    // @return The new pointer to the stack.
+    func swap{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.Stack*, stack_index_1: felt, stack_index_2: felt
+    ) -> model.Stack* {
+        alloc_locals;
+        Stack.check_underlow(self, stack_index_1);
+        Stack.check_underlow(self, stack_index_2);
+        let element_1 = Stack.peek(self, stack_index_1);
+        let element_2 = Stack.peek(self, stack_index_2);
+        // Get raw length
+        let raw_len = self.raw_len;
+        // Get source elements
+        let src_elements = self.elements;
+        // Get new segment for stack copy
+        let (dst_elements: Uint256*) = alloc();
+        // Copy element 2 at the top of the stack
+        assert [dst_elements + raw_len - 1 * element_size] = element_2;
+        let start_index = raw_len - 2 * element_size;
+        let exception_index = Stack.get_array_index(self, stack_index_2);
+        %{ print(f"raw_len: {ids.raw_len}") %}
+        %{ print(f"element_size: {ids.element_size}") %}
+        %{ print(f"start_index: {ids.start_index}") %}
+        %{ print(f"exception_index: {ids.exception_index}") %}
+        // Copy stack
+        Stack.copy_from_end_except_at_index(
+            src_elements, dst_elements, start_index, 0, exception_index, element_1
+        );
+        return new model.Stack(elements=dst_elements, raw_len=raw_len);
+    }
+
+    func copy_from_end_except_at_index(
+        src_elements: Uint256*,
+        dst_elements: Uint256*,
+        start_index: felt,
+        last_index: felt,
+        exception_index: felt,
+        exception_value: Uint256,
+    ) {
+        alloc_locals;
+        if (start_index == exception_index) {
+            assert [dst_elements + start_index] = exception_value;
+        } else {
+            assert [dst_elements + start_index] = src_elements[start_index];
+        }
+
+        if (start_index == last_index) {
+            return ();
+        }
+        let new_start_index = start_index - element_size;
+
+        return copy_from_end_except_at_index(
+            src_elements,
+            dst_elements,
+            new_start_index,
+            last_index,
+            exception_index,
+            exception_value,
+        );
+    }
+
     // @notice Check stack overflow.
     // @param self - The pointer to the stack.
     // @custom:revert if stack overflow.
