@@ -3,7 +3,7 @@
 %lang starknet
 
 // Starkware dependencies
-from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
 
 // Local dependencies
@@ -47,7 +47,7 @@ func test_arithmetic_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, 
     return ();
 }
 
-func _assert_comparison_operation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func _assert_comparison_operation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
     filename: felt, assert_result: felt
 ) {
     // Load test case
@@ -63,7 +63,7 @@ func _assert_comparison_operation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*
 }
 
 @external
-func test_comparison_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+func test_comparison_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}() {
     alloc_locals;
 
     print_banner();
@@ -82,6 +82,15 @@ func test_comparison_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, 
     
      // Test for SGT
     _assert_comparison_operation('./tests/cases/003_sgt.json', 0);
+
+    // Test for ISZERO
+    _assert_comparison_operation('./tests/cases/003_iszero.json', 1);
+
+    // Test for AND
+    _assert_comparison_operation('./tests/cases/003_and.json', 5);
+
+    // Test for OR
+    _assert_comparison_operation('./tests/cases/003_or.json', 7);
 
     return ();
 }
