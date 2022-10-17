@@ -99,58 +99,73 @@ namespace Stack {
         self: model.Stack*, stack_index_1: felt, stack_index_2: felt
     ) -> model.Stack* {
         alloc_locals;
+        // Check stack underflow at specified indexes
         Stack.check_underlow(self, stack_index_1);
         Stack.check_underlow(self, stack_index_2);
+
+        // Retrieve elements at specified indexes
         let element_1 = Stack.peek(self, stack_index_1);
         let element_2 = Stack.peek(self, stack_index_2);
-        // Get raw length
-        let raw_len = self.raw_len;
-        // Get source elements
-        let src_elements = self.elements;
-        // Get new segment for stack copy
-        let (dst_elements: Uint256*) = alloc();
-        // Copy element 2 at the top of the stack
-        assert [dst_elements + raw_len - 1 * element_size] = element_2;
-        let start_index = raw_len - 2 * element_size;
-        let exception_index = Stack.get_array_index(self, stack_index_2);
-        %{ print(f"raw_len: {ids.raw_len}") %}
-        %{ print(f"element_size: {ids.element_size}") %}
-        %{ print(f"start_index: {ids.start_index}") %}
-        %{ print(f"exception_index: {ids.exception_index}") %}
+
+        // Source stack is the initial stack
+        let src_stack = self;
+        // Destination stack is a new stack with no initial elements
+        let dst_stack: model.Stack* = Stack.init();
+        // Get the lenght of the source stack
+        let stack_len = Stack.len(self);
+        // Start index is the index of the last element in the source stack
+        let start_index = stack_len - 1;
+        // Last index is the second element of the stack
+        let last_index = 1;
+        // At stack_index_2 we will push element_1
+        let exception_index = stack_index_2;
+        let exception_value = element_1;
+        // After the stack copy, we will push element_2 at the top value of the new stack
+        let top_value = element_2;
+
         // Copy stack
-        Stack.copy_from_end_except_at_index(
-            src_elements, dst_elements, start_index, 0, exception_index, element_1
+        let (src_stack, dst_stack) = Stack.copy_except_at_index(
+            src_stack, dst_stack, start_index, last_index, exception_index, exception_value
         );
-        return new model.Stack(elements=dst_elements, raw_len=raw_len);
+        // Push the top value and return the new stack
+        return Stack.push(dst_stack, top_value);
     }
 
-    func copy_from_end_except_at_index(
-        src_elements: Uint256*,
-        dst_elements: Uint256*,
+    // @notice Copy a segment of the stack except at a given index.
+    // @dev stack_index is 0-based, 0 is the top of the stack.
+    // @param src_stack - The pointer to the source stack.
+    // @param dst_stack - The pointer to the destination stack.
+    // @param start_index - The index of the first element to copy.
+    // @param last_index - The index of the last element to copy.
+    // @param exception_index - The index of the element with an exception value.
+    // @param exception_value - The exception value.
+    // @return The new pointer to the source stack.
+    // @return The new pointer to the destination stack.
+    func copy_except_at_index{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        src_stack: model.Stack*,
+        dst_stack: model.Stack*,
         start_index: felt,
         last_index: felt,
         exception_index: felt,
         exception_value: Uint256,
-    ) {
+    ) -> (src_stack: model.Stack*, dst_stack: model.Stack*) {
         alloc_locals;
+        // If the index is the exception index, push the exception value
         if (start_index == exception_index) {
-            assert [dst_elements + start_index] = exception_value;
+            let dst_stack = Stack.push(dst_stack, exception_value);
         } else {
-            assert [dst_elements + start_index] = src_elements[start_index];
+            // Otherwise, push the value at the source index
+            let element = Stack.peek(src_stack, start_index);
+            let dst_stack = Stack.push(dst_stack, element);
         }
 
+        // If the index is the last index, we are done and we can return the new stacks
         if (start_index == last_index) {
-            return ();
+            return (src_stack=src_stack, dst_stack=dst_stack);
         }
-        let new_start_index = start_index - element_size;
-
-        return copy_from_end_except_at_index(
-            src_elements,
-            dst_elements,
-            new_start_index,
-            last_index,
-            exception_index,
-            exception_value,
+        let new_start_index = start_index - 1;
+        return copy_except_at_index(
+            src_stack, dst_stack, new_start_index, last_index, exception_index, exception_value
         );
     }
 

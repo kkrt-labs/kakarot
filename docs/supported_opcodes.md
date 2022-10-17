@@ -2,8 +2,6 @@
 
 This document describes the opcodes supported by Kakarot.
 
-**Summary: 59 / 142 opcodes supported.**
-
 ## Arithmetic operations
 
 | Opcode Value | Opcode Name | Description                                      | Implemented |
@@ -18,7 +16,7 @@ This document describes the opcodes supported by Kakarot.
 | 0x08         | ADDMOD      | Modulo addition operation                        | ✅          |
 | 0x09         | MULMOD      | Modulo multiplication operation                  | ✅          |
 | 0x0a         | EXP         | Exponential operation                            | ✅          |
-| 0x0b         | SIGNEXTEND  | Extend length of two's complement signed integer | ⚠️           |
+| 0x0b         | SIGNEXTEND  | Extend length of two's complement signed integer | ✅          |
 
 ## Comparison & bitwise logic operations
 
@@ -159,22 +157,22 @@ This document describes the opcodes supported by Kakarot.
 
 | Opcode Value | Opcode Name | Description                       | Implemented |
 | ------------ | ----------- | --------------------------------- | ----------- |
-| 0x90         | SWAP1       | Exchange 1st and 2nd stack items  |             |
-| 0x91         | SWAP2       | Exchange 1st and 3rd stack items  |             |
-| 0x92         | SWAP3       | Exchange 1st and 4th stack items  |             |
-| 0x93         | SWAP4       | Exchange 1st and 5th stack items  |             |
-| 0x94         | SWAP5       | Exchange 1st and 6th stack items  |             |
-| 0x95         | SWAP6       | Exchange 1st and 7th stack items  |             |
-| 0x96         | SWAP7       | Exchange 1st and 8th stack items  |             |
-| 0x97         | SWAP8       | Exchange 1st and 9th stack items  |             |
-| 0x98         | SWAP9       | Exchange 1st and 10th stack items |             |
-| 0x99         | SWAP10      | Exchange 1st and 11th stack items |             |
-| 0x9a         | SWAP11      | Exchange 1st and 12th stack items |             |
-| 0x9b         | SWAP12      | Exchange 1st and 13th stack items |             |
-| 0x9c         | SWAP13      | Exchange 1st and 14th stack items |             |
-| 0x9d         | SWAP14      | Exchange 1st and 15th stack items |             |
-| 0x9e         | SWAP15      | Exchange 1st and 16th stack items |             |
-| 0x9f         | SWAP16      | Exchange 1st and 17th stack items |             |
+| 0x90         | SWAP1       | Exchange 1st and 2nd stack items  | ✅          |
+| 0x91         | SWAP2       | Exchange 1st and 3rd stack items  | ✅          |
+| 0x92         | SWAP3       | Exchange 1st and 4th stack items  | ✅          |
+| 0x93         | SWAP4       | Exchange 1st and 5th stack items  | ✅          |
+| 0x94         | SWAP5       | Exchange 1st and 6th stack items  | ✅          |
+| 0x95         | SWAP6       | Exchange 1st and 7th stack items  | ✅          |
+| 0x96         | SWAP7       | Exchange 1st and 8th stack items  | ✅          |
+| 0x97         | SWAP8       | Exchange 1st and 9th stack items  | ✅          |
+| 0x98         | SWAP9       | Exchange 1st and 10th stack items | ✅          |
+| 0x99         | SWAP10      | Exchange 1st and 11th stack items | ✅          |
+| 0x9a         | SWAP11      | Exchange 1st and 12th stack items | ✅          |
+| 0x9b         | SWAP12      | Exchange 1st and 13th stack items | ✅          |
+| 0x9c         | SWAP13      | Exchange 1st and 14th stack items | ✅          |
+| 0x9d         | SWAP14      | Exchange 1st and 15th stack items | ✅          |
+| 0x9e         | SWAP15      | Exchange 1st and 16th stack items | ✅          |
+| 0x9f         | SWAP16      | Exchange 1st and 17th stack items | ✅          |
 
 ## Logging Operations
 
