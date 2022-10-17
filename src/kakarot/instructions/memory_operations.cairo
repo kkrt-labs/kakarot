@@ -12,9 +12,21 @@ from kakarot.memory import Memory
 from kakarot.execution_context import ExecutionContext
 from kakarot.constants import Constants
 
+// @title Exchange operations opcodes.
+// @notice This contract contains the functions to execute for memory operations opcodes.
+// @author @LucasLvy @abdelhamidbakhta
+// @custom:namespace MemoryOperations
 namespace MemoryOperations {
     const GAS_COST_MSTORE = 3;
 
+    // @notice MSTORE operation
+    // @dev Save word to memory.
+    // @custom:since Frontier
+    // @custom:group Stack Memory Storage and Flow operations.
+    // @custom:gas 3 + dynamic gas
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 0
+    // @return Updated execution context.
     func exec_store{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         ctx: model.ExecutionContext*
     ) -> model.ExecutionContext* {
