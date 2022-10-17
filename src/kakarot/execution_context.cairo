@@ -6,8 +6,6 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math_cmp import is_not_zero
-from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.memcpy import memcpy
 
 // Internal dependencies
@@ -146,6 +144,28 @@ namespace ExecutionContext {
             return_data=self.return_data,
             stack=new_stack,
             memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit,
+            intrinsic_gas_cost=self.intrinsic_gas_cost,
+            );
+    }
+
+    // @notice Update the memory of the current execution context.
+    // @dev The memory is updated with the given memory.
+    // @param self The pointer to the execution context.
+    // @param memory The pointer to the new memory.
+    func update_memory{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.ExecutionContext*, new_memory: model.Memory*
+    ) -> model.ExecutionContext* {
+        return new model.ExecutionContext(
+            code=self.code,
+            code_len=self.code_len,
+            calldata=self.calldata,
+            program_counter=self.program_counter,
+            stopped=self.stopped,
+            return_data=self.return_data,
+            stack=self.stack,
+            memory=new_memory,
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,

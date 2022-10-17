@@ -3,11 +3,7 @@
 %lang starknet
 
 // StarkWare dependencies
-from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.uint256 import Uint256
-
-// Internal dependencies
-from utils.utils import Helpers
 
 namespace model {
     struct Stack {
@@ -17,7 +13,7 @@ namespace model {
 
     struct Memory {
         elements: Uint256*,
-        size: felt,  // The size is counted with the highest address that was accessed.
+        raw_len: felt,  // The size is counted with the highest address that was accessed.
     }
 
     struct ExecutionContext {
