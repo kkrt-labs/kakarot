@@ -35,7 +35,12 @@ It is a work in progress, and it is not ready for production.
 
 ## Supported opcodes
 
-**Summary: 77 / 142 opcodes supported. (54.22%)**
+```mermaid
+pie title Kakarot EMV opcodes support
+    "Supported" : 77
+    "Not supported" : 65
+    "Partially supported" : 0
+```
 
 Here is the list of supported opcodes: [opcodes](docs/supported_opcodes.md)
 
