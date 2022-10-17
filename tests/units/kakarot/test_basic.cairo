@@ -100,14 +100,14 @@ func test_exchange_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
 
     // Load test case
     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
-        './tests/cases/003.json'
+        './tests/cases/004.json'
     );
 
     // Run EVM execution
     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
 
     // Assert value on the top of the stack
-    // test_utils.assert_top_stack(ctx, 3);
+    test_utils.assert_top_stack(ctx, 4);
 
     return ();
 }
