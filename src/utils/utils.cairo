@@ -14,7 +14,7 @@ namespace Helpers {
 
             MAX_LEN_FELT = 31
             BYTES32_SIZE = 32
-            os.environ.setdefault('DEBUG', 'True')
+            os.environ.setdefault('DEBUG', 'False')
 
             def dump_array(array):
                 pprint(array)
