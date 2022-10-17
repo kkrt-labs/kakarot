@@ -184,8 +184,10 @@ namespace EVMInstructions {
         // Comparison & bitwise logic operations
         // 0x10 - LT
         add_instruction(instructions, 0x10, ComparisonOperations.exec_lt);
-        // 0x1 - GT
+        // 0x11 - GT
         add_instruction(instructions, 0x11, ComparisonOperations.exec_gt);
+        // 0x12 - SLT
+        add_instruction(instructions, 0x12, ComparisonOperations.exec_slt);
 
         // 0x52 - MSTORE
         add_instruction(instructions, 0x52, MemoryOperations.exec_store);
