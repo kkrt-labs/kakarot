@@ -9,7 +9,6 @@ from starkware.cairo.common.bool import TRUE, FALSE
 // Local dependencies
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.memory import Memory
 from tests.units.kakarot.library import setup, prepare, Kakarot
 from tests.model import EVMTestCase
 from tests.utils import test_utils
@@ -42,30 +41,7 @@ func test_arithmetic_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, 
     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
 
     // Assert value on the top of the stack
-    test_utils.assert_top_stack(ctx, 16);
-
-    return ();
-}
-
-@external
-func test_comparison_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    alloc_locals;
-
-    print_banner();
-
-    // Prepare Kakarot instance
-    let (local context) = prepare();
-
-    // Load test case
-    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
-        './tests/cases/003.json'
-    );
-
-    // Run EVM execution
-    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
-
-    // Assert value on the top of the stack
-    test_utils.assert_top_stack(ctx, 0);
+    test_utils.assert_top_stack(ctx, 1);
 
     return ();
 }
@@ -93,7 +69,7 @@ func test_duplication_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*,
 }
 
 @external
-func test_memory_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+func test_exchange_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
 
     // Prepare Kakarot instance
@@ -101,14 +77,14 @@ func test_memory_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
 
     // Load test case
     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
-        './tests/cases/004.json'
+        './tests/cases/003.json'
     );
 
     // Run EVM execution
     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
 
-    // Assert value on the top of the memory
-    test_utils.assert_top_memory(ctx, 10);
+    // Assert value on the top of the stack
+    // test_utils.assert_top_stack(ctx, 3);
 
     return ();
 }

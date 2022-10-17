@@ -1,6 +1,6 @@
 {
-  "name": "Comparison & bitwise logic operations",
-  "code": "600a600910600a600a10",
+  "name": "Exchange operations",
+  "code": "6003600260019100",
   "calldata": "",
   "expected_return_data": ""
 }
