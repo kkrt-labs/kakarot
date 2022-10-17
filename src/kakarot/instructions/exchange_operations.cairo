@@ -30,8 +30,8 @@ namespace ExchangeOperations {
     // Define constants.
     const GAS_COST_SWAP = 3;
 
-    // @notice Generic DUP operation
-    // @dev Duplicate the top i-th stack item to the top of the stack.
+    // @notice Generic SWAP operation
+    // @dev Exchange 1st and i-th stack items.
     func exec_swap_i{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         ctx: model.ExecutionContext*, i: felt
     ) -> model.ExecutionContext* {
