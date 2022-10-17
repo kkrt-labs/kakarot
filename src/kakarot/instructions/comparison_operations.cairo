@@ -20,6 +20,7 @@ namespace ComparisonOperations {
     const GAS_COST_LT = 3;
     const GAS_COST_GT = 3;
     const GAS_COST_SLT = 3;
+    const GAS_COST_SGT = 3;
 
     // @notice 0x10 - LT
     // @dev Comparison operation
@@ -129,6 +130,43 @@ namespace ComparisonOperations {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SLT);
+        return ctx;
+    }
+
+    // @notice 0x13 - SGT
+    // @dev Comparison operation
+    // @custom:since Frontier
+    // @custom:group Comparison & Bitwise Logic Operations
+    // @custom:gas 3
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context.
+    // @return The pointer to the execution context.
+    func exec_sgt{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx: model.ExecutionContext*
+    ) -> model.ExecutionContext* {
+        alloc_locals;
+        %{ print("0x13 - SGT") %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - a: left side integer.
+        // 1 - b: right side integer.
+        let (stack, a) = Stack.pop(stack);
+        let (stack, b) = Stack.pop(stack);
+
+        // Compute the comparison
+        let (result) = uint256_signed_lt(b, a);
+
+        // Stack output:
+        // a < b: integer result of comparison a less than b
+        let stack: model.Stack* = Stack.push(stack, Uint256(result, 0));
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SGT);
         return ctx;
     }
 }

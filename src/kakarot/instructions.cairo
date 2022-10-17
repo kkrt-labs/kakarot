@@ -188,6 +188,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x11, ComparisonOperations.exec_gt);
         // 0x12 - SLT
         add_instruction(instructions, 0x12, ComparisonOperations.exec_slt);
+        // 0x13 - SGT
+        add_instruction(instructions, 0x13, ComparisonOperations.exec_sgt);
 
         // 0x52 - MSTORE
         add_instruction(instructions, 0x52, MemoryOperations.exec_store);
