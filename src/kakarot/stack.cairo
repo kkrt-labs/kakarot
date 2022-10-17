@@ -47,7 +47,7 @@ namespace Stack {
         self: model.Stack*, element: Uint256
     ) -> model.Stack* {
         alloc_locals;
-        Stack.check_overlow(self);
+        Stack.check_overflow(self);
         assert [self.elements + self.raw_len] = element;
         return new model.Stack(elements=self.elements, raw_len=self.raw_len + element_size);
     }
@@ -60,7 +60,7 @@ namespace Stack {
         self: model.Stack*
     ) -> (new_stack: model.Stack*, element: Uint256) {
         alloc_locals;
-        Stack.check_underlow(self, 0);
+        Stack.check_underflow(self, 0);
         // Get last element
         let len = Stack.len(self);
         let element = self.elements[len - 1];
@@ -84,7 +84,7 @@ namespace Stack {
         self: model.Stack*, stack_index: felt
     ) -> Uint256 {
         alloc_locals;
-        Stack.check_underlow(self, stack_index);
+        Stack.check_underflow(self, stack_index);
         let array_index = Stack.get_array_index(self, stack_index);
         return self.elements[array_index];
     }
@@ -99,10 +99,6 @@ namespace Stack {
         self: model.Stack*, stack_index_1: felt, stack_index_2: felt
     ) -> model.Stack* {
         alloc_locals;
-        // Check stack underflow at specified indexes
-        Stack.check_underlow(self, stack_index_1);
-        Stack.check_underlow(self, stack_index_2);
-
         // Retrieve elements at specified indexes
         let element_1 = Stack.peek(self, stack_index_1);
         let element_2 = Stack.peek(self, stack_index_2);
@@ -172,7 +168,7 @@ namespace Stack {
     // @notice Check stack overflow.
     // @param self - The pointer to the stack.
     // @custom:revert if stack overflow.
-    func check_overlow{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    func check_overflow{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.Stack*
     ) {
         let stack_len = Stack.len(self);
@@ -187,7 +183,7 @@ namespace Stack {
     // @param self - The pointer to the stack.
     // @param stack_index - The index of the element.
     // @custom:revert if stack underflow.
-    func check_underlow{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    func check_underflow{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.Stack*, stack_index: felt
     ) {
         alloc_locals;
