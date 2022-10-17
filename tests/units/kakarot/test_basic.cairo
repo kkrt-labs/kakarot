@@ -47,6 +47,21 @@ func test_arithmetic_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, 
     return ();
 }
 
+func _assert_comparison_operation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    filename: felt, assert_result: felt
+) {
+    // Load test case
+    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(filename);
+
+    // Run EVM execution
+    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+    // Assert value on the top of the stack
+    test_utils.assert_top_stack(ctx, assert_result);
+
+    return ();
+}
+
 @external
 func test_comparison_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     alloc_locals;
@@ -56,50 +71,17 @@ func test_comparison_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, 
     // Prepare Kakarot instance
     let (local context) = prepare();
 
-    // Load test case for LT
-    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
-        './tests/cases/003_lt.json'
-    );
+    // Test for LT
+    _assert_comparison_operation('./tests/cases/003_lt.json', 0);
 
-    // Run EVM execution
-    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
-
-    // Assert value on the top of the stack
-    test_utils.assert_top_stack(ctx, 0);
-
-    // Load test case for GT
-    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
-        './tests/cases/003_gt.json'
-    );
-
-    // Run EVM execution
-    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
-
-    // Assert value on the top of the stack
-    test_utils.assert_top_stack(ctx, 1);
-
-    // Load test case for SLT
-    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
-        './tests/cases/003_slt.json'
-    );
-
-    // Run EVM execution
-    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
-
-    // Assert value on the top of the stack
-    test_utils.assert_top_stack(ctx, 1);
-
-     // Load test case for SGT
-    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
-        './tests/cases/003_sgt.json'
-    );
-
-    // Run EVM execution
-    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
-
-    // Assert value on the top of the stack
-    test_utils.assert_top_stack(ctx, 0);
-
+    // Test for GT
+    _assert_comparison_operation('./tests/cases/003_gt.json', 1);
+    
+    // Test for SLT
+    _assert_comparison_operation('./tests/cases/003_slt.json', 1);
+    
+     // Test for SGT
+    _assert_comparison_operation('./tests/cases/003_sgt.json', 0);
 
     return ();
 }
