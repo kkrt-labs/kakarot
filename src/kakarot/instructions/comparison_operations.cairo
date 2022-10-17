@@ -90,7 +90,7 @@ namespace ComparisonOperations {
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_LT);
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_GT);
         return ctx;
     }
 }
