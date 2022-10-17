@@ -56,9 +56,9 @@ func test_comparison_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, 
     // Prepare Kakarot instance
     let (local context) = prepare();
 
-    // Load test case
+    // Load test case for LT
     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
-        './tests/cases/003.json'
+        './tests/cases/003_lt.json'
     );
 
     // Run EVM execution
@@ -66,6 +66,18 @@ func test_comparison_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, 
 
     // Assert value on the top of the stack
     test_utils.assert_top_stack(ctx, 0);
+
+    // Load test case for LT
+    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+        './tests/cases/003_gt.json'
+    );
+
+    // Run EVM execution
+    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+    // Assert value on the top of the stack
+    test_utils.assert_top_stack(ctx, 1);
+
 
     return ();
 }
