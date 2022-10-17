@@ -49,6 +49,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "l-henri",
+      "name": "Henri",
+      "avatar_url": "https://avatars.githubusercontent.com/u/22731646?v=4",
+      "profile": "https://github.com/l-henri",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
