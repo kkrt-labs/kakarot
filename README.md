@@ -37,6 +37,7 @@ It is a work in progress, and it is not ready for production.
 ## Supported opcodes
 
 ```mermaid
+%%{init: {'theme': 'forest', 'themeVariables': { 'darkMode': 'false'}}}%%
 pie title Kakarot EMV opcodes support
     "Supported" : 77
     "Not supported" : 65
