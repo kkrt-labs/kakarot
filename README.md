@@ -51,6 +51,48 @@ And if you implement a new opcode, please update the list.
 
 ## Documentation
 
+### Architecture
+
+### Main execution flow
+
+```mermaid
+sequenceDiagram
+    title Simple bytecode execution flow example: [PUSH1 0x01 PUSH1 0x02 ADD]
+    actor User
+    participant Kakarot
+    participant ExecutionContext
+    participant EVMInstructions
+    participant ArithmeticOperations
+    participant PushOperations
+    participant Stack
+    User->>+Kakarot: execute(code, calldata)
+    Kakarot->>+EVMInstructions: generate_instructions()
+    EVMInstructions->>-Kakarot: instructions
+    Kakarot->>+ExecutionContext: compute_intrinsic_gas_cost()
+    ExecutionContext->>-Kakarot: ctx
+    Kakarot->>Kakarot: run(instructions, ctx)
+    loop opcode
+        Kakarot->>+EVMInstructions: decode_and_execute(instructions, ctx)
+        EVMInstructions->>EVMInstructions: retrieve the current program counter
+        Note over EVMInstructions: revert if pc < 0, stop if pc > length of code
+        EVMInstructions->>EVMInstructions: read opcode associated function from instruction set
+        Note over PushOperations, Stack: x2 PUSH a=1, PUSH b=2
+        EVMInstructions->>+PushOperations: exec_push1(ctx)
+        PushOperations->>Stack: push(stack, element)
+        PushOperations->>-EVMInstructions: ctx
+        EVMInstructions->>+ArithmeticOperations: exec_add(ctx)
+        Note over PushOperations, Stack: x2 POP a, POP b
+        ArithmeticOperations->>Stack: pop(stack)
+        Stack->>ArithmeticOperations: element
+        ArithmeticOperations->>Stack: push(stack, result)
+        ArithmeticOperations->>-EVMInstructions: ctx
+        EVMInstructions->>-Kakarot: ctx
+    end
+    Kakarot->>-User: ctx
+```
+
+### Execution sample
+
 Execution of a simple EVM bytecode program on Kakarot.
 
 The bytecode is the following:
