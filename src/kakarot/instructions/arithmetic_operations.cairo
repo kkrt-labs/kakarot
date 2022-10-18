@@ -46,26 +46,8 @@ namespace ArithmeticOperations {
     ) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x01 - ADD") %}
-
-        let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - a: first integer value to add.
-        // 1 - b: second integer value to add.
-        let (stack, a) = Stack.pop(stack);
-        let (stack, b) = Stack.pop(stack);
-
-        // Compute the addition
-        let (result) = SafeUint256.add(a, b);
-
-        // Stack output:
-        // a + b: integer result of the addition modulo 2^256
-        let stack: model.Stack* = Stack.push(stack, result);
-
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_ADD);
+        let (stack, gas_cost) = add(ctx.stack);
+        let ctx = apply_context_changes(ctx, stack, gas_cost);
         return ctx;
     }
 
@@ -83,26 +65,8 @@ namespace ArithmeticOperations {
     ) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x02 - MUL") %}
-
-        let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - a: first integer value to multiply.
-        // 1 - b: second integer value to multiply.
-        let (stack, a) = Stack.pop(stack);
-        let (stack, b) = Stack.pop(stack);
-
-        // Compute the multiplication
-        let (result) = SafeUint256.mul(a, b);
-
-        // Stack output:
-        // a * b: integer result of the multiplication modulo 2^256
-        let stack: model.Stack* = Stack.push(stack, result);
-
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MUL);
+        let (stack, gas_cost) = mul(ctx.stack);
+        let ctx = apply_context_changes(ctx, stack, gas_cost);
         return ctx;
     }
 
@@ -120,26 +84,8 @@ namespace ArithmeticOperations {
     ) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x03 - SUB") %}
-
-        let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - a: first integer value to sub.
-        // 1 - b: second integer value to sub.
-        let (stack, a) = Stack.pop(stack);
-        let (stack, b) = Stack.pop(stack);
-
-        // Compute the subtraction
-        let (result) = SafeUint256.sub_le(a, b);
-
-        // Stack output:
-        // a - b: integer result of the subtraction modulo 2^256
-        let stack: model.Stack* = Stack.push(stack, result);
-
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SUB);
+        let (stack, gas_cost) = sub(ctx.stack);
+        let ctx = apply_context_changes(ctx, stack, gas_cost);
         return ctx;
     }
 
@@ -157,26 +103,8 @@ namespace ArithmeticOperations {
     ) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x04 - DIV") %}
-
-        let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - a: numerator.
-        // 1 - b: denominator.
-        let (stack, a) = Stack.pop(stack);
-        let (stack, b) = Stack.pop(stack);
-
-        // Compute the division
-        let (result, _rem) = SafeUint256.div_rem(a, b);
-
-        // Stack output:
-        // a / b: integer result of the division modulo 2^256
-        let stack: model.Stack* = Stack.push(stack, result);
-
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_DIV);
+        let (stack, gas_cost) = div(ctx.stack);
+        let ctx = apply_context_changes(ctx, stack, gas_cost);
         return ctx;
     }
 
@@ -194,26 +122,8 @@ namespace ArithmeticOperations {
     ) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x05 - SDIV") %}
-
-        let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - a: numerator.
-        // 1 - b: denominator.
-        let (stack, a) = Stack.pop(stack);
-        let (stack, b) = Stack.pop(stack);
-
-        // Compute the division
-        let (result, _rem) = uint256_signed_div_rem(a, b);
-
-        // Stack output:
-        // a / b: signed integer result of the division modulo 2^256
-        let stack: model.Stack* = Stack.push(stack, result);
-
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SDIV);
+        let (stack, gas_cost) = sdiv(ctx.stack);
+        let ctx = apply_context_changes(ctx, stack, gas_cost);
         return ctx;
     }
 
@@ -231,25 +141,8 @@ namespace ArithmeticOperations {
     ) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x06 - MOD") %}
-
-        let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - a: number.
-        // 1 - b: modulo.
-        let (stack, a) = Stack.pop(stack);
-        let (stack, b) = Stack.pop(stack);
-
-        // Compute the modulo
-        let (_result, rem) = SafeUint256.div_rem(a, b);
-
-        // Stack output:
-        // a % b:  integer result of the a % b
-        let stack: model.Stack* = Stack.push(stack, rem);
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MOD);
+        let (stack, gas_cost) = mod(ctx.stack);
+        let ctx = apply_context_changes(ctx, stack, gas_cost);
         return ctx;
     }
 
@@ -267,25 +160,8 @@ namespace ArithmeticOperations {
     ) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x07 - SMOD") %}
-
-        let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - a: number.
-        // 1 - b: modulo.
-        let (stack, a) = Stack.pop(stack);
-        let (stack, b) = Stack.pop(stack);
-
-        // Compute the signed modulo
-        let (_result, rem) = uint256_signed_div_rem(a, b);
-
-        // Stack output:
-        // a % b:  signed integer result of the a % b
-        let stack: model.Stack* = Stack.push(stack, rem);
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SMOD);
+        let (stack, gas_cost) = smod(ctx.stack);
+        let ctx = apply_context_changes(ctx, stack, gas_cost);
         return ctx;
     }
 
@@ -303,29 +179,8 @@ namespace ArithmeticOperations {
     ) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x08 - ADDMOD") %}
-
-        let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - a: number.
-        // 1 - b: number.
-        // 1 - c: modulo.
-        let (stack, a) = Stack.pop(stack);
-        let (stack, b) = Stack.pop(stack);
-        let (stack, c) = Stack.pop(stack);
-
-        // Compute the addition
-        let (result) = SafeUint256.add(a, b);
-        // Compute the modulo
-        let (_result, rem) = SafeUint256.div_rem(result, c);
-
-        // Stack output:
-        // integer result of a + b % c
-        let stack: model.Stack* = Stack.push(stack, rem);
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_ADDMOD);
+        let (stack, gas_cost) = addmod(ctx.stack);
+        let ctx = apply_context_changes(ctx, stack, gas_cost);
         return ctx;
     }
 
@@ -343,29 +198,8 @@ namespace ArithmeticOperations {
     ) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x09 - MULMOD") %}
-
-        let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - a: number.
-        // 1 - b: number.
-        // 1 - c: modulos.
-        let (stack, a) = Stack.pop(stack);
-        let (stack, b) = Stack.pop(stack);
-        let (stack, c) = Stack.pop(stack);
-
-        // Compute the addition
-        let (result) = SafeUint256.mul(a, b);
-        // Compute the modulo
-        let (_result, rem) = SafeUint256.div_rem(result, c);
-
-        // Stack output:
-        // integer result of the a * b % c
-        let stack: model.Stack* = Stack.push(stack, rem);
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MULMOD);
+        let (stack, gas_cost) = mulmod(ctx.stack);
+        let ctx = apply_context_changes(ctx, stack, gas_cost);
         return ctx;
     }
 
@@ -383,8 +217,222 @@ namespace ArithmeticOperations {
     ) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x0A - EXP") %}
+        let (stack, gas_cost) = exp(ctx.stack);
+        let ctx = apply_context_changes(ctx, stack, gas_cost);
+        return ctx;
+    }
 
-        let stack = ctx.stack;
+    // @notice 0x0B - SIGNEXTEND
+    // @dev Exp operation
+    // @custom:since Frontier
+    // @custom:group Stop and Arithmetic Operations
+    // @custom:gas 5
+    // @custom:stack_consumed_elements 3
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context.
+    // @return The pointer to the execution context.
+    func exec_signextend{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx: model.ExecutionContext*
+    ) -> model.ExecutionContext* {
+        alloc_locals;
+        %{ print("0x0B - SIGNEXTEND") %}
+        let (stack, gas_cost) = signextend(ctx.stack);
+        let ctx = apply_context_changes(ctx, stack, gas_cost);
+        return ctx;
+    }
+
+    func add{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        stack: model.Stack*
+    ) -> (model.Stack*, felt) {
+        alloc_locals;
+
+        // Stack input:
+        // 0 - a: first integer value to add.
+        // 1 - b: second integer value to add.
+        let (stack, a) = Stack.pop(stack);
+        let (stack, b) = Stack.pop(stack);
+
+        // Compute the addition
+        let (result) = SafeUint256.add(a, b);
+
+        // Stack output:
+        // a + b: integer result of the addition modulo 2^256
+        let stack: model.Stack* = Stack.push(stack, result);
+        return (stack, GAS_COST_ADD);
+    }
+
+    func mul{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        stack: model.Stack*
+    ) -> (model.Stack*, felt) {
+        alloc_locals;
+
+        // Stack input:
+        // 0 - a: first integer value to multiply.
+        // 1 - b: second integer value to multiply.
+        let (stack, a) = Stack.pop(stack);
+        let (stack, b) = Stack.pop(stack);
+
+        // Compute the multiplication
+        let (result) = SafeUint256.mul(a, b);
+
+        // Stack output:
+        // a * b: integer result of the multiplication modulo 2^256
+        let stack: model.Stack* = Stack.push(stack, result);
+        return (stack, GAS_COST_MUL);
+    }
+
+    func sub{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        stack: model.Stack*
+    ) -> (model.Stack*, felt) {
+        alloc_locals;
+
+        // Stack input:
+        // 0 - a: first integer value to sub.
+        // 1 - b: second integer value to sub.
+        let (stack, a) = Stack.pop(stack);
+        let (stack, b) = Stack.pop(stack);
+
+        // Compute the subtraction
+        let (result) = SafeUint256.sub_le(a, b);
+
+        // Stack output:
+        // a - b: integer result of the subtraction modulo 2^256
+        let stack: model.Stack* = Stack.push(stack, result);
+        return (stack, GAS_COST_SUB);
+    }
+
+    func div{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        stack: model.Stack*
+    ) -> (model.Stack*, felt) {
+        alloc_locals;
+
+        // Stack input:
+        // 0 - a: numerator.
+        // 1 - b: denominator.
+        let (stack, a) = Stack.pop(stack);
+        let (stack, b) = Stack.pop(stack);
+
+        // Compute the division
+        let (result, _rem) = SafeUint256.div_rem(a, b);
+
+        // Stack output:
+        // a / b: integer result of the division modulo 2^256
+        let stack: model.Stack* = Stack.push(stack, result);
+        return (stack, GAS_COST_DIV);
+    }
+
+    func sdiv{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        stack: model.Stack*
+    ) -> (model.Stack*, felt) {
+        alloc_locals;
+
+        // Stack input:
+        // 0 - a: numerator.
+        // 1 - b: denominator.
+        let (stack, a) = Stack.pop(stack);
+        let (stack, b) = Stack.pop(stack);
+
+        // Compute the division
+        let (result, _rem) = uint256_signed_div_rem(a, b);
+
+        // Stack output:
+        // a / b: signed integer result of the division modulo 2^256
+        let stack: model.Stack* = Stack.push(stack, result);
+        return (stack, GAS_COST_SDIV);
+    }
+
+    func mod{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        stack: model.Stack*
+    ) -> (model.Stack*, felt) {
+        alloc_locals;
+
+        // Stack input:
+        // 0 - a: number.
+        // 1 - b: modulo.
+        let (stack, a) = Stack.pop(stack);
+        let (stack, b) = Stack.pop(stack);
+
+        // Compute the modulo
+        let (_result, rem) = SafeUint256.div_rem(a, b);
+
+        // Stack output:
+        // a % b:  integer result of the a % b
+        let stack: model.Stack* = Stack.push(stack, rem);
+        return (stack, GAS_COST_MOD);
+    }
+
+    func smod{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        stack: model.Stack*
+    ) -> (model.Stack*, felt) {
+        alloc_locals;
+
+        // Stack input:
+        // 0 - a: number.
+        // 1 - b: modulo.
+        let (stack, a) = Stack.pop(stack);
+        let (stack, b) = Stack.pop(stack);
+
+        // Compute the signed modulo
+        let (_result, rem) = uint256_signed_div_rem(a, b);
+
+        // Stack output:
+        // a % b:  signed integer result of the a % b
+        let stack: model.Stack* = Stack.push(stack, rem);
+        return (stack, GAS_COST_SMOD);
+    }
+
+    func addmod{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        stack: model.Stack*
+    ) -> (model.Stack*, felt) {
+        alloc_locals;
+
+        // Stack input:
+        // 0 - a: number.
+        // 1 - b: number.
+        // 1 - c: modulo.
+        let (stack, a) = Stack.pop(stack);
+        let (stack, b) = Stack.pop(stack);
+        let (stack, c) = Stack.pop(stack);
+
+        // Compute the addition
+        let (result) = SafeUint256.add(a, b);
+        // Compute the modulo
+        let (_result, rem) = SafeUint256.div_rem(result, c);
+
+        // Stack output:
+        // integer result of a + b % c
+        let stack: model.Stack* = Stack.push(stack, rem);
+        return (stack, GAS_COST_ADDMOD);
+    }
+
+    func mulmod{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        stack: model.Stack*
+    ) -> (model.Stack*, felt) {
+        alloc_locals;
+
+        // Stack input:
+        // 0 - a: number.
+        // 1 - b: number.
+        // 1 - c: modulos.
+        let (stack, a) = Stack.pop(stack);
+        let (stack, b) = Stack.pop(stack);
+        let (stack, c) = Stack.pop(stack);
+
+        // Compute the addition
+        let (result) = SafeUint256.mul(a, b);
+        // Compute the modulo
+        let (_result, rem) = SafeUint256.div_rem(result, c);
+
+        // Stack output:
+        // integer result of the a * b % c
+        let stack: model.Stack* = Stack.push(stack, rem);
+        return (stack, GAS_COST_MULMOD);
+    }
+
+    func exp{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        stack: model.Stack*
+    ) -> (model.Stack*, felt) {
+        alloc_locals;
 
         // Stack input:
         // 0 - a: number.
@@ -398,11 +446,7 @@ namespace ArithmeticOperations {
         // Stack output:
         // integer result of a ** b
         let stack: model.Stack* = Stack.push(stack, result);
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_EXP);
-        return ctx;
+        return (stack, GAS_COST_EXP);
     }
 
     func internal_exp{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -425,22 +469,10 @@ namespace ArithmeticOperations {
         return zero_uint;
     }
 
-    // @notice 0x0B - SIGNEXTEND
-    // @dev Exp operation
-    // @custom:since Frontier
-    // @custom:group Stop and Arithmetic Operations
-    // @custom:gas 5
-    // @custom:stack_consumed_elements 3
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
-    func exec_signextend{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func signextend{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        stack: model.Stack*
+    ) -> (model.Stack*, felt) {
         alloc_locals;
-        %{ print("0x0B - SIGNEXTEND") %}
-
-        let stack = ctx.stack;
 
         // Stack input:
         // 0 - a: number.
@@ -450,10 +482,17 @@ namespace ArithmeticOperations {
 
         // Value is already a uint256
         let stack: model.Stack* = Stack.push(stack, x);
+        return (stack, GAS_COST_SIGNEXTEND);
+    }
+
+    func apply_context_changes{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx: model.ExecutionContext*, stack: model.Stack*, gas_cost: felt
+    ) -> model.ExecutionContext* {
+        alloc_locals;
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SIGNEXTEND);
+        let ctx = ExecutionContext.increment_gas_used(ctx, gas_cost);
         return ctx;
     }
 }
