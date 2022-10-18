@@ -11,7 +11,7 @@
 ![GitHub contributors](https://img.shields.io/github/contributors/abdelhamidbakhta/kakarot?logo=github&style=flat-square)
 ![Lines of code](https://img.shields.io/tokei/lines/github/abdelhamidbakhta/kakarot?style=flat-square)
 ![Discord](https://img.shields.io/discord/595666850260713488?color=purple&logo=discord&style=flat-square)
-[![Telegram](https://img.shields.io/badge/telegram-Kakarot-yellow.svg?logo=telegram)[https://t.me/KakarotZkEvm]
+[![Telegran](https://img.shields.io/badge/telegram-Kakarot-yellow.svg?logo=telegram)](https://t.me/KakarotZkEvm)
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
 ![GitHub Repo stars](https://img.shields.io/github/stars/abdelhamidbakhta/kakarot?style=social)
 [![Twitter Follow](https://img.shields.io/twitter/follow/KakarotZkEvm?style=social)](https://twitter.com/KakarotZkEvm)
