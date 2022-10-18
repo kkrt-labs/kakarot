@@ -49,7 +49,7 @@ class TestBasic(IsolatedAsyncioTestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cairo_coverage.report_runs(excluded_file={".local"})
+        cairo_coverage.report_runs(excluded_file={"site-packages"})
 
     async def test_arithmetic_operations(self):
         code, calldata = get_case(case="./tests/cases/001.json")
