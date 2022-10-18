@@ -1,8 +1,7 @@
 <p align="center">
-    <img src="resources/img/logo.png" height="200">
+    <img src="resources/img/kakarot_github_banner.png" height="200">
 </p>
 <div align="center">
-  <h1 align="center">Kakarot</h1>
   <h3 align="center">EVM interpreter written in Cairo, a sort of ZK-EVM emulator, leveraging STARK proof system.</h3>
 </div>
 
