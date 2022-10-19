@@ -22,6 +22,7 @@ from kakarot.constants import Constants
 namespace BlockInformation {
     // Define constants.
     const GAS_COST_CHAINID = 2;
+    const GAS_COST_COINBASE = 2;
 
     // @notice CHAINID operation.
     // @dev Get the chain ID.
@@ -44,6 +45,30 @@ namespace BlockInformation {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CHAINID);
+        return ctx;
+    }
+
+    // @notice COINBASE operation.
+    // @dev Get the block's beneficiary address.
+    // @custom:since Frontier
+    // @custom:group Block Information
+    // @custom:gas 3
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx: model.ExecutionContext*
+    ) -> model.ExecutionContext* {
+        %{ print("0x41 - COINBASE") %}
+        // Get the coinbase address.
+        let coinbase_address = Helpers.to_uint256(Constants.COINBASE_ADDRESS);
+        let stack: model.Stack* = Stack.push(ctx.stack, coinbase_address);
+
+        // Update the execution context.
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_COINBASE);
         return ctx;
     }
 }

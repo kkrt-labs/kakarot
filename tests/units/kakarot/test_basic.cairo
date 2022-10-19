@@ -186,5 +186,16 @@ func test_block_information{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
     // Assert value on the top of the stack
     test_utils.assert_top_stack(ctx, Constants.CHAIN_ID);
 
+    // Load test case COINBASE
+    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+        './tests/cases/008.json'
+    );
+
+    // Run EVM execution
+    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+    // Assert value on the top of the stack
+    test_utils.assert_top_stack(ctx, Constants.COINBASE_ADDRESS);
+
     return ();
 }

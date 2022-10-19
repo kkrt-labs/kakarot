@@ -1,0 +1,6 @@
+{
+  "name": "Block information COINBASE",
+  "code": "4100",
+  "calldata": "",
+  "expected_return_data": ""
+}
