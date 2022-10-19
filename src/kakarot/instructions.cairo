@@ -21,6 +21,7 @@ from kakarot.instructions.comparison_operations import ComparisonOperations
 from kakarot.instructions.duplication_operations import DuplicationOperations
 from kakarot.instructions.exchange_operations import ExchangeOperations
 from kakarot.instructions.memory_operations import MemoryOperations
+from kakarot.instructions.environmental_information import EnvironmentalInformation
 
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.
@@ -190,6 +191,9 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x12, ComparisonOperations.exec_slt);
         // 0x13 - SGT
         add_instruction(instructions, 0x13, ComparisonOperations.exec_sgt);
+
+        // 0x38 - CODESIZE
+        add_instruction(instructions, 0x38, EnvironmentalInformation.exec_codesize);
 
         // 0x52 - MSTORE
         add_instruction(instructions, 0x52, MemoryOperations.exec_store);
