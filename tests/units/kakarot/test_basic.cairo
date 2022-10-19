@@ -7,6 +7,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
 
 // Local dependencies
+from kakarot.constants import Constants
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.memory import Memory
@@ -163,6 +164,27 @@ func test_environmental_information{
 
     // Assert value on the top of the stack
     test_utils.assert_top_stack(ctx, 7);
+
+    return ();
+}
+
+@external
+func test_block_information{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    alloc_locals;
+
+    // Prepare Kakarot instance
+    let (local context) = prepare();
+
+    // Load test case CHAINID
+    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+        './tests/cases/007.json'
+    );
+
+    // Run EVM execution
+    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+    // Assert value on the top of the stack
+    test_utils.assert_top_stack(ctx, Constants.CHAIN_ID);
 
     return ();
 }

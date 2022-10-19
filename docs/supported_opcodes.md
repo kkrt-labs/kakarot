@@ -74,7 +74,7 @@ This document describes the opcodes supported by Kakarot.
 | 0x43         | NUMBER      | Get the block's number                                     |             |
 | 0x44         | DIFFICULTY  | Get the block's difficulty                                 |             |
 | 0x45         | GASLIMIT    | Get the block's gas limit                                  |             |
-| 0x46         | CHAINID     | Get the chain ID                                           |             |
+| 0x46         | CHAINID     | Get the chain ID                                           | ✅          |
 | 0x47         | SELFBALANCE | Get the balance of the current contract                    |             |
 | 0x48         | BASEFEE     | Get the base fee of the current block                      |             |
 
