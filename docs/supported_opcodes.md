@@ -27,7 +27,7 @@ This document describes the opcodes supported by Kakarot.
 | 0x12         | SLT         | Signed less-than comparision    | ✅          |
 | 0x13         | SGT         | Signed greater-than comparision | ✅          |
 | 0x14         | EQ          | Equality comparision            |             |
-| 0x15         | ISZERO      | Simple not operator             |             |
+| 0x15         | ISZERO      | Simple not operator             | ✅          |
 | 0x16         | AND         | Bitwise AND operation           |             |
 | 0x17         | OR          | Bitwise OR operation            |             |
 | 0x18         | XOR         | Bitwise XOR operation           |             |

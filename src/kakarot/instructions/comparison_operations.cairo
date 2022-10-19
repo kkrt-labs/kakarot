@@ -4,7 +4,7 @@
 
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.uint256 import Uint256, uint256_lt, uint256_signed_lt
+from starkware.cairo.common.uint256 import Uint256, uint256_lt, uint256_signed_lt, uint256_eq
 
 // Internal dependencies
 from kakarot.model import model
@@ -21,6 +21,7 @@ namespace ComparisonOperations {
     const GAS_COST_GT = 3;
     const GAS_COST_SLT = 3;
     const GAS_COST_SGT = 3;
+    const GAS_COST_ISZERO = 3;
 
     // @notice 0x10 - LT
     // @dev Comparison operation
@@ -167,6 +168,41 @@ namespace ComparisonOperations {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SGT);
+        return ctx;
+    }
+
+        // @notice 0x15 - ISZERO
+    // @dev Comparison operation
+    // @custom:since Frontier
+    // @custom:group Comparison & Bitwise Logic Operations
+    // @custom:gas 3
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context.
+    // @return The pointer to the execution context.
+    func exec_iszero{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx: model.ExecutionContext*
+    ) -> model.ExecutionContext* {
+        alloc_locals;
+        %{ print("0x15 - ISZERO") %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - a: integer
+        let (stack, a) = Stack.pop(stack);
+
+        // a == 0: 1 if a is 0, 0 otherwise.
+        let (result) = uint256_eq(a, Uint256(0, 0));
+
+        // Stack output:
+        // a == 0: 1 if a is 0, 0 otherwise.
+        let stack: model.Stack* = Stack.push(stack, Uint256(result, 0));
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_ISZERO);
         return ctx;
     }
 }

@@ -77,6 +77,9 @@ func test_comparison_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, 
     // Test for SGT
     _assert_comparison_operation('./tests/cases/003_sgt.json', 0);
 
+    // Test for ISZERO
+    _assert_comparison_operation('./tests/cases/003_iszero.json', 1);
+
     return ();
 }
 
