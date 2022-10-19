@@ -11,7 +11,7 @@ from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 
 // @title Duplication operations opcodes.
-// @notice This contract contains the functions to execute for duplication operations opcodes.
+// @notice This file contains the functions to execute for duplication operations opcodes.
 // @author @abdelhamidbakhta
 // @custom:namespace DuplicationOperations
 namespace DuplicationOperations {

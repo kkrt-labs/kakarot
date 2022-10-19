@@ -22,6 +22,7 @@ from kakarot.instructions.duplication_operations import DuplicationOperations
 from kakarot.instructions.exchange_operations import ExchangeOperations
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.environmental_information import EnvironmentalInformation
+from kakarot.instructions.block_information import BlockInformation
 
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.
@@ -194,8 +195,13 @@ namespace EVMInstructions {
         // 0x15 - ISZERO
         add_instruction(instructions, 0x15, ComparisonOperations.exec_iszero);
 
+        // Environment Information
         // 0x38 - CODESIZE
         add_instruction(instructions, 0x38, EnvironmentalInformation.exec_codesize);
+
+        // Block Information
+        // 0x46 - CHAINID
+        add_instruction(instructions, 0x46, BlockInformation.exec_chainid);
 
         // 0x52 - MSTORE
         add_instruction(instructions, 0x52, MemoryOperations.exec_store);

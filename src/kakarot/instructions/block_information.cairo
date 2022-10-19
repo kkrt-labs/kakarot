@@ -13,36 +13,37 @@ from kakarot.model import model
 from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
+from kakarot.constants import Constants
 
-// @title Environmental information opcodes.
-// @notice This file contains the functions to execute for environmental information opcodes.
+// @title BlockInformation information opcodes.
+// @notice This file contains the functions to execute for block information opcodes.
 // @author @abdelhamidbakhta
-// @custom:namespace EnvironmentalInformation
-namespace EnvironmentalInformation {
+// @custom:namespace BlockInformation
+namespace BlockInformation {
     // Define constants.
-    const GAS_COST_CODESIZE = 2;
+    const GAS_COST_CHAINID = 2;
 
-    // @notice CODESIZE operation.
-    // @dev Get size of code running in current environment.
-    // @custom:since Frontier
-    // @custom:group Environmental Information
+    // @notice CHAINID operation.
+    // @dev Get the chain ID.
+    // @custom:since Instanbul
+    // @custom:group Block Information
     // @custom:gas 3
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_codesize{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    func exec_chainid{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         ctx: model.ExecutionContext*
     ) -> model.ExecutionContext* {
-        %{ print("0x38 - CODESIZE") %}
-        // Get the code size.
-        let code_size = Helpers.to_uint256(ctx.code_len);
-        let stack: model.Stack* = Stack.push(ctx.stack, code_size);
+        %{ print("0x46 - CHAINID") %}
+        // Get the chain ID.
+        let chain_id = Helpers.to_uint256(Constants.CHAIN_ID);
+        let stack: model.Stack* = Stack.push(ctx.stack, chain_id);
 
         // Update the execution context.
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CODESIZE);
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CHAINID);
         return ctx;
     }
 }
