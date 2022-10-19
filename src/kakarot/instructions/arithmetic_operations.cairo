@@ -170,7 +170,7 @@ namespace ArithmeticOperations {
     // @custom:since Frontier
     // @custom:group Stop and Arithmetic Operations
     // @custom:gas 8
-    // @custom:stack_consumed_elements 3
+    // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
@@ -189,7 +189,7 @@ namespace ArithmeticOperations {
     // @custom:since Frontier
     // @custom:group Stop and Arithmetic Operations
     // @custom:gas 8
-    // @custom:stack_consumed_elements 3
+    // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
@@ -208,7 +208,7 @@ namespace ArithmeticOperations {
     // @custom:since Frontier
     // @custom:group Stop and Arithmetic Operations
     // @custom:gas 10
-    // @custom:stack_consumed_elements 3
+    // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
@@ -227,7 +227,7 @@ namespace ArithmeticOperations {
     // @custom:since Frontier
     // @custom:group Stop and Arithmetic Operations
     // @custom:gas 5
-    // @custom:stack_consumed_elements 3
+    // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
@@ -241,6 +241,12 @@ namespace ArithmeticOperations {
         return ctx;
     }
 
+    // @notice Add two 256-bit integers from the stack.
+    // @dev The result is modulo 2^256.
+    // @param stack The pointer to the stack.
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the stack.
     func add{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         stack: model.Stack*
     ) -> (model.Stack*, felt) {
@@ -261,6 +267,12 @@ namespace ArithmeticOperations {
         return (stack, GAS_COST_ADD);
     }
 
+    // @notice Multiply two 256-bit integers from the stack.
+    // @dev The result is modulo 2^256.
+    // @param stack The pointer to the stack.
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the stack.
     func mul{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         stack: model.Stack*
     ) -> (model.Stack*, felt) {
@@ -281,6 +293,12 @@ namespace ArithmeticOperations {
         return (stack, GAS_COST_MUL);
     }
 
+    // @notice Subtract two 256-bit integers from the stack.
+    // @dev The result is modulo 2^256.
+    // @param stack The pointer to the stack.
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the stack.
     func sub{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         stack: model.Stack*
     ) -> (model.Stack*, felt) {
@@ -301,6 +319,12 @@ namespace ArithmeticOperations {
         return (stack, GAS_COST_SUB);
     }
 
+    // @notice Divide two 256-bit integers from the stack.
+    // @dev The result is modulo 2^256.
+    // @param stack The pointer to the stack.
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the stack.
     func div{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         stack: model.Stack*
     ) -> (model.Stack*, felt) {
@@ -321,6 +345,12 @@ namespace ArithmeticOperations {
         return (stack, GAS_COST_DIV);
     }
 
+    // @notice Signed integer division of two 256-bit integers from the stack.
+    // @dev The result is modulo 2^256.
+    // @param stack The pointer to the stack.
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the stack.
     func sdiv{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         stack: model.Stack*
     ) -> (model.Stack*, felt) {
@@ -341,6 +371,12 @@ namespace ArithmeticOperations {
         return (stack, GAS_COST_SDIV);
     }
 
+    // @notice Modulo remainder of two 256-bit integers from the stack.
+    // @dev The result is modulo 2^256.
+    // @param stack The pointer to the stack.
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the stack.
     func mod{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         stack: model.Stack*
     ) -> (model.Stack*, felt) {
@@ -361,6 +397,12 @@ namespace ArithmeticOperations {
         return (stack, GAS_COST_MOD);
     }
 
+    // @notice Singed modulo remainder two 256-bit integers from the stack.
+    // @dev The result is modulo 2^256.
+    // @param stack The pointer to the stack.
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the stack.
     func smod{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         stack: model.Stack*
     ) -> (model.Stack*, felt) {
@@ -381,6 +423,12 @@ namespace ArithmeticOperations {
         return (stack, GAS_COST_SMOD);
     }
 
+    // @notice Modulo addition of two 256-bit integers from the stack.
+    // @dev The result is modulo 2^256.
+    // @param stack The pointer to the stack.
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the stack.
     func addmod{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         stack: model.Stack*
     ) -> (model.Stack*, felt) {
@@ -405,6 +453,12 @@ namespace ArithmeticOperations {
         return (stack, GAS_COST_ADDMOD);
     }
 
+    // @notice Modulo multiplication of two 256-bit integers from the stack.
+    // @dev The result is modulo 2^256.
+    // @param stack The pointer to the stack.
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the stack.
     func mulmod{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         stack: model.Stack*
     ) -> (model.Stack*, felt) {
@@ -429,6 +483,12 @@ namespace ArithmeticOperations {
         return (stack, GAS_COST_MULMOD);
     }
 
+    // @notice Exponentiation of two 256-bit integers from the stack.
+    // @dev The result is modulo 2^256.
+    // @param stack The pointer to the stack.
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the stack.
     func exp{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         stack: model.Stack*
     ) -> (model.Stack*, felt) {
@@ -449,6 +509,11 @@ namespace ArithmeticOperations {
         return (stack, GAS_COST_EXP);
     }
 
+    // @notice Internal exponentiation of two 256-bit integers from the stack.
+    // @dev The result is modulo 2^256.
+    // @param a The base.
+    // @param b The exponent.
+    // @return The result of the exponentiation.
     func internal_exp{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         a: Uint256, b: Uint256
     ) -> Uint256 {
@@ -469,6 +534,12 @@ namespace ArithmeticOperations {
         return zero_uint;
     }
 
+    // @notice Extend length of two’s complement signed integer.
+    // @dev The result is modulo 2^256.
+    // @param stack The pointer to the stack.
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the stack.
     func signextend{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         stack: model.Stack*
     ) -> (model.Stack*, felt) {
@@ -485,6 +556,11 @@ namespace ArithmeticOperations {
         return (stack, GAS_COST_SIGNEXTEND);
     }
 
+    // @notice Apply changes to the execution context.
+    // @param ctx The pointer to the execution context.
+    // @param stack The pointer to the stack.
+    // @param gas_cost The gas cost to increment.
+    // @return The pointer to the execution context.
     func apply_context_changes{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         ctx: model.ExecutionContext*, stack: model.Stack*, gas_cost: felt
     ) -> model.ExecutionContext* {
