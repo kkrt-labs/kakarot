@@ -223,3 +223,7 @@ Please read [our contribution guidelines](docs/CONTRIBUTING.md), and thank you f
 <!-- prettier-ignore-end -->
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
+
+<p align="center">
+    <img src="resources/img/kakarot_github_banner_footer.png" height="200">
+</p>
