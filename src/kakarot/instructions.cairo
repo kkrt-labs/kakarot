@@ -192,6 +192,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x12, ComparisonOperations.exec_slt);
         // 0x13 - SGT
         add_instruction(instructions, 0x13, ComparisonOperations.exec_sgt);
+        // 0x14 - EQ
+        add_instruction(instructions, 0x14, ComparisonOperations.exec_eq);
         // 0x15 - ISZERO
         add_instruction(instructions, 0x15, ComparisonOperations.exec_iszero);
 
