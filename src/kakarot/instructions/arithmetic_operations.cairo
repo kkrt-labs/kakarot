@@ -255,8 +255,6 @@ namespace ArithmeticOperations {
         // Stack input:
         // 0 - a: first integer value to add.
         // 1 - b: second integer value to add.
-        // let (stack, a) = Stack.pop(stack);
-        // let (stack, b) = Stack.pop(stack);
         let (stack, size, popped) = Stack.pop_n(stack, 2);
         let a = popped[0];
         let b = popped[1];
