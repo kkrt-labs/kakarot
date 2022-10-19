@@ -23,6 +23,8 @@ To set up a development environment, please follow these steps:
 
 You've found a bug in the source code, a mistake in the documentation or maybe you'd like a new feature? You can help us by [submitting an issue on GitHub](https://github.com/Gabdelhamidbakhta/kakarot/issues). Before you create an issue, make sure to search the issue archive -- your issue may have already been addressed!
 
+Also, the current priority is to target the [MVP](https://github.com/sayajin-labs/kakarot/tree/main/docs/mvp). Please make sure to always prioritize your contributions accordingly.
+
 Please try to create bug reports that are:
 
 - _Reproducible._ Include steps to reproduce the problem.
