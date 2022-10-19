@@ -198,6 +198,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x38, EnvironmentalInformation.exec_codesize);
 
         // Block Information
+        // 0x41 - COINBASE
+        add_instruction(instructions, 0x41, BlockInformation.exec_coinbase);
         // 0x46 - CHAINID
         add_instruction(instructions, 0x46, BlockInformation.exec_chainid);
 
