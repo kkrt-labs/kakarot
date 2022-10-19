@@ -31,7 +31,7 @@
 | EQ              |             |
 | GAS             |             |
 | GT              | ✅          |
-| ISZERO          |             |
+| ISZERO          | ✅          |
 | JUMP            |             |
 | JUMPDESTINATION |             |
 | JUMPI           |             |

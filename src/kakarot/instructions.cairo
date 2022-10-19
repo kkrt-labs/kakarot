@@ -192,6 +192,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x12, ComparisonOperations.exec_slt);
         // 0x13 - SGT
         add_instruction(instructions, 0x13, ComparisonOperations.exec_sgt);
+        // 0x15 - ISZERO
+        add_instruction(instructions, 0x15, ComparisonOperations.exec_iszero);
 
         // Environment Information
         // 0x38 - CODESIZE
