@@ -15,7 +15,7 @@ from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 
 // @title Environmental information opcodes.
-// @notice This contract contains the functions to execute for environmental information opcodes.
+// @notice This file contains the functions to execute for environmental information opcodes.
 // @author @abdelhamidbakhta
 // @custom:namespace EnvironmentalInformation
 namespace EnvironmentalInformation {

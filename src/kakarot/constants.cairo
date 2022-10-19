@@ -5,7 +5,7 @@
 // @title Constants file.
 // @notice This file contains global constants.
 // @author @abdelhamidbakhta
-// @custom:namespace EnvironConstantsmentalInformation
+// @custom:namespace Constants
 namespace Constants {
     // Define constants
 

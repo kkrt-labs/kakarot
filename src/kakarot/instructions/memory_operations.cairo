@@ -13,7 +13,7 @@ from kakarot.execution_context import ExecutionContext
 from kakarot.constants import Constants
 
 // @title Exchange operations opcodes.
-// @notice This contract contains the functions to execute for memory operations opcodes.
+// @notice This file contains the functions to execute for memory operations opcodes.
 // @author @LucasLvy @abdelhamidbakhta
 // @custom:namespace MemoryOperations
 namespace MemoryOperations {
