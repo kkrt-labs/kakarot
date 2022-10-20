@@ -44,7 +44,10 @@ body:
         - Exchange Operations
         - Logging Operations
         - System Operations
-  - type: markdown
+  - type: textarea
+    id: description
     attributes:
-      value: |
-        ## Description
+      label: Description
+      description: What does the opcode do?
+      placeholder: Opcode description
+      value: "0x - "
