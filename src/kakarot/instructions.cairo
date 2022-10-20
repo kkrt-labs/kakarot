@@ -23,6 +23,7 @@ from kakarot.instructions.exchange_operations import ExchangeOperations
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.environmental_information import EnvironmentalInformation
 from kakarot.instructions.block_information import BlockInformation
+from kakarot.instructions.system_operations import SystemOperations
 
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.
@@ -280,6 +281,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x9e, ExchangeOperations.exec_swap15);
         add_instruction(instructions, 0x9f, ExchangeOperations.exec_swap16);
 
+        // Add fs: System operations
+        add_instruction(instructions, 0xfe, SystemOperations.exec_invalid);
         return instructions;
     }
 }
