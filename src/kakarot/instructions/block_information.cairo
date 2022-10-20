@@ -10,7 +10,6 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp
 from starkware.cairo.common.math import split_felt
 
-
 // Internal dependencies
 from kakarot.model import model
 from utils.utils import Helpers
@@ -119,7 +118,7 @@ namespace BlockInformation {
         // Get the block number.
         let (current_block) = get_block_number();
         let (high, low) = split_felt(current_block);
-        let block_number = Uint256(low,high);
+        let block_number = Uint256(low, high);
 
         let stack: model.Stack* = Stack.push(ctx.stack, block_number);
 
@@ -131,4 +130,3 @@ namespace BlockInformation {
         return ctx;
     }
 }
-
