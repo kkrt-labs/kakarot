@@ -7,10 +7,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 
 from starkware.cairo.common.uint256 import Uint256
-from starkware.starknet.common.syscalls import (
-    get_block_number,
-    get_block_timestamp,
-)
+from starkware.starknet.common.syscalls import get_block_number
 
 // Internal dependencies
 from kakarot.model import model
@@ -88,7 +85,7 @@ namespace BlockInformation {
     func exec_number{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         ctx: model.ExecutionContext*
     ) -> model.ExecutionContext* {
-        %{ print("0x43 - NUMBER") %}
+        // %{ print("0x43 - NUMBER") %}
         // Get the block number.
         let (current_block) = get_block_number();
         let block_number = Helpers.to_uint256(current_block);
