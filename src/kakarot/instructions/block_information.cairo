@@ -7,6 +7,10 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 
 from starkware.cairo.common.uint256 import Uint256
+from starkware.starknet.common.syscalls import (
+    get_block_number,
+    get_block_timestamp,
+)
 
 // Internal dependencies
 from kakarot.model import model
@@ -86,14 +90,15 @@ namespace BlockInformation {
     ) -> model.ExecutionContext* {
         %{ print("0x43 - NUMBER") %}
         // Get the block number.
-        let block_number = Helpers.to_uint256(Constants.BLOCK_NUMBER);
+        let current_block = get_block_number();
+        let block_number = Helpers.to_uint256(current_block);
         let stack: model.Stack* = Stack.push(ctx.stack, block_number);
 
         // Update the execution context.
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_COINBASE);
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_NUMBER);
         return ctx;
     }
 }
