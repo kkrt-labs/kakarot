@@ -12,6 +12,7 @@ body:
     attributes:
       value: |
         # Opcode Request
+        Check [this](https://www.evm.codes/) for more information about opcodes and EVM.
   - type: dropdown
     id: since
     attributes:
