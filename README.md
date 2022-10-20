@@ -231,6 +231,7 @@ for being involved!
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/pscott"><img src="https://avatars.githubusercontent.com/u/30843220?v=4?s=100" width="100px;" alt="pscott"/><br /><sub><b>pscott</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=pscott" title="Code">💻</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=pscott" title="Tests">⚠️</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://www.linkedin.com/in/clementwalter"><img src="https://avatars.githubusercontent.com/u/18620296?v=4?s=100" width="100px;" alt="Clément Walter"/><br /><sub><b>Clément Walter</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=ClementWalter" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/danilowhk"><img src="https://avatars.githubusercontent.com/u/12735159?v=4?s=100" width="100px;" alt="danilowhk"/><br /><sub><b>danilowhk</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=danilowhk" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
