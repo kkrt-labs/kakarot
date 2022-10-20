@@ -7,6 +7,8 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.uint256 import Uint256
+from starkware.starknet.common.syscalls import get_block_number
+
 
 // Local dependencies
 from kakarot.constants import Constants
@@ -16,6 +18,7 @@ from kakarot.memory import Memory
 from tests.units.kakarot.library import setup, prepare, Kakarot
 from tests.model import EVMTestCase
 from tests.utils import test_utils
+
 
 // @title Basic EVM unit tests.
 // @author @abdelhamidbakhta
@@ -246,6 +249,21 @@ func test_block_information{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
 
     // Assert value on the top of the stack
     test_utils.assert_top_stack(ctx, coinbase_address);
+
+    // Load test case NUMBER
+    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+        './tests/cases/010.json'
+    );
+
+    // Run EVM execution
+    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+    // Assert value on the top of the stack
+    let (current_block) = get_block_number();
+    let (high, low) = split_felt(current_block);
+    let block_number = Uint256(low,high);
+
+    test_utils.assert_top_stack(ctx, block_number);
 
     return ();
 }
