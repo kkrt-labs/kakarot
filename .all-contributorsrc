@@ -79,6 +79,25 @@
         "code",
         "test"
       ]
+    },
+    {
+      "login": "pscott",
+      "name": "pscott",
+      "avatar_url": "https://avatars.githubusercontent.com/u/30843220?v=4",
+      "profile": "https://github.com/pscott",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "ClementWalter",
+      "name": "Clément Walter",
+      "avatar_url": "https://avatars.githubusercontent.com/u/18620296?v=4",
+      "profile": "https://www.linkedin.com/in/clementwalter",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,

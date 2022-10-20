@@ -39,9 +39,9 @@ production.
 
 ```mermaid
 %%{init: {'theme': 'forest', 'themeVariables': { 'darkMode': 'false'}}}%%
-pie title Kakarot EMV opcodes support (86 / 142)
-    "Supported" : 86
-    "Not supported" : 56
+pie title Kakarot EMV opcodes support (88 / 142)
+    "Supported" : 88
+    "Not supported" : 54
     "Partially supported" : 0
 ```
 
@@ -227,6 +227,10 @@ for being involved!
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/l-henri"><img src="https://avatars.githubusercontent.com/u/22731646?v=4?s=100" width="100px;" alt="Henri"/><br /><sub><b>Henri</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=l-henri" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://linktr.ee/lenny.codes"><img src="https://avatars.githubusercontent.com/u/46480795?v=4?s=100" width="100px;" alt="Lenny"/><br /><sub><b>Lenny</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=0xlny" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Kelvyne"><img src="https://avatars.githubusercontent.com/u/8125532?v=4?s=100" width="100px;" alt="Lakhdar Slaim"/><br /><sub><b>Lakhdar Slaim</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=Kelvyne" title="Code">💻</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=Kelvyne" title="Tests">⚠️</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/pscott"><img src="https://avatars.githubusercontent.com/u/30843220?v=4?s=100" width="100px;" alt="pscott"/><br /><sub><b>pscott</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=pscott" title="Code">💻</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=pscott" title="Tests">⚠️</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://www.linkedin.com/in/clementwalter"><img src="https://avatars.githubusercontent.com/u/18620296?v=4?s=100" width="100px;" alt="Clément Walter"/><br /><sub><b>Clément Walter</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=ClementWalter" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>
