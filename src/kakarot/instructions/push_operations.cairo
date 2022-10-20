@@ -15,7 +15,7 @@ from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 
 // @title Push operations opcodes.
-// @notice This contract contains the functions to execute for push operations opcodes.
+// @notice This file contains the functions to execute for push operations opcodes.
 // @author @abdelhamidbakhta
 // @custom:namespace PushOperations
 namespace PushOperations {

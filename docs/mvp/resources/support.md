@@ -1,6 +1,6 @@
 # Support of opcodes for the MVP
 
-38 / 75 opcodes are supported by the MVP.
+45 / 74 opcodes are supported by the MVP.
 
 | Opcode Name     | Implemented |
 | --------------- | ----------- |
@@ -12,7 +12,7 @@
 | CALLDATASIZE    |             |
 | CALLER          |             |
 | CALLVALUE       |             |
-| CHAINID         |             |
+| CHAINID         | ✅          |
 | DIV             | ✅          |
 | DUP1            | ✅          |
 | DUP10           | ✅          |
@@ -28,10 +28,10 @@
 | DUP7            | ✅          |
 | DUP8            | ✅          |
 | DUP9            | ✅          |
-| EQ              |             |
+| EQ              | ✅          |
 | GAS             |             |
 | GT              | ✅          |
-| ISZERO          |             |
+| ISZERO          | ✅          |
 | JUMP            |             |
 | JUMPDESTINATION |             |
 | JUMPI           |             |
@@ -40,7 +40,7 @@
 | LOG3            |             |
 | LT              | ✅          |
 | MLOAD           |             |
-| MOD             |             |
+| MOD             | ✅          |
 | MSTORE          | ✅          |
 | MUL             | ✅          |
 | NOT             |             |
@@ -52,7 +52,7 @@
 | PUSH3           | ✅          |
 | PUSH4           | ✅          |
 | PUSH5           | ✅          |
-| RETURN          | ✅          |
+| RETURN          |             |
 | RETURNDATACOPY  |             |
 | RETURNDATASIZE  |             |
 | REVERT          |             |
@@ -60,7 +60,7 @@
 | SHL             |             |
 | SHR             |             |
 | SLOAD           |             |
-| SLT             |             |
+| SLT             | ✅          |
 | SSTORE          |             |
 | STATICCALL      |             |
 | STOP            | ✅          |

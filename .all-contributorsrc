@@ -69,6 +69,16 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "Kelvyne",
+      "name": "Lakhdar Slaim",
+      "avatar_url": "https://avatars.githubusercontent.com/u/8125532?v=4",
+      "profile": "https://github.com/Kelvyne",
+      "contributions": [
+        "code",
+        "test"
+      ]
     }
   ],
   "contributorsPerLine": 7,

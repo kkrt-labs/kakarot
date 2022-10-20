@@ -26,7 +26,7 @@ It is a work in progress, and it is not ready for production.
 [Supported opcodes](#supported-opcodes) •
 [Build](#build) •
 [Test](#test) .
-[Report a bug](https://github.com/abdelhamidbakhta/kakarot/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+)
+[Report a bug](https://github.com/sayajin-labs/kakarot/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+)
 
 </div>
 
@@ -38,9 +38,9 @@ It is a work in progress, and it is not ready for production.
 
 ```mermaid
 %%{init: {'theme': 'forest', 'themeVariables': { 'darkMode': 'false'}}}%%
-pie title Kakarot EMV opcodes support
-    "Supported" : 80
-    "Not supported" : 62
+pie title Kakarot EMV opcodes support (86 / 142)
+    "Supported" : 86
+    "Not supported" : 56
     "Partially supported" : 0
 ```
 
@@ -215,6 +215,7 @@ Please read [our contribution guidelines](docs/CONTRIBUTING.md), and thank you f
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/0xMentorNotAPseudo"><img src="https://avatars.githubusercontent.com/u/4404287?v=4?s=100" width="100px;" alt="Mentor"/><br /><sub><b>Mentor</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=0xMentorNotAPseudo" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/l-henri"><img src="https://avatars.githubusercontent.com/u/22731646?v=4?s=100" width="100px;" alt="Henri"/><br /><sub><b>Henri</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=l-henri" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://linktr.ee/lenny.codes"><img src="https://avatars.githubusercontent.com/u/46480795?v=4?s=100" width="100px;" alt="Lenny"/><br /><sub><b>Lenny</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=0xlny" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Kelvyne"><img src="https://avatars.githubusercontent.com/u/8125532?v=4?s=100" width="100px;" alt="Lakhdar Slaim"/><br /><sub><b>Lakhdar Slaim</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=Kelvyne" title="Code">💻</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=Kelvyne" title="Tests">⚠️</a></td>
     </tr>
   </tbody>
 </table>
