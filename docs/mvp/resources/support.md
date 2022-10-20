@@ -77,4 +77,4 @@
 | SWAP7           | ✅          |
 | SWAP8           | ✅          |
 | SWAP9           | ✅          |
-| TIMESTAMP       |             |
+| TIMESTAMP       | ✅          |

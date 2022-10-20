@@ -7,7 +7,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.uint256 import Uint256
-from starkware.starknet.common.syscalls import get_block_number
+from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp
 
 
 // Local dependencies
@@ -222,7 +222,9 @@ func test_block_information{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
     // Prepare Kakarot instance
     let (local context) = prepare();
 
+    // ------------------------------------------------------------------------------------------------
     // Load test case CHAINID
+    // ------------------------------------------------------------------------------------------------
     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
         './tests/cases/007.json'
     );
@@ -250,7 +252,9 @@ func test_block_information{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
     // Assert value on the top of the stack
     test_utils.assert_top_stack(ctx, coinbase_address);
 
+    // ------------------------------------------------------------------------------------------------
     // Load test case NUMBER
+    // ------------------------------------------------------------------------------------------------
     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
         './tests/cases/010.json'
     );
@@ -264,6 +268,23 @@ func test_block_information{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
     let block_number = Uint256(low,high);
 
     test_utils.assert_top_stack(ctx, block_number);
+
+    // ------------------------------------------------------------------------------------------------
+    // Load test case TIMESTAMP
+    // ------------------------------------------------------------------------------------------------
+    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+        './tests/cases/011.json'
+    );
+
+    // Run EVM execution
+    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+    // Assert value on the top of the stack
+    let (current_timestamp) = get_block_timestamp();
+    let (high, low) = split_felt(current_timestamp);
+    let block_timestamp = Uint256(low, high);
+
+    test_utils.assert_top_stack(ctx, block_timestamp);
 
     return ();
 }

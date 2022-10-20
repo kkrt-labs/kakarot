@@ -7,7 +7,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 
 from starkware.cairo.common.uint256 import Uint256
-from starkware.starknet.common.syscalls import get_block_number
+from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp
 from starkware.cairo.common.math import split_felt
 
 
@@ -26,6 +26,7 @@ namespace BlockInformation {
     // Define constants.
     const GAS_COST_CHAINID = 2;
     const GAS_COST_COINBASE = 2;
+    const GAS_COST_TIMESTAMP = 2;
     const GAS_COST_NUMBER = 2;
 
     // @notice CHAINID operation.
@@ -73,6 +74,33 @@ namespace BlockInformation {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_COINBASE);
+        return ctx;
+    }
+
+    // @notice TIMESTAMP operation.
+    // @dev Get the block’s timestamp
+    // @custom:since Frontier
+    // @custom:group Block Information
+    // @custom:gas 2
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_timestamp{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx: model.ExecutionContext*
+    ) -> model.ExecutionContext* {
+        %{ print("0x42 - TIMESTAMP") %}
+        // Get the block’s timestamp
+        let (current_timestamp) = get_block_timestamp();
+        let (high, low) = split_felt(current_timestamp);
+        let block_timestamp = Uint256(low, high);
+
+        let stack: model.Stack* = Stack.push(ctx.stack, block_timestamp);
+
+        // Update the execution context.
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_TIMESTAMP);
         return ctx;
     }
 
