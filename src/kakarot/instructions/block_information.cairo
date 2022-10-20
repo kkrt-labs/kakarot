@@ -90,7 +90,7 @@ namespace BlockInformation {
     ) -> model.ExecutionContext* {
         %{ print("0x43 - NUMBER") %}
         // Get the block number.
-        let current_block = get_block_number();
+        let (current_block) = get_block_number();
         let block_number = Helpers.to_uint256(current_block);
         let stack: model.Stack* = Stack.push(ctx.stack, block_number);
 
