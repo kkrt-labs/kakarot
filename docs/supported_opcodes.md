@@ -196,5 +196,5 @@ This document describes the opcodes supported by Kakarot.
 | 0xf5         | CREATE2      | Create a new account with associated code                         |             |
 | 0xfa         | STATICCALL   | Static message-call into an account                               |             |
 | 0xfd         | REVERT       | Halt execution reverting state changes                            |             |
-| 0xfe         | INVALID      | Designated invalid instruction                                    |             |
+| 0xfe         | INVALID      | Designated invalid instruction                                    | ✅          |
 | 0xff         | SELFDESTRUCT | Halt execution and register account for later deletion            |             |

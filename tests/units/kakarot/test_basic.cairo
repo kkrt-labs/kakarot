@@ -205,3 +205,22 @@ func test_block_information{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
 
     return ();
 }
+
+@external
+func test_system_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    alloc_locals;
+
+    // Prepare Kakarot instance
+    let (local context) = prepare();
+
+    // Load test case
+    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+        './tests/cases/009.json'
+    );
+
+    // Run EVM execution
+    %{ expect_revert("TRANSACTION_FAILED", "Kakarot: 0xFE: Invalid Opcode") %}
+    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+    return ();
+}
