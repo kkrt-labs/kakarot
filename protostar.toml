@@ -5,25 +5,20 @@ protostar_version = "0.4.2"
 libs_path = "lib"
 
 ["protostar.shared_command_configs"]
-cairo_path = [
-     "./lib/cairo_contracts/src",
-    "src"
-]
+cairo_path = ["./lib/cairo_contracts/src", "src"]
 
 ["protostar.contracts"]
-Kakarot = [
-    "./src/kakarot/kakarot.cairo",
-]
+Kakarot = ["./src/kakarot/kakarot.cairo"]
 
 ["protostar.test"]
 target = ["tests"]
 
 # https://github.com/Shard-Labs/starknet-devnet
 [profile.devnet.protostar.deploy]
-gateway_url="http://127.0.0.1:5050/"
+gateway_url = "http://127.0.0.1:5050/"
 
 [profile.testnet.protostar.deploy]
-network="testnet"
+network = "testnet"
 
 [profile.mainnet.protostar.deploy]
-network="mainnet"
+network = "mainnet"

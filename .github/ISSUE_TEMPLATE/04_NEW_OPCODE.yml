@@ -1,0 +1,51 @@
+name: Opcode Request
+about: Suggest the implementation of a new opcode
+title: "feat: implement 0x - "
+labels:
+  - "Techno: cairo"
+  - "Context: isolated"
+  - "Difficulty: intermediate"
+  - "Type: feature"
+  - "Duration: 1 day"
+assignees: ""
+body:
+  - type: markdown
+    attributes: null
+    value: |
+      # Opcode Request
+  - type: dropdown
+    id: since
+    attributes:
+      label: Since
+      description: Since which upgrade the opcode is available?
+      options:
+        - Frontier
+        - Constantinople
+        - Petersburg
+        - Istanbul
+        - Muir Glacier
+        - Berlin
+        - London
+        - Arrow Glacier
+        - Gray Glacier
+  - type: dropdown
+    id: group
+    attributes:
+      label: Group
+      description: What group does this opcode belong to?
+      options:
+        - Stop and Arithmetic Operations
+        - Comparison & bitwise logic operations
+        - SHA3
+        - Environmental Information
+        - Block Information
+        - Stack, Memory, Storage and Flow Operations
+        - Push Operations
+        - Duplication Operations
+        - Exchange Operations
+        - Logging Operations
+        - System Operations
+  - type: markdown
+    attributes: null
+    value: |
+      ## Description
