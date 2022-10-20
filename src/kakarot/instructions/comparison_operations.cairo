@@ -4,7 +4,14 @@
 
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.uint256 import Uint256, uint256_lt, uint256_signed_lt, uint256_eq, uint256_shl, uint256_shr
+from starkware.cairo.common.uint256 import (
+    Uint256,
+    uint256_lt,
+    uint256_signed_lt,
+    uint256_eq,
+    uint256_shl,
+    uint256_shr,
+)
 
 // Internal dependencies
 from kakarot.model import model
@@ -211,7 +218,7 @@ namespace ComparisonOperations {
         return ctx;
     }
 
-        // @notice 0x15 - ISZERO
+    // @notice 0x15 - ISZERO
     // @dev Comparison operation
     // @custom:since Frontier
     // @custom:group Comparison & Bitwise Logic Operations

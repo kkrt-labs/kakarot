@@ -43,7 +43,7 @@ func test__init__should_return_an_empty_execution_context{
     assert result.stack.raw_len = 0;
     assert result.memory.raw_len = 0;
     assert result.gas_used = 0;
-    assert result.gas_limit = 0; // TODO: Add support for gas limit
+    assert result.gas_limit = 0;  // TODO: Add support for gas limit
     assert result.intrinsic_gas_cost = 0;
     return ();
 }

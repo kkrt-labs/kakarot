@@ -9,7 +9,6 @@ from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp
 
-
 // Local dependencies
 from kakarot.constants import Constants
 from kakarot.model import model
@@ -18,7 +17,6 @@ from kakarot.memory import Memory
 from tests.units.kakarot.library import setup, prepare, Kakarot
 from tests.model import EVMTestCase
 from tests.utils import test_utils
-
 
 // @title Basic EVM unit tests.
 // @author @abdelhamidbakhta
@@ -102,25 +100,46 @@ func test_bitwise_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
     // Test for SHL (from https://eips.ethereum.org/EIPS/eip-145)
     _assert_operation('./tests/cases/003/shl/1.json', Uint256(1, 0));
     _assert_operation('./tests/cases/003/shl/2.json', Uint256(2, 0));
-    _assert_operation('./tests/cases/003/shl/3.json', Uint256(0, 0x80000000000000000000000000000000));
+    _assert_operation(
+        './tests/cases/003/shl/3.json', Uint256(0, 0x80000000000000000000000000000000)
+    );
     _assert_operation('./tests/cases/003/shl/4.json', Uint256(0, 0));
     _assert_operation('./tests/cases/003/shl/5.json', Uint256(0, 0));
-    _assert_operation('./tests/cases/003/shl/6.json', Uint256(0xffffffffffffffffffffffffffffffff, 0xffffffffffffffffffffffffffffffff));
-    _assert_operation('./tests/cases/003/shl/7.json', Uint256(0xfffffffffffffffffffffffffffffffe, 0xffffffffffffffffffffffffffffffff));
-    _assert_operation('./tests/cases/003/shl/8.json', Uint256(0, 0x80000000000000000000000000000000));
+    _assert_operation(
+        './tests/cases/003/shl/6.json',
+        Uint256(0xffffffffffffffffffffffffffffffff, 0xffffffffffffffffffffffffffffffff),
+    );
+    _assert_operation(
+        './tests/cases/003/shl/7.json',
+        Uint256(0xfffffffffffffffffffffffffffffffe, 0xffffffffffffffffffffffffffffffff),
+    );
+    _assert_operation(
+        './tests/cases/003/shl/8.json', Uint256(0, 0x80000000000000000000000000000000)
+    );
     _assert_operation('./tests/cases/003/shl/9.json', Uint256(0, 0));
     _assert_operation('./tests/cases/003/shl/10.json', Uint256(0, 0));
-    _assert_operation('./tests/cases/003/shl/11.json', Uint256(0xfffffffffffffffffffffffffffffffe, 0xffffffffffffffffffffffffffffffff));
+    _assert_operation(
+        './tests/cases/003/shl/11.json',
+        Uint256(0xfffffffffffffffffffffffffffffffe, 0xffffffffffffffffffffffffffffffff),
+    );
 
     // Test for SHR (from https://eips.ethereum.org/EIPS/eip-145)
     _assert_operation('./tests/cases/003/shr/1.json', Uint256(1, 0));
     _assert_operation('./tests/cases/003/shr/2.json', Uint256(0, 0));
-    _assert_operation('./tests/cases/003/shr/3.json', Uint256(0, 0x40000000000000000000000000000000));
+    _assert_operation(
+        './tests/cases/003/shr/3.json', Uint256(0, 0x40000000000000000000000000000000)
+    );
     _assert_operation('./tests/cases/003/shr/4.json', Uint256(1, 0));
     _assert_operation('./tests/cases/003/shr/5.json', Uint256(0, 0));
     _assert_operation('./tests/cases/003/shr/6.json', Uint256(0, 0));
-    _assert_operation('./tests/cases/003/shr/7.json', Uint256(0xffffffffffffffffffffffffffffffff, 0xffffffffffffffffffffffffffffffff));
-    _assert_operation('./tests/cases/003/shr/8.json', Uint256(0xffffffffffffffffffffffffffffffff, 0x7fffffffffffffffffffffffffffffff));
+    _assert_operation(
+        './tests/cases/003/shr/7.json',
+        Uint256(0xffffffffffffffffffffffffffffffff, 0xffffffffffffffffffffffffffffffff),
+    );
+    _assert_operation(
+        './tests/cases/003/shr/8.json',
+        Uint256(0xffffffffffffffffffffffffffffffff, 0x7fffffffffffffffffffffffffffffff),
+    );
     _assert_operation('./tests/cases/003/shr/9.json', Uint256(1, 0));
     _assert_operation('./tests/cases/003/shr/10.json', Uint256(0, 0));
     _assert_operation('./tests/cases/003/shr/11.json', Uint256(0, 0));
@@ -265,7 +284,7 @@ func test_block_information{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
     // Assert value on the top of the stack
     let (current_block) = get_block_number();
     let (high, low) = split_felt(current_block);
-    let block_number = Uint256(low,high);
+    let block_number = Uint256(low, high);
 
     test_utils.assert_top_stack(ctx, block_number);
 
