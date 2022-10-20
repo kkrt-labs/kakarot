@@ -209,6 +209,8 @@ namespace EVMInstructions {
         // Block Information
         // 0x41 - COINBASE
         add_instruction(instructions, 0x41, BlockInformation.exec_coinbase);
+        // 0x42 - TIMESTAMP
+        add_instruction(instructions, 0x42, BlockInformation.exec_timestamp);
         // 0x43 - NUMBER
         add_instruction(instructions, 0x43, BlockInformation.exec_number);
         // 0x46 - CHAINID
