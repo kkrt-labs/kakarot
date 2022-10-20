@@ -2,30 +2,31 @@
     <img src="resources/img/kakarot_github_banner.png" height="200">
 </p>
 <div align="center">
-  <h3 align="center">EVM interpreter written in Cairo, a sort of ZK-EVM emulator, leveraging STARK proof system.</h3>
+  <h3 align="center">
+  EVM interpreter written in Cairo, a sort of ZK-EVM emulator, leveraging STARK proof system.
+  </h3>
 </div>
 
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/abdelhamidbakhta/kakarot/TESTS?style=flat-square&logo=github)
 ![GitHub](https://img.shields.io/github/license/abdelhamidbakhta/kakarot?style=flat-square&logo=github)
 ![GitHub contributors](https://img.shields.io/github/contributors/abdelhamidbakhta/kakarot?logo=github&style=flat-square)
 ![GitHub top language](https://img.shields.io/github/languages/top/abdelhamidbakhta/kakarot?style=flat-square)
-[![Telegran](https://img.shields.io/badge/telegram-Kakarot-yellow.svg?logo=telegram)](https://t.me/KakarotZkEvm)
+[![Telegram](https://img.shields.io/badge/telegram-Kakarot-yellow.svg?logo=telegram)](https://t.me/KakarotZkEvm)
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
 ![GitHub Repo stars](https://img.shields.io/github/stars/abdelhamidbakhta/kakarot?style=social)
 [![Twitter Follow](https://img.shields.io/twitter/follow/KakarotZkEvm?style=social)](https://twitter.com/KakarotZkEvm)
 
 <div align="center">
 
-**Kakarot** is an Ethereum Virtual Machine written in Cairo. It means it can be deployed on StarkNet, a layer 2 scaling solution for Ethereum, and run an EVM bytecode program.
-Hence, Kakarot can be used to run Ethereum smart contracts on StarkNet.
-Kakarot is the super sayajin ZK-EVM !
-Why ? Because: `It's over 9000!!!!!`.
-It is a work in progress, and it is not ready for production.
+**Kakarot** is an Ethereum Virtual Machine written in Cairo. It means it can be
+deployed on StarkNet, a layer 2 scaling solution for Ethereum, and run an EVM
+bytecode program. Hence, Kakarot can be used to run Ethereum smart contracts on
+StarkNet. Kakarot is the super sayajin ZK-EVM ! Why ? Because:
+`It's over 9000!!!!!`. It is a work in progress, and it is not ready for
+production.
 
-[Getting started](#getting-started) •
-[Supported opcodes](#supported-opcodes) •
-[Build](#build) •
-[Test](#test) .
+[Getting started](#getting-started) • [Supported opcodes](#supported-opcodes) •
+[Build](#build) • [Test](#test) .
 [Report a bug](https://github.com/sayajin-labs/kakarot/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+)
 
 </div>
@@ -46,8 +47,10 @@ pie title Kakarot EMV opcodes support (86 / 142)
 
 Here is the list of supported opcodes: [opcodes](docs/supported_opcodes.md)
 
-For the moment the list is maintained manually, but it will likely be generated automatically in the future. If you want to contribute, you can help us by adding the missing opcodes.
-And if you implement a new opcode, please update the list.
+For the moment the list is maintained manually, but it will likely be generated
+automatically in the future. If you want to contribute, you can help us by
+adding the missing opcodes. And if you implement a new opcode, please update the
+list.
 
 ## Documentation
 
@@ -97,13 +100,13 @@ Execution of a simple EVM bytecode program on Kakarot.
 
 The bytecode is the following:
 
-```
+```console
 6001600503600301610166016002026105b40460020500
 ```
 
 Which corresponds to the following EVM program:
 
-```
+```console
 0x60 - PUSH1
 0x60 - PUSH1
 0x03 - SUB
@@ -176,13 +179,16 @@ DEBUG=True protostar test
 With:
 
 - `testnet` profile defined in protostar config file (testnet for alpha-goerli)
-- `admin` alias to the admin account (optional if it is your `__default__` acount, see also starknet account [documentation](https://starknet.io/docs/hello_starknet/account_setup.html))
+- `admin` alias to the admin account (optional if it is your `__default__`
+  account, see also starknet account
+  [documentation](https://starknet.io/docs/hello_starknet/account_setup.html))
 
 Contract addresses will be logged into the prompt.
 
 ### Inputs
 
-To manage inputs sent to constructor during the deployment, you can customize the [config files](./scripts/configs/).
+To manage inputs sent to constructor during the deployment, you can customize
+the [config files](./scripts/configs/).
 
 ## License
 
@@ -193,13 +199,18 @@ To manage inputs sent to constructor during the deployment, you can customize th
 Kakarot follows good practices of security, but 100% security cannot be assured.
 Kakarot is provided **"as is"** without any **warranty**. Use at your own risk.
 
-_For more information and to report security issues, please refer to our [security documentation](docs/SECURITY.md)._
+_For more information and to report security issues, please refer to our
+[security documentation](docs/SECURITY.md)._
 
 ## Contributing
 
-First off, thanks for taking the time to contribute! Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make will benefit everybody else and are **greatly appreciated**.
+First off, thanks for taking the time to contribute! Contributions are what make
+the open-source community such an amazing place to learn, inspire, and create.
+Any contributions you make will benefit everybody else and are **greatly
+appreciated**.
 
-Please read [our contribution guidelines](docs/CONTRIBUTING.md), and thank you for being involved!
+Please read [our contribution guidelines](docs/CONTRIBUTING.md), and thank you
+for being involved!
 
 ## Contributors
 
