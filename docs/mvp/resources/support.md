@@ -28,7 +28,7 @@
 | DUP7            | ✅          |
 | DUP8            | ✅          |
 | DUP9            | ✅          |
-| EQ              |             |
+| EQ              | ✅          |
 | GAS             |             |
 | GT              | ✅          |
 | ISZERO          | ✅          |
