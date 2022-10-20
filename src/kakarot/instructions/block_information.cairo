@@ -89,12 +89,7 @@ namespace BlockInformation {
     ) -> model.ExecutionContext* {
         %{ print("0x43 - NUMBER") %}
         // Get the block number.
-        // let current_block : felt = 1000;
         let (current_block) = get_block_number();
-        %{
-            print(ids.current_block)
-        %}
-        // let block_number = Helpers.to_uint256(current_block);
         let (high, low) = split_felt(current_block);
         let block_number = Uint256(low,high);
 
