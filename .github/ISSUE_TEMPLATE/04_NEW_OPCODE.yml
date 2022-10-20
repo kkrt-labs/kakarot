@@ -7,7 +7,6 @@ labels:
   - "Difficulty: intermediate"
   - "Type: feature"
   - "Duration: 1 day"
-assignees: ""
 body:
   - type: markdown
     attributes:
