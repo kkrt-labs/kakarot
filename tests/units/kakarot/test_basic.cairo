@@ -19,6 +19,7 @@ from tests.units.kakarot.library import setup, prepare, Kakarot
 from tests.model import EVMTestCase
 from tests.utils import test_utils
 
+
 // @title Basic EVM unit tests.
 // @author @abdelhamidbakhta
 
@@ -260,7 +261,6 @@ func test_block_information{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
     // Assert value on the top of the stack
     let (current_block) = get_block_number();
     let (high, low) = split_felt(current_block);
-
     let block_number = Uint256(low,high);
 
     test_utils.assert_top_stack(ctx, block_number);
