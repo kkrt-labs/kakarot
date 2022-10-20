@@ -14,8 +14,6 @@ namespace Constants {
     const CHAIN_ID = 1263227476;
     // COINBASE address does not make sense in a StarkNet context
     const COINBASE_ADDRESS = 0;
-    // COINBASE address does not make sense in a StarkNet context
-    const BLOCK_NUMBER = 1636704767;
 
     // STACK
     const STACK_MAX_DEPTH = 1024;
