@@ -4,7 +4,7 @@
 
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.uint256 import Uint256, uint256_lt, uint256_signed_lt, uint256_eq
+from starkware.cairo.common.uint256 import Uint256, uint256_lt, uint256_signed_lt, uint256_eq, uint256_shl, uint256_shr
 
 // Internal dependencies
 from kakarot.model import model
@@ -23,6 +23,8 @@ namespace ComparisonOperations {
     const GAS_COST_SGT = 3;
     const GAS_COST_ISZERO = 3;
     const GAS_COST_EQ = 3;
+    const GAS_COST_SHL = 3;
+    const GAS_COST_SHR = 3;
 
     // @notice 0x10 - LT
     // @dev Comparison operation
@@ -241,6 +243,79 @@ namespace ComparisonOperations {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_ISZERO);
+        return ctx;
+    }
+    // @notice 0x1B - SHL
+    // @dev Bitwise operation
+    // @custom:since Constantinople
+    // @custom:group Comparison & Bitwise Logic Operations
+    // @custom:gas 3
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context.
+    // @return The pointer to the execution context.
+    func exec_shl{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx: model.ExecutionContext*
+    ) -> model.ExecutionContext* {
+        alloc_locals;
+        %{ print("0x1B - SHL") %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - shift: integer
+        // 1 - value: integer
+        let (stack, shift) = Stack.pop(stack);
+        let (stack, value) = Stack.pop(stack);
+
+        // Left shift `value` by `shift`.
+        let (result) = uint256_shl(value, shift);
+
+        // Stack output:
+        // The result of the shift operation.
+        let stack: model.Stack* = Stack.push(stack, result);
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SHL);
+        return ctx;
+    }
+
+    // @notice 0x1C - SHR
+    // @dev Bitwise operation
+    // @custom:since Constantinople
+    // @custom:group Comparison & Bitwise Logic Operations
+    // @custom:gas 3
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context.
+    // @return The pointer to the execution context.
+    func exec_shr{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx: model.ExecutionContext*
+    ) -> model.ExecutionContext* {
+        alloc_locals;
+        %{ print("0x1C - SHR") %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - shift: integer
+        // 1 - value: integer
+        let (stack, shift) = Stack.pop(stack);
+        let (stack, value) = Stack.pop(stack);
+
+        // Right shift `value` by `shift`.
+        let (result) = uint256_shr(value, shift);
+
+        // Stack output:
+        // The result of the shift operation.
+        let stack: model.Stack* = Stack.push(stack, result);
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SHR);
         return ctx;
     }
 }

@@ -7,6 +7,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.uint256 import Uint256, uint256_eq
+from starkware.cairo.common.math import split_felt
 
 // Internal dependencies
 from kakarot.execution_context import ExecutionContext
@@ -54,12 +55,11 @@ namespace test_utils {
     // @param ctx The pointer to the execution context.
     // @param expected_value The expected value.
     func assert_top_stack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*, expected_value: felt
+        ctx: model.ExecutionContext*, expected_value: Uint256
     ) {
         alloc_locals;
         let (stack, actual) = Stack.pop(ctx.stack);
-        let expected_uint256 = Uint256(expected_value, 0);
-        let (are_equal) = uint256_eq(actual, expected_uint256);
+        let (are_equal) = uint256_eq(actual, expected_value);
         assert are_equal = TRUE;
         return ();
     }
@@ -68,13 +68,12 @@ namespace test_utils {
     // @param ctx The pointer to the execution context.
     // @param expected_value The expected value.
     func assert_top_memory{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*, expected_value: felt
+        ctx: model.ExecutionContext*, expected_value: Uint256
     ) {
         alloc_locals;
         let len = Memory.len(ctx.memory);
         let actual = Memory.load(ctx.memory, len - 1);
-        let expected_uint256 = Uint256(expected_value, 0);
-        let (are_equal) = uint256_eq(actual, expected_uint256);
+        let (are_equal) = uint256_eq(actual, expected_value);
         assert are_equal = TRUE;
         return ();
     }
