@@ -51,9 +51,9 @@ namespace ArithmeticOperations {
         // 0 - a: first integer value to add.
         // 1 - b: second integer value to add.
         let stack = ctx.stack;
-        let (stack, len, popped) = Stack.pop_n(stack, 2);
-        let a = popped[0];
-        let b = popped[1];
+        let (stack, popped) = Stack.pop_n(stack, 2);
+        let a = popped[1];
+        let b = popped[0];
 
         // Compute the addition
         let (result) = SafeUint256.add(a, b);

@@ -92,13 +92,12 @@ func test__pop__should_pop_N_elements_to_the_stack{
     let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
 
     // When
-    let (stack, elements_len, elements) = Stack.pop_n(stack, 3);
+    let (stack, elements) = Stack.pop_n(stack, 3);
 
     // Then
-    assert elements_len = 3;
-    assert elements[0] = Uint256(3, 0);
+    assert elements[2] = Uint256(3, 0);
     assert elements[1] = Uint256(2, 0);
-    assert elements[2] = Uint256(1, 0);
+    assert elements[0] = Uint256(1, 0);
     assert stack.raw_len = 0;
     return ();
 }
@@ -126,7 +125,7 @@ func test__pop__should_fail__when_stack_underflow_pop_n{
 
     // When & Then
     %{ expect_revert("TRANSACTION_FAILED", "Kakarot: StackUnderflow") %}
-    let (stack, elements_len, elements) = Stack.pop_n(stack, 2);
+    let (stack, elements) = Stack.pop_n(stack, 2);
     return ();
 }
 

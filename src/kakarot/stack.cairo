@@ -79,30 +79,23 @@ namespace Stack {
     // @param self - The pointer to the stack.
     // @param len - The len of elements to pop.
     // @return The new pointer to the stack.
-    // @return elements_len the popped elements.
     // @return elements the pointer to the first popped element.
     func pop_n{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Stack*, len: felt
-    ) -> (new_stack: model.Stack*, elements_len: felt, elements: Uint256*) {
+        self: model.Stack*, n: felt
+    ) -> (new_stack: model.Stack*, elements: Uint256*) {
         alloc_locals;
-        Stack.check_underflow(self, len - 1);
-        // Get stack length
-        let current_len = Stack.len(self);
+        Stack.check_underflow(self, n - 1);
         // Get new segment for next stack copy
         let (new_elements: Uint256*) = alloc();
         // Get length of new stack copy
-        let new_len = self.raw_len - (element_size * len);
+        let new_len = self.raw_len - (element_size * n);
         // Copy stack without last N elements
         memcpy(dst=new_elements, src=self.elements, len=new_len);
-
-        // Get new segment for popped elements copy
-        let (popped_elements: Uint256*) = alloc();
-        // Copy N last elements
-        copy_reverse(len, &self.elements[current_len - len], popped_elements);
         
         // Create new stack
         local new_stack: model.Stack* = new model.Stack(elements=new_elements, raw_len=new_len);
-        return (new_stack=new_stack, elements_len=len, elements=popped_elements);
+        // Return new stack & pointer to first popped element
+        return (new_stack=new_stack, elements=self.elements + new_len);
     }
 
     // @notice Return a value from the stack at a given stack index.
@@ -155,21 +148,6 @@ namespace Stack {
         );
         // Push the top value and return the new stack
         return Stack.push(dst_stack, top_value);
-    }
-
-    // @notice Copy & reverse a segment into dst.
-    // @param elements_len - The length of elements to copy.
-    // @param elements - The pointer to the source segment.
-    // @param dst - The pointer to the destination segment.
-    // @return The new pointer to the destination segment.
-    func copy_reverse{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        elements_len: felt, elements: Uint256*, dst: Uint256*
-    ) -> (dst: Uint256*){
-        if(elements_len == 0){
-            return (dst=dst);
-        }
-        assert [dst] = elements[elements_len - 1];
-        return copy_reverse(elements_len - 1, elements, dst + element_size);
     }
 
     // @notice Copy a segment of the stack except at a given index.
