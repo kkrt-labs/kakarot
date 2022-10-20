@@ -60,7 +60,7 @@
 | SHL             |             |
 | SHR             |             |
 | SLOAD           |             |
-| SLT             |             |
+| SLT             | ✅          |
 | SSTORE          |             |
 | STATICCALL      |             |
 | STOP            | ✅          |
