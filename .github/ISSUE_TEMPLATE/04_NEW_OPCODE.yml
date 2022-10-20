@@ -1,5 +1,5 @@
 name: Opcode Request
-about: Suggest the implementation of a new opcode
+description: Suggest the implementation of a new opcode
 title: "feat: implement 0x - "
 labels:
   - "Techno: cairo"
@@ -10,9 +10,9 @@ labels:
 assignees: ""
 body:
   - type: markdown
-    attributes: null
-    value: |
-      # Opcode Request
+    attributes:
+      value: |
+        # Opcode Request
   - type: dropdown
     id: since
     attributes:
@@ -46,6 +46,6 @@ body:
         - Logging Operations
         - System Operations
   - type: markdown
-    attributes: null
-    value: |
-      ## Description
+    attributes:
+      value: |
+        ## Description
