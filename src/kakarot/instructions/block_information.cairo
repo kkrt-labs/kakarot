@@ -23,6 +23,7 @@ namespace BlockInformation {
     // Define constants.
     const GAS_COST_CHAINID = 2;
     const GAS_COST_COINBASE = 2;
+    const GAS_COST_NUMBER = 2;
 
     // @notice CHAINID operation.
     // @dev Get the chain ID.
@@ -71,4 +72,29 @@ namespace BlockInformation {
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_COINBASE);
         return ctx;
     }
+
+    // @notice NUMBER operation.
+    // @dev Get the block number
+    // @custom:since Frontier
+    // @custom:group Block Information
+    // @custom:gas 2
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_number{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx: model.ExecutionContext*
+    ) -> model.ExecutionContext* {
+        %{ print("0x43 - NUMBER") %}
+        // Get the block number.
+        let block_number = Helpers.to_uint256(Constants.BLOCK_NUMBER);
+        let stack: model.Stack* = Stack.push(ctx.stack, block_number);
+
+        // Update the execution context.
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_COINBASE);
+        return ctx;
+    }
 }
+
