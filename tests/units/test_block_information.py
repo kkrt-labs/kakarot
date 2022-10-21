@@ -10,7 +10,7 @@ class TestBasic(IsolatedAsyncioTestCase):
         async def _setUpClass(cls) -> None:
             cls.starknet = await Starknet.empty()
             cls.unit_test = await cls.starknet.deploy(
-                source="./tests/real_tests/cairo_files/instructions/test_block_information.cairo",
+                source="./tests/cairo_files/instructions/test_block_information.cairo",
                 cairo_path=["src"],
                 disable_hint_validation=True,
             )

@@ -38,7 +38,7 @@ func setup{
         import time
         sys.path.append('.')
         from tests import load
-        load("./tests/real_tests/cairo_files/config.yml", context)
+        load("./tests/cairo_files/config.yml", context)
     %}
     return ();
 }

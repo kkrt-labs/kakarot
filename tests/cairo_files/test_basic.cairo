@@ -20,7 +20,7 @@ from kakarot.stack import Stack
 from kakarot.memory import Memory
 from utils.utils import Helpers
 from tests.units.kakarot.library import setup, prepare, Kakarot
-from tests.real_tests.cairo_files.library import setup, prepare, Kakarot
+from tests.cairo_files.library import setup, prepare, Kakarot
 from tests.model import EVMTestCase
 from tests.utils import test_utils
 

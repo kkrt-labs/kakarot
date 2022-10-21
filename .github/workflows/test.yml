@@ -35,4 +35,4 @@ jobs:
           pip install cairo-lang cairo-coverage pytest openzeppelin-cairo-contracts
       - name: Run tests
         run: |
-          pytest tests/real_tests/ 
+          pytest 

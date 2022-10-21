@@ -133,42 +133,31 @@ Here is the execution trace of the program on Kakarot:
 
 Install the requirements:
 
-- [protostar](https://github.com/software-mansion/protostar)
-
-Then, install the dependencies:
-
 ```bash
-protostar install
+pip install -r requirements.txt
 ```
 
 ## Build
 
 ```bash
-protostar build
+starknet-compile ./src/kakarot/kakarot.cairo --cairo_path ./src --disable_hint_validation --output build/kakarot.json
 ```
 
 ## Test
 
 ```bash
 # Run all tests
-protostar test
+pytest 
 
 # Run only unit tests
-protostar test tests/units
+pytest tests/units
 
 # Run only integration tests
-protostar test tests/integrations
-```
+pytest tests/integrations
 
-## Debug
-
-Start the debug server:
-
-```bash
-python3 tests/debug/debug_server.py
-# then use DEBUG env variable
-# for example:
-DEBUG=True protostar test
+# Run a specific test file
+pytest <PATH_TO_FILE>  # with pytest
+python3 -m unittest <PATH_TO_FILE>  # with unittest
 ```
 
 ## Deploy
