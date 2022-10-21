@@ -7,7 +7,7 @@
 | ADD             | ✅          |
 | ADDMOD          | ✅          |
 | ADDRESS         |             |
-| AND             |             |
+| AND             | ✅          |
 | CALLDATALOAD    |             |
 | CALLDATASIZE    |             |
 | CALLER          |             |
