@@ -1,0 +1,4 @@
+cairo-lang==0.10.1
+cairo_coverage==0.1.0
+openzeppelin-cairo-contracts==0.4.0
+pip>=22.3
