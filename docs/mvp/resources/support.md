@@ -1,6 +1,6 @@
 # Support of opcodes for the MVP
 
-45 / 74 opcodes are supported by the MVP.
+51 / 74 opcodes are supported by the MVP.
 
 | Opcode Name     | Implemented |
 | --------------- | ----------- |
@@ -57,8 +57,8 @@
 | RETURNDATASIZE  |             |
 | REVERT          |             |
 | SHA3            |             |
-| SHL             |             |
-| SHR             |             |
+| SHL             | ✅          |
+| SHR             | ✅          |
 | SLOAD           |             |
 | SLT             | ✅          |
 | SSTORE          |             |
