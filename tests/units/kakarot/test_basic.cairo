@@ -343,7 +343,7 @@ func test_block_information{
     // Load test case GASLIMIT
     // ------------------------------------------------------------------------------------------------
     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
-        './tests/cases/013.json'
+        './tests/cases/015.json'
     );
 
     // Run EVM execution
