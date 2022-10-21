@@ -50,7 +50,7 @@ This document describes the opcodes supported by Kakarot.
 | 0x30         | ADDRESS        | Get address of currently executing account                                        |             |
 | 0x31         | BALANCE        | Get balance of the given account                                                  |             |
 | 0x32         | ORIGIN         | Get execution origination address                                                 |             |
-| 0x33         | CALLER         | Get caller address                                                                |             |
+| 0x33         | CALLER         | Get caller address                                                                |    ✅         |
 | 0x34         | CALLVALUE      | Get deposited value by the instruction/transaction responsible for this execution |             |
 | 0x35         | CALLDATALOAD   | Get input data of current environment                                             |             |
 | 0x36         | CALLDATASIZE   | Get size of input data in current environment                                     |             |

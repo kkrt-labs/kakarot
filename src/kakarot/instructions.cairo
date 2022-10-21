@@ -61,7 +61,7 @@ namespace EVMInstructions {
         local opcode_exist;
 
         // Check if opcode exists
-        %{
+        %{  
             if memory.get(ids.instructions + ids.opcode) == None:
                 ids.opcode_exist = 0
             else:
@@ -203,6 +203,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x1C, ComparisonOperations.exec_shr);
 
         // Environment Information
+        // 0x33 - CALLER
+        add_instruction(instructions, 0x33, EnvironmentalInformation.exec_caller);
         // 0x38 - CODESIZE
         add_instruction(instructions, 0x38, EnvironmentalInformation.exec_codesize);
 
