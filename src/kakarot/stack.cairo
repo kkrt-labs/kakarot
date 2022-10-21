@@ -75,6 +75,29 @@ namespace Stack {
         return (new_stack=new_stack, element=element);
     }
 
+    // @notice Pop N elements from the stack.
+    // @param self - The pointer to the stack.
+    // @param len - The len of elements to pop.
+    // @return The new pointer to the stack.
+    // @return elements the pointer to the first popped element.
+    func pop_n{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.Stack*, n: felt
+    ) -> (new_stack: model.Stack*, elements: Uint256*) {
+        alloc_locals;
+        Stack.check_underflow(self, n - 1);
+        // Get new segment for next stack copy
+        let (new_elements: Uint256*) = alloc();
+        // Get length of new stack copy
+        let new_len = self.raw_len - (element_size * n);
+        // Copy stack without last N elements
+        memcpy(dst=new_elements, src=self.elements, len=new_len);
+        
+        // Create new stack
+        local new_stack: model.Stack* = new model.Stack(elements=new_elements, raw_len=new_len);
+        // Return new stack & pointer to first popped element
+        return (new_stack=new_stack, elements=self.elements + new_len);
+    }
+
     // @notice Return a value from the stack at a given stack index.
     // @dev stack_index is 0-based, 0 is the top of the stack.
     // @param self - The pointer to the stack.
