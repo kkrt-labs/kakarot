@@ -88,7 +88,6 @@ func test__load__should_fail__when_out_of_memory{
     let memory: model.Memory* = Memory.store(memory, Uint256(1, 0), 0);
 
     // When & Then
-    %{ expect_revert("TRANSACTION_FAILED") %}
     let result = Memory.load(memory, 2);
     return ();
 }
