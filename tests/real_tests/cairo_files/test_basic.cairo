@@ -20,6 +20,7 @@ from kakarot.stack import Stack
 from kakarot.memory import Memory
 from utils.utils import Helpers
 from tests.units.kakarot.library import setup, prepare, Kakarot
+from tests.real_tests.cairo_files.library import setup, prepare, Kakarot
 from tests.model import EVMTestCase
 from tests.utils import test_utils
 
@@ -377,7 +378,6 @@ func test_block_information{
 
     // Run EVM execution
     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
-
 
     // Assert value on the top of the stack
     test_utils.assert_top_stack(ctx, Uint256(0, 0));

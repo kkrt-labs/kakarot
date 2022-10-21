@@ -25,9 +25,10 @@ func execute{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 ) -> (top_stack: Uint256, top_memory: Uint256) {
     let context = Kakarot.execute(code=code, calldata=calldata);
     let len = Stack.len(context.stack);
-    let top_stack = context.stack.elements[len - 1];
+    tempvar top_stack = context.stack.elements[len - 1];
     let len = Memory.len(context.memory);
     if (len == 0) {
+        %{ print(ids.top_stack.low, "heeeeeeeeeere") %}
         return (top_stack=top_stack, top_memory=Uint256(0, 0),);
     } else {
         let top_memory = Memory.load(context.memory, len - 1);

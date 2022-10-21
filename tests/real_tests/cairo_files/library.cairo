@@ -38,7 +38,7 @@ func setup{
         import time
         sys.path.append('.')
         from tests import load
-        load("./tests/units/kakarot/config.yml", context)
+        load("./tests/real_tests/cairo_files/config.yml", context)
     %}
     return ();
 }
