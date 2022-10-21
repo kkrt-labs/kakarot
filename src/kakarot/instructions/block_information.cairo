@@ -27,6 +27,7 @@ namespace BlockInformation {
     const GAS_COST_COINBASE = 2;
     const GAS_COST_TIMESTAMP = 2;
     const GAS_COST_NUMBER = 2;
+    const GAS_COST_GASLIMIT= 2;
 
     // @notice CHAINID operation.
     // @dev Get the chain ID.
@@ -139,6 +140,36 @@ namespace BlockInformation {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_NUMBER);
+        return ctx;
+    }
+
+
+    // @notice GASLIMIT operation.
+    // @dev Get gas limit
+    // @custom:since Frontier
+    // @custom:group Block Information
+    // @custom:gas 2
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_gaslimit{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        %{ print("0x45 - GASLIMIT") %}
+        // Get the Gas Limit.
+
+        let gas_limit = Helpers.to_uint256(ctx.gas_limit);
+
+        let stack: model.Stack* = Stack.push(ctx.stack, gas_limit);
+
+        // Update the execution context.
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_GASLIMIT);
         return ctx;
     }
 }
