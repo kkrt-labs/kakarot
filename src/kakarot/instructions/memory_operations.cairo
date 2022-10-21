@@ -69,6 +69,7 @@ namespace MemoryOperations {
         %{ print("0x58 - PC") %}
 
         let pc = Helpers.to_uint256(ctx.program_counter);
+        
         let stack: model.Stack* = Stack.push(ctx.stack, pc);
 
         // Update context stack.
