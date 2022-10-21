@@ -52,14 +52,14 @@ namespace EnvironmentalInformation {
     // @dev Get caller address.
     // @custom:since Frontier
     // @custom:group Environmental Information
-    // @custom:gas 3
+    // @custom:gas 2
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
     func exec_caller{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         ctx: model.ExecutionContext*
     ) -> model.ExecutionContext* {
-        %{ print("0x33 - CALL") %}
+        %{ print("0x33 - CALLER") %}
         // Get caller address.
         let (current_address) = get_caller_address();
         let caller_address = Helpers.to_uint256(current_address);
