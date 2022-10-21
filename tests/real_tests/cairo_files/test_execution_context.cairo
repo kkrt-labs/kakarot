@@ -30,11 +30,12 @@ func test__init__should_return_an_empty_execution_context{
     Helpers.setup_python_defs();
     let (code) = alloc();
     assert [code] = 00;
+    tempvar code_len = 1;
     let (calldata) = alloc();
     assert [calldata] = '';
 
     // When
-    let result: model.ExecutionContext* = ExecutionContext.init(code, calldata);
+    let result: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
 
     // Then
     assert result.code = code;
