@@ -234,6 +234,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x42, BlockInformation.exec_timestamp);
         // 0x43 - NUMBER
         add_instruction(instructions, 0x43, BlockInformation.exec_number);
+        // 0x45 - GASLIMIT
+        add_instruction(instructions, 0x45, BlockInformation.exec_gaslimit);
         // 0x46 - CHAINID
         add_instruction(instructions, 0x46, BlockInformation.exec_chainid);
 
