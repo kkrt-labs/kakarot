@@ -36,9 +36,13 @@ class TestBasic(IsolatedAsyncioTestCase):
         await self.unit_test.test__len__should_return_the_length_of_the_stack().call()
         await self.unit_test.test__push__should_add_an_element_to_the_stack().call()
         await self.unit_test.test__pop__should_pop_an_element_to_the_stack().call()
+        await self.unit_test.test__pop__should_pop_N_elements_to_the_stack().call()
 
         with self.raisesStarknetError("Kakarot: StackUnderflow"):
-            await self.unit_test.test__pop__should_fail__when_stack_underflow().call()
+            await self.unit_test.test__pop__should_fail__when_stack_underflow_pop().call()
+
+        with self.raisesStarknetError("Kakarot: StackUnderflow"):
+            await self.unit_test.test__pop__should_fail__when_stack_underflow_pop_n().call()
 
         await self.unit_test.test__peek__should_return_stack_at_given_index__when_value_is_0().call()
         await self.unit_test.test__peek__should_return_stack_at_given_index__when_value_is_1().call()

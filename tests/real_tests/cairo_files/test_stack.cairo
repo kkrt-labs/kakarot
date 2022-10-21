@@ -125,7 +125,6 @@ func test__pop__should_fail__when_stack_underflow_pop_n{
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
 
     // When & Then
-    %{ expect_revert("TRANSACTION_FAILED", "Kakarot: StackUnderflow") %}
     let (stack, elements) = Stack.pop_n(stack, 2);
     return ();
 }
