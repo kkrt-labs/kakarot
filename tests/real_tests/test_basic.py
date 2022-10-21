@@ -1,9 +1,11 @@
+from contextlib import contextmanager
 from typing import List, Tuple
 from unittest import IsolatedAsyncioTestCase
 from asyncio import run
 from marshmallow_dataclass import dataclass
 from starkware.starknet.testing.starknet import Starknet
 from cairo_coverage import cairo_coverage
+from starkware.starkware_utils.error_handling import StarkException
 
 
 @dataclass
@@ -47,6 +49,18 @@ class TestBasic(IsolatedAsyncioTestCase):
 
         run(_setUpClass(cls))
 
+    @classmethod
+    def tearDownClass(cls):
+        cairo_coverage.report_runs(excluded_file={"site-packages"})
+
+    @contextmanager
+    def raisesStarknetError(self, error_message):
+        with self.assertRaises(StarkException) as error_msg:
+            yield error_msg
+        self.assertTrue(
+            f"Error message: {error_message}" in str(error_msg.exception.message)
+        )
+
     async def assert_compare(self, case: str, expected: Uint256):
         code, calldata = get_case(case=f"./tests/cases/003{case}.json")
 
@@ -55,10 +69,6 @@ class TestBasic(IsolatedAsyncioTestCase):
         )
         self.assertEqual(res.result.top_stack, expected)
         self.assertEqual(res.result.top_memory, Uint256(0, 0))
-
-    @classmethod
-    def tearDownClass(cls):
-        cairo_coverage.report_runs(excluded_file={"site-packages"})
 
     async def test_arithmetic_operations(self):
         code, calldata = get_case(case="./tests/cases/001.json")
@@ -74,6 +84,8 @@ class TestBasic(IsolatedAsyncioTestCase):
         await self.assert_compare("_gt", Uint256(1, 0))
         await self.assert_compare("_slt", Uint256(1, 0))
         await self.assert_compare("_sgt", Uint256(0, 0))
+        await self.assert_compare("_eq", Uint256(0, 0))
+        await self.assert_compare("_iszero", Uint256(1, 0))
 
     async def test_bitwise_operations(self):
 
@@ -173,7 +185,7 @@ class TestBasic(IsolatedAsyncioTestCase):
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
             caller_address=1
         )
-        self.assertEqual(res.result.top_stack, Uint256(8, 0))
+        self.assertEqual(res.result.top_stack, Uint256(7, 0))
         self.assertEqual(res.result.top_memory, Uint256(0, 0))
 
         code, calldata = get_case(case="./tests/cases/012.json")
@@ -182,3 +194,10 @@ class TestBasic(IsolatedAsyncioTestCase):
         )
         self.assertEqual(res.result.top_stack, Uint256(1, 0))
         self.assertEqual(res.result.top_memory, Uint256(0, 0))
+
+    async def test_system_operations(self):
+        code, calldata = get_case(case="./tests/cases/009.json")
+        with self.raisesStarknetError("Kakarot: 0xFE: Invalid Opcode"):
+            await self.zk_evm.execute(code=code, calldata=calldata).execute(
+                caller_address=1
+            )
