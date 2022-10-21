@@ -211,6 +211,10 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x14, ComparisonOperations.exec_eq);
         // 0x15 - ISZERO
         add_instruction(instructions, 0x15, ComparisonOperations.exec_iszero);
+        // 0x16 - AND
+        add_instruction(instructions, 0x16, ComparisonOperations.exec_and);
+        // 0x17 - OR
+        add_instruction(instructions, 0x17, ComparisonOperations.exec_or);
         // 0x1B - SHL
         add_instruction(instructions, 0x1B, ComparisonOperations.exec_shl);
         // 0x1C - SHR

@@ -156,6 +156,12 @@ func test_bitwise_operations{
     _assert_operation('./tests/cases/003/shr/10.json', Uint256(0, 0));
     _assert_operation('./tests/cases/003/shr/11.json', Uint256(0, 0));
 
+    // Test for AND
+    _assert_operation('./tests/cases/003_and.json', Uint256(5, 0));
+
+    // Test for OR
+    _assert_operation('./tests/cases/003_or.json', Uint256(7, 0));
+
     return ();
 }
 

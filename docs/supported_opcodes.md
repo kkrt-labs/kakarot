@@ -28,8 +28,8 @@ This document describes the opcodes supported by Kakarot.
 | 0x13         | SGT         | Signed greater-than comparision | ✅          |
 | 0x14         | EQ          | Equality comparision            | ✅          |
 | 0x15         | ISZERO      | Simple not operator             | ✅          |
-| 0x16         | AND         | Bitwise AND operation           |             |
-| 0x17         | OR          | Bitwise OR operation            |             |
+| 0x16         | AND         | Bitwise AND operation           | ✅          |
+| 0x17         | OR          | Bitwise OR operation            | ✅          |
 | 0x18         | XOR         | Bitwise XOR operation           |             |
 | 0x19         | NOT         | Bitwise NOT operation           |             |
 | 0x1a         | BYTE        | Retrieve single byte from word  |             |
