@@ -67,8 +67,7 @@ namespace MemoryOperations {
     ) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x58 - PC") %}
-
-        let pc = Helpers.to_uint256(ctx.program_counter);
+        let pc = Helpers.to_uint256(ctx.program_counter - 1);
         
         let stack: model.Stack* = Stack.push(ctx.stack, pc);
 

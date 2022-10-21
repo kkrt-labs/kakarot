@@ -216,6 +216,8 @@ namespace EVMInstructions {
 
         // 0x52 - MSTORE
         add_instruction(instructions, 0x52, MemoryOperations.exec_store);
+        // 0x58 - PC
+        add_instruction(instructions, 0x58, MemoryOperations.exec_pc);
 
         // Add 6s: Push operations
         add_instruction(instructions, 0x60, PushOperations.exec_push1);

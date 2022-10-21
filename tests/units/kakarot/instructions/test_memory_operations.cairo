@@ -32,26 +32,6 @@ func init_context{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 }
 
 @external
-func test__exec_pc__should_be_0_upon_init{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}() {
-    // Given
-    alloc_locals;
-    let ctx: model.ExecutionContext* = init_context();
-
-    // When
-    let result = MemoryOperations.exec_pc(ctx);
-
-    // Then
-    assert result.gas_used = 2;
-    let len: felt = Stack.len(result.stack);
-    assert len = 1;
-    let index0 = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(0, 0);
-    return ();
-}
-
-@external
 func setup__exec_pc__should_update_after_incrementing{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     ) {
     %{
@@ -77,6 +57,6 @@ func test__exec_pc__should_update_after_incrementing{
     let len: felt = Stack.len(result.stack);
     assert len = 1;
     let index0 = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(increment, 0);
+    assert index0 = Uint256(increment - 1, 0);
     return ();
 }
