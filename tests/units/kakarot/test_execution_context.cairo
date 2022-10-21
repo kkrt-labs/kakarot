@@ -4,7 +4,7 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.uint256 import Uint256
 
@@ -15,13 +15,15 @@ from kakarot.model import model
 from kakarot.execution_context import ExecutionContext
 
 @view
-func __setup__{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+func __setup__{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     return ();
 }
 
 @external
 func test__init__should_return_an_empty_execution_context{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
     alloc_locals;

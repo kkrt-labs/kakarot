@@ -4,7 +4,7 @@
 
 // Starkware dependencies
 
-from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
 from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp
@@ -36,9 +36,12 @@ namespace BlockInformation {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_chainid{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_chainid{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         %{ print("0x46 - CHAINID") %}
         // Get the chain ID.
         let chain_id = Helpers.to_uint256(Constants.CHAIN_ID);
@@ -60,9 +63,12 @@ namespace BlockInformation {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_coinbase{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         %{ print("0x41 - COINBASE") %}
         // Get the coinbase address.
         let coinbase_address = Helpers.to_uint256(Constants.COINBASE_ADDRESS);
@@ -84,9 +90,12 @@ namespace BlockInformation {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_timestamp{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_timestamp{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         %{ print("0x42 - TIMESTAMP") %}
         // Get the block’s timestamp
         let (current_timestamp) = get_block_timestamp();
@@ -111,9 +120,12 @@ namespace BlockInformation {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_number{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_number{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         %{ print("0x43 - NUMBER") %}
         // Get the block number.
         let (current_block) = get_block_number();

@@ -4,7 +4,7 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.uint256 import Uint256
 
@@ -15,13 +15,15 @@ from kakarot.model import model
 from kakarot.stack import Stack
 
 @view
-func __setup__{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+func __setup__{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     return ();
 }
 
 @external
 func test__init__should_return_an_empty_stack{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // When
     let result: model.Stack* = Stack.init();
@@ -33,7 +35,7 @@ func test__init__should_return_an_empty_stack{
 
 @external
 func test__len__should_return_the_length_of_the_stack{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
     let stack: model.Stack* = Stack.init();
@@ -48,7 +50,7 @@ func test__len__should_return_the_length_of_the_stack{
 
 @external
 func test__push__should_add_an_element_to_the_stack{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
     let stack: model.Stack* = Stack.init();
@@ -64,7 +66,7 @@ func test__push__should_add_an_element_to_the_stack{
 
 @external
 func test__pop__should_pop_an_element_to_the_stack{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
     let stack: model.Stack* = Stack.init();
@@ -83,7 +85,7 @@ func test__pop__should_pop_an_element_to_the_stack{
 
 @external
 func test__pop__should_pop_N_elements_to_the_stack{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
     let stack: model.Stack* = Stack.init();
@@ -104,7 +106,7 @@ func test__pop__should_pop_N_elements_to_the_stack{
 
 @external
 func test__pop__should_fail__when_stack_underflow_pop{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
     let stack: model.Stack* = Stack.init();
@@ -117,7 +119,7 @@ func test__pop__should_fail__when_stack_underflow_pop{
 
 @external
 func test__pop__should_fail__when_stack_underflow_pop_n{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
     let stack: model.Stack* = Stack.init();
@@ -131,7 +133,7 @@ func test__pop__should_fail__when_stack_underflow_pop_n{
 
 @external
 func test__peek__should_return_stack_at_given_index__when_value_is_0{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
     let stack: model.Stack* = Stack.init();
@@ -149,7 +151,7 @@ func test__peek__should_return_stack_at_given_index__when_value_is_0{
 
 @external
 func test__peek__should_return_stack_at_given_index__when_value_is_1{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
     let stack: model.Stack* = Stack.init();
@@ -167,7 +169,7 @@ func test__peek__should_return_stack_at_given_index__when_value_is_1{
 
 @external
 func test__peek__should_fail_when_underflow{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
     let stack: model.Stack* = Stack.init();
@@ -180,7 +182,7 @@ func test__peek__should_fail_when_underflow{
 
 @external
 func test__swap__should_swap_2_stacks{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
     alloc_locals;
@@ -215,7 +217,7 @@ func test__swap__should_swap_2_stacks{
 
 @external
 func test__swap__should_fail__when_index_1_is_underflow{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
     let stack: model.Stack* = Stack.init();
@@ -228,7 +230,7 @@ func test__swap__should_fail__when_index_1_is_underflow{
 
 @external
 func test__swap__should_fail__when_index_2_is_underflow{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
     let stack: model.Stack* = Stack.init();
@@ -242,7 +244,7 @@ func test__swap__should_fail__when_index_2_is_underflow{
 
 @external
 func test__dump__should_print_the_stack{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
     Helpers.setup_python_defs();

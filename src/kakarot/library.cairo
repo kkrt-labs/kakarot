@@ -3,7 +3,7 @@
 %lang starknet
 
 // Starkware dependencies
-from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import TRUE
 
 // OpenZeppelin dependencies
@@ -22,7 +22,12 @@ from utils.utils import Helpers
 namespace Kakarot {
     // @notice The constructor of the contract.
     // @param _owner The address of the owner of the contract.
-    func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(owner: felt) {
+    func constructor{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(owner: felt) {
         Ownable.initializer(owner);
         return ();
     }
@@ -31,9 +36,12 @@ namespace Kakarot {
     // @param _bytecode The bytecode to execute.
     // @param calldata The calldata to pass to the bytecode.
     // @return The pointer to the execution context.
-    func execute{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        code: felt*, calldata: felt*
-    ) -> model.ExecutionContext* {
+    func execute{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(code: felt*, calldata: felt*) -> model.ExecutionContext* {
         alloc_locals;
 
         // Load helper hints
@@ -61,9 +69,12 @@ namespace Kakarot {
     // @param instructions The instructions set.
     // @param ctx The pointer to the execution context.
     // @return The pointer to the updated execution context.
-    func run{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        instructions: felt*, ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func run{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(instructions: felt*, ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
         // Decode and execute

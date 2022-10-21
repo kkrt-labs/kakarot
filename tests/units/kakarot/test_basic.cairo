@@ -3,12 +3,15 @@
 %lang starknet
 
 // Starkware dependencies
-from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.uint256 import Uint256
-from starkware.starknet.common.syscalls import (get_block_number,get_block_timestamp,get_caller_address)
-
+from starkware.starknet.common.syscalls import (
+    get_block_number,
+    get_block_timestamp,
+    get_caller_address,
+)
 
 // Local dependencies
 from kakarot.constants import Constants
@@ -23,12 +26,16 @@ from tests.utils import test_utils
 // @author @abdelhamidbakhta
 
 @view
-func __setup__{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+func __setup__{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     return setup();
 }
 
 @external
-func test_arithmetic_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+func test_arithmetic_operations{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
 
     // Prepare Kakarot instance
@@ -48,9 +55,9 @@ func test_arithmetic_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, 
     return ();
 }
 
-func _assert_operation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    filename: felt, assert_result: Uint256
-) {
+func _assert_operation{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(filename: felt, assert_result: Uint256) {
     // Load test case
     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(filename);
 
@@ -64,7 +71,9 @@ func _assert_operation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
 }
 
 @external
-func test_comparison_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+func test_comparison_operations{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
 
     // Prepare Kakarot instance
@@ -92,7 +101,9 @@ func test_comparison_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, 
 }
 
 @external
-func test_bitwise_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+func test_bitwise_operations{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
 
     // Prepare Kakarot instance
@@ -149,8 +160,9 @@ func test_bitwise_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
 }
 
 @external
-func test_duplication_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    ) {
+func test_duplication_operations{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
 
     // Prepare Kakarot instance
@@ -171,7 +183,9 @@ func test_duplication_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*,
 }
 
 @external
-func test_memory_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+func test_memory_operations{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
 
     // Prepare Kakarot instance
@@ -192,7 +206,9 @@ func test_memory_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
 }
 
 @external
-func test_exchange_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+func test_exchange_operations{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
 
     // Prepare Kakarot instance
@@ -214,7 +230,7 @@ func test_exchange_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
 
 @external
 func test_environmental_information{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     alloc_locals;
 
@@ -242,17 +258,18 @@ func test_environmental_information{
 
     let (current_caller) = get_caller_address();
     let (high, low) = split_felt(current_caller);
-    let caller_address = Uint256(low,high);
+    let caller_address = Uint256(low, high);
 
     // Assert value on the top of the stack
     test_utils.assert_top_stack(ctx, caller_address);
 
     return ();
-
 }
 
 @external
-func test_block_information{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+func test_block_information{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
 
     // Prepare Kakarot instance
@@ -323,13 +340,12 @@ func test_block_information{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
     test_utils.assert_top_stack(ctx, block_timestamp);
 
     return ();
-
-
-
 }
 
 @external
-func test_system_operations{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+func test_system_operations{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     alloc_locals;
 
     // Prepare Kakarot instance
