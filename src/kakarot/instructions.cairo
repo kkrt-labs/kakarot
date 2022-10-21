@@ -203,6 +203,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x1C, ComparisonOperations.exec_shr);
 
         // Environment Information
+        // 0x33 - CALLER
+        // add_instruction(instructions, 0x33, EnvironmentalInformation.exec_caller);
         // 0x38 - CODESIZE
         add_instruction(instructions, 0x38, EnvironmentalInformation.exec_codesize);
 

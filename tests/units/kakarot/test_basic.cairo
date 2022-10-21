@@ -7,7 +7,8 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.uint256 import Uint256
-from starkware.starknet.common.syscalls import get_block_number
+from starkware.starknet.common.syscalls import (get_block_number,get_caller_address)
+
 
 
 // Local dependencies
@@ -201,7 +202,7 @@ func test_environmental_information{
     // Prepare Kakarot instance
     let (local context) = prepare();
 
-    // Load test case
+    // Load test case CODESIZE
     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
         './tests/cases/006.json'
     );
@@ -212,7 +213,23 @@ func test_environmental_information{
     // Assert value on the top of the stack
     test_utils.assert_top_stack(ctx, Uint256(7, 0));
 
+    // Load test case CALLER
+    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+        './tests/cases/012.json'
+    );
+
+    // Run EVM execution
+    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+    let (current_caller) = get_caller_address();
+    let (high, low) = split_felt(current_caller);
+    let caller_address = Uint256(low,high);
+
+    // Assert value on the top of the stack
+    test_utils.assert_top_stack(ctx, caller_address);
+
     return ();
+
 }
 
 @external
@@ -266,6 +283,9 @@ func test_block_information{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
     test_utils.assert_top_stack(ctx, block_number);
 
     return ();
+
+
+
 }
 
 @external
