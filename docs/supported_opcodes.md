@@ -50,7 +50,7 @@ This document describes the opcodes supported by Kakarot.
 | 0x30         | ADDRESS        | Get address of currently executing account                                        |             |
 | 0x31         | BALANCE        | Get balance of the given account                                                  |             |
 | 0x32         | ORIGIN         | Get execution origination address                                                 |             |
-| 0x33         | CALLER         | Get caller address                                                                |    ✅         |
+| 0x33         | CALLER         | Get caller address                                                                | ✅          |
 | 0x34         | CALLVALUE      | Get deposited value by the instruction/transaction responsible for this execution |             |
 | 0x35         | CALLDATALOAD   | Get input data of current environment                                             |             |
 | 0x36         | CALLDATASIZE   | Get size of input data in current environment                                     |             |
@@ -90,7 +90,7 @@ This document describes the opcodes supported by Kakarot.
 | 0x55         | SSTORE      | Save word to storage                                                                               |             |
 | 0x56         | JUMP        | Alter the program counter                                                                          |             |
 | 0x57         | JUMPI       | Conditionally alter the program counter                                                            |             |
-| 0x58         | PC          | Get the value of the program counter prior to the increment                                        |             |
+| 0x58         | PC          | Get the value of the program counter prior to the increment                                        | ✅          |
 | 0x59         | MSIZE       | Get the size of active memory in bytes                                                             |             |
 | 0x5a         | GAS         | Get the amount of available gas, including the corresponding reduction the amount of available gas |             |
 | 0x5b         | JUMPDEST    | Mark a valid destination for jumps                                                                 |             |
