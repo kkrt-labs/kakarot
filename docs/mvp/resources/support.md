@@ -56,7 +56,7 @@
 | RETURNDATACOPY  |             |
 | RETURNDATASIZE  |             |
 | REVERT          |             |
-| SHA3            |             |
+| SHA3            | ✅          |
 | SHL             | ✅          |
 | SHR             | ✅          |
 | SLOAD           |             |
