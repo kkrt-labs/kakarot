@@ -5,7 +5,7 @@
 // StarkWare dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
-from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.memcpy import memcpy
 
 // Internal dependencies
@@ -25,9 +25,12 @@ namespace ExecutionContext {
     // @param code The code to execute.
     // @param calldata The calldata.
     // @return The initialized execution context.
-    func init{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        code: felt*, calldata: felt*
-    ) -> model.ExecutionContext* {
+    func init{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(code: felt*, calldata: felt*) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
 
@@ -90,9 +93,12 @@ namespace ExecutionContext {
     // @dev When the execution context is stopped, no more instructions can be executed.
     // @param self The pointer to the execution context.
     // @return The pointer to the updated execution context.
-    func stop{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func stop{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.ExecutionContext*) -> model.ExecutionContext* {
         return new model.ExecutionContext(
             code=self.code,
             code_len=self.code_len,
@@ -132,9 +138,12 @@ namespace ExecutionContext {
     // @dev The stack is updated with the given stack.
     // @param self The pointer to the execution context.
     // @param stack The pointer to the new stack.
-    func update_stack{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.ExecutionContext*, new_stack: model.Stack*
-    ) -> model.ExecutionContext* {
+    func update_stack{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.ExecutionContext*, new_stack: model.Stack*) -> model.ExecutionContext* {
         return new model.ExecutionContext(
             code=self.code,
             code_len=self.code_len,
@@ -154,9 +163,12 @@ namespace ExecutionContext {
     // @dev The memory is updated with the given memory.
     // @param self The pointer to the execution context.
     // @param memory The pointer to the new memory.
-    func update_memory{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.ExecutionContext*, new_memory: model.Memory*
-    ) -> model.ExecutionContext* {
+    func update_memory{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.ExecutionContext*, new_memory: model.Memory*) -> model.ExecutionContext* {
         return new model.ExecutionContext(
             code=self.code,
             code_len=self.code_len,
@@ -220,9 +232,12 @@ namespace ExecutionContext {
 
     // @notice Dump the current execution context.
     // @dev The execution context is dumped to the debug server if `DEBUG` environment variable is set to `True`.
-    func dump{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.ExecutionContext*
-    ) {
+    func dump{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.ExecutionContext*) {
         let pc = self.program_counter;
         let stopped = is_stopped(self);
         %{
