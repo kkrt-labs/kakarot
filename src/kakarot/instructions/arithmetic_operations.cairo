@@ -3,7 +3,7 @@
 %lang starknet
 
 // Starkware dependencies
-from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256, uint256_signed_div_rem, uint256_le, uint256_eq
 
 // Project dependencies
@@ -41,9 +41,12 @@ namespace ArithmeticOperations {
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
-    func exec_add{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_add{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x01 - ADD") %}
 
@@ -51,8 +54,9 @@ namespace ArithmeticOperations {
         // 0 - a: first integer value to add.
         // 1 - b: second integer value to add.
         let stack = ctx.stack;
-        let (stack, a) = Stack.pop(stack);
-        let (stack, b) = Stack.pop(stack);
+        let (stack, popped) = Stack.pop_n(stack, 2);
+        let a = popped[1];
+        let b = popped[0];
 
         // Compute the addition
         let (result) = SafeUint256.add(a, b);
@@ -73,9 +77,12 @@ namespace ArithmeticOperations {
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
-    func exec_mul{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_mul{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x02 - MUL") %}
 
@@ -105,9 +112,12 @@ namespace ArithmeticOperations {
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
-    func exec_sub{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_sub{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x03 - SUB") %}
 
@@ -137,9 +147,12 @@ namespace ArithmeticOperations {
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
-    func exec_div{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_div{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x04 - DIV") %}
 
@@ -169,9 +182,12 @@ namespace ArithmeticOperations {
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
-    func exec_sdiv{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_sdiv{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x05 - SDIV") %}
 
@@ -201,9 +217,12 @@ namespace ArithmeticOperations {
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
-    func exec_mod{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_mod{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x06 - MOD") %}
 
@@ -233,9 +252,12 @@ namespace ArithmeticOperations {
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
-    func exec_smod{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_smod{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x07 - SMOD") %}
 
@@ -265,9 +287,12 @@ namespace ArithmeticOperations {
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
-    func exec_addmod{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_addmod{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x08 - ADDMOD") %}
 
@@ -301,9 +326,12 @@ namespace ArithmeticOperations {
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
-    func exec_mulmod{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_mulmod{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x09 - MULMOD") %}
 
@@ -337,9 +365,12 @@ namespace ArithmeticOperations {
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
-    func exec_exp{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_exp{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x0A - EXP") %}
 
@@ -369,9 +400,12 @@ namespace ArithmeticOperations {
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
-    func exec_signextend{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_signextend{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x0B - SIGNEXTEND") %}
 
@@ -393,9 +427,13 @@ namespace ArithmeticOperations {
     // @param a The base.
     // @param b The exponent.
     // @return The result of the exponentiation.
-    func internal_exp{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        a: Uint256, b: Uint256
-    ) -> Uint256 {
+    func internal_exp{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(a: Uint256, b: Uint256) -> Uint256 {
+        alloc_locals;
         let one_uint: Uint256 = Uint256(1, 0);
         let zero_uint: Uint256 = Uint256(0, 0);
 
@@ -418,7 +456,12 @@ namespace ArithmeticOperations {
     // @param stack The pointer to the stack.
     // @param gas_cost The gas cost to increment.
     // @return The pointer to the execution context.
-    func apply_context_changes{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    func apply_context_changes{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(
         ctx: model.ExecutionContext*, stack: model.Stack*, gas_cost: felt
     ) -> model.ExecutionContext* {
         alloc_locals;
