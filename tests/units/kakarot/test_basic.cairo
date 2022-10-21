@@ -370,7 +370,7 @@ func test_system_operations{
 }
 
 @external
-func test_sha3_operations{
+func test_sha3{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Load test case

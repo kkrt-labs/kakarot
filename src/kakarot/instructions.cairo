@@ -24,7 +24,7 @@ from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.environmental_information import EnvironmentalInformation
 from kakarot.instructions.block_information import BlockInformation
 from kakarot.instructions.system_operations import SystemOperations
-from kakarot.instructions.sha3_operation import Sha3Operation
+from kakarot.instructions.sha3 import Sha3
 
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.
@@ -238,7 +238,7 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x46, BlockInformation.exec_chainid);
 
         // 0x20 - SHA3
-        add_instruction(instructions, 0x20, Sha3Operation.exec_sha3);
+        add_instruction(instructions, 0x20, Sha3.exec_sha3);
 
         // 0x52 - MSTORE
         add_instruction(instructions, 0x52, MemoryOperations.exec_store);

@@ -5,7 +5,7 @@
 // Starkware dependencies
 from starkware.cairo.common.math import assert_le
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin, KeccakBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import keccak_bigend, finalize_keccak
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
@@ -15,9 +15,21 @@ from starkware.starknet.common.syscalls import get_contract_address
 
 from kakarot.model import model
 
-namespace Sha3Operation {
+// @title Sha3 opcodes.
+// @notice This file contains the keccak opcode.
+// @author @LucasLvy
+// @custom:namespace Sha3
+namespace Sha3 {
     const GAS_COST_SHA3 = 30;
 
+    // @notice SHA3.
+    // @dev Hashes n memory elements at m memory offset.
+    // @custom:since Frontier
+    // @custom:group Sha3
+    // @custom:gas 30
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
     func exec_sha3{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -40,7 +52,6 @@ namespace Sha3Operation {
 
         let (keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
-        local val: Uint256 = [ctx.memory.elements + offset.low];
         with keccak_ptr {
             let (result) = keccak_bigend(
                 inputs=ctx.memory.elements + offset.low, n_bytes=length.low
@@ -48,7 +59,6 @@ namespace Sha3Operation {
 
             finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
         }
-        // %{ print("SHA3 VAL", ids.val.low, ids.val.high, ids.length.low, hex(ids.result.low + ids.result.high * 2 **128)) %}
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=result);
 
         // Update context stack.
