@@ -23,6 +23,16 @@ def hex_string_to_int_array(text):
     return [int(text[i : i + 2], 16) for i in range(0, len(text), 2)]
 
 
+async def assert_compare(self, case: str, expected: Uint256):
+    code, calldata = get_case(case=f"./tests/cases/003{case}.json")
+
+    res = await self.zk_evm.execute(code=[*code], calldata=[*calldata]).execute(
+        caller_address=1
+    )
+    self.assertEqual(res.result.top_stack, expected)
+    self.assertEqual(res.result.top_memory, Uint256(0, 0))
+
+
 def get_case(case: str) -> Tuple[List[int], List[int]]:
     from json import load
 
@@ -61,19 +71,45 @@ class TestBasic(IsolatedAsyncioTestCase):
         self.assertEqual(res.result.top_memory, Uint256(0, 0))
 
     async def test_comparison_operations(self):
-        async def assert_compare(self, case: str, expected: Uint256):
-            code, calldata = get_case(case=f"./tests/cases/003_{case}.json")
+        await assert_compare(self, "_lt", Uint256(0, 0))
+        await assert_compare(self, "_gt", Uint256(1, 0))
+        await assert_compare(self, "_slt", Uint256(1, 0))
+        await assert_compare(self, "_sgt", Uint256(0, 0))
 
-            res = await self.zk_evm.execute(code=[*code], calldata=[*calldata]).execute(
-                caller_address=1
-            )
-            self.assertEqual(res.result.top_stack, expected)
-            self.assertEqual(res.result.top_memory, Uint256(0, 0))
-
-        await assert_compare(self, "lt", Uint256(0, 0))
-        await assert_compare(self, "gt", Uint256(1, 0))
-        await assert_compare(self, "slt", Uint256(1, 0))
-        await assert_compare(self, "sgt", Uint256(0, 0))
+    async def test_bitwise_operations(self):
+        await assert_compare(self, "/shl/1", Uint256(1, 0))
+        await assert_compare(self, "/shl/2", Uint256(2, 0))
+        await assert_compare(
+            self, "/shl/3", Uint256(0, 0x80000000000000000000000000000000)
+        )
+        await assert_compare(self, "/shl/4", Uint256(0, 0))
+        await assert_compare(self, "/shl/5", Uint256(0, 0))
+        await assert_compare(
+            self,
+            "/shl/6",
+            Uint256(
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            ),
+        )
+        await assert_compare(
+            self,
+            "/shl/7",
+            Uint256(
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            ),
+        )
+        await assert_compare(
+            self, "/shl/8", Uint256(0, 0x80000000000000000000000000000000)
+        )
+        await assert_compare(self, "/shl/9", Uint256(0, 0))
+        await assert_compare(self, "/shl/10", Uint256(0, 0))
+        await assert_compare(
+            self,
+            "/shl/11",
+            Uint256(
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            ),
+        )
 
     async def test_duplication_operations(self):
         code, calldata = get_case(case="./tests/cases/002.json")
