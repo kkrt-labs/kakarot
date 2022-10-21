@@ -368,3 +368,21 @@ func test_system_operations{
 
     return ();
 }
+
+@external
+func test_sha3{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Load test case
+    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+        './tests/cases/013.json'
+    );
+
+    // Run EVM execution
+    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+    test_utils.assert_top_stack(
+        ctx,
+        Uint256(193329242337984562015045870912253156030, 200044476455392313921036785920804272591),
+    );
+    return ();
+}

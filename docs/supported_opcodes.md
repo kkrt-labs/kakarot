@@ -41,7 +41,7 @@ This document describes the opcodes supported by Kakarot.
 
 | Opcode Value | Opcode Name | Description             | Implemented |
 | ------------ | ----------- | ----------------------- | ----------- |
-| 0x20         | SHA3        | Compute Keccak-256 hash |             |
+| 0x20         | SHA3        | Compute Keccak-256 hash | ✅          |
 
 ## Environmental Information
 
