@@ -42,6 +42,7 @@ production.
 pie title Kakarot EMV opcodes support (91 / 142)
     "Supported" : 91
     "Not supported" : 51
+
     "Partially supported" : 0
 ```
 

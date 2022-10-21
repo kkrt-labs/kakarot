@@ -70,8 +70,8 @@ This document describes the opcodes supported by Kakarot.
 | ------------ | ----------- | ---------------------------------------------------------- | ----------- |
 | 0x40         | BLOCKHASH   | Get the hash of one of the 256 most recent complete blocks |             |
 | 0x41         | COINBASE    | Get the block's beneficiary address                        | ✅          |
-| 0x42         | TIMESTAMP   | Get the block's timestamp                                  |             |
-| 0x43         | NUMBER      | Get the block's number                                     |   ✅           |
+| 0x42         | TIMESTAMP   | Get the block's timestamp                                  | ✅          |
+| 0x43         | NUMBER      | Get the block's number                                     | ✅          |
 | 0x44         | DIFFICULTY  | Get the block's difficulty                                 |             |
 | 0x45         | GASLIMIT    | Get the block's gas limit                                  |             |
 | 0x46         | CHAINID     | Get the chain ID                                           | ✅          |

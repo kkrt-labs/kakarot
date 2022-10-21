@@ -164,8 +164,9 @@ func test__exec_sdiv__should_signed_div_0_and_1{
 }
 
 @external
-func test__exec_mod__should_mod_0_and_1{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    ) {
+func test__exec_mod__should_mod_0_and_1{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}() {
     // Given
     alloc_locals;
     let stack: model.Stack* = Stack.init();
@@ -263,8 +264,9 @@ func test__exec_mulmod__should_mul_0_and_1_and_div_rem_by_2{
 }
 
 @external
-func test__exec_exp__should_exp_0_and_1{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    ) {
+func test__exec_exp__should_exp_0_and_1{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}() {
     // Given
     alloc_locals;
     let stack: model.Stack* = Stack.init();
