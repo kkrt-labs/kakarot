@@ -18,6 +18,7 @@ from kakarot.constants import Constants
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.memory import Memory
+from utils.utils import Helpers
 from tests.units.kakarot.library import setup, prepare, Kakarot
 from tests.model import EVMTestCase
 from tests.utils import test_utils
@@ -156,6 +157,12 @@ func test_bitwise_operations{
     _assert_operation('./tests/cases/003/shr/10.json', Uint256(0, 0));
     _assert_operation('./tests/cases/003/shr/11.json', Uint256(0, 0));
 
+    // Test for AND
+    _assert_operation('./tests/cases/003_and.json', Uint256(5, 0));
+
+    // Test for OR
+    _assert_operation('./tests/cases/003_or.json', Uint256(7, 0));
+
     return ();
 }
 
@@ -201,6 +208,17 @@ func test_memory_operations{
 
     // Assert value on the top of the memory
     test_utils.assert_top_memory(ctx, Uint256(10, 0));
+
+    // Load test case
+    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+        './tests/cases/014.json'
+    );
+
+    // Run EVM execution
+    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+    // Assert value on the top of the stack
+    test_utils.assert_top_stack(ctx, Uint256(3, 0));
 
     return ();
 }
@@ -374,5 +392,23 @@ func test_system_operations{
     %{ expect_revert("TRANSACTION_FAILED", "Kakarot: 0xFE: Invalid Opcode") %}
     let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
 
+    return ();
+}
+
+@external
+func test_sha3{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Load test case
+    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+        './tests/cases/013.json'
+    );
+
+    // Run EVM execution
+    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+    test_utils.assert_top_stack(
+        ctx,
+        Uint256(193329242337984562015045870912253156030, 200044476455392313921036785920804272591),
+    );
     return ();
 }
