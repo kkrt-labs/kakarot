@@ -1,13 +1,13 @@
 # Support of opcodes for the MVP
 
-45 / 74 opcodes are supported by the MVP.
+51 / 74 opcodes are supported by the MVP.
 
 | Opcode Name     | Implemented |
 | --------------- | ----------- |
 | ADD             | ✅          |
 | ADDMOD          | ✅          |
 | ADDRESS         |             |
-| AND             |             |
+| AND             | ✅          |
 | CALLDATALOAD    |             |
 | CALLDATASIZE    |             |
 | CALLER          |             |
@@ -57,8 +57,8 @@
 | RETURNDATASIZE  |             |
 | REVERT          |             |
 | SHA3            |             |
-| SHL             |             |
-| SHR             |             |
+| SHL             | ✅          |
+| SHR             | ✅          |
 | SLOAD           |             |
 | SLT             | ✅          |
 | SSTORE          |             |
@@ -77,4 +77,4 @@
 | SWAP7           | ✅          |
 | SWAP8           | ✅          |
 | SWAP9           | ✅          |
-| TIMESTAMP       |             |
+| TIMESTAMP       | ✅          |

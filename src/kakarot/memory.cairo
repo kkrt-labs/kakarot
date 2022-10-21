@@ -4,7 +4,7 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.math import assert_lt
@@ -25,7 +25,12 @@ namespace Memory {
 
     // @notice Initialize the memory.
     // @return The pointer to the memory.
-    func init{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> model.Memory* {
+    func init{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }() -> model.Memory* {
         alloc_locals;
         let (elements: Uint256*) = alloc();
         return new model.Memory(elements=elements, raw_len=0);
@@ -35,9 +40,12 @@ namespace Memory {
     // @dev The len is counted with the highest address that was accessed.
     // @param self - The pointer to the memory.
     // @return The len of the memory.
-    func len{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Memory*
-    ) -> felt {
+    func len{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.Memory*) -> felt {
         let actual_len = self.raw_len / element_size;
         return actual_len;
     }
@@ -47,9 +55,12 @@ namespace Memory {
     // @param element - The element to push.
     // @param offset - The offset to store the element at.
     // @return The new pointer to the memory.
-    func store{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Memory*, element: Uint256, offset: felt
-    ) -> model.Memory* {
+    func store{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.Memory*, element: Uint256, offset: felt) -> model.Memory* {
         alloc_locals;
         let offset = offset * element_size;
         assert [self.elements + offset] = element;
@@ -69,9 +80,12 @@ namespace Memory {
     // @param offset - The offset to load the element from.
     // @return The new pointer to the memory.
     // @return The loaded element.
-    func load{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Memory*, offset: felt
-    ) -> Uint256 {
+    func load{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.Memory*, offset: felt) -> Uint256 {
         alloc_locals;
         assert_lt(offset, len(self));
         let element = self.elements[offset];
@@ -80,9 +94,12 @@ namespace Memory {
 
     // @notice Print the memory.
     // @param self - The pointer to the memory.
-    func dump{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Memory*
-    ) {
+    func dump{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.Memory*) {
         let memory_len = Memory.len(self);
         if (memory_len == 0) {
             return ();
@@ -96,9 +113,12 @@ namespace Memory {
     // @param self - The pointer to the memory.
     // @param memory_index - The index of the element.
     // @param last_index - The index of the last element.
-    func inner_dump{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Memory*, memory_index: felt, last_index: felt
-    ) {
+    func inner_dump{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.Memory*, memory_index: felt, last_index: felt) {
         Memory.print_element_at(self, memory_index);
         if (memory_index == last_index) {
             return ();
@@ -110,9 +130,12 @@ namespace Memory {
     // @param self - The pointer to the memory.
     // @param memory_index - The index of the element.
     // @custom:use_hint
-    func print_element_at{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Memory*, memory_index: felt
-    ) {
+    func print_element_at{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.Memory*, memory_index: felt) {
         let element = Memory.load(self, memory_index);
         %{
             element_str = cairo_uint256_to_str(ids.element)
