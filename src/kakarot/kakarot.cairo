@@ -20,9 +20,11 @@ func constructor{
 }
 
 @external
-func execute{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    code_len: felt, code: felt*, calldata_len: felt, calldata: felt*
-) -> (top_stack: Uint256, top_memory: Uint256) {
+func execute{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(code_len: felt, code: felt*, calldata_len: felt, calldata: felt*) -> (
+    top_stack: Uint256, top_memory: Uint256
+) {
     let context = Kakarot.execute(code=code, code_len=code_len, calldata=calldata);
     let len = Stack.len(context.stack);
     tempvar top_stack = context.stack.elements[len - 1];
