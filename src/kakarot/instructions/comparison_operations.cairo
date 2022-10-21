@@ -3,7 +3,7 @@
 %lang starknet
 
 // Starkware dependencies
-from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import (
     Uint256,
     uint256_lt,
@@ -42,9 +42,12 @@ namespace ComparisonOperations {
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
-    func exec_lt{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_lt{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x10 - LT") %}
 
@@ -79,9 +82,12 @@ namespace ComparisonOperations {
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
-    func exec_gt{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_gt{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x11 - GT") %}
 
@@ -116,9 +122,12 @@ namespace ComparisonOperations {
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
-    func exec_slt{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_slt{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x12 - SLT") %}
 
@@ -153,9 +162,12 @@ namespace ComparisonOperations {
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
-    func exec_sgt{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_sgt{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x13 - SGT") %}
 
@@ -190,9 +202,12 @@ namespace ComparisonOperations {
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
-    func exec_eq{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_eq{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x14 - EQ") %}
 
@@ -227,9 +242,12 @@ namespace ComparisonOperations {
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
-    func exec_iszero{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_iszero{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x15 - ISZERO") %}
 
@@ -261,9 +279,12 @@ namespace ComparisonOperations {
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
-    func exec_shl{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_shl{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x1B - SHL") %}
 
@@ -298,9 +319,12 @@ namespace ComparisonOperations {
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
-    func exec_shr{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_shr{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x1C - SHR") %}
 

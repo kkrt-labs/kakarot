@@ -4,7 +4,7 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.invoke import invoke
 from starkware.cairo.common.math import assert_nn
 from starkware.cairo.common.memcpy import memcpy
@@ -35,9 +35,12 @@ namespace EVMInstructions {
     // @param opcode The opcode value.
     // @param ctx The pointer to the execution context.
     // @return The pointer to the updated execution context.
-    func decode_and_execute{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        instructions: felt*, ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func decode_and_execute{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(instructions: felt*, ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
         // Retrieve the current program counter.
@@ -61,7 +64,7 @@ namespace EVMInstructions {
         local opcode_exist;
 
         // Check if opcode exists
-        %{  
+        %{
             if memory.get(ids.instructions + ids.opcode) == None:
                 ids.opcode_exist = 0
             else:
@@ -83,7 +86,7 @@ namespace EVMInstructions {
 
         // Prepare implicit arguments
         let implicit_args_len = decode_and_execute.ImplicitArgs.SIZE;
-        tempvar implicit_args = new decode_and_execute.ImplicitArgs(syscall_ptr, pedersen_ptr, range_check_ptr);
+        tempvar implicit_args = new decode_and_execute.ImplicitArgs(syscall_ptr, pedersen_ptr, range_check_ptr, bitwise_ptr);
 
         // Build arguments array
         let (args_len: felt, args: felt*) = prepare_arguments(
@@ -100,6 +103,7 @@ namespace EVMInstructions {
         let syscall_ptr = implicit_args.syscall_ptr;
         let pedersen_ptr = implicit_args.pedersen_ptr;
         let range_check_ptr = implicit_args.range_check_ptr;
+        let bitwise_ptr = implicit_args.bitwise_ptr;
 
         // Get actual return value from ap
         return cast([ap_val - 1], model.ExecutionContext*);
@@ -109,9 +113,12 @@ namespace EVMInstructions {
     // @param instructions the instruction set
     // @param opcode The opcode value
     // @param function the function to execute for the specified opcode
-    func add_instruction{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        instructions: felt*, opcode: felt, function: codeoffset
-    ) {
+    func add_instruction{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(instructions: felt*, opcode: felt, function: codeoffset) {
         assert [instructions + opcode] = cast(function, felt);
         return ();
     }
@@ -122,9 +129,12 @@ namespace EVMInstructions {
     // @custom:group Stop and Arithmetic Operations
     // @custom:gas 0
     // @param ctx The pointer to the execution context.
-    func exec_stop{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_stop{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         %{ print("0x00 - STOP") %}
         return ExecutionContext.stop(ctx_ptr);
     }
@@ -150,8 +160,12 @@ namespace EVMInstructions {
 
     // @notice Generate the instructions set for the EVM.
     // @return The instructions set.
-    func generate_instructions{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ) -> felt* {
+    func generate_instructions{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }() -> felt* {
         alloc_locals;
         // Init instructions
         let (instructions: felt*) = alloc();

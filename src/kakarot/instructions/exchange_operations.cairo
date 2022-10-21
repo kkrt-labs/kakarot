@@ -3,7 +3,7 @@
 %lang starknet
 
 // Starkware dependencies
-from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
 // Internal dependencies
 from kakarot.model import model
@@ -20,9 +20,12 @@ namespace ExchangeOperations {
 
     // @notice Generic SWAP operation
     // @dev Exchange 1st and i-th stack items.
-    func exec_swap_i{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*, i: felt
-    ) -> model.ExecutionContext* {
+    func exec_swap_i{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*, i: felt) -> model.ExecutionContext* {
         alloc_locals;
         %{
             opcode_value =  143 + ids.i
@@ -49,9 +52,12 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @return Updated execution context.
-    func exec_swap1{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_swap1{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_swap_i(ctx, 1);
     }
 
@@ -62,9 +68,12 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @return Updated execution context.
-    func exec_swap2{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_swap2{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_swap_i(ctx, 2);
     }
 
@@ -75,9 +84,12 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @return Updated execution context.
-    func exec_swap3{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_swap3{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_swap_i(ctx, 3);
     }
 
@@ -88,9 +100,12 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @return Updated execution context.
-    func exec_swap4{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_swap4{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_swap_i(ctx, 4);
     }
 
@@ -101,9 +116,12 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @return Updated execution context.
-    func exec_swap5{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_swap5{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_swap_i(ctx, 5);
     }
 
@@ -114,9 +132,12 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @return Updated execution context.
-    func exec_swap6{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_swap6{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_swap_i(ctx, 6);
     }
 
@@ -127,9 +148,12 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @return Updated execution context.
-    func exec_swap7{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_swap7{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_swap_i(ctx, 7);
     }
 
@@ -140,9 +164,12 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @return Updated execution context.
-    func exec_swap8{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_swap8{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_swap_i(ctx, 8);
     }
 
@@ -153,9 +180,12 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @return Updated execution context.
-    func exec_swap9{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_swap9{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_swap_i(ctx, 9);
     }
 
@@ -166,9 +196,12 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @return Updated execution context.
-    func exec_swap10{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_swap10{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_swap_i(ctx, 10);
     }
 
@@ -179,9 +212,12 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @return Updated execution context.
-    func exec_swap11{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_swap11{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_swap_i(ctx, 11);
     }
 
@@ -192,9 +228,12 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @return Updated execution context.
-    func exec_swap12{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_swap12{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_swap_i(ctx, 12);
     }
 
@@ -205,9 +244,12 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @return Updated execution context.
-    func exec_swap13{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_swap13{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_swap_i(ctx, 13);
     }
 
@@ -218,9 +260,12 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @return Updated execution context.
-    func exec_swap14{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_swap14{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_swap_i(ctx, 14);
     }
 
@@ -231,9 +276,12 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @return Updated execution context.
-    func exec_swap15{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_swap15{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_swap_i(ctx, 15);
     }
 
@@ -244,9 +292,12 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @return Updated execution context.
-    func exec_swap16{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_swap16{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_swap_i(ctx, 16);
     }
 }

@@ -4,7 +4,7 @@
 
 // Starkware dependencies
 
-from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
 from starkware.cairo.common.uint256 import Uint256
 
@@ -24,9 +24,12 @@ namespace PushOperations {
 
     // @notice Generic PUSH operation
     // @dev Place i bytes items on stack
-    func exec_push_i{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*, i: felt
-    ) -> model.ExecutionContext* {
+    func exec_push_i{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*, i: felt) -> model.ExecutionContext* {
         alloc_locals;
         %{
             opcode_value =  95 + ids.i
@@ -59,9 +62,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push1{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push1{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 1);
     }
 
@@ -73,9 +79,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push2{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push2{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 2);
     }
 
@@ -87,9 +96,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push3{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push3{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 3);
     }
 
@@ -101,9 +113,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push4{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push4{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 4);
     }
 
@@ -115,9 +130,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push5{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push5{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 5);
     }
 
@@ -129,9 +147,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push6{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push6{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 6);
     }
 
@@ -143,9 +164,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push7{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push7{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 7);
     }
 
@@ -157,9 +181,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push8{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push8{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 8);
     }
 
@@ -171,9 +198,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push9{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push9{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 9);
     }
 
@@ -185,9 +215,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push10{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push10{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 10);
     }
 
@@ -199,9 +232,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push11{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push11{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 11);
     }
 
@@ -213,9 +249,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push12{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push12{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 12);
     }
 
@@ -227,9 +266,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push13{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push13{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 13);
     }
 
@@ -241,9 +283,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push14{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push14{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 14);
     }
 
@@ -255,9 +300,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push15{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push15{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 15);
     }
 
@@ -269,9 +317,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push16{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push16{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 16);
     }
 
@@ -283,9 +334,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push17{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push17{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 17);
     }
 
@@ -297,9 +351,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push18{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push18{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 18);
     }
 
@@ -311,9 +368,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push19{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push19{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 19);
     }
 
@@ -325,9 +385,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push20{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push20{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 20);
     }
 
@@ -339,9 +402,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push21{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push21{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 21);
     }
 
@@ -353,9 +419,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push22{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push22{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 22);
     }
 
@@ -367,9 +436,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push23{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push23{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 23);
     }
 
@@ -381,9 +453,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push24{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push24{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 24);
     }
 
@@ -395,9 +470,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push25{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push25{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 25);
     }
 
@@ -409,9 +487,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push26{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push26{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 26);
     }
 
@@ -423,9 +504,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push27{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push27{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 27);
     }
 
@@ -437,9 +521,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push28{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push28{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 28);
     }
 
@@ -451,9 +538,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push29{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push29{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 29);
     }
 
@@ -465,9 +555,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push30{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push30{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 30);
     }
 
@@ -479,9 +572,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push31{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push31{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 31);
     }
 
@@ -493,9 +589,12 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
-    func exec_push32{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_ptr: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_push32{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_push_i(ctx_ptr, 32);
     }
 }

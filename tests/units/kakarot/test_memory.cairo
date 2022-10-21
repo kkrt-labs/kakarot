@@ -4,7 +4,7 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.uint256 import Uint256
 
@@ -14,13 +14,15 @@ from kakarot.model import model
 from kakarot.memory import Memory
 
 @view
-func __setup__{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+func __setup__{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
     return ();
 }
 
 @external
 func test__init__should_return_an_empty_memory{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // When
     let result: model.Memory* = Memory.init();
@@ -32,7 +34,7 @@ func test__init__should_return_an_empty_memory{
 
 @external
 func test__len__should_return_the_length_of_the_memory{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
     let memory: model.Memory* = Memory.init();
@@ -47,7 +49,7 @@ func test__len__should_return_the_length_of_the_memory{
 
 @external
 func test__store__should_add_an_element_to_the_memory{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
     let memory: model.Memory* = Memory.init();
@@ -63,7 +65,7 @@ func test__store__should_add_an_element_to_the_memory{
 
 @external
 func test__load__should_load_an_element_from_the_memory{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
     let memory: model.Memory* = Memory.init();
@@ -79,7 +81,7 @@ func test__load__should_load_an_element_from_the_memory{
 
 @external
 func test__load__should_fail__when_out_of_memory{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
     let memory: model.Memory* = Memory.init();
@@ -93,7 +95,7 @@ func test__load__should_fail__when_out_of_memory{
 
 @external
 func test__dump__should_print_the_memory{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
     alloc_locals;

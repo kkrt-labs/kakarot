@@ -3,7 +3,7 @@
 %lang starknet
 
 // Starkware dependencies
-from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
 // Internal dependencies
 from kakarot.model import model
@@ -20,9 +20,12 @@ namespace DuplicationOperations {
 
     // @notice Generic DUP operation
     // @dev Duplicate the top i-th stack item to the top of the stack.
-    func exec_dup_i{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*, i: felt
-    ) -> model.ExecutionContext* {
+    func exec_dup_i{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*, i: felt) -> model.ExecutionContext* {
         alloc_locals;
         %{
             opcode_value =  127 + ids.i
@@ -52,9 +55,12 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return Updated execution context.
-    func exec_dup1{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_dup1{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_dup_i(ctx, 1);
     }
 
@@ -65,9 +71,12 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return Updated execution context.
-    func exec_dup2{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_dup2{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_dup_i(ctx, 2);
     }
 
@@ -78,9 +87,12 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return Updated execution context.
-    func exec_dup3{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_dup3{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_dup_i(ctx, 3);
     }
 
@@ -91,9 +103,12 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return Updated execution context.
-    func exec_dup4{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_dup4{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_dup_i(ctx, 4);
     }
 
@@ -104,9 +119,12 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return Updated execution context.
-    func exec_dup5{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_dup5{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_dup_i(ctx, 5);
     }
 
@@ -117,9 +135,12 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return Updated execution context.
-    func exec_dup6{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_dup6{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_dup_i(ctx, 6);
     }
 
@@ -130,9 +151,12 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return Updated execution context.
-    func exec_dup7{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_dup7{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_dup_i(ctx, 7);
     }
 
@@ -143,9 +167,12 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return Updated execution context.
-    func exec_dup8{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_dup8{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_dup_i(ctx, 8);
     }
 
@@ -156,9 +183,12 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return Updated execution context.
-    func exec_dup9{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_dup9{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_dup_i(ctx, 9);
     }
 
@@ -169,9 +199,12 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return Updated execution context.
-    func exec_dup10{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_dup10{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_dup_i(ctx, 10);
     }
 
@@ -182,9 +215,12 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return Updated execution context.
-    func exec_dup11{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_dup11{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_dup_i(ctx, 11);
     }
 
@@ -195,9 +231,12 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return Updated execution context.
-    func exec_dup12{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_dup12{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_dup_i(ctx, 12);
     }
 
@@ -208,9 +247,12 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return Updated execution context.
-    func exec_dup13{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_dup13{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_dup_i(ctx, 13);
     }
 
@@ -221,9 +263,12 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return Updated execution context.
-    func exec_dup14{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_dup14{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_dup_i(ctx, 14);
     }
 
@@ -234,9 +279,12 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return Updated execution context.
-    func exec_dup15{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_dup15{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_dup_i(ctx, 15);
     }
 
@@ -247,9 +295,12 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @return Updated execution context.
-    func exec_dup16{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_dup16{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         return exec_dup_i(ctx, 16);
     }
 }
