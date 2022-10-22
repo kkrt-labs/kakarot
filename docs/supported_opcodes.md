@@ -60,7 +60,7 @@ This document describes the opcodes supported by Kakarot.
 | 0x3a         | GASPRICE       | Get price of gas in current environment                                           |             |
 | 0x3b         | EXTCODESIZE    | Get size of an account's code                                                     |             |
 | 0x3c         | EXTCODECOPY    | Copy an account's code to memory                                                  |             |
-| 0x3d         | RETURNDATASIZE | Get size of output data from the previous call from the current environment       |   ✅          |
+| 0x3d         | RETURNDATASIZE | Get size of output data from the previous call from the current environment       | ✅          |
 | 0x3e         | RETURNDATACOPY | Copy output data from the previous call to memory                                 |             |
 | 0x3f         | EXTCODEHASH    | Get the code hash of an account                                                   |             |
 
@@ -73,7 +73,7 @@ This document describes the opcodes supported by Kakarot.
 | 0x42         | TIMESTAMP   | Get the block's timestamp                                  | ✅          |
 | 0x43         | NUMBER      | Get the block's number                                     | ✅          |
 | 0x44         | DIFFICULTY  | Get the block's difficulty                                 |             |
-| 0x45         | GASLIMIT    | Get the block's gas limit                                  |    ✅          |
+| 0x45         | GASLIMIT    | Get the block's gas limit                                  | ✅          |
 | 0x46         | CHAINID     | Get the chain ID                                           | ✅          |
 | 0x47         | SELFBALANCE | Get the balance of the current contract                    |             |
 | 0x48         | BASEFEE     | Get the base fee of the current block                      |             |
