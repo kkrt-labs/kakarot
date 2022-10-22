@@ -22,6 +22,7 @@ namespace EnvironmentalInformation {
     // Define constants.
     const GAS_COST_CODESIZE = 2;
     const GAS_COST_CALLER = 2;
+    const GAS_COST_RETURNDATASIZE=2;
 
     // @notice CODESIZE operation.
     // @dev Get size of code running in current environment.
