@@ -4,7 +4,6 @@
 
 // StarkWare dependencies
 from starkware.cairo.common.uint256 import Uint256
-
 namespace Helpers {
     func setup_python_defs() {
         %{
@@ -191,5 +190,9 @@ namespace Helpers {
         }
         assert new_arr[old_arr_len - 1] = [old_arr];
         return reverse(old_arr_len - 1, &old_arr[1], new_arr_len + 1, new_arr);
+    }
+
+    func uint256_to_felt{range_check_ptr}(val: Uint256) -> felt {
+        return val.low + val.high * 2 ** 128;
     }
 }

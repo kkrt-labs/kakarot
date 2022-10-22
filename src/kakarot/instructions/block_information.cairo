@@ -27,8 +27,8 @@ namespace BlockInformation {
     const GAS_COST_COINBASE = 2;
     const GAS_COST_TIMESTAMP = 2;
     const GAS_COST_NUMBER = 2;
-    const GAS_COST_GASLIMIT= 2;
-    const GAS_COST_DIFFICULTY= 2;
+    const GAS_COST_GASLIMIT = 2;
+    const GAS_COST_DIFFICULTY = 2;
     const GAS_COST_BASEFEE = 2;
 
     // @notice CHAINID operation.
@@ -45,9 +45,9 @@ namespace BlockInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ 
-        import logging
-        logging.info("0x46 - CHAINID") 
+        %{
+            import logging
+            logging.info("0x46 - CHAINID")
         %}
         // Get the chain ID.
         let chain_id = Helpers.to_uint256(Constants.CHAIN_ID);
@@ -75,12 +75,13 @@ namespace BlockInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ 
-        import logging
-        logging.info("0x41 - COINBASE")
+        %{
+            import logging
+            logging.info("0x41 - COINBASE")
         %}
         // Get the coinbase address.
-        let coinbase_address = Helpers.to_uint256(Constants.COINBASE_ADDRESS);
+        // TODO: switch to real coinbase addr when going to prod
+        let coinbase_address = Helpers.to_uint256(Constants.MOCK_COINBASE_ADDRESS);
         let stack: model.Stack* = Stack.push(ctx.stack, coinbase_address);
 
         // Update the execution context.
@@ -106,8 +107,8 @@ namespace BlockInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         %{
-        import logging
-        logging.info("0x42 - TIMESTAMP")
+            import logging
+            logging.info("0x42 - TIMESTAMP")
         %}
         // Get the block’s timestamp
         let (current_timestamp) = get_block_timestamp();
@@ -139,8 +140,8 @@ namespace BlockInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         %{
-        import logging
-        logging.info("0x43 - NUMBER")
+            import logging
+            logging.info("0x43 - NUMBER")
         %}
         // Get the block number.
         let (current_block) = get_block_number();
@@ -157,7 +158,6 @@ namespace BlockInformation {
         return ctx;
     }
 
-
     // @notice GASLIMIT operation.
     // @dev Get gas limit
     // @custom:since Frontier
@@ -173,8 +173,8 @@ namespace BlockInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         %{
-        import logging
-        logging.info("0x45 - GASLIMIT")
+            import logging
+            logging.info("0x45 - GASLIMIT")
         %}
         // Get the Gas Limit.
 
@@ -204,11 +204,11 @@ namespace BlockInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ 
-        import logging
-        logging.info("0x44 - DIFFICULTY")
+        %{
+            import logging
+            logging.info("0x44 - DIFFICULTY")
         %}
-        
+
         // Get the Difficulty.
         let difficulty = Helpers.to_uint256(0);
 
@@ -237,10 +237,10 @@ namespace BlockInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         %{
-        import logging
-        logging.info("0x48 - BASEFEE")
+            import logging
+            logging.info("0x48 - BASEFEE")
         %}
-        
+
         // Get the base fee.
         let basefee = Helpers.to_uint256(0);
 
