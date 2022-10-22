@@ -100,7 +100,7 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x59 - MSIZE") %}
-        let msize = Helpers.to_uint256(model.Memory.raw_len);
+        let msize = Helpers.to_uint256(ctx.memory.raw_len);
 
         let stack: model.Stack* = Stack.push(ctx.stack, msize);
 
