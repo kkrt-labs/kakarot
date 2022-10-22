@@ -207,6 +207,7 @@ class TestBasic(IsolatedAsyncioTestCase):
     #         )
 
     async def test_block_information(self):
+        # chain id
         code, calldata = get_case(case="./tests/cases/007.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
             caller_address=1
@@ -214,6 +215,7 @@ class TestBasic(IsolatedAsyncioTestCase):
         self.assertEqual(res.result.top_stack, Uint256(1263227476, 0))
         self.assertEqual(res.result.top_memory, Uint256(0, 0))
 
+        # coinbase
         code, calldata = get_case(case="./tests/cases/008.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
             caller_address=1
@@ -221,13 +223,28 @@ class TestBasic(IsolatedAsyncioTestCase):
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertEqual(res.result.top_memory, Uint256(0, 0))
 
+        # block_number
         code, calldata = get_case(case="./tests/cases/010.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
             caller_address=1
         )
-
-        # TODO: test block number
         self.assertEqual(res.result.top_stack, Uint256(1, 0))
+        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+
+        # block_timestamp
+        code, calldata = get_case(case="./tests/cases/011.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        self.assertEqual(res.result.top_stack, Uint256(1, 0))
+        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+
+        # gas limit
+        code, calldata = get_case(case="./tests/cases/015.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertEqual(res.result.top_memory, Uint256(0, 0))
 
 
