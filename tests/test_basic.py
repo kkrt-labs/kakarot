@@ -72,7 +72,6 @@ class TestBasic(IsolatedAsyncioTestCase):
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, expected)
-        print(f"TOP STACK >>> {res.result.top_stack}")
         self.assertEqual(res.result.top_memory, Uint256(0, 0))
 
     async def test_arithmetic_operations(self):
@@ -169,8 +168,6 @@ class TestBasic(IsolatedAsyncioTestCase):
                 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
             )
         )
-
-
 
     async def test_duplication_operations(self):
         code, calldata = get_case(case="./tests/cases/002.json")
