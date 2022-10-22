@@ -31,7 +31,7 @@ This document describes the opcodes supported by Kakarot.
 | 0x16         | AND         | Bitwise AND operation           | ✅          |
 | 0x17         | OR          | Bitwise OR operation            | ✅          |
 | 0x18         | XOR         | Bitwise XOR operation           |             |
-| 0x19         | NOT         | Bitwise NOT operation           |             |
+| 0x19         | NOT         | Bitwise NOT operation           | ✅          |
 | 0x1a         | BYTE        | Retrieve single byte from word  |             |
 | 0x1b         | SHL         | Shift left                      | ✅          |
 | 0x1c         | SHR         | Logical shift right             | ✅          |

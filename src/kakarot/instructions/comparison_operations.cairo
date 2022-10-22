@@ -13,6 +13,7 @@ from starkware.cairo.common.uint256 import (
     uint256_shr,
     uint256_and,
     uint256_or,
+    uint256_not
 )
 
 // Internal dependencies
@@ -36,6 +37,7 @@ namespace ComparisonOperations {
     const GAS_COST_EQ = 3;
     const GAS_COST_SHL = 3;
     const GAS_COST_SHR = 3;
+    const GAS_COST_NOT = 3;
 
     // @notice 0x10 - LT
     // @dev Comparison operation
@@ -423,6 +425,44 @@ namespace ComparisonOperations {
 
         // Right shift `value` by `shift`.
         let (result) = uint256_shr(value, shift);
+
+        // Stack output:
+        // The result of the shift operation.
+        let stack: model.Stack* = Stack.push(stack, result);
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SHR);
+        return ctx;
+    }
+
+    // @notice 0x19 - Not
+    // @dev Bitwise operation
+    // @custom:since Frontier
+    // @custom:group Comparison & Bitwise Logic Operations
+    // @custom:gas 3
+    // @custom:stack_consumed_elements 1
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context.
+    // @return The pointer to the execution context.
+    func exec_not{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        %{ print("0x19 - NOT") %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - a: binary value
+        let (stack, a) = Stack.pop(stack);
+
+        // Bitwise NOT operation
+        let (result) = uint256_not(a);
 
         // Stack output:
         // The result of the shift operation.

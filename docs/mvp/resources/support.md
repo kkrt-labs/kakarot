@@ -43,7 +43,7 @@
 | MOD             | ✅          |
 | MSTORE          | ✅          |
 | MUL             | ✅          |
-| NOT             |             |
+| NOT             | ✅          |
 | POP             | ✅          |
 | PUSH1           | ✅          |
 | PUSH11          | ✅          |
