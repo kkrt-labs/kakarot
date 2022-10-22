@@ -48,11 +48,13 @@ namespace MemoryOperations {
         let (stack, offset) = Stack.pop(stack);
         let (stack, value) = Stack.pop(stack);
 
-        with_attr error_message("Kakarot: MemoryOverflow") {
-            assert_le(offset.low, Constants.MAX_MEMORY_OFFSET);
-        }
+        // with_attr error_message("Kakarot: MemoryOverflow") {
+        //     assert_le(offset.low, Constants.MAX_MEMORY_OFFSET);
+        // }
 
-        let memory: model.Memory* = Memory.store(self=ctx.memory, element=value, offset=offset.low);
+        let offset_byte = 2**3;
+
+        let memory: model.Memory* = Memory.store(self=ctx.memory, element=value, offset=2**3);
 
         // Update context stack.
         let ctx = ExecutionContext.update_memory(ctx, memory);
