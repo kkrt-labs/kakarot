@@ -18,9 +18,50 @@ from kakarot.constants import Constants
 // @author @LucasLvy @abdelhamidbakhta
 // @custom:namespace MemoryOperations
 namespace MemoryOperations {
+    const GAS_COST_MLOAD = 3;
     const GAS_COST_MSTORE = 3;
     const GAS_COST_PC = 2;
     const GAS_COST_MSIZE = 2;
+
+    // @notice MLOAD operation
+    // @dev Load word from memory and push to stack.
+    // @custom:since Frontier
+    // @custom:group Stack Memory and Flow operations.
+    // @custom:gas 3 + dynamic gas
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 2
+    // @return Updated execution context.
+    func exec_load{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }() -> model.ExecutionContext{
+        alloc_locals;
+        %{ print("0x51 - MLOAD") %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - offset: memory offset of the value to load.
+        let (stack, offset) = Stack.pop(stack);
+
+        with_attr error_message("Kakarot: MemoryOverflow") {
+            assert_le(offset.low, Constants.MAX_MEMORY_OFFSET);
+        }
+        
+        //Read word from memory at offset
+        let (value: Uint256) = Memory.load(self=ctx.memory, offset=offset.low);
+
+        //Push word to the stack
+        let stack: model.Stack* = Stack.push(stack, value)
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MLOAD);
+        return ctx;
+    }
 
 
     // @notice MSTORE operation

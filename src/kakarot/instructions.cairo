@@ -242,6 +242,8 @@ namespace EVMInstructions {
         // 0x20 - SHA3
         add_instruction(instructions, 0x20, Sha3.exec_sha3);
 
+        // 0x51 - MLOAD
+        add_instruction(instructions, 0x51, MemoryOperations.exec_load);
         // 0x52 - MSTORE
         add_instruction(instructions, 0x52, MemoryOperations.exec_store);
         // 0x58 - PC

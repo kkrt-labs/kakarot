@@ -1,6 +1,6 @@
 # Support of opcodes for the MVP
 
-51 / 74 opcodes are supported by the MVP.
+52 / 74 opcodes are supported by the MVP.
 
 | Opcode Name     | Implemented |
 | --------------- | ----------- |
@@ -39,7 +39,7 @@
 | LOG2            |             |
 | LOG3            |             |
 | LT              | ✅          |
-| MLOAD           |             |
+| MLOAD           | ✅          |
 | MOD             | ✅          |
 | MSTORE          | ✅          |
 | MUL             | ✅          |
