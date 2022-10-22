@@ -24,6 +24,7 @@ from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.environmental_information import EnvironmentalInformation
 from kakarot.instructions.block_information import BlockInformation
 from kakarot.instructions.system_operations import SystemOperations
+from kakarot.instructions.sha3 import Sha3
 
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.
@@ -211,6 +212,10 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x14, ComparisonOperations.exec_eq);
         // 0x15 - ISZERO
         add_instruction(instructions, 0x15, ComparisonOperations.exec_iszero);
+        // 0x16 - AND
+        add_instruction(instructions, 0x16, ComparisonOperations.exec_and);
+        // 0x17 - OR
+        add_instruction(instructions, 0x17, ComparisonOperations.exec_or);
         // 0x1B - SHL
         add_instruction(instructions, 0x1B, ComparisonOperations.exec_shl);
         // 0x1C - SHR
@@ -229,11 +234,18 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x42, BlockInformation.exec_timestamp);
         // 0x43 - NUMBER
         add_instruction(instructions, 0x43, BlockInformation.exec_number);
+        // 0x45 - GASLIMIT
+        add_instruction(instructions, 0x45, BlockInformation.exec_gaslimit);
         // 0x46 - CHAINID
         add_instruction(instructions, 0x46, BlockInformation.exec_chainid);
 
+        // 0x20 - SHA3
+        add_instruction(instructions, 0x20, Sha3.exec_sha3);
+
         // 0x52 - MSTORE
         add_instruction(instructions, 0x52, MemoryOperations.exec_store);
+        // 0x58 - PC
+        add_instruction(instructions, 0x58, MemoryOperations.exec_pc);
 
         // Add 6s: Push operations
         add_instruction(instructions, 0x60, PushOperations.exec_push1);

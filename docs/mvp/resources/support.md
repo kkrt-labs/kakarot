@@ -7,7 +7,7 @@
 | ADD             | ✅          |
 | ADDMOD          | ✅          |
 | ADDRESS         |             |
-| AND             |             |
+| AND             | ✅          |
 | CALLDATALOAD    |             |
 | CALLDATASIZE    |             |
 | CALLER          |             |
@@ -56,7 +56,7 @@
 | RETURNDATACOPY  |             |
 | RETURNDATASIZE  |             |
 | REVERT          |             |
-| SHA3            |             |
+| SHA3            | ✅          |
 | SHL             | ✅          |
 | SHR             | ✅          |
 | SLOAD           |             |

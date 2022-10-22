@@ -28,8 +28,8 @@ This document describes the opcodes supported by Kakarot.
 | 0x13         | SGT         | Signed greater-than comparision | ✅          |
 | 0x14         | EQ          | Equality comparision            | ✅          |
 | 0x15         | ISZERO      | Simple not operator             | ✅          |
-| 0x16         | AND         | Bitwise AND operation           |             |
-| 0x17         | OR          | Bitwise OR operation            |             |
+| 0x16         | AND         | Bitwise AND operation           | ✅          |
+| 0x17         | OR          | Bitwise OR operation            | ✅          |
 | 0x18         | XOR         | Bitwise XOR operation           |             |
 | 0x19         | NOT         | Bitwise NOT operation           |             |
 | 0x1a         | BYTE        | Retrieve single byte from word  |             |
@@ -41,7 +41,7 @@ This document describes the opcodes supported by Kakarot.
 
 | Opcode Value | Opcode Name | Description             | Implemented |
 | ------------ | ----------- | ----------------------- | ----------- |
-| 0x20         | SHA3        | Compute Keccak-256 hash |             |
+| 0x20         | SHA3        | Compute Keccak-256 hash | ✅          |
 
 ## Environmental Information
 
@@ -50,7 +50,7 @@ This document describes the opcodes supported by Kakarot.
 | 0x30         | ADDRESS        | Get address of currently executing account                                        |             |
 | 0x31         | BALANCE        | Get balance of the given account                                                  |             |
 | 0x32         | ORIGIN         | Get execution origination address                                                 |             |
-| 0x33         | CALLER         | Get caller address                                                                |    ✅         |
+| 0x33         | CALLER         | Get caller address                                                                | ✅          |
 | 0x34         | CALLVALUE      | Get deposited value by the instruction/transaction responsible for this execution |             |
 | 0x35         | CALLDATALOAD   | Get input data of current environment                                             |             |
 | 0x36         | CALLDATASIZE   | Get size of input data in current environment                                     |             |
@@ -73,7 +73,7 @@ This document describes the opcodes supported by Kakarot.
 | 0x42         | TIMESTAMP   | Get the block's timestamp                                  | ✅          |
 | 0x43         | NUMBER      | Get the block's number                                     | ✅          |
 | 0x44         | DIFFICULTY  | Get the block's difficulty                                 |             |
-| 0x45         | GASLIMIT    | Get the block's gas limit                                  |             |
+| 0x45         | GASLIMIT    | Get the block's gas limit                                  |    ✅          |
 | 0x46         | CHAINID     | Get the chain ID                                           | ✅          |
 | 0x47         | SELFBALANCE | Get the balance of the current contract                    |             |
 | 0x48         | BASEFEE     | Get the base fee of the current block                      |             |
@@ -90,7 +90,7 @@ This document describes the opcodes supported by Kakarot.
 | 0x55         | SSTORE      | Save word to storage                                                                               |             |
 | 0x56         | JUMP        | Alter the program counter                                                                          |             |
 | 0x57         | JUMPI       | Conditionally alter the program counter                                                            |             |
-| 0x58         | PC          | Get the value of the program counter prior to the increment                                        |             |
+| 0x58         | PC          | Get the value of the program counter prior to the increment                                        | ✅          |
 | 0x59         | MSIZE       | Get the size of active memory in bytes                                                             |             |
 | 0x5a         | GAS         | Get the amount of available gas, including the corresponding reduction the amount of available gas |             |
 | 0x5b         | JUMPDEST    | Mark a valid destination for jumps                                                                 |             |
