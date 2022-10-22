@@ -20,6 +20,8 @@ from kakarot.constants import Constants
 namespace MemoryOperations {
     const GAS_COST_MSTORE = 3;
     const GAS_COST_PC = 2;
+    const GAS_COST_MSIZE = 2;
+
 
     // @notice MSTORE operation
     // @dev Save word to memory.
@@ -81,6 +83,32 @@ namespace MemoryOperations {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_PC);
+        return ctx;
+    }
+
+    // @notice MSIZE operation
+    // @dev Get the value of memory size.
+    // @custom:since Frontier
+    // @custom:group Stack Memory Storage and Flow operations.
+    // @custom:stack_produced_elements 1
+    // @return Updated execution context.
+    func exec_msize{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        %{ print("0x59 - MSIZE") %}
+        let len = Memory.len(ctx.memory);
+        let msize = Helpers.to_uint256(len);
+
+        let stack: model.Stack* = Stack.push(ctx.stack, msize);
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MSIZE);
         return ctx;
     }
 }
