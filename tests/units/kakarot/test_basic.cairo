@@ -220,6 +220,17 @@ func test_memory_operations{
     // Assert value on the top of the stack
     test_utils.assert_top_stack(ctx, Uint256(3, 0));
 
+    // Get Memory Size test - 0x59 MSIZE
+    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+        './tests/cases/016.json'
+    );
+
+    // Run EVM execution
+    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+    // Assert value on the top of the stack
+    test_utils.assert_top_stack(ctx, Uint256(0, 0));
+
     return ();
 }
 
