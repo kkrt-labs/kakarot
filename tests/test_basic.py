@@ -160,6 +160,15 @@ class TestBasic(IsolatedAsyncioTestCase):
         await self.assert_compare("/shr/10", Uint256(0, 0))
         await self.assert_compare("/shr/11", Uint256(0, 0))
 
+
+        await self.assert_compare(
+            "_not", 
+            Uint256(
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+            )
+        )
+
     async def test_duplication_operations(self):
         code, calldata = get_case(case="./tests/cases/002.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
