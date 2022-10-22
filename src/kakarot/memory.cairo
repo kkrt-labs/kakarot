@@ -104,15 +104,18 @@ namespace Memory {
         );
         let element = self.elements[nth_word];
 
+        // get word_offset in uint256 denomination to be able to do uint256 operations
         let (low_word_offset, high_word_offset) = split_64(word_offset);
         let word_offset_as_uint256 = Uint256(low_word_offset, high_word_offset);
         let (word_with_offset) = uint256_shr(element, word_offset_as_uint256);
 
+        // padd zeros in case we run out of memory at the offset
         let (res) = uint256_shl(word_with_offset, word_offset_as_uint256);
         if (is_nn(nth_word - memory_len + 1) == 0) {
             return res;
         }
 
+        // get next element's first bytes to complete the word
         let next_element = self.elements[nth_word + 1];
         let (low_complementary_word_offset, high_complementary_word_offset) = split_64(
             Constants.EVM_WORD_LENGTH_IN_BYTES - word_offset
