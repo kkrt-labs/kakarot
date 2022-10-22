@@ -247,5 +247,17 @@ class TestBasic(IsolatedAsyncioTestCase):
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertEqual(res.result.top_memory, Uint256(0, 0))
 
-
-# TODO: test sha3
+    async def test_sha3(self):
+        code, calldata = get_case(case="./tests/cases/013.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        # keccak(10) = 0x967f2a2c7f3d22f9278175c1e6aa39cf9171db91dceacd5ee0f37c2e507b5abe
+        self.assertEqual(
+            res.result.top_stack,
+            Uint256(
+                193329242337984562015045870912253156030,
+                200044476455392313921036785920804272591,
+            ),
+        )
+        self.assertEqual(res.result.top_memory, Uint256(0x10, 0))
