@@ -28,9 +28,10 @@ func init_context{
     Helpers.setup_python_defs();
     let (code) = alloc();
     assert [code] = 00;
+    tempvar code_len = 1;
     let (calldata) = alloc();
     assert [calldata] = '';
-    let ctx: model.ExecutionContext* = ExecutionContext.init(code, calldata);
+    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
     return ctx;
 }
 

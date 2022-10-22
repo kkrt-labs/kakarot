@@ -87,7 +87,9 @@ namespace Memory {
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.Memory*, offset: felt) -> Uint256 {
         alloc_locals;
-        assert_lt(offset, len(self));
+        with_attr error_message("Kakarot: MemoryUnderflow") {
+            assert_lt(offset, len(self));
+        }
         let element = self.elements[offset];
         return element;
     }

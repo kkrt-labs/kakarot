@@ -4,9 +4,9 @@
 
 # Python
 __pycache__
-env
+venv
 
-# starknet 
+# starknet
 node.json
 *.deployments.txt
 artifacts

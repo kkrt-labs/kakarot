@@ -80,6 +80,7 @@ namespace test_utils {
         let len = Memory.len(ctx.memory);
         let actual = Memory.load(ctx.memory, len - 1);
         let (are_equal) = uint256_eq(actual, expected_value);
+        %{ print(f"actual {ids.actual.low, ids.actual.high}, expected {ids.expected_uint256.low, ids.expected_uint256.high}") %}
         assert are_equal = TRUE;
         return ();
     }

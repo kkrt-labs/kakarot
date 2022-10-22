@@ -2,25 +2,37 @@ name: TESTS
 
 on: [push, pull_request, pull_request_target]
 
-env:
-  PROTOSTAR_VERSION: 0.5.0
-  DEBUG: False
-
 jobs:
-  protostar-tests:
+  compilation-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Install protostar
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dependencies
         run: |
-          curl -L https://raw.githubusercontent.com/software-mansion/protostar/master/install.sh | bash -s -- -v $PROTOSTAR_VERSION
+          python -m pip install --upgrade pip
+          pip install cairo-lang openzeppelin-cairo-contracts
+      - name: Compile all the cairo files
+        run: |
+          for filename in $(find ./src/ -type f -name '*.cairo');
+          do echo $(basename -- $filename) && starknet-compile $filename --cairo_path ./src --disable_hint_validation >/dev/null;
+          done;
 
-      - name: Install protostar dependencies
-        run: /home/runner/.protostar/dist/protostar/protostar install
-
-      - name: Compile smart contracts
-        run: /home/runner/.protostar/dist/protostar/protostar build
-
-      - name: Run protostar tests
-        run: /home/runner/.protostar/dist/protostar/protostar test
+  python-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install cairo-lang cairo-coverage pytest openzeppelin-cairo-contracts
+      - name: Run tests
+        run: |
+          pytest 
