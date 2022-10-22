@@ -96,7 +96,7 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         %{ print("0x3a - GASPRICE") %}
         // Get caller address.
-        let return_gas_price = Helpers.to_uint256(ctx.compute_intrinsic_gas_cost);
+        let return_gas_price = Helpers.to_uint256(ctx.intrinsic_gas_cost);
         let stack: model.Stack* = Stack.push(ctx.stack, return_gas_price);
 
         // Update the execution context.
