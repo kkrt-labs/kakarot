@@ -1,0 +1,6 @@
+{
+    "name": "Get the price of gas - 0x3a GASPRICE",
+    "code": "3a00",
+    "calldata": "",
+    "expected_return_data": ""
+}

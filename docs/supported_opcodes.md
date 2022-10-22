@@ -57,7 +57,7 @@ This document describes the opcodes supported by Kakarot.
 | 0x37         | CALLDATACOPY   | Copy input data in current environment to memory                                  |             |
 | 0x38         | CODESIZE       | Get size of code running in current environment                                   | ✅          |
 | 0x39         | CODECOPY       | Copy code running in current environment to memory                                |             |
-| 0x3a         | GASPRICE       | Get price of gas in current environment                                           |             |
+| 0x3a         | GASPRICE       | Get price of gas in current environment                                           | ✅         |
 | 0x3b         | EXTCODESIZE    | Get size of an account's code                                                     |             |
 | 0x3c         | EXTCODECOPY    | Copy an account's code to memory                                                  |             |
 | 0x3d         | RETURNDATASIZE | Get size of output data from the previous call from the current environment       |   ✅          |
