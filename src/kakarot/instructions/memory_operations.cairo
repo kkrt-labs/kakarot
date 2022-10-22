@@ -102,10 +102,6 @@ namespace MemoryOperations {
         let (stack, offset) = Stack.pop(stack);
         let (stack, value) = Stack.pop(stack);
 
-        with_attr error_message("Kakarot: MemoryOverflow") {
-            assert_le(offset.low, Constants.MAX_MEMORY_OFFSET);
-        }
-
         let memory: model.Memory* = Memory.store(self=ctx.memory, element=value, offset=offset.low);
 
         // Update context stack.
@@ -156,11 +152,8 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ 
-        import logging
-        logging.info("0x59 - MSIZE")
-        %}
-        let len = Memory.len(ctx.memory);
+        %{ print("0x59 - MSIZE") %}
+        let len = ctx.memory.bytes_len;
         let msize = Helpers.to_uint256(len);
 
         let stack: model.Stack* = Stack.push(ctx.stack, msize);

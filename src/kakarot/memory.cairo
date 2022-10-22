@@ -7,10 +7,12 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math_cmp import is_le
-from starkware.cairo.common.math import assert_lt
+from starkware.cairo.common.math import assert_lt, split_int, unsigned_div_rem
+from starkware.cairo.common.memcpy import memcpy
 
 // Internal dependencies
 from kakarot.model import model
+from utils.utils import Helpers
 
 // @title Memory related functions.
 // @notice This file contains functions related to the memory.
@@ -21,8 +23,6 @@ from kakarot.model import model
 // @custom:namespace Memory
 // @custom:model model.Memory
 namespace Memory {
-    const element_size = Uint256.SIZE;
-
     // @notice Initialize the memory.
     // @return The pointer to the memory.
     func init{
@@ -32,22 +32,8 @@ namespace Memory {
         bitwise_ptr: BitwiseBuiltin*,
     }() -> model.Memory* {
         alloc_locals;
-        let (elements: Uint256*) = alloc();
-        return new model.Memory(elements=elements, raw_len=0);
-    }
-
-    // @notice Returns the len of the memory.
-    // @dev The len is counted with the highest address that was accessed.
-    // @param self - The pointer to the memory.
-    // @return The len of the memory.
-    func len{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.Memory*) -> felt {
-        let actual_len = self.raw_len / element_size;
-        return actual_len;
+        let (bytes: felt*) = alloc();
+        return new model.Memory(bytes=bytes, bytes_len=0);
     }
 
     // @notice Store an element into the memory.
@@ -62,17 +48,25 @@ namespace Memory {
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.Memory*, element: Uint256, offset: felt) -> model.Memory* {
         alloc_locals;
-        let offset = offset * element_size;
-        assert [self.elements + offset] = element;
-        let is_size_too_small = is_le(self.raw_len, offset);
-        local new_raw_len: felt;
-        if (is_size_too_small == 1) {
-            assert new_raw_len = offset + element_size;
+        let (memory: felt*) = alloc();
+        memcpy(dst=memory, src=self.bytes, len=offset);
+        split_int(
+            value=element.high, n=16, base=2 ** 8, bound=2 ** 128, output=memory + offset + 16
+        );
+        split_int(value=element.low, n=16, base=2 ** 8, bound=2 ** 128, output=memory + offset);
+
+        // TODO: Fill with 0 if offset > bytes_len
+        let is_memory_expanded = is_le(self.bytes_len, offset + 32);
+        if (is_memory_expanded == 1) {
+            return new model.Memory(bytes=memory, bytes_len=offset + 32);
         } else {
-            new_raw_len = self.raw_len;
+            memcpy(
+                dst=memory + offset + 32,
+                src=self.bytes + offset + 32,
+                len=self.bytes_len - 32 - offset,
+            );
+            return new model.Memory(bytes=memory, bytes_len=self.bytes_len);
         }
-        // TODO: update size if offset > current size.
-        return new model.Memory(elements=self.elements, raw_len=new_raw_len);
     }
 
     // @notice Load an element from the memory.
@@ -88,10 +82,12 @@ namespace Memory {
     }(self: model.Memory*, offset: felt) -> Uint256 {
         alloc_locals;
         with_attr error_message("Kakarot: MemoryUnderflow") {
-            assert_lt(offset, len(self));
+            assert_lt(offset, self.bytes_len);
         }
-        let element = self.elements[offset];
-        return element;
+        with_attr error_message("Kakarot: MemoryOverflow") {
+            let res: Uint256 = Helpers.felt_as_byte_to_uint256(self.bytes + offset);
+        }
+        return res;
     }
 
     // @notice Print the memory.
@@ -102,7 +98,7 @@ namespace Memory {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.Memory*) {
-        let memory_len = Memory.len(self);
+        let (memory_len, _rem) = unsigned_div_rem(self.bytes_len, 32);
         if (memory_len == 0) {
             return ();
         }
@@ -138,7 +134,7 @@ namespace Memory {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.Memory*, memory_index: felt) {
-        let element = Memory.load(self, memory_index);
+        let element = Memory.load(self, memory_index * 32);
         %{
             import logging
             element_str = cairo_uint256_to_str(ids.element)

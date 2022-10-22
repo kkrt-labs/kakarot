@@ -364,12 +364,14 @@ class TestBasic(IsolatedAsyncioTestCase):
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
             caller_address=1
         )
-        # keccak(10) = 0x967f2a2c7f3d22f9278175c1e6aa39cf9171db91dceacd5ee0f37c2e507b5abe
+        # keccak(0000000000000000000000000000000000000000000000000000000000000100)
+        # <=>
+        #  0x45e010b9ae401e2eb71529478da8bd513a9bdc2d095a111e324f5b95c09ed87b
         self.assertEqual(
             res.result.top_stack,
             Uint256(
-                193329242337984562015045870912253156030,
-                200044476455392313921036785920804272591,
+                77904495466872384669646666695347984507,
+                92880145435162625678889344074777148753,
             ),
         )
-        self.assertEqual(res.result.top_memory, Uint256(0x10, 0))
+        self.assertEqual(res.result.top_memory, Uint256(0x100, 0))

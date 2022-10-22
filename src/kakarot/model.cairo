@@ -12,8 +12,8 @@ namespace model {
     }
 
     struct Memory {
-        elements: Uint256*,
-        raw_len: felt,  // The size is counted with the highest address that was accessed.
+        bytes: felt*,
+        bytes_len: felt,  // The size is counted with the highest address that was accessed.
     }
 
     struct ExecutionContext {
