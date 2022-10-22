@@ -471,7 +471,7 @@ namespace ComparisonOperations {
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SHR);
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_NOT);
         return ctx;
     }
 }
