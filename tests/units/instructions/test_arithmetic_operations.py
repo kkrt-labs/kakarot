@@ -32,3 +32,4 @@ class TestBasic(IsolatedAsyncioTestCase):
         await self.unit_test.test__exec_addmod__should_add_0_and_1_and_div_rem_by_2().call()
         await self.unit_test.test__exec_mulmod__should_mul_0_and_1_and_div_rem_by_2().call()
         await self.unit_test.test__exec_exp__should_exp_0_and_1().call()
+        await self.unit_test.test__exec_signextend__should_signextend_0_and_1().call()
