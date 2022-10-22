@@ -1,0 +1,6 @@
+{
+    "name": "Get Memory Size",
+    "code": "3d00",
+    "calldata": "",
+    "expected_return_data": ""
+}

@@ -290,6 +290,20 @@ func test_environmental_information{
     let caller_address = Uint256(low, high);
 
     // Assert value on the top of the stack
+    test_utils.assert_top_stack(ctx, Uint256(0, 0));
+
+    return ();
+
+    // Load test case RETURNDATASIZE
+    let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
+        './tests/cases/017.json'
+    );
+
+    // Run EVM execution
+    let ctx: model.ExecutionContext* = Kakarot.execute(evm_test_case.code, evm_test_case.calldata);
+
+
+    // Assert value on the top of the stack
     test_utils.assert_top_stack(ctx, caller_address);
 
     return ();
