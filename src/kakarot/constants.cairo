@@ -20,6 +20,7 @@ namespace Constants {
 
     // MEMORY
     const MAX_MEMORY_OFFSET = 2 ** 64;
+    const EVM_WORD_LENGTH_IN_BYTES = 32;
 
     // GAS METERING
     const TRANSACTION_INTRINSIC_GAS_COST = 21000;
