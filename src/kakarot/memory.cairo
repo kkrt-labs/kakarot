@@ -4,13 +4,22 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.uint256 import Uint256
-from starkware.cairo.common.math_cmp import is_le
-from starkware.cairo.common.math import assert_lt
+from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.uint256 import (
+    Uint256,
+    split_64,
+    uint256_shr,
+    uint256_shl,
+    uint256_reverse_endian,
+    uint256_add,
+)
+from starkware.cairo.common.math_cmp import is_nn, is_le
+from starkware.cairo.common.math import unsigned_div_rem, assert_in_range
+from starkware.cairo.common.memcpy import memcpy
 
 // Internal dependencies
 from kakarot.model import model
+from kakarot.constants import Constants
 
 // @title Memory related functions.
 // @notice This file contains functions related to the memory.
@@ -77,7 +86,7 @@ namespace Memory {
 
     // @notice Load an element from the memory.
     // @param self - The pointer to the memory.
-    // @param offset - The offset to load the element from.
+    // @param offset - The offset to load the element from, expressed in bytes.
     // @return The new pointer to the memory.
     // @return The loaded element.
     func load{
@@ -87,11 +96,36 @@ namespace Memory {
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.Memory*, offset: felt) -> Uint256 {
         alloc_locals;
-        with_attr error_message("Kakarot: MemoryUnderflow") {
-            assert_lt(offset, len(self));
+        let memory_len = len(self);
+        assert_in_range(offset, 0, memory_len * Constants.EVM_WORD_LENGTH_IN_BYTES);
+
+        let (local nth_word: felt, local word_offset: felt) = unsigned_div_rem(
+            offset, Constants.EVM_WORD_LENGTH_IN_BYTES
+        );
+        let element = self.elements[nth_word];
+
+        let (low_word_offset, high_word_offset) = split_64(word_offset);
+        let word_offset_as_uint256 = Uint256(low_word_offset, high_word_offset);
+        let (word_with_offset) = uint256_shr(element, word_offset_as_uint256);
+
+        let (res) = uint256_shl(word_with_offset, word_offset_as_uint256);
+        if (is_nn(nth_word - memory_len + 1) == 0) {
+            return res;
         }
-        let element = self.elements[offset];
-        return element;
+
+        let next_element = self.elements[nth_word + 1];
+        let (low_complementary_word_offset, high_complementary_word_offset) = split_64(
+            Constants.EVM_WORD_LENGTH_IN_BYTES - word_offset
+        );
+        let complementary_word_offset_as_uint256 = Uint256(
+            low_complementary_word_offset, high_complementary_word_offset
+        );
+        let (next_word_with_offset) = uint256_shr(
+            next_element, complementary_word_offset_as_uint256
+        );
+        let (word_left_shift_with_offset) = uint256_shl(word_with_offset, word_offset_as_uint256);
+        let (res, _) = uint256_add(word_left_shift_with_offset, next_word_with_offset);
+        return res;
     }
 
     // @notice Print the memory.
