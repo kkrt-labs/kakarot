@@ -30,7 +30,7 @@ namespace ExecutionContext {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(code: felt*, calldata: felt*) -> model.ExecutionContext* {
+    }(code: felt*, code_len: felt, calldata: felt*) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
 
@@ -45,7 +45,7 @@ namespace ExecutionContext {
 
         local ctx: model.ExecutionContext* = new model.ExecutionContext(
             code=code,
-            code_len=Helpers.get_len(code),
+            code_len=code_len,
             calldata=calldata,
             program_counter=initial_pc,
             stopped=FALSE,

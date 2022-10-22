@@ -112,7 +112,6 @@ func test__pop__should_fail__when_stack_underflow_pop{
     let stack: model.Stack* = Stack.init();
 
     // When & Then
-    %{ expect_revert("TRANSACTION_FAILED", "Kakarot: StackUnderflow") %}
     let (stack, element) = Stack.pop(stack);
     return ();
 }
@@ -126,7 +125,6 @@ func test__pop__should_fail__when_stack_underflow_pop_n{
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
 
     // When & Then
-    %{ expect_revert("TRANSACTION_FAILED", "Kakarot: StackUnderflow") %}
     let (stack, elements) = Stack.pop_n(stack, 2);
     return ();
 }
@@ -175,7 +173,6 @@ func test__peek__should_fail_when_underflow{
     let stack: model.Stack* = Stack.init();
 
     // When & Then
-    %{ expect_revert("TRANSACTION_FAILED", "Kakarot: StackUnderflow") %}
     let result = Stack.peek(stack, 1);
     return ();
 }
@@ -223,7 +220,6 @@ func test__swap__should_fail__when_index_1_is_underflow{
     let stack: model.Stack* = Stack.init();
 
     // When & Then
-    %{ expect_revert("TRANSACTION_FAILED", "Kakarot: StackUnderflow") %}
     let result = Stack.swap(stack, 0, 1);
     return ();
 }
@@ -237,7 +233,6 @@ func test__swap__should_fail__when_index_2_is_underflow{
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
 
     // When & Then
-    %{ expect_revert("TRANSACTION_FAILED", "Kakarot: StackUnderflow") %}
     let result = Stack.swap(stack, 0, 1);
     return ();
 }
