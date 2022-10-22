@@ -292,8 +292,6 @@ func test_environmental_information{
     // Assert value on the top of the stack
     test_utils.assert_top_stack(ctx, Uint256(0, 0));
 
-    return ();
-
     // Load test case RETURNDATASIZE
     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
         './tests/cases/017.json'

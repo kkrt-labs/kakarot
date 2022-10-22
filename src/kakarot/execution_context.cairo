@@ -50,7 +50,7 @@ namespace ExecutionContext {
             program_counter=initial_pc,
             stopped=FALSE,
             return_data=empty_return_data,
-            return_data_len=Helpers.get_len(return_data),
+            return_data_len=Helpers.get_len(empty_return_data),
             stack=stack,
             memory=memory,
             gas_used=gas_used,
