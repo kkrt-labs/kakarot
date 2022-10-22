@@ -1,0 +1,6 @@
+{
+    "name": "Get the size of return data - 0x3d RETURNDATASIZE",
+    "code": "3d00",
+    "calldata": "",
+    "expected_return_data": ""
+}

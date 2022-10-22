@@ -213,6 +213,13 @@ class TestBasic(IsolatedAsyncioTestCase):
         self.assertEqual(res.result.top_stack, Uint256(1, 0))
         self.assertEqual(res.result.top_memory, Uint256(0, 0))
 
+        code, calldata = get_case(case="./tests/cases/017.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        self.assertEqual(res.result.top_stack, Uint256(0, 0))
+        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+
     async def test_system_operations(self):
         code, calldata = get_case(case="./tests/cases/009.json")
         with self.raisesStarknetError("Kakarot: 0xFE: Invalid Opcode"):
