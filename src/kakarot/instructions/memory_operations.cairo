@@ -21,6 +21,7 @@ namespace MemoryOperations {
     const GAS_COST_MSTORE = 3;
     const GAS_COST_PC = 2;
     const GAS_COST_MSIZE = 2;
+    const GAS_COST_GAS = 2;
 
 
     // @notice MSTORE operation
@@ -48,13 +49,11 @@ namespace MemoryOperations {
         let (stack, offset) = Stack.pop(stack);
         let (stack, value) = Stack.pop(stack);
 
-        // with_attr error_message("Kakarot: MemoryOverflow") {
-        //     assert_le(offset.low, Constants.MAX_MEMORY_OFFSET);
-        // }
+        with_attr error_message("Kakarot: MemoryOverflow") {
+            assert_le(offset.low, Constants.MAX_MEMORY_OFFSET);
+        }
 
-        let offset_byte = 2**3;
-
-        let memory: model.Memory* = Memory.store(self=ctx.memory, element=value, offset=2**3);
+        let memory: model.Memory* = Memory.store(self=ctx.memory, element=value, offset=offset.low);
 
         // Update context stack.
         let ctx = ExecutionContext.update_memory(ctx, memory);
@@ -111,6 +110,33 @@ namespace MemoryOperations {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MSIZE);
+        return ctx;
+    }
+
+    // @notice GAS operation
+    // @dev Get the remaining gas after this instruction.
+    // @custom:since Frontier
+    // @custom:group Stack Memory Storage and Flow operations.
+    // @custom:stack_produced_elements 1
+    // @return Updated execution context.
+    func exec_gas{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        %{ print("0x5a - GAS") %}
+        // get remaining gas based 
+        let current_remaining_gas : felt = ctx.gas_limit - ctx.gas_used - GAS_COST_GAS;
+        let remaining_gas = Helpers.to_uint256(current_remaining_gas);
+
+        let stack: model.Stack* = Stack.push(ctx.stack, remaining_gas);
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_GAS);
         return ctx;
     }
 }
