@@ -220,7 +220,7 @@ func test_memory_operations{
     // Assert value on the top of the stack
     test_utils.assert_top_stack(ctx, Uint256(3, 0));
 
-    // Get Memory Size test - 0x59 MSIZE
+    // Load test case - 0x59 MSIZE
     let (evm_test_case: EVMTestCase) = test_utils.load_evm_test_case_from_file(
         './tests/cases/016.json'
     );
