@@ -22,7 +22,7 @@ namespace EnvironmentalInformation {
     // Define constants.
     const GAS_COST_CODESIZE = 2;
     const GAS_COST_CALLER = 2;
-    const GAS_COST_RETURNDATA = 2;
+    const GAS_COST_RETURNDATASIZE = 2;
 
     // @notice CODESIZE operation.
     // @dev Get size of code running in current environment.
@@ -102,7 +102,8 @@ namespace EnvironmentalInformation {
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_RETURNDATA);
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_RETURNDATASIZE);
         return ctx;
     }
+
 }
