@@ -36,14 +36,14 @@ namespace MemoryOperations {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }() -> model.ExecutionContext{
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{ print("0x51 - MLOAD") %}
 
         let stack = ctx.stack;
 
         // Stack input:
-        // 0 - offset: memory offset of the value to load.
+        // 0 - offset: memory offset of the word we read.
         let (stack, offset) = Stack.pop(stack);
 
         with_attr error_message("Kakarot: MemoryOverflow") {
@@ -51,10 +51,10 @@ namespace MemoryOperations {
         }
         
         //Read word from memory at offset
-        let (value: Uint256) = Memory.load(self=ctx.memory, offset=offset.low);
+        let value = Memory.load(self=ctx.memory, offset=offset.low);
 
         //Push word to the stack
-        let stack: model.Stack* = Stack.push(stack, value)
+        let stack: model.Stack* = Stack.push(stack, value);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);

@@ -1,6 +1,6 @@
 {
     "name": "Load Word from Memory",
-    "code": "600a52005100",
+    "code": "600a600052600051",
     "calldata": "",
     "expected_return_data": ""
 }
