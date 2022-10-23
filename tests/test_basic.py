@@ -212,9 +212,8 @@ class TestBasic(IsolatedAsyncioTestCase):
             caller_address=1
         )
 
-        self.assertEqual(res.result.top_stack, Uint256(0, 0))
+        self.assertEqual(res.result.top_stack, Uint256(8, 0))
         self.assertEqual(res.result.top_memory, Uint256(0, 0))
-        # JUMP TEST TEST END
 
     async def test_exchange_operations(self):
         code, calldata = get_case(case="./tests/cases/005.json")

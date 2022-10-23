@@ -168,14 +168,6 @@ namespace MemoryOperations {
         alloc_locals;
         %{ print("0x5b - JUMPDEST") %}
 
-        // --- Added this part because of error when stack.len = 0 on test (Overflow error)
-        let pc = Helpers.to_uint256(0);
-        let stack: model.Stack* = Stack.push(ctx.stack, pc);
-
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment program counter
-        let ctx = ExecutionContext.increment_program_counter(ctx, 1);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_JUMPDEST);
         return ctx;
