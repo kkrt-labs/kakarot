@@ -165,13 +165,13 @@ namespace MemoryOperations {
     // @custom:stack_produced_elements 1
     // @return Updated execution context.
     func exec_jumpdest{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         %{ print("0x5b - JUMPDEST") %}
-
-        let (ctx, data) = ExecutionContext.check_jumpdest(ctx, 4);
-        let stack_element: Uint256 = Helpers.to_uint256(data);
-        let stack: model.Stack* = Stack.push(ctx.stack, stack_element);
-
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        alloc_locals;
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_JUMPDEST);
 
