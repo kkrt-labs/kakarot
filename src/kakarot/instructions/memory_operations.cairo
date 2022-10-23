@@ -5,6 +5,8 @@
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import assert_le
+from starkware.cairo.common.uint256 import Uint256
+
 
 from kakarot.model import model
 from utils.utils import Helpers
@@ -168,6 +170,11 @@ namespace MemoryOperations {
         alloc_locals;
         %{ print("0x5b - JUMPDEST") %}
 
+        let (ctx, data) = ExecutionContext.check_jumpdest(ctx, 4);
+        let stack_element: Uint256 = Helpers.to_uint256(data);
+        let stack: model.Stack* = Stack.push(ctx.stack, stack_element);
+
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_JUMPDEST);
         return ctx;
