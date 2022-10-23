@@ -22,6 +22,7 @@ namespace MemoryOperations {
     const GAS_COST_MSTORE = 3;
     const GAS_COST_PC = 2;
     const GAS_COST_MSIZE = 2;
+    const GAS_COST_POP = 2;
 
     // @notice MLOAD operation
     // @dev Load word from memory and push to stack.
@@ -149,6 +150,37 @@ namespace MemoryOperations {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MSIZE);
+        return ctx;
+    }
+
+    // @notice POP operation
+    // @dev Pops the first item on the stack (top of the stack).
+    // @custom: since Frontier
+    // @custom:group Stack Memory Storage and Flow operations.
+    // @custom:stack_consumed_elements 1
+    // @custom:stack_produced_elements 0
+    // @return Updated execution context.
+    func exec_pop{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        %{
+            print("0x50 - POP")
+        %}
+
+        // Get stack from context.
+        let stack: model.Stack* = ctx.stack;
+
+        let (stack, _) = Stack.pop(stack);
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_POP);
         return ctx;
     }
 }
