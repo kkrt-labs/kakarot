@@ -33,3 +33,4 @@ class TestBasic(IsolatedAsyncioTestCase):
             ).call()
             for x in range(15)
         ]
+        await self.unit_test.test__exec_pop_should_pop_an_item_from_execution_context().call()
