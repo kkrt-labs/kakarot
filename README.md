@@ -40,9 +40,9 @@ production.
 ```mermaid
 %%{init: {'theme': 'forest', 'themeVariables': { 'darkMode': 'false'}}}%%
 
-pie title Kakarot EMV opcodes support (100 / 142)
-    "Supported" : 100
-    "Not supported" : 42
+pie title Kakarot EMV opcodes support (101 / 142)
+    "Supported" : 101
+    "Not supported" : 41
 
     "Partially supported" : 0
 ```
@@ -147,7 +147,7 @@ starknet-compile ./src/kakarot/kakarot.cairo --cairo_path ./src --disable_hint_v
 
 ```bash
 # Run all tests
-pytest 
+pytest
 
 # Run only unit tests
 pytest tests/units
