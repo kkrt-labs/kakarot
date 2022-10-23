@@ -5,7 +5,7 @@
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 
 // Local dependencies
 from utils.utils import Helpers
@@ -61,5 +61,30 @@ func test__exec_pc__should_update_after_incrementing{
     assert len = 1;
     let index0 = Stack.peek(result.stack, 0);
     assert index0 = Uint256(increment - 1, 0);
+    return ();
+}
+
+@external
+func test__exec_pop_should_pop_an_item_from_execution_context {
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given
+    alloc_locals;
+    let ctx: model.ExecutionContext* = init_context();
+    // Given
+    let stack: model.Stack* = Stack.init();
+    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
+    let ctx = ExecutionContext.update_stack(ctx, stack);
+
+    // When
+    let result = MemoryOperations.exec_pop(ctx);
+
+    // Then
+    assert result.gas_used = 2;
+    let len: felt = Stack.len(result.stack);
+    assert len = 1;
+    let index0 = Stack.peek(result.stack, 0);
+    assert_uint256_eq(index0, Uint256(1, 0));
     return ();
 }

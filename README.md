@@ -31,9 +31,7 @@ production.
 
 </div>
 
-## Getting started
 
-![Tutorial](resources/img/kakarot.gif)
 
 ## Supported opcodes
 
@@ -137,6 +135,17 @@ Install the requirements:
 pip install -r requirements.txt
 ```
 
+For Mac M1s (using [brew, miniforge and conda](https://towardsdatascience.com/how-to-easily-set-up-python-on-any-m1-mac-5ea885b73fab)):
+```bash
+brew install gmp
+conda create --name cairo python=3.9
+conda activate cairo
+conda update -n base -c conda-forge conda
+conda install pip
+CFLAGS=-I`brew --prefix gmp`/include LDFLAGS=-L`brew --prefix gmp`/lib /opt/homebrew/Caskroom/miniforge/base/envs/cairo/bin/pip install ecdsa fastecdsa sympy
+CFLAGS=-I`brew --prefix gmp`/include LDFLAGS=-L`brew --prefix gmp`/lib /opt/homebrew/Caskroom/miniforge/base/envs/cairo/bin/pip install cairo-lang cairo_coverage openzeppelin-cairo-contracts
+```
+
 ## Build
 
 ```bash
@@ -147,7 +156,7 @@ starknet-compile ./src/kakarot/kakarot.cairo --cairo_path ./src --disable_hint_v
 
 ```bash
 # Run all tests
-pytest 
+pytest
 
 # Run only unit tests
 pytest tests/units
@@ -180,6 +189,7 @@ Contract addresses will be logged into the prompt.
 
 To manage inputs sent to constructor during the deployment, you can customize
 the [config files](./scripts/configs/).
+
 
 ## License
 
