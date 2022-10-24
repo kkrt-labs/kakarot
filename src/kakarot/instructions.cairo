@@ -222,6 +222,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x1B, ComparisonOperations.exec_shl);
         // 0x1C - SHR
         add_instruction(instructions, 0x1C, ComparisonOperations.exec_shr);
+        // 0x1D - SAR
+        add_instruction(instructions, 0x1D, ComparisonOperations.exec_sar);
 
         // Environment Information
         // 0x33 - CALLER
