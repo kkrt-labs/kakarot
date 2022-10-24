@@ -246,6 +246,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x45, BlockInformation.exec_gaslimit);
         // 0x46 - CHAINID
         add_instruction(instructions, 0x46, BlockInformation.exec_chainid);
+        // 0x48 - BASEFEE
+        add_instruction(instructions, 0x48, BlockInformation.exec_basefee);
 
         // 0x20 - SHA3
         add_instruction(instructions, 0x20, Sha3.exec_sha3);

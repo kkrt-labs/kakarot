@@ -29,6 +29,7 @@ namespace BlockInformation {
     const GAS_COST_NUMBER = 2;
     const GAS_COST_GASLIMIT= 2;
     const GAS_COST_DIFFICULTY= 2;
+    const GAS_COST_BASEFEE = 2;
 
     // @notice CHAINID operation.
     // @dev Get the chain ID.
@@ -200,6 +201,35 @@ namespace BlockInformation {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_DIFFICULTY);
+        return ctx;
+    }
+
+    // @notice BASEFEE operation.
+    // @dev Get base fee
+    // @custom:since Frontier
+    // @custom:group Block Information
+    // @custom:gas 2
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_basefee{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        %{ print("0x48 - BASEFEE") %}
+        
+        // Get the base fee.
+        let basefee = Helpers.to_uint256(0);
+
+        let stack: model.Stack* = Stack.push(ctx.stack, basefee);
+
+        // Update the execution context.
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_BASEFEE);
         return ctx;
     }
 }

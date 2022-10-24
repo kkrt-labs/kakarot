@@ -343,6 +343,14 @@ class TestBasic(IsolatedAsyncioTestCase):
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertEqual(res.result.top_memory, Uint256(0, 0))
 
+        # basefee
+        code, calldata = get_case(case="./tests/cases/023.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        self.assertEqual(res.result.top_stack, Uint256(0, 0))
+        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+
     async def test_sha3(self):
         code, calldata = get_case(case="./tests/cases/013.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
