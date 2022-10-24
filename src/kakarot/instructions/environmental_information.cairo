@@ -38,7 +38,10 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ print("0x38 - CODESIZE") %}
+        %{
+        import logging
+        logging.info("0x38 - CODESIZE")
+        %}
         // Get the code size.
         let code_size = Helpers.to_uint256(ctx.code_len);
         let stack: model.Stack* = Stack.push(ctx.stack, code_size);
@@ -65,7 +68,10 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ print("0x33 - CALLER") %}
+        %{
+        import logging
+        logging.info("0x33 - CALLER")
+        %}
         // Get caller address.
         let (current_address) = get_caller_address();
         let caller_address = Helpers.to_uint256(current_address);
@@ -93,7 +99,10 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ print("0x3d - RETURNDATASIZE") %}
+        %{
+        import logging
+        logging.info("0x3d - RETURNDATASIZE")
+        %}
         // Get return data size.
         let return_data_size = Helpers.to_uint256(ctx.return_data_len);
         let stack: model.Stack* = Stack.push(ctx.stack, return_data_size);
