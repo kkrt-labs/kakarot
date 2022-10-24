@@ -89,7 +89,7 @@ This document describes the opcodes supported by Kakarot.
 | 0x54         | SLOAD       | Load word from storage                                                                             |             |
 | 0x55         | SSTORE      | Save word to storage                                                                               |             |
 | 0x56         | JUMP        | Alter the program counter                                                                          | ✅          |
-| 0x57         | JUMPI       | Conditionally alter the program counter                                                            |             |
+| 0x57         | JUMPI       | Conditionally alter the program counter                                                            | ✅          |
 | 0x58         | PC          | Get the value of the program counter prior to the increment                                        | ✅          |
 | 0x59         | MSIZE       | Get the size of active memory in bytes                                                             | ✅          |
 | 0x5a         | GAS         | Get the amount of available gas, including the corresponding reduction the amount of available gas |             |
