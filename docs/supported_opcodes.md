@@ -35,7 +35,7 @@ This document describes the opcodes supported by Kakarot.
 | 0x1a         | BYTE        | Retrieve single byte from word  |             |
 | 0x1b         | SHL         | Shift left                      | ✅          |
 | 0x1c         | SHR         | Logical shift right             | ✅          |
-| 0x1d         | SAR         | Arithmetic shift right          | ✅           |
+| 0x1d         | SAR         | Arithmetic shift right          | ✅          |
 
 ## SHA3
 
@@ -72,7 +72,7 @@ This document describes the opcodes supported by Kakarot.
 | 0x41         | COINBASE    | Get the block's beneficiary address                        | ✅          |
 | 0x42         | TIMESTAMP   | Get the block's timestamp                                  | ✅          |
 | 0x43         | NUMBER      | Get the block's number                                     | ✅          |
-| 0x44         | DIFFICULTY  | Get the block's difficulty                                 |       ✅        |
+| 0x44         | DIFFICULTY  | Get the block's difficulty                                 | ✅          |
 | 0x45         | GASLIMIT    | Get the block's gas limit                                  | ✅          |
 | 0x46         | CHAINID     | Get the chain ID                                           | ✅          |
 | 0x47         | SELFBALANCE | Get the balance of the current contract                    |             |
@@ -88,12 +88,12 @@ This document describes the opcodes supported by Kakarot.
 | 0x53         | MSTORE8     | Save byte to memory                                                                                |             |
 | 0x54         | SLOAD       | Load word from storage                                                                             |             |
 | 0x55         | SSTORE      | Save word to storage                                                                               |             |
-| 0x56         | JUMP        | Alter the program counter                                                                          |             |
+| 0x56         | JUMP        | Alter the program counter                                                                          | ✅          |
 | 0x57         | JUMPI       | Conditionally alter the program counter                                                            |             |
 | 0x58         | PC          | Get the value of the program counter prior to the increment                                        | ✅          |
 | 0x59         | MSIZE       | Get the size of active memory in bytes                                                             | ✅          |
 | 0x5a         | GAS         | Get the amount of available gas, including the corresponding reduction the amount of available gas |             |
-| 0x5b         | JUMPDEST    | Mark a valid destination for jumps                                                                 |   ✅          |
+| 0x5b         | JUMPDEST    | Mark a valid destination for jumps                                                                 | ✅          |
 
 ## Push Operations
 
