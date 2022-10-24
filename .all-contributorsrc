@@ -116,6 +116,26 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "TotalPizza",
+      "name": "FreshPizza",
+      "avatar_url": "https://avatars.githubusercontent.com/u/50166315?v=4",
+      "profile": "https://github.com/TotalPizza",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "Eikix",
+      "name": "Elias Tazartes",
+      "avatar_url": "https://avatars.githubusercontent.com/u/66871571?v=4",
+      "profile": "https://github.com/Eikix",
+      "contributions": [
+        "code",
+        "test"
+      ]
     }
   ],
   "contributorsPerLine": 7,

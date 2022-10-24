@@ -31,16 +31,14 @@ production.
 
 </div>
 
-
-
 ## Supported opcodes
 
 ```mermaid
 %%{init: {'theme': 'forest', 'themeVariables': { 'darkMode': 'false'}}}%%
 
-pie title Kakarot EMV opcodes support (101 / 142)
-    "Supported" : 101
-    "Not supported" : 41
+pie title Kakarot EMV opcodes support (104 / 142)
+    "Supported" : 104
+    "Not supported" : 38
 
     "Partially supported" : 0
 ```
@@ -132,10 +130,12 @@ Here is the execution trace of the program on Kakarot:
 Install the requirements:
 
 ```bash
-pip install -r requirements.txt
+make setup
 ```
 
-For Mac M1s (using [brew, miniforge and conda](https://towardsdatascience.com/how-to-easily-set-up-python-on-any-m1-mac-5ea885b73fab)):
+For Mac M1s (using
+[brew, miniforge and conda](https://towardsdatascience.com/how-to-easily-set-up-python-on-any-m1-mac-5ea885b73fab)):
+
 ```bash
 brew install gmp
 conda create --name cairo python=3.9
@@ -149,20 +149,20 @@ CFLAGS=-I`brew --prefix gmp`/include LDFLAGS=-L`brew --prefix gmp`/lib /opt/home
 ## Build
 
 ```bash
-starknet-compile ./src/kakarot/kakarot.cairo --cairo_path ./src --disable_hint_validation --output build/kakarot.json
+make build
 ```
 
 ## Test
 
 ```bash
 # Run all tests
-pytest
+make test
 
 # Run only unit tests
-pytest tests/units
+make test-units
 
 # Run only integration tests
-pytest tests/integrations
+make test-integration
 
 # Run a specific test file
 pytest <PATH_TO_FILE>  # with pytest
@@ -189,7 +189,6 @@ Contract addresses will be logged into the prompt.
 
 To manage inputs sent to constructor during the deployment, you can customize
 the [config files](./scripts/configs/).
-
 
 ## License
 
@@ -221,19 +220,21 @@ for being involved!
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/abdelhamidbakhta"><img src="https://avatars.githubusercontent.com/u/45264458?v=4?s=100" width="100px;" alt="Abdel @ StarkWare "/><br /><sub><b>Abdel @ StarkWare </b></sub></a><br /><a href="https://github.com/sayajin-labs/kakarot/commits?author=abdelhamidbakhta" title="Tests">⚠️</a> <a href="https://github.com/sayajin-labs/kakarot/commits?author=abdelhamidbakhta" title="Documentation">📖</a> <a href="https://github.com/sayajin-labs/kakarot/commits?author=abdelhamidbakhta" title="Code">💻</a> <a href="#infra-abdelhamidbakhta" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/LucasLvy"><img src="https://avatars.githubusercontent.com/u/70894690?v=4?s=100" width="100px;" alt="Lucas"/><br /><sub><b>Lucas</b></sub></a><br /><a href="https://github.com/sayajin-labs/kakarot/commits?author=LucasLvy" title="Code">💻</a> <a href="https://github.com/sayajin-labs/kakarot/commits?author=LucasLvy" title="Tests">⚠️</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/florian-bellotti"><img src="https://avatars.githubusercontent.com/u/7861901?v=4?s=100" width="100px;" alt="Florian Bellotti"/><br /><sub><b>Florian Bellotti</b></sub></a><br /><a href="https://github.com/sayajin-labs/kakarot/commits?author=florian-bellotti" title="Code">💻</a> <a href="https://github.com/sayajin-labs/kakarot/commits?author=florian-bellotti" title="Tests">⚠️</a> <a href="https://github.com/sayajin-labs/kakarot/commits?author=florian-bellotti" title="Documentation">📖</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/0xMentorNotAPseudo"><img src="https://avatars.githubusercontent.com/u/4404287?v=4?s=100" width="100px;" alt="Mentor"/><br /><sub><b>Mentor</b></sub></a><br /><a href="https://github.com/sayajin-labs/kakarot/commits?author=0xMentorNotAPseudo" title="Tests">⚠️</a> <a href="https://github.com/sayajin-labs/kakarot/commits?author=0xMentorNotAPseudo" title="Documentation">📖</a> <a href="https://github.com/sayajin-labs/kakarot/commits?author=0xMentorNotAPseudo" title="Code">💻</a> <a href="#infra-0xMentorNotAPseudo" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/l-henri"><img src="https://avatars.githubusercontent.com/u/22731646?v=4?s=100" width="100px;" alt="Henri"/><br /><sub><b>Henri</b></sub></a><br /><a href="https://github.com/sayajin-labs/kakarot/commits?author=l-henri" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://linktr.ee/lenny.codes"><img src="https://avatars.githubusercontent.com/u/46480795?v=4?s=100" width="100px;" alt="Lenny"/><br /><sub><b>Lenny</b></sub></a><br /><a href="https://github.com/sayajin-labs/kakarot/commits?author=0xlny" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Kelvyne"><img src="https://avatars.githubusercontent.com/u/8125532?v=4?s=100" width="100px;" alt="Lakhdar Slaim"/><br /><sub><b>Lakhdar Slaim</b></sub></a><br /><a href="https://github.com/sayajin-labs/kakarot/commits?author=Kelvyne" title="Code">💻</a> <a href="https://github.com/sayajin-labs/kakarot/commits?author=Kelvyne" title="Tests">⚠️</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/abdelhamidbakhta"><img src="https://avatars.githubusercontent.com/u/45264458?v=4?s=100" width="100px;" alt="Abdel @ StarkWare "/><br /><sub><b>Abdel @ StarkWare </b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=abdelhamidbakhta" title="Tests">⚠️</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=abdelhamidbakhta" title="Documentation">📖</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=abdelhamidbakhta" title="Code">💻</a> <a href="#infra-abdelhamidbakhta" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/LucasLvy"><img src="https://avatars.githubusercontent.com/u/70894690?v=4?s=100" width="100px;" alt="Lucas"/><br /><sub><b>Lucas</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=LucasLvy" title="Code">💻</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=LucasLvy" title="Tests">⚠️</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/florian-bellotti"><img src="https://avatars.githubusercontent.com/u/7861901?v=4?s=100" width="100px;" alt="Florian Bellotti"/><br /><sub><b>Florian Bellotti</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=florian-bellotti" title="Code">💻</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=florian-bellotti" title="Tests">⚠️</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=florian-bellotti" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/0xMentorNotAPseudo"><img src="https://avatars.githubusercontent.com/u/4404287?v=4?s=100" width="100px;" alt="Mentor"/><br /><sub><b>Mentor</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=0xMentorNotAPseudo" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/l-henri"><img src="https://avatars.githubusercontent.com/u/22731646?v=4?s=100" width="100px;" alt="Henri"/><br /><sub><b>Henri</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=l-henri" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://linktr.ee/lenny.codes"><img src="https://avatars.githubusercontent.com/u/46480795?v=4?s=100" width="100px;" alt="Lenny"/><br /><sub><b>Lenny</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=0xlny" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Kelvyne"><img src="https://avatars.githubusercontent.com/u/8125532?v=4?s=100" width="100px;" alt="Lakhdar Slaim"/><br /><sub><b>Lakhdar Slaim</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=Kelvyne" title="Code">💻</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=Kelvyne" title="Tests">⚠️</a></td>
     </tr>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/pscott"><img src="https://avatars.githubusercontent.com/u/30843220?v=4?s=100" width="100px;" alt="pscott"/><br /><sub><b>pscott</b></sub></a><br /><a href="https://github.com/sayajin-labs/kakarot/commits?author=pscott" title="Code">💻</a> <a href="https://github.com/sayajin-labs/kakarot/commits?author=pscott" title="Tests">⚠️</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://www.linkedin.com/in/clementwalter"><img src="https://avatars.githubusercontent.com/u/18620296?v=4?s=100" width="100px;" alt="Clément Walter"/><br /><sub><b>Clément Walter</b></sub></a><br /><a href="https://github.com/sayajin-labs/kakarot/commits?author=ClementWalter" title="Documentation">📖</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/danilowhk"><img src="https://avatars.githubusercontent.com/u/12735159?v=4?s=100" width="100px;" alt="danilowhk"/><br /><sub><b>danilowhk</b></sub></a><br /><a href="https://github.com/sayajin-labs/kakarot/commits?author=danilowhk" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://www.silika.studio/"><img src="https://avatars.githubusercontent.com/u/112415316?v=4?s=100" width="100px;" alt="etash"/><br /><sub><b>etash</b></sub></a><br /><a href="https://github.com/sayajin-labs/kakarot/commits?author=etashhh" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/pscott"><img src="https://avatars.githubusercontent.com/u/30843220?v=4?s=100" width="100px;" alt="pscott"/><br /><sub><b>pscott</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=pscott" title="Code">💻</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=pscott" title="Tests">⚠️</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://www.linkedin.com/in/clementwalter"><img src="https://avatars.githubusercontent.com/u/18620296?v=4?s=100" width="100px;" alt="Clément Walter"/><br /><sub><b>Clément Walter</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=ClementWalter" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/danilowhk"><img src="https://avatars.githubusercontent.com/u/12735159?v=4?s=100" width="100px;" alt="danilowhk"/><br /><sub><b>danilowhk</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=danilowhk" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://www.silika.studio/"><img src="https://avatars.githubusercontent.com/u/112415316?v=4?s=100" width="100px;" alt="etash"/><br /><sub><b>etash</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=etashhh" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/TotalPizza"><img src="https://avatars.githubusercontent.com/u/50166315?v=4?s=100" width="100px;" alt="FreshPizza"/><br /><sub><b>FreshPizza</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=TotalPizza" title="Code">💻</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=TotalPizza" title="Tests">⚠️</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Eikix"><img src="https://avatars.githubusercontent.com/u/66871571?v=4?s=100" width="100px;" alt="Elias Tazartes"/><br /><sub><b>Elias Tazartes</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=Eikix" title="Code">💻</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=Eikix" title="Tests">⚠️</a></td>
     </tr>
   </tbody>
 </table>
