@@ -284,7 +284,7 @@ namespace ExecutionContext {
     // @notice Update the program counter.
     // @dev The program counter is updated to a given value. This is only ever called by JUMP or JUMPI
     // @param self The pointer to the execution context.
-    // @param new_value The value to update the program counter by.
+    // @param new_pc_offset The value to update the program counter by.
     // @return The pointer to the updated execution context.
     func update_program_counter{range_check_ptr}(
         self: model.ExecutionContext*, new_pc_offset: felt
@@ -296,6 +296,7 @@ namespace ExecutionContext {
             assert_le(new_pc_offset,self.code_len-1);
         }
         
+        //Revert if new pc_offset points to something other then JUMPDEST
         check_jumpdest(self,new_pc_offset);
 
         return new model.ExecutionContext(
