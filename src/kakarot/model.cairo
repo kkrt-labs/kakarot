@@ -20,6 +20,7 @@ namespace model {
         code: felt*,
         code_len: felt,
         calldata: felt*,
+        calldata_len: felt,
         program_counter: felt,
         stopped: felt,
         return_data: felt*,
