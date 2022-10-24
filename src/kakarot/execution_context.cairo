@@ -310,6 +310,7 @@ namespace ExecutionContext {
             code=self.code,
             code_len=self.code_len,
             calldata=self.calldata,
+            calldata_len=self.calldata_len,
             program_counter=new_pc_offset,
             stopped=self.stopped,
             return_data=self.return_data,
