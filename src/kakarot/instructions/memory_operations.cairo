@@ -5,6 +5,8 @@
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import assert_le
+from starkware.cairo.common.uint256 import Uint256
+
 
 from kakarot.model import model
 from utils.utils import Helpers
@@ -22,7 +24,9 @@ namespace MemoryOperations {
     const GAS_COST_MSTORE = 3;
     const GAS_COST_PC = 2;
     const GAS_COST_MSIZE = 2;
+    const GAS_COST_JUMPDEST = 1;
     const GAS_COST_POP = 2;
+
 
     // @notice MLOAD operation
     // @dev Load word from memory and push to stack.
@@ -153,6 +157,28 @@ namespace MemoryOperations {
         return ctx;
     }
 
+
+    // @notice JUMPDEST operation
+    // @dev Set this pc as Jumpdestination and improve Program Counter by one.
+    // @custom:since Frontier
+    // @custom:group Stack Memory Storage and Flow operations.
+    // @custom:stack_produced_elements 1
+    // @return Updated execution context.
+    func exec_jumpdest{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        %{ print("0x5b - JUMPDEST") %}
+        alloc_locals;
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_JUMPDEST);
+
+          return ctx;
+    }
+
+
     // @notice POP operation
     // @dev Pops the first item on the stack (top of the stack).
     // @custom: since Frontier
@@ -161,6 +187,7 @@ namespace MemoryOperations {
     // @custom:stack_produced_elements 0
     // @return Updated execution context.
     func exec_pop{
+
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,

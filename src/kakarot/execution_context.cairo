@@ -7,6 +7,8 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.uint256 import Uint256
+
 
 // Internal dependencies
 from utils.utils import Helpers
@@ -276,5 +278,29 @@ namespace ExecutionContext {
             print("===================================")
         %}
         return ();
+    }
+
+    // @notice Check if location is a valid Jump destination
+    // @dev The check is done directly on the bytecode.
+    // @param self The pointer to the execution context.
+    // @param pc_location location to check.
+    // @return The pointer to the updated execution context.
+    // @return 1 if location is valid, 0 is location is invalid.
+    func check_jumpdest(self: model.ExecutionContext*, pc_location: felt) -> (
+        self: model.ExecutionContext*, is_valid: felt
+    ) {
+        alloc_locals;
+        let (local output: felt*) = alloc();
+
+        // Copy code slice
+        memcpy(dst=output, src=self.code + pc_location - 1, len = 1);
+
+        if([output] == 0x5b) {
+            return (self=self, is_valid=1);
+        } else {
+            return (self=self, is_valid=0);
+        }
+
+        //Check if it jumpdest
     }
 }

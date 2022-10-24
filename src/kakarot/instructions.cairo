@@ -261,6 +261,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x58, MemoryOperations.exec_pc);
         // 0x59 - MSIZE
         add_instruction(instructions, 0x59, MemoryOperations.exec_msize);
+        // 0x5b - JUMPDEST
+        add_instruction(instructions, 0x5b, MemoryOperations.exec_jumpdest);
 
         // Add 6s: Push operations
         add_instruction(instructions, 0x60, PushOperations.exec_push1);
