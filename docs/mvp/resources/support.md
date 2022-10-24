@@ -1,6 +1,6 @@
 # Support of opcodes for the MVP
 
-57 / 74 opcodes are supported by the MVP.
+58 / 74 opcodes are supported by the MVP.
 
 | Opcode Name     | Implemented |
 | --------------- | ----------- |
@@ -34,7 +34,7 @@
 | ISZERO          | ✅          |
 | JUMP            | ✅          |
 | JUMPDESTINATION | ✅          |
-| JUMPI           |             |
+| JUMPI           | ✅          |
 | LOG1            |             |
 | LOG2            |             |
 | LOG3            |             |
