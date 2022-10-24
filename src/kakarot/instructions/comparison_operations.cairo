@@ -13,13 +13,16 @@ from starkware.cairo.common.uint256 import (
     uint256_shr,
     uint256_and,
     uint256_or,
-    uint256_not
+    uint256_not,
+    uint256_xor
 )
 
 // Internal dependencies
 from kakarot.model import model
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
+
+const BIT_MASK = 2 ** 127;
 
 // @title Comparison & Bitwise Logic operations opcodes.
 // @notice This file contains the functions to execute for comparison & bitwise logic operations opcodes.
@@ -37,6 +40,7 @@ namespace ComparisonOperations {
     const GAS_COST_EQ = 3;
     const GAS_COST_SHL = 3;
     const GAS_COST_SHR = 3;
+    const GAS_COST_SAR = 3;
     const GAS_COST_NOT = 3;
 
     // @notice 0x10 - LT
@@ -434,6 +438,71 @@ namespace ComparisonOperations {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SHR);
+        return ctx;
+    }
+
+    // @notice 0x1D - SAR
+    // @dev Bitwise operation
+    // @custom:since Constantinople
+    // @custom:group Comparison & Bitwise Logic Operations
+    // @custom:gas 3
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context.
+    // @return The pointer to the execution context.
+    func exec_sar{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
+        ctx: model.ExecutionContext*
+    ) -> model.ExecutionContext* {
+        alloc_locals;
+        %{ print("0x1D - SAR") %}
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - shift: integer
+        // 1 - value: integer
+        let (stack, shift) = Stack.pop(stack);
+        let (stack, value) = Stack.pop(stack);
+
+        // In C, SAR would be something like that (on a 4 bytes int):
+        // ```
+        // int sign = -((unsigned) x >> 31);
+        // int sar = (sign^x) >> n ^ sign;
+        // ```
+        // This is the cairo adaptation
+
+        // (unsigned) x >> 31 : extract the left-most bit (i.e. the sign).
+        let (_sign) = uint256_shr(value, Uint256(255, 0));
+
+        // Declare low and high as tempvar because we can't declare a Uint256 as tempvar.
+        tempvar low;
+        tempvar high;
+        if (_sign.low == 0) {
+            // If sign is positive, set it to 0.
+            low = 0;
+            high = 0;
+        } else {
+            // If sign is negative, set the number to -1.
+            low = 0xffffffffffffffffffffffffffffffff;
+            high = 0xffffffffffffffffffffffffffffffff;
+        }
+
+        // Rebuild the `sign` variable from `low` and `high`.
+        let sign = Uint256(low, high);
+
+        // `sign ^ x`
+        let (step1) = uint256_xor(sign, value);
+        // `sign ^ x >> n`
+        let (step2) = uint256_shr(step1, shift);
+        // `sign & x >> n ^ sign`
+        let (result) = uint256_xor(step2, sign);
+
+        // Stack output:
+        // The result of the shift operation.
+        let stack: model.Stack* = Stack.push(stack, result);
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SAR);
         return ctx;
     }
 

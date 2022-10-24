@@ -222,6 +222,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x1B, ComparisonOperations.exec_shl);
         // 0x1C - SHR
         add_instruction(instructions, 0x1C, ComparisonOperations.exec_shr);
+        // 0x1D - SAR
+        add_instruction(instructions, 0x1D, ComparisonOperations.exec_sar);
 
         // Environment Information
         // 0x33 - CALLER
@@ -238,6 +240,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x42, BlockInformation.exec_timestamp);
         // 0x43 - NUMBER
         add_instruction(instructions, 0x43, BlockInformation.exec_number);
+        // 0x44 - DIFFICULTY
+        add_instruction(instructions, 0x44, BlockInformation.exec_difficulty);
         // 0x45 - GASLIMIT
         add_instruction(instructions, 0x45, BlockInformation.exec_gaslimit);
         // 0x46 - CHAINID
@@ -245,6 +249,9 @@ namespace EVMInstructions {
 
         // 0x20 - SHA3
         add_instruction(instructions, 0x20, Sha3.exec_sha3);
+
+        // 0x50 - POP
+        add_instruction(instructions, 0x50, MemoryOperations.exec_pop);
 
         // 0x51 - MLOAD
         add_instruction(instructions, 0x51, MemoryOperations.exec_load);
@@ -254,6 +261,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x58, MemoryOperations.exec_pc);
         // 0x59 - MSIZE
         add_instruction(instructions, 0x59, MemoryOperations.exec_msize);
+        // 0x5b - JUMPDEST
+        add_instruction(instructions, 0x5b, MemoryOperations.exec_jumpdest);
 
         // Add 6s: Push operations
         add_instruction(instructions, 0x60, PushOperations.exec_push1);

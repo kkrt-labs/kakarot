@@ -160,7 +160,31 @@ class TestBasic(IsolatedAsyncioTestCase):
         await self.assert_compare("/shr/10", Uint256(0, 0))
         await self.assert_compare("/shr/11", Uint256(0, 0))
 
+        ##########################
+        # SHIFT ARITHMETIC RIGHT #
+        ##########################
+        # https://eips.ethereum.org/EIPS/eip-145
 
+        await self.assert_compare("/sar/1", Uint256(1, 0))
+        await self.assert_compare("/sar/2", Uint256(0, 0))
+        await self.assert_compare("/sar/3", Uint256(0, 0xc0000000000000000000000000000000))
+        await self.assert_compare("/sar/4", Uint256(0xffffffffffffffffffffffffffffffff, 0xffffffffffffffffffffffffffffffff))
+        await self.assert_compare("/sar/5", Uint256(0xffffffffffffffffffffffffffffffff, 0xffffffffffffffffffffffffffffffff))
+        await self.assert_compare("/sar/6", Uint256(0xffffffffffffffffffffffffffffffff, 0xffffffffffffffffffffffffffffffff))
+        await self.assert_compare("/sar/7", Uint256(0xffffffffffffffffffffffffffffffff, 0xffffffffffffffffffffffffffffffff))
+        await self.assert_compare("/sar/8", Uint256(0xffffffffffffffffffffffffffffffff, 0xffffffffffffffffffffffffffffffff))
+        await self.assert_compare("/sar/9", Uint256(0xffffffffffffffffffffffffffffffff, 0xffffffffffffffffffffffffffffffff))
+        await self.assert_compare("/sar/10", Uint256(0xffffffffffffffffffffffffffffffff, 0xffffffffffffffffffffffffffffffff))
+        await self.assert_compare("/sar/11", Uint256(0x0, 0x0))
+        await self.assert_compare("/sar/12", Uint256(0x1, 0x0))
+        await self.assert_compare("/sar/13", Uint256(0x7f, 0x0))
+        await self.assert_compare("/sar/14", Uint256(0x1, 0x0))
+        await self.assert_compare("/sar/15", Uint256(0x0, 0x0))
+        await self.assert_compare("/sar/16", Uint256(0x0, 0x0))
+
+        ###############
+        #     NOT     #
+        ###############        
         await self.assert_compare(
             "_not", 
             Uint256(
@@ -205,6 +229,15 @@ class TestBasic(IsolatedAsyncioTestCase):
         )
         self.assertEqual(res.result.top_stack, Uint256(10, 0))
         self.assertEqual(res.result.top_memory, Uint256(10, 0))
+
+        # JUMPDEST
+        code, calldata = get_case(case="./tests/cases/019.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+
+        self.assertEqual(res.result.top_stack, Uint256(8, 0))
+        self.assertEqual(res.result.top_memory, Uint256(0, 0))
 
     async def test_exchange_operations(self):
         code, calldata = get_case(case="./tests/cases/005.json")
@@ -278,6 +311,14 @@ class TestBasic(IsolatedAsyncioTestCase):
 
         # gas limit
         code, calldata = get_case(case="./tests/cases/015.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        self.assertEqual(res.result.top_stack, Uint256(0, 0))
+        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+
+        # difficulty
+        code, calldata = get_case(case="./tests/cases/021.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
             caller_address=1
         )
