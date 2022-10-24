@@ -24,6 +24,7 @@ namespace MemoryOperations {
     const GAS_COST_MSTORE = 3;
     const GAS_COST_PC = 2;
     const GAS_COST_MSIZE = 2;
+    const GAS_COST_JUMP = 8;
     const GAS_COST_JUMPDEST = 1;
     const GAS_COST_POP = 2;
 
@@ -154,6 +155,38 @@ namespace MemoryOperations {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MSIZE);
+        return ctx;
+    }
+
+    // @notice JUMP operation
+    // @dev The JUMP instruction changes the pc counter. The new pc target has to be a JUMPDEST opcode.
+    // @custom:since Frontier
+    // @custom:group Stack Memory and Flow operations.
+    // @custom:gas 8
+    // @custom:stack_consumed_elements 1
+    // @return Updated execution context.
+    func exec_jump{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        %{ print("0x56 - JUMP") %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - offset: offset in the deployed code where execution will continue from
+        let (stack, offset) = Stack.pop(stack);
+
+        //Update pc counter.
+        ExecutionContext.update_program_counter(ctx,offset.low);
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_JUMP);
         return ctx;
     }
 

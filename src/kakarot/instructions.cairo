@@ -257,6 +257,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x51, MemoryOperations.exec_load);
         // 0x52 - MSTORE
         add_instruction(instructions, 0x52, MemoryOperations.exec_store);
+        // 0x56 - JUMP
+        add_instruction(instructions, 0x56, MemoryOperations.exec_jump);
         // 0x58 - PC
         add_instruction(instructions, 0x58, MemoryOperations.exec_pc);
         // 0x59 - MSIZE
