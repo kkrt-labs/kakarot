@@ -3,6 +3,7 @@
 %lang starknet
 
 // Starkware dependencies
+from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import assert_le
 from starkware.cairo.common.uint256 import Uint256
@@ -25,6 +26,7 @@ namespace MemoryOperations {
     const GAS_COST_PC = 2;
     const GAS_COST_MSIZE = 2;
     const GAS_COST_JUMP = 8;
+    const GAS_COST_JUMPI = 10;
     const GAS_COST_JUMPDEST = 1;
     const GAS_COST_POP = 2;
 
@@ -190,6 +192,48 @@ namespace MemoryOperations {
         return ctx;
     }
 
+    // @notice JUMPI operation
+    // @dev Change the pc counter under a provided certain condition.
+    //      The new pc target has to be a JUMPDEST opcode.
+    // @custom:since Frontier
+    // @custom:group Stack Memory and Flow operations.
+    // @custom:gas 10
+    // @custom:stack_consumed_elements 2
+    // @return Updated execution context.
+    func exec_jumpi{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        %{ print("0x57 - JUMPI") %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - offset: offset in the deployed code where execution will continue from
+        // 1 - skip_jump: condition that will trigger a jump if not FALSE 
+        let (stack, offset) = Stack.pop(stack);
+        let (stack, skip_condition) = Stack.pop(stack);
+
+        //Update pc if skip_jump is anything other then 0
+        if (skip_condition.low != FALSE){
+            //Update pc counter.
+            ExecutionContext.update_program_counter(ctx,offset.low);
+            // Update context stack.
+            let ctx = ExecutionContext.update_stack(ctx, stack);
+            // Increment gas used.
+            let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_JUMPI);
+            return ctx;
+        }
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_JUMPI);
+        return ctx;
+    }
 
     // @notice JUMPDEST operation
     // @dev Set this pc as Jumpdestination and improve Program Counter by one.
