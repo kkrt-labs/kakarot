@@ -50,3 +50,78 @@ func test__init__should_return_an_empty_execution_context{
     assert result.intrinsic_gas_cost = 0;
     return ();
 }
+
+@external
+func test__update_program_counter__should_set_pc_to_given_value{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given
+    alloc_locals;
+    Helpers.setup_python_defs();
+    let (code) = alloc();
+    assert code[0] = 56;
+    assert code[1] = 60;
+    assert code[2] = 0x0a;
+    assert code[3] = 0x5b;
+    assert code[4] = 60;
+    assert code[5] = 0x0b;
+    tempvar code_len = 6;
+    let (calldata) = alloc();
+    assert [calldata] = '';
+
+    // When
+    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
+    let result = ExecutionContext.update_program_counter(ctx,3);
+
+    // Then
+    assert result.program_counter = 3;
+    return ();
+}
+
+@external
+func test__update_program_counter__should_fail__when_given_value_not_in_code_range{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given
+    alloc_locals;
+    Helpers.setup_python_defs();
+    let (code) = alloc();
+    assert code[0] = 56;
+    assert code[1] = 60;
+    assert code[2] = 0x0a;
+    assert code[3] = 0x5b;
+    assert code[4] = 60;
+    assert code[5] = 0x0b;
+    tempvar code_len = 6;
+    let (calldata) = alloc();
+    assert [calldata] = '';
+
+    // When & Then
+    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
+    let result = ExecutionContext.update_program_counter(ctx,6);
+    return ();
+}
+
+@external
+func test__update_program_counter__should_fail__when_given_destination_that_is_not_JUMPDEST{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given
+    alloc_locals;
+    Helpers.setup_python_defs();
+    let (code) = alloc();
+    assert code[0] = 56;
+    assert code[1] = 60;
+    assert code[2] = 0x0a;
+    assert code[3] = 0x5b;
+    assert code[4] = 60;
+    assert code[5] = 0x0b;
+    tempvar code_len = 6;
+    let (calldata) = alloc();
+    assert [calldata] = '';
+
+    // When & Then
+    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
+    let result = ExecutionContext.update_program_counter(ctx,2);
+    return ();
+}
