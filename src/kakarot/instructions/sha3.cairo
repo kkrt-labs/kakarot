@@ -9,17 +9,13 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import keccak_bigend, finalize_keccak
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.uint256 import Uint256
-from starkware.starknet.common.syscalls import get_contract_address
 from starkware.cairo.common.pow import pow
-
-from openzeppelin.security.safemath.library import SafeUint256
 
 from kakarot.model import model
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
-from kakarot.memory import Memory
-from kakarot.constants import Constants
 from utils.utils import Helpers
+
 // @title Sha3 opcodes.
 // @notice This file contains the keccak opcode.
 // @author @LucasLvy
@@ -42,9 +38,9 @@ namespace Sha3 {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ 
-        import logging
-        logging.info("0x20 - SHA3")
+        %{
+            import logging
+            logging.info("0x20 - SHA3")
         %}
 
         let stack = ctx.stack;
@@ -55,11 +51,13 @@ namespace Sha3 {
         let (stack, offset: Uint256) = Stack.pop(stack);
         let (stack, length: Uint256) = Stack.pop(stack);
 
-        let (full_64_bits, remaining_bytes) = SafeUint256.div_rem(length, Uint256(8, 0));
+        let (full_64_bits, remaining_bytes) = unsigned_div_rem(length.low, 8);
+
         let (dest: felt*) = alloc();
-        if (remaining_bytes.low != 0) {
+
+        if (remaining_bytes != 0) {
             let last_felt = convert_part_felt(
-                ctx.memory.bytes + offset.low + length.low, remaining_bytes.low, 0
+                ctx.memory.bytes + offset.low + full_64_bits, remaining_bytes, 0
             );
             assert [dest] = last_felt;
             tempvar range_check_ptr = range_check_ptr;
@@ -67,11 +65,17 @@ namespace Sha3 {
             tempvar range_check_ptr = range_check_ptr;
         }
 
-        let (end_dest: felt*, end_first_byte: felt*) = convert_full_64_bits(
-            first_byte=ctx.memory.bytes + offset.low + 8 * (full_64_bits.low - 1),
-            length=full_64_bits,
-            dest=dest,
-        );
+        if (full_64_bits != 0) {
+            tempvar range_check_ptr = range_check_ptr;
+            convert_full_64_bits(
+                first_byte=ctx.memory.bytes + offset.low + 8 * (full_64_bits - 1),
+                length=full_64_bits,
+                dest=dest,
+            );
+            tempvar range_check_ptr = range_check_ptr;
+        } else {
+            tempvar range_check_ptr = range_check_ptr;
+        }
 
         let (keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
@@ -90,17 +94,13 @@ namespace Sha3 {
         return ctx;
     }
 
-    func convert_full_64_bits{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        first_byte: felt*, length: Uint256, dest: felt*
-    ) -> (end_dest: felt*, end_first_byte: felt*) {
-        if (length.low == 1 and length.high == 0) {
+    func convert_full_64_bits(first_byte: felt*, length: felt, dest: felt*) {
+        if (length == 1) {
             assert [dest] = Helpers.byte_to_64_bits_little_felt(first_byte);
-            return (end_dest=dest, end_first_byte=first_byte);
+            return ();
         }
         assert [dest] = Helpers.byte_to_64_bits_little_felt(first_byte);
-        let one = Uint256(1, 0);
-        let (new_length) = SafeUint256.sub_le(length, one);
-        return convert_full_64_bits(first_byte - 8, new_length, dest + 1);
+        return convert_full_64_bits(first_byte - 8, length - 1, dest + 1);
     }
 
     func convert_part_felt{range_check_ptr}(val: felt*, length: felt, res: felt) -> felt {
