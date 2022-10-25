@@ -165,4 +165,15 @@ namespace Helpers {
         let res = Uint256(low, high);
         return res;
     }
+    func felt_as_byte_to_uint256(val: felt*) -> Uint256 {
+        let res = Uint256(
+            low=[val] + [val + 1] * 256 + [val + 2] * 256 ** 2 + [val + 3] * 256 ** 3 + [val + 4] * 256 ** 4 + [val + 5] * 256 ** 5 + [val + 6] * 256 ** 6 + [val + 7] * 256 ** 7 + [val + 8] * 256 ** 8 + [val + 9] * 256 ** 9 + [val + 10] * 256 ** 10 + [val + 11] * 256 ** 11 + [val + 12] * 256 ** 12 + [val + 13] * 256 ** 13 + [val + 14] * 256 ** 14 + [val + 15] * 256 ** 15,
+            high=[val + 16] + [val + 17] * 256 + [val + 18] * 256 ** 2 + [val + 19] * 256 ** 3 + [val + 20] * 256 ** 4 + [val + 21] * 256 ** 5 + [val + 22] * 256 ** 6 + [val + 23] * 256 ** 7 + [val + 24] * 256 ** 8 + [val + 25] * 256 ** 9 + [val + 26] * 256 ** 10 + [val + 27] * 256 ** 11 + [val + 28] * 256 ** 12 + [val + 29] * 256 ** 13 + [val + 30] * 256 ** 14 + [val + 31] * 256 ** 15,
+        );
+        return res;
+    }
+
+    func byte_to_64_bits_little_felt(val: felt*) -> felt {
+        return [val + 7] + [val + 6] * 256 + [val + 5] * 256 ** 2 + [val + 4] * 256 ** 3 + [val + 3] * 256 ** 4 + [val + 2] * 256 ** 5 + [val + 1] * 256 ** 6 + [val] * 256 ** 7;
+    }
 }

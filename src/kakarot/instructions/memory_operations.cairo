@@ -8,7 +8,6 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import assert_le
 from starkware.cairo.common.uint256 import Uint256
 
-
 from kakarot.model import model
 from utils.utils import Helpers
 from kakarot.stack import Stack
@@ -30,7 +29,6 @@ namespace MemoryOperations {
     const GAS_COST_JUMPDEST = 1;
     const GAS_COST_POP = 2;
 
-
     // @notice MLOAD operation
     // @dev Load word from memory and push to stack.
     // @custom:since Frontier
@@ -46,9 +44,9 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ 
-        import logging
-        logging.info("0x51 - MLOAD")
+        %{
+            import logging
+            logging.info("0x51 - MLOAD")
         %}
 
         let stack = ctx.stack;
@@ -57,14 +55,10 @@ namespace MemoryOperations {
         // 0 - offset: memory offset of the word we read.
         let (stack, offset) = Stack.pop(stack);
 
-        with_attr error_message("Kakarot: MemoryOverflow") {
-            assert_le(offset.low, Constants.MAX_MEMORY_OFFSET);
-        }
-        
-        //Read word from memory at offset
+        // Read word from memory at offset
         let value = Memory.load(self=ctx.memory, offset=offset.low);
 
-        //Push word to the stack
+        // Push word to the stack
         let stack: model.Stack* = Stack.push(stack, value);
 
         // Update context stack.
@@ -90,8 +84,8 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-        import logging
-        logging.info("0x52 - MSTORE")
+            import logging
+            logging.info("0x52 - MSTORE")
         %}
 
         let stack = ctx.stack;
@@ -101,10 +95,6 @@ namespace MemoryOperations {
         // 1 - value: value to store in memory.
         let (stack, offset) = Stack.pop(stack);
         let (stack, value) = Stack.pop(stack);
-
-        with_attr error_message("Kakarot: MemoryOverflow") {
-            assert_le(offset.low, Constants.MAX_MEMORY_OFFSET);
-        }
 
         let memory: model.Memory* = Memory.store(self=ctx.memory, element=value, offset=offset.low);
 
@@ -129,8 +119,8 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-        import logging
-        logging.info("0x58 - PC")
+            import logging
+            logging.info("0x58 - PC")
         %}
         let pc = Helpers.to_uint256(ctx.program_counter - 1);
 
@@ -156,11 +146,8 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ 
-        import logging
-        logging.info("0x59 - MSIZE")
-        %}
-        let len = Memory.len(ctx.memory);
+        %{ print("0x59 - MSIZE") %}
+        let len = ctx.memory.bytes_len;
         let msize = Helpers.to_uint256(len);
 
         let stack: model.Stack* = Stack.push(ctx.stack, msize);
@@ -187,8 +174,8 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-        import logging
-        logging.info("0x56 - JUMP")
+            import logging
+            logging.info("0x56 - JUMP")
         %}
 
         let stack = ctx.stack;
@@ -197,8 +184,8 @@ namespace MemoryOperations {
         // 0 - offset: offset in the deployed code where execution will continue from
         let (stack, offset) = Stack.pop(stack);
 
-        //Update pc counter.
-        ExecutionContext.update_program_counter(ctx,offset.low);
+        // Update pc counter.
+        ExecutionContext.update_program_counter(ctx, offset.low);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -223,22 +210,22 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-        import logging
-        logging.info("0x57 - JUMPI")
+            import logging
+            logging.info("0x57 - JUMPI")
         %}
 
         let stack = ctx.stack;
 
         // Stack input:
         // 0 - offset: offset in the deployed code where execution will continue from
-        // 1 - skip_jump: condition that will trigger a jump if not FALSE 
+        // 1 - skip_jump: condition that will trigger a jump if not FALSE
         let (stack, offset) = Stack.pop(stack);
         let (stack, skip_condition) = Stack.pop(stack);
 
-        //Update pc if skip_jump is anything other then 0
-        if (skip_condition.low != FALSE){
-            //Update pc counter.
-            ExecutionContext.update_program_counter(ctx,offset.low);
+        // Update pc if skip_jump is anything other then 0
+        if (skip_condition.low != FALSE) {
+            // Update pc counter.
+            ExecutionContext.update_program_counter(ctx, offset.low);
             // Update context stack.
             let ctx = ExecutionContext.update_stack(ctx, stack);
             // Increment gas used.
@@ -266,16 +253,15 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         %{
-        import logging
-        logging.info("0x5b - JUMPDEST")
+            import logging
+            logging.info("0x5b - JUMPDEST")
         %}
         alloc_locals;
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_JUMPDEST);
 
-          return ctx;
+        return ctx;
     }
-
 
     // @notice POP operation
     // @dev Pops the first item on the stack (top of the stack).
@@ -285,7 +271,6 @@ namespace MemoryOperations {
     // @custom:stack_produced_elements 0
     // @return Updated execution context.
     func exec_pop{
-
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
@@ -293,8 +278,8 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-        import logging
-        logging.info("0x50 - POP")
+            import logging
+            logging.info("0x50 - POP")
         %}
 
         // Get stack from context.
