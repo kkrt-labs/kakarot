@@ -33,7 +33,7 @@ namespace Memory {
     }() -> model.Memory* {
         alloc_locals;
         let (bytes: felt*) = alloc();
-        return new model.Memory(bytes=bytes, bytes_len=0, init_offset=0);
+        return new model.Memory(bytes=bytes, bytes_len=0, init_offset=2**128);
     }
 
     // @notice Store an element into the memory.
