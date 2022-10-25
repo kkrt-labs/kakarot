@@ -49,7 +49,9 @@ namespace Memory {
     }(self: model.Memory*, element: Uint256, offset: felt) -> model.Memory* {
         alloc_locals;
         let (memory: felt*) = alloc();
-        memcpy(dst=memory, src=self.bytes, len=offset);
+        if (self.bytes_len != 0) {
+            memcpy(dst=memory, src=self.bytes, len=offset);
+        }
         split_int(
             value=element.high, n=16, base=2 ** 8, bound=2 ** 128, output=memory + offset + 16
         );
