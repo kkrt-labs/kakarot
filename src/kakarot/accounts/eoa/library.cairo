@@ -8,10 +8,10 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 // OpenZeppelin dependencies
 from openzeppelin.access.ownable.library import Ownable
 
-// @title SmartContractAccount main library file.
-// @notice This file contains the EVM smart contract account representation logic.
+// @title ExternallyOwnedAccount main library file.
+// @notice This file contains the EVM EOA account representation logic.
 // @author @abdelhamidbakhta
-// @custom:namespace SmartContractAccount
+// @custom:namespace ExternallyOwnedAccount
 
 namespace ExternallyOwnedAccount {
     func constructor{

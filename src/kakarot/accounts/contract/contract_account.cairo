@@ -22,6 +22,7 @@ func constructor{
 // @notice Store the bytecode of the contract.
 // @param code: The bytecode of the contract.
 // @param code_len: The length of the bytecode.
+@external
 func store_code{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(code_len: felt, code: felt*) {
@@ -30,6 +31,7 @@ func store_code{
 
 // @notice This function is used to get the code of the smart contract.
 // @return The code of the smart contract.
+@view
 func code{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> (code_len: felt, code: felt*) {
