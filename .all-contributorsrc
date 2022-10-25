@@ -29,7 +29,8 @@
       "profile": "https://github.com/LucasLvy",
       "contributions": [
         "code",
-        "test"
+        "test",
+        "infra"
       ]
     },
     {
@@ -45,11 +46,14 @@
     },
     {
       "login": "0xMentorNotAPseudo",
-      "name": "Mentor",
+      "name": "Mentor Reka",
       "avatar_url": "https://avatars.githubusercontent.com/u/4404287?v=4",
       "profile": "https://github.com/0xMentorNotAPseudo",
       "contributions": [
-        "code"
+        "code",
+        "test",
+        "doc",
+        "infra"
       ]
     },
     {
@@ -67,7 +71,8 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/46480795?v=4",
       "profile": "https://linktr.ee/lenny.codes",
       "contributions": [
-        "code"
+        "code",
+        "test",
       ]
     },
     {
