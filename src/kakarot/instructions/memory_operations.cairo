@@ -6,7 +6,7 @@
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import assert_le
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256 , uint256_unsigned_div_rem
 
 from kakarot.model import model
 from utils.utils import Helpers
@@ -28,6 +28,7 @@ namespace MemoryOperations {
     const GAS_COST_JUMPI = 10;
     const GAS_COST_JUMPDEST = 1;
     const GAS_COST_POP = 2;
+    const GAS_COST_MSTORE8 = 3;
 
     // @notice MLOAD operation
     // @dev Load word from memory and push to stack.
@@ -295,6 +296,47 @@ namespace MemoryOperations {
 
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_POP);
+        return ctx;
+    }
+
+    // @notice MSTORE8 operation
+    // @dev Save word to memory.
+    // @custom:since Frontier
+    // @custom:group Stack Memory Storage and Flow operations.
+    // @custom:gas 3 
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 0
+    // @return Updated execution context.
+    func exec_mstore8{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        %{
+            import logging
+            logging.info("0x53 - MSTORE8")
+        %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - offset: memory offset of the work we save.
+        // 1 - value: value from which the last byte will be extracted and stored in memory.
+        let (stack, offset) = Stack.pop(stack);
+        let (stack, value) = Stack.pop(stack);
+        let (quotient, remainder) = uint256_unsigned_div_rem(value, Uint256(256,0));
+
+        let memory: model.Memory* = Memory.store(self=ctx.memory, element=remainder, offset=offset.low);
+
+        // Update context memory.
+        let ctx = ExecutionContext.update_memory(ctx, memory);
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MSTORE8);
         return ctx;
     }
 }

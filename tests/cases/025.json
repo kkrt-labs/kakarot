@@ -1,0 +1,6 @@
+{
+    "name": "Get the size of calldata - 0x53 MSTORE8",
+    "code": "63ffffffff60005300",
+    "calldata": "",
+    "expected_return_data": ""
+}
