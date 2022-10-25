@@ -6,7 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_le_felt
 from starkware.cairo.common.math import assert_lt, split_int, unsigned_div_rem
 from starkware.cairo.common.memcpy import memcpy
 
@@ -33,7 +33,7 @@ namespace Memory {
     }() -> model.Memory* {
         alloc_locals;
         let (bytes: felt*) = alloc();
-        return new model.Memory(bytes=bytes, bytes_len=0);
+        return new model.Memory(bytes=bytes, bytes_len=0, init_offset=2 ** 128);
     }
 
     // @notice Store an element into the memory.
@@ -49,23 +49,34 @@ namespace Memory {
     }(self: model.Memory*, element: Uint256, offset: felt) -> model.Memory* {
         alloc_locals;
         let (memory: felt*) = alloc();
-        memcpy(dst=memory, src=self.bytes, len=offset);
+        if (self.bytes_len != 0) {
+            memcpy(dst=memory, src=self.bytes, len=offset);
+        }
         split_int(
             value=element.high, n=16, base=2 ** 8, bound=2 ** 128, output=memory + offset + 16
         );
         split_int(value=element.low, n=16, base=2 ** 8, bound=2 ** 128, output=memory + offset);
 
+        let is_offset_lower = is_le_felt(offset, self.init_offset);
+
+        local init_offset: felt;
+        if (is_offset_lower == 1) {
+            init_offset = offset;
+        } else {
+            init_offset = self.init_offset;
+        }
+
         // TODO: Fill with 0 if offset > bytes_len
-        let is_memory_expanded = is_le(self.bytes_len, offset + 32);
+        let is_memory_expanded = is_le_felt(self.bytes_len, offset + 32);
         if (is_memory_expanded == 1) {
-            return new model.Memory(bytes=memory, bytes_len=offset + 32);
+            return new model.Memory(bytes=memory, bytes_len=offset + 32, init_offset=init_offset);
         } else {
             memcpy(
                 dst=memory + offset + 32,
                 src=self.bytes + offset + 32,
                 len=self.bytes_len - 32 - offset,
             );
-            return new model.Memory(bytes=memory, bytes_len=self.bytes_len);
+            return new model.Memory(bytes=memory, bytes_len=self.bytes_len, init_offset=init_offset);
         }
     }
 
@@ -102,8 +113,7 @@ namespace Memory {
         if (memory_len == 0) {
             return ();
         }
-        let last_index = memory_len - 1;
-        inner_dump(self, 0, last_index);
+        inner_dump(self, self.init_offset, self.init_offset + memory_len * 32);
         return ();
     }
 
@@ -117,11 +127,11 @@ namespace Memory {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.Memory*, memory_index: felt, last_index: felt) {
-        Memory.print_element_at(self, memory_index);
         if (memory_index == last_index) {
             return ();
         }
-        return inner_dump(self, memory_index + 1, last_index);
+        Memory.print_element_at(self, memory_index);
+        return inner_dump(self, memory_index + 32, last_index);
     }
 
     // @notice Print the value of an element at a given memory index.
@@ -134,7 +144,7 @@ namespace Memory {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.Memory*, memory_index: felt) {
-        let element = Memory.load(self, memory_index * 32);
+        let element = Memory.load(self, memory_index);
         %{
             import logging
             element_str = cairo_uint256_to_str(ids.element)
