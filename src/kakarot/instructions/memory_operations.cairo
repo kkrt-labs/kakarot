@@ -98,8 +98,11 @@ namespace MemoryOperations {
 
         let memory: model.Memory* = Memory.store(self=ctx.memory, element=value, offset=offset.low);
 
-        // Update context stack.
+        // Update context memory.
         let ctx = ExecutionContext.update_memory(ctx, memory);
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MSTORE);
         return ctx;

@@ -85,7 +85,7 @@ namespace Sha3 {
 
             finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
         }
-        let stack: model.Stack* = Stack.push(self=ctx.stack, element=result);
+        let stack: model.Stack* = Stack.push(self=stack, element=result);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
