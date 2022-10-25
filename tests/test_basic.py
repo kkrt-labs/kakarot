@@ -212,42 +212,51 @@ class TestBasic(IsolatedAsyncioTestCase):
         self.assertEqual(res.result.top_memory, Uint256(0, 0))
 
     async def test_memory_operations(self):
-        code, calldata = get_case(case="./tests/cases/004.json")
+        # MSTORE
+        code, calldata = get_case(case="./tests/cases/memory/001.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertEqual(res.result.top_memory, Uint256(10, 0))
 
-        code, calldata = get_case(case="./tests/cases/014.json")
+        code, calldata = get_case(case="./tests/cases/memory/002.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        self.assertEqual(res.result.top_stack, Uint256(0, 0))
+        self.assertEqual(res.result.top_memory, Uint256(10, 0))
+
+        # PC
+        code, calldata = get_case(case="./tests/cases/memory/003.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
         self.assertEqual(res.result.top_stack, Uint256(3, 0))
         self.assertEqual(res.result.top_memory, Uint256(0, 0))
 
-        code, calldata = get_case(case="./tests/cases/016.json")
+        # MEMORY SIZE
+        code, calldata = get_case(case="./tests/cases/memory/004.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertEqual(res.result.top_memory, Uint256(0, 0))
 
-        code, calldata = get_case(case="./tests/cases/018.json")
+        # MLOAD
+        code, calldata = get_case(case="./tests/cases/memory/005.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
         self.assertEqual(res.result.top_stack, Uint256(10, 0))
         self.assertEqual(res.result.top_memory, Uint256(10, 0))
 
         # JUMPDEST
-        code, calldata = get_case(case="./tests/cases/019.json")
+        code, calldata = get_case(case="./tests/cases/memory/006.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
 
         self.assertEqual(res.result.top_stack, Uint256(8, 0))
         self.assertEqual(res.result.top_memory, Uint256(0, 0))
 
         # JUMP
-        code, calldata = get_case(case="./tests/cases/020.json")
+        code, calldata = get_case(case="./tests/cases/memory/007.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
 
         self.assertEqual(res.result.top_stack, Uint256(11, 0))
         self.assertEqual(res.result.top_memory, Uint256(0, 0))
 
         # JUMPI
-        code, calldata = get_case(case="./tests/cases/022.json")
+        code, calldata = get_case(case="./tests/cases/memory/008.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
 
         self.assertEqual(res.result.top_stack, Uint256(20, 0))

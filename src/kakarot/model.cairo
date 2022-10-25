@@ -14,6 +14,7 @@ namespace model {
     struct Memory {
         bytes: felt*,
         bytes_len: felt,  // The size is counted with the highest address that was accessed.
+        init_offset: felt,
     }
 
     struct ExecutionContext {
