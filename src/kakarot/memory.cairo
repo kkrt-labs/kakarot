@@ -33,7 +33,7 @@ namespace Memory {
     }() -> model.Memory* {
         alloc_locals;
         let (bytes: felt*) = alloc();
-        return new model.Memory(bytes=bytes, bytes_len=0);
+        return new model.Memory(bytes=bytes, bytes_len=0, init_offset=2**128);
     }
 
     // @notice Store an element into the memory.
@@ -57,17 +57,24 @@ namespace Memory {
         );
         split_int(value=element.low, n=16, base=2 ** 8, bound=2 ** 128, output=memory + offset);
 
+        let is_offset_lower = is_le(offset, self.init_offset);
+
+        let init_offset = self.init_offset;
+        if (is_offset_lower == 1){
+            init_offset = offset;
+        }
+
         // TODO: Fill with 0 if offset > bytes_len
         let is_memory_expanded = is_le(self.bytes_len, offset + 32);
         if (is_memory_expanded == 1) {
-            return new model.Memory(bytes=memory, bytes_len=offset + 32);
+            return new model.Memory(bytes=memory, bytes_len=offset + 32, init_offset=init_offset);
         } else {
             memcpy(
                 dst=memory + offset + 32,
                 src=self.bytes + offset + 32,
                 len=self.bytes_len - 32 - offset,
             );
-            return new model.Memory(bytes=memory, bytes_len=self.bytes_len);
+            return new model.Memory(bytes=memory, bytes_len=self.bytes_len,  init_offset=init_offset);
         }
     }
 
