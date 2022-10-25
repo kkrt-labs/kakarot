@@ -267,16 +267,18 @@ namespace ExecutionContext {
         %}
 
         %{
-            print("===================================")
-            print(f"PROGRAM COUNTER:\t{ids.pc}")
-            print(f"INTRINSIC GAS:\t\t{ids.self.intrinsic_gas_cost}")
-            print(f"GAS USED:\t\t{ids.self.gas_used}")
-            print("*************STACK*****************")
+        import logging
+        logging.info("===================================")
+        logging.info(f"PROGRAM COUNTER:\t{ids.pc}")
+        logging.info(f"INTRINSIC GAS:\t\t{ids.self.intrinsic_gas_cost}")
+        logging.info(f"GAS USED:\t\t{ids.self.gas_used}")
+        logging.info("*************STACK*****************")
         %}
         Stack.dump(self.stack);
         %{
-            print("***********************************")
-            print("===================================")
+        import logging
+        logging.info("***********************************")
+        logging.info("===================================")
         %}
         return ();
     }

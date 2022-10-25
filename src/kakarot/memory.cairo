@@ -140,8 +140,9 @@ namespace Memory {
     }(self: model.Memory*, memory_index: felt) {
         let element = Memory.load(self, memory_index);
         %{
+            import logging
             element_str = cairo_uint256_to_str(ids.element)
-            print(f"{ids.memory_index} - {element_str}")
+            logging.info(f"{ids.memory_index} - {element_str}")
         %}
         return ();
     }

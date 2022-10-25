@@ -48,7 +48,10 @@ namespace ArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x01 - ADD") %}
+        %{ 
+        import logging
+        logging.info("0x01 - ADD") 
+        %}
 
         // Stack input:
         // 0 - a: first integer value to add.
@@ -84,7 +87,10 @@ namespace ArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x02 - MUL") %}
+        %{
+        import logging
+        logging.info("0x02 - MUL") 
+        %}
 
         // Stack input:
         // 0 - a: first integer value to multiply.
@@ -119,7 +125,10 @@ namespace ArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x03 - SUB") %}
+        %{
+        import logging
+        logging.info("0x03 - SUB") 
+        %}
 
         // Stack input:
         // 0 - a: first integer value to sub.
@@ -154,7 +163,10 @@ namespace ArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x04 - DIV") %}
+        %{
+        import logging
+        logging.info("0x04 - DIV")
+        %}
 
         // Stack input:
         // 0 - a: numerator.
@@ -189,7 +201,10 @@ namespace ArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x05 - SDIV") %}
+        %{
+        import logging
+        logging.info("0x05 - SDIV")
+        %}
 
         // Stack input:
         // 0 - a: numerator.
@@ -224,7 +239,10 @@ namespace ArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x06 - MOD") %}
+        %{
+        import logging
+        logging.info("0x06 - MOD")
+        %}
 
         // Stack input:
         // 0 - a: number.
@@ -259,7 +277,10 @@ namespace ArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x07 - SMOD") %}
+        %{
+        import logging
+        logging.info("0x07 - SMOD")
+        %}
 
         // Stack input:
         // 0 - a: number.
@@ -294,7 +315,10 @@ namespace ArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x08 - ADDMOD") %}
+        %{
+        import logging
+        logging.info("0x08 - ADDMOD")
+        %}
 
         // Stack input:
         // 0 - a: number.
@@ -333,7 +357,10 @@ namespace ArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x09 - MULMOD") %}
+        %{ 
+        import logging
+        logging.info("0x09 - MULMOD")
+        %}
 
         // Stack input:
         // 0 - a: number.
@@ -372,7 +399,10 @@ namespace ArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x0A - EXP") %}
+        %{ 
+        import logging
+        logging.info("0x0A - EXP")
+        %}
 
         // Stack input:
         // 0 - a: number.
@@ -407,7 +437,10 @@ namespace ArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x0B - SIGNEXTEND") %}
+        %{ 
+        import logging  
+        logging.info("0x0B - SIGNEXTEND")
+        %}
 
         // Stack input:
         // 0 - a: number.
