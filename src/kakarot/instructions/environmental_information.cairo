@@ -22,9 +22,9 @@ namespace EnvironmentalInformation {
     // Define constants.
     const GAS_COST_CODESIZE = 2;
     const GAS_COST_CALLER = 2;
-    const GAS_COST_RETURNDATASIZE=2;
+    const GAS_COST_RETURNDATASIZE= 2;
     const GAS_COST_CALLDATASIZE = 2;
-
+    const GAS_COST_ORIGIN= 2;
     // @notice CODESIZE operation.
     // @dev Get size of code running in current environment.
     // @custom:since Frontier
@@ -52,6 +52,37 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CODESIZE);
+        return ctx;
+    }
+
+    // @notice ORIGIN operation.
+    // @dev Get execution origination address.
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 2
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_origin{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        
+        %{
+        import logging
+        logging.info("0x32 - ORIGIN")
+        %}
+
+        let (current_address) = get_origin_address();
+        let origin_address = Helpers.to_uint256(current_address);
+
+        // Update Context stack
+        let stack: model.Stack* = Stack.push(ctx.stack, origin_address);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_ORIGIN);
         return ctx;
     }
 
