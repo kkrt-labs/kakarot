@@ -146,6 +146,16 @@
         "code",
         "test"
       ]
+    },
+    {
+      "login": "Jrigada",
+      "name": "Juan Rigada",
+      "avatar_url": "https://avatars.githubusercontent.com/u/62958725?v=4",
+      "profile": "https://github.com/Jrigada",
+      "contributions": [
+        "code",
+        "test"
+      ]
     }
   ],
   "contributorsPerLine": 7,
