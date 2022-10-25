@@ -31,6 +31,8 @@ production.
 
 </div>
 
+[Kakarot](resources/img/kakarot.gif)
+
 ## Supported opcodes
 
 ```mermaid
