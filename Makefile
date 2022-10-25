@@ -7,11 +7,10 @@ setup:
 	pip install -r requirements.txt
 
 test:
-	pytest -s
+	pytest -s --log-cli-level=INFO
 
 test-integration:
-	pytest tests/integrations -s
+	pytest tests/integrations -s --log-cli-level=INFO
 
 test-units:
-	pytest tests/units -s
-
+	pytest tests/units -s --log-cli-level=INFO

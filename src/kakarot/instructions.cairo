@@ -45,7 +45,7 @@ namespace EVMInstructions {
         alloc_locals;
 
         // Retrieve the current program counter.
-        let pc = ctx.program_counter;
+            let pc = ctx.program_counter;
 
         // Revert if pc < 0
         with_attr error_message("Kakarot: InvalidCodeOffset") {
@@ -136,7 +136,10 @@ namespace EVMInstructions {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ print("0x00 - STOP") %}
+        %{ 
+        import logging
+        logging.info("0x00 - STOP")
+        %}
         return ExecutionContext.stop(ctx_ptr);
     }
 

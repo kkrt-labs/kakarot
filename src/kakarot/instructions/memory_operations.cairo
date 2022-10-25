@@ -46,7 +46,10 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x51 - MLOAD") %}
+        %{ 
+        import logging
+        logging.info("0x51 - MLOAD")
+        %}
 
         let stack = ctx.stack;
 
@@ -86,7 +89,10 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x52 - MSTORE") %}
+        %{
+        import logging
+        logging.info("0x52 - MSTORE")
+        %}
 
         let stack = ctx.stack;
 
@@ -122,7 +128,10 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x58 - PC") %}
+        %{
+        import logging
+        logging.info("0x58 - PC")
+        %}
         let pc = Helpers.to_uint256(ctx.program_counter - 1);
 
         let stack: model.Stack* = Stack.push(ctx.stack, pc);
@@ -147,7 +156,10 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x59 - MSIZE") %}
+        %{ 
+        import logging
+        logging.info("0x59 - MSIZE")
+        %}
         let len = Memory.len(ctx.memory);
         let msize = Helpers.to_uint256(len);
 
@@ -174,7 +186,10 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x56 - JUMP") %}
+        %{
+        import logging
+        logging.info("0x56 - JUMP")
+        %}
 
         let stack = ctx.stack;
 
@@ -207,7 +222,10 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x57 - JUMPI") %}
+        %{
+        import logging
+        logging.info("0x57 - JUMPI")
+        %}
 
         let stack = ctx.stack;
 
@@ -247,7 +265,10 @@ namespace MemoryOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ print("0x5b - JUMPDEST") %}
+        %{
+        import logging
+        logging.info("0x5b - JUMPDEST")
+        %}
         alloc_locals;
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_JUMPDEST);
@@ -272,7 +293,8 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-            print("0x50 - POP")
+        import logging
+        logging.info("0x50 - POP")
         %}
 
         // Get stack from context.

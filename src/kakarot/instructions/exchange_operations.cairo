@@ -28,8 +28,9 @@ namespace ExchangeOperations {
     }(ctx: model.ExecutionContext*, i: felt) -> model.ExecutionContext* {
         alloc_locals;
         %{
+            import logging
             opcode_value =  143 + ids.i
-            print(f"0x{opcode_value:02x} - SWAP{ids.i}")
+            logging.info(f"0x{opcode_value:02x} - SWAP{ids.i}")
         %}
 
         // Get stack from context.
