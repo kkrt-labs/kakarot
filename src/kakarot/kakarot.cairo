@@ -25,14 +25,19 @@ func execute{
 }(code_len: felt, code: felt*, calldata_len: felt, calldata: felt*) -> (
     top_stack: Uint256, top_memory: Uint256
 ) {
+    alloc_locals;
     let context = Kakarot.execute(code=code, code_len=code_len, calldata=calldata);
     let len = Stack.len(context.stack);
-    tempvar top_stack = context.stack.elements[len - 1];
-    let len = Memory.len(context.memory);
+    if (len == 0) {
+        tempvar top_stack = Uint256(0, 0);
+    } else {
+        tempvar top_stack = context.stack.elements[len - 1];
+    }
+    let len = context.memory.bytes_len;
     if (len == 0) {
         return (top_stack=top_stack, top_memory=Uint256(0, 0),);
     } else {
-        let top_memory = Memory.load(context.memory, len - 1);
+        let top_memory = Memory.load(context.memory, len - 32);
         return (top_stack=top_stack, top_memory=top_memory,);
     }
 }

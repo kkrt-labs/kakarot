@@ -29,6 +29,7 @@ namespace BlockInformation {
     const GAS_COST_NUMBER = 2;
     const GAS_COST_GASLIMIT= 2;
     const GAS_COST_DIFFICULTY= 2;
+    const GAS_COST_BASEFEE = 2;
 
     // @notice CHAINID operation.
     // @dev Get the chain ID.
@@ -44,7 +45,10 @@ namespace BlockInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ print("0x46 - CHAINID") %}
+        %{ 
+        import logging
+        logging.info("0x46 - CHAINID") 
+        %}
         // Get the chain ID.
         let chain_id = Helpers.to_uint256(Constants.CHAIN_ID);
         let stack: model.Stack* = Stack.push(ctx.stack, chain_id);
@@ -71,7 +75,10 @@ namespace BlockInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ print("0x41 - COINBASE") %}
+        %{ 
+        import logging
+        logging.info("0x41 - COINBASE")
+        %}
         // Get the coinbase address.
         let coinbase_address = Helpers.to_uint256(Constants.COINBASE_ADDRESS);
         let stack: model.Stack* = Stack.push(ctx.stack, coinbase_address);
@@ -98,7 +105,10 @@ namespace BlockInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ print("0x42 - TIMESTAMP") %}
+        %{
+        import logging
+        logging.info("0x42 - TIMESTAMP")
+        %}
         // Get the block’s timestamp
         let (current_timestamp) = get_block_timestamp();
         let (high, low) = split_felt(current_timestamp);
@@ -128,7 +138,10 @@ namespace BlockInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ print("0x43 - NUMBER") %}
+        %{
+        import logging
+        logging.info("0x43 - NUMBER")
+        %}
         // Get the block number.
         let (current_block) = get_block_number();
         let (high, low) = split_felt(current_block);
@@ -159,7 +172,10 @@ namespace BlockInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ print("0x45 - GASLIMIT") %}
+        %{
+        import logging
+        logging.info("0x45 - GASLIMIT")
+        %}
         // Get the Gas Limit.
 
         let gas_limit = Helpers.to_uint256(ctx.gas_limit);
@@ -188,7 +204,10 @@ namespace BlockInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ print("0x44 - DIFFICULTY") %}
+        %{ 
+        import logging
+        logging.info("0x44 - DIFFICULTY")
+        %}
         
         // Get the Difficulty.
         let difficulty = Helpers.to_uint256(0);
@@ -200,6 +219,38 @@ namespace BlockInformation {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_DIFFICULTY);
+        return ctx;
+    }
+
+    // @notice BASEFEE operation.
+    // @dev Get base fee
+    // @custom:since Frontier
+    // @custom:group Block Information
+    // @custom:gas 2
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_basefee{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        %{
+        import logging
+        logging.info("0x48 - BASEFEE")
+        %}
+        
+        // Get the base fee.
+        let basefee = Helpers.to_uint256(0);
+
+        let stack: model.Stack* = Stack.push(ctx.stack, basefee);
+
+        // Update the execution context.
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_BASEFEE);
         return ctx;
     }
 }

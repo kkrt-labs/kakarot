@@ -23,6 +23,7 @@ namespace EnvironmentalInformation {
     const GAS_COST_CODESIZE = 2;
     const GAS_COST_CALLER = 2;
     const GAS_COST_RETURNDATASIZE=2;
+    const GAS_COST_CALLDATASIZE = 2;
 
     // @notice CODESIZE operation.
     // @dev Get size of code running in current environment.
@@ -38,7 +39,10 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ print("0x38 - CODESIZE") %}
+        %{
+        import logging
+        logging.info("0x38 - CODESIZE")
+        %}
         // Get the code size.
         let code_size = Helpers.to_uint256(ctx.code_len);
         let stack: model.Stack* = Stack.push(ctx.stack, code_size);
@@ -65,7 +69,10 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ print("0x33 - CALLER") %}
+        %{
+        import logging
+        logging.info("0x33 - CALLER")
+        %}
         // Get caller address.
         let (current_address) = get_caller_address();
         let caller_address = Helpers.to_uint256(current_address);
@@ -93,7 +100,10 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ print("0x3d - RETURNDATASIZE") %}
+        %{
+        import logging
+        logging.info("0x3d - RETURNDATASIZE")
+        %}
         // Get return data size.
         let return_data_size = Helpers.to_uint256(ctx.return_data_len);
         let stack: model.Stack* = Stack.push(ctx.stack, return_data_size);
@@ -103,6 +113,32 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_RETURNDATASIZE);
+        return ctx;
+    }
+
+    // @notice CALLDATASIZE operation.
+    // @dev Get the size of return data.
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 2
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_calldatasize{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        %{ print("0x36 - CALLDATASIZE") %}
+        let calldata_size = Helpers.to_uint256(ctx.calldata_len);
+        let stack: model.Stack* = Stack.push(ctx.stack, calldata_size);
+
+        // Update the execution context.
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLDATASIZE);
         return ctx;
     }
 }

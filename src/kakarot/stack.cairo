@@ -279,8 +279,9 @@ namespace Stack {
     }(self: model.Stack*, stack_index: felt) {
         let element = Stack.peek(self, stack_index);
         %{
+            import logging
             element_str = cairo_uint256_to_str(ids.element)
-            print(f"{ids.stack_index} - {element_str}")
+            logging.info(f"{ids.stack_index} - {element_str}")
         %}
         return ();
     }

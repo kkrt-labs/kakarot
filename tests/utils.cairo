@@ -77,10 +77,13 @@ namespace test_utils {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*, expected_value: Uint256) {
         alloc_locals;
-        let len = Memory.len(ctx.memory);
-        let actual = Memory.load(ctx.memory, len - 1);
+        let len = ctx.memory.bytes_len;
+        let actual = Memory.load(ctx.memory, len - 32);
         let (are_equal) = uint256_eq(actual, expected_value);
-        %{ print(f"actual {ids.actual.low, ids.actual.high}, expected {ids.expected_uint256.low, ids.expected_uint256.high}") %}
+        %{ 
+        import logging
+        logging.info(f"actual {ids.actual.low, ids.actual.high}, expected {ids.expected_uint256.low, ids.expected_uint256.high}") 
+        %}
         assert are_equal = TRUE;
         return ();
     }

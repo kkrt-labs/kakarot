@@ -136,7 +136,10 @@ namespace EVMInstructions {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ print("0x00 - STOP") %}
+        %{
+            import logging
+            logging.info("0x00 - STOP")
+        %}
         return ExecutionContext.stop(ctx_ptr);
     }
 
@@ -228,6 +231,8 @@ namespace EVMInstructions {
         // Environment Information
         // 0x33 - CALLER
         add_instruction(instructions, 0x33, EnvironmentalInformation.exec_caller);
+        // 0x36 - CALLDATASIZE
+        add_instruction(instructions, 0x36, EnvironmentalInformation.exec_calldatasize);
         // 0x38 - CODESIZE
         add_instruction(instructions, 0x38, EnvironmentalInformation.exec_codesize);
         // 0x3d - RETURNDATASIZE
@@ -246,6 +251,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x45, BlockInformation.exec_gaslimit);
         // 0x46 - CHAINID
         add_instruction(instructions, 0x46, BlockInformation.exec_chainid);
+        // 0x48 - BASEFEE
+        add_instruction(instructions, 0x48, BlockInformation.exec_basefee);
 
         // 0x20 - SHA3
         add_instruction(instructions, 0x20, Sha3.exec_sha3);
@@ -257,6 +264,10 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x51, MemoryOperations.exec_load);
         // 0x52 - MSTORE
         add_instruction(instructions, 0x52, MemoryOperations.exec_store);
+        // 0x56 - JUMP
+        add_instruction(instructions, 0x56, MemoryOperations.exec_jump);
+        // 0x57 - JUMPI
+        add_instruction(instructions, 0x57, MemoryOperations.exec_jumpi);
         // 0x58 - PC
         add_instruction(instructions, 0x58, MemoryOperations.exec_pc);
         // 0x59 - MSIZE

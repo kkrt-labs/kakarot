@@ -6,9 +6,9 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.math import assert_le, assert_nn
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
-
 
 // Internal dependencies
 from utils.utils import Helpers
@@ -49,6 +49,7 @@ namespace ExecutionContext {
             code=code,
             code_len=code_len,
             calldata=calldata,
+            calldata_len=Helpers.get_len(calldata),
             program_counter=initial_pc,
             stopped=FALSE,
             return_data=empty_return_data,
@@ -73,6 +74,7 @@ namespace ExecutionContext {
             code=self.code,
             code_len=self.code_len,
             calldata=self.calldata,
+            calldata_len=self.calldata_len,
             program_counter=self.program_counter,
             stopped=self.stopped,
             return_data=self.return_data,
@@ -107,6 +109,7 @@ namespace ExecutionContext {
             code=self.code,
             code_len=self.code_len,
             calldata=self.calldata,
+            calldata_len=self.calldata_len,
             program_counter=self.program_counter,
             stopped=TRUE,
             return_data=self.return_data,
@@ -153,6 +156,7 @@ namespace ExecutionContext {
             code=self.code,
             code_len=self.code_len,
             calldata=self.calldata,
+            calldata_len=self.calldata_len,
             program_counter=self.program_counter,
             stopped=self.stopped,
             return_data=self.return_data,
@@ -179,6 +183,7 @@ namespace ExecutionContext {
             code=self.code,
             code_len=self.code_len,
             calldata=self.calldata,
+            calldata_len=self.calldata_len,
             program_counter=self.program_counter,
             stopped=self.stopped,
             return_data=self.return_data,
@@ -203,6 +208,7 @@ namespace ExecutionContext {
             code=self.code,
             code_len=self.code_len,
             calldata=self.calldata,
+            calldata_len=self.calldata_len,
             program_counter=self.program_counter + inc_value,
             stopped=self.stopped,
             return_data=self.return_data,
@@ -227,6 +233,7 @@ namespace ExecutionContext {
             code=self.code,
             code_len=self.code_len,
             calldata=self.calldata,
+            calldata_len=self.calldata_len,
             program_counter=self.program_counter,
             stopped=self.stopped,
             return_data=self.return_data,
@@ -266,18 +273,57 @@ namespace ExecutionContext {
         %}
 
         %{
-            print("===================================")
-            print(f"PROGRAM COUNTER:\t{ids.pc}")
-            print(f"INTRINSIC GAS:\t\t{ids.self.intrinsic_gas_cost}")
-            print(f"GAS USED:\t\t{ids.self.gas_used}")
-            print("*************STACK*****************")
+            import logging
+            logging.info("===================================")
+            logging.info(f"PROGRAM COUNTER:\t{ids.pc}")
+            logging.info(f"INTRINSIC GAS:\t\t{ids.self.intrinsic_gas_cost}")
+            logging.info(f"GAS USED:\t\t{ids.self.gas_used}")
+            logging.info("*************STACK*****************")
         %}
         Stack.dump(self.stack);
         %{
-            print("***********************************")
-            print("===================================")
+            import logging
+            logging.info("***********************************")
+            logging.info("===================================")
         %}
+        Memory.dump(self.memory);
+        %{ print("===================================") %}
         return ();
+    }
+
+    // @notice Update the program counter.
+    // @dev The program counter is updated to a given value. This is only ever called by JUMP or JUMPI
+    // @param self The pointer to the execution context.
+    // @param new_pc_offset The value to update the program counter by.
+    // @return The pointer to the updated execution context.
+    func update_program_counter{range_check_ptr}(
+        self: model.ExecutionContext*, new_pc_offset: felt
+    ) -> model.ExecutionContext* {
+        alloc_locals;
+        // Revert if new_value points outside of the code range
+        with_attr error_message("Kakarot: new pc target out of range") {
+            assert_nn(new_pc_offset);
+            assert_le(new_pc_offset, self.code_len - 1);
+        }
+
+        // Revert if new pc_offset points to something other then JUMPDEST
+        check_jumpdest(self, new_pc_offset);
+
+        return new model.ExecutionContext(
+            code=self.code,
+            code_len=self.code_len,
+            calldata=self.calldata,
+            calldata_len=self.calldata_len,
+            program_counter=new_pc_offset,
+            stopped=self.stopped,
+            return_data=self.return_data,
+            return_data_len=self.return_data_len,
+            stack=self.stack,
+            memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit,
+            intrinsic_gas_cost=self.intrinsic_gas_cost,
+            );
     }
 
     // @notice Check if location is a valid Jump destination
@@ -286,21 +332,18 @@ namespace ExecutionContext {
     // @param pc_location location to check.
     // @return The pointer to the updated execution context.
     // @return 1 if location is valid, 0 is location is invalid.
-    func check_jumpdest(self: model.ExecutionContext*, pc_location: felt) -> (
-        self: model.ExecutionContext*, is_valid: felt
-    ) {
+    func check_jumpdest(self: model.ExecutionContext*, pc_location: felt) {
         alloc_locals;
         let (local output: felt*) = alloc();
 
         // Copy code slice
-        memcpy(dst=output, src=self.code + pc_location - 1, len = 1);
+        memcpy(dst=output, src=self.code + pc_location, len=1);
 
-        if([output] == 0x5b) {
-            return (self=self, is_valid=1);
-        } else {
-            return (self=self, is_valid=0);
+        // Revert if now pc offset is not JUMPDEST
+        with_attr error_message("Kakarot: JUMPed to pc offset is not JUMPDEST") {
+            assert [output] = 0x5b;
         }
 
-        //Check if it jumpdest
+        return ();
     }
 }

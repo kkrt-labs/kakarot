@@ -18,9 +18,6 @@ namespace Constants {
     // STACK
     const STACK_MAX_DEPTH = 1024;
 
-    // MEMORY
-    const MAX_MEMORY_OFFSET = 2 ** 64;
-
     // GAS METERING
     const TRANSACTION_INTRINSIC_GAS_COST = 21000;
 }

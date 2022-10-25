@@ -1,0 +1,6 @@
+{
+    "name": "JUMP opcode",
+    "code": "600556600a5b600b",
+    "calldata": "",
+    "expected_return_data": ""
+}

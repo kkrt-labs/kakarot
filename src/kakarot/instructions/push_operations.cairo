@@ -32,8 +32,9 @@ namespace PushOperations {
     }(ctx: model.ExecutionContext*, i: felt) -> model.ExecutionContext* {
         alloc_locals;
         %{
+            import logging
             opcode_value =  95 + ids.i
-            print(f"0x{opcode_value:02x} - PUSH{ids.i}")
+            logging.info(f"0x{opcode_value:02x} - PUSH{ids.i}")
         %}
 
         // Get stack from context.

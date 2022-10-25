@@ -59,7 +59,10 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x10 - LT") %}
+        %{
+        import logging
+        logging.info("0x10 - LT")
+        %}
 
         let stack = ctx.stack;
 
@@ -99,7 +102,10 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x11 - GT") %}
+        %{
+        import logging
+        logging.info("0x11 - GT")
+        %}
 
         let stack = ctx.stack;
 
@@ -139,7 +145,10 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x12 - SLT") %}
+        %{
+        import logging
+        logging.info("0x12 - SLT")
+        %}
 
         let stack = ctx.stack;
 
@@ -179,7 +188,10 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x13 - SGT") %}
+        %{
+        import logging
+        logging.info("0x13 - SGT")
+        %}
 
         let stack = ctx.stack;
 
@@ -219,7 +231,10 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x14 - EQ") %}
+        %{
+        import logging
+        logging.info("0x14 - EQ")
+        %}
 
         let stack = ctx.stack;
 
@@ -259,7 +274,10 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x15 - ISZERO") %}
+        %{
+        import logging
+        logging.info("0x15 - ISZERO")
+        %}
 
         let stack = ctx.stack;
 
@@ -297,7 +315,10 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x16 - AND") %}
+        %{
+        import logging
+        logging.info("0x16 - AND")
+        %}
 
         let stack = ctx.stack;
 
@@ -337,7 +358,10 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x17 - OR") %}
+        %{
+        import logging
+        logging.info("0x17 - OR")
+        %}
 
         let stack = ctx.stack;
 
@@ -377,7 +401,10 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x1B - SHL") %}
+        %{
+        import logging
+        logging.info("0x1B - SHL")
+        %}
 
         let stack = ctx.stack;
 
@@ -417,7 +444,10 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x1C - SHR") %}
+        %{
+        import logging
+        logging.info("0x1C - SHR")
+        %}
 
         let stack = ctx.stack;
 
@@ -454,7 +484,10 @@ namespace ComparisonOperations {
         ctx: model.ExecutionContext*
     ) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x1D - SAR") %}
+        %{
+        import logging
+        logging.info("0x1D - SAR")
+        %}
         let stack = ctx.stack;
 
         // Stack input:
@@ -522,7 +555,10 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{ print("0x19 - NOT") %}
+        %{
+        import logging
+        logging.info("0x19 - NOT")
+        %}
 
         let stack = ctx.stack;
 

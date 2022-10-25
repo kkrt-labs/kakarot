@@ -136,6 +136,26 @@
         "code",
         "test"
       ]
+    },
+    {
+      "login": "richwarner",
+      "name": "Rich Warner",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1719742?v=4",
+      "profile": "https://github.com/richwarner",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "Jrigada",
+      "name": "Juan Rigada",
+      "avatar_url": "https://avatars.githubusercontent.com/u/62958725?v=4",
+      "profile": "https://github.com/Jrigada",
+      "contributions": [
+        "code",
+        "test"
+      ]
     }
   ],
   "contributorsPerLine": 7,
