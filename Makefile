@@ -18,6 +18,12 @@ test-integration:
 test-units:
 	pytest tests/units -s --log-cli-level=INFO
 
+format:
+	cairo-format src/**/*.cairo -i
+
+format-check:
+	cairo-format src/**/*.cairo -c
+
 clean:
 	rm -rf build
 	mkdir build
