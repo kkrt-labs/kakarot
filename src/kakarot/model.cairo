@@ -24,7 +24,7 @@ namespace model {
         program_counter: felt,
         stopped: felt,
         return_data: felt*,
-        return_data_len:felt,
+        return_data_len: felt,
         stack: Stack*,
         memory: Memory*,
         gas_used: felt,
