@@ -231,6 +231,8 @@ namespace EVMInstructions {
         // Environment Information
         // 0x33 - CALLER
         add_instruction(instructions, 0x33, EnvironmentalInformation.exec_caller);
+        // 0x36 - CALLDATASIZE
+        add_instruction(instructions, 0x36, EnvironmentalInformation.exec_calldatasize);
         // 0x38 - CODESIZE
         add_instruction(instructions, 0x38, EnvironmentalInformation.exec_codesize);
         // 0x3d - RETURNDATASIZE

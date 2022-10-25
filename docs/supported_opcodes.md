@@ -53,7 +53,7 @@ This document describes the opcodes supported by Kakarot.
 | 0x33         | CALLER         | Get caller address                                                                | ✅          |
 | 0x34         | CALLVALUE      | Get deposited value by the instruction/transaction responsible for this execution |             |
 | 0x35         | CALLDATALOAD   | Get input data of current environment                                             |             |
-| 0x36         | CALLDATASIZE   | Get size of input data in current environment                                     |             |
+| 0x36         | CALLDATASIZE   | Get size of input data in current environment                                     | ✅          |
 | 0x37         | CALLDATACOPY   | Copy input data in current environment to memory                                  |             |
 | 0x38         | CODESIZE       | Get size of code running in current environment                                   | ✅          |
 | 0x39         | CODECOPY       | Copy code running in current environment to memory                                |             |

@@ -1,0 +1,6 @@
+{
+    "name": "Get the size of calldata - 0x36 CALLDATASIZE",
+    "code": "3600",
+    "calldata": "",
+    "expected_return_data": ""
+}
