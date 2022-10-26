@@ -5,7 +5,7 @@
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, uint256_unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le_felt
 from starkware.cairo.common.math import assert_lt, split_int, unsigned_div_rem
 from starkware.cairo.common.memcpy import memcpy
@@ -90,6 +90,59 @@ namespace Memory {
                 dst=new_memory + offset + 32,
                 src=self.bytes + offset + 32,
                 len=self.bytes_len - (offset),
+            );
+            new_bytes_len = self.bytes_len;
+        }
+
+        return new model.Memory(bytes=new_memory, bytes_len=new_bytes_len);
+    }
+
+    // @notice Store a byte into the memory.
+    // @param self - The pointer to the memory.
+    // @param element - The element to push.
+    // @param offset - The offset to store the element at.
+    // @return The new pointer to the memory.
+    func store8{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.Memory*, element: Uint256, offset: felt) -> model.Memory* {
+        alloc_locals;
+        let (new_memory: felt*) = alloc();
+        if (self.bytes_len == 0) {
+            Helpers.fill_zeros(fill_with=offset, arr=new_memory);
+        }
+
+        let is_offset_greater_than_length = is_le_felt(self.bytes_len, offset);
+        local max_copy: felt;
+
+        assert [new_memory + offset] = element.low;
+
+        let (quotient, remainder) = uint256_unsigned_div_rem(Uint256(offset, 0), Uint256(256, 0));
+
+        local diff = 32 - remainder.low;
+
+        if (is_offset_greater_than_length == 1) {
+            Helpers.fill_zeros(fill_with=offset - self.bytes_len, arr=new_memory + self.bytes_len);
+            // Fill the unused bytes into 0
+            Helpers.fill_zeros(fill_with=diff, arr=new_memory + offset + 1);
+            max_copy = self.bytes_len;
+        } else {
+            max_copy = offset;
+        }
+
+        if (self.bytes_len != 0) {
+            memcpy(dst=new_memory, src=self.bytes, len=max_copy);
+        }
+
+        let is_memory_growing = is_le_felt(self.bytes_len, offset);
+        local new_bytes_len: felt;
+        if (is_memory_growing == 1) {
+            new_bytes_len = offset + diff;
+        } else {
+            memcpy(
+                dst=new_memory + offset + 1, src=self.bytes + offset, len=self.bytes_len - offset
             );
             new_bytes_len = self.bytes_len;
         }

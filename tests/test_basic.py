@@ -23,7 +23,7 @@ class Uint256:
         return self.low == __o.low and self.high == __o.high
 
     def __str__(self):
-        return str(self.low + self.high * 2**128)
+        return str(self.low + self.high * 2 ** 128)
 
 
 def hex_string_to_int_array(text):
@@ -55,8 +55,7 @@ class TestBasic(IsolatedAsyncioTestCase):
 
     async def coverageSetupClass(cls):
         cls.eth = await cls.starknet.deploy(
-            source="./tests/utils/ERC20.cairo",
-            constructor_calldata=[2] * 6,
+            source="./tests/utils/ERC20.cairo", constructor_calldata=[2] * 6,
         )
         cls.zk_evm = await cls.starknet.deploy(
             source="./src/kakarot/kakarot.cairo",
@@ -133,15 +132,13 @@ class TestBasic(IsolatedAsyncioTestCase):
         await self.assert_compare(
             "/shl/6",
             Uint256(
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
             ),
         )
         await self.assert_compare(
             "/shl/7",
             Uint256(
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE,
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
             ),
         )
         await self.assert_compare(
@@ -152,8 +149,7 @@ class TestBasic(IsolatedAsyncioTestCase):
         await self.assert_compare(
             "/shl/11",
             Uint256(
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE,
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
             ),
         )
 
@@ -172,15 +168,13 @@ class TestBasic(IsolatedAsyncioTestCase):
         await self.assert_compare(
             "/shr/7",
             Uint256(
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
             ),
         )
         await self.assert_compare(
             "/shr/8",
             Uint256(
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
-                0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
             ),
         )
         await self.assert_compare("/shr/9", Uint256(1, 0))
@@ -252,8 +246,7 @@ class TestBasic(IsolatedAsyncioTestCase):
         await self.assert_compare(
             "_not",
             Uint256(
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
             ),
         )
 
@@ -295,11 +288,7 @@ class TestBasic(IsolatedAsyncioTestCase):
         )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertListEqual(
-            res.result.memory,
-            [
-                *[0] * 95,
-                17,
-            ],  # leading 0s
+            res.result.memory, [*[0] * 95, 17,],  # leading 0s
         )
         # Checking when data is saved on already saved memory location
         code, calldata = get_case(case="./tests/cases/memory/010.json")
@@ -308,11 +297,7 @@ class TestBasic(IsolatedAsyncioTestCase):
         )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertListEqual(
-            res.result.memory,
-            [
-                *[0] * 95,
-                34,
-            ],  # 0x40 offset
+            res.result.memory, [*[0] * 95, 34,],  # 0x40 offset
         )
         # Checking when data is saved on already saved memory location
         code, calldata = get_case(case="./tests/cases/memory/010.json")
@@ -321,11 +306,7 @@ class TestBasic(IsolatedAsyncioTestCase):
         )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertListEqual(
-            res.result.memory,
-            [
-                *[0] * 95,
-                34,
-            ],  # 0x40 offset
+            res.result.memory, [*[0] * 95, 34,],  # 0x40 offset
         )
 
         # Checking saving memory with 30 bytes or more
@@ -335,11 +316,7 @@ class TestBasic(IsolatedAsyncioTestCase):
         )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertListEqual(
-            res.result.memory,
-            [
-                *[0] * 2,  # offset 0x00 for 30 Bytes data
-                *[17] * 30,
-            ],
+            res.result.memory, [*[0] * 2, *[17] * 30,],  # offset 0x00 for 30 Bytes data
         )
 
         # Checking when data is saved on already saved memory location
@@ -349,8 +326,26 @@ class TestBasic(IsolatedAsyncioTestCase):
         )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertListEqual(
-            res.result.memory,
-            [*[0] * 84, 17, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
+            res.result.memory, [*[0] * 84, 17, *[255] * 11,],
+        )
+
+        # MSTORE8 - Withing 32bytes test
+        code, calldata = get_case(case="./tests/cases/memory/013.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        self.assertEqual(res.result.top_stack, Uint256(0, 0))
+        self.assertListEqual(
+            res.result.memory, [*[0] * 3, 34, *[0] * 28],
+        )
+        # MSTORE8 - Save in the middle of stored memory
+        code, calldata = get_case(case="./tests/cases/memory/014.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        self.assertEqual(res.result.top_stack, Uint256(0, 0))
+        self.assertListEqual(
+            res.result.memory, [*[17] * 5, 34, *[17] * 26],
         )
 
         # PC
@@ -403,12 +398,6 @@ class TestBasic(IsolatedAsyncioTestCase):
 
         self.assertEqual(res.result.top_stack, Uint256(20, 0))
         self.assertListEqual(res.result.memory, [])
-
-        # MSTORE8
-        code, calldata = get_case(case="./tests/cases/025.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
-        self.assertEqual(res.result.top_stack, Uint256(0, 0))
-        self.assertEqual(res.result.top_memory, Uint256(255, 0))
 
     async def test_exchange_operations(self):
         code, calldata = get_case(case="./tests/cases/005.json")

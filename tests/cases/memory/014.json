@@ -1,0 +1,8 @@
+{
+    "name": "MSTORE8 - Testing MSTORE8 in the middle of saved data",
+    "code": "7f111111111111111111111111111111111111111111111111111111111111111160005261222260055300",
+    "calldata": "",
+    "expected_return_data": ""
+  }
+  
+  

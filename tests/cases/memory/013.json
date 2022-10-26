@@ -1,0 +1,8 @@
+{
+    "name": "MSTORE8 - Testing MSTORE8 withing 32bytes",
+    "code": "611122600353",
+    "calldata": "",
+    "expected_return_data": ""
+  }
+  
+  
