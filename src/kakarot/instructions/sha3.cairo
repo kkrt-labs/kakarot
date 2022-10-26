@@ -51,9 +51,9 @@ namespace Sha3 {
         let (stack, offset: Uint256) = Stack.pop(stack);
         let (stack, length: Uint256) = Stack.pop(stack);
 
-        let (full_64_bits, remaining_bytes) = unsigned_div_rem(length.low, 8);
+        let (local full_64_bits, local remaining_bytes) = unsigned_div_rem(length.low, 8);
 
-        let (dest: felt*) = alloc();
+        let (local dest: felt*) = alloc();
 
         if (remaining_bytes != 0) {
             let last_felt = convert_part_felt(
@@ -70,7 +70,7 @@ namespace Sha3 {
             convert_full_64_bits(
                 first_byte=ctx.memory.bytes + offset.low + 8 * (full_64_bits - 1),
                 length=full_64_bits,
-                dest=dest,
+                dest=dest + full_64_bits - 1,
             );
             tempvar range_check_ptr = range_check_ptr;
         } else {
@@ -100,7 +100,7 @@ namespace Sha3 {
             return ();
         }
         assert [dest] = Helpers.byte_to_64_bits_little_felt(first_byte);
-        return convert_full_64_bits(first_byte - 8, length - 1, dest + 1);
+        return convert_full_64_bits(first_byte - 8, length - 1, dest - 1);
     }
 
     func convert_part_felt{range_check_ptr}(val: felt*, length: felt, res: felt) -> felt {

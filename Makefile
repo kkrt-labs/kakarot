@@ -1,4 +1,4 @@
-.PHONY: build test
+.PHONY: build test coverage
 
 build:
 	$(MAKE) clean
@@ -8,10 +8,13 @@ build:
 	starknet-compile ./src/kakarot/accounts/registry/account_registry.cairo --output build/account_registry.json --disable_hint_validation --cairo_path ./src
 
 setup:
-	pip install -r requirements.txt
+	poetry install --no-root
+
+coverage:
+	pytest ./coverage/coverage.py -s
 
 test:
-	pytest -s --log-cli-level=INFO
+	pytest tests -s --log-cli-level=INFO
 
 test-integration:
 	pytest tests/integrations -s --log-cli-level=INFO
@@ -21,9 +24,13 @@ test-units:
 
 format:
 	cairo-format src/**/*.cairo -i
+	black tests/.
+	isort tests/.
 
 format-check:
 	cairo-format src/**/*.cairo -c
+	black tests/. --check
+	isort tests/. --check
 
 clean:
 	rm -rf build

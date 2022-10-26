@@ -1,14 +1,14 @@
+from asyncio import run
 from contextlib import contextmanager
 from unittest import IsolatedAsyncioTestCase
-from asyncio import run
-from starkware.starknet.testing.starknet import Starknet
-from starkware.starkware_utils.error_handling import StarkException
-from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 
 from cairo_coverage import cairo_coverage
+from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
+from starkware.starknet.testing.starknet import Starknet
+from starkware.starkware_utils.error_handling import StarkException
 
 
-class TestBasic(IsolatedAsyncioTestCase):
+class TestExecutionContext(IsolatedAsyncioTestCase):
     @classmethod
     def setUpClass(cls) -> None:
         async def _setUpClass(cls) -> None:
@@ -16,13 +16,20 @@ class TestBasic(IsolatedAsyncioTestCase):
             cls.starknet.state.state.update_block_info(
                 BlockInfo.create_for_testing(block_number=1, block_timestamp=1)
             )
-            cls.unit_test = await cls.starknet.deploy(
+            cls.test_execution_context = await cls.starknet.deploy(
                 source="./tests/cairo_files/test_execution_context.cairo",
                 cairo_path=["src"],
                 disable_hint_validation=True,
             )
 
         run(_setUpClass(cls))
+
+    async def coverageSetupClass(cls):
+        cls.test_execution_context = await cls.starknet.deploy(
+            source="./tests/cairo_files/test_execution_context.cairo",
+            cairo_path=["src"],
+            disable_hint_validation=True,
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -36,10 +43,10 @@ class TestBasic(IsolatedAsyncioTestCase):
             f"Error message: {error_message}" in str(error_msg.exception.message)
         )
 
-    async def test_everything(self):
-        await self.unit_test.test__init__should_return_an_empty_execution_context().call()
-        await self.unit_test.test__update_program_counter__should_set_pc_to_given_value().call()
+    async def test_everything_context(self):
+        await self.test_execution_context.test__init__should_return_an_empty_execution_context().call()
+        await self.test_execution_context.test__update_program_counter__should_set_pc_to_given_value().call()
         with self.raisesStarknetError("Kakarot: new pc target out of range"):
-            await self.unit_test.test__update_program_counter__should_fail__when_given_value_not_in_code_range().call()
+            await self.test_execution_context.test__update_program_counter__should_fail__when_given_value_not_in_code_range().call()
         with self.raisesStarknetError("Kakarot: JUMPed to pc offset is not JUMPDEST"):
-            await self.unit_test.test__update_program_counter__should_fail__when_given_destination_that_is_not_JUMPDEST().call()
+            await self.test_execution_context.test__update_program_counter__should_fail__when_given_destination_that_is_not_JUMPDEST().call()

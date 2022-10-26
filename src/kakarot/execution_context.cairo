@@ -287,7 +287,10 @@ namespace ExecutionContext {
             logging.info("===================================")
         %}
         Memory.dump(self.memory);
-        %{ print("===================================") %}
+        %{
+            import logging
+            logging.info("===================================")
+        %}
         return ();
     }
 
