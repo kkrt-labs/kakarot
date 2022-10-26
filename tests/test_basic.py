@@ -364,7 +364,9 @@ class TestBasic(IsolatedAsyncioTestCase):
 
         # ORIGIN 
         code, calldata = get_case(case="./tests/cases/025.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1) 
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        ) 
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertListEqual(res.result.memory, [])
 
