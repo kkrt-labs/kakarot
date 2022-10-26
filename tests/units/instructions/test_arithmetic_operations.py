@@ -33,15 +33,35 @@ class TestArithmeticOperations(IsolatedAsyncioTestCase):
     def tearDownClass(cls):
         cairo_coverage.report_runs(excluded_file={"site-packages"})
 
-    async def test_everything_arithmetic(self):
+    async def test__exec_add__should_add_0_and_1(self):
         await self.test_arithmetic_operations.test__exec_add__should_add_0_and_1().call()
+
+    async def test__exec_mul__should_mul_0_and_1(self):
         await self.test_arithmetic_operations.test__exec_mul__should_mul_0_and_1().call()
+
+    async def test__exec_sub__should_sub_0_and_1(self):
         await self.test_arithmetic_operations.test__exec_sub__should_sub_0_and_1().call()
+
+    async def test__exec_div__should_div_0_and_1(self):
         await self.test_arithmetic_operations.test__exec_div__should_div_0_and_1().call()
+
+    async def test__exec_sdiv__should_signed_div_0_and_1(self):
         await self.test_arithmetic_operations.test__exec_sdiv__should_signed_div_0_and_1().call()
+
+    async def test__exec_mod__should_mod_0_and_1(self):
         await self.test_arithmetic_operations.test__exec_mod__should_mod_0_and_1().call()
+
+    async def test__exec_smod__should_smod_0_and_1(self):
         await self.test_arithmetic_operations.test__exec_smod__should_smod_0_and_1().call()
+
+    async def test__exec_addmod__should_add_0_and_1_and_div_rem_by_2(self):
         await self.test_arithmetic_operations.test__exec_addmod__should_add_0_and_1_and_div_rem_by_2().call()
+
+    async def test__exec_mulmod__should_mul_0_and_1_and_div_rem_by_2(self):
         await self.test_arithmetic_operations.test__exec_mulmod__should_mul_0_and_1_and_div_rem_by_2().call()
+
+    async def test__exec_exp__should_exp_0_and_1(self):
         await self.test_arithmetic_operations.test__exec_exp__should_exp_0_and_1().call()
+
+    async def test__exec_signextend__should_signextend_0_and_1(self):
         await self.test_arithmetic_operations.test__exec_signextend__should_signextend_0_and_1().call()
