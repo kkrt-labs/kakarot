@@ -1,4 +1,4 @@
-.PHONY: build test
+.PHONY: build test coverage
 
 build:
 	$(MAKE) clean
@@ -10,8 +10,11 @@ build:
 setup:
 	poetry install --no-root
 
+coverage:
+	pytest ./coverage/coverage.py -s
+
 test:
-	pytest -s --log-cli-level=INFO
+	pytest tests -s --log-cli-level=INFO
 
 test-integration:
 	pytest tests/integrations -s --log-cli-level=INFO
