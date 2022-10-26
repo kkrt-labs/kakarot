@@ -8,7 +8,7 @@ build:
 	starknet-compile ./src/kakarot/accounts/registry/account_registry.cairo --output build/account_registry.json --disable_hint_validation --cairo_path ./src
 
 setup:
-	pip install -r requirements.txt
+	poetry install
 
 test:
 	pytest -s --log-cli-level=INFO
@@ -21,9 +21,13 @@ test-units:
 
 format:
 	cairo-format src/**/*.cairo -i
+	black tests/.
+	isort tests/.
 
 format-check:
 	cairo-format src/**/*.cairo -c
+	black tests/. --check
+	isort tests/. --check
 
 clean:
 	rm -rf build

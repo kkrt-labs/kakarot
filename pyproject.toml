@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "kakarot"
+version = "0.1.0"
+description = "EVM interpreter written in Cairo, a sort of ZK-EVM emulator, leveraging STARK proof system."
+authors = []
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+cairo-lang = "^0.10.1"
+openzeppelin-cairo-contracts = "0.4.0"
+
+[tool.poetry.group.dev.dependencies]
+cairo-coverage = "^0.1.0"
+black = "^22.10.0"
+isort = "^5.10.1"
+marshmallow-dataclass = "^8.5.9"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+filterwarnings = [
+    'ignore:Using or importing the ABCs:DeprecationWarning',                                # from frozendict
+    'ignore:lexer_state will be removed in subsequent releases. Use lexer_thread instead.', # from lark
+]
+
+[tool.isort]
+profile = "black"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
