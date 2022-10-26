@@ -267,6 +267,75 @@ class TestBasic(IsolatedAsyncioTestCase):
                 250,
             ],
         )
+        # Testing when initial offset if higher than 32 bytes (0x40 for the test)
+        code, calldata = get_case(case="./tests/cases/memory/009.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        self.assertEqual(res.result.top_stack, Uint256(0, 0))
+        self.assertListEqual(
+            res.result.memory,
+            [
+                *[0] * 95,  # leading 0s
+                17,
+            ],
+        )
+        # Checking when data is saved on already saved memory location
+        code, calldata = get_case(case="./tests/cases/memory/010.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        self.assertEqual(res.result.top_stack, Uint256(0, 0))
+        self.assertListEqual(
+            res.result.memory,
+            [
+                *[0]*95,  # 0x40 offset
+                34,
+            ],
+        )
+        # Checking when data is saved on already saved memory location
+        code, calldata = get_case(case="./tests/cases/memory/010.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        self.assertEqual(res.result.top_stack, Uint256(0, 0))
+        self.assertListEqual(
+            res.result.memory,
+            [
+                *[0]*95,  # 0x40 offset
+                34,
+            ],
+        )
+
+        # Checking saving memory with 30 bytes or more
+        code, calldata = get_case(case="./tests/cases/memory/011.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        self.assertEqual(res.result.top_stack, Uint256(0, 0))
+        self.assertListEqual(
+            res.result.memory,
+            [
+                *[0]*2,  # offset 0x00 for 30 Bytes data
+                17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17,17
+            ],
+        )
+
+        # Checking when data is saved on already saved memory location
+        code, calldata = get_case(case="./tests/cases/memory/012.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        self.assertEqual(res.result.top_stack, Uint256(0, 0))
+        self.assertListEqual(
+            res.result.memory,
+            [
+                *[0]*94, 
+                17,
+                255,255,255,255,255,255,255,255,255,255,255
+            ],
+        )
+
         # PC
         code, calldata = get_case(case="./tests/cases/memory/003.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
@@ -453,3 +522,5 @@ class TestBasic(IsolatedAsyncioTestCase):
                 200044476455392313921036785920804272591,
             ),
         )
+
+

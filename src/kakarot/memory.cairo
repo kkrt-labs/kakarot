@@ -50,17 +50,21 @@ namespace Memory {
         alloc_locals;
         let (new_memory: felt*) = alloc();
         if (self.bytes_len == 0) {
+            //Q1. This fill the array with zeros up to "offset" bytes?
             Helpers.fill_zeros(fill_with=offset, arr=new_memory);
         }
+        // Maybe it should be offset+32(as it will be the final offset for the ending bytes_len
         let is_offset_greater_than_length = is_le_felt(self.bytes_len, offset);
         local max_copy: felt;
         if (is_offset_greater_than_length == 1) {
+            // What is actually happening here?
             Helpers.fill_zeros(fill_with=offset - self.bytes_len, arr=new_memory + self.bytes_len);
             max_copy = self.bytes_len;
         } else {
             max_copy = offset;
         }
         if (self.bytes_len != 0) {
+            // What would happen if a middle location was selected? dont we have to copy the remaining part aswell?
             memcpy(dst=new_memory, src=self.bytes, len=max_copy);
         }
         split_int(
@@ -83,6 +87,7 @@ namespace Memory {
         let is_memory_growing = is_le_felt(self.bytes_len, offset + 32);
         local new_bytes_len: felt;
         if (is_memory_growing == 1) {
+            // What would happen if memory grows more than 32 bytes? do we just add the extra memory from the offset location? Or do we need to fill all the way to offset?
             new_bytes_len = offset + 32;
         } else {
             memcpy(
