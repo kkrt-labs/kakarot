@@ -63,6 +63,7 @@ namespace Memory {
         if (self.bytes_len != 0) {
             memcpy(dst=new_memory, src=self.bytes, len=max_copy);
         }
+
         split_int(
             value=element.high,
             n=16,
@@ -87,8 +88,8 @@ namespace Memory {
         } else {
             memcpy(
                 dst=new_memory + offset + 32,
-                src=self.bytes + offset + 1,
-                len=self.bytes_len - (offset + 32),
+                src=self.bytes + offset + 32,
+                len=self.bytes_len - (offset),
             );
             new_bytes_len = self.bytes_len;
         }
