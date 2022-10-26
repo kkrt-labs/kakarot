@@ -97,7 +97,7 @@ namespace Memory {
         return new model.Memory(bytes=new_memory, bytes_len=new_bytes_len);
     }
 
-    // @notice Store a byte into the memory.
+    // @notice MSTORE8 - Store a byte into the memory.
     // @param self - The pointer to the memory.
     // @param element - The element to push.
     // @param offset - The offset to store the element at.
