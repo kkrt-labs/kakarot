@@ -1,10 +1,10 @@
 from asyncio import run
 from contextlib import contextmanager
+from dataclasses import dataclass
 from typing import List, Tuple
 from unittest import IsolatedAsyncioTestCase
 
 from cairo_coverage import cairo_coverage
-from marshmallow_dataclass import dataclass
 from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 from starkware.starknet.testing.starknet import Starknet
 from starkware.starkware_utils.error_handling import StarkException
@@ -76,7 +76,7 @@ class TestBasic(IsolatedAsyncioTestCase):
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, expected)
-        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
 
     async def test_arithmetic_operations(self):
         code, calldata = get_case(case="./tests/cases/001.json")
@@ -85,7 +85,7 @@ class TestBasic(IsolatedAsyncioTestCase):
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, Uint256(16, 0))
-        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
 
     async def test_comparison_operations(self):
         await self.assert_compare("_lt", Uint256(0, 0))
@@ -240,31 +240,40 @@ class TestBasic(IsolatedAsyncioTestCase):
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, Uint256(3, 0))
-        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
 
     async def test_memory_operations(self):
         # MSTORE
+        # 0 offset stores 0x0a
         code, calldata = get_case(case="./tests/cases/memory/001.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
-        self.assertEqual(res.result.top_memory, Uint256(10, 0))
+        self.assertListEqual(res.result.memory, [*[0] * 31, 10])
 
+        # 0 offset stores 0x0a then 36 offset stores 0xfa
         code, calldata = get_case(case="./tests/cases/memory/002.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
-        self.assertEqual(res.result.top_memory, Uint256(10, 0))
-
+        self.assertListEqual(
+            res.result.memory,
+            [
+                *[0] * 31,  # leading 0s
+                10,
+                *[0] * 35,  # 36 offset + 31 leading 0s = 32 + 35
+                250,
+            ],
+        )
         # PC
         code, calldata = get_case(case="./tests/cases/memory/003.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, Uint256(3, 0))
-        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
 
         # MEMORY SIZE
         code, calldata = get_case(case="./tests/cases/memory/004.json")
@@ -272,7 +281,7 @@ class TestBasic(IsolatedAsyncioTestCase):
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
-        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
 
         # MLOAD
         code, calldata = get_case(case="./tests/cases/memory/005.json")
@@ -280,7 +289,7 @@ class TestBasic(IsolatedAsyncioTestCase):
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, Uint256(10, 0))
-        self.assertEqual(res.result.top_memory, Uint256(10, 0))
+        self.assertListEqual(res.result.memory, [*[0] * 31, 10])
 
         # JUMPDEST
         code, calldata = get_case(case="./tests/cases/memory/006.json")
@@ -289,7 +298,7 @@ class TestBasic(IsolatedAsyncioTestCase):
         )
 
         self.assertEqual(res.result.top_stack, Uint256(8, 0))
-        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
 
         # JUMP
         code, calldata = get_case(case="./tests/cases/memory/007.json")
@@ -298,7 +307,7 @@ class TestBasic(IsolatedAsyncioTestCase):
         )
 
         self.assertEqual(res.result.top_stack, Uint256(11, 0))
-        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
 
         # JUMPI
         code, calldata = get_case(case="./tests/cases/memory/008.json")
@@ -307,7 +316,7 @@ class TestBasic(IsolatedAsyncioTestCase):
         )
 
         self.assertEqual(res.result.top_stack, Uint256(20, 0))
-        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
 
     async def test_exchange_operations(self):
         code, calldata = get_case(case="./tests/cases/005.json")
@@ -315,7 +324,7 @@ class TestBasic(IsolatedAsyncioTestCase):
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, Uint256(4, 0))
-        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
 
     async def test_environmental_information(self):
         code, calldata = get_case(case="./tests/cases/006.json")
@@ -323,21 +332,21 @@ class TestBasic(IsolatedAsyncioTestCase):
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, Uint256(7, 0))
-        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
 
         code, calldata = get_case(case="./tests/cases/012.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, Uint256(1, 0))
-        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
 
         code, calldata = get_case(case="./tests/cases/017.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
-        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
 
         # CALLDATASIZE
         code, calldata = get_case(case="./tests/cases/024.json")
@@ -345,7 +354,7 @@ class TestBasic(IsolatedAsyncioTestCase):
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
-        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
 
     async def test_system_operations(self):
         code, calldata = get_case(case="./tests/cases/009.json")
@@ -361,7 +370,7 @@ class TestBasic(IsolatedAsyncioTestCase):
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, Uint256(1263227476, 0))
-        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
 
         # coinbase
         code, calldata = get_case(case="./tests/cases/008.json")
@@ -369,7 +378,7 @@ class TestBasic(IsolatedAsyncioTestCase):
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
-        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
 
         # block_number
         code, calldata = get_case(case="./tests/cases/010.json")
@@ -377,7 +386,7 @@ class TestBasic(IsolatedAsyncioTestCase):
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, Uint256(1, 0))
-        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
 
         # block_timestamp
         code, calldata = get_case(case="./tests/cases/011.json")
@@ -385,7 +394,7 @@ class TestBasic(IsolatedAsyncioTestCase):
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, Uint256(1, 0))
-        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
 
         # gas limit
         code, calldata = get_case(case="./tests/cases/015.json")
@@ -393,7 +402,7 @@ class TestBasic(IsolatedAsyncioTestCase):
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
-        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
 
         # difficulty
         code, calldata = get_case(case="./tests/cases/021.json")
@@ -401,7 +410,7 @@ class TestBasic(IsolatedAsyncioTestCase):
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
-        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
 
         # basefee
         code, calldata = get_case(case="./tests/cases/023.json")
@@ -409,7 +418,7 @@ class TestBasic(IsolatedAsyncioTestCase):
             caller_address=1
         )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
-        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
 
     async def test_sha3(self):
         code, calldata = get_case(case="./tests/cases/013/sha3.json")
@@ -426,15 +435,17 @@ class TestBasic(IsolatedAsyncioTestCase):
                 92880145435162625678889344074777148753,
             ),
         )
-        self.assertEqual(res.result.top_memory, Uint256(0x100, 0))
+        self.assertListEqual(res.result.memory, [*[0] * 30, 1, 0])
 
         code, calldata = get_case(case="./tests/cases/013/sha3prime.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
             caller_address=1
         )
-        # keccak(0000000000000000000000000000000000000000000001000000000000000000)
+
+        # keccak(10)
         # <=>
         #  0x967f2a2c7f3d22f9278175c1e6aa39cf9171db91dceacd5ee0f37c2e507b5abe
+        self.assertListEqual(res.result.memory, [*[0] * 31, 16])
         self.assertEqual(
             res.result.top_stack,
             Uint256(
@@ -442,4 +453,3 @@ class TestBasic(IsolatedAsyncioTestCase):
                 200044476455392313921036785920804272591,
             ),
         )
-        self.assertEqual(res.result.top_memory, Uint256(0x10, 0))

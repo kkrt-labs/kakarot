@@ -167,13 +167,29 @@ namespace Helpers {
     }
     func felt_as_byte_to_uint256(val: felt*) -> Uint256 {
         let res = Uint256(
-            low=[val] + [val + 1] * 256 + [val + 2] * 256 ** 2 + [val + 3] * 256 ** 3 + [val + 4] * 256 ** 4 + [val + 5] * 256 ** 5 + [val + 6] * 256 ** 6 + [val + 7] * 256 ** 7 + [val + 8] * 256 ** 8 + [val + 9] * 256 ** 9 + [val + 10] * 256 ** 10 + [val + 11] * 256 ** 11 + [val + 12] * 256 ** 12 + [val + 13] * 256 ** 13 + [val + 14] * 256 ** 14 + [val + 15] * 256 ** 15,
-            high=[val + 16] + [val + 17] * 256 + [val + 18] * 256 ** 2 + [val + 19] * 256 ** 3 + [val + 20] * 256 ** 4 + [val + 21] * 256 ** 5 + [val + 22] * 256 ** 6 + [val + 23] * 256 ** 7 + [val + 24] * 256 ** 8 + [val + 25] * 256 ** 9 + [val + 26] * 256 ** 10 + [val + 27] * 256 ** 11 + [val + 28] * 256 ** 12 + [val + 29] * 256 ** 13 + [val + 30] * 256 ** 14 + [val + 31] * 256 ** 15,
+            low=[val + 16] * 256 ** 15 + [val + 17] * 256 ** 14 + [val + 18] * 256 ** 13 + [val + 19] * 256 ** 12 + [val + 20] * 256 ** 11 + [val + 21] * 256 ** 10 + [val + 22] * 256 ** 9 + [val + 23] * 256 ** 8 + [val + 24] * 256 ** 7 + [val + 25] * 256 ** 6 + [val + 26] * 256 ** 5 + [val + 27] * 256 ** 4 + [val + 28] * 256 ** 3 + [val + 29] * 256 ** 2 + [val + 30] * 256 + [val + 31],
+            high=[val] * 256 ** 15 + [val + 1] * 256 ** 14 + [val + 2] * 256 ** 13 + [val + 3] * 256 ** 12 + [val + 4] * 256 ** 11 + [val + 5] * 256 ** 10 + [val + 6] * 256 ** 9 + [val + 7] * 256 ** 8 + [val + 8] * 256 ** 7 + [val + 9] * 256 ** 6 + [val + 10] * 256 ** 5 + [val + 11] * 256 ** 4 + [val + 12] * 256 ** 3 + [val + 13] * 256 ** 2 + [val + 14] * 256 + [val + 15],
         );
         return res;
     }
 
     func byte_to_64_bits_little_felt(val: felt*) -> felt {
-        return [val + 7] + [val + 6] * 256 + [val + 5] * 256 ** 2 + [val + 4] * 256 ** 3 + [val + 3] * 256 ** 4 + [val + 2] * 256 ** 5 + [val + 1] * 256 ** 6 + [val] * 256 ** 7;
+        return [val + 7] * 256 ** 7 + [val + 6] * 256 ** 6 + [val + 5] * 256 ** 5 + [val + 4] * 256 ** 4 + [val + 3] * 256 ** 3 + [val + 2] * 256 ** 2 + [val + 1] * 256 + [val];
+    }
+
+    func fill_zeros(fill_with: felt, arr: felt*) {
+        if (fill_with == 0) {
+            return ();
+        }
+        assert [arr] = 0;
+        return fill_zeros(fill_with - 1, arr + 1);
+    }
+
+    func reverse(old_arr_len: felt, old_arr: felt*, new_arr_len: felt, new_arr: felt*) {
+        if (old_arr_len == 0) {
+            return ();
+        }
+        assert new_arr[old_arr_len - 1] = [old_arr];
+        return reverse(old_arr_len - 1, &old_arr[1], new_arr_len + 1, new_arr);
     }
 }
