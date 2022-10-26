@@ -39,6 +39,6 @@ class TestMemoryOperations(IsolatedAsyncioTestCase):
             await self.test_memory_operations.test__exec_pc__should_update_after_incrementing(
                 increment=x
             ).call()
-            for x in range(15)
+            for x in range(1, 15)
         ]
         await self.test_memory_operations.test__exec_pop_should_pop_an_item_from_execution_context().call()

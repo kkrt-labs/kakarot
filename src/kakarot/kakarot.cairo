@@ -15,8 +15,8 @@ from kakarot.memory import Memory
 @constructor
 func constructor{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(owner: felt) {
-    return Kakarot.constructor(owner);
+}(owner: felt, native_token_address_: felt) {
+    return Kakarot.constructor(owner, native_token_address_);
 }
 
 @external
@@ -34,4 +34,18 @@ func execute{
         tempvar top_stack = context.stack.elements[len - 1];
     }
     return (top_stack=top_stack, memory_len=context.memory.bytes_len, memory=context.memory.bytes);
+}
+
+@external
+func set_account_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    registry_address_: felt
+) {
+    return Kakarot.set_account_registry(registry_address_);
+}
+
+@external
+func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    native_token_address_: felt
+) {
+    return Kakarot.set_native_token(native_token_address_);
 }

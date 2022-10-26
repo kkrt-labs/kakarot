@@ -4,7 +4,7 @@
 
 // StarkWare dependencies
 from starkware.cairo.common.uint256 import Uint256
-
+from starkware.cairo.common.math import split_felt
 namespace Helpers {
     func setup_python_defs() {
         %{
@@ -149,8 +149,9 @@ namespace Helpers {
         return res;
     }
 
-    func to_uint256(val: felt) -> Uint256 {
-        let res = Uint256(val, 0);
+    func to_uint256{range_check_ptr}(val: felt) -> Uint256 {
+        let (high, low) = split_felt(val);
+        let res = Uint256(low, high);
         return res;
     }
 
@@ -191,5 +192,9 @@ namespace Helpers {
         }
         assert new_arr[old_arr_len - 1] = [old_arr];
         return reverse(old_arr_len - 1, &old_arr[1], new_arr_len + 1, new_arr);
+    }
+
+    func uint256_to_felt{range_check_ptr}(val: Uint256) -> felt {
+        return val.low + val.high * 2 ** 128;
     }
 }
