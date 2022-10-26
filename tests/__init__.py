@@ -1,8 +1,9 @@
-import yaml
 from pathlib import Path
 
+import yaml
 
-class Object():
+
+class Object:
     pass
 
 
@@ -34,7 +35,7 @@ def load(path: str, context: object):
         config_path = parent / path.name
         if not config_path.exists():
             continue
-        with open(config_path, 'r') as file_instance:
+        with open(config_path, "r") as file_instance:
             update(config, yaml.safe_load(file_instance))
 
     # set up context
