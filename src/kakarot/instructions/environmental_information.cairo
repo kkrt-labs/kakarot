@@ -14,7 +14,7 @@ from kakarot.model import model
 from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
-from kakarot.constants import ETH_ADDRESS, REGISTRY_ADDRESS
+from kakarot.constants import native_token_address, registry_address
 from kakarot.interfaces.interfaces import IEth, IResgistry
 
 // @title Environmental information opcodes.
@@ -52,13 +52,13 @@ namespace EnvironmentalInformation {
         let (stack: model.Stack*, address: Uint256) = Stack.pop(ctx.stack);
 
         let addr: felt = Helpers.uint256_to_felt(address);
-        let (registry_address) = REGISTRY_ADDRESS.read();
+        let (registry_address_) = registry_address.read();
         let (starknet_address) = IResgistry.get_starknet_address(
-            contract_address=registry_address, evm_address=address.low
+            contract_address=registry_address_, evm_address=address.low
         );
-        let (eth_address) = ETH_ADDRESS.read();
+        let (native_token_address_) = native_token_address.read();
         let (balance: Uint256) = IEth.balanceOf(
-            contract_address=eth_address, account=starknet_address
+            contract_address=native_token_address_, account=starknet_address
         );
 
         let stack: model.Stack* = Stack.push(stack, balance);

@@ -49,25 +49,7 @@ class TestBasic(IsolatedAsyncioTestCase):
             cls.starknet.state.state.update_block_info(
                 BlockInfo.create_for_testing(block_number=1, block_timestamp=1)
             )
-            cls.eth = await cls.starknet.deploy(
-                source="./tests/utils/ERC20.cairo",
-                constructor_calldata=[2] * 6,
-            )
-            cls.zk_evm = await cls.starknet.deploy(
-                source="./src/kakarot/kakarot.cairo",
-                cairo_path=["src"],
-                disable_hint_validation=True,
-                constructor_calldata=[1, cls.eth.contract_address],
-            )
-            cls.registry = await cls.starknet.deploy(
-                source="./src/kakarot/accounts/registry/account_registry.cairo",
-                cairo_path=["src"],
-                disable_hint_validation=True,
-                constructor_calldata=[cls.zk_evm.contract_address],
-            )
-            await cls.zk_evm.set_account_registry(
-                registry_address_=cls.registry.contract_address
-            ).execute(caller_address=1)
+            await cls.coverageSetupClass(cls)
 
         run(_setUpClass(cls))
 

@@ -3,11 +3,11 @@
 %lang starknet
 
 @storage_var
-func ETH_ADDRESS() -> (res: felt) {
+func native_token_address() -> (res: felt) {
 }
 
 @storage_var
-func REGISTRY_ADDRESS() -> (res: felt) {
+func registry_address() -> (res: felt) {
 }
 
 // @title Constants file.
