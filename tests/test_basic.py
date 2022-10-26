@@ -72,6 +72,10 @@ class TestBasic(IsolatedAsyncioTestCase):
         run(_setUpClass(cls))
 
     async def coverageSetupClass(cls):
+        cls.eth = await cls.starknet.deploy(
+            source="./tests/utils/ERC20.cairo",
+            constructor_calldata=[2] * 6,
+        )
         cls.zk_evm = await cls.starknet.deploy(
             source="./src/kakarot/kakarot.cairo",
             cairo_path=["src"],
