@@ -57,6 +57,14 @@ class TestBasic(IsolatedAsyncioTestCase):
 
         run(_setUpClass(cls))
 
+    async def coverageSetupClass(cls):
+        cls.zk_evm = await cls.starknet.deploy(
+            source="./src/kakarot/kakarot.cairo",
+            cairo_path=["src"],
+            disable_hint_validation=True,
+            constructor_calldata=[1],
+        )
+
     @classmethod
     def tearDownClass(cls):
         cairo_coverage.report_runs(excluded_file={"site-packages"})
@@ -78,7 +86,7 @@ class TestBasic(IsolatedAsyncioTestCase):
         self.assertEqual(res.result.top_stack, expected)
         self.assertListEqual(res.result.memory, [])
 
-    async def test_arithmetic_operations(self):
+    async def test_arithmetic_operation(self):
         code, calldata = get_case(case="./tests/cases/001.json")
 
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
@@ -242,9 +250,7 @@ class TestBasic(IsolatedAsyncioTestCase):
         self.assertEqual(res.result.top_stack, Uint256(3, 0))
         self.assertListEqual(res.result.memory, [])
 
-    async def test_memory_operations(self):
-        # MSTORE
-        # 0 offset stores 0x0a
+    async def test_memory_operation(self):
         code, calldata = get_case(case="./tests/cases/memory/001.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
             caller_address=1
