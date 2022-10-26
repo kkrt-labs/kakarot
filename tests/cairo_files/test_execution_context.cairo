@@ -125,3 +125,91 @@ func test__update_program_counter__should_fail__when_given_destination_that_is_n
     let result = ExecutionContext.update_program_counter(ctx,2);
     return ();
 }
+
+@external
+func test__read_calldata__should_return_parameter_from_calldata{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+
+    // Given
+    alloc_locals;
+    Helpers.setup_python_defs();
+    let (code) = alloc();
+    tempvar code_len = 0;
+    let (calldata) = alloc();
+    assert calldata[0] = 0x0c;
+    assert calldata[1] = 0x0b;
+    assert calldata[2] = 0x0a;
+
+    // When
+    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
+    let selector = ExecutionContext.read_calldata(ctx,0);
+    let param_1 = ExecutionContext.read_calldata(ctx,4);
+    let param_2 = ExecutionContext.read_calldata(ctx,4+32);
+
+    // Then
+    assert 0x0a = param_2;
+    assert 0x0b = param_1;
+    assert 0x0c = selector;
+    return ();
+}
+
+@external
+func test__read_calldata__should_fail__when_given_offset_out_of_range{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given
+    alloc_locals;
+    Helpers.setup_python_defs();
+    let (code) = alloc();
+    tempvar code_len = 0;
+    let (calldata) = alloc();
+    assert calldata[0] = 0x0c;
+    assert calldata[1] = 0x0b;
+    assert calldata[2] = 0x0a;
+
+    // When
+    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
+    let result = ExecutionContext.read_calldata(ctx,4+32+32);
+    return ();
+}
+
+@external
+func test__read_calldata__should_fail__when_providing_invalid_parameter_offset{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given
+    alloc_locals;
+    Helpers.setup_python_defs();
+    let (code) = alloc();
+    tempvar code_len = 0;
+    let (calldata) = alloc();
+    assert calldata[0] = 0x0c;
+    assert calldata[1] = 0x0b;
+    assert calldata[2] = 0x0a;
+
+    // When
+    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
+    let result = ExecutionContext.read_calldata(ctx,4+31);
+    return ();
+}
+
+@external
+func test__read_calldata__should_fail__when_providing_invalid_selector_offset{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given
+    alloc_locals;
+    Helpers.setup_python_defs();
+    let (code) = alloc();
+    tempvar code_len = 0;
+    let (calldata) = alloc();
+    assert calldata[0] = 0x0c;
+    assert calldata[1] = 0x0b;
+    assert calldata[2] = 0x0a;
+
+    // When
+    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
+    let result = ExecutionContext.read_calldata(ctx,3);
+    return ();
+}

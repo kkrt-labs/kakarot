@@ -63,7 +63,7 @@ namespace EVMInstructions {
         %}
 
         local opcode_exist;
-
+        
         // Check if opcode exists
         %{
             if memory.get(ids.instructions + ids.opcode) == None:
@@ -93,7 +93,7 @@ namespace EVMInstructions {
         let (args_len: felt, args: felt*) = prepare_arguments(
             ctx, implicit_args_len, implicit_args
         );
-
+        
         // Invoke opcode function
         invoke(function_ptr, args_len, args);
 
@@ -231,6 +231,8 @@ namespace EVMInstructions {
         // Environment Information
         // 0x33 - CALLER
         add_instruction(instructions, 0x33, EnvironmentalInformation.exec_caller);
+        // 0x35 - CALLDATALOAD
+        add_instruction(instructions, 0x35, EnvironmentalInformation.exec_calldataload);
         // 0x36 - CALLDATASIZE
         add_instruction(instructions, 0x36, EnvironmentalInformation.exec_calldatasize);
         // 0x38 - CODESIZE

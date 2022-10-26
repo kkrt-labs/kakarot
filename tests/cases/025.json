@@ -1,0 +1,6 @@
+{
+    "name": "Load parameter from calldata onto stack - 0x35 CALLDATALOAD",
+    "code": "60243560043560003501010",
+    "calldata": "0c0b0a",
+    "expected_return_data": ""
+}

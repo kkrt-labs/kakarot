@@ -287,6 +287,14 @@ class TestBasic(IsolatedAsyncioTestCase):
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertEqual(res.result.top_memory, Uint256(0, 0))
 
+        # CALLDATALOAD
+        code, calldata = get_case(case="./tests/cases/025.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        self.assertEqual(res.result.top_stack, Uint256(33, 0))
+        self.assertEqual(res.result.top_memory, Uint256(0, 0))
+
         # CALLDATASIZE
         code, calldata = get_case(case="./tests/cases/024.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(

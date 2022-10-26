@@ -1,6 +1,6 @@
 # Support of opcodes for the MVP
 
-58 / 74 opcodes are supported by the MVP.
+59 / 74 opcodes are supported by the MVP.
 
 | Opcode Name     | Implemented |
 | --------------- | ----------- |
@@ -8,7 +8,7 @@
 | ADDMOD          | ✅          |
 | ADDRESS         |             |
 | AND             | ✅          |
-| CALLDATALOAD    |             |
+| CALLDATALOAD    | ✅          |
 | CALLDATASIZE    |             |
 | CALLER          |             |
 | CALLVALUE       |             |

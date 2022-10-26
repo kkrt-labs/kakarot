@@ -6,7 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math import (assert_le, assert_nn)
+from starkware.cairo.common.math import (assert_le, assert_nn, unsigned_div_rem, assert_not_equal)
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
 
@@ -141,6 +141,52 @@ namespace ExecutionContext {
         // Move program counter
         let self = ExecutionContext.increment_program_counter(self, len);
         return (self=self, output=output);
+    }
+
+    // @notice Read and return 32bytes from calldata.
+    // @dev The 32 bytes are read from the calldata given an offset.
+    //      Right now assumes that calldata is stored in a felt_arr, but the offset arrives as expected by the EVM
+    // @param self The pointer to the execution context.
+    // @param offset the location from which the following 32 bytes will be returned
+    // @return The data read from calldata
+    func read_calldata{range_check_ptr}(
+        self: model.ExecutionContext*, offset: felt
+    ) -> felt{
+        alloc_locals;
+
+        //Make sure there is calldata that we can read
+        with_attr error_message("Kakarot: Trying to load CallData with no CallData being provided") {
+            assert_not_equal(self.calldata_len,0);
+        }
+
+        local calldata: felt;
+        //First 4 bytes are the selector
+        if (offset == 0){
+            assert calldata = self.calldata[0];
+            return calldata;
+        }else{
+            //Check underflow
+            let calldata_parameters = offset - 4;
+            with_attr error_message("Kakarot: calldataload offset does not point to start of a calldata parameter") {
+                assert_nn(calldata_parameters);
+            }
+
+            //Check if divisable by 32
+            let (local calldata_arr_index,remainder) =  unsigned_div_rem(calldata_parameters,32);
+            with_attr error_message("Kakarot: calldataload offset does not point to start of a calldata parameter") {
+                assert remainder = 0;
+            }
+
+            //Ensure that calldata is within the array length
+            with_attr error_message("Kakarot: calldataload offset out of range") {
+                assert_le(calldata_arr_index,self.calldata_len-2);
+            }
+
+            //read calldata parameter
+            assert calldata = self.calldata[calldata_arr_index+1];
+
+            return calldata;
+        }
     }
 
     // @notice Update the stack of the current execution context.

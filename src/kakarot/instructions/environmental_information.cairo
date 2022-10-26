@@ -23,6 +23,7 @@ namespace EnvironmentalInformation {
     const GAS_COST_CODESIZE = 2;
     const GAS_COST_CALLER = 2;
     const GAS_COST_RETURNDATASIZE=2;
+    const GAS_COST_CALLDATALOAD = 3;
     const GAS_COST_CALLDATASIZE = 2;
 
     // @notice CODESIZE operation.
@@ -116,8 +117,44 @@ namespace EnvironmentalInformation {
         return ctx;
     }
 
+    // @notice CALLDATALOAD operation.
+    // @dev Push a word from the calldata onto the stack.
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 3
+    // @custom:stack_consumed_elements 1
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_calldataload{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        %{ print("0x35 - CALLDATALOAD") %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - offset: calldata offset of the word we read (32 byte steps).
+        let (stack, offset) = Stack.pop(stack);
+
+        //read calldata at offset
+        let calldata = ExecutionContext.read_calldata(ctx,offset.low);
+        local tester = calldata;
+        //Push CallData word onto stack
+        let stack: model.Stack* = Stack.push(stack, Uint256(calldata,0));
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLDATALOAD);
+        return ctx;
+    }
+
     // @notice CALLDATASIZE operation.
-    // @dev Get the size of return data.
+    // @dev Get the size of calldata.
     // @custom:since Frontier
     // @custom:group Environmental Information
     // @custom:gas 2
