@@ -31,6 +31,8 @@ production.
 
 </div>
 
+![](resources/img/kakarot.gif)
+
 ## Supported opcodes
 
 ```mermaid
@@ -236,6 +238,9 @@ for being involved!
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/TotalPizza"><img src="https://avatars.githubusercontent.com/u/50166315?v=4?s=100" width="100px;" alt="FreshPizza"/><br /><sub><b>FreshPizza</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=TotalPizza" title="Code">💻</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=TotalPizza" title="Tests">⚠️</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Eikix"><img src="https://avatars.githubusercontent.com/u/66871571?v=4?s=100" width="100px;" alt="Elias Tazartes"/><br /><sub><b>Elias Tazartes</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=Eikix" title="Code">💻</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=Eikix" title="Tests">⚠️</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/richwarner"><img src="https://avatars.githubusercontent.com/u/1719742?v=4?s=100" width="100px;" alt="Rich Warner"/><br /><sub><b>Rich Warner</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=richwarner" title="Code">💻</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=richwarner" title="Tests">⚠️</a></td>
+    </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Jrigada"><img src="https://avatars.githubusercontent.com/u/62958725?v=4?s=100" width="100px;" alt="Juan Rigada"/><br /><sub><b>Juan Rigada</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=Jrigada" title="Code">💻</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=Jrigada" title="Tests">⚠️</a></td>
     </tr>
   </tbody>
 </table>

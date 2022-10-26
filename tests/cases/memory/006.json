@@ -1,0 +1,6 @@
+{
+    "name": "Jumpdest opcode",
+    "code": "5860015b6001600158",
+    "calldata": "",
+    "expected_return_data": ""
+}

@@ -10,7 +10,6 @@ from starkware.cairo.common.math import (assert_le, assert_nn, unsigned_div_rem,
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
 
-
 // Internal dependencies
 from utils.utils import Helpers
 from kakarot.model import model
@@ -320,19 +319,21 @@ namespace ExecutionContext {
         %}
 
         %{
-        import logging
-        logging.info("===================================")
-        logging.info(f"PROGRAM COUNTER:\t{ids.pc}")
-        logging.info(f"INTRINSIC GAS:\t\t{ids.self.intrinsic_gas_cost}")
-        logging.info(f"GAS USED:\t\t{ids.self.gas_used}")
-        logging.info("*************STACK*****************")
+            import logging
+            logging.info("===================================")
+            logging.info(f"PROGRAM COUNTER:\t{ids.pc}")
+            logging.info(f"INTRINSIC GAS:\t\t{ids.self.intrinsic_gas_cost}")
+            logging.info(f"GAS USED:\t\t{ids.self.gas_used}")
+            logging.info("*************STACK*****************")
         %}
         Stack.dump(self.stack);
         %{
-        import logging
-        logging.info("***********************************")
-        logging.info("===================================")
+            import logging
+            logging.info("***********************************")
+            logging.info("===================================")
         %}
+        Memory.dump(self.memory);
+        %{ print("===================================") %}
         return ();
     }
 
@@ -348,11 +349,11 @@ namespace ExecutionContext {
         // Revert if new_value points outside of the code range
         with_attr error_message("Kakarot: new pc target out of range") {
             assert_nn(new_pc_offset);
-            assert_le(new_pc_offset,self.code_len-1);
+            assert_le(new_pc_offset, self.code_len - 1);
         }
-        
-        //Revert if new pc_offset points to something other then JUMPDEST
-        check_jumpdest(self,new_pc_offset);
+
+        // Revert if new pc_offset points to something other then JUMPDEST
+        check_jumpdest(self, new_pc_offset);
 
         return new model.ExecutionContext(
             code=self.code,
@@ -368,7 +369,7 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,
-        );
+            );
     }
 
     // @notice Check if location is a valid Jump destination
@@ -377,21 +378,18 @@ namespace ExecutionContext {
     // @param pc_location location to check.
     // @return The pointer to the updated execution context.
     // @return 1 if location is valid, 0 is location is invalid.
-    func check_jumpdest(
-        self: model.ExecutionContext*, pc_location: felt
-    ){
+    func check_jumpdest(self: model.ExecutionContext*, pc_location: felt) {
         alloc_locals;
         let (local output: felt*) = alloc();
 
         // Copy code slice
-        memcpy(dst=output, src=self.code + pc_location, len = 1);
+        memcpy(dst=output, src=self.code + pc_location, len=1);
 
-        //Revert if now pc offset is not JUMPDEST
+        // Revert if now pc offset is not JUMPDEST
         with_attr error_message("Kakarot: JUMPed to pc offset is not JUMPDEST") {
             assert [output] = 0x5b;
         }
 
         return ();
-
     }
 }

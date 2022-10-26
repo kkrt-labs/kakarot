@@ -42,7 +42,7 @@ class TestBasic(IsolatedAsyncioTestCase):
         await self.unit_test.test__store__should_add_an_element_to_the_memory().call()
         await self.unit_test.test__load__should_load_an_element_from_the_memory().call()
 
-        with self.raisesStarknetError("Kakarot: MemoryUnderflow"):
+        with self.raisesStarknetError("Kakarot: MemoryOverflow"):
             await self.unit_test.test__load__should_fail__when_out_of_memory().call()
 
         await self.unit_test.test__dump__should_print_the_memory().call()
