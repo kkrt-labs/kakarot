@@ -132,6 +132,8 @@ Here is the execution trace of the program on Kakarot:
 Install the requirements:
 
 ```bash
+# install poetry if you don't have it already
+# curl -sSL https://install.python-poetry.org | python3 -
 make setup
 ```
 
