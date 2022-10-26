@@ -1,0 +1,8 @@
+{
+    "name": "Memory operations - Check saving memory with 30 bytes",
+    "code": "7d111111111111111111111111111111111111111111111111111111111111600052",
+    "calldata": "",
+    "expected_return_data": ""
+  }
+  
+  

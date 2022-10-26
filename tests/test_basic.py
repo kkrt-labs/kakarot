@@ -23,7 +23,7 @@ class Uint256:
         return self.low == __o.low and self.high == __o.high
 
     def __str__(self):
-        return str(self.low + self.high * 2**128)
+        return str(self.low + self.high * 2 ** 128)
 
 
 def hex_string_to_int_array(text):
@@ -35,8 +35,9 @@ def get_case(case: str) -> Tuple[List[int], List[int]]:
 
     with open(case, "r") as f:
         test_case_data = load(f)
-    return hex_string_to_int_array(test_case_data["code"]), hex_string_to_int_array(
-        test_case_data["calldata"]
+    return (
+        hex_string_to_int_array(test_case_data["code"]),
+        hex_string_to_int_array(test_case_data["calldata"]),
     )
 
 
@@ -118,15 +119,13 @@ class TestBasic(IsolatedAsyncioTestCase):
         await self.assert_compare(
             "/shl/6",
             Uint256(
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
             ),
         )
         await self.assert_compare(
             "/shl/7",
             Uint256(
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE,
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
             ),
         )
         await self.assert_compare(
@@ -137,8 +136,7 @@ class TestBasic(IsolatedAsyncioTestCase):
         await self.assert_compare(
             "/shl/11",
             Uint256(
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE,
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
             ),
         )
 
@@ -157,15 +155,13 @@ class TestBasic(IsolatedAsyncioTestCase):
         await self.assert_compare(
             "/shr/7",
             Uint256(
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
             ),
         )
         await self.assert_compare(
             "/shr/8",
             Uint256(
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
-                0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
             ),
         )
         await self.assert_compare("/shr/9", Uint256(1, 0))
@@ -237,8 +233,7 @@ class TestBasic(IsolatedAsyncioTestCase):
         await self.assert_compare(
             "_not",
             Uint256(
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
-                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
             ),
         )
 
@@ -273,6 +268,88 @@ class TestBasic(IsolatedAsyncioTestCase):
                 250,
             ],
         )
+        # Testing when initial offset if higher than 32 bytes (0x40 for the test)
+        code, calldata = get_case(case="./tests/cases/memory/009.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        self.assertEqual(res.result.top_stack, Uint256(0, 0))
+        self.assertListEqual(
+            res.result.memory, [*[0] * 95, 17,],  # leading 0s
+        )
+        # Checking when data is saved on already saved memory location
+        code, calldata = get_case(case="./tests/cases/memory/010.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        self.assertEqual(res.result.top_stack, Uint256(0, 0))
+        self.assertListEqual(
+            res.result.memory, [*[0] * 95, 34,],  # 0x40 offset
+        )
+        # Checking when data is saved on already saved memory location
+        code, calldata = get_case(case="./tests/cases/memory/010.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        self.assertEqual(res.result.top_stack, Uint256(0, 0))
+        self.assertListEqual(
+            res.result.memory, [*[0] * 95, 34,],  # 0x40 offset
+        )
+
+        # Checking saving memory with 30 bytes or more
+        code, calldata = get_case(case="./tests/cases/memory/011.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        self.assertEqual(res.result.top_stack, Uint256(0, 0))
+        self.assertListEqual(
+            res.result.memory,
+            [
+                *[0] * 2,  # offset 0x00 for 30 Bytes data
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+                17,
+            ],
+        )
+
+        # Checking when data is saved on already saved memory location
+        code, calldata = get_case(case="./tests/cases/memory/012.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        self.assertEqual(res.result.top_stack, Uint256(0, 0))
+        self.assertListEqual(
+            res.result.memory,
+            [*[0] * 84, 17, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
+        )
+
         # PC
         code, calldata = get_case(case="./tests/cases/memory/003.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
