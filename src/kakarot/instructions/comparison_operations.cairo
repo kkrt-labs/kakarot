@@ -37,6 +37,7 @@ namespace ComparisonOperations {
     const GAS_COST_ISZERO = 3;
     const GAS_COST_AND = 3;
     const GAS_COST_OR = 3;
+    const GAS_COST_XOR = 3;
     const GAS_COST_EQ = 3;
     const GAS_COST_SHL = 3;
     const GAS_COST_SHR = 3;
@@ -385,6 +386,48 @@ namespace ComparisonOperations {
         return ctx;
     }
 
+    // @notice 0x18 - XOR
+    // @dev Comparison operation
+    // @custom:since Frontier
+    // @custom:group Comparison & Bitwise Logic Operations
+    // @custom:gas 3
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context.
+    // @return The pointer to the execution context.
+    func exec_xor{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        %{
+        import logging
+        logging.info("0x18 - XOR")
+        %}
+
+        let stack = ctx.stack;
+
+        // Stack input
+        // a: first binary value.
+        // b: second binary value.
+        let (stack, a) = Stack.pop(stack);
+        let (stack, b) = Stack.pop(stack);
+
+        // a & b: the bitwise XOR result.
+        let (result) = uint256_xor(a, b);
+
+        // Stack output:
+        // a & b: the bitwise XOR result.
+        let stack: model.Stack* = Stack.push(stack, result);
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_XOR);
+        return ctx;
+    }
     // @notice 0x1B - SHL
     // @dev Bitwise operation
     // @custom:since Constantinople
