@@ -15,7 +15,7 @@ from kakarot.stack import Stack
 from kakarot.memory import Memory
 from kakarot.model import model
 from utils.utils import Helpers
-from tests.model import EVMTestCase
+from tests.utils.model import EVMTestCase
 
 namespace test_utils {
     // @notice Load Test case from file.

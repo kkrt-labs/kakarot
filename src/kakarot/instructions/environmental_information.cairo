@@ -14,13 +14,8 @@ from kakarot.model import model
 from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
-from kakarot.constants import Constants
-
-@contract_interface
-namespace IEth {
-    func balanceOf(account: felt) -> (balance: Uint256) {
-    }
-}
+from kakarot.constants import ETH_ADDRESS, REGISTRY_ADDRESS
+from kakarot.interfaces.interfaces import IEth, IResgistry
 
 // @title Environmental information opcodes.
 // @notice This file contains the functions to execute for environmental information opcodes.
@@ -48,19 +43,25 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ print("0x31 - BALANCE") %}
+        %{
+            import logging
+            logging.info("0x31 - BALANCE")
+        %}
 
         // Get the address.
         let (stack: model.Stack*, address: Uint256) = Stack.pop(ctx.stack);
-        %{ print(ids.address.low, ids.address.high, "address") %}
-        // TODO: Convert ETH addr to StarkNet addr
-        // TODO: Use real ETH addr for prod
+
         let addr: felt = Helpers.uint256_to_felt(address);
+        let (registry_address) = REGISTRY_ADDRESS.read();
+        let (starknet_address) = IResgistry.get_starknet_address(
+            contract_address=registry_address, evm_address=address.low
+        );
+        let (eth_address) = ETH_ADDRESS.read();
         let (balance: Uint256) = IEth.balanceOf(
-            contract_address=Constants.MOCK_ETH_ADDRESS, account=address.low
+            contract_address=eth_address, account=starknet_address
         );
 
-        let stack: model.Stack* = Stack.push(ctx.stack, balance);
+        let stack: model.Stack* = Stack.push(stack, balance);
 
         // Update the execution context.
         // Update context stack.

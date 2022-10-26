@@ -49,12 +49,25 @@ class TestBasic(IsolatedAsyncioTestCase):
             cls.starknet.state.state.update_block_info(
                 BlockInfo.create_for_testing(block_number=1, block_timestamp=1)
             )
+            cls.eth = await cls.starknet.deploy(
+                source="./tests/utils/ERC20.cairo",
+                constructor_calldata=[2] * 6,
+            )
             cls.zk_evm = await cls.starknet.deploy(
                 source="./src/kakarot/kakarot.cairo",
                 cairo_path=["src"],
                 disable_hint_validation=True,
-                constructor_calldata=[1],
+                constructor_calldata=[1, cls.eth.contract_address],
             )
+            cls.registry = await cls.starknet.deploy(
+                source="./src/kakarot/accounts/registry/account_registry.cairo",
+                cairo_path=["src"],
+                disable_hint_validation=True,
+                constructor_calldata=[cls.zk_evm.contract_address],
+            )
+            await cls.zk_evm.set_account_registry(
+                registry_address_=cls.registry.contract_address
+            ).execute(caller_address=1)
 
         run(_setUpClass(cls))
 
@@ -63,8 +76,17 @@ class TestBasic(IsolatedAsyncioTestCase):
             source="./src/kakarot/kakarot.cairo",
             cairo_path=["src"],
             disable_hint_validation=True,
-            constructor_calldata=[1],
+            constructor_calldata=[1, cls.eth.contract_address],
         )
+        cls.registry = await cls.starknet.deploy(
+            source="./src/kakarot/accounts/registry/account_registry.cairo",
+            cairo_path=["src"],
+            disable_hint_validation=True,
+            constructor_calldata=[cls.zk_evm.contract_address],
+        )
+        await cls.zk_evm.set_account_registry(
+            registry_address_=cls.registry.contract_address
+        ).execute(caller_address=1)
 
     @classmethod
     def tearDownClass(cls):
@@ -74,19 +96,25 @@ class TestBasic(IsolatedAsyncioTestCase):
     def raisesStarknetError(self, error_message):
         with self.assertRaises(StarkException) as error_msg:
             yield error_msg
-        self.assertTrue(f"Error message: {error_message}" in str(error_msg.exception.message))
+        self.assertTrue(
+            f"Error message: {error_message}" in str(error_msg.exception.message)
+        )
 
     async def assert_compare(self, case: str, expected: Uint256):
         code, calldata = get_case(case=f"./tests/cases/003{case}.json")
 
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, expected)
         self.assertListEqual(res.result.memory, [])
 
     async def test_arithmetic_operation(self):
         code, calldata = get_case(case="./tests/cases/001.json")
 
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(16, 0))
         self.assertListEqual(res.result.memory, [])
 
@@ -111,7 +139,9 @@ class TestBasic(IsolatedAsyncioTestCase):
         ##############
         await self.assert_compare("/shl/1", Uint256(1, 0))
         await self.assert_compare("/shl/2", Uint256(2, 0))
-        await self.assert_compare("/shl/3", Uint256(0, 0x80000000000000000000000000000000))
+        await self.assert_compare(
+            "/shl/3", Uint256(0, 0x80000000000000000000000000000000)
+        )
         await self.assert_compare("/shl/4", Uint256(0, 0))
         await self.assert_compare("/shl/5", Uint256(0, 0))
         await self.assert_compare(
@@ -128,7 +158,9 @@ class TestBasic(IsolatedAsyncioTestCase):
                 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
             ),
         )
-        await self.assert_compare("/shl/8", Uint256(0, 0x80000000000000000000000000000000))
+        await self.assert_compare(
+            "/shl/8", Uint256(0, 0x80000000000000000000000000000000)
+        )
         await self.assert_compare("/shl/9", Uint256(0, 0))
         await self.assert_compare("/shl/10", Uint256(0, 0))
         await self.assert_compare(
@@ -145,7 +177,9 @@ class TestBasic(IsolatedAsyncioTestCase):
 
         await self.assert_compare("/shr/1", Uint256(1, 0))
         await self.assert_compare("/shr/2", Uint256(0, 0))
-        await self.assert_compare("/shr/3", Uint256(0, 0x40000000000000000000000000000000))
+        await self.assert_compare(
+            "/shr/3", Uint256(0, 0x40000000000000000000000000000000)
+        )
         await self.assert_compare("/shr/4", Uint256(1, 0))
         await self.assert_compare("/shr/5", Uint256(0, 0))
         await self.assert_compare("/shr/6", Uint256(0, 0))
@@ -174,34 +208,50 @@ class TestBasic(IsolatedAsyncioTestCase):
 
         await self.assert_compare("/sar/1", Uint256(1, 0))
         await self.assert_compare("/sar/2", Uint256(0, 0))
-        await self.assert_compare("/sar/3", Uint256(0, 0xC0000000000000000000000000000000))
+        await self.assert_compare(
+            "/sar/3", Uint256(0, 0xC0000000000000000000000000000000)
+        )
         await self.assert_compare(
             "/sar/4",
-            Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF),
+            Uint256(
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            ),
         )
         await self.assert_compare(
             "/sar/5",
-            Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF),
+            Uint256(
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            ),
         )
         await self.assert_compare(
             "/sar/6",
-            Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF),
+            Uint256(
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            ),
         )
         await self.assert_compare(
             "/sar/7",
-            Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF),
+            Uint256(
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            ),
         )
         await self.assert_compare(
             "/sar/8",
-            Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF),
+            Uint256(
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            ),
         )
         await self.assert_compare(
             "/sar/9",
-            Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF),
+            Uint256(
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            ),
         )
         await self.assert_compare(
             "/sar/10",
-            Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF),
+            Uint256(
+                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+            ),
         )
         await self.assert_compare("/sar/11", Uint256(0x0, 0x0))
         await self.assert_compare("/sar/12", Uint256(0x1, 0x0))
@@ -223,19 +273,25 @@ class TestBasic(IsolatedAsyncioTestCase):
 
     async def test_duplication_operations(self):
         code, calldata = get_case(case="./tests/cases/002.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(3, 0))
         self.assertListEqual(res.result.memory, [])
 
-    async def test_memory_operations(self):
-        code, calldata = get_case(case="./tests/cases/004.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+    async def test_memory_operation(self):
+        code, calldata = get_case(case="./tests/cases/memory/001.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertListEqual(res.result.memory, [*[0] * 31, 10])
 
         # 0 offset stores 0x0a then 36 offset stores 0xfa
         code, calldata = get_case(case="./tests/cases/memory/002.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertListEqual(
             res.result.memory,
@@ -248,7 +304,9 @@ class TestBasic(IsolatedAsyncioTestCase):
         )
         # Testing when initial offset if higher than 32 bytes (0x40 for the test)
         code, calldata = get_case(case="./tests/cases/memory/009.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertListEqual(
             res.result.memory,
@@ -259,7 +317,9 @@ class TestBasic(IsolatedAsyncioTestCase):
         )
         # Checking when data is saved on already saved memory location
         code, calldata = get_case(case="./tests/cases/memory/010.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertListEqual(
             res.result.memory,
@@ -270,7 +330,9 @@ class TestBasic(IsolatedAsyncioTestCase):
         )
         # Checking when data is saved on already saved memory location
         code, calldata = get_case(case="./tests/cases/memory/010.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertListEqual(
             res.result.memory,
@@ -282,48 +344,23 @@ class TestBasic(IsolatedAsyncioTestCase):
 
         # Checking saving memory with 30 bytes or more
         code, calldata = get_case(case="./tests/cases/memory/011.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertListEqual(
             res.result.memory,
             [
                 *[0] * 2,  # offset 0x00 for 30 Bytes data
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
-                17,
+                *[17] * 30,
             ],
         )
 
         # Checking when data is saved on already saved memory location
         code, calldata = get_case(case="./tests/cases/memory/012.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertListEqual(
             res.result.memory,
@@ -332,126 +369,180 @@ class TestBasic(IsolatedAsyncioTestCase):
 
         # PC
         code, calldata = get_case(case="./tests/cases/memory/003.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(3, 0))
         self.assertListEqual(res.result.memory, [])
 
-        code, calldata = get_case(case="./tests/cases/016.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        # MEMORY SIZE
+        code, calldata = get_case(case="./tests/cases/memory/004.json")
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertListEqual(res.result.memory, [])
 
         # MLOAD
         code, calldata = get_case(case="./tests/cases/memory/005.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(10, 0))
         self.assertListEqual(res.result.memory, [*[0] * 31, 10])
 
         # JUMPDEST
         code, calldata = get_case(case="./tests/cases/memory/006.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
 
         self.assertEqual(res.result.top_stack, Uint256(8, 0))
         self.assertListEqual(res.result.memory, [])
 
         # JUMP
         code, calldata = get_case(case="./tests/cases/memory/007.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
 
         self.assertEqual(res.result.top_stack, Uint256(11, 0))
         self.assertListEqual(res.result.memory, [])
 
         # JUMPI
         code, calldata = get_case(case="./tests/cases/memory/008.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
 
         self.assertEqual(res.result.top_stack, Uint256(20, 0))
         self.assertListEqual(res.result.memory, [])
 
     async def test_exchange_operations(self):
         code, calldata = get_case(case="./tests/cases/005.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(4, 0))
         self.assertListEqual(res.result.memory, [])
 
     async def test_environmental_information(self):
         # CODESIZE
         code, calldata = get_case(case="./tests/cases/006.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(7, 0))
         self.assertListEqual(res.result.memory, [])
 
         # CALLER
         code, calldata = get_case(case="./tests/cases/012.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(1, 0))
         self.assertListEqual(res.result.memory, [])
 
         code, calldata = get_case(case="./tests/cases/017.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertListEqual(res.result.memory, [])
 
         # CALLDATASIZE
         code, calldata = get_case(case="./tests/cases/024.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        self.assertEqual(res.result.top_stack, Uint256(0, 0))
+        self.assertListEqual(res.result.memory, [])
+
         # BALANCE
         code, calldata = get_case(case="./tests/cases/balance.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertListEqual(res.result.memory, [])
 
     async def test_system_operations(self):
         code, calldata = get_case(case="./tests/cases/009.json")
         with self.raisesStarknetError("Kakarot: 0xFE: Invalid Opcode"):
-            await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+            await self.zk_evm.execute(code=code, calldata=calldata).execute(
+                caller_address=1
+            )
 
     async def test_block_information(self):
         # chain id
         code, calldata = get_case(case="./tests/cases/007.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(1263227476, 0))
         self.assertListEqual(res.result.memory, [])
 
         # coinbase
         code, calldata = get_case(case="./tests/cases/008.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
-        self.assertEqual(res.result.top_stack, Uint256(0, 0))
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
+        # 0x388ca486b82e20cc81965d056b4cdcaacdffe0cf08e20ed8ba10ea97a487004
+        # default config sequencer address
+        self.assertEqual(
+            res.result.top_stack,
+            Uint256(
+                229790250231684299717252079072141930500,
+                4697939144556246738688061959621103050,
+            ),
+        )
         self.assertListEqual(res.result.memory, [])
 
         # block_number
         code, calldata = get_case(case="./tests/cases/010.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(1, 0))
         self.assertListEqual(res.result.memory, [])
 
         # block_timestamp
         code, calldata = get_case(case="./tests/cases/011.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(1, 0))
         self.assertListEqual(res.result.memory, [])
 
         # gas limit
         code, calldata = get_case(case="./tests/cases/015.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertListEqual(res.result.memory, [])
 
         # difficulty
         code, calldata = get_case(case="./tests/cases/021.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertListEqual(res.result.memory, [])
 
         # basefee
         code, calldata = get_case(case="./tests/cases/023.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         self.assertEqual(res.result.top_stack, Uint256(0, 0))
         self.assertListEqual(res.result.memory, [])
 
     async def test_sha3(self):
         code, calldata = get_case(case="./tests/cases/013/sha3.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
         # keccak(0000000000000000000000000000000000000000000000000000000000000100)
         # <=>
         #  0x45e010b9ae401e2eb71529478da8bd513a9bdc2d095a111e324f5b95c09ed87b
@@ -465,7 +556,9 @@ class TestBasic(IsolatedAsyncioTestCase):
         self.assertListEqual(res.result.memory, [*[0] * 30, 1, 0])
 
         code, calldata = get_case(case="./tests/cases/013/sha3prime.json")
-        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(caller_address=1)
+        res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
+            caller_address=1
+        )
 
         # keccak(10)
         # <=>

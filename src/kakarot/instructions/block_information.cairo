@@ -8,7 +8,6 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
 from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp
-from starkware.cairo.common.math import split_felt
 
 // Internal dependencies
 from kakarot.model import model
@@ -112,8 +111,7 @@ namespace BlockInformation {
         %}
         // Get the block’s timestamp
         let (current_timestamp) = get_block_timestamp();
-        let (high, low) = split_felt(current_timestamp);
-        let block_timestamp = Uint256(low, high);
+        let block_timestamp = Helpers.to_uint256(current_timestamp);
 
         let stack: model.Stack* = Stack.push(ctx.stack, block_timestamp);
 
@@ -145,8 +143,7 @@ namespace BlockInformation {
         %}
         // Get the block number.
         let (current_block) = get_block_number();
-        let (high, low) = split_felt(current_block);
-        let block_number = Uint256(low, high);
+        let block_number = Helpers.to_uint256(current_block);
 
         let stack: model.Stack* = Stack.push(ctx.stack, block_number);
 
