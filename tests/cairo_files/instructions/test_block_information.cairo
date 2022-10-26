@@ -35,7 +35,7 @@ func init_context{
     return ctx;
 }
 
-@external
+@view
 func test__chainId__should_add_0_and_1{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {

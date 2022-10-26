@@ -22,7 +22,7 @@ namespace EnvironmentalInformation {
     // Define constants.
     const GAS_COST_CODESIZE = 2;
     const GAS_COST_CALLER = 2;
-    const GAS_COST_RETURNDATASIZE=2;
+    const GAS_COST_RETURNDATASIZE = 2;
     const GAS_COST_CALLDATASIZE = 2;
 
     // @notice CODESIZE operation.
@@ -40,8 +40,8 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         %{
-        import logging
-        logging.info("0x38 - CODESIZE")
+            import logging
+            logging.info("0x38 - CODESIZE")
         %}
         // Get the code size.
         let code_size = Helpers.to_uint256(ctx.code_len);
@@ -70,8 +70,8 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         %{
-        import logging
-        logging.info("0x33 - CALLER")
+            import logging
+            logging.info("0x33 - CALLER")
         %}
         // Get caller address.
         let (current_address) = get_caller_address();
@@ -101,8 +101,8 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         %{
-        import logging
-        logging.info("0x3d - RETURNDATASIZE")
+            import logging
+            logging.info("0x3d - RETURNDATASIZE")
         %}
         // Get return data size.
         let return_data_size = Helpers.to_uint256(ctx.return_data_len);
@@ -130,7 +130,10 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ print("0x36 - CALLDATASIZE") %}
+        %{
+            import logging
+            logging.info("0x36 - CALLDATASIZE")
+        %}
         let calldata_size = Helpers.to_uint256(ctx.calldata_len);
         let stack: model.Stack* = Stack.push(ctx.stack, calldata_size);
 
