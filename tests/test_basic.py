@@ -330,11 +330,13 @@ class TestBasic(IsolatedAsyncioTestCase):
         self.assertListEqual(
             res.result.memory,
             [
-                *[0]*94, 
+                *[0]*84, 
                 17,
                 255,255,255,255,255,255,255,255,255,255,255
             ],
         )
+
+        
 
         # PC
         code, calldata = get_case(case="./tests/cases/memory/003.json")
