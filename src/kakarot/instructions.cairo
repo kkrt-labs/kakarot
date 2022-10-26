@@ -229,6 +229,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x1D, ComparisonOperations.exec_sar);
 
         // Environment Information
+        // 0x31 - BALANCE
+        add_instruction(instructions, 0x31, EnvironmentalInformation.exec_balance);
         // 0x33 - CALLER
         add_instruction(instructions, 0x33, EnvironmentalInformation.exec_caller);
         // 0x36 - CALLDATASIZE
