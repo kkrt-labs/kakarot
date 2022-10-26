@@ -1,8 +1,9 @@
-from unittest import IsolatedAsyncioTestCase
 from asyncio import run
+from unittest import IsolatedAsyncioTestCase
+
+from cairo_coverage import cairo_coverage
 from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 from starkware.starknet.testing.starknet import Starknet
-from cairo_coverage import cairo_coverage
 
 
 class TestBasic(IsolatedAsyncioTestCase):
