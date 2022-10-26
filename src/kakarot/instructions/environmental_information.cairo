@@ -5,7 +5,7 @@
 // Starkware dependencies
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.starknet.common.syscalls import get_caller_address
+from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
@@ -75,8 +75,10 @@ namespace EnvironmentalInformation {
         logging.info("0x32 - ORIGIN")
         %}
 
-        let (current_address) = get_origin_address();
-        let origin_address = Helpers.to_uint256(current_address);
+        // Get Starknet address
+        /// TODO: get EVM address from Starknet address
+        let (tx_info) = get_tx_info();
+        let origin_address = Helpers.to_uint256(tx_info.account_contract_address);
 
         // Update Context stack
         let stack: model.Stack* = Stack.push(ctx.stack, origin_address);
