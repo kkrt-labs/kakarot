@@ -348,5 +348,4 @@ namespace MemoryOperations {
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MSTORE8);
         return ctx;
     }
-
 }
