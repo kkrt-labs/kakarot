@@ -11,23 +11,23 @@ setup:
 	poetry install --no-root
 
 test:
-	pytest tests -s --log-cli-level=INFO
+	poetry run pytest tests -s --log-cli-level=INFO
 
 test-integration:
-	pytest tests/integrations -s --log-cli-level=INFO
+	poetry run pytest tests/integrations -s --log-cli-level=INFO
 
 test-units:
-	pytest tests/units -s --log-cli-level=INFO
+	poetry run pytest tests/units -s --log-cli-level=INFO
 
 format:
-	cairo-format src/**/*.cairo -i
-	black tests/.
-	isort tests/.
+	poetry run cairo-format src/**/*.cairo -i
+	poetry run black tests/.
+	poetry run isort tests/.
 
 format-check:
-	cairo-format src/**/*.cairo -c
-	black tests/. --check
-	isort tests/. --check
+	poetry run cairo-format src/**/*.cairo -c
+	poetry run black tests/. --check
+	poetry run isort tests/. --check
 
 clean:
 	rm -rf build
