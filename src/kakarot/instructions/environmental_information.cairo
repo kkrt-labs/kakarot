@@ -8,7 +8,6 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math import assert_lt
-
 // Internal dependencies
 from kakarot.model import model
 from utils.utils import Helpers
@@ -121,10 +120,12 @@ namespace EnvironmentalInformation {
         logging.info("0x32 - ORIGIN")
         %}
 
-        // Get Starknet address
-        /// TODO: get EVM address from Starknet address
+        // Get  EVM address from Starknet address
+
         let (tx_info) = get_tx_info();
-        let origin_address = Helpers.to_uint256(tx_info.account_contract_address);
+        let (registry_address_) = registry_address.read();
+        let (evm_address) = IResgistry.get_evm_address(registry_address_, tx_info.account_contract_address);
+        let origin_address = Helpers.to_uint256(evm_address);
 
         // Update Context stack
         let stack: model.Stack* = Stack.push(ctx.stack, origin_address);
