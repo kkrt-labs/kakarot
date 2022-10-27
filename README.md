@@ -38,9 +38,9 @@ production.
 ```mermaid
 %%{init: {'theme': 'forest', 'themeVariables': { 'darkMode': 'false'}}}%%
 
-pie title Kakarot EMV opcodes support (109 / 142)
-    "Supported" : 109
-    "Not supported" : 33
+pie title Kakarot EMV opcodes support (111 / 142)
+    "Supported" : 111
+    "Not supported" : 31
 
     "Partially supported" : 0
 ```
@@ -238,6 +238,7 @@ for being involved!
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/richwarner"><img src="https://avatars.githubusercontent.com/u/1719742?v=4?s=100" width="100px;" alt="Rich Warner"/><br /><sub><b>Rich Warner</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=richwarner" title="Code">💻</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=richwarner" title="Tests">⚠️</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/pscott"><img src="https://avatars.githubusercontent.com/u/30843220?v=4?s=100" width="100px;" alt="pscott"/><br /><sub><b>pscott</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=pscott" title="Code">💻</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=pscott" title="Tests">⚠️</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Eikix"><img src="https://avatars.githubusercontent.com/u/66871571?v=4?s=100" width="100px;" alt="Elias Tazartes"/><br /><sub><b>Elias Tazartes</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=Eikix" title="Code">💻</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=Eikix" title="Tests">⚠️</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/Riad15l"><img src="https://avatars.githubusercontent.com/u/116729712?v=4?s=100" width="100px;" alt="Riad15l"/><br /><sub><b>Riad15l</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=Riad15l" title="Code">💻</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=Riad15l" title="Tests">⚠️</a></td>
     </tr>
   </tbody>
 </table>
