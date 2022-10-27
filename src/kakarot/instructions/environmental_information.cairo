@@ -4,6 +4,7 @@
 
 // Starkware dependencies
 
+from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.uint256 import Uint256
@@ -26,6 +27,7 @@ namespace EnvironmentalInformation {
     const GAS_COST_CODESIZE = 2;
     const GAS_COST_CALLER = 2;
     const GAS_COST_RETURNDATASIZE = 2;
+    const GAS_COST_CALLDATALOAD = 3;
     const GAS_COST_CALLDATASIZE = 2;
     const GAS_COST_BALANCE = 100;
 
@@ -158,6 +160,44 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_RETURNDATASIZE);
+        return ctx;
+    }
+
+    // @notice CALLDATALOAD operation.
+    // @dev Push a word from the calldata onto the stack.
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 3
+    // @custom:stack_consumed_elements 1
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_calldataload{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        %{ print("0x35 - CALLDATALOAD") %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - offset: calldata offset of the word we read (32 byte steps).
+        let (stack, offset) = Stack.pop(stack);
+
+        let (calldata: Uint256*) = alloc();
+
+        //read calldata at offset
+        ExecutionContext.read_calldata(ctx,offset.low,32,calldata);
+        
+        //Push CallData word onto stack
+        let stack: model.Stack* = Stack.push(stack, calldata[0]);
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLDATALOAD);
         return ctx;
     }
 
