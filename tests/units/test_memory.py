@@ -40,7 +40,8 @@ class TestMemory(IsolatedAsyncioTestCase):
         with self.assertRaises(StarkException) as error_msg:
             yield error_msg
         self.assertTrue(
-            f"Error message: {error_message}" in str(error_msg.exception.message)
+            f"Error message: {error_message}" in str(
+                error_msg.exception.message)
         )
 
     async def test_everything_memory(self):
@@ -48,6 +49,11 @@ class TestMemory(IsolatedAsyncioTestCase):
         await self.test_memory.test__len__should_return_the_length_of_the_memory().call()
         await self.test_memory.test__store__should_add_an_element_to_the_memory().call()
         await self.test_memory.test__load__should_load_an_element_from_the_memory().call()
+        await self.test_memory.test__load__should_load_an_element_from_the_memory_with_offset(8, 2 * 256 ** 8, 256 ** 8).call()
+        await self.test_memory.test__load__should_load_an_element_from_the_memory_with_offset(7, 2 * 256 ** 7, 256 ** 7).call()
+        await self.test_memory.test__load__should_load_an_element_from_the_memory_with_offset(23, 3 * 256 ** 7, 2 * 256 ** 7).call()
+        await self.test_memory.test__load__should_load_an_element_from_the_memory_with_offset(33, 4 * 256 ** 1, 3 * 256 ** 1).call()
+        await self.test_memory.test__load__should_load_an_element_from_the_memory_with_offset(63, 0, 4 * 256 ** 15).call()
 
         with self.raisesStarknetError("Kakarot: MemoryOverflow"):
             await self.test_memory.test__load__should_fail__when_out_of_memory().call()
