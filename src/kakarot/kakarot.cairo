@@ -23,17 +23,17 @@ func constructor{
 func execute{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(code_len: felt, code: felt*, calldata_len: felt, calldata: felt*) -> (
-    top_stack: Uint256, memory_len: felt, memory: felt*
+    stack_len: felt, stack: Uint256*, memory_len: felt, memory: felt*
 ) {
     alloc_locals;
     let context = Kakarot.execute(code=code, code_len=code_len, calldata=calldata);
     let len = Stack.len(context.stack);
-    if (len == 0) {
-        tempvar top_stack = Uint256(0, 0);
-    } else {
-        tempvar top_stack = context.stack.elements[len - 1];
-    }
-    return (top_stack=top_stack, memory_len=context.memory.bytes_len, memory=context.memory.bytes);
+    return (
+        stack_len=len,
+        stack=context.stack.elements,
+        memory_len=context.memory.bytes_len,
+        memory=context.memory.bytes,
+    );
 }
 
 @external
