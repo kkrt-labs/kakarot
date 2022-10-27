@@ -6,7 +6,7 @@
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import assert_le
-from starkware.cairo.common.uint256 import Uint256,uint256_unsigned_div_rem
+from starkware.cairo.common.uint256 import Uint256, uint256_unsigned_div_rem
 
 from kakarot.model import model
 from utils.utils import Helpers
@@ -306,7 +306,7 @@ namespace MemoryOperations {
     // @dev Save word to memory.
     // @custom:since Frontier
     // @custom:group Stack Memory Storage and Flow operations.
-    // @custom:gas 3 
+    // @custom:gas 3
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 0
     // @return Updated execution context.
@@ -329,9 +329,11 @@ namespace MemoryOperations {
         // 1 - value: value from which the last byte will be extracted and stored in memory.
         let (stack, offset) = Stack.pop(stack);
         let (stack, value) = Stack.pop(stack);
-        let (quotient, remainder) = uint256_unsigned_div_rem(value, Uint256(256,0));
+        let (quotient, remainder) = uint256_unsigned_div_rem(value, Uint256(256, 0));
 
-        let memory: model.Memory* = Memory.store_n(self=ctx.memory,element_len=1, element=remainder, offset=offset.low);
+        let memory: model.Memory* = Memory.store_n(
+            self=ctx.memory, element_len=1, element=remainder, offset=offset.low
+        );
 
         // Update context memory.
         let ctx = ExecutionContext.update_memory(ctx, memory);
@@ -342,5 +344,4 @@ namespace MemoryOperations {
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MSTORE8);
         return ctx;
     }
-
 }

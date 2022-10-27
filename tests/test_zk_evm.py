@@ -804,7 +804,7 @@ test_cases = [
         },
         "id": "Memory operations - Check saving memory in between an already saved memory location",
     },
-        {
+    {
         "params": {
             "code": "611122600353",
             "calldata": "",
@@ -814,7 +814,7 @@ test_cases = [
         },
         "id": "Memory operations - Check saving memory in between an already saved memory location",
     },
-        {
+    {
         "params": {
             "code": "7f111111111111111111111111111111111111111111111111111111111111111160005261222260055300",
             "calldata": "",
@@ -839,8 +839,7 @@ class TestZkEVM:
         return low, high
 
     @pytest.mark.parametrize(
-        argnames,
-        params,
+        argnames, params,
     )
     async def test_case(self, zk_evm, code, calldata, stack, memory, return_value):
         Uint256 = zk_evm.struct_manager.get_contract_struct("Uint256")
