@@ -23,7 +23,7 @@ contract Counter {
 }
 ```
 
-34 / 44 opcodes are supported by the MVP.
+35 / 44 opcodes are supported by the MVP.
 
 | Opcode Name  | Implemented |
 | ------------ | ----------- |
@@ -39,7 +39,7 @@ contract Counter {
 | SHR          | ✅          |
 | KECCAK256    | ✅          |
 | CALLVALUE    |             |
-| CALLDATALOAD |             |
+| CALLDATALOAD | ✅          |
 | CALLDATASIZE | ✅          |
 | CALLDATACOPY |             |
 | CODECOPY     |             |
