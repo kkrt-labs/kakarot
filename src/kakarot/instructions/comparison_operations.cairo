@@ -16,7 +16,7 @@ from starkware.cairo.common.uint256 import (
     uint256_not,
     uint256_xor,
     uint256_mul,
-    uint256_sub
+    uint256_sub,
 )
 
 // Internal dependencies
@@ -64,8 +64,8 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-        import logging
-        logging.info("0x10 - LT")
+            import logging
+            logging.info("0x10 - LT")
         %}
 
         let stack = ctx.stack;
@@ -108,8 +108,8 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-        import logging
-        logging.info("0x11 - GT")
+            import logging
+            logging.info("0x11 - GT")
         %}
 
         let stack = ctx.stack;
@@ -152,8 +152,8 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-        import logging
-        logging.info("0x12 - SLT")
+            import logging
+            logging.info("0x12 - SLT")
         %}
 
         let stack = ctx.stack;
@@ -196,8 +196,8 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-        import logging
-        logging.info("0x13 - SGT")
+            import logging
+            logging.info("0x13 - SGT")
         %}
 
         let stack = ctx.stack;
@@ -240,8 +240,8 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-        import logging
-        logging.info("0x14 - EQ")
+            import logging
+            logging.info("0x14 - EQ")
         %}
 
         let stack = ctx.stack;
@@ -284,8 +284,8 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-        import logging
-        logging.info("0x15 - ISZERO")
+            import logging
+            logging.info("0x15 - ISZERO")
         %}
 
         let stack = ctx.stack;
@@ -325,8 +325,8 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-        import logging
-        logging.info("0x16 - AND")
+            import logging
+            logging.info("0x16 - AND")
         %}
 
         let stack = ctx.stack;
@@ -369,8 +369,8 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-        import logging
-        logging.info("0x17 - OR")
+            import logging
+            logging.info("0x17 - OR")
         %}
 
         let stack = ctx.stack;
@@ -412,8 +412,8 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-        import logging
-        logging.info("0x18 - XOR")
+            import logging
+            logging.info("0x18 - XOR")
         %}
 
         let stack = ctx.stack;
@@ -454,8 +454,8 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-        import logging
-        logging.info("0x1A - BYTE")
+            import logging
+            logging.info("0x1A - BYTE")
         %}
 
         let stack = ctx.stack;
@@ -466,9 +466,8 @@ namespace ComparisonOperations {
         let (stack, offset) = Stack.pop(stack);
         let (stack, value) = Stack.pop(stack);
 
-
         // compute y = (x >> (248 - i * 8)) & 0xFF
-        let (mul,_) = uint256_mul(offset, Uint256(8, 0));
+        let (mul, _) = uint256_mul(offset, Uint256(8, 0));
         let (right) = uint256_sub(Uint256(248, 0), mul);
         let (shift_right) = uint256_shr(value, right);
         let (result) = uint256_and(shift_right, Uint256(0xFF, 0));
@@ -501,8 +500,8 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-        import logging
-        logging.info("0x1B - SHL")
+            import logging
+            logging.info("0x1B - SHL")
         %}
 
         let stack = ctx.stack;
@@ -545,8 +544,8 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-        import logging
-        logging.info("0x1C - SHR")
+            import logging
+            logging.info("0x1C - SHR")
         %}
 
         let stack = ctx.stack;
@@ -581,13 +580,16 @@ namespace ComparisonOperations {
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return The pointer to the execution context.
-    func exec_sar{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
-        ctx: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
+    func exec_sar{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-        import logging
-        logging.info("0x1D - SAR")
+            import logging
+            logging.info("0x1D - SAR")
         %}
         let stack = ctx.stack;
 
@@ -658,8 +660,8 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-        import logging
-        logging.info("0x19 - NOT")
+            import logging
+            logging.info("0x19 - NOT")
         %}
 
         let stack = ctx.stack;

@@ -608,7 +608,7 @@ test_cases = [
             "memory": "0000000000000000000000000000000000000000000000000000000000000100",
             "return_value": "",
         },
-        "id": "Hash 0x100",
+        "id": "Sha3 - Hash  32 bytes 0x100",
     },
     {
         "params": {
@@ -618,7 +618,17 @@ test_cases = [
             "memory": "0000000000000000000000000000000000000000000000000000000000000010",
             "return_value": "",
         },
-        "id": "Hash 0x10",
+        "id": "Sha3 - Hash 1 byte 0x10",
+    },
+    {
+        "params": {
+            "code": "6010600052600960002000",
+            "calldata": "",
+            "stack": "78337347954576241567341556127836028920764967266964912349540464394612926403441",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000010",
+            "return_value": "",
+        },
+        "id": "Sha3 - Hash 9 bytes 0x10",
     },
     {
         "params": {
@@ -800,6 +810,26 @@ test_cases = [
             "calldata": "",
             "stack": "",
             "memory": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011ffffffffffffffffffffff",
+            "return_value": "",
+        },
+        "id": "Memory operations - Check saving memory in between an already saved memory location",
+    },
+    {
+        "params": {
+            "code": "611122600353",
+            "calldata": "",
+            "stack": "",
+            "memory": "0000002200000000000000000000000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "Memory operations - Check saving memory in between an already saved memory location",
+    },
+    {
+        "params": {
+            "code": "7f111111111111111111111111111111111111111111111111111111111111111160005261222260055300",
+            "calldata": "",
+            "stack": "",
+            "memory": "1111111111221111111111111111111111111111111111111111111111111111",
             "return_value": "",
         },
         "id": "Memory operations - Check saving memory in between an already saved memory location",
