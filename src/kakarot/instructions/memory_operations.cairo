@@ -39,7 +39,7 @@ namespace MemoryOperations {
     // @custom:stack_consumed_elements 1
     // @custom:stack_produced_elements 1
     // @return Updated execution context.
-    func exec_load{
+    func exec_mload{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
@@ -78,7 +78,7 @@ namespace MemoryOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 0
     // @return Updated execution context.
-    func exec_store{
+    func exec_mstore{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,

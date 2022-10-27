@@ -273,9 +273,10 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x50, MemoryOperations.exec_pop);
 
         // 0x51 - MLOAD
-        add_instruction(instructions, 0x51, MemoryOperations.exec_load);
+        add_instruction(instructions, 0x51, MemoryOperations.exec_mload);
         // 0x52 - MSTORE
-        add_instruction(instructions, 0x52, MemoryOperations.exec_store);
+        add_instruction(instructions, 0x52, MemoryOperations.exec_mstore);
+
         // 0x53 - MSTORE8
         add_instruction(instructions, 0x53, MemoryOperations.exec_mstore8);
         // 0x56 - JUMP
