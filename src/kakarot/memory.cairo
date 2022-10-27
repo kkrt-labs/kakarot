@@ -107,7 +107,7 @@ namespace Memory {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.Memory*, element: Uint256, offset: felt) -> model.Memory* {
+    }(self: model.Memory*, element: felt, offset: felt) -> model.Memory* {
         alloc_locals;
         let (new_memory: felt*) = alloc();
         if (self.bytes_len == 0) {
@@ -117,7 +117,7 @@ namespace Memory {
         let is_offset_greater_than_length = is_le_felt(self.bytes_len, offset);
         local max_copy: felt;
 
-        assert [new_memory + offset] = element.low;
+        assert [new_memory + offset] = element;
 
         let (quotient, remainder) = uint256_unsigned_div_rem(Uint256(offset, 0), Uint256(256, 0));
 
