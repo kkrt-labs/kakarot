@@ -15,7 +15,7 @@ from kakarot.stack import Stack
 from kakarot.memory import Memory
 from kakarot.model import model
 from utils.utils import Helpers
-from tests.model import EVMTestCase
+from tests.utils.model import EVMTestCase
 
 namespace test_utils {
     // @notice Load Test case from file.
@@ -77,12 +77,11 @@ namespace test_utils {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*, expected_value: Uint256) {
         alloc_locals;
-        let len = ctx.memory.bytes_len;
-        let actual = Memory.load(ctx.memory, len - 32);
+        let actual = Memory.load(ctx.memory, ctx.memory.end_index - 32);
         let (are_equal) = uint256_eq(actual, expected_value);
-        %{ 
-        import logging
-        logging.info(f"actual {ids.actual.low, ids.actual.high}, expected {ids.expected_uint256.low, ids.expected_uint256.high}") 
+        %{
+            import logging
+            logging.info(f"actual {ids.actual.low, ids.actual.high}, expected {ids.expected_uint256.low, ids.expected_uint256.high}")
         %}
         assert are_equal = TRUE;
         return ();

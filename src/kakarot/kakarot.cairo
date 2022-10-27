@@ -15,15 +15,15 @@ from kakarot.memory import Memory
 @constructor
 func constructor{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(owner: felt) {
-    return Kakarot.constructor(owner);
+}(owner: felt, native_token_address_: felt) {
+    return Kakarot.constructor(owner, native_token_address_);
 }
 
 @external
 func execute{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(code_len: felt, code: felt*, calldata_len: felt, calldata: felt*) -> (
-    top_stack: Uint256, top_memory: Uint256
+    top_stack: Uint256, memory_len: felt, memory: felt*
 ) {
     alloc_locals;
     let context = Kakarot.execute(code=code, code_len=code_len, calldata=calldata);
@@ -33,11 +33,19 @@ func execute{
     } else {
         tempvar top_stack = context.stack.elements[len - 1];
     }
-    let len = context.memory.bytes_len;
-    if (len == 0) {
-        return (top_stack=top_stack, top_memory=Uint256(0, 0),);
-    } else {
-        let top_memory = Memory.load(context.memory, len - 32);
-        return (top_stack=top_stack, top_memory=top_memory,);
-    }
+    return (top_stack=top_stack, memory_len=context.memory.bytes_len, memory=context.memory.bytes);
+}
+
+@external
+func set_account_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    registry_address_: felt
+) {
+    return Kakarot.set_account_registry(registry_address_);
+}
+
+@external
+func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    native_token_address_: felt
+) {
+    return Kakarot.set_native_token(native_token_address_);
 }

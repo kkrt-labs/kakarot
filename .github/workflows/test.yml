@@ -60,4 +60,4 @@ jobs:
           make setup
       - name: Run tests
         run: |
-          make test
+          make coverage
