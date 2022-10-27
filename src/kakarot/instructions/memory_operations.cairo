@@ -7,6 +7,7 @@ from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import assert_le
 from starkware.cairo.common.uint256 import Uint256, uint256_unsigned_div_rem
+from starkware.cairo.common.alloc import alloc
 
 from kakarot.model import model
 from utils.utils import Helpers
@@ -331,8 +332,11 @@ namespace MemoryOperations {
         let (stack, value) = Stack.pop(stack);
         let (quotient, remainder) = uint256_unsigned_div_rem(value, Uint256(256, 0));
 
+        let (value_pointer: felt*) = alloc();
+        assert [value_pointer] = remainder.low;
+
         let memory: model.Memory* = Memory.store_n(
-            self=ctx.memory, element_len=1, element=remainder, offset=offset.low
+            self=ctx.memory, element_len=1, element=value_pointer, offset=offset.low
         );
 
         // Update context memory.
@@ -344,4 +348,5 @@ namespace MemoryOperations {
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MSTORE8);
         return ctx;
     }
+
 }
