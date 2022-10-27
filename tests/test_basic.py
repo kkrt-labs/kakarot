@@ -257,6 +257,16 @@ class TestBasic(IsolatedAsyncioTestCase):
             ),
         )
 
+        ###############
+        #     XOR     #
+        ###############
+        await self.assert_compare("_xor", Uint256(0xF, 0x0))
+
+        ###############
+        #     BYTE    #
+        ###############
+        await self.assert_compare("_byte", Uint256(0xCD, 0x0))
+
     async def test_duplication_operations(self):
         code, calldata = get_case(case="./tests/cases/002.json")
         res = await self.zk_evm.execute(code=code, calldata=calldata).execute(
