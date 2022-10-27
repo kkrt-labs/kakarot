@@ -33,9 +33,9 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ 
-        import logging
-        logging.info("0xFE - INVALID")
+        %{
+            import logging
+            logging.info("0xFE - INVALID")
         %}
         with_attr error_message("Kakarot: 0xFE: Invalid Opcode") {
             assert TRUE = FALSE;
