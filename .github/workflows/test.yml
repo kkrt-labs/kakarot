@@ -29,6 +29,7 @@ jobs:
           make setup
       - name: Compile all the cairo files
         run: |
+          make format-check
           for filename in $(find ./src/ -type f -name '*.cairo');
           do echo $(basename -- $filename) && starknet-compile $filename --cairo_path ./src --disable_hint_validation >/dev/null;
           done;

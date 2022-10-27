@@ -608,7 +608,7 @@ test_cases = [
             "memory": "0000000000000000000000000000000000000000000000000000000000000100",
             "return_value": "",
         },
-        "id": "Hash 0x100",
+        "id": "Sha3 - Hash 0x100",
     },
     {
         "params": {
@@ -618,7 +618,7 @@ test_cases = [
             "memory": "0000000000000000000000000000000000000000000000000000000000000010",
             "return_value": "",
         },
-        "id": "Hash 0x10",
+        "id": "Sha3 - Hash 0x10",
     },
     {
         "params": {
@@ -849,7 +849,8 @@ class TestZkEVM:
         return low, high
 
     @pytest.mark.parametrize(
-        argnames, params,
+        argnames,
+        params,
     )
     async def test_case(self, zk_evm, code, calldata, stack, memory, return_value):
         Uint256 = zk_evm.struct_manager.get_contract_struct("Uint256")
