@@ -331,7 +331,7 @@ namespace MemoryOperations {
         let (stack, value) = Stack.pop(stack);
         let (quotient, remainder) = uint256_unsigned_div_rem(value, Uint256(256,0));
 
-        let memory: model.Memory* = Memory.store8(self=ctx.memory, element=remainder.low, offset=offset.low);
+        let memory: model.Memory* = Memory.store_n(self=ctx.memory,element_len=1, element=remainder, offset=offset.low);
 
         // Update context memory.
         let ctx = ExecutionContext.update_memory(ctx, memory);
