@@ -45,7 +45,7 @@ contract Counter {
 | CODECOPY     |             |
 | POP          | ✅          |
 | MSTORE       | ✅          |
-| MLOAD        |             |
+| MLOAD        | ✅          |
 | SLOAD        |             |
 | SSTORE       |             |
 | JUMP         | ✅          |
