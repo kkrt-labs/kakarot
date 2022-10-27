@@ -592,6 +592,16 @@ test_cases = [
     },
     {
         "params": {
+            "code": "3200",
+            "calldata": "",
+            "stack": "0",
+            "memory": "",
+            "return_value": "",
+        },
+        "id": "Origin Address",
+    },
+    {
+        "params": {
             "code": "3300",
             "calldata": "",
             "stack": "1",

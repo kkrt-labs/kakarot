@@ -5,10 +5,9 @@
 // Starkware dependencies
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.starknet.common.syscalls import get_caller_address
+from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math import assert_lt
-
 // Internal dependencies
 from kakarot.model import model
 from utils.utils import Helpers
@@ -27,6 +26,7 @@ namespace EnvironmentalInformation {
     const GAS_COST_CALLER = 2;
     const GAS_COST_RETURNDATASIZE = 2;
     const GAS_COST_CALLDATASIZE = 2;
+    const GAS_COST_ORIGIN = 2;
     const GAS_COST_BALANCE = 100;
 
     // @notice BALANCE opcode.
@@ -97,6 +97,41 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CODESIZE);
+        return ctx;
+    }
+
+    // @notice ORIGIN operation.
+    // @dev Get execution origination address.
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 2
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_origin{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        
+        %{
+        import logging
+        logging.info("0x32 - ORIGIN")
+        %}
+
+        // Get  EVM address from Starknet address
+
+        let (tx_info) = get_tx_info();
+        let (registry_address_) = registry_address.read();
+        let (evm_address) = IResgistry.get_evm_address(registry_address_, tx_info.account_contract_address);
+        let origin_address = Helpers.to_uint256(evm_address);
+
+        // Update Context stack
+        let stack: model.Stack* = Stack.push(ctx.stack, origin_address);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_ORIGIN);
         return ctx;
     }
 
