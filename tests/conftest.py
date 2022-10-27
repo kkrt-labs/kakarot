@@ -38,5 +38,6 @@ async def starknet() -> AsyncGenerator[Starknet, None]:
 @pytest_asyncio.fixture(scope="session")
 async def eth(starknet):
     return await starknet.deploy(
-        source="./tests/utils/ERC20.cairo", constructor_calldata=[2] * 6,
+        source="./tests/utils/ERC20.cairo",
+        constructor_calldata=[2] * 6,
     )
