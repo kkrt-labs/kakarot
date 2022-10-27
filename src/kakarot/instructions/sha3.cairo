@@ -70,7 +70,7 @@ namespace Sha3 {
             convert_full_64_bits(
                 first_byte=ctx.memory.bytes + offset.low + 8 * (full_64_bits - 1),
                 length=full_64_bits,
-                dest=dest + full_64_bits - 1,
+                dest=dest + full_64_bits - 1 + remaining_bytes,
             );
             tempvar range_check_ptr = range_check_ptr;
         } else {
