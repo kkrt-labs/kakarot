@@ -56,7 +56,7 @@ namespace LoggingOperations {
 
         // TODO: compute dynamic gas cost.
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST);
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_LOG_STATIC);
         return ctx;
     }
 }
