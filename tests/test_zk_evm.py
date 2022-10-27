@@ -827,7 +827,7 @@ class TestZkEVM:
         res = await zk_evm.execute(
             code=[int(b, 16) for b in wrap(code, 2)],
             calldata=[int(b, 16) for b in wrap(calldata, 2)],
-        ).execute(caller_address=1)
+        ).call(caller_address=1)
         assert res.result.stack == [
             Uint256(*self.int_to_uint256(int(s)))
             for s in (stack.split(",") if stack else [])
