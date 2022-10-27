@@ -35,3 +35,8 @@ format-check:
 clean:
 	rm -rf build
 	mkdir build
+
+format-mac:
+	cairo-format src/**/*.cairo -i
+	black tests/.
+	isort tests/.
