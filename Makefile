@@ -10,9 +10,6 @@ build:
 setup:
 	poetry install --no-root
 
-coverage:
-	pytest ./coverage/coverage.py -s
-
 test:
 	pytest tests -s --log-cli-level=INFO
 
