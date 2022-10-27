@@ -1,4 +1,4 @@
-# Support of opcodes for the MVP
+# Support of ERC-20 contract opcodes for the MVP
 
 58 / 74 opcodes are supported by the MVP.
 
