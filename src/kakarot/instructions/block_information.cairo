@@ -8,7 +8,6 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
 from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp
-from starkware.cairo.common.math import split_felt
 
 // Internal dependencies
 from kakarot.model import model
@@ -27,8 +26,8 @@ namespace BlockInformation {
     const GAS_COST_COINBASE = 2;
     const GAS_COST_TIMESTAMP = 2;
     const GAS_COST_NUMBER = 2;
-    const GAS_COST_GASLIMIT= 2;
-    const GAS_COST_DIFFICULTY= 2;
+    const GAS_COST_GASLIMIT = 2;
+    const GAS_COST_DIFFICULTY = 2;
     const GAS_COST_BASEFEE = 2;
 
     // @notice CHAINID operation.
@@ -45,9 +44,9 @@ namespace BlockInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ 
-        import logging
-        logging.info("0x46 - CHAINID") 
+        %{
+            import logging
+            logging.info("0x46 - CHAINID")
         %}
         // Get the chain ID.
         let chain_id = Helpers.to_uint256(Constants.CHAIN_ID);
@@ -75,12 +74,13 @@ namespace BlockInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ 
-        import logging
-        logging.info("0x41 - COINBASE")
+        %{
+            import logging
+            logging.info("0x41 - COINBASE")
         %}
         // Get the coinbase address.
-        let coinbase_address = Helpers.to_uint256(Constants.COINBASE_ADDRESS);
+        // TODO: switch to real coinbase addr when going to prod
+        let coinbase_address = Helpers.to_uint256(Constants.MOCK_COINBASE_ADDRESS);
         let stack: model.Stack* = Stack.push(ctx.stack, coinbase_address);
 
         // Update the execution context.
@@ -106,13 +106,12 @@ namespace BlockInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         %{
-        import logging
-        logging.info("0x42 - TIMESTAMP")
+            import logging
+            logging.info("0x42 - TIMESTAMP")
         %}
         // Get the block’s timestamp
         let (current_timestamp) = get_block_timestamp();
-        let (high, low) = split_felt(current_timestamp);
-        let block_timestamp = Uint256(low, high);
+        let block_timestamp = Helpers.to_uint256(current_timestamp);
 
         let stack: model.Stack* = Stack.push(ctx.stack, block_timestamp);
 
@@ -139,13 +138,12 @@ namespace BlockInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         %{
-        import logging
-        logging.info("0x43 - NUMBER")
+            import logging
+            logging.info("0x43 - NUMBER")
         %}
         // Get the block number.
         let (current_block) = get_block_number();
-        let (high, low) = split_felt(current_block);
-        let block_number = Uint256(low, high);
+        let block_number = Helpers.to_uint256(current_block);
 
         let stack: model.Stack* = Stack.push(ctx.stack, block_number);
 
@@ -156,7 +154,6 @@ namespace BlockInformation {
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_NUMBER);
         return ctx;
     }
-
 
     // @notice GASLIMIT operation.
     // @dev Get gas limit
@@ -173,8 +170,8 @@ namespace BlockInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         %{
-        import logging
-        logging.info("0x45 - GASLIMIT")
+            import logging
+            logging.info("0x45 - GASLIMIT")
         %}
         // Get the Gas Limit.
 
@@ -204,11 +201,11 @@ namespace BlockInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{ 
-        import logging
-        logging.info("0x44 - DIFFICULTY")
+        %{
+            import logging
+            logging.info("0x44 - DIFFICULTY")
         %}
-        
+
         // Get the Difficulty.
         let difficulty = Helpers.to_uint256(0);
 
@@ -237,10 +234,10 @@ namespace BlockInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         %{
-        import logging
-        logging.info("0x48 - BASEFEE")
+            import logging
+            logging.info("0x48 - BASEFEE")
         %}
-        
+
         // Get the base fee.
         let basefee = Helpers.to_uint256(0);
 

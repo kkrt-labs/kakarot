@@ -219,8 +219,12 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x16, ComparisonOperations.exec_and);
         // 0x17 - OR
         add_instruction(instructions, 0x17, ComparisonOperations.exec_or);
+        // 0x18 - XOR
+        add_instruction(instructions, 0x18, ComparisonOperations.exec_xor);
         // 0x19 - NOT
         add_instruction(instructions, 0x19, ComparisonOperations.exec_not);
+        // 0x1A - BYTE
+        add_instruction(instructions, 0x1A, ComparisonOperations.exec_byte);
         // 0x1B - SHL
         add_instruction(instructions, 0x1B, ComparisonOperations.exec_shl);
         // 0x1C - SHR
@@ -229,6 +233,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x1D, ComparisonOperations.exec_sar);
 
         // Environment Information
+        // 0x31 - BALANCE
+        add_instruction(instructions, 0x31, EnvironmentalInformation.exec_balance);
         // 0x32 - ORIGIN
         add_instruction(instructions, 0x32, EnvironmentalInformation.exec_origin);
         // 0x33 - CALLER

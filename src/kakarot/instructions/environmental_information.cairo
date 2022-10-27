@@ -7,12 +7,15 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.math import assert_lt
 
 // Internal dependencies
 from kakarot.model import model
 from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
+from kakarot.constants import native_token_address, registry_address
+from kakarot.interfaces.interfaces import IEth, IResgistry
 
 // @title Environmental information opcodes.
 // @notice This file contains the functions to execute for environmental information opcodes.
@@ -25,7 +28,49 @@ namespace EnvironmentalInformation {
     const GAS_COST_RETURNDATASIZE = 2;
     const GAS_COST_CALLDATASIZE = 2;
     const GAS_COST_ORIGIN = 2;
-    
+    const GAS_COST_BALANCE = 100;
+
+    // @notice BALANCE opcode.
+    // @dev Get ETH balance of the specified address.
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 100 || 2600
+    // @custom:stack_consumed_elements 1
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_balance{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        %{
+            import logging
+            logging.info("0x31 - BALANCE")
+        %}
+
+        // Get the address.
+        let (stack: model.Stack*, address: Uint256) = Stack.pop(ctx.stack);
+
+        let addr: felt = Helpers.uint256_to_felt(address);
+        let (registry_address_) = registry_address.read();
+        let (starknet_address) = IResgistry.get_starknet_address(
+            contract_address=registry_address_, evm_address=address.low
+        );
+        let (native_token_address_) = native_token_address.read();
+        let (balance: Uint256) = IEth.balanceOf(
+            contract_address=native_token_address_, account=starknet_address
+        );
+
+        let stack: model.Stack* = Stack.push(stack, balance);
+
+        // Update the execution context.
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_BALANCE);
+        return ctx;
+    }
     // @notice CODESIZE operation.
     // @dev Get size of code running in current environment.
     // @custom:since Frontier

@@ -13,6 +13,7 @@ from openzeppelin.access.ownable.library import Ownable
 from kakarot.model import model
 from kakarot.instructions import EVMInstructions
 from kakarot.execution_context import ExecutionContext
+from kakarot.constants import native_token_address, registry_address
 from utils.utils import Helpers
 
 // @title Kakarot main library file.
@@ -27,8 +28,9 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(owner: felt) {
+    }(owner: felt, native_token_address_) {
         Ownable.initializer(owner);
+        native_token_address.write(native_token_address_);
         return ();
     }
 
@@ -90,5 +92,27 @@ namespace Kakarot {
 
         // Continue execution
         return run(instructions, ctx);
+    }
+
+    // @notice Sets the account registry address.
+    // @param account registry address.
+    // @return None.
+    func set_account_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        registry_address_: felt
+    ) {
+        Ownable.assert_only_owner();
+        registry_address.write(registry_address_);
+        return ();
+    }
+
+    // @notice Sets the native token address.
+    // @param native token address.
+    // @return None.
+    func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        native_token_address_: felt
+    ) {
+        Ownable.assert_only_owner();
+        native_token_address.write(native_token_address_);
+        return ();
     }
 }

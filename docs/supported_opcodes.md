@@ -30,9 +30,9 @@ This document describes the opcodes supported by Kakarot.
 | 0x15         | ISZERO      | Simple not operator             | ✅          |
 | 0x16         | AND         | Bitwise AND operation           | ✅          |
 | 0x17         | OR          | Bitwise OR operation            | ✅          |
-| 0x18         | XOR         | Bitwise XOR operation           |             |
+| 0x18         | XOR         | Bitwise XOR operation           | ✅          |
 | 0x19         | NOT         | Bitwise NOT operation           | ✅          |
-| 0x1a         | BYTE        | Retrieve single byte from word  |             |
+| 0x1a         | BYTE        | Retrieve single byte from word  | ✅          |
 | 0x1b         | SHL         | Shift left                      | ✅          |
 | 0x1c         | SHR         | Logical shift right             | ✅          |
 | 0x1d         | SAR         | Arithmetic shift right          | ✅          |
@@ -48,8 +48,8 @@ This document describes the opcodes supported by Kakarot.
 | Opcode Value | Opcode Name    | Description                                                                       | Implemented |
 | ------------ | -------------- | --------------------------------------------------------------------------------- | ----------- |
 | 0x30         | ADDRESS        | Get address of currently executing account                                        |             |
-| 0x31         | BALANCE        | Get balance of the given account                                                  |             |
-| 0x32         | ORIGIN         | Get execution origination address                                                 | ✅          |
+| 0x31         | BALANCE        | Get balance of the given account                                                  | ✅          |
+| 0x32         | ORIGIN         | Get execution origination address                                                 | ✅             |
 | 0x33         | CALLER         | Get caller address                                                                | ✅          |
 | 0x34         | CALLVALUE      | Get deposited value by the instruction/transaction responsible for this execution |             |
 | 0x35         | CALLDATALOAD   | Get input data of current environment                                             |             |

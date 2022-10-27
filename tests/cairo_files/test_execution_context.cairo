@@ -71,7 +71,7 @@ func test__update_program_counter__should_set_pc_to_given_value{
 
     // When
     let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
-    let result = ExecutionContext.update_program_counter(ctx,3);
+    let result = ExecutionContext.update_program_counter(ctx, 3);
 
     // Then
     assert result.program_counter = 3;
@@ -98,7 +98,7 @@ func test__update_program_counter__should_fail__when_given_value_not_in_code_ran
 
     // When & Then
     let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
-    let result = ExecutionContext.update_program_counter(ctx,6);
+    let result = ExecutionContext.update_program_counter(ctx, 6);
     return ();
 }
 
@@ -122,6 +122,6 @@ func test__update_program_counter__should_fail__when_given_destination_that_is_n
 
     // When & Then
     let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
-    let result = ExecutionContext.update_program_counter(ctx,2);
+    let result = ExecutionContext.update_program_counter(ctx, 2);
     return ();
 }
