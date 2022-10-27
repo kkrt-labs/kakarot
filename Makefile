@@ -13,6 +13,9 @@ setup:
 test:
 	poetry run pytest tests -s --log-cli-level=INFO
 
+test-no-log:
+	poetry run pytest tests -s
+
 test-integration:
 	poetry run pytest tests/integrations -s --log-cli-level=INFO
 
