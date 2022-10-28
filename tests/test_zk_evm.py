@@ -18,7 +18,7 @@ async def zk_evm(starknet, eth):
         source="./src/kakarot/kakarot.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
-        constructor_calldata=[1, eth.contract_address],
+        constructor_calldata=[1, eth.contract_address, contract_hash.class_hash],
     )
     evm_time = time()
     print(f"\nzkEVM deployed in {evm_time - start:.2f}s")
@@ -26,10 +26,8 @@ async def zk_evm(starknet, eth):
         source="./src/kakarot/accounts/registry/account_registry.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
-        constructor_calldata=[_zk_evm.contract_address, contract_hash.class_hash],
+        constructor_calldata=[_zk_evm.contract_address],
     )
-    res = await registry.deploy(bytes=[1, 12312]).call(caller_address=1)
-    print("Contract Address: ", res)
     registry_time = time()
     print(f"AccountRegistry deployed in {registry_time - evm_time:.2f}s")
     await _zk_evm.set_account_registry(
@@ -37,6 +35,8 @@ async def zk_evm(starknet, eth):
     ).execute(caller_address=1)
     account_time = time()
     print(f"zkEVM set in {account_time - registry_time:.2f}s")
+    res = await _zk_evm.deploy(bytes=[1, 12312]).call(caller_address=1)
+    print("Contract Address: ", res)
     return _zk_evm
 
 

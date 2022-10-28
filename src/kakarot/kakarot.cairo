@@ -15,8 +15,8 @@ from kakarot.memory import Memory
 @constructor
 func constructor{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(owner: felt, native_token_address_: felt) {
-    return Kakarot.constructor(owner, native_token_address_);
+}(owner: felt, native_token_address_: felt, evm_contract_class_hash: felt) {
+    return Kakarot.init(owner, native_token_address_, evm_contract_class_hash);
 }
 
 @external
@@ -49,4 +49,16 @@ func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     native_token_address_: felt
 ) {
     return Kakarot.set_native_token(native_token_address_);
+}
+
+// @notice deploy starknet contract
+// @dev starknet contract will be mapped to an evm address that is also generated within this function
+// @param bytes: the contract code
+// @return evm address that is mapped to the actual contract address
+@external
+func deploy{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    bytes_len: felt, bytes: felt*
+) -> (evm_contract_address: felt) {
+    let evm_contract_address = Kakarot.deploy_contract(bytes_len, bytes);
+    return (evm_contract_address,);
 }

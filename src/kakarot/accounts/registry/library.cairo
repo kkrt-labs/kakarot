@@ -3,12 +3,7 @@
 %lang starknet
 
 // Starkware dependencies
-from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math import unsigned_div_rem
-from starkware.cairo.common.memcpy import memcpy
-from starkware.starknet.common.syscalls import deploy
 
 // OpenZeppelin dependencies
 from openzeppelin.access.ownable.library import Ownable
@@ -27,14 +22,6 @@ func starknet_address_(evm_address: felt) -> (starknet_address: felt) {
 func evm_address_(starknet_address: felt) -> (evm_address: felt) {
 }
 
-@storage_var
-func salt() -> (value: felt) {
-}
-
-@storage_var
-func EVM_contract_class_hash() -> (value: felt) {
-}
-
 namespace AccountRegistry {
     // @notice This function is used to initialize the registry.
     // @param kakarot_address: The address of the Kakarot smart contract.
@@ -43,10 +30,9 @@ namespace AccountRegistry {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(kakarot_address: felt, evm_contract_class_hash: felt) {
+    }(kakarot_address: felt) {
         // Initialize access control.
         Ownable.initializer(kakarot_address);
-        EVM_contract_class_hash.write(evm_contract_class_hash);
         return ();
     }
 
@@ -97,39 +83,4 @@ namespace AccountRegistry {
         return evm_address;
     }
 
-    // @notice Deploy the starknetcontract holding the evm code
-    // @param bytes: byte code stored in the new contract
-    // @return evm_contract_address: address that is mapped to the actual new contract address
-    @external
-    func deploy_contract{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        bytes_len: felt, bytes: felt*
-    ) -> felt {
-        alloc_locals;
-        let (current_salt) = salt.read();
-        let (class_hash) = EVM_contract_class_hash.read();
-
-        let (local calldata: felt*) = alloc();
-        let (kakarot_address) = Ownable.owner();
-
-        assert [calldata] = kakarot_address;
-        assert [calldata+1] = bytes_len;
-        memcpy(dst=calldata + 2, src=bytes, len=bytes_len);
-
-        let (contract_address) = deploy(
-            class_hash=class_hash,
-            contract_address_salt=current_salt,
-            constructor_calldata_size=bytes_len + 2,
-            constructor_calldata=calldata,
-            deploy_from_zero=FALSE,
-        );
-        salt.write(value=current_salt + 1);
-        // Generate EVM_contract address from the new cairo contract
-        // let (evm_contract_address,_) = unsigned_div_rem(contract_address, 1000000000000000000000000000000000000000000000000);
-        let evm_contract_address = 123 + current_salt;
-        
-        //Save address of new contracts
-        starknet_address_.write(evm_contract_address, contract_address);
-        evm_address_.write(contract_address, evm_contract_address);
-        return (evm_contract_address);
-    }
 }
