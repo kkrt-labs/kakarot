@@ -99,6 +99,7 @@ namespace ContractAccount {
         bitwise_ptr: BitwiseBuiltin*,
     }(key: Uint256, value: Uint256) {
         state_.write(key, value);
+        return ();
     }
 }
 
