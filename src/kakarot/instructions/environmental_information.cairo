@@ -94,6 +94,7 @@ namespace EnvironmentalInformation {
             import logging
             logging.info("0x38 - CODESIZE")
         %}
+        
         // Get the code size.
         let code_size = Helpers.to_uint256(ctx.code_len);
         let stack: model.Stack* = Stack.push(ctx.stack, code_size);
@@ -272,15 +273,62 @@ namespace EnvironmentalInformation {
 
         let is_diff_greater_than_element_len: felt = is_le_felt(element_len.low, diff);
 
+        %{
+            import logging
+            i = 0
+            res = ""
+            for i in range(ids.calldata_len):
+                res += " " + str(memory.get(ids.calldata + i))
+                i += i
+            logging.info("*************CALLDATA*****************")
+            logging.info(res)
+            logging.info("************************************")
+            logging.info("*************DIFF*****************")
+            logging.info(ids.diff)
+            logging.info("************************************")
+            logging.info("*************CALLDATA LEN*****************")
+            logging.info(ids.calldata_len)
+            logging.info("************************************")
+            logging.info("*************CALLDATA OFFSET*****************")
+            logging.info(ids.calldata_offset.low)
+            logging.info("************************************")
+            logging.info("*************IS DIFF GREATER?*****************")
+            logging.info(ids.is_diff_greater_than_element_len)
+            logging.info("************************************")
+            i = 0
+            res2 = ""
+            for i in range(ids.element_len.low):
+                res += " " + str(memory.get(ids.copied_calldata + i))
+                i += i
+            logging.info("*************COPIED CALLDATA BEFORE*****************")
+            logging.info(res2)
+            logging.info("************************************")
+        %}
+
         if (is_diff_greater_than_element_len == 0) {
-            memcpy(dst=copied_calldata, src=calldata + offset.low - 1, len=diff);
+            memcpy(dst=copied_calldata, src=calldata + calldata_offset.low , len=diff);
+            // Helpers.fill_array(fill_with=diff, input_arr= calldata + calldata_offset.low, output_arr=copied_calldata); 
+
 
             let pad_n: felt = element_len.low - diff;
 
             Helpers.fill_zeros(fill_with=pad_n, arr=copied_calldata + diff);
         } else {
-            memcpy(dst=copied_calldata, src=calldata + offset.low - 1, len=element_len.low);
+            memcpy(dst=copied_calldata, src=calldata + calldata_offset.low, len=element_len.low);
+            // fill_array(fill_with: felt, input_arr: felt*, output_arr: felt*)
+            // Helpers.fill_array(fill_with= element_len.low, input_arr= calldata + calldata_offset.low, output_arr=copied_calldata); 
         }
+        %{
+            import logging
+            i = 0
+            res = ""
+            for i in range(ids.element_len.low):
+                res += " " + str(memory.get(ids.copied_calldata + i))
+                i += i
+            logging.info("*************COPIED CALLDATA AFTER*****************")
+            logging.info(res)
+            logging.info("************************************")
+        %}
 
         let memory: model.Memory* = Memory.store_n(
             self=ctx.memory, element_len=element_len.low, element=copied_calldata, offset=offset.low
