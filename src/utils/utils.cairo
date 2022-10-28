@@ -186,6 +186,14 @@ namespace Helpers {
         return fill_zeros(fill_with - 1, arr + 1);
     }
 
+    func fill_array(fill_with: felt, input_arr: felt*, output_arr: felt*) {
+        if (fill_with == 0) {
+            return ();
+        }
+        assert [output_arr] = [input_arr];
+        return fill_array(fill_with - 1, input_arr + 1, output_arr + 1);
+    }
+
     func reverse(old_arr_len: felt, old_arr: felt*, new_arr_len: felt, new_arr: felt*) {
         if (old_arr_len == 0) {
             return ();

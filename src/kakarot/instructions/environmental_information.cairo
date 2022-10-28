@@ -9,11 +9,16 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math import assert_lt
+from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.math_cmp import is_le_felt
+from starkware.cairo.common.memcpy import memcpy
+
 // Internal dependencies
 from kakarot.model import model
 from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
+from kakarot.memory import Memory
 from kakarot.constants import native_token_address, registry_address
 from kakarot.interfaces.interfaces import IEth, IResgistry
 
@@ -30,6 +35,7 @@ namespace EnvironmentalInformation {
     const GAS_COST_CALLDATASIZE = 2;
     const GAS_COST_ORIGIN = 2;
     const GAS_COST_BALANCE = 100;
+    const GAS_COST_CALLDATACOPY = 3;
 
     // @notice BALANCE opcode.
     // @dev Get ETH balance of the specified address.
@@ -116,17 +122,18 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        
         %{
-        import logging
-        logging.info("0x32 - ORIGIN")
+            import logging
+            logging.info("0x32 - ORIGIN")
         %}
 
         // Get  EVM address from Starknet address
 
         let (tx_info) = get_tx_info();
         let (registry_address_) = registry_address.read();
-        let (evm_address) = IResgistry.get_evm_address(registry_address_, tx_info.account_contract_address);
+        let (evm_address) = IResgistry.get_evm_address(
+            registry_address_, tx_info.account_contract_address
+        );
         let origin_address = Helpers.to_uint256(evm_address);
 
         // Update Context stack
@@ -262,6 +269,69 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLDATASIZE);
+        return ctx;
+    }
+
+    // @notice CALLDATACOPY operation
+    // @dev Save word to memory.
+    // @custom:since Frontier
+    // @custom:group Stack Memory Storage and Flow operations.
+    // @custom:gas 3
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 0
+    // @return Updated execution context.
+    func exec_calldatacopy{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        %{
+            import logging
+            logging.info("0x37 - CALLDATACOPY")
+        %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - offset: memory offset of the work we save.
+        // 1 - calldata_offset: offset for calldata from where data will be copied.
+        // 2 - element_len: bytes length of the copied calldata.
+
+        let (stack, offset) = Stack.pop(stack);
+        let (stack, calldata_offset) = Stack.pop(stack);
+        let (stack, element_len) = Stack.pop(stack);
+
+        let calldata: felt* = ctx.calldata;
+        let calldata_len: felt = ctx.calldata_len;
+
+        let (local copied_calldata: felt*) = alloc();
+
+        let diff = calldata_len - calldata_offset.low;
+
+        let is_diff_greater_than_element_len: felt = is_le_felt(element_len.low, diff);
+
+        if (is_diff_greater_than_element_len == 0) {
+            memcpy(dst=copied_calldata, src=calldata + offset.low - 1, len=diff);
+
+            let pad_n: felt = element_len.low - diff;
+
+            Helpers.fill_zeros(fill_with=pad_n, arr=copied_calldata + diff);
+        } else {
+            memcpy(dst=copied_calldata, src=calldata + offset.low - 1, len=element_len.low);
+        }
+
+        let memory: model.Memory* = Memory.store_n(
+            self=ctx.memory, element_len=element_len.low, element=copied_calldata, offset=offset.low
+        );
+
+        // Update context memory.
+        let ctx = ExecutionContext.update_memory(ctx, memory);
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLDATACOPY);
         return ctx;
     }
 }

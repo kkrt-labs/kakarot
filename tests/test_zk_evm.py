@@ -854,6 +854,16 @@ test_cases = [
         },
         "id": "Memory operations - Check saving memory in between an already saved memory location",
     },
+    {
+        "params": {
+            "code": "6020600560063700",
+            "calldata": "00112233445566778899aabbcceeddff",
+            "stack": "",
+            "memory": "0000000000005566778899aabbcceeddff0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "calldatacopy",
+    },
 ]
 
 
