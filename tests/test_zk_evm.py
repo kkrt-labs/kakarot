@@ -735,6 +735,16 @@ test_cases = [
     },
     {
         "params": {
+            "code": "600035",
+            "calldata": "000000000000000000000000000000000000000000000000000000000000000a",
+            "stack": "10",
+            "memory": "",
+            "return_value": "",
+        },
+        "id": "Load CallData onto the Stack - 0x35 CALLDATALOAD",
+    },
+    {
+        "params": {
             "code": "3600",
             "calldata": "",
             "stack": "0",

@@ -6,7 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 
 // Local dependencies
 from utils.utils import Helpers
@@ -67,14 +67,56 @@ func test__store__should_add_an_element_to_the_memory{
 func test__load__should_load_an_element_from_the_memory{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
+    alloc_locals;
     // Given
     let memory: model.Memory* = Memory.init();
-    let memory: model.Memory* = Memory.store(memory, Uint256(1, 0), 0);
+    // In the memory, the following values are stored in the order 1, 2, 3, 4 (Big Endian)
+    let memory: model.Memory* = Memory.store(memory, Uint256(low=2, high=1), 0);
+    let memory: model.Memory* = Memory.store(memory, Uint256(low=4, high=3), 32);
 
     // When
     let result = Memory.load(memory, 0);
+
+    %{ print(f"result low: {ids.result.low} | result high: {ids.result.high}") %}
+
     // Then
-    assert result = Uint256(1, 0);
+    assert_uint256_eq(result, Uint256(2, 1));
+
+    // When
+    let result = Memory.load(memory, 32);
+
+    %{ print(f"result low: {ids.result.low} | result high: {ids.result.high}") %}
+    // Then
+    assert_uint256_eq(result, Uint256(4, 3));
+
+    // When
+    let result = Memory.load(memory, 16);
+
+    %{ print(f"result low: {ids.result.low} | result high: {ids.result.high}") %}
+    // Then
+    assert_uint256_eq(result, Uint256(3, 2));
+
+    return ();
+}
+
+@external
+func test__load__should_load_an_element_from_the_memory_with_offset{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(offset: felt, low: felt, high: felt) {
+    alloc_locals;
+    // Given
+    let memory: model.Memory* = Memory.init();
+    let memory: model.Memory* = Memory.store(memory, Uint256(low=2, high=1), 0);
+    let memory: model.Memory* = Memory.store(memory, Uint256(low=4, high=3), 32);
+
+    // When
+    let result = Memory.load(memory, offset);
+
+    %{ print(f"result low: {ids.result.low} | result high: {ids.result.high}") %}
+
+    // Then
+    assert_uint256_eq(result, Uint256(low, high));
+
     return ();
 }
 

@@ -6,7 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256, uint256_unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le_felt
+from starkware.cairo.common.math_cmp import is_le_felt, is_le
 from starkware.cairo.common.math import assert_lt, split_int, unsigned_div_rem
 from starkware.cairo.common.memcpy import memcpy
 
@@ -176,7 +176,19 @@ namespace Memory {
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.Memory*, offset: felt) -> Uint256 {
         alloc_locals;
-        with_attr error_message("Kakarot: MemoryOverflow") {
+
+        // Check if the offset + 32 > MSIZE
+        let offset_out_of_bounds = is_le(self.bytes_len, offset + 32 + 1);
+        if (offset_out_of_bounds == 1) {
+            let (local new_memory: felt*) = alloc();
+            memcpy(dst=new_memory, src=self.bytes, len=self.bytes_len);
+            Helpers.fill_zeros(
+                fill_with=offset + 32 - self.bytes_len, arr=new_memory + self.bytes_len
+            );
+            let res: Uint256 = Helpers.felt_as_byte_to_uint256(new_memory + offset);
+            return res;
+        }
+        with_attr error_message("Kakarot: Memory Error") {
             let res: Uint256 = Helpers.felt_as_byte_to_uint256(self.bytes + offset);
         }
         return res;
