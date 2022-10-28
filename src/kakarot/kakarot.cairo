@@ -36,6 +36,26 @@ func execute{
     );
 }
 
+// Create new function
+@external
+func execute_at_address{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(address: felt, calldata_len: felt, calldata: felt*) -> (
+    stack_len: felt, stack: Uint256*, memory_len: felt, memory: felt*
+) {
+    alloc_locals;
+    let context = Kakarot.execute_at_address(
+        address=address, calldata_len=calldata_len, calldata=calldata
+    );
+    let len = Stack.len(context.stack);
+    return (
+        stack_len=len,
+        stack=context.stack.elements,
+        memory_len=context.memory.bytes_len,
+        memory=context.memory.bytes,
+    );
+}
+
 @external
 func set_account_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     registry_address_: felt

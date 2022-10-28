@@ -1,5 +1,6 @@
 from collections import namedtuple
 from textwrap import wrap
+from time import time
 
 import pytest
 import pytest_asyncio
@@ -7,21 +8,28 @@ import pytest_asyncio
 
 @pytest_asyncio.fixture(scope="session")
 async def zk_evm(starknet, eth):
+    start = time()
     _zk_evm = await starknet.deploy(
         source="./src/kakarot/kakarot.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
         constructor_calldata=[1, eth.contract_address],
     )
+    evm_time = time()
+    print(f"\nzkEVM deployed in {evm_time - start:.2f}s")
     registry = await starknet.deploy(
         source="./src/kakarot/accounts/registry/account_registry.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
         constructor_calldata=[_zk_evm.contract_address],
     )
+    registry_time = time()
+    print(f"AccountRegistry deployed in {registry_time - evm_time:.2f}s")
     await _zk_evm.set_account_registry(
         registry_address_=registry.contract_address
     ).execute(caller_address=1)
+    account_time = time()
+    print(f"zkEVM set in {account_time - registry_time:.2f}s")
     return _zk_evm
 
 
@@ -29,6 +37,36 @@ argnames = ["code", "calldata", "stack", "memory", "return_value"]
 Params = namedtuple("Params", argnames)
 
 test_cases = [
+    {
+        "params": {
+            "code": "600160015500",
+            "calldata": "",
+            "stack": "",
+            "memory": "",
+            "return_value": "",
+        },
+        "id": "sstore",
+    },
+    {
+        "params": {
+            "code": "60056003600039",
+            "calldata": "",
+            "stack": "",
+            "memory": "0360003900000000000000000000000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "codecopy",
+    },
+    {
+        "params": {
+            "code": "7dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6008601f600039",
+            "calldata": "",
+            "stack": "1766847064778384329583297500742918515827483896875618958121606201292619775",
+            "memory": "6008601f60003900000000000000000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "codecopy2",
+    },
     {
         "params": {
             "code": "6003600401600a02608c036102bc04604605600d066010076005600608601060020960040A60600B00",
@@ -618,7 +656,8 @@ test_cases = [
             "memory": "0000000000000000000000000000000000000000000000000000000000000100",
             "return_value": "",
         },
-        "id": "Sha3 - Hash  32 bytes 0x100",
+        "id": "Hash 32 bytes",
+        "marks": pytest.mark.sha3,
     },
     {
         "params": {
@@ -628,7 +667,41 @@ test_cases = [
             "memory": "0000000000000000000000000000000000000000000000000000000000000010",
             "return_value": "",
         },
-        "id": "Sha3 - Hash 1 byte 0x10",
+        "id": "Hash 1 byte with offset 1f",
+        "marks": pytest.mark.sha3,
+    },
+    {
+        "params": {
+            "code": "6010600052600160002000",
+            "calldata": "",
+            "stack": "85131057757245807317576516368191972321038229705283732634690444270750521936266",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000010",
+            "return_value": "",
+        },
+        "id": "Hash 1 byte no offset",
+        "marks": pytest.mark.sha3,
+    },
+    {
+        "params": {
+            "code": "6010600052600760002000",
+            "calldata": "",
+            "stack": "101225983456080153511598605893998939348063346639131267901574990367534118792751",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000010",
+            "return_value": "",
+        },
+        "id": "Hash 7 bytes",
+        "marks": pytest.mark.sha3,
+    },
+    {
+        "params": {
+            "code": "6010600052600860002000",
+            "calldata": "",
+            "stack": "500549258012437878224561338362079327067368301550791134293299473726337612750",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000010",
+            "return_value": "",
+        },
+        "id": "Hash 8 bytes",
+        "marks": pytest.mark.sha3,
     },
     {
         "params": {
@@ -638,7 +711,19 @@ test_cases = [
             "memory": "0000000000000000000000000000000000000000000000000000000000000010",
             "return_value": "",
         },
-        "id": "Sha3 - Hash 9 bytes 0x10",
+        "id": "Hash 9 bytes",
+        "marks": pytest.mark.sha3,
+    },
+    {
+        "params": {
+            "code": "6010600052601160002000",
+            "calldata": "",
+            "stack": "41382199742381387985558122494590197322490258008471162768551975289239028668781",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000010",
+            "return_value": "",
+        },
+        "id": "Hash 17 bytes",
+        "marks": pytest.mark.sha3,
     },
     {
         "params": {
@@ -863,6 +948,56 @@ test_cases = [
             "return_value": "",
         },
         "id": "calldatacopy",
+    },
+    {
+        "params": {
+            "code": "7f00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff60005260106003600337",
+            "calldata": "11111111111111111111111111111111111111111111111111111111111111111111",
+            "stack": "",
+            "memory": "0011221111111111111111111111111111111133445566778899aabbccddeeff",
+            "return_value": "",
+        },
+        "id": "calldatacopy1",
+    },
+    {
+        "params": {
+            "code": "60246005600037",
+            "calldata": "00112233445566778899aabbcceeddff00112233445566778899aabbccddeeff",
+            "stack": "",
+            "memory": "5566778899aabbcceeddff00112233445566778899aabbccddeeff00000000000000000000000000000000000000000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "calldatacopy2",
+    },
+    {
+        "params": {
+            "code": "60206005600037",
+            "calldata": "00112233445566778899aabbcceeddff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
+            "stack": "",
+            "memory": "5566778899aabbcceeddff00112233445566778899aabbccddeeff0011223344",
+            "return_value": "",
+        },
+        "id": "calldatacopy3",
+    },
+    {
+        "params": {
+            "code": "60406003600037",
+            "calldata": "00112233445566778899aabbcceeddff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
+            "stack": "",
+            "memory": "33445566778899aabbcceeddff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "calldatacopy4",
+    },
+    {
+        "params": {
+            "code": "60106005600037",
+            "calldata": "00112233445566778899aabbcceeddff00112233445566778899aabbccddeeff",
+            "stack": "",
+            "memory": "5566778899aabbcceeddff001122334400000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "calldatacopy5",
     },
 ]
 
