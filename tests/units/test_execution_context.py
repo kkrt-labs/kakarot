@@ -51,9 +51,3 @@ class TestExecutionContext(IsolatedAsyncioTestCase):
             await self.test_execution_context.test__update_program_counter__should_fail__when_given_value_not_in_code_range().call()
         with self.raisesStarknetError("Kakarot: JUMPed to pc offset is not JUMPDEST"):
             await self.test_execution_context.test__update_program_counter__should_fail__when_given_destination_that_is_not_JUMPDEST().call()
-        # READ CALLDATA
-        await self.test_execution_context.test__read_calldata__should_return_parameter_from_calldata().call()
-        await self.test_execution_context.test__read_calldata__should_return_parameter_from_calldata_extended().call()
-        await self.test_execution_context.test__read_calldata__should_return_variable_byte_length().call()
-        with self.raisesStarknetError("Kakarot: calldata read offset is out of range"):
-            await self.test_execution_context.test__read_calldata__should_fail__when_given_offset_out_of_range().call()

@@ -7,7 +7,6 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import assert_le, assert_nn
-from starkware.cairo.common.math_cmp import is_le_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
 
@@ -141,59 +140,6 @@ namespace ExecutionContext {
         // Move program counter
         let self = ExecutionContext.increment_program_counter(self, len);
         return (self=self, output=output);
-    }
-
-    // @notice Read and return a variable number of bytes from calldata.
-    // @param self The pointer to the execution context.
-    // @param offset the location from which to start reading the bytes
-    // @param byte_size number of bytes to read
-    // @param calldata is a pointer to the an array of 32bytes that the results will be written to
-    // @return The data read from calldata
-    func read_calldata{range_check_ptr}(
-        self: model.ExecutionContext*, offset: felt, byte_size: felt, calldata: Uint256*
-    ) {
-        alloc_locals;
-
-        if (byte_size == 0) {
-            return ();
-        }
-        let is_32_bytes = is_le_felt(32, byte_size);
-        local bytes;
-        if (is_32_bytes == TRUE) {
-            assert bytes = 32;
-        } else {
-            assert bytes = byte_size;
-        }
-
-        let (local output: felt*) = alloc();
-        with_attr error_message("Kakarot: calldata read offset is out of range") {
-            assert_le(offset, self.calldata_len);
-        }
-
-        // Check if we have to pad the returned calldata
-        let is_in_range = is_le_felt(offset + bytes, self.calldata_len);
-
-        if (is_in_range == TRUE) {
-            // read calldata slice
-            memcpy(dst=output, src=self.calldata + offset, len=bytes);
-            // convert bytes array to Uint256
-            let output_32bytes = Helpers.bytes_to_uint256(output);
-            assert calldata[0] = output_32bytes;
-            read_calldata(self, offset + bytes, byte_size - bytes, calldata + 1);
-            return ();
-        } else {
-            // Determine number of zeros to pad
-            local zeros_to_pad = offset + bytes - self.calldata_len;
-            // read calldata slice
-            memcpy(dst=output, src=self.calldata + offset, len=bytes - zeros_to_pad);
-            // pad zeros
-            Helpers.fill_zeros(zeros_to_pad, output + (bytes - zeros_to_pad));
-            // convert bytes array to Uint256
-            let output_32bytes = Helpers.bytes_to_uint256(output);
-            assert calldata[0] = output_32bytes;
-            read_calldata(self, offset + bytes, byte_size - bytes, calldata + 1);
-            return ();
-        }
     }
 
     // @notice Update the stack of the current execution context.

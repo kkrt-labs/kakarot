@@ -125,20 +125,20 @@ namespace Memory {
             fill_with=element_len, input_arr=element, output_arr=new_memory + offset
         );
 
-        let (local quotient,local remainder) = uint256_unsigned_div_rem(
+        let (local quotient, local remainder) = uint256_unsigned_div_rem(
             Uint256(offset + element_len, 0), Uint256(max_uint256_bytes, 0)
         );
         local diff: felt;
-        if(remainder.low == 0){
-           diff = 0;
+        if (remainder.low == 0) {
+            diff = 0;
         } else {
-           diff = max_uint256_bytes - remainder.low;
+            diff = max_uint256_bytes - remainder.low;
         }
-        
+
         if (is_offset_greater_than_length == 1) {
             Helpers.fill_zeros(fill_with=offset - self.bytes_len, arr=new_memory + self.bytes_len);
             // Fill the unused bytes into 0
-            Helpers.fill_zeros(fill_with= diff, arr=new_memory + total_len);
+            Helpers.fill_zeros(fill_with=diff, arr=new_memory + total_len);
             max_copy = self.bytes_len;
         } else {
             max_copy = offset;
