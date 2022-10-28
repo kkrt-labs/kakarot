@@ -19,3 +19,13 @@ namespace IEth {
     func balanceOf(account: felt) -> (balance: Uint256) {
     }
 }
+
+@contract_interface
+namespace IEvm_Contract {
+    func get_bytecode() -> (bytecode_len: felt, bytecode: felt*) {
+    }
+    func get_key_storage(key: Uint256) -> (value: Uint256) {
+    }
+    func write_key_storage(key: Uint256, value: Uint256) {
+    }
+}
