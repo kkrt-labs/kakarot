@@ -267,6 +267,37 @@ namespace ExecutionContext {
             );
     }
 
+    // @notice Update the return data of the current execution context.
+    // @dev The memory is updated with the given memory.
+    // @param self The pointer to the execution context.
+    // @param memory The pointer to the new memory.
+    func update_return_data{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(
+        self: model.ExecutionContext*, new_return_data_len: felt, new_return_data: felt*
+    ) -> model.ExecutionContext* {
+        return new model.ExecutionContext(
+            code=self.code,
+            code_len=self.code_len,
+            calldata=self.calldata,
+            calldata_len=self.calldata_len,
+            program_counter=self.program_counter,
+            stopped=TRUE,
+            return_data=new_return_data,
+            return_data_len=new_return_data_len,
+            stack=self.stack,
+            memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit,
+            intrinsic_gas_cost=self.intrinsic_gas_cost,
+            starknet_address=self.starknet_address,
+            evm_address=self.evm_address,
+            );
+    }
+
     // @notice Increment the program counter.
     // @dev The program counter is incremented by the given value.
     // @param self The pointer to the execution context.

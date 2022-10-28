@@ -366,6 +366,8 @@ namespace EVMInstructions {
 
         // Add fs: System operations
         add_instruction(instructions, 0xfe, SystemOperations.exec_invalid);
+        // 0xF3 - RETURN
+        add_instruction(instructions, 0xf3, SystemOperations.exec_return);
         return instructions;
     }
 }
