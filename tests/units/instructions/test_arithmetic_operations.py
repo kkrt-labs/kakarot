@@ -1,9 +1,11 @@
 from asyncio import run
+from contextlib import contextmanager
 from unittest import IsolatedAsyncioTestCase
 
 from cairo_coverage import cairo_coverage
 from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 from starkware.starknet.testing.starknet import Starknet
+from starkware.starkware_utils.error_handling import StarkException
 
 
 class TestArithmeticOperations(IsolatedAsyncioTestCase):
@@ -33,8 +35,18 @@ class TestArithmeticOperations(IsolatedAsyncioTestCase):
     def tearDownClass(cls):
         cairo_coverage.report_runs(excluded_file={"site-packages"})
 
+    @contextmanager
+    def raisesStarknetError(self, error_message):
+        with self.assertRaises(StarkException) as error_msg:
+            yield error_msg
+        self.assertTrue(
+            f"Error message: {error_message}" in str(error_msg.exception.message)
+        )    
+
     async def test__exec_add__should_add_0_and_1(self):
         await self.test_arithmetic_operations.test__exec_add__should_add_0_and_1().call()
+        with self.raisesStarknetError("SafeUint256: addition overflow"):
+            await self.test_arithmetic_operations.test__exec_add__should_fail__when_overflow().call()
 
     async def test__exec_mul__should_mul_0_and_1(self):
         await self.test_arithmetic_operations.test__exec_mul__should_mul_0_and_1().call()

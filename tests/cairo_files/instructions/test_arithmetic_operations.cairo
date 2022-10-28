@@ -63,6 +63,23 @@ func test__exec_add__should_add_0_and_1{
 }
 
 @external
+func test__exec_add__should_fail__when_overflow{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given
+    alloc_locals;
+    let stack: model.Stack* = Stack.init();
+    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let stack: model.Stack* = Stack.push(stack, Uint256(340282366920938463463374607431768211455, 340282366920938463463374607431768211455));
+    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let ctx: model.ExecutionContext* = init_context(stack);
+
+    // When & Then
+    let result = ArithmeticOperations.exec_add(ctx);
+    return ();
+}
+
+@external
 func test__exec_mul__should_mul_0_and_1{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
