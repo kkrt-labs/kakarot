@@ -106,10 +106,12 @@ func test__exec_mload_should_load_a_value_from_memory{
     let ctx = ExecutionContext.update_stack(ctx, stack);
 
     // When
+    local gas_used_before = ctx.gas_used;
     let result = MemoryOperations.exec_mload(ctx);
+    local gas_used = result.gas_used - gas_used_before;
 
     // Then
-    assert result.gas_used = 9;
+    assert gas_used = 3;
     let len: felt = Stack.len(result.stack);
     assert len = 1;
     let index0 = Stack.peek(result.stack, 0);
@@ -135,12 +137,12 @@ func test__exec_mload_should_load_a_value_from_memory_with_memory_expansion{
     let ctx = ExecutionContext.update_stack(ctx, stack);
 
     // When
+    local gas_used_before = ctx.gas_used;
     let result = MemoryOperations.exec_mload(ctx);
+    local gas_used = result.gas_used - gas_used_before;
 
     // Then
-    // TODO - created by Elias - Gas Consumption: Investigate gas consumption for memory expansion
-    // comment: Shouldn't be 9 but higher due to memory expansion
-    assert result.gas_used = 9;
+    assert gas_used = 6;
     let len: felt = Stack.len(result.stack);
     assert len = 1;
     let index0 = Stack.peek(result.stack, 0);
@@ -170,9 +172,7 @@ func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_ms
     let result = MemoryOperations.exec_mload(ctx);
 
     // Then
-    // TODO - created by Elias - Gas Consumption: Investigate gas consumption for memory expansion
-    // comment: Shouldn't be 9 but higher due to memory expansion
-    assert result.gas_used = 9;
+    assert result.gas_used = 73;
     let len: felt = Stack.len(result.stack);
     assert len = 1;
     let index0 = Stack.peek(result.stack, 0);

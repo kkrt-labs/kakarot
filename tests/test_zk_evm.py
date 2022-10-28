@@ -1,5 +1,6 @@
 from collections import namedtuple
 from textwrap import wrap
+from time import time
 
 import pytest
 import pytest_asyncio
@@ -7,21 +8,28 @@ import pytest_asyncio
 
 @pytest_asyncio.fixture(scope="session")
 async def zk_evm(starknet, eth):
+    start = time()
     _zk_evm = await starknet.deploy(
         source="./src/kakarot/kakarot.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
         constructor_calldata=[1, eth.contract_address],
     )
+    evm_time = time()
+    print(f"\nzkEVM deployed in {evm_time - start:.2f}s")
     registry = await starknet.deploy(
         source="./src/kakarot/accounts/registry/account_registry.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
         constructor_calldata=[_zk_evm.contract_address],
     )
+    registry_time = time()
+    print(f"AccountRegistry deployed in {registry_time - evm_time:.2f}s")
     await _zk_evm.set_account_registry(
         registry_address_=registry.contract_address
     ).execute(caller_address=1)
+    account_time = time()
+    print(f"zkEVM set in {account_time - registry_time:.2f}s")
     return _zk_evm
 
 
@@ -618,7 +626,8 @@ test_cases = [
             "memory": "0000000000000000000000000000000000000000000000000000000000000100",
             "return_value": "",
         },
-        "id": "Sha3 - Hash  32 bytes 0x100",
+        "id": "Hash 32 bytes",
+        "marks": pytest.mark.sha3,
     },
     {
         "params": {
@@ -628,7 +637,41 @@ test_cases = [
             "memory": "0000000000000000000000000000000000000000000000000000000000000010",
             "return_value": "",
         },
-        "id": "Sha3 - Hash 1 byte 0x10",
+        "id": "Hash 1 byte with offset 1f",
+        "marks": pytest.mark.sha3,
+    },
+    {
+        "params": {
+            "code": "6010600052600160002000",
+            "calldata": "",
+            "stack": "85131057757245807317576516368191972321038229705283732634690444270750521936266",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000010",
+            "return_value": "",
+        },
+        "id": "Hash 1 byte no offset",
+        "marks": pytest.mark.sha3,
+    },
+    {
+        "params": {
+            "code": "6010600052600760002000",
+            "calldata": "",
+            "stack": "101225983456080153511598605893998939348063346639131267901574990367534118792751",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000010",
+            "return_value": "",
+        },
+        "id": "Hash 7 bytes",
+        "marks": pytest.mark.sha3,
+    },
+    {
+        "params": {
+            "code": "6010600052600860002000",
+            "calldata": "",
+            "stack": "500549258012437878224561338362079327067368301550791134293299473726337612750",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000010",
+            "return_value": "",
+        },
+        "id": "Hash 8 bytes",
+        "marks": pytest.mark.sha3,
     },
     {
         "params": {
@@ -638,7 +681,19 @@ test_cases = [
             "memory": "0000000000000000000000000000000000000000000000000000000000000010",
             "return_value": "",
         },
-        "id": "Sha3 - Hash 9 bytes 0x10",
+        "id": "Hash 9 bytes",
+        "marks": pytest.mark.sha3,
+    },
+    {
+        "params": {
+            "code": "6010600052601160002000",
+            "calldata": "",
+            "stack": "41382199742381387985558122494590197322490258008471162768551975289239028668781",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000010",
+            "return_value": "",
+        },
+        "id": "Hash 17 bytes",
+        "marks": pytest.mark.sha3,
     },
     {
         "params": {
