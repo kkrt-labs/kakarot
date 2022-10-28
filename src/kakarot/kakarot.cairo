@@ -19,7 +19,7 @@ func constructor{
     return Kakarot.constructor(owner, native_token_address_);
 }
 
-@external
+@view
 func execute{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(code_len: felt, code: felt*, calldata_len: felt, calldata: felt*) -> (
