@@ -9,10 +9,11 @@ import pytest_asyncio
 @pytest_asyncio.fixture(scope="session")
 async def zk_evm(starknet, eth):
     start = time()
-    # contract_hash = await starknet.declare(
-    #    source="./src/kakarot/accounts/contract/contract_account.cairo",
-    #    disable_hint_validation=0,
-    # )
+    contract_hash = await starknet.declare(
+        source="./src/kakarot/accounts/contract/contract_account.cairo",
+        cairo_path=["src"],
+        disable_hint_validation=0,
+    )
     _zk_evm = await starknet.deploy(
         source="./src/kakarot/kakarot.cairo",
         cairo_path=["src"],
@@ -25,10 +26,10 @@ async def zk_evm(starknet, eth):
         source="./src/kakarot/accounts/registry/account_registry.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
-        constructor_calldata=[_zk_evm.contract_address, 123123],
+        constructor_calldata=[_zk_evm.contract_address, contract_hash.class_hash],
     )
-    # res = await registry.deploy(bytes=[1, 12312]).call(caller_address=1)
-    # print("Contract Address: ", res)
+    res = await registry.deploy(bytes=[1, 12312]).call(caller_address=1)
+    print("Contract Address: ", res)
     registry_time = time()
     print(f"AccountRegistry deployed in {registry_time - evm_time:.2f}s")
     await _zk_evm.set_account_registry(

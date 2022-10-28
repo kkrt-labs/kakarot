@@ -118,14 +118,14 @@ namespace AccountRegistry {
         let (contract_address) = deploy(
             class_hash=class_hash,
             contract_address_salt=current_salt,
-            constructor_calldata_size=bytes_len + 1,
+            constructor_calldata_size=bytes_len + 2,
             constructor_calldata=calldata,
             deploy_from_zero=FALSE,
         );
         salt.write(value=current_salt + 1);
         // Generate EVM_contract address from the new cairo contract
         // let (evm_contract_address,_) = unsigned_div_rem(contract_address, 1000000000000000000000000000000000000000000000000);
-        let evm_contract_address = 123;
+        let evm_contract_address = 123 + current_salt;
         
         //Save address of new contracts
         starknet_address_.write(evm_contract_address, contract_address);

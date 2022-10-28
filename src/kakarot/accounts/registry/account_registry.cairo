@@ -52,7 +52,7 @@ func get_evm_address{
 // @return evm address that is mapped to the actual contract address
 @external
 func deploy{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    kakarot_address: felt, bytes_len: felt, bytes: felt*
+    bytes_len: felt, bytes: felt*
 ) -> (evm_contract_address: felt) {
     let evm_contract_address = AccountRegistry.deploy_contract(bytes_len, bytes);
     return (evm_contract_address,);
