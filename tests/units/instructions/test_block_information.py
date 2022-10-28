@@ -34,4 +34,4 @@ class TestBlockInformation(IsolatedAsyncioTestCase):
         cairo_coverage.report_runs(excluded_file={"site-packages"})
 
     async def test_everything_block(self):
-        await self.test_block_informations.test__chainId__should_add_0_and_1().call()
+        await self.test_block_informations.test__chainId__should_push_chain_id_to_stack().call()
