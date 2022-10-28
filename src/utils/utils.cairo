@@ -5,6 +5,10 @@
 // StarkWare dependencies
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math import split_felt
+from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.math_cmp import is_le_felt
+from starkware.cairo.common.memcpy import memcpy
+
 namespace Helpers {
     func setup_python_defs() {
         %{
@@ -192,6 +196,35 @@ namespace Helpers {
         }
         assert [output_arr] = [input_arr];
         return fill_array(fill_with - 1, input_arr + 1, output_arr + 1);
+    }
+
+    // @notice Read and return a variable number of bytes from calldata.
+    // @param self The pointer to the execution context.
+    // @param offset the location from which to start reading the bytes
+    // @param byte_size number of bytes to read
+    // @param calldata is a pointer to the an array of 32bytes that the results will be written to
+    // @return The data read from calldata
+    func slice_data{range_check_ptr}(
+        data_len: felt, data: felt*, data_offset: felt, slice_len: felt
+    ) -> felt* {
+        alloc_locals;
+        let (local sliced_data: felt*) = alloc();
+
+        let diff = data_len - data_offset;
+
+        let is_diff_greater_than_element_len: felt = is_le_felt(slice_len, diff);
+
+        if (is_diff_greater_than_element_len == 0) {
+            memcpy(dst=sliced_data, src=data + data_offset, len=diff);
+
+            let pad_n: felt = slice_len - diff;
+
+            fill_zeros(fill_with=pad_n, arr=sliced_data + diff);
+        } else {
+            memcpy(dst=sliced_data, src=data + data_offset, len=slice_len);
+        }
+
+        return (sliced_data);
     }
 
     func reverse(old_arr_len: felt, old_arr: felt*, new_arr_len: felt, new_arr: felt*) {

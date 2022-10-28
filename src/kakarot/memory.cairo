@@ -118,17 +118,22 @@ namespace Memory {
         let is_offset_greater_than_length = is_le_felt(self.bytes_len, offset);
         local max_copy: felt;
         local total_len: felt = offset + element_len;
+        tempvar max_uint256_bytes: felt = 32;
 
         // Add all the elements into new_memory
         Helpers.fill_array(
             fill_with=element_len, input_arr=element, output_arr=new_memory + offset
         );
 
-        let (quotient, remainder) = uint256_unsigned_div_rem(
-            Uint256(offset + element_len, 0), Uint256(32, 0)
+        let (local quotient, local remainder) = uint256_unsigned_div_rem(
+            Uint256(offset + element_len, 0), Uint256(max_uint256_bytes, 0)
         );
-
-        local diff = 32 - remainder.low;
+        local diff: felt;
+        if (remainder.low == 0) {
+            diff = 0;
+        } else {
+            diff = max_uint256_bytes - remainder.low;
+        }
 
         if (is_offset_greater_than_length == 1) {
             Helpers.fill_zeros(fill_with=offset - self.bytes_len, arr=new_memory + self.bytes_len);
@@ -144,9 +149,10 @@ namespace Memory {
         }
 
         let is_memory_growing = is_le_felt(self.bytes_len, total_len);
+
         local new_bytes_len: felt;
         if (is_memory_growing == 1) {
-            new_bytes_len = total_len + diff;
+            new_bytes_len = total_len + (diff);
         } else {
             memcpy(
                 dst=new_memory + total_len,
@@ -155,7 +161,6 @@ namespace Memory {
             );
             new_bytes_len = self.bytes_len;
         }
-
         return new model.Memory(bytes=new_memory, bytes_len=new_bytes_len);
     }
 

@@ -864,6 +864,56 @@ test_cases = [
         },
         "id": "calldatacopy",
     },
+    {
+        "params": {
+            "code": "7f00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff60005260106003600337",
+            "calldata": "11111111111111111111111111111111111111111111111111111111111111111111",
+            "stack": "",
+            "memory": "0011221111111111111111111111111111111133445566778899aabbccddeeff",
+            "return_value": "",
+        },
+        "id": "calldatacopy1",
+    },
+    {
+        "params": {
+            "code": "60246005600037",
+            "calldata": "00112233445566778899aabbcceeddff00112233445566778899aabbccddeeff",
+            "stack": "",
+            "memory": "5566778899aabbcceeddff00112233445566778899aabbccddeeff00000000000000000000000000000000000000000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "calldatacopy2",
+    },
+    {
+        "params": {
+            "code": "60206005600037",
+            "calldata": "00112233445566778899aabbcceeddff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
+            "stack": "",
+            "memory": "5566778899aabbcceeddff00112233445566778899aabbccddeeff0011223344",
+            "return_value": "",
+        },
+        "id": "calldatacopy3",
+    },
+    {
+        "params": {
+            "code": "60406003600037",
+            "calldata": "00112233445566778899aabbcceeddff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
+            "stack": "",
+            "memory": "33445566778899aabbcceeddff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "calldatacopy4",
+    },
+    {
+        "params": {
+            "code": "60106005600037",
+            "calldata": "00112233445566778899aabbcceeddff00112233445566778899aabbccddeeff",
+            "stack": "",
+            "memory": "5566778899aabbcceeddff001122334400000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "calldatacopy5",
+    },
 ]
 
 

@@ -95,6 +95,7 @@ namespace EnvironmentalInformation {
             import logging
             logging.info("0x38 - CODESIZE")
         %}
+
         // Get the code size.
         let code_size = Helpers.to_uint256(ctx.code_len);
         let stack: model.Stack* = Stack.push(ctx.stack, code_size);
@@ -225,15 +226,21 @@ namespace EnvironmentalInformation {
 
         // Stack input:
         // 0 - offset: calldata offset of the word we read (32 byte steps).
-        let (stack, offset) = Stack.pop(stack);
+        let (stack, calldata_offset) = Stack.pop(stack);
 
-        let (calldata: Uint256*) = alloc();
+        let (sliced_calldata: felt*) = alloc();
 
-        //read calldata at offset
-        ExecutionContext.read_calldata(ctx,offset.low,32,calldata);
-        
-        //Push CallData word onto stack
-        let stack: model.Stack* = Stack.push(stack, calldata[0]);
+        let calldata: felt* = ctx.calldata;
+        let calldata_len: felt = ctx.calldata_len;
+
+        // read calldata at offset
+        let sliced_calldata: felt* = Helpers.slice_data(
+            data_len=calldata_len, data=calldata, data_offset=calldata_offset.low, slice_len=32
+        );
+        let uint256_sliced_calldata: Uint256 = Helpers.bytes_to_uint256(sliced_calldata);
+
+        // Push CallData word onto stack
+        let stack: model.Stack* = Stack.push(stack, uint256_sliced_calldata);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -305,24 +312,15 @@ namespace EnvironmentalInformation {
         let calldata: felt* = ctx.calldata;
         let calldata_len: felt = ctx.calldata_len;
 
-        let (local copied_calldata: felt*) = alloc();
-
-        let diff = calldata_len - calldata_offset.low;
-
-        let is_diff_greater_than_element_len: felt = is_le_felt(element_len.low, diff);
-
-        if (is_diff_greater_than_element_len == 0) {
-            memcpy(dst=copied_calldata, src=calldata + offset.low - 1, len=diff);
-
-            let pad_n: felt = element_len.low - diff;
-
-            Helpers.fill_zeros(fill_with=pad_n, arr=copied_calldata + diff);
-        } else {
-            memcpy(dst=copied_calldata, src=calldata + offset.low - 1, len=element_len.low);
-        }
+        let sliced_calldata: felt* = Helpers.slice_data(
+            data_len=calldata_len,
+            data=calldata,
+            data_offset=calldata_offset.low,
+            slice_len=element_len.low,
+        );
 
         let memory: model.Memory* = Memory.store_n(
-            self=ctx.memory, element_len=element_len.low, element=copied_calldata, offset=offset.low
+            self=ctx.memory, element_len=element_len.low, element=sliced_calldata, offset=offset.low
         );
 
         // Update context memory.
