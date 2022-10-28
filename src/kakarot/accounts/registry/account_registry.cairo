@@ -5,6 +5,9 @@
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
+// @title EVM account registry contract.
+// @author @abdelhamidbakhta
+
 // Local dependencies
 from kakarot.accounts.registry.library import AccountRegistry
 
