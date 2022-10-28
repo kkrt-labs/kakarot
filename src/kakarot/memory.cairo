@@ -97,9 +97,10 @@ namespace Memory {
         return new model.Memory(bytes=new_memory, bytes_len=new_bytes_len);
     }
 
-    // @notice MSTORE_N - Store N bytes into the memory.
+    // @notice store_n - Store N bytes into the memory.
     // @param self - The pointer to the memory.
-    // @param element - The element to push.
+    // @param element_len - byte length of the array to be saved on memory.
+    // @param element - pointer to the array that will be saved on memory.
     // @param offset - The offset to store the element at.
     // @return The new pointer to the memory.
     func store_n{
@@ -107,7 +108,7 @@ namespace Memory {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.Memory*, element_len: felt, element: Uint256, offset: felt) -> model.Memory* {
+    }(self: model.Memory*, element_len: felt, element: felt*, offset: felt) -> model.Memory* {
         alloc_locals;
         let (new_memory: felt*) = alloc();
         if (self.bytes_len == 0) {
@@ -117,32 +118,14 @@ namespace Memory {
         let is_offset_greater_than_length = is_le_felt(self.bytes_len, offset);
         local max_copy: felt;
         local total_len: felt = offset + element_len;
+
         // Add all the elements into new_memory
-        let is_element_len_greater_than_16 = is_le_felt(16, element_len);
-        if (is_element_len_greater_than_16 == 1) {
-            local high_element_len: felt = element_len - 16;
-            split_int(
-                value=element.low, n=16, base=2 ** 8, bound=2 ** 128, output=new_memory + offset
-            );
-            split_int(
-                value=element.high,
-                n=high_element_len,
-                base=2 ** 8,
-                bound=2 ** 128,
-                output=new_memory + offset + 16,
-            );
-        } else {
-            split_int(
-                value=element.low,
-                n=element_len,
-                base=2 ** 8,
-                bound=2 ** 128,
-                output=new_memory + offset,
-            );
-        }
+        Helpers.fill_array(
+            fill_with=element_len, input_arr=element, output_arr=new_memory + offset
+        );
 
         let (quotient, remainder) = uint256_unsigned_div_rem(
-            Uint256(offset + element_len, 0), Uint256(256, 0)
+            Uint256(offset + element_len, 0), Uint256(32, 0)
         );
 
         local diff = 32 - remainder.low;
@@ -150,7 +133,7 @@ namespace Memory {
         if (is_offset_greater_than_length == 1) {
             Helpers.fill_zeros(fill_with=offset - self.bytes_len, arr=new_memory + self.bytes_len);
             // Fill the unused bytes into 0
-            Helpers.fill_zeros(fill_with=diff, arr=new_memory + offset + 1);
+            Helpers.fill_zeros(fill_with=diff, arr=new_memory + total_len);
             max_copy = self.bytes_len;
         } else {
             max_copy = offset;

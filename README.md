@@ -38,9 +38,9 @@ production.
 ```mermaid
 %%{init: {'theme': 'forest', 'themeVariables': { 'darkMode': 'false'}}}%%
 
-pie title Kakarot EMV opcodes support (112 / 142)
-    "Supported" : 112
-    "Not supported" : 30
+pie title Kakarot EMV opcodes support (114 / 142)
+    "Supported" : 114
+    "Not supported" : 28
 
     "Partially supported" : 0
 ```
