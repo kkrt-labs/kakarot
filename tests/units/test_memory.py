@@ -55,7 +55,4 @@ class TestMemory(IsolatedAsyncioTestCase):
         await self.test_memory.test__load__should_load_an_element_from_the_memory_with_offset(33, 4 * 256 ** 1, 3 * 256 ** 1).call()
         await self.test_memory.test__load__should_load_an_element_from_the_memory_with_offset(63, 0, 4 * 256 ** 15).call()
 
-        with self.raisesStarknetError("Kakarot: MemoryOverflow"):
-            await self.test_memory.test__load__should_fail__when_out_of_memory().call()
-
         await self.test_memory.test__dump__should_print_the_memory().call()
