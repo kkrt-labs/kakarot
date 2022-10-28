@@ -17,11 +17,12 @@ isort = "^5.10.1"
 marshmallow-dataclass = "^8.5.9"
 
 [tool.pytest.ini_options]
-asyncio_mode = "auto"
 filterwarnings = [
-    'ignore:Using or importing the ABCs:DeprecationWarning',                                # from frozendict
-    'ignore:lexer_state will be removed in subsequent releases. Use lexer_thread instead.', # from lark
+    "ignore:Using or importing the ABCs:DeprecationWarning",                                # from frozendict
+    "ignore:lexer_state will be removed in subsequent releases. Use lexer_thread instead.", # from lark
 ]
+asyncio_mode = "auto"
+markers = ["sha3"]
 
 [tool.isort]
 profile = "black"

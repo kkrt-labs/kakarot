@@ -3,10 +3,10 @@
 %lang starknet
 
 // Starkware dependencies
-from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import assert_le
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_le, is_le_felt
 from starkware.cairo.common.uint256 import Uint256, uint256_unsigned_div_rem
 from starkware.cairo.common.alloc import alloc
 
@@ -59,24 +59,19 @@ namespace MemoryOperations {
         let (stack, offset) = Stack.pop(stack);
 
         // Read word from memory at offset
-        let value = Memory.load(self=ctx.memory, offset=offset.low);
+        let (new_memory, cost) = Memory.insure_length(ctx.memory, 32 + offset.low);
+
+        let value = Memory.load(self=new_memory, offset=offset.low);
 
         // Push word to the stack
         let stack: model.Stack* = Stack.push(stack, value);
 
+        // Update context memory.
+        let ctx = ExecutionContext.update_memory(ctx, new_memory);
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MLOAD);
-
-        // Memory expansion if offset + 32 > MSIZE
-        let is_memory_expansion = is_le(ctx.memory.bytes_len, offset.low + 32);
-        if (is_memory_expansion == 1) {
-            let memory = Memory.store(self=ctx.memory, element=value, offset=offset.low);
-            let ctx = ExecutionContext.update_memory(ctx, memory);
-            let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MSTORE);
-            return ctx;
-        }
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MLOAD + cost);
 
         return ctx;
     }
