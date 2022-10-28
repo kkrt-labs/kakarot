@@ -321,6 +321,7 @@ namespace EnvironmentalInformation {
             slice_len=element_len.low,
         );
 
+
         let memory: model.Memory* = Memory.store_n(
             self=ctx.memory, element_len=element_len.low, element=sliced_calldata, offset=offset.low
         );
@@ -374,6 +375,7 @@ namespace EnvironmentalInformation {
 
         let memory: model.Memory* = Memory.store_n(
             self=ctx.memory, element_len=element_len.low, element=sliced_code, offset=offset.low
+
         );
 
         // Update context memory.

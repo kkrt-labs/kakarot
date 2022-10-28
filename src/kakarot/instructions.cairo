@@ -279,7 +279,7 @@ namespace EVMInstructions {
         // 0x52 - MSTORE
         add_instruction(instructions, 0x52, MemoryOperations.exec_mstore);
 
-        // 0x53 - MSTORE8
+        // 0x55 - SSTORE
         add_instruction(instructions, 0x55, MemoryOperations.exec_sstore);
         // 0x53 - MSTORE8
         add_instruction(instructions, 0x53, MemoryOperations.exec_mstore8);
