@@ -42,3 +42,6 @@ class TestMemoryOperations(IsolatedAsyncioTestCase):
             for x in range(1, 15)
         ]
         await self.test_memory_operations.test__exec_pop_should_pop_an_item_from_execution_context().call()
+        await self.test_memory_operations.test__exec_mload_should_load_a_value_from_memory().call()
+        await self.test_memory_operations.test__exec_mload_should_load_a_value_from_memory_with_memory_expansion().call()
+        await self.test_memory_operations.test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_msize().call()
