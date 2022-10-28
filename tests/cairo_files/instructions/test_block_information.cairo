@@ -58,6 +58,27 @@ func test__chainId__should_push_chain_id_to_stack{
 }
 
 @external
+func test__coinbase_should_push_coinbase_address_to_stack{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given
+    alloc_locals;
+    let ctx: model.ExecutionContext* = init_context();
+
+    // When
+    let result = BlockInformation.exec_coinbase(ctx);
+
+    // Then
+    assert result.gas_used = 2;
+    let len: felt = Stack.len(result.stack);
+    assert len = 1;
+    let index0 = Stack.peek(result.stack, 0);
+    let coinbase_address = Helpers.to_uint256(Constants.MOCK_COINBASE_ADDRESS);
+    assert index0 = coinbase_address;
+    return ();
+}
+
+@external
 func test__timestamp_should_push_block_timestamp_to_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
@@ -119,5 +140,47 @@ func test__gaslimit_should_push_gaslimit_to_stack{
     let index0 = Stack.peek(result.stack, 0);
     let gas_limit = Helpers.to_uint256(ctx.gas_limit);
     assert index0 = gas_limit;
+    return ();
+}
+
+@external
+func test__difficulty_should_push_difficulty_to_stack{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given
+    alloc_locals;
+    let ctx: model.ExecutionContext* = init_context();
+
+    // When
+    let result = BlockInformation.exec_difficulty(ctx);
+
+    // Then
+    assert result.gas_used = 2;
+    let len: felt = Stack.len(result.stack);
+    assert len = 1;
+    let index0 = Stack.peek(result.stack, 0);
+    let difficulty = Helpers.to_uint256(0);
+    assert index0 = difficulty;
+    return ();
+}
+
+@external
+func test__basefee_should_push_basefee_to_stack{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given
+    alloc_locals;
+    let ctx: model.ExecutionContext* = init_context();
+
+    // When
+    let result = BlockInformation.exec_basefee(ctx);
+
+    // Then
+    assert result.gas_used = 2;
+    let len: felt = Stack.len(result.stack);
+    assert len = 1;
+    let index0 = Stack.peek(result.stack, 0);
+    let basefee = Helpers.to_uint256(0);
+    assert index0 = basefee;
     return ();
 }
