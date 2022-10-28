@@ -6,6 +6,7 @@
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import assert_le
+from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.uint256 import Uint256, uint256_unsigned_div_rem
 from starkware.cairo.common.alloc import alloc
 
@@ -67,6 +68,16 @@ namespace MemoryOperations {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MLOAD);
+
+        // Memory expansion if offset + 32 > MSIZE
+        let is_memory_expansion = is_le(ctx.memory.bytes_len, offset.low + 32);
+        if (is_memory_expansion == 1) {
+            let memory = Memory.store(self=ctx.memory, element=value, offset=offset.low);
+            let ctx = ExecutionContext.update_memory(ctx, memory);
+            let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MSTORE);
+            return ctx;
+        }
+
         return ctx;
     }
 
