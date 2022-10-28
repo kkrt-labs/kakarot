@@ -45,6 +45,7 @@ class TestExecutionContext(IsolatedAsyncioTestCase):
 
     async def test_everything_context(self):
         await self.test_execution_context.test__init__should_return_an_empty_execution_context().call()
+        # UPDATE PROGRAM COUNTER
         await self.test_execution_context.test__update_program_counter__should_set_pc_to_given_value().call()
         with self.raisesStarknetError("Kakarot: new pc target out of range"):
             await self.test_execution_context.test__update_program_counter__should_fail__when_given_value_not_in_code_range().call()

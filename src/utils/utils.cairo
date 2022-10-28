@@ -5,6 +5,10 @@
 // StarkWare dependencies
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math import split_felt
+from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.math_cmp import is_le_felt
+from starkware.cairo.common.memcpy import memcpy
+
 namespace Helpers {
     func setup_python_defs() {
         %{
@@ -166,7 +170,8 @@ namespace Helpers {
         let res = Uint256(low, high);
         return res;
     }
-    func felt_as_byte_to_uint256(val: felt*) -> Uint256 {
+
+    func bytes32_to_uint256(val: felt*) -> Uint256 {
         let res = Uint256(
             low=[val + 16] * 256 ** 15 + [val + 17] * 256 ** 14 + [val + 18] * 256 ** 13 + [val + 19] * 256 ** 12 + [val + 20] * 256 ** 11 + [val + 21] * 256 ** 10 + [val + 22] * 256 ** 9 + [val + 23] * 256 ** 8 + [val + 24] * 256 ** 7 + [val + 25] * 256 ** 6 + [val + 26] * 256 ** 5 + [val + 27] * 256 ** 4 + [val + 28] * 256 ** 3 + [val + 29] * 256 ** 2 + [val + 30] * 256 + [val + 31],
             high=[val] * 256 ** 15 + [val + 1] * 256 ** 14 + [val + 2] * 256 ** 13 + [val + 3] * 256 ** 12 + [val + 4] * 256 ** 11 + [val + 5] * 256 ** 10 + [val + 6] * 256 ** 9 + [val + 7] * 256 ** 8 + [val + 8] * 256 ** 7 + [val + 9] * 256 ** 6 + [val + 10] * 256 ** 5 + [val + 11] * 256 ** 4 + [val + 12] * 256 ** 3 + [val + 13] * 256 ** 2 + [val + 14] * 256 + [val + 15],
@@ -174,16 +179,16 @@ namespace Helpers {
         return res;
     }
 
-    func byte_to_64_bits_little_felt(val: felt*) -> felt {
-        return [val + 7] * 256 ** 7 + [val + 6] * 256 ** 6 + [val + 5] * 256 ** 5 + [val + 4] * 256 ** 4 + [val + 3] * 256 ** 3 + [val + 2] * 256 ** 2 + [val + 1] * 256 + [val];
+    func bytes_to_64_bits_little_felt(bytes: felt*) -> felt {
+        return [bytes + 7] * 256 ** 7 + [bytes + 6] * 256 ** 6 + [bytes + 5] * 256 ** 5 + [bytes + 4] * 256 ** 4 + [bytes + 3] * 256 ** 3 + [bytes + 2] * 256 ** 2 + [bytes + 1] * 256 + [bytes];
     }
 
-    func fill_zeros(fill_with: felt, arr: felt*) {
-        if (fill_with == 0) {
+    func fill(arr: felt*, value: felt, length: felt) {
+        if (length == 0) {
             return ();
         }
-        assert [arr] = 0;
-        return fill_zeros(fill_with - 1, arr + 1);
+        assert [arr] = value;
+        return fill(arr + 1, value, length - 1);
     }
 
     func fill_array(fill_with: felt, input_arr: felt*, output_arr: felt*) {
@@ -192,6 +197,35 @@ namespace Helpers {
         }
         assert [output_arr] = [input_arr];
         return fill_array(fill_with - 1, input_arr + 1, output_arr + 1);
+    }
+
+    // @notice Read and return a variable number of bytes from calldata.
+    // @param self The pointer to the execution context.
+    // @param offset the location from which to start reading the bytes
+    // @param byte_size number of bytes to read
+    // @param calldata is a pointer to the an array of 32bytes that the results will be written to
+    // @return The data read from calldata
+    func slice_data{range_check_ptr}(
+        data_len: felt, data: felt*, data_offset: felt, slice_len: felt
+    ) -> felt* {
+        alloc_locals;
+        let (local sliced_data: felt*) = alloc();
+
+        let diff = data_len - data_offset;
+
+        let is_diff_greater_than_element_len: felt = is_le_felt(slice_len, diff);
+
+        if (is_diff_greater_than_element_len == 0) {
+            memcpy(dst=sliced_data, src=data + data_offset, len=diff);
+
+            let pad_n: felt = slice_len - diff;
+
+            fill(arr=sliced_data + diff, value=0, length=pad_n);
+        } else {
+            memcpy(dst=sliced_data, src=data + data_offset, len=slice_len);
+        }
+
+        return (sliced_data);
     }
 
     func reverse(old_arr_len: felt, old_arr: felt*, new_arr_len: felt, new_arr: felt*) {

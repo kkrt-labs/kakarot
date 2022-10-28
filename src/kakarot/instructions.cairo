@@ -239,12 +239,16 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x32, EnvironmentalInformation.exec_origin);
         // 0x33 - CALLER
         add_instruction(instructions, 0x33, EnvironmentalInformation.exec_caller);
+        // 0x35 - CALLDATALOAD
+        add_instruction(instructions, 0x35, EnvironmentalInformation.exec_calldataload);
         // 0x36 - CALLDATASIZE
         add_instruction(instructions, 0x36, EnvironmentalInformation.exec_calldatasize);
         // 0x37 - CALLDATACOPY
         add_instruction(instructions, 0x37, EnvironmentalInformation.exec_calldatacopy);
         // 0x38 - CODESIZE
         add_instruction(instructions, 0x38, EnvironmentalInformation.exec_codesize);
+        // 0x39 - CODECOPY
+        add_instruction(instructions, 0x39, EnvironmentalInformation.exec_codecopy);
         // 0x3d - RETURNDATASIZE
         add_instruction(instructions, 0x3d, EnvironmentalInformation.exec_returndatasize);
 
@@ -271,9 +275,12 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x50, MemoryOperations.exec_pop);
 
         // 0x51 - MLOAD
-        add_instruction(instructions, 0x51, MemoryOperations.exec_load);
+        add_instruction(instructions, 0x51, MemoryOperations.exec_mload);
         // 0x52 - MSTORE
-        add_instruction(instructions, 0x52, MemoryOperations.exec_store);
+        add_instruction(instructions, 0x52, MemoryOperations.exec_mstore);
+
+        // 0x53 - MSTORE8
+        add_instruction(instructions, 0x55, MemoryOperations.exec_sstore);
         // 0x53 - MSTORE8
         add_instruction(instructions, 0x53, MemoryOperations.exec_mstore8);
         // 0x56 - JUMP

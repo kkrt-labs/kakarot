@@ -48,8 +48,27 @@ class TestMemory(IsolatedAsyncioTestCase):
         await self.test_memory.test__len__should_return_the_length_of_the_memory().call()
         await self.test_memory.test__store__should_add_an_element_to_the_memory().call()
         await self.test_memory.test__load__should_load_an_element_from_the_memory().call()
-
-        with self.raisesStarknetError("Kakarot: MemoryOverflow"):
-            await self.test_memory.test__load__should_fail__when_out_of_memory().call()
+        await self.test_memory.test__load__should_load_an_element_from_the_memory_with_offset(
+            8, 2 * 256**8, 256**8
+        ).call()
+        await self.test_memory.test__load__should_load_an_element_from_the_memory_with_offset(
+            7, 2 * 256**7, 256**7
+        ).call()
+        await self.test_memory.test__load__should_load_an_element_from_the_memory_with_offset(
+            23, 3 * 256**7, 2 * 256**7
+        ).call()
+        await self.test_memory.test__load__should_load_an_element_from_the_memory_with_offset(
+            33, 4 * 256**1, 3 * 256**1
+        ).call()
+        await self.test_memory.test__load__should_load_an_element_from_the_memory_with_offset(
+            63, 0, 4 * 256**15
+        ).call()
+        await self.test_memory.test__load__should_load_an_element_from_the_memory_with_offset(
+            500, 0, 0
+        ).call()
 
         await self.test_memory.test__dump__should_print_the_memory().call()
+        await self.test_memory.test__expand__should_return_the_same_memory_and_no_cost().call()
+        await self.test_memory.test__expand__should_return_expanded_memory_and_cost().call()
+        await self.test_memory.test__insure_length__should_return_the_same_memory_and_no_cost().call()
+        await self.test_memory.test__insure_length__should_return_expanded_memory_and_cost().call()

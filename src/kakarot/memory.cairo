@@ -6,9 +6,10 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256, uint256_unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le_felt
+from starkware.cairo.common.math_cmp import is_le_felt, is_le
 from starkware.cairo.common.math import assert_lt, split_int, unsigned_div_rem
 from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.bool import TRUE
 
 // Internal dependencies
 from kakarot.model import model
@@ -50,12 +51,12 @@ namespace Memory {
         alloc_locals;
         let (new_memory: felt*) = alloc();
         if (self.bytes_len == 0) {
-            Helpers.fill_zeros(fill_with=offset, arr=new_memory);
+            Helpers.fill(arr=new_memory, value=0, length=offset);
         }
         let is_offset_greater_than_length = is_le_felt(self.bytes_len, offset);
         local max_copy: felt;
         if (is_offset_greater_than_length == 1) {
-            Helpers.fill_zeros(fill_with=offset - self.bytes_len, arr=new_memory + self.bytes_len);
+            Helpers.fill(arr=new_memory + self.bytes_len, value=0, length=offset - self.bytes_len);
             max_copy = self.bytes_len;
         } else {
             max_copy = offset;
@@ -112,28 +113,33 @@ namespace Memory {
         alloc_locals;
         let (new_memory: felt*) = alloc();
         if (self.bytes_len == 0) {
-            Helpers.fill_zeros(fill_with=offset, arr=new_memory);
+            Helpers.fill(arr=new_memory, value=0, length=offset);
         }
 
         let is_offset_greater_than_length = is_le_felt(self.bytes_len, offset);
         local max_copy: felt;
         local total_len: felt = offset + element_len;
+        tempvar max_uint256_bytes: felt = 32;
 
         // Add all the elements into new_memory
         Helpers.fill_array(
             fill_with=element_len, input_arr=element, output_arr=new_memory + offset
         );
 
-        let (quotient, remainder) = uint256_unsigned_div_rem(
-            Uint256(offset + element_len, 0), Uint256(32, 0)
+        let (local quotient, local remainder) = uint256_unsigned_div_rem(
+            Uint256(offset + element_len, 0), Uint256(max_uint256_bytes, 0)
         );
-
-        local diff = 32 - remainder.low;
+        local diff: felt;
+        if (remainder.low == 0) {
+            diff = 0;
+        } else {
+            diff = max_uint256_bytes - remainder.low;
+        }
 
         if (is_offset_greater_than_length == 1) {
-            Helpers.fill_zeros(fill_with=offset - self.bytes_len, arr=new_memory + self.bytes_len);
+            Helpers.fill(arr=new_memory + self.bytes_len, value=0, length=offset - self.bytes_len);
             // Fill the unused bytes into 0
-            Helpers.fill_zeros(fill_with=diff, arr=new_memory + total_len);
+            Helpers.fill(arr=new_memory + total_len, value=0, length=diff);
             max_copy = self.bytes_len;
         } else {
             max_copy = offset;
@@ -144,9 +150,10 @@ namespace Memory {
         }
 
         let is_memory_growing = is_le_felt(self.bytes_len, total_len);
+
         local new_bytes_len: felt;
         if (is_memory_growing == 1) {
-            new_bytes_len = total_len + diff;
+            new_bytes_len = total_len + (diff);
         } else {
             memcpy(
                 dst=new_memory + total_len,
@@ -155,7 +162,6 @@ namespace Memory {
             );
             new_bytes_len = self.bytes_len;
         }
-
         return new model.Memory(bytes=new_memory, bytes_len=new_bytes_len);
     }
 
@@ -171,8 +177,20 @@ namespace Memory {
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.Memory*, offset: felt) -> Uint256 {
         alloc_locals;
-        with_attr error_message("Kakarot: MemoryOverflow") {
-            let res: Uint256 = Helpers.felt_as_byte_to_uint256(self.bytes + offset);
+
+        // Check if the offset + 32 > MSIZE
+        let offset_out_of_bounds = is_le(self.bytes_len, offset + 32 + 1);
+        if (offset_out_of_bounds == 1) {
+            let (local new_memory: felt*) = alloc();
+            memcpy(dst=new_memory, src=self.bytes, len=self.bytes_len);
+            Helpers.fill(
+                arr=new_memory + self.bytes_len, value=0, length=offset + 32 - self.bytes_len
+            );
+            let res: Uint256 = Helpers.bytes32_to_uint256(new_memory + offset);
+            return res;
+        }
+        with_attr error_message("Kakarot: Memory Error") {
+            let res: Uint256 = Helpers.bytes32_to_uint256(self.bytes + offset);
         }
         return res;
     }
@@ -197,5 +215,65 @@ namespace Memory {
             logging.info("************************************")
         %}
         return ();
+    }
+
+    // @notice Expend the memory with length bytes
+    // @param self - The pointer to the memory.
+    // @param length - The number of bytes to add.
+    // @return The new pointer to the memory.
+    // @return The gas cost of this expansion.
+    func expand{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.Memory*, length: felt) -> (new_memory: model.Memory*, cost: felt) {
+        Helpers.fill(self.bytes + self.bytes_len, value=0, length=length);
+        let (last_memory_size_word, _) = unsigned_div_rem(self.bytes_len + 31, 32);
+        let (last_memory_cost, _) = unsigned_div_rem(
+            last_memory_size_word * last_memory_size_word, 512
+        );
+        let last_memory_cost = last_memory_cost + (3 * last_memory_size_word);
+
+        let (new_memory_size_word, _) = unsigned_div_rem(self.bytes_len + length + 31, 32);
+        let (new_memory_cost, _) = unsigned_div_rem(
+            new_memory_size_word * new_memory_size_word, 512
+        );
+        let new_memory_cost = new_memory_cost + (3 * new_memory_size_word);
+
+        let cost = new_memory_cost - last_memory_cost;
+
+        return (new model.Memory(bytes=self.bytes, bytes_len=self.bytes_len + length), cost);
+    }
+
+    // @notice Insure that the memory as at least length bytes. Expand if necessary.
+    // @param self - The pointer to the memory.
+    // @param offset - The number of bytes to add.
+    // @return The new pointer to the memory.
+    // @return The gas cost of this expansion.
+    func insure_length{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.Memory*, length: felt) -> (new_memory: model.Memory*, cost: felt) {
+        let is_memory_expanding = is_le_felt(self.bytes_len + 1, length);
+        if (is_memory_expanding == TRUE) {
+            let (new_memory, cost) = Memory.expand(self, length - self.bytes_len);
+            tempvar cost = cost;
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+            tempvar bitwise_ptr = bitwise_ptr;
+        } else {
+            tempvar new_memory = self;
+            tempvar cost = 0;
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+            tempvar bitwise_ptr = bitwise_ptr;
+        }
+
+        return (new_memory, cost);
     }
 }
