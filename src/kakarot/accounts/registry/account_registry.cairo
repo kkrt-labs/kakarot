@@ -8,15 +8,12 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 // Local dependencies
 from kakarot.accounts.registry.library import AccountRegistry
 
-// @title EVM account registry contract.
-// @author @abdelhamidbakhta
-
 // Constructor
 @constructor
 func constructor{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(kakarot_address: felt) {
-    return AccountRegistry.constructor(kakarot_address);
+}(kakarot_address: felt, evm_contract_class_hash: felt) {
+    return AccountRegistry.init(kakarot_address,evm_contract_class_hash);
 }
 
 // @notice Update or create an entry in the registry.
@@ -47,4 +44,16 @@ func get_evm_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(starknet_address: felt) -> (evm_address: felt) {
     return AccountRegistry.get_evm_address(starknet_address);
+}
+
+// @notice deploy starknet contract
+// @dev starknet contract will be mapped to an evm address that is also generated within this function
+// @param bytes: the contract code
+// @return evm address that is mapped to the actual contract address
+@external
+func deploy{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    bytes_len: felt, bytes: felt*
+) -> (evm_contract_address: felt) {
+    let evm_contract_address = AccountRegistry.deploy_contract(bytes_len, bytes);
+    return (evm_contract_address,);
 }
