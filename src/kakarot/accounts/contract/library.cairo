@@ -34,17 +34,18 @@ namespace ContractAccount {
     // @param kakarot_address: The address of the Kakarot smart contract.
     // @param code: The code of the smart contract.
     // @param code_len: The length of the smart contract code.
-    func constructor{
+    func init{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(kakarot_address: felt, code_len: felt, code: felt*) {
-        // Initialize access control.
-        Ownable.initializer(kakarot_address);
 
         // Store the bytecode.
-        store_code(code_len, code);
+        internal.store_code(0, code_len - 1, code);
+
+        // Initialize access control.
+        Ownable.initializer(kakarot_address);
 
         return ();
     }
@@ -112,7 +113,6 @@ namespace internal {
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
     }(index: felt, last_index: felt, code: felt*) {
         alloc_locals;
         if (index == last_index) {
