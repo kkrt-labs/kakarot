@@ -39,6 +39,36 @@ Params = namedtuple("Params", argnames)
 test_cases = [
     {
         "params": {
+            "code": "600160015500",
+            "calldata": "",
+            "stack": "",
+            "memory": "",
+            "return_value": "",
+        },
+        "id": "sstore",
+    },
+    {
+        "params": {
+            "code": "60056003600039",
+            "calldata": "",
+            "stack": "",
+            "memory": "0360003900000000000000000000000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "codecopy",
+    },
+    {
+        "params": {
+            "code": "7dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6008601f600039",
+            "calldata": "",
+            "stack": "1766847064778384329583297500742918515827483896875618958121606201292619775",
+            "memory": "6008601f60003900000000000000000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "codecopy2",
+    },
+    {
+        "params": {
             "code": "6003600401600a02608c036102bc04604605600d066010076005600608601060020960040A60600B00",
             "calldata": "",
             "stack": "16",
