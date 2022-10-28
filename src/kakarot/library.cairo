@@ -9,6 +9,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.memcpy import memcpy
 from starkware.starknet.common.syscalls import deploy
+from starkware.cairo.common.uint256 import Uint256
 
 // OpenZeppelin dependencies
 from openzeppelin.access.ownable.library import Ownable
@@ -64,6 +65,41 @@ namespace Kakarot {
 
         // Prepare execution context
         let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
+
+        // Compute intrinsic gas cost and update gas used
+        let ctx = ExecutionContext.compute_intrinsic_gas_cost(ctx);
+
+        // Start execution
+        let ctx = run(instructions, ctx);
+
+        // For debugging purpose
+        ExecutionContext.dump(ctx);
+
+        return ctx;
+    }
+
+    // @notice Execute an EVM bytecode.
+    // @param _bytecode The bytecode to execute.
+    // @param calldata The calldata to pass to the bytecode.
+    // @return The pointer to the execution context.
+    func execute_at_address{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(address: felt, calldata_len: felt, calldata: felt*) -> model.ExecutionContext* {
+        alloc_locals;
+
+        // Load helper hints
+        Helpers.setup_python_defs();
+
+        // Generate instructions set
+        let instructions: felt* = EVMInstructions.generate_instructions();
+
+        // Prepare execution context
+        let ctx: model.ExecutionContext* = ExecutionContext.init_evm(
+            address, calldata_len, calldata
+        );
 
         // Compute intrinsic gas cost and update gas used
         let ctx = ExecutionContext.compute_intrinsic_gas_cost(ctx);

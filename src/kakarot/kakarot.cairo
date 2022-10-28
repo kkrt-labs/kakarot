@@ -19,7 +19,7 @@ func constructor{
     return Kakarot.init(owner, native_token_address_, evm_contract_class_hash);
 }
 
-@external
+@view
 func execute{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(code_len: felt, code: felt*, calldata_len: felt, calldata: felt*) -> (
@@ -34,6 +34,26 @@ func execute{
         memory_len=context.memory.bytes_len,
         memory=context.memory.bytes,
         gas_used=context.gas_used,
+    );
+}
+
+// Create new function
+@external
+func execute_at_address{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(address: felt, calldata_len: felt, calldata: felt*) -> (
+    stack_len: felt, stack: Uint256*, memory_len: felt, memory: felt*
+) {
+    alloc_locals;
+    let context = Kakarot.execute_at_address(
+        address=address, calldata_len=calldata_len, calldata=calldata
+    );
+    let len = Stack.len(context.stack);
+    return (
+        stack_len=len,
+        stack=context.stack.elements,
+        memory_len=context.memory.bytes_len,
+        memory=context.memory.bytes,
     );
 }
 

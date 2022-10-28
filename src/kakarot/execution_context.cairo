@@ -16,6 +16,8 @@ from kakarot.model import model
 from kakarot.memory import Memory
 from kakarot.stack import Stack
 from kakarot.constants import Constants
+from kakarot.constants import native_token_address, registry_address
+from kakarot.interfaces.interfaces import IEth, IResgistry, IEvm_Contract
 
 // @title ExecutionContext related functions.
 // @notice This file contains functions related to the execution context.
@@ -45,6 +47,10 @@ namespace ExecutionContext {
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();
 
+        // 1. Evm address
+        // 2. Get starknet Address
+        // 3. Get the constant of Evm address mappings
+
         local ctx: model.ExecutionContext* = new model.ExecutionContext(
             code=code,
             code_len=code_len,
@@ -59,6 +65,63 @@ namespace ExecutionContext {
             gas_used=gas_used,
             gas_limit=gas_limit,
             intrinsic_gas_cost=0,
+            starknet_address=0,
+            evm_address=0,
+            );
+        return ctx;
+    }
+
+    // @notice Initialize the execution context.
+    // @param code The code to execute.
+    // @param calldata The calldata.
+    // @return The initialized execution context.
+    func init_evm{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(address: felt, calldata_len: felt, calldata: felt*) -> model.ExecutionContext* {
+        alloc_locals;
+        let (empty_return_data: felt*) = alloc();
+
+        // Define initial program counter
+        let initial_pc = 0;
+        let gas_used = 0;
+        // TODO: Add support for gas limit
+        let gas_limit = 0;
+
+        let stack: model.Stack* = Stack.init();
+        let memory: model.Memory* = Memory.init();
+
+        // 1. Evm address
+        // 2. Get starknet Address
+        // let addr: felt = Helpers.uint256_to_felt(address);
+        let (registry_address_) = registry_address.read();
+        let (starknet_address) = IResgistry.get_starknet_address(
+            contract_address=registry_address_, evm_address=address
+        );
+        // Get the BYTECODE from the Starknet_contract
+
+        let (bytecode_len, bytecode) = IEvm_Contract.get_bytecode(
+            contract_address=starknet_address
+        );
+
+        local ctx: model.ExecutionContext* = new model.ExecutionContext(
+            code=calldata,
+            code_len=0,
+            calldata=calldata,
+            calldata_len=Helpers.get_len(calldata),
+            program_counter=initial_pc,
+            stopped=FALSE,
+            return_data=empty_return_data,
+            return_data_len=Helpers.get_len(empty_return_data),
+            stack=stack,
+            memory=memory,
+            gas_used=gas_used,
+            gas_limit=gas_limit,
+            intrinsic_gas_cost=0,
+            starknet_address=starknet_address,
+            evm_address=address,
             );
         return ctx;
     }
@@ -84,6 +147,8 @@ namespace ExecutionContext {
             gas_used=gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=intrinsic_gas_cost,
+            starknet_address=self.starknet_address,
+            evm_address=self.evm_address,
             );
     }
 
@@ -119,6 +184,8 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,
+            starknet_address=self.starknet_address,
+            evm_address=self.evm_address,
             );
     }
 
@@ -166,6 +233,8 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,
+            starknet_address=self.starknet_address,
+            evm_address=self.evm_address,
             );
     }
 
@@ -193,6 +262,8 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,
+            starknet_address=self.starknet_address,
+            evm_address=self.evm_address,
             );
     }
 
@@ -218,6 +289,8 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,
+            starknet_address=self.starknet_address,
+            evm_address=self.evm_address,
             );
     }
 
@@ -243,6 +316,8 @@ namespace ExecutionContext {
             gas_used=self.gas_used + inc_value,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,
+            starknet_address=self.starknet_address,
+            evm_address=self.evm_address,
             );
     }
 
@@ -326,6 +401,8 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,
+            starknet_address=self.starknet_address,
+            evm_address=self.evm_address,
             );
     }
 

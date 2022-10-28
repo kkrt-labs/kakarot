@@ -5,6 +5,7 @@
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.uint256 import Uint256
 
 // OpenZeppelin dependencies
 from openzeppelin.access.ownable.library import Ownable
@@ -22,6 +23,10 @@ func code_(index: felt) -> (res: felt) {
 
 @storage_var
 func code_len_() -> (res: felt) {
+}
+
+@storage_var
+func state_(key: Uint256) -> (value: Uint256) {
 }
 
 namespace ContractAccount {
@@ -76,6 +81,26 @@ namespace ContractAccount {
         // Recursively load code into specified memory location.
         internal.load_code(0, code_len - 1, code);
         return (code_len, code);
+    }
+
+    func read_state{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(key: Uint256) -> (value: Uint256) {
+        let value = state_.read(key);
+        return value;
+    }
+
+    func write_state{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(key: Uint256, value: Uint256) {
+        state_.write(key, value);
+        return ();
     }
 }
 
