@@ -260,20 +260,9 @@ namespace Memory {
         let is_memory_expanding = is_le_felt(self.bytes_len + 1, length);
         if (is_memory_expanding == TRUE) {
             let (new_memory, cost) = Memory.expand(self, length - self.bytes_len);
-            tempvar cost = cost;
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar range_check_ptr = range_check_ptr;
-            tempvar bitwise_ptr = bitwise_ptr;
+            return (new_memory, cost);
         } else {
-            tempvar new_memory = self;
-            tempvar cost = 0;
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar range_check_ptr = range_check_ptr;
-            tempvar bitwise_ptr = bitwise_ptr;
+            return (new_memory=self, cost=0);
         }
-
-        return (new_memory, cost);
     }
 }
