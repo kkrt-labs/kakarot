@@ -56,6 +56,9 @@ namespace Sha3 {
 
         let (memory, cost) = Memory.insure_length(ctx.memory, offset.low + length.low);
 
+        // Update context memory.
+        let ctx = ExecutionContext.update_memory(ctx, memory);
+
         let (local dest: felt*) = alloc();
         bytes_to_byte8_little_endian(
             bytes_len=memory.bytes_len - offset.low,
