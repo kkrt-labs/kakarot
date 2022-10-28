@@ -592,6 +592,16 @@ test_cases = [
     },
     {
         "params": {
+            "code": "3200",
+            "calldata": "",
+            "stack": "0",
+            "memory": "",
+            "return_value": "",
+        },
+        "id": "Origin Address",
+    },
+    {
+        "params": {
             "code": "3300",
             "calldata": "",
             "stack": "1",
@@ -608,7 +618,7 @@ test_cases = [
             "memory": "0000000000000000000000000000000000000000000000000000000000000100",
             "return_value": "",
         },
-        "id": "Hash 0x100",
+        "id": "Sha3 - Hash  32 bytes 0x100",
     },
     {
         "params": {
@@ -618,7 +628,17 @@ test_cases = [
             "memory": "0000000000000000000000000000000000000000000000000000000000000010",
             "return_value": "",
         },
-        "id": "Hash 0x10",
+        "id": "Sha3 - Hash 1 byte 0x10",
+    },
+    {
+        "params": {
+            "code": "6010600052600960002000",
+            "calldata": "",
+            "stack": "78337347954576241567341556127836028920764967266964912349540464394612926403441",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000010",
+            "return_value": "",
+        },
+        "id": "Sha3 - Hash 9 bytes 0x10",
     },
     {
         "params": {
@@ -849,7 +869,8 @@ class TestZkEVM:
         return low, high
 
     @pytest.mark.parametrize(
-        argnames, params,
+        argnames,
+        params,
     )
     async def test_case(self, zk_evm, code, calldata, stack, memory, return_value):
         Uint256 = zk_evm.struct_manager.get_contract_struct("Uint256")

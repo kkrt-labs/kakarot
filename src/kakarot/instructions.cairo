@@ -235,6 +235,8 @@ namespace EVMInstructions {
         // Environment Information
         // 0x31 - BALANCE
         add_instruction(instructions, 0x31, EnvironmentalInformation.exec_balance);
+        // 0x32 - ORIGIN
+        add_instruction(instructions, 0x32, EnvironmentalInformation.exec_origin);
         // 0x33 - CALLER
         add_instruction(instructions, 0x33, EnvironmentalInformation.exec_caller);
         // 0x35 - CALLDATALOAD
