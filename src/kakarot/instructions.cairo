@@ -247,6 +247,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x37, EnvironmentalInformation.exec_calldatacopy);
         // 0x38 - CODESIZE
         add_instruction(instructions, 0x38, EnvironmentalInformation.exec_codesize);
+        // 0x39 - CODECOPY
+        add_instruction(instructions, 0x39, EnvironmentalInformation.exec_codecopy);
         // 0x3d - RETURNDATASIZE
         add_instruction(instructions, 0x3d, EnvironmentalInformation.exec_returndatasize);
 
@@ -277,6 +279,8 @@ namespace EVMInstructions {
         // 0x52 - MSTORE
         add_instruction(instructions, 0x52, MemoryOperations.exec_mstore);
 
+        // 0x55 - SSTORE
+        add_instruction(instructions, 0x55, MemoryOperations.exec_sstore);
         // 0x53 - MSTORE8
         add_instruction(instructions, 0x53, MemoryOperations.exec_mstore8);
         // 0x56 - JUMP
