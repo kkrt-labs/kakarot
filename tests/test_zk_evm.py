@@ -1,4 +1,3 @@
-from collections import namedtuple
 from textwrap import wrap
 from time import time
 
@@ -32,9 +31,6 @@ async def zk_evm(starknet, eth):
     print(f"zkEVM set in {account_time - registry_time:.2f}s")
     return _zk_evm
 
-
-argnames = ["code", "calldata", "stack", "memory", "return_value"]
-Params = namedtuple("Params", argnames)
 
 test_cases = [
     {
@@ -969,10 +965,164 @@ test_cases = [
         },
         "id": "calldatacopy5",
     },
+    {
+        "params": {
+            "code": "60106000526001601fA000",
+            "calldata": "",
+            "stack": "",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000010",
+            "return_value": "",
+            "events": [[[], [0x10]]],
+        },
+        "id": "PRElog0",
+    },
+    {
+        "params": {
+            "code": "601060005260016022A000",
+            "calldata": "",
+            "stack": "",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000010000000",
+            "return_value": "",
+            "events": [[[], [0x00]]],
+        },
+        "id": "PRElog0-1",
+    },
+    {
+        "params": {
+            "code": "60106000527FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF6001601fA100",
+            "calldata": "",
+            "stack": "",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000010",
+            "return_value": "",
+            "events": [
+                [
+                    [
+                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                    ],
+                    [0x10],
+                ]
+            ],
+        },
+        "id": "PRElog1",
+    },
+    {
+        "params": {
+            "code": "601060005260FF60016022A100",
+            "calldata": "",
+            "stack": "",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000010000000",
+            "return_value": "",
+            "events": [[[0xFF, 0x00], [0x00]]],
+        },
+        "id": "PRElog1-1",
+    },
+    {
+        "params": {
+            "code": "60106000527FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF60FF6001601fA200",
+            "calldata": "",
+            "stack": "",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000010",
+            "return_value": "",
+            "events": [
+                [
+                    [
+                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                        0xFF,
+                        0x00,
+                    ],
+                    [0x10],
+                ]
+            ],
+        },
+        "id": "PRElog2",
+    },
+    {
+        "params": {
+            "code": "6010600052600060FF60016022A200",
+            "calldata": "",
+            "stack": "",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000010000000",
+            "return_value": "",
+            "events": [[[0x00, 0x00, 0xFF, 0x00], [0x00]]],
+        },
+        "id": "PRElog2-1",
+    },
+    {
+        "params": {
+            "code": "601060005260AB7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF60FF6001601fA300",
+            "calldata": "",
+            "stack": "",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000010",
+            "return_value": "",
+            "events": [
+                [
+                    [
+                        0xAB,
+                        0x00,
+                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                        0xFF,
+                        0x00,
+                    ],
+                    [0x10],
+                ]
+            ],
+        },
+        "id": "PRElog3",
+    },
+    {
+        "params": {
+            "code": "601060005260AB600060FF60016022A300",
+            "calldata": "",
+            "stack": "",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000010000000",
+            "return_value": "",
+            "events": [[[0xAB, 0x00, 0x00, 0x00, 0xFF, 0x00], [0x00]]],
+        },
+        "id": "PRElog3-1",
+    },
+    {
+        "params": {
+            "code": "6010600052600860AB7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF60FF6001601fA400",
+            "calldata": "",
+            "stack": "",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000010",
+            "return_value": "",
+            "events": [
+                [
+                    [
+                        0x08,
+                        0x00,
+                        0xAB,
+                        0x00,
+                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                        0xFF,
+                        0x00,
+                    ],
+                    [0x10],
+                ]
+            ],
+        },
+        "id": "PRElog4",
+    },
+    {
+        "params": {
+            "code": "6010600052600860AB600060FF60016022A400",
+            "calldata": "",
+            "stack": "",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000010000000",
+            "return_value": "",
+            "events": [[[0x08, 0x00, 0xAB, 0x00, 0x00, 0x00, 0xFF, 0x00], [0x00]]],
+        },
+        "id": "PRElog4-1",
+    },
 ]
 
 
-params = [pytest.param(*Params(**case.pop("params")), **case) for case in test_cases]
+params = [pytest.param(case.pop("params"), **case) for case in test_cases]
 
 
 @pytest.mark.asyncio
@@ -984,17 +1134,26 @@ class TestZkEVM:
         return low, high
 
     @pytest.mark.parametrize(
-        argnames,
+        "params",
         params,
     )
-    async def test_case(self, zk_evm, code, calldata, stack, memory, return_value):
+    async def test_case(self, zk_evm, params):
         Uint256 = zk_evm.struct_manager.get_contract_struct("Uint256")
         res = await zk_evm.execute(
-            code=[int(b, 16) for b in wrap(code, 2)],
-            calldata=[int(b, 16) for b in wrap(calldata, 2)],
+            code=[int(b, 16) for b in wrap(params["code"], 2)],
+            calldata=[int(b, 16) for b in wrap(params["calldata"], 2)],
         ).call(caller_address=1)
         assert res.result.stack == [
             Uint256(*self.int_to_uint256(int(s)))
-            for s in (stack.split(",") if stack else [])
+            for s in (params["stack"].split(",") if params["stack"] else [])
         ]
-        assert res.result.memory == [int(m, 16) for m in wrap(memory, 2)]
+        assert res.result.memory == [int(m, 16) for m in wrap(params["memory"], 2)]
+        events = params.get("events")
+        if events:
+            assert [
+                [
+                    event.keys,
+                    event.data,
+                ]
+                for event in sorted(res.call_info.events, key=lambda x: x.order)
+            ] == events
