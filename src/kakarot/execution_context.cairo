@@ -17,7 +17,7 @@ from kakarot.memory import Memory
 from kakarot.stack import Stack
 from kakarot.constants import Constants
 from kakarot.constants import native_token_address, registry_address
-from kakarot.interfaces.interfaces import IEth, IResgistry, IEvm_Contract
+from kakarot.interfaces.interfaces import IEth, IRegistry, IEvm_Contract
 
 // @title ExecutionContext related functions.
 // @notice This file contains functions related to the execution context.
@@ -97,7 +97,7 @@ namespace ExecutionContext {
         // 2. Get starknet Address
         // let addr: felt = Helpers.uint256_to_felt(address);
         let (registry_address_) = registry_address.read();
-        let (starknet_address) = IResgistry.get_starknet_address(
+        let (starknet_address) = IRegistry.get_starknet_address(
             contract_address=registry_address_, evm_address=address
         );
         // Get the BYTECODE from the Starknet_contract

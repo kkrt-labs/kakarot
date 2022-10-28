@@ -5,18 +5,18 @@
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
-// Local dependencies
-from kakarot.accounts.registry.library import AccountRegistry
-
 // @title EVM account registry contract.
 // @author @abdelhamidbakhta
+
+// Local dependencies
+from kakarot.accounts.registry.library import AccountRegistry
 
 // Constructor
 @constructor
 func constructor{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(kakarot_address: felt) {
-    return AccountRegistry.constructor(kakarot_address);
+    return AccountRegistry.init(kakarot_address);
 }
 
 // @notice Update or create an entry in the registry.
