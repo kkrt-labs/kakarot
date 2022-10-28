@@ -929,7 +929,8 @@ class TestZkEVM:
         return low, high
 
     @pytest.mark.parametrize(
-        argnames, params,
+        argnames,
+        params,
     )
     async def test_case(self, zk_evm, code, calldata, stack, memory, return_value):
         Uint256 = zk_evm.struct_manager.get_contract_struct("Uint256")
