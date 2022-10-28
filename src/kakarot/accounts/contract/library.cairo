@@ -29,7 +29,7 @@ namespace ContractAccount {
     // @param kakarot_address: The address of the Kakarot smart contract.
     // @param code: The code of the smart contract.
     // @param code_len: The length of the smart contract code.
-    func constructor{
+    func init{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,

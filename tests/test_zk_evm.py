@@ -10,7 +10,8 @@ import pytest_asyncio
 async def zk_evm(starknet, eth):
     start = time()
     contract_hash = await starknet.declare(
-        source="./src/kakarot/mock_evm_contract.cairo", disable_hint_validation=0
+        source="./src/kakarot/accounts/contract/contract_account.cairo",
+        disable_hint_validation=0,
     )
     _zk_evm = await starknet.deploy(
         source="./src/kakarot/kakarot.cairo",

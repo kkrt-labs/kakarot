@@ -16,7 +16,7 @@ from kakarot.accounts.contract.library import ContractAccount
 func constructor{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(kakarot_address: felt, code_len: felt, code: felt*) {
-    return ContractAccount.constructor(kakarot_address, code_len, code);
+    return ContractAccount.init(kakarot_address, code_len, code);
 }
 
 // @notice Store the bytecode of the contract.

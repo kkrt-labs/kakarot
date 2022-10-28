@@ -109,8 +109,11 @@ namespace AccountRegistry {
         let (class_hash) = EVM_contract_class_hash.read();
 
         let (local calldata: felt*) = alloc();
-        assert [calldata] = bytes_len;
-        memcpy(dst=calldata + 1, src=bytes, len=bytes_len);
+        let (kakarot_address) = Ownable.owner();
+
+        assert [calldata] = kakarot_address;
+        assert [calldata+1] = bytes_len;
+        memcpy(dst=calldata + 2, src=bytes, len=bytes_len);
 
         let (contract_address) = deploy(
             class_hash=class_hash,
