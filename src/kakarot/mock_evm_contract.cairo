@@ -10,6 +10,6 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 func constructor{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(bytes_len: felt, bytes: felt*) {
-    //Store bytes here
-    return();
+    // Store bytes here
+    return ();
 }

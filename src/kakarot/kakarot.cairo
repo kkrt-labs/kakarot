@@ -22,12 +22,10 @@ func constructor{
 }
 
 @external
-func deploy{
-        syscall_ptr: felt*, 
-        pedersen_ptr: HashBuiltin*, 
-        range_check_ptr
-    }(bytes_len: felt, bytes: felt*) -> (evm_contract_address: felt){
-    let evm_contract_address = EvmContractFactory.deploy_contract(bytes_len,bytes);
+func deploy{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    bytes_len: felt, bytes: felt*
+) -> (evm_contract_address: felt) {
+    let evm_contract_address = EvmContractFactory.deploy_contract(bytes_len, bytes);
     return (evm_contract_address,);
 }
 
@@ -45,7 +43,7 @@ func execute{
         stack=context.stack.elements,
         memory_len=context.memory.bytes_len,
         memory=context.memory.bytes,
-        gas_used=context.gas_used
+        gas_used=context.gas_used,
     );
 }
 

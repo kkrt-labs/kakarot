@@ -41,7 +41,7 @@ class TestArithmeticOperations(IsolatedAsyncioTestCase):
             yield error_msg
         self.assertTrue(
             f"Error message: {error_message}" in str(error_msg.exception.message)
-        )    
+        )
 
     async def test__exec_add__should_add_0_and_1(self):
         await self.test_arithmetic_operations.test__exec_add__should_add_0_and_1().call()
