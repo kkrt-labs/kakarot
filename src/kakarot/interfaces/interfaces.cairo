@@ -22,10 +22,10 @@ namespace IEth {
 
 @contract_interface
 namespace IEvm_Contract {
-    func get_bytecode() -> (bytecode_len: felt, bytecode: felt*) {
+    func code() -> (bytecode_len: felt, bytecode: felt*) {
     }
-    func get_key_storage(key: Uint256) -> (value: Uint256) {
+    func state(key: Uint256) -> (value: Uint256) {
     }
-    func write_key_storage(key: Uint256, value: Uint256) {
+    func write_state(key: Uint256, value: Uint256) {
     }
 }

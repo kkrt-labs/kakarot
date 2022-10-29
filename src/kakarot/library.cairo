@@ -17,7 +17,7 @@ from openzeppelin.access.ownable.library import Ownable
 // Internal dependencies
 from kakarot.model import model
 from kakarot.instructions import EVMInstructions
-from kakarot.interfaces.interfaces import IRegistry
+from kakarot.interfaces.interfaces import IRegistry, IEvm_Contract
 from kakarot.execution_context import ExecutionContext
 from kakarot.constants import native_token_address, registry_address, evm_contract_class_hash
 from utils.utils import Helpers
@@ -54,7 +54,7 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(code: felt*, code_len: felt, calldata: felt*) -> model.ExecutionContext* {
+    }(code_len: felt, code: felt*, calldata: felt*) -> model.ExecutionContext* {
         alloc_locals;
 
         // Load helper hints
@@ -78,7 +78,7 @@ namespace Kakarot {
         return ctx;
     }
 
-    // @notice Execute an EVM bytecode.
+    // @notice Fetch EVM bytecode from contract, then execute it.
     // @param _bytecode The bytecode to execute.
     // @param calldata The calldata to pass to the bytecode.
     // @return The pointer to the execution context.
@@ -87,28 +87,20 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, calldata_len: felt, calldata: felt*) -> model.ExecutionContext* {
+    }(address: felt, calldata: felt*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Load helper hints
-        Helpers.setup_python_defs();
+        // Get registry address
+        let (reg_address) = registry_address.read();
 
-        // Generate instructions set
-        let instructions: felt* = EVMInstructions.generate_instructions();
+        // get starknet contract from registry
+        let (starknet_address) = IRegistry.get_starknet_address(reg_address, address);
 
-        // Prepare execution context
-        let ctx: model.ExecutionContext* = ExecutionContext.init_evm(
-            address, calldata_len, calldata
-        );
+        // fetch code
+        let (bytecode_len: felt, bytecode: felt*) = IEvm_Contract.code(starknet_address);
 
-        // Compute intrinsic gas cost and update gas used
-        let ctx = ExecutionContext.compute_intrinsic_gas_cost(ctx);
-
-        // Start execution
-        let ctx = run(instructions, ctx);
-
-        // For debugging purpose
-        ExecutionContext.dump(ctx);
+        // call execute
+        let ctx = execute(bytecode_len, bytecode, calldata);
 
         return ctx;
     }

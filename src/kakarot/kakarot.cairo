@@ -26,7 +26,7 @@ func execute{
     stack_len: felt, stack: Uint256*, memory_len: felt, memory: felt*, gas_used: felt
 ) {
     alloc_locals;
-    let context = Kakarot.execute(code=code, code_len=code_len, calldata=calldata);
+    let context = Kakarot.execute(code_len=code_len, code=code, calldata=calldata);
     let len = Stack.len(context.stack);
     return (
         stack_len=len,
@@ -45,9 +45,7 @@ func execute_at_address{
     stack_len: felt, stack: Uint256*, memory_len: felt, memory: felt*
 ) {
     alloc_locals;
-    let context = Kakarot.execute_at_address(
-        address=address, calldata_len=calldata_len, calldata=calldata
-    );
+    let context = Kakarot.execute_at_address(address=address, calldata=calldata);
     let len = Stack.len(context.stack);
     return (
         stack_len=len,
