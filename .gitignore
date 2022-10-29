@@ -22,3 +22,10 @@ build
 
 # README
 tests/integrations/README.md
+scripts/deploy_eth_lisbon.sh
+scripts/deploy_eth_lisbon.ts
+
+package.json
+node_modules
+package-lock.json
+tsconfig.json

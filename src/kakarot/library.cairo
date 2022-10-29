@@ -26,6 +26,13 @@ from utils.utils import Helpers
 func salt() -> (value: felt) {
 }
 
+// An event emitted whenever kakarot deploys a evm contract
+// evm_contract_address is the representation of the evm address of the contract
+// starknet_contract_address if the starknet address of the contract
+@event
+func evm_contract_deployed(evm_contract_address: felt, starknet_contract_address: felt) {
+}
+
 // @title Kakarot main library file.
 // @notice This file contains the core EVM execution logic.
 // @author @abdelhamidbakhta
@@ -168,7 +175,7 @@ namespace Kakarot {
     @external
     func deploy_contract{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         bytes_len: felt, bytes: felt*
-    ) -> felt {
+    ) -> (evm_contract_address: felt, starknet_contract_address: felt) {
         alloc_locals;
         let (current_salt) = salt.read();
         let (class_hash) = evm_contract_class_hash.read();
@@ -195,6 +202,8 @@ namespace Kakarot {
         // Save address of new contracts
         let (reg_address) = registry_address.read();
         IRegistry.set_account_entry(reg_address, contract_address, evm_contract_address);
-        return (evm_contract_address);
+        return (
+            evm_contract_address=evm_contract_address, starknet_contract_address=contract_address
+        );
     }
 }
