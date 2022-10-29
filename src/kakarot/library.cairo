@@ -6,7 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
-from starkware.cairo.common.math import unsigned_div_rem
+from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.starknet.common.syscalls import deploy
 from starkware.cairo.common.uint256 import Uint256
@@ -181,12 +181,13 @@ namespace Kakarot {
         );
         salt.write(value=current_salt + 1);
         // Generate EVM_contract address from the new cairo contract
-        // let (evm_contract_address,_) = unsigned_div_rem(contract_address, 1000000000000000000000000000000000000000000000000);
-        let evm_contract_address = 123 + current_salt;
-
+        // TEMPORARY SOLUTION FOR HACK-LISBON !!!
+        let (_, low) = split_felt(contract_address);
+        // We run the risk to create an address that is 21 bytes
+        local mock_evm_address = 0xAbdE100700000000000000000000000000000000 + low;
         // Save address of new contracts
         let (reg_address) = registry_address.read();
-        IRegistry.set_account_entry(reg_address, contract_address, evm_contract_address);
-        return (evm_contract_address);
+        IRegistry.set_account_entry(reg_address, contract_address, mock_evm_address);
+        return (mock_evm_address);
     }
 }
