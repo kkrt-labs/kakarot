@@ -19,7 +19,7 @@ from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 from kakarot.memory import Memory
 from kakarot.constants import native_token_address, registry_address
-from kakarot.interfaces.interfaces import IEth, IResgistry
+from kakarot.interfaces.interfaces import IEth, IRegistry
 
 // @title Environmental information opcodes.
 // @notice This file contains the functions to execute for environmental information opcodes.
@@ -35,6 +35,7 @@ namespace EnvironmentalInformation {
     const GAS_COST_ORIGIN = 2;
     const GAS_COST_BALANCE = 100;
     const GAS_COST_CALLDATACOPY = 3;
+    const GAS_COST_CODECOPY = 3;
 
     // @notice BALANCE opcode.
     // @dev Get ETH balance of the specified address.
@@ -60,7 +61,7 @@ namespace EnvironmentalInformation {
 
         let addr: felt = Helpers.uint256_to_felt(address);
         let (registry_address_) = registry_address.read();
-        let (starknet_address) = IResgistry.get_starknet_address(
+        let (starknet_address) = IRegistry.get_starknet_address(
             contract_address=registry_address_, evm_address=address.low
         );
         let (native_token_address_) = native_token_address.read();
@@ -131,7 +132,7 @@ namespace EnvironmentalInformation {
 
         let (tx_info) = get_tx_info();
         let (registry_address_) = registry_address.read();
-        let (evm_address) = IResgistry.get_evm_address(
+        let (evm_address) = IRegistry.get_evm_address(
             registry_address_, tx_info.account_contract_address
         );
         let origin_address = Helpers.to_uint256(evm_address);
@@ -240,6 +241,7 @@ namespace EnvironmentalInformation {
         let uint256_sliced_calldata: Uint256 = Helpers.bytes_to_uint256(sliced_calldata);
 
         // Push CallData word onto stack
+
         let stack: model.Stack* = Stack.push(stack, uint256_sliced_calldata);
 
         // Update context stack.
@@ -329,6 +331,57 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLDATACOPY);
+        return ctx;
+    }
+
+    // @notice CODECOPY operation
+    // @dev Save word to memory.
+    // @custom:since Frontier
+    // @custom:group Stack Memory Storage and Flow operations.
+    // @custom:gas 3
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 0
+    // @return Updated execution context.
+    func exec_codecopy{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        %{
+            import logging
+            logging.info("0x39 - CODECOPY")
+        %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - offset: memory offset of the work we save.
+        // 1 - code_offset: offset for code from where data will be copied.
+        // 2 - element_len: bytes length of the copied code.
+
+        let (stack, offset) = Stack.pop(stack);
+        let (stack, code_offset) = Stack.pop(stack);
+        let (stack, element_len) = Stack.pop(stack);
+
+        let code: felt* = ctx.code;
+        let code_len: felt = ctx.code_len;
+
+        let sliced_code: felt* = Helpers.slice_data(
+            data_len=code_len, data=code, data_offset=code_offset.low, slice_len=element_len.low
+        );
+
+        let memory: model.Memory* = Memory.store_n(
+            self=ctx.memory, element_len=element_len.low, element=sliced_code, offset=offset.low
+        );
+
+        // Update context memory.
+        let ctx = ExecutionContext.update_memory(ctx, memory);
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CODECOPY);
         return ctx;
     }
 }

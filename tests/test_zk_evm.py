@@ -9,11 +9,16 @@ import pytest_asyncio
 @pytest_asyncio.fixture(scope="session")
 async def zk_evm(starknet, eth):
     start = time()
+    contract_hash = await starknet.declare(
+        source="./src/kakarot/accounts/contract/contract_account.cairo",
+        cairo_path=["src"],
+        disable_hint_validation=0,
+    )
     _zk_evm = await starknet.deploy(
         source="./src/kakarot/kakarot.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
-        constructor_calldata=[1, eth.contract_address],
+        constructor_calldata=[1, eth.contract_address, contract_hash.class_hash],
     )
     evm_time = time()
     print(f"\nzkEVM deployed in {evm_time - start:.2f}s")
@@ -30,6 +35,8 @@ async def zk_evm(starknet, eth):
     ).execute(caller_address=1)
     account_time = time()
     print(f"zkEVM set in {account_time - registry_time:.2f}s")
+    res = await _zk_evm.deploy(bytes=[1, 12312]).call(caller_address=1)
+    print("Contract Address: ", res)
     return _zk_evm
 
 
@@ -37,6 +44,36 @@ argnames = ["code", "calldata", "stack", "memory", "return_value"]
 Params = namedtuple("Params", argnames)
 
 test_cases = [
+    {
+        "params": {
+            "code": "600160015500",
+            "calldata": "",
+            "stack": "",
+            "memory": "",
+            "return_value": "",
+        },
+        "id": "sstore",
+    },
+    {
+        "params": {
+            "code": "60056003600039",
+            "calldata": "",
+            "stack": "",
+            "memory": "0360003900000000000000000000000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "codecopy",
+    },
+    {
+        "params": {
+            "code": "7dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6008601f600039",
+            "calldata": "",
+            "stack": "1766847064778384329583297500742918515827483896875618958121606201292619775",
+            "memory": "6008601f60003900000000000000000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "codecopy2",
+    },
     {
         "params": {
             "code": "6003600401600a02608c036102bc04604605600d066010076005600608601060020960040A60600B00",

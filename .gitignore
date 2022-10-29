@@ -19,3 +19,6 @@ build
 *logs.json
 
 .DS_Store
+
+# README
+tests/integrations/README.md

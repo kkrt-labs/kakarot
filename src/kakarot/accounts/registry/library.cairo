@@ -3,7 +3,6 @@
 %lang starknet
 
 // Starkware dependencies
-from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
 // OpenZeppelin dependencies
@@ -15,7 +14,6 @@ from openzeppelin.access.ownable.library import Ownable
 // @custom:namespace AccountRegistry
 
 // Storage
-
 @storage_var
 func starknet_address_(evm_address: felt) -> (starknet_address: felt) {
 }
@@ -27,7 +25,7 @@ func evm_address_(starknet_address: felt) -> (evm_address: felt) {
 namespace AccountRegistry {
     // @notice This function is used to initialize the registry.
     // @param kakarot_address: The address of the Kakarot smart contract.
-    func constructor{
+    func init{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
@@ -35,7 +33,6 @@ namespace AccountRegistry {
     }(kakarot_address: felt) {
         // Initialize access control.
         Ownable.initializer(kakarot_address);
-
         return ();
     }
 
@@ -85,4 +82,5 @@ namespace AccountRegistry {
         let evm_address = evm_address_.read(starknet_address);
         return evm_address;
     }
+
 }
