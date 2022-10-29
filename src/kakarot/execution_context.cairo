@@ -102,7 +102,7 @@ namespace ExecutionContext {
         );
         // Get the BYTECODE from the Starknet_contract
 
-        let (bytecode_len, bytecode) = IEvm_Contract.get_bytecode(
+        let (bytecode_len, bytecode) = IEvm_Contract.code(
             contract_address=starknet_address
         );
 

@@ -64,23 +64,44 @@ namespace SystemOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         let stack = ctx.stack;
+        let memory = ctx.memory;
         %{
             import logging
             logging.info("0xF3 - RETURN")
         %}
         let (local new_return_data: felt*) = alloc();
+        let (local new_memory: model.Memory*) = alloc();
         let (stack, size) = Stack.pop(stack);
         let (stack, offset) = Stack.pop(stack);
-        let curr_memory_len = ctx.memory.bytes_len;
+        let curr_memory_len: felt = ctx.memory.bytes_len;
+        let total_len: felt = offset.low + size.low;
+        // TODO check in which multiple of 32 bytes it should be.
+        // Pad if offset + size > memory_len pad n
+        %{
+            import logging
+            logging.info("Current memory Len")
+            logging.info(ids.curr_memory_len)
+            logging.info("Total Len")
+            logging.info(ids.total_len)
+        %}
+
+
+        if(memory.bytes_len == 0){
+            Helpers.fill(arr=memory.bytes, value=0, length=32); 
+        }
 
         memcpy(dst=new_return_data, src=ctx.memory.bytes + offset.low, len=size.low);
         // Pad if offset + size > memory_len pad n
-        let total_len: felt = offset.low + size.low;
         let is_total_greater_than_memory_len: felt = is_le_felt(curr_memory_len, total_len);
+        // let is_total_greater_than_memory_len: felt = 0;
+
         if (is_total_greater_than_memory_len == 0) {
             local diff = total_len - curr_memory_len;
-            // Helpers.fill_zeros(fill_with=diff, arr= new_return_data + curr_memory_len);
+            Helpers.fill(arr= new_return_data + curr_memory_len,value=0, length=diff );
         }
+        tempvar new_memory= new model.Memory(bytes=memory.bytes, bytes_len=32);
+        let ctx = ExecutionContext.update_memory(ctx,new_memory);
+        let ctx = ExecutionContext.update_stack(ctx,stack);
 
         // TODO: GAS IMPLEMENTATION
 
