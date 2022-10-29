@@ -70,7 +70,7 @@ namespace ExecutionContext {
             );
         return ctx;
     }
-    
+
     // @notice Compute the intrinsic gas cost of the current transaction.
     // @dev Update the given execution context with the intrinsic gas cost.
     // @param self The execution context.
