@@ -40,65 +40,30 @@ async def zk_evm(starknet, eth):
     return _zk_evm
 
 
-argnames = ["contract_code", "code", "calldata", "stack", "memory", "return_value"]
+argnames = ["contract_code", "calldata", "stack", "memory", "return_value"]
 Params = namedtuple("Params", argnames)
 
 test_cases = [
-    # {
-    #     "params": {
-    #         "contract_code": "6000357f371303c0000000000000000000000000000000000000000000000000000000008114605057007f6d4ce63c000000000000000000000000000000000000000000000000000000008114605b575b600a54600101600a55005b600a5400",
-    #         "code": "6000357f371303c0000000000000000000000000000000000000000000000000000000008114604f577f6d4ce63c000000000000000000000000000000000000000000000000000000008114605a575b600a54600101600a55005b600a5400",
-    #         "calldata": "371303c000000000000000000000000000000000000000000000000000000000",
-    #         "stack": "",
-    #         "memory": "",
-    #         "return_value": "",
-    #     },
-    #     "id": "sstore",
-    # },
-    #     {
-    #     "params": {
-    #         "contract_code": "6000357f371303c0000000000000000000000000000000000000000000000000000000008114605057007f6d4ce63c000000000000000000000000000000000000000000000000000000008114605b575b600a54600101600a55005b600a5400",
-    #         "code": "6000357f371303c0000000000000000000000000000000000000000000000000000000008114604f577f6d4ce63c000000000000000000000000000000000000000000000000000000008114605a575b600a54600101600a55005b600a5400",
-    #         "calldata": "6d4ce63c00000000000000000000000000000000000000000000000000000000",
-    #         "stack": "",
-    #         "memory": "",
-    #         "return_value": "",
-    #     },
-    #     "id": "sstore2",
-    # },
-    # {
-    #     "params": {
-    #         "contract_code": "6000357f371303c0000000000000000000000000000000000000000000000000000000008114605057007f6d4ce63c000000000000000000000000000000000000000000000000000000008114605b575b600a54600101600a55005b600a5400",
-    #         "code": "600054",
-    #         "calldata": "",
-    #         "stack": "",
-    #         "memory": "",
-    #         "return_value": "",
-    #     },
-    #     "id": "sload",
-    # },
-    # {
-    #     "params": {
-    #         "contract_code": "6000357f371303c0000000000000000000000000000000000000000000000000000000008114605057007f6d4ce63c000000000000000000000000000000000000000000000000000000008114605b575b600a54600101600a55005b600a5400",
-    #         "code": "602e600055600054",
-    #         "calldata": "",
-    #         "stack": "",
-    #         "memory": "",
-    #         "return_value": "",
-    #     },
-    #     "id": "sload",
-    # },
-    # {
-    #     "params": {
-    #         "contract_code": "6000357f371303c0000000000000000000000000000000000000000000000000000000008114605057007f6d4ce63c000000000000000000000000000000000000000000000000000000008114605b575b600a54600101600a55005b600a5400",
-    #         "code": "6000357f371303c0000000000000000000000000000000000000000000000000000000008114605057007f6d4ce63c000000000000000000000000000000000000000000000000000000008114605b575b600a54600101600a55005b600a5400",
-    #         "calldata": "6d4ce63c00000000000000000000000000000000000000000000000000000000",
-    #         "stack": "",
-    #         "memory": "",
-    #         "return_value": "",
-    #     },
-    #     "id": "return",
-    # },
+    {
+        "params": {
+            "contract_code": "6000357f371303c0000000000000000000000000000000000000000000000000000000008114604f577f6d4ce63c000000000000000000000000000000000000000000000000000000008114605a575b600a54600101600a55005b600a5400",
+            "calldata": "371303c000000000000000000000000000000000000000000000000000000000",
+            "stack": "24910802647859241127409114343308891693497142153707997329506107691490485469184",
+            "memory": "",
+            "return_value": "",
+        },
+        "id": "contract_call_function_SSTORE",
+    },
+    {
+        "params": {
+            "contract_code": "6000357f371303c0000000000000000000000000000000000000000000000000000000008114604f577f6d4ce63c000000000000000000000000000000000000000000000000000000008114605a575b600a54600101600a55005b600a5400",
+            "calldata": "6d4ce63c00000000000000000000000000000000000000000000000000000000",
+            "stack": "49437969891755755400450161744656089009884903607872082989584577758955590123520,0",
+            "memory": "",
+            "return_value": "",
+        },
+        "id": "contract_call_function_SLOAD",
+    },
 ]
 
 
@@ -119,9 +84,7 @@ class TestZkEVM:
     )
     async def test_execute_at_address(
         self,
-        starknet,
         zk_evm,
-        code,
         contract_code,
         calldata,
         stack,
@@ -131,17 +94,16 @@ class TestZkEVM:
         Uint256 = zk_evm.struct_manager.get_contract_struct("Uint256")
         # Add right arguments
         print("Deploy Called")
-        contract_address = await starknet.deploy(
-            source="./src/kakarot/accounts/contract/contract_account.cairo",
-            cairo_path=["src"],
-            disable_hint_validation=True,
-            constructor_calldata=[1, 96, *[int(m, 16) for m in wrap(contract_code, 2)]],
-        )
+        tx = await zk_evm.deploy(
+            bytes=[int(b, 16) for b in wrap(contract_code, 2)],
+        ).execute(caller_address=1)
+        evm_contract_address = tx.result.evm_contract_address
+
         print("Contract Address")
-        print(contract_address.contract_address)
+        print(evm_contract_address)
+
         res = await zk_evm.execute_at_address(
-            address=contract_address.contract_address,
-            code=[int(m, 16) for m in wrap(code, 2)],
+            address=evm_contract_address,
             calldata=[int(m, 16) for m in wrap(calldata, 2)],
         ).call(caller_address=1)
         print("Before Check")
@@ -151,4 +113,21 @@ class TestZkEVM:
         ]
         assert res.result.memory == [int(m, 16) for m in wrap(memory, 2)]
 
-        # address: felt, calldata_len: felt, calldata: felt*
+    # async def test_execute_at_address(
+    #     self, zk_evm, code, calldata, stack, memory, return_value
+    # ):
+    #     Uint256 = zk_evm.struct_manager.get_contract_struct("Uint256")
+    #     tx = await zk_evm.deploy(
+    #         bytes=[int(b, 16) for b in wrap(code, 2)],
+    #     ).execute(caller_address=1)
+    #     evm_contract_address = tx.result.evm_contract_address
+
+    #     res = await zk_evm.execute_at_address(
+    #         address=evm_contract_address,
+    #         calldata=[int(b, 16) for b in wrap(calldata, 2)],
+    #     ).execute(caller_address=1)
+    #     assert res.result.stack == [
+    #         Uint256(*self.int_to_uint256(int(s)))
+    #         for s in (stack.split(",") if stack else [])
+    #     ]
+    #     assert res.result.memory == [int(m, 16) for m in wrap(memory, 2)]
