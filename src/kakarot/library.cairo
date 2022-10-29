@@ -10,7 +10,7 @@ from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.starknet.common.syscalls import deploy
 from starkware.cairo.common.uint256 import Uint256
-
+from starkware.starknet.common.syscalls import get_contract_address
 // OpenZeppelin dependencies
 from openzeppelin.access.ownable.library import Ownable
 
@@ -188,7 +188,7 @@ namespace Kakarot {
         let (class_hash) = evm_contract_class_hash.read();
 
         let (local calldata: felt*) = alloc();
-        let (kakarot_address) = Ownable.owner();
+        let (kakarot_address) = get_contract_address();
 
         assert [calldata] = kakarot_address;
         assert [calldata + 1] = bytes_len;
