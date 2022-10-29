@@ -20,6 +20,7 @@ from kakarot.instructions.arithmetic_operations import ArithmeticOperations
 from kakarot.instructions.comparison_operations import ComparisonOperations
 from kakarot.instructions.duplication_operations import DuplicationOperations
 from kakarot.instructions.exchange_operations import ExchangeOperations
+from kakarot.instructions.logging_operations import LoggingOperations
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.environmental_information import EnvironmentalInformation
 from kakarot.instructions.block_information import BlockInformation
@@ -363,6 +364,13 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x9d, ExchangeOperations.exec_swap14);
         add_instruction(instructions, 0x9e, ExchangeOperations.exec_swap15);
         add_instruction(instructions, 0x9f, ExchangeOperations.exec_swap16);
+
+        // Add as: Log operations
+        add_instruction(instructions, 0xa0, LoggingOperations.exec_log_0);
+        add_instruction(instructions, 0xa1, LoggingOperations.exec_log_1);
+        add_instruction(instructions, 0xa2, LoggingOperations.exec_log_2);
+        add_instruction(instructions, 0xa3, LoggingOperations.exec_log_3);
+        add_instruction(instructions, 0xa4, LoggingOperations.exec_log_4);
 
         // Add fs: System operations
         add_instruction(instructions, 0xfe, SystemOperations.exec_invalid);
