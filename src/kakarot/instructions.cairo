@@ -578,15 +578,12 @@ namespace EVMInstructions {
             instructions=instructions, opcode=0x9f, function=ExchangeOperations.exec_swap16
         );
 
-        // Add as: Log operations
-        add_instruction(instructions, 0xa0, LoggingOperations.exec_log_0);
-        add_instruction(instructions, 0xa1, LoggingOperations.exec_log_1);
-        add_instruction(instructions, 0xa2, LoggingOperations.exec_log_2);
-        add_instruction(instructions, 0xa3, LoggingOperations.exec_log_3);
-        add_instruction(instructions, 0xa4, LoggingOperations.exec_log_4);
-
         // Add fs: System operations
-        add_instruction(instructions, 0xfe, SystemOperations.exec_invalid);
+        add_instruction(
+            instructions=instructions, opcode=0xfe, function=SystemOperations.exec_invalid
+        );
+        // 0xF3 - RETURN
+        add_instruction(instructions, 0xf3, SystemOperations.exec_return);
         return instructions;
     }
 }
