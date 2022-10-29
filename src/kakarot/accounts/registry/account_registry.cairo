@@ -16,7 +16,7 @@ from kakarot.accounts.registry.library import AccountRegistry
 func constructor{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(kakarot_address: felt) {
-    return AccountRegistry.init(kakarot_address);
+    return AccountRegistry.constructor(kakarot_address);
 }
 
 // @notice Update or create an entry in the registry.
