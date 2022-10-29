@@ -1048,19 +1048,19 @@ class TestZkEVM:
         ]
         assert res.result.memory == [int(m, 16) for m in wrap(memory, 2)]
 
-    async def test_deploy(
-        self,
-        starknet: Starknet,
-        zk_evm: StarknetContract,
-        contract_account_class: DeclaredClass,
-    ):
-        code = [1, 12312]
-        tx = await zk_evm.deploy(bytes=code).execute(caller_address=1)
-        starknet_contract_address = tx.result.starknet_contract_address
-        account_contract = StarknetContract(
-            starknet.state,
-            contract_account_class.abi,
-            starknet_contract_address,
-            tx,
-        )
-        assert (await account_contract.code().call()).result.code == code
+    # async def test_deploy(
+    #     self,
+    #     starknet: Starknet,
+    #     zk_evm: StarknetContract,
+    #     contract_account_class: DeclaredClass,
+    # ):
+    #     code = [1, 12312]
+    #     tx = await zk_evm.deploy(bytes=code).execute(caller_address=1)
+    #     starknet_contract_address = tx.result.starknet_contract_address
+    #     account_contract = StarknetContract(
+    #         starknet.state,
+    #         contract_account_class.abi,
+    #         starknet_contract_address,
+    #         tx,
+    #     )
+    #     assert (await account_contract.code().call()).result.code == code

@@ -77,13 +77,6 @@ namespace SystemOperations {
         let total_len: felt = offset.low + size.low;
         // TODO check in which multiple of 32 bytes it should be.
         // Pad if offset + size > memory_len pad n
-        %{
-            import logging
-            logging.info("Current memory Len")
-            logging.info(ids.curr_memory_len)
-            logging.info("Total Len")
-            logging.info(ids.total_len)
-        %}
 
         if (memory.bytes_len == 0) {
             Helpers.fill(arr=memory.bytes, value=0, length=32);

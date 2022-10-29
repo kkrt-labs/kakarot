@@ -368,10 +368,14 @@ namespace EVMInstructions {
         add_instruction(
             instructions=instructions, opcode=0x51, function=MemoryOperations.exec_mload
         );
+
         // 0x52 - MSTORE
         add_instruction(
             instructions=instructions, opcode=0x52, function=MemoryOperations.exec_mstore
         );
+
+        // 0x55 - SLOAD
+        add_instruction(instructions, 0x54, MemoryOperations.exec_sload);
 
         // 0x55 - SSTORE
         add_instruction(instructions, 0x55, MemoryOperations.exec_sstore);

@@ -10,7 +10,7 @@ from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.starknet.common.syscalls import deploy
 from starkware.cairo.common.uint256 import Uint256
-
+from starkware.starknet.common.syscalls import get_contract_address
 // OpenZeppelin dependencies
 from openzeppelin.access.ownable.library import Ownable
 
@@ -96,20 +96,26 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, calldata_len: felt, calldata: felt*) -> model.ExecutionContext* {
+    }(address: felt, calldata: felt*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Get registry address
-        let (reg_address) = registry_address.read();
+        // Load helper hints
+        Helpers.setup_python_defs();
 
-        // get starknet contract from registry
-        let (starknet_address) = IRegistry.get_starknet_address(reg_address, address);
+        // Generate instructions set
+        let instructions: felt* = EVMInstructions.generate_instructions();
 
-        // fetch code
-        let (bytecode_len: felt, bytecode: felt*) = IEvm_Contract.code(starknet_address);
+        // Prepare execution context
+        let ctx: model.ExecutionContext* = ExecutionContext.init_at_address(address, calldata);
 
-        // call execute
-        let ctx = execute(bytecode_len, bytecode, calldata);
+        // Compute intrinsic gas cost and update gas used
+        let ctx = ExecutionContext.compute_intrinsic_gas_cost(ctx);
+
+        // Start execution
+        let ctx = run(instructions, ctx);
+
+        // For debugging purpose
+        ExecutionContext.dump(ctx);
 
         return ctx;
     }
@@ -186,7 +192,7 @@ namespace Kakarot {
         let (class_hash) = evm_contract_class_hash.read();
 
         let (local calldata: felt*) = alloc();
-        let (kakarot_address) = Ownable.owner();
+        let (kakarot_address) = get_contract_address();
 
         assert [calldata] = kakarot_address;
         assert [calldata + 1] = bytes_len;
