@@ -30,5 +30,7 @@ namespace model {
         gas_used: felt,
         gas_limit: felt,
         intrinsic_gas_cost: felt,
+        starknet_address: felt,
+        evm_address: felt,
     }
 }

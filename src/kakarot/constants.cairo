@@ -10,6 +10,10 @@ func native_token_address() -> (res: felt) {
 func registry_address() -> (res: felt) {
 }
 
+@storage_var
+func evm_contract_class_hash() -> (value: felt) {
+}
+
 // @title Constants file.
 // @notice This file contains global constants.
 // @author @abdelhamidbakhta
