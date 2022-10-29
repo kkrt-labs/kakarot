@@ -71,59 +71,6 @@ namespace ExecutionContext {
         return ctx;
     }
 
-    // @notice Initialize the execution context.
-    // @param code The code to execute.
-    // @param calldata The calldata.
-    // @return The initialized execution context.
-    func init_evm{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, calldata_len: felt, calldata: felt*) -> model.ExecutionContext* {
-        alloc_locals;
-        let (empty_return_data: felt*) = alloc();
-
-        // Define initial program counter
-        let initial_pc = 0;
-        let gas_used = 0;
-        // TODO: Add support for gas limit
-        let gas_limit = 0;
-
-        let stack: model.Stack* = Stack.init();
-        let memory: model.Memory* = Memory.init();
-
-        // 1. Evm address
-        // 2. Get starknet Address
-        // let addr: felt = Helpers.uint256_to_felt(address);
-        let (registry_address_) = registry_address.read();
-        let (starknet_address) = IRegistry.get_starknet_address(
-            contract_address=registry_address_, evm_address=address
-        );
-        // Get the BYTECODE from the Starknet_contract
-
-        let (bytecode_len, bytecode) = IEvm_Contract.code(contract_address=starknet_address);
-
-        local ctx: model.ExecutionContext* = new model.ExecutionContext(
-            code=calldata,
-            code_len=0,
-            calldata=calldata,
-            calldata_len=Helpers.get_len(calldata),
-            program_counter=initial_pc,
-            stopped=FALSE,
-            return_data=empty_return_data,
-            return_data_len=Helpers.get_len(empty_return_data),
-            stack=stack,
-            memory=memory,
-            gas_used=gas_used,
-            gas_limit=gas_limit,
-            intrinsic_gas_cost=0,
-            starknet_address=starknet_address,
-            evm_address=address,
-            );
-        return ctx;
-    }
-
     // @notice Compute the intrinsic gas cost of the current transaction.
     // @dev Update the given execution context with the intrinsic gas cost.
     // @param self The execution context.

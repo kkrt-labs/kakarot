@@ -42,7 +42,7 @@ func execute{
 func execute_at_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(address: felt, calldata_len: felt, calldata: felt*) -> (
-    stack_len: felt, stack: Uint256*, memory_len: felt, memory: felt*
+    stack_len: felt, stack: Uint256*, memory_len: felt, memory: felt*, gas_used: felt
 ) {
     alloc_locals;
     let context = Kakarot.execute_at_address(
@@ -54,6 +54,7 @@ func execute_at_address{
         stack=context.stack.elements,
         memory_len=context.memory.bytes_len,
         memory=context.memory.bytes,
+        gas_used=context.gas_used,
     );
 }
 
