@@ -71,7 +71,9 @@ namespace Kakarot {
         let instructions: felt* = EVMInstructions.generate_instructions();
 
         // Prepare execution context
-        let ctx: model.ExecutionContext* = ExecutionContext.init(code=code, code_len=code_len, calldata=calldata);
+        let ctx: model.ExecutionContext* = ExecutionContext.init(
+            code=code, code_len=code_len, calldata=calldata
+        );
 
         // Compute intrinsic gas cost and update gas used
         let ctx = ExecutionContext.compute_intrinsic_gas_cost(self=ctx);
@@ -125,7 +127,9 @@ namespace Kakarot {
         alloc_locals;
 
         // Decode and execute
-        let ctx: model.ExecutionContext* = EVMInstructions.decode_and_execute(instructions=instructions, ctx=ctx);
+        let ctx: model.ExecutionContext* = EVMInstructions.decode_and_execute(
+            instructions=instructions, ctx=ctx
+        );
 
         // Check if execution should be stopped
         let stopped: felt = ExecutionContext.is_stopped(self=ctx);

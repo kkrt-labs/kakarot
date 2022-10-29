@@ -167,7 +167,12 @@ namespace Stack {
 
         // Copy stack
         let (src_stack, dst_stack) = Stack.copy_except_at_index(
-            src_stack=src_stack, dst_stack=dst_stack, start_index=start_index, last_index=last_index, exception_index=exception_index, exception_value=exception_value
+            src_stack=src_stack,
+            dst_stack=dst_stack,
+            start_index=start_index,
+            last_index=last_index,
+            exception_index=exception_index,
+            exception_value=exception_value,
         );
         // Push the top value and return the new stack
         return Stack.push(dst_stack, top_value);

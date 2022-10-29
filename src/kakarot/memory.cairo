@@ -235,7 +235,9 @@ namespace Memory {
         );
         let last_memory_cost = last_memory_cost + (3 * last_memory_size_word);
 
-        let (new_memory_size_word, _) = unsigned_div_rem(value=self.bytes_len + length + 31, div=32);
+        let (new_memory_size_word, _) = unsigned_div_rem(
+            value=self.bytes_len + length + 31, div=32
+        );
         let (new_memory_cost, _) = unsigned_div_rem(
             value=new_memory_size_word * new_memory_size_word, div=512
         );
