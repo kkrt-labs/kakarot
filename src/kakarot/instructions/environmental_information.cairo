@@ -421,11 +421,17 @@ namespace EnvironmentalInformation {
         let return_data_len: felt = ctx.return_data_len;
 
         let sliced_return_data: felt* = Helpers.slice_data(
-            data_len=return_data_len, data=return_data, data_offset=return_data_offset.low, slice_len=element_len.low
+            data_len=return_data_len,
+            data=return_data,
+            data_offset=return_data_offset.low,
+            slice_len=element_len.low,
         );
 
         let memory: model.Memory* = Memory.store_n(
-            self=ctx.memory, element_len=element_len.low, element=sliced_return_data, offset=offset.low
+            self=ctx.memory,
+            element_len=element_len.low,
+            element=sliced_return_data,
+            offset=offset.low,
         );
 
         // Update context memory.

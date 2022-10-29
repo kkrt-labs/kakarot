@@ -102,9 +102,7 @@ namespace ExecutionContext {
         );
         // Get the BYTECODE from the Starknet_contract
 
-        let (bytecode_len, bytecode) = IEvm_Contract.code(
-            contract_address=starknet_address
-        );
+        let (bytecode_len, bytecode) = IEvm_Contract.code(contract_address=starknet_address);
 
         local ctx: model.ExecutionContext* = new model.ExecutionContext(
             code=calldata,
@@ -125,7 +123,6 @@ namespace ExecutionContext {
             );
         return ctx;
     }
-
 
     // @notice Compute the intrinsic gas cost of the current transaction.
     // @dev Update the given execution context with the intrinsic gas cost.

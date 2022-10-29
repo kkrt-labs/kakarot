@@ -85,9 +85,8 @@ namespace SystemOperations {
             logging.info(ids.total_len)
         %}
 
-
-        if(memory.bytes_len == 0){
-            Helpers.fill(arr=memory.bytes, value=0, length=32); 
+        if (memory.bytes_len == 0) {
+            Helpers.fill(arr=memory.bytes, value=0, length=32);
         }
 
         memcpy(dst=new_return_data, src=ctx.memory.bytes + offset.low, len=size.low);
@@ -97,11 +96,11 @@ namespace SystemOperations {
 
         if (is_total_greater_than_memory_len == 0) {
             local diff = total_len - curr_memory_len;
-            Helpers.fill(arr= new_return_data + curr_memory_len,value=0, length=diff );
+            Helpers.fill(arr=new_return_data + curr_memory_len, value=0, length=diff);
         }
-        tempvar new_memory= new model.Memory(bytes=memory.bytes, bytes_len=32);
-        let ctx = ExecutionContext.update_memory(ctx,new_memory);
-        let ctx = ExecutionContext.update_stack(ctx,stack);
+        tempvar new_memory = new model.Memory(bytes=memory.bytes, bytes_len=32);
+        let ctx = ExecutionContext.update_memory(ctx, new_memory);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
 
         // TODO: GAS IMPLEMENTATION
 

@@ -392,12 +392,9 @@ namespace MemoryOperations {
 
         // 3. Call Write storage on contract with starknet address
 
-        with_attr error_message("Contract call failed"){
-            IEvm_Contract.write_state(
-                    contract_address=starknet_address, key=key, value=value
-            );
+        with_attr error_message("Contract call failed") {
+            IEvm_Contract.write_state(contract_address=starknet_address, key=key, value=value);
         }
- 
 
         %{
             import logging
@@ -447,19 +444,16 @@ namespace MemoryOperations {
         // 0 - key: key of memory.
         // 1 - value: value for given key.
         let (stack, local key) = Stack.pop(stack);
-        local value:Uint256;
+        local value: Uint256;
         // 3. Get the data and add on the Stack
 
-        with_attr error_message("Contract call failed"){
+        with_attr error_message("Contract call failed") {
             value = IEvm_Contract.state(
                 contract_address=starknet_address, key=key
-            );
+                );
         }
 
-
-        
         let stack: model.Stack* = Stack.push(ctx.stack, value);
-
 
         %{
             import logging
