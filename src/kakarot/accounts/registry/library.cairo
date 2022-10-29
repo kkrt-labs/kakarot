@@ -25,7 +25,7 @@ func evm_address_(starknet_address: felt) -> (evm_address: felt) {
 namespace AccountRegistry {
     // @notice This function is used to initialize the registry.
     // @param kakarot_address: The address of the Kakarot smart contract.
-    func init{
+    func constructor{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,

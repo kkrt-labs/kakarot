@@ -6,7 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
-from starkware.cairo.common.math import unsigned_div_rem
+from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.starknet.common.syscalls import deploy
 from starkware.cairo.common.uint256 import Uint256
@@ -17,7 +17,7 @@ from openzeppelin.access.ownable.library import Ownable
 // Internal dependencies
 from kakarot.model import model
 from kakarot.instructions import EVMInstructions
-from kakarot.interfaces.interfaces import IRegistry
+from kakarot.interfaces.interfaces import IRegistry, IEvm_Contract
 from kakarot.execution_context import ExecutionContext
 from kakarot.constants import native_token_address, registry_address, evm_contract_class_hash
 from utils.utils import Helpers
@@ -40,7 +40,7 @@ func evm_contract_deployed(evm_contract_address: felt, starknet_contract_address
 namespace Kakarot {
     // @notice The constructor of the contract.
     // @param _owner The address of the owner of the contract.
-    func init{
+    func constructor{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
@@ -61,7 +61,7 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(code: felt*, code_len: felt, calldata: felt*) -> model.ExecutionContext* {
+    }(code_len: felt, code: felt*, calldata: felt*) -> model.ExecutionContext* {
         alloc_locals;
 
         // Load helper hints
@@ -97,25 +97,17 @@ namespace Kakarot {
     }(address: felt, calldata_len: felt, calldata: felt*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Load helper hints
-        Helpers.setup_python_defs();
+        // Get registry address
+        let (reg_address) = registry_address.read();
 
-        // Generate instructions set
-        let instructions: felt* = EVMInstructions.generate_instructions();
+        // get starknet contract from registry
+        let (starknet_address) = IRegistry.get_starknet_address(reg_address, address);
 
-        // Prepare execution context
-        let ctx: model.ExecutionContext* = ExecutionContext.init_evm(
-            address, calldata_len, calldata
-        );
+        // fetch code
+        let (bytecode_len: felt, bytecode: felt*) = IEvm_Contract.code(starknet_address);
 
-        // Compute intrinsic gas cost and update gas used
-        let ctx = ExecutionContext.compute_intrinsic_gas_cost(ctx);
-
-        // Start execution
-        let ctx = run(instructions, ctx);
-
-        // For debugging purpose
-        ExecutionContext.dump(ctx);
+        // call execute
+        let ctx = execute(bytecode_len, bytecode, calldata);
 
         return ctx;
     }
@@ -196,14 +188,16 @@ namespace Kakarot {
         );
         salt.write(value=current_salt + 1);
         // Generate EVM_contract address from the new cairo contract
-        // let (evm_contract_address,_) = unsigned_div_rem(contract_address, 1000000000000000000000000000000000000000000000000);
-        let evm_contract_address = 123 + current_salt;
-
+        // TEMPORARY SOLUTION FOR HACK-LISBON !!!
+        let (_, low) = split_felt(contract_address);
+        // We run the risk to create an address that is 21 bytes
+        local mock_evm_address = 0xAbdE100700000000000000000000000000000000 + low;
         // Save address of new contracts
         let (reg_address) = registry_address.read();
-        IRegistry.set_account_entry(reg_address, contract_address, evm_contract_address);
+        IRegistry.set_account_entry(reg_address, contract_address, mock_evm_address);
         return (
-            evm_contract_address=evm_contract_address, starknet_contract_address=contract_address
+            evm_contract_address=mock_evm_address, starknet_contract_address=contract_address
         );
+
     }
 }
