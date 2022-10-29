@@ -71,16 +71,16 @@ namespace Kakarot {
         let instructions: felt* = EVMInstructions.generate_instructions();
 
         // Prepare execution context
-        let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
+        let ctx: model.ExecutionContext* = ExecutionContext.init(code=code, code_len=code_len, calldata=calldata);
 
         // Compute intrinsic gas cost and update gas used
-        let ctx = ExecutionContext.compute_intrinsic_gas_cost(ctx);
+        let ctx = ExecutionContext.compute_intrinsic_gas_cost(self=ctx);
 
         // Start execution
-        let ctx = run(instructions, ctx);
+        let ctx = run(instructions=instructions, ctx=ctx);
 
         // For debugging purpose
-        ExecutionContext.dump(ctx);
+        ExecutionContext.dump(self=ctx);
 
         return ctx;
     }
@@ -125,10 +125,10 @@ namespace Kakarot {
         alloc_locals;
 
         // Decode and execute
-        let ctx: model.ExecutionContext* = EVMInstructions.decode_and_execute(instructions, ctx);
+        let ctx: model.ExecutionContext* = EVMInstructions.decode_and_execute(instructions=instructions, ctx=ctx);
 
         // Check if execution should be stopped
-        let stopped: felt = ExecutionContext.is_stopped(ctx);
+        let stopped: felt = ExecutionContext.is_stopped(self=ctx);
 
         // Terminate execution
         if (stopped == TRUE) {
@@ -136,7 +136,7 @@ namespace Kakarot {
         }
 
         // Continue execution
-        return run(instructions, ctx);
+        return run(instructions=instructions, ctx=ctx);
     }
 
     // @notice Sets the account registry address.

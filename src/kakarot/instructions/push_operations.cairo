@@ -41,7 +41,7 @@ namespace PushOperations {
         let stack: model.Stack* = ctx.stack;
 
         // Read i bytes.
-        let (ctx, data) = ExecutionContext.read_code(ctx, i);
+        let (ctx, data) = ExecutionContext.read_code(self=ctx, len=i);
 
         // Convert to Uint256.
         let stack_element: Uint256 = Helpers.bytes_to_uint256(data);

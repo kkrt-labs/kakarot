@@ -73,7 +73,7 @@ namespace ComparisonOperations {
         // Stack input:
         // 0 - a: left side integer.
         // 1 - b: right side integer.
-        let (stack, popped) = Stack.pop_n(stack, 2);
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let a = popped[1];
         let b = popped[0];
 
@@ -82,12 +82,12 @@ namespace ComparisonOperations {
 
         // Stack output:
         // a < b: integer result of comparison a less than b
-        let stack: model.Stack* = Stack.push(stack, Uint256(result, 0));
+        let stack: model.Stack* = Stack.push(self=stack, element=Uint256(result, 0));
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_LT);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_LT);
         return ctx;
     }
 
@@ -117,7 +117,7 @@ namespace ComparisonOperations {
         // Stack input:
         // 0 - a: left side integer.
         // 1 - b: right side integer.
-        let (stack, popped) = Stack.pop_n(stack, 2);
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let a = popped[1];
         let b = popped[0];
 
@@ -129,9 +129,9 @@ namespace ComparisonOperations {
         let stack: model.Stack* = Stack.push(stack, Uint256(result, 0));
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_GT);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_GT);
         return ctx;
     }
 
@@ -161,7 +161,7 @@ namespace ComparisonOperations {
         // Stack input:
         // 0 - a: left side signed integer.
         // 1 - b: right side signed integer.
-        let (stack, popped) = Stack.pop_n(stack, 2);
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let a = popped[1];
         let b = popped[0];
 
@@ -170,12 +170,12 @@ namespace ComparisonOperations {
 
         // Stack output:
         // a < b: integer result of comparison a less than b
-        let stack: model.Stack* = Stack.push(stack, Uint256(result, 0));
+        let stack: model.Stack* = Stack.push(self=stack, element=Uint256(result, 0));
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SLT);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SLT);
         return ctx;
     }
 
@@ -205,21 +205,21 @@ namespace ComparisonOperations {
         // Stack input:
         // 0 - a: left side integer.
         // 1 - b: right side integer.
-        let (stack, popped) = Stack.pop_n(stack, 2);
-        let a = popped[1];
-        let b = popped[0];
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
+        let b = popped[1];
+        let a = popped[0];
 
         // Compute the comparison
-        let (result) = uint256_signed_lt(b, a);
+        let (result) = uint256_signed_lt(a, b);
 
         // Stack output:
         // a < b: integer result of comparison a less than b
-        let stack: model.Stack* = Stack.push(stack, Uint256(result, 0));
+        let stack: model.Stack* = Stack.push(self=stack, element=Uint256(result, 0));
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SGT);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SGT);
         return ctx;
     }
 
@@ -249,21 +249,21 @@ namespace ComparisonOperations {
         // Stack input:
         // 0 - a: left side integer.
         // 1 - b: right side integer.
-        let (stack, popped) = Stack.pop_n(stack, 2);
-        let a = popped[1];
-        let b = popped[0];
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
+        let b = popped[1];
+        let a = popped[0];
 
         // Compute the comparison
-        let (result) = uint256_eq(b, a);
+        let (result) = uint256_eq(a, b);
 
         // Stack output:
         // a == b: 1 if the left side is equal to the right side, 0 otherwise.
-        let stack: model.Stack* = Stack.push(stack, Uint256(result, 0));
+        let stack: model.Stack* = Stack.push(self=stack, element=Uint256(result, 0));
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_EQ);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_EQ);
         return ctx;
     }
 
@@ -295,16 +295,16 @@ namespace ComparisonOperations {
         let (stack, a) = Stack.pop(stack);
 
         // a == 0: 1 if a is 0, 0 otherwise.
-        let (result) = uint256_eq(a, Uint256(0, 0));
+        let (result) = uint256_eq(a=a, b=Uint256(0, 0));
 
         // Stack output:
         // a == 0: 1 if a is 0, 0 otherwise.
-        let stack: model.Stack* = Stack.push(stack, Uint256(result, 0));
+        let stack: model.Stack* = Stack.push(self=stack, element=Uint256(result, 0));
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_ISZERO);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_ISZERO);
         return ctx;
     }
 
@@ -334,7 +334,7 @@ namespace ComparisonOperations {
         // Stack input
         // a: first binary value.
         // b: second binary value.
-        let (stack, popped) = Stack.pop_n(stack, 2);
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let a = popped[1];
         let b = popped[0];
 
@@ -343,12 +343,12 @@ namespace ComparisonOperations {
 
         // Stack output:
         // a & b: the bitwise AND result.
-        let stack: model.Stack* = Stack.push(stack, result);
+        let stack: model.Stack* = Stack.push(self=stack, element=result);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_AND);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_AND);
         return ctx;
     }
 
@@ -378,7 +378,7 @@ namespace ComparisonOperations {
         // Stack input
         // a: first binary value.
         // b: second binary value.
-        let (stack, popped) = Stack.pop_n(stack, 2);
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let a = popped[1];
         let b = popped[0];
 
@@ -387,12 +387,12 @@ namespace ComparisonOperations {
 
         // Stack output:
         // a & b: the bitwise AND result.
-        let stack: model.Stack* = Stack.push(stack, result);
+        let stack: model.Stack* = Stack.push(self=stack, element=result);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_OR);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_OR);
         return ctx;
     }
 
@@ -429,12 +429,12 @@ namespace ComparisonOperations {
 
         // Stack output:
         // a & b: the bitwise XOR result.
-        let stack: model.Stack* = Stack.push(stack, result);
+        let stack: model.Stack* = Stack.push(self=stack, element=result);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_XOR);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_XOR);
         return ctx;
     }
 
@@ -474,12 +474,12 @@ namespace ComparisonOperations {
 
         // Stack output:
         // The result of the shift operation.
-        let stack: model.Stack* = Stack.push(stack, result);
+        let stack: model.Stack* = Stack.push(self=stack, element=result);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_BYTE);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_BYTE);
         return ctx;
     }
 
@@ -509,21 +509,21 @@ namespace ComparisonOperations {
         // Stack input:
         // 0 - shift: integer
         // 1 - value: integer
-        let (stack, popped) = Stack.pop_n(stack, 2);
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let shift = popped[1];
         let value = popped[0];
 
         // Left shift `value` by `shift`.
-        let (result) = uint256_shl(value, shift);
+        let (result) = uint256_shl(a=value, b=shift);
 
         // Stack output:
         // The result of the shift operation.
-        let stack: model.Stack* = Stack.push(stack, result);
+        let stack: model.Stack* = Stack.push(self=stack, element=result);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SHL);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SHL);
         return ctx;
     }
 
@@ -553,21 +553,21 @@ namespace ComparisonOperations {
         // Stack input:
         // 0 - shift: integer
         // 1 - value: integer
-        let (stack, popped) = Stack.pop_n(stack, 2);
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let shift = popped[1];
         let value = popped[0];
 
         // Right shift `value` by `shift`.
-        let (result) = uint256_shr(value, shift);
+        let (result) = uint256_shr(a=value, b=shift);
 
         // Stack output:
         // The result of the shift operation.
-        let stack: model.Stack* = Stack.push(stack, result);
+        let stack: model.Stack* = Stack.push(self=stack, element=result);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SHR);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SHR);
         return ctx;
     }
 
@@ -596,7 +596,7 @@ namespace ComparisonOperations {
         // Stack input:
         // 0 - shift: integer
         // 1 - value: integer
-        let (stack, popped) = Stack.pop_n(stack, 2);
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let shift = popped[1];
         let value = popped[0];
 
@@ -635,11 +635,11 @@ namespace ComparisonOperations {
 
         // Stack output:
         // The result of the shift operation.
-        let stack: model.Stack* = Stack.push(stack, result);
+        let stack: model.Stack* = Stack.push(self=stack, element=result);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SAR);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SAR);
         return ctx;
     }
 
@@ -675,12 +675,12 @@ namespace ComparisonOperations {
 
         // Stack output:
         // The result of the shift operation.
-        let stack: model.Stack* = Stack.push(stack, result);
+        let stack: model.Stack* = Stack.push(self=stack, element=result);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_NOT);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_NOT);
         return ctx;
     }
 }

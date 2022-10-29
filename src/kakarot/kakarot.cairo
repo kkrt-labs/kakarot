@@ -48,7 +48,7 @@ func execute_at_address{
     let context = Kakarot.execute_at_address(
         address=address, calldata_len=calldata_len, calldata=calldata
     );
-    let len = Stack.len(context.stack);
+    let len = Stack.len(self=context.stack);
     return (
         stack_len=len,
         stack=context.stack.elements,

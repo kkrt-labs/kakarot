@@ -54,10 +54,10 @@ namespace Sha3 {
         let (stack, offset: Uint256) = Stack.pop(stack);
         let (stack, length: Uint256) = Stack.pop(stack);
 
-        let (memory, cost) = Memory.insure_length(ctx.memory, offset.low + length.low);
+        let (memory, cost) = Memory.insure_length(self=ctx.memory, length=offset.low + length.low);
 
         // Update context memory.
-        let ctx = ExecutionContext.update_memory(ctx, memory);
+        let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
 
         let (local dest: felt*) = alloc();
         bytes_to_byte8_little_endian(
@@ -88,7 +88,7 @@ namespace Sha3 {
         let minimum_word_size = (length.low + 31) / 32;
         let dynamic_gas = 6 * minimum_word_size + cost;
 
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SHA3 + dynamic_gas);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SHA3 + dynamic_gas);
         let memory_extension = length.low - ctx.memory.bytes_len + offset.low;
 
         return ctx;
@@ -110,7 +110,7 @@ namespace Sha3 {
         }
 
         local current_byte;
-        let out_of_bound = is_le_felt(bytes_len, index);
+        let out_of_bound = is_le_felt(a=bytes_len, b=index);
         if (out_of_bound == TRUE) {
             current_byte = 0;
         } else {
@@ -121,7 +121,7 @@ namespace Sha3 {
 
         let _byte8 = byte8 + bit_shift * current_byte;
 
-        let byte8_full = is_le_felt(7, byte8_shift);
+        let byte8_full = is_le_felt(a=7, b=byte8_shift);
         let end_of_loop = is_le_felt(size, index + 1);
         let write_to_dest = is_le_felt(1, byte8_full + end_of_loop);
         if (write_to_dest == TRUE) {
@@ -134,7 +134,7 @@ namespace Sha3 {
             tempvar _byte8_shift = byte8_shift + 1;
             tempvar _dest_index = dest_index;
         }
-
+        
         return bytes_to_byte8_little_endian(
             bytes_len, bytes, index + 1, size, _byte8, _byte8_shift, dest, _dest_index
         );
