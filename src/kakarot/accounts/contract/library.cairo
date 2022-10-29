@@ -40,7 +40,6 @@ namespace ContractAccount {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(kakarot_address: felt, code_len: felt, code: felt*) {
-
         // Store the bytecode.
         internal.store_code(0, code_len - 1, code);
 
@@ -109,11 +108,9 @@ namespace internal {
     // @param index: The index in the code.
     // @param code: The bytecode of the contract.
     // @param code_len: The length of the bytecode.
-    func store_code{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-    }(index: felt, last_index: felt, code: felt*) {
+    func store_code{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        index: felt, last_index: felt, code: felt*
+    ) {
         alloc_locals;
         if (index == last_index) {
             return ();
