@@ -251,6 +251,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x39, EnvironmentalInformation.exec_codecopy);
         // 0x3d - RETURNDATASIZE
         add_instruction(instructions, 0x3d, EnvironmentalInformation.exec_returndatasize);
+        // 0x3e - RETURNDATASIZE
+        add_instruction(instructions, 0x3e, EnvironmentalInformation.exec_returndatacopy);
 
         // Block Information
         // 0x41 - COINBASE

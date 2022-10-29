@@ -82,5 +82,4 @@ namespace AccountRegistry {
         let evm_address = evm_address_.read(starknet_address);
         return evm_address;
     }
-
 }
