@@ -195,9 +195,6 @@ namespace Kakarot {
         // Save address of new contracts
         let (reg_address) = registry_address.read();
         IRegistry.set_account_entry(reg_address, contract_address, mock_evm_address);
-        return (
-            evm_contract_address=mock_evm_address, starknet_contract_address=contract_address
-        );
-
+        return (evm_contract_address=mock_evm_address, starknet_contract_address=contract_address);
     }
 }
