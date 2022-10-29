@@ -18,15 +18,9 @@ namespace Helpers {
         %{
             import re, os, requests
             import array as arr
-            from pprint import pprint
 
             MAX_LEN_FELT = 31
             BYTES32_SIZE = 32
-            os.environ.setdefault('DEBUG', 'False')
-
-            def dump_array(array):
-                pprint(array)
-                return
 
             def hex_string_to_int_array(text):
                 return [int(text[i:i+2], 16) for i in range(0, len(text), 2)]
@@ -133,30 +127,6 @@ namespace Helpers {
         return actual_len;
     }
 
-    func get_last(array: felt*) -> felt {
-        tempvar res;
-        %{
-            if py_has_entries(ids.array):
-                last_idx = py_get_len(ids.array) - 1
-                ids.res = memory.get(ids.array + last_idx)
-            else:
-                ids.res = 0
-        %}
-        return res;
-    }
-
-    func get_last_or_default(array: felt*, default_value: felt) -> felt {
-        tempvar res;
-        %{
-            if py_has_entries(ids.array):
-                last_idx = py_get_len(ids.array) - 1
-                ids.res = memory[ids.array + last_idx]
-            else:
-                ids.res = ids.default_value
-        %}
-        return res;
-    }
-
     func to_uint256{range_check_ptr}(val: felt) -> Uint256 {
         let (high, low) = split_felt(val);
         let res = Uint256(low, high);
@@ -181,6 +151,45 @@ namespace Helpers {
             high=[val] * 256 ** 15 + [val + 1] * 256 ** 14 + [val + 2] * 256 ** 13 + [val + 3] * 256 ** 12 + [val + 4] * 256 ** 11 + [val + 5] * 256 ** 10 + [val + 6] * 256 ** 9 + [val + 7] * 256 ** 8 + [val + 8] * 256 ** 7 + [val + 9] * 256 ** 6 + [val + 10] * 256 ** 5 + [val + 11] * 256 ** 4 + [val + 12] * 256 ** 3 + [val + 13] * 256 ** 2 + [val + 14] * 256 + [val + 15],
         );
         return res;
+    }
+
+    func bytes_i_to_uint256{range_check_ptr}(val: felt*, i: felt, res: Uint256) -> Uint256 {
+        alloc_locals;
+        let is_16_le_i = is_le_felt(i, 16);
+        if (is_16_le_i == 1) {
+            let (high) = compute_half_uint256(val=val, i=i - 16, res=0);
+            tempvar high = high;
+            tempvar range_check_ptr = range_check_ptr;
+        } else {
+            tempvar high = 0;
+            tempvar range_check_ptr = range_check_ptr;
+        }
+
+        tempvar high = high;
+
+        let is_i_le_16 = is_le_felt(i, 16);
+        if (is_i_le_16 == 1) {
+            let (low) = compute_half_uint256(val=val, i=i, res=0);
+            let res = Uint256(low=low, high=high);
+            return res;
+        } else {
+            let low = 0;
+            let res = Uint256(low=low, high=high);
+            return res;
+        }
+    }
+
+    func compute_half_uint256{range_check_ptr}(val: felt*, i: felt, res: felt) -> (res: felt) {
+        %{
+            print(ids.val, ids.i, ids.res)
+            breakpoint()
+        %}
+        if (i == 1) {
+            return (res=res + [val]);
+        } else {
+            let (res) = compute_half_uint256(val + 1, i - 1, res + [val]);
+            return (res=res);
+        }
     }
 
     func bytes_to_64_bits_little_felt(bytes: felt*) -> felt {

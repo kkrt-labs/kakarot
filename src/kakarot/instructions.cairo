@@ -7,6 +7,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.invoke import invoke
 from starkware.cairo.common.math import assert_nn
+from starkware.cairo.common.math_cmp import is_le_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.bool import TRUE
 from starkware.cairo.common.registers import get_ap
@@ -56,36 +57,24 @@ namespace EVMInstructions {
 
         local opcode;
 
-        %{
-            # Check if pc > len(code) and process it as a STOP if true
-            if ids.pc >= ids.ctx.code_len:
-                ids.opcode = 0
-            else:
-                ids.opcode = memory[ids.ctx.code + ids.pc]
-        %}
+        let is_pc_le_code_len = is_le_felt(ctx.code_len, pc);
 
-        local opcode_exist;
-
-        // Check if opcode exists
-        %{
-            if memory.get(ids.instructions + ids.opcode) == None:
-                ids.opcode_exist = 0
-            else:
-                ids.opcode_exist = 1
-        %}
-
-        // Revert if opcode does not exist
-        with_attr error_message("Kakarot: UnknownOpcode {opcode}") {
-            assert opcode_exist = TRUE;
+        if (is_pc_le_code_len == 1) {
+            assert opcode = 0;
+        } else {
+            assert opcode = [ctx.code + pc];
         }
 
         // move program counter + 1 after opcode is read
         let ctx = ExecutionContext.increment_program_counter(self=ctx, inc_value=1);
 
-        // Read opcode in instruction set
-        let function_codeoffset_felt = instructions[opcode];
-        let function_codeoffset = cast(function_codeoffset_felt, codeoffset);
-        let (function_ptr) = get_label_location(function_codeoffset);
+        // Revert if opcode does not exist
+        with_attr error_message("Kakarot: UnknownOpcode {opcode}") {
+            // Read opcode in instruction set
+            let function_codeoffset_felt = instructions[opcode];
+            let function_codeoffset = cast(function_codeoffset_felt, codeoffset);
+            let (function_ptr) = get_label_location(function_codeoffset);
+        }
 
         // Prepare implicit arguments
         let implicit_args_len = decode_and_execute.ImplicitArgs.SIZE;

@@ -246,7 +246,7 @@ namespace EnvironmentalInformation {
         let sliced_calldata: felt* = Helpers.slice_data(
             data_len=calldata_len, data=calldata, data_offset=calldata_offset.low, slice_len=32
         );
-        let uint256_sliced_calldata: Uint256 = Helpers.bytes_to_uint256(sliced_calldata);
+        let uint256_sliced_calldata: Uint256 = Helpers.bytes32_to_uint256(sliced_calldata);
 
         // Push CallData word onto stack
         let stack: model.Stack* = Stack.push(self=stack, element=uint256_sliced_calldata);
