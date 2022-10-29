@@ -447,6 +447,7 @@ namespace MemoryOperations {
         // local value: Uint256;
         // 3. Get the data and add on the Stack
 
+
         %{
             import logging
             logging.info("*************SLOAD- CONTRACT ADDRESS*****************")

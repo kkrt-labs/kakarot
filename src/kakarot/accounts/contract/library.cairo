@@ -40,11 +40,12 @@ namespace ContractAccount {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(kakarot_address: felt, code_len: felt, code: felt*) {
-        // Store the bytecode.
-        internal.store_code(0, code_len - 1, code);
 
         // Initialize access control.
         Ownable.initializer(kakarot_address);
+
+        // Store the bytecode.
+        internal.store_code(0, code_len, code);
 
         return ();
     }
@@ -61,7 +62,7 @@ namespace ContractAccount {
         // Access control check.
         Ownable.assert_only_owner();
         // Recursively store the code.
-        internal.store_code(0, code_len - 1, code);
+        internal.store_code(0, code_len, code);
         return ();
     }
 
@@ -78,7 +79,7 @@ namespace ContractAccount {
         // Read code length from storage.
         let (code_len) = code_len_.read();
         // Recursively load code into specified memory location.
-        internal.load_code(0, code_len - 1, code);
+        internal.load_code(0, code_len, code);
         return (code_len, code);
     }
 
@@ -106,17 +107,18 @@ namespace ContractAccount {
 namespace internal {
     // @notice Store the bytecode of the contract.
     // @param index: The index in the code.
-    // @param code: The bytecode of the contract.
     // @param code_len: The length of the bytecode.
+
     func store_code{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        index: felt, last_index: felt, code: felt*
+        index: felt, code_len: felt, code: felt*
     ) {
         alloc_locals;
-        if (index == last_index) {
+        if (index == code_len) {
+            code_len_.write(code_len);
             return ();
         }
         code_.write(index, code[index]);
-        store_code(index + 1, last_index, code);
+        store_code(index + 1, code_len, code);
         return ();
     }
 
@@ -129,14 +131,14 @@ namespace internal {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(index: felt, last_index: felt, code: felt*) {
+    }(index: felt, code_len: felt, code: felt*) {
         alloc_locals;
-        if (index == last_index) {
+        if (index == code_len) {
             return ();
         }
         let (value) = code_.read(index);
         assert [code + index] = value;
-        load_code(index + 1, last_index, code);
+        load_code(index + 1, code_len, code);
         return ();
     }
 }

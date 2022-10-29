@@ -29,6 +29,14 @@ func set_account_entry{
     return AccountRegistry.set_account_entry(starknet_address, evm_address);
 }
 
+@external
+func transfer_ownership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    new_address: felt
+) {
+    AccountRegistry.transfer_ownership(new_address);
+    return ();
+}
+
 // @notice Get the starknet address of an EVM address.
 // @param evm_address: The EVM address.
 // @return starknet_address: The starknet address.

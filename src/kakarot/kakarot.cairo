@@ -6,7 +6,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 // Local dependencies
-from kakarot.library import Kakarot
+from kakarot.library import Kakarot, evm_contract_deployed
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.memory import Memory
@@ -62,6 +62,13 @@ func set_account_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
     return Kakarot.set_account_registry(registry_address_);
 }
 
+@view
+func get_account_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    address: felt
+) {
+    return Kakarot.get_account_registry();
+}
+
 @external
 func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     native_token_address_: felt
@@ -76,7 +83,13 @@ func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 @external
 func deploy{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     bytes_len: felt, bytes: felt*
-) -> (evm_contract_address: felt) {
-    let evm_contract_address = Kakarot.deploy_contract(bytes_len, bytes);
-    return (evm_contract_address,);
+) -> (evm_contract_address: felt, starknet_contract_address: felt) {
+    let (evm_contract_address, starknet_contract_address) = Kakarot.deploy_contract(
+        bytes_len, bytes
+    );
+    evm_contract_deployed.emit(
+        evm_contract_address=evm_contract_address,
+        starknet_contract_address=starknet_contract_address,
+    );
+    return (evm_contract_address, starknet_contract_address);
 }
