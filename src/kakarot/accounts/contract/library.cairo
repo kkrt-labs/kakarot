@@ -40,7 +40,6 @@ namespace ContractAccount {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(kakarot_address: felt, code_len: felt, code: felt*) {
-
         // Initialize access control.
         Ownable.initializer(kakarot_address);
 

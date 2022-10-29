@@ -76,13 +76,11 @@ namespace ExecutionContext {
     // @param calldata The calldata.
     // @return The initialized execution context.
     func init_at_address{
-
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(address: felt, code: felt*, calldata: felt*) -> model.ExecutionContext* {
-
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
 
@@ -110,7 +108,6 @@ namespace ExecutionContext {
         local ctx: model.ExecutionContext* = new model.ExecutionContext(
             code=code,
             code_len=Helpers.get_len(code),
-
             calldata=calldata,
             calldata_len=Helpers.get_len(calldata),
             program_counter=initial_pc,
@@ -123,7 +120,6 @@ namespace ExecutionContext {
             gas_limit=gas_limit,
             intrinsic_gas_cost=0,
             starknet_address=address,
-
             evm_address=address,
             );
         return ctx;
