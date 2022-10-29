@@ -150,6 +150,15 @@ namespace Kakarot {
         return ();
     }
 
+    // @notice Sets the account registry address.
+    // @param account registry address.
+    // @return None.
+    func get_account_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ) -> (address: felt) {
+        let (reg_address) = registry_address.read();
+        return (reg_address,);
+    }
+
     // @notice Sets the native token address.
     // @param native token address.
     // @return None.

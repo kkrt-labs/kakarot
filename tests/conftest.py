@@ -1,4 +1,5 @@
 import asyncio
+from time import time
 from typing import AsyncGenerator, List, cast
 
 import pytest
@@ -40,4 +41,28 @@ async def eth(starknet):
     return await starknet.deploy(
         source="./tests/utils/ERC20.cairo",
         constructor_calldata=[2] * 6,
+    )
+
+
+@pytest_asyncio.fixture(scope="session")
+async def account_registry(starknet: Starknet):
+    print("account_registry")
+    start = time()
+    registry = await starknet.deploy(
+        source="./src/kakarot/accounts/registry/account_registry.cairo",
+        cairo_path=["src"],
+        disable_hint_validation=True,
+        constructor_calldata=[1],
+    )
+    registry_time = time()
+    print(f"AccountRegistry deployed in {registry_time - start:.2f}s")
+    return registry
+
+
+@pytest_asyncio.fixture(scope="session")
+async def contract_account_class(starknet: Starknet):
+    return await starknet.declare(
+        source="./src/kakarot/accounts/contract/contract_account.cairo",
+        cairo_path=["src"],
+        disable_hint_validation=True,
     )

@@ -4,40 +4,42 @@ from time import time
 
 import pytest
 import pytest_asyncio
+from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
+from starkware.starknet.testing.starknet import Starknet
 
 
-@pytest_asyncio.fixture(scope="session")
-async def zk_evm(starknet, eth):
+@pytest_asyncio.fixture(scope="module")
+async def zk_evm(
+    starknet: Starknet, eth: StarknetContract, contract_account_class: DeclaredClass
+):
     start = time()
-    contract_hash = await starknet.declare(
-        source="./src/kakarot/accounts/contract/contract_account.cairo",
-        cairo_path=["src"],
-        disable_hint_validation=0,
-    )
     _zk_evm = await starknet.deploy(
         source="./src/kakarot/kakarot.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
-        constructor_calldata=[1, eth.contract_address, contract_hash.class_hash],
+        constructor_calldata=[
+            1,
+            eth.contract_address,
+            contract_account_class.class_hash,
+        ],
     )
     evm_time = time()
     print(f"\nzkEVM deployed in {evm_time - start:.2f}s")
-    registry = await starknet.deploy(
-        source="./src/kakarot/accounts/registry/account_registry.cairo",
-        cairo_path=["src"],
-        disable_hint_validation=True,
-        constructor_calldata=[_zk_evm.contract_address],
-    )
-    registry_time = time()
-    print(f"AccountRegistry deployed in {registry_time - evm_time:.2f}s")
-    await _zk_evm.set_account_registry(
-        registry_address_=registry.contract_address
-    ).execute(caller_address=1)
-    account_time = time()
-    print(f"zkEVM set in {account_time - registry_time:.2f}s")
-    res = await _zk_evm.deploy(bytes=[1, 12312]).call(caller_address=1)
-    print("Contract Address: ", res)
     return _zk_evm
+
+
+@pytest_asyncio.fixture(scope="module", autouse=True)
+async def set_account_registry(zk_evm, account_registry):
+    await account_registry.transfer_ownership(zk_evm.contract_address).execute(
+        caller_address=1
+    )
+    await zk_evm.set_account_registry(
+        registry_address_=account_registry.contract_address
+    ).execute(caller_address=1)
+    yield
+    await account_registry.transfer_ownership(1).execute(
+        caller_address=zk_evm.contract_address
+    )
 
 
 argnames = ["code", "calldata", "stack", "memory", "return_value"]
@@ -1034,7 +1036,7 @@ class TestZkEVM:
         argnames,
         params,
     )
-    async def test_case(self, zk_evm, code, calldata, stack, memory, return_value):
+    async def test_execute(self, zk_evm, code, calldata, stack, memory, return_value):
         Uint256 = zk_evm.struct_manager.get_contract_struct("Uint256")
         res = await zk_evm.execute(
             code=[int(b, 16) for b in wrap(code, 2)],
@@ -1045,3 +1047,20 @@ class TestZkEVM:
             for s in (stack.split(",") if stack else [])
         ]
         assert res.result.memory == [int(m, 16) for m in wrap(memory, 2)]
+
+    async def test_deploy(
+        self,
+        starknet: Starknet,
+        zk_evm: StarknetContract,
+        contract_account_class: DeclaredClass,
+    ):
+        code = [1, 12312]
+        tx = await zk_evm.deploy(bytes=code).execute(caller_address=1)
+        starknet_contract_address = tx.result.starknet_contract_address
+        account_contract = StarknetContract(
+            starknet.state,
+            contract_account_class.abi,
+            starknet_contract_address,
+            tx,
+        )
+        assert (await account_contract.code().call()).result.code == code
