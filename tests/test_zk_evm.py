@@ -1052,25 +1052,6 @@ class TestZkEVM:
         argnames,
         params[:2],
     )
-    async def test_execute_at_address(
-        self, zk_evm, code, calldata, stack, memory, return_value
-    ):
-        Uint256 = zk_evm.struct_manager.get_contract_struct("Uint256")
-        tx = await zk_evm.deploy(
-            bytes=[int(b, 16) for b in wrap(code, 2)],
-        ).execute(caller_address=1)
-        evm_contract_address = tx.result.evm_contract_address
-
-        res = await zk_evm.execute_at_address(
-            address=evm_contract_address,
-            calldata=[int(b, 16) for b in wrap(calldata, 2)],
-        ).execute(caller_address=1)
-        assert res.result.stack == [
-            Uint256(*self.int_to_uint256(int(s)))
-            for s in (stack.split(",") if stack else [])
-        ]
-        assert res.result.memory == [int(m, 16) for m in wrap(memory, 2)]
-
     async def test_deploy(
         self,
         starknet: Starknet,
