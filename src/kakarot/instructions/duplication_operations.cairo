@@ -37,15 +37,15 @@ namespace DuplicationOperations {
         let stack: model.Stack* = ctx.stack;
 
         // Get the value top i-th stack item.
-        let element = Stack.peek(stack, i - 1);
+        let element = Stack.peek(self=stack, stack_index=i - 1);
 
         // Duplicate the element to the top of the stack.
-        let stack = Stack.push(stack, element);
+        let stack = Stack.push(self=stack, element=element);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_DUP);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_DUP);
         return ctx;
     }
 
@@ -62,7 +62,7 @@ namespace DuplicationOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_dup_i(ctx, 1);
+        return exec_dup_i(ctx=ctx, i=1);
     }
 
     // @notice DUP2 operation
@@ -78,7 +78,7 @@ namespace DuplicationOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_dup_i(ctx, 2);
+        return exec_dup_i(ctx=ctx, i=2);
     }
 
     // @notice DUP3 operation
@@ -94,7 +94,7 @@ namespace DuplicationOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_dup_i(ctx, 3);
+        return exec_dup_i(ctx=ctx, i=3);
     }
 
     // @notice DUP4 operation
@@ -110,7 +110,7 @@ namespace DuplicationOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_dup_i(ctx, 4);
+        return exec_dup_i(ctx=ctx, i=4);
     }
 
     // @notice DUP5 operation
@@ -126,7 +126,7 @@ namespace DuplicationOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_dup_i(ctx, 5);
+        return exec_dup_i(ctx=ctx, i=5);
     }
 
     // @notice DUP6 operation
@@ -142,7 +142,7 @@ namespace DuplicationOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_dup_i(ctx, 6);
+        return exec_dup_i(ctx=ctx, i=6);
     }
 
     // @notice DUP7 operation
@@ -158,7 +158,7 @@ namespace DuplicationOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_dup_i(ctx, 7);
+        return exec_dup_i(ctx=ctx, i=7);
     }
 
     // @notice DUP8 operation
@@ -174,7 +174,7 @@ namespace DuplicationOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_dup_i(ctx, 8);
+        return exec_dup_i(ctx=ctx, i=8);
     }
 
     // @notice DUP9 operation
@@ -190,7 +190,7 @@ namespace DuplicationOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_dup_i(ctx, 9);
+        return exec_dup_i(ctx=ctx, i=9);
     }
 
     // @notice DUP10 operation
@@ -206,7 +206,7 @@ namespace DuplicationOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_dup_i(ctx, 10);
+        return exec_dup_i(ctx=ctx, i=10);
     }
 
     // @notice DUP11 operation
@@ -222,7 +222,7 @@ namespace DuplicationOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_dup_i(ctx, 11);
+        return exec_dup_i(ctx=ctx, i=11);
     }
 
     // @notice DUP12 operation
@@ -238,7 +238,7 @@ namespace DuplicationOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_dup_i(ctx, 12);
+        return exec_dup_i(ctx=ctx, i=12);
     }
 
     // @notice DUP13 operation
@@ -254,7 +254,7 @@ namespace DuplicationOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_dup_i(ctx, 13);
+        return exec_dup_i(ctx=ctx, i=13);
     }
 
     // @notice DUP14 operation
@@ -270,7 +270,7 @@ namespace DuplicationOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_dup_i(ctx, 14);
+        return exec_dup_i(ctx=ctx, i=14);
     }
 
     // @notice DUP15 operation
@@ -286,7 +286,7 @@ namespace DuplicationOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_dup_i(ctx, 15);
+        return exec_dup_i(ctx=ctx, i=15);
     }
 
     // @notice DUP16 operation
@@ -302,6 +302,6 @@ namespace DuplicationOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_dup_i(ctx, 16);
+        return exec_dup_i(ctx=ctx, i=16);
     }
 }

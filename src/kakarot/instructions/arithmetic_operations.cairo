@@ -57,7 +57,7 @@ namespace ArithmeticOperations {
         // 0 - a: first integer value to add.
         // 1 - b: second integer value to add.
         let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(stack, 2);
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let a = popped[1];
         let b = popped[0];
 
@@ -66,8 +66,8 @@ namespace ArithmeticOperations {
 
         // Stack output:
         // a + b: integer result of the addition modulo 2^256
-        let stack: model.Stack* = Stack.push(stack, result);
-        let ctx = apply_context_changes(ctx, stack, GAS_COST_ADD);
+        let stack: model.Stack* = Stack.push(self=stack, element=result);
+        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_ADD);
         return ctx;
     }
 
@@ -96,7 +96,7 @@ namespace ArithmeticOperations {
         // 0 - a: first integer value to multiply.
         // 1 - b: second integer value to multiply.
         let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(stack, 2);
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let a = popped[1];
         let b = popped[0];
 
@@ -106,7 +106,7 @@ namespace ArithmeticOperations {
         // Stack output:
         // a * b: integer result of the multiplication modulo 2^256
         let stack: model.Stack* = Stack.push(stack, result);
-        let ctx = apply_context_changes(ctx, stack, GAS_COST_MUL);
+        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_MUL);
         return ctx;
     }
 
@@ -135,7 +135,7 @@ namespace ArithmeticOperations {
         // 0 - a: first integer value to sub.
         // 1 - b: second integer value to sub.
         let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(stack, 2);
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let a = popped[1];
         let b = popped[0];
 
@@ -144,8 +144,8 @@ namespace ArithmeticOperations {
 
         // Stack output:
         // a - b: integer result of the subtraction modulo 2^256
-        let stack: model.Stack* = Stack.push(stack, result);
-        let ctx = apply_context_changes(ctx, stack, GAS_COST_SUB);
+        let stack: model.Stack* = Stack.push(self=stack, element=result);
+        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_SUB);
         return ctx;
     }
 
@@ -174,7 +174,7 @@ namespace ArithmeticOperations {
         // 0 - a: numerator.
         // 1 - b: denominator.
         let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(stack, 2);
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let a = popped[1];
         let b = popped[0];
 
@@ -183,8 +183,8 @@ namespace ArithmeticOperations {
 
         // Stack output:
         // a / b: integer result of the division modulo 2^256
-        let stack: model.Stack* = Stack.push(stack, result);
-        let ctx = apply_context_changes(ctx, stack, GAS_COST_DIV);
+        let stack: model.Stack* = Stack.push(self=stack, element=result);
+        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_DIV);
         return ctx;
     }
 
@@ -213,7 +213,7 @@ namespace ArithmeticOperations {
         // 0 - a: numerator.
         // 1 - b: denominator.
         let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(stack, 2);
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let a = popped[1];
         let b = popped[0];
 
@@ -222,8 +222,8 @@ namespace ArithmeticOperations {
 
         // Stack output:
         // a / b: signed integer result of the division modulo 2^256
-        let stack: model.Stack* = Stack.push(stack, result);
-        let ctx = apply_context_changes(ctx, stack, GAS_COST_SDIV);
+        let stack: model.Stack* = Stack.push(self=stack, element=result);
+        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_SDIV);
         return ctx;
     }
 
@@ -252,7 +252,7 @@ namespace ArithmeticOperations {
         // 0 - a: number.
         // 1 - b: modulo.
         let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(stack, 2);
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let a = popped[1];
         let b = popped[0];
 
@@ -261,8 +261,8 @@ namespace ArithmeticOperations {
 
         // Stack output:
         // a % b:  integer result of the a % b
-        let stack: model.Stack* = Stack.push(stack, rem);
-        let ctx = apply_context_changes(ctx, stack, GAS_COST_MOD);
+        let stack: model.Stack* = Stack.push(self=stack, element=rem);
+        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_MOD);
         return ctx;
     }
 
@@ -291,7 +291,7 @@ namespace ArithmeticOperations {
         // 0 - a: number.
         // 1 - b: modulo.
         let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(stack, 2);
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let a = popped[1];
         let b = popped[0];
 
@@ -300,8 +300,8 @@ namespace ArithmeticOperations {
 
         // Stack output:
         // a % b:  signed integer result of the a % b
-        let stack: model.Stack* = Stack.push(stack, rem);
-        let ctx = apply_context_changes(ctx, stack, GAS_COST_SMOD);
+        let stack: model.Stack* = Stack.push(self=stack, element=rem);
+        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_SMOD);
         return ctx;
     }
 
@@ -331,7 +331,7 @@ namespace ArithmeticOperations {
         // 1 - b: number.
         // 1 - c: modulo.
         let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(stack, 3);
+        let (stack, popped) = Stack.pop_n(self=stack, n=3);
         let a = popped[2];
         let b = popped[1];
         let c = popped[0];
@@ -343,8 +343,8 @@ namespace ArithmeticOperations {
 
         // Stack output:
         // integer result of a + b % c
-        let stack: model.Stack* = Stack.push(stack, rem);
-        let ctx = apply_context_changes(ctx, stack, GAS_COST_ADDMOD);
+        let stack: model.Stack* = Stack.push(self=stack, element=rem);
+        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_ADDMOD);
         return ctx;
     }
 
@@ -374,7 +374,7 @@ namespace ArithmeticOperations {
         // 1 - b: number.
         // 1 - c: modulos.
         let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(stack, 3);
+        let (stack, popped) = Stack.pop_n(self=stack, n=3);
         let a = popped[2];
         let b = popped[1];
         let c = popped[0];
@@ -382,12 +382,12 @@ namespace ArithmeticOperations {
         // Compute the addition
         let (result) = SafeUint256.mul(a, b);
         // Compute the modulo
-        let (_result, rem) = SafeUint256.div_rem(result, c);
+        let (_result, rem) = SafeUint256.div_rem(a=result, b=c);
 
         // Stack output:
         // integer result of the a * b % c
-        let stack: model.Stack* = Stack.push(stack, rem);
-        let ctx = apply_context_changes(ctx, stack, GAS_COST_MULMOD);
+        let stack: model.Stack* = Stack.push(self=stack, element=rem);
+        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_MULMOD);
         return ctx;
     }
 
@@ -416,7 +416,7 @@ namespace ArithmeticOperations {
         // 0 - a: number.
         // 1 - b: exponent.
         let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(stack, 2);
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let a = popped[1];
         let b = popped[0];
 
@@ -425,8 +425,8 @@ namespace ArithmeticOperations {
 
         // Stack output:
         // integer result of a ** b
-        let stack: model.Stack* = Stack.push(stack, result);
-        let ctx = apply_context_changes(ctx, stack, GAS_COST_EXP);
+        let stack: model.Stack* = Stack.push(self=stack, element=result);
+        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_EXP);
         return ctx;
     }
 
@@ -455,13 +455,13 @@ namespace ArithmeticOperations {
         // 0 - a: number.
         // 1 - b: exponent.
         let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(stack, 2);
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let b = popped[1];
         let x = popped[0];
 
         // Value is already a uint256
-        let stack: model.Stack* = Stack.push(stack, x);
-        let ctx = apply_context_changes(ctx, stack, GAS_COST_SIGNEXTEND);
+        let stack: model.Stack* = Stack.push(self=stack, element=x);
+        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_SIGNEXTEND);
         return ctx;
     }
 
@@ -487,7 +487,7 @@ namespace ArithmeticOperations {
         let (is_b_ge_than_one) = uint256_le(zero_uint, b);
         if (is_b_ge_than_one == 1) {
             let (b_minus_one) = SafeUint256.sub_le(b, one_uint);
-            let temp_pow = internal_exp(a, b_minus_one);
+            let temp_pow = internal_exp(a=a, b=b_minus_one);
             let (res) = SafeUint256.mul(a, temp_pow);
             return res;
         }
@@ -509,9 +509,9 @@ namespace ArithmeticOperations {
     ) -> model.ExecutionContext* {
         alloc_locals;
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, gas_cost);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=gas_cost);
         return ctx;
     }
 }

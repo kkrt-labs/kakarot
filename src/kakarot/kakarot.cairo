@@ -45,6 +45,7 @@ func execute_at_address{
     stack_len: felt, stack: Uint256*, memory_len: felt, memory: felt*
 ) {
     alloc_locals;
+
     let context = Kakarot.execute_at_address(address=address, calldata=calldata);
     let len = Stack.len(context.stack);
     return (

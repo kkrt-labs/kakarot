@@ -204,7 +204,7 @@ namespace ExecutionContext {
         // Copy code slice
         memcpy(dst=output, src=self.code + pc, len=len);
         // Move program counter
-        let self = ExecutionContext.increment_program_counter(self, len);
+        let self = ExecutionContext.increment_program_counter(self=self, inc_value=len);
         return (self=self, output=output);
     }
 
@@ -412,7 +412,7 @@ namespace ExecutionContext {
         }
 
         // Revert if new pc_offset points to something other then JUMPDEST
-        check_jumpdest(self, new_pc_offset);
+        check_jumpdest(self=self, pc_location=new_pc_offset);
 
         return new model.ExecutionContext(
             code=self.code,

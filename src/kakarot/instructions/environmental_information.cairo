@@ -74,9 +74,9 @@ namespace EnvironmentalInformation {
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_BALANCE);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_BALANCE);
         return ctx;
     }
     // @notice CODESIZE operation.
@@ -100,13 +100,13 @@ namespace EnvironmentalInformation {
 
         // Get the code size.
         let code_size = Helpers.to_uint256(ctx.code_len);
-        let stack: model.Stack* = Stack.push(ctx.stack, code_size);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=code_size);
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CODESIZE);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CODESIZE);
         return ctx;
     }
 
@@ -134,15 +134,15 @@ namespace EnvironmentalInformation {
         let (tx_info) = get_tx_info();
         let (registry_address_) = registry_address.read();
         let (evm_address) = IRegistry.get_evm_address(
-            registry_address_, tx_info.account_contract_address
+            registry_address_, starknet_address=tx_info.account_contract_address
         );
         let origin_address = Helpers.to_uint256(evm_address);
 
         // Update Context stack
-        let stack: model.Stack* = Stack.push(ctx.stack, origin_address);
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=origin_address);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_ORIGIN);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_ORIGIN);
         return ctx;
     }
 
@@ -167,13 +167,13 @@ namespace EnvironmentalInformation {
         // Get caller address.
         let (current_address) = get_caller_address();
         let caller_address = Helpers.to_uint256(current_address);
-        let stack: model.Stack* = Stack.push(ctx.stack, caller_address);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=caller_address);
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLER);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CALLER);
         return ctx;
     }
 
@@ -197,13 +197,13 @@ namespace EnvironmentalInformation {
         %}
         // Get return data size.
         let return_data_size = Helpers.to_uint256(ctx.return_data_len);
-        let stack: model.Stack* = Stack.push(ctx.stack, return_data_size);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=return_data_size);
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_RETURNDATASIZE);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_RETURNDATASIZE);
         return ctx;
     }
 
@@ -242,13 +242,12 @@ namespace EnvironmentalInformation {
         let uint256_sliced_calldata: Uint256 = Helpers.bytes_to_uint256(sliced_calldata);
 
         // Push CallData word onto stack
-
-        let stack: model.Stack* = Stack.push(stack, uint256_sliced_calldata);
+        let stack: model.Stack* = Stack.push(self=stack, element=uint256_sliced_calldata);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLDATALOAD);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CALLDATALOAD);
         return ctx;
     }
 
@@ -327,11 +326,11 @@ namespace EnvironmentalInformation {
         );
 
         // Update context memory.
-        let ctx = ExecutionContext.update_memory(ctx, memory);
+        let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLDATACOPY);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CALLDATACOPY);
         return ctx;
     }
 
@@ -435,11 +434,12 @@ namespace EnvironmentalInformation {
         );
 
         // Update context memory.
-        let ctx = ExecutionContext.update_memory(ctx, memory);
+        let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_RETURNDATACOPY);
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLDATACOPY);
         return ctx;
     }
-}
+
+}    

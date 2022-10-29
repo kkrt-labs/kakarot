@@ -62,7 +62,7 @@ namespace MemoryOperations {
         let (stack, offset) = Stack.pop(stack);
 
         // Read word from memory at offset
-        let (new_memory, cost) = Memory.insure_length(ctx.memory, 32 + offset.low);
+        let (new_memory, cost) = Memory.insure_length(self=ctx.memory, length=32 + offset.low);
 
         let value = Memory.load(self=new_memory, offset=offset.low);
 

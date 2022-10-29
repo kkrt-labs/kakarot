@@ -127,7 +127,7 @@ namespace Memory {
         );
 
         let (local quotient, local remainder) = uint256_unsigned_div_rem(
-            Uint256(offset + element_len, 0), Uint256(max_uint256_bytes, 0)
+            a=Uint256(offset + element_len, 0), div=Uint256(max_uint256_bytes, 0)
         );
         local diff: felt;
         if (remainder.low == 0) {
@@ -229,15 +229,17 @@ namespace Memory {
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.Memory*, length: felt) -> (new_memory: model.Memory*, cost: felt) {
         Helpers.fill(self.bytes + self.bytes_len, value=0, length=length);
-        let (last_memory_size_word, _) = unsigned_div_rem(self.bytes_len + 31, 32);
+        let (last_memory_size_word, _) = unsigned_div_rem(value=self.bytes_len + 31, div=32);
         let (last_memory_cost, _) = unsigned_div_rem(
-            last_memory_size_word * last_memory_size_word, 512
+            value=last_memory_size_word * last_memory_size_word, div=512
         );
         let last_memory_cost = last_memory_cost + (3 * last_memory_size_word);
 
-        let (new_memory_size_word, _) = unsigned_div_rem(self.bytes_len + length + 31, 32);
+        let (new_memory_size_word, _) = unsigned_div_rem(
+            value=self.bytes_len + length + 31, div=32
+        );
         let (new_memory_cost, _) = unsigned_div_rem(
-            new_memory_size_word * new_memory_size_word, 512
+            value=new_memory_size_word * new_memory_size_word, div=512
         );
         let new_memory_cost = new_memory_cost + (3 * new_memory_size_word);
 
@@ -259,7 +261,7 @@ namespace Memory {
     }(self: model.Memory*, length: felt) -> (new_memory: model.Memory*, cost: felt) {
         let is_memory_expanding = is_le_felt(self.bytes_len + 1, length);
         if (is_memory_expanding == TRUE) {
-            let (new_memory, cost) = Memory.expand(self, length - self.bytes_len);
+            let (new_memory, cost) = Memory.expand(self=self, length=length - self.bytes_len);
             return (new_memory, cost);
         } else {
             return (new_memory=self, cost=0);
