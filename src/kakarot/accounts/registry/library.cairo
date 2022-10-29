@@ -36,6 +36,15 @@ namespace AccountRegistry {
         return ();
     }
 
+    func transfer_ownership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        new_owner: felt
+    ) {
+        // Access control check.
+        Ownable.assert_only_owner();
+        Ownable.transfer_ownership(new_owner);
+        return ();
+    }
+
     // @notice Update or create an entry in the registry.
     // @param starknet_address: The StarkNet address of the account.
     // @param evm_address: The EVM address of the account.

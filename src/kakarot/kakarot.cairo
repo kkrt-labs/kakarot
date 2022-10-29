@@ -64,6 +64,13 @@ func set_account_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
     return Kakarot.set_account_registry(registry_address_);
 }
 
+@view
+func get_account_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    address: felt
+) {
+    return Kakarot.get_account_registry();
+}
+
 @external
 func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     native_token_address_: felt
@@ -78,7 +85,7 @@ func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 @external
 func deploy{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     bytes_len: felt, bytes: felt*
-) -> (evm_contract_address: felt) {
+) -> (evm_contract_address: felt, starknet_contract_address: felt) {
     let (evm_contract_address, starknet_contract_address) = Kakarot.deploy_contract(
         bytes_len, bytes
     );
@@ -86,5 +93,5 @@ func deploy{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         evm_contract_address=evm_contract_address,
         starknet_contract_address=starknet_contract_address,
     );
-    return (evm_contract_address,);
+    return (evm_contract_address, starknet_contract_address);
 }
