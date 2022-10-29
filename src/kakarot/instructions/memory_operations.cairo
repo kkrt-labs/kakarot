@@ -430,7 +430,7 @@ namespace MemoryOperations {
         alloc_locals;
         %{
             import logging
-            logging.info("0x55 - SSTORE")
+            logging.info("0x54 - SLOAD")
         %}
 
         let stack = ctx.stack;
@@ -444,25 +444,31 @@ namespace MemoryOperations {
         // 0 - key: key of memory.
         // 1 - value: value for given key.
         let (stack, local key) = Stack.pop(stack);
-        local value: Uint256;
+        // local value: Uint256;
         // 3. Get the data and add on the Stack
 
-        with_attr error_message("Contract call failed") {
-            value = IEvm_Contract.state(
-                contract_address=starknet_address, key=key
-                );
-        }
+        %{
+            import logging
+            logging.info("*************SLOAD- CONTRACT ADDRESS*****************")
+            logging.info(ids.ctx.starknet_address)
+        %}
+
+        let (local value: Uint256) = IEvm_Contract.state(
+            contract_address=starknet_address, key=key
+        );
+        %{
+            import logging
+            logging.info("*************SLOAD- AFTER CONTRACT CALL*****************")
+        %}
 
         let stack: model.Stack* = Stack.push(ctx.stack, value);
 
         %{
             import logging
-            logging.info("*************STARKNET ADDRESS*****************")
-            logging.info(ids.ctx.starknet_address)
-            logging.info("*************KEY*****************")
-            logging.info(ids.key.low)
-            logging.info("*************VALUE*****************")
+            logging.info("*************SLOAD- VALUE LOW*****************")
             logging.info(ids.value.low)
+            logging.info("*************SLOAD- VALUE HIGH*****************")
+            logging.info(ids.value.high)
         %}
 
         // Update context stack.

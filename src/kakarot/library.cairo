@@ -87,20 +87,28 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, calldata_len: felt, calldata: felt*) -> model.ExecutionContext* {
+    }(address: felt, code: felt*, calldata: felt*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Get registry address
-        let (reg_address) = registry_address.read();
+        // Load helper hints
+        Helpers.setup_python_defs();
 
-        // get starknet contract from registry
-        let (starknet_address) = IRegistry.get_starknet_address(reg_address, address);
+        // Generate instructions set
+        let instructions: felt* = EVMInstructions.generate_instructions();
 
-        // fetch code
-        let (bytecode_len: felt, bytecode: felt*) = IEvm_Contract.code(starknet_address);
+        // Prepare execution context
+        let ctx: model.ExecutionContext* = ExecutionContext.init_at_address(
+            address, code, calldata
+        );
 
-        // call execute
-        let ctx = execute(bytecode_len, bytecode, calldata);
+        // Compute intrinsic gas cost and update gas used
+        let ctx = ExecutionContext.compute_intrinsic_gas_cost(ctx);
+
+        // Start execution
+        let ctx = run(instructions, ctx);
+
+        // For debugging purpose
+        ExecutionContext.dump(ctx);
 
         return ctx;
     }
