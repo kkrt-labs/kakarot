@@ -17,7 +17,7 @@ from kakarot.memory import Memory
 from kakarot.stack import Stack
 from kakarot.constants import Constants
 from kakarot.constants import native_token_address, registry_address
-from kakarot.interfaces.interfaces import IEth, IRegistry
+from kakarot.interfaces.interfaces import IEth, IRegistry, IEvm_Contract
 
 // @title ExecutionContext related functions.
 // @notice This file contains functions related to the execution context.
