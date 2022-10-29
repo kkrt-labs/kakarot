@@ -17,7 +17,7 @@ from kakarot.memory import Memory
 from kakarot.stack import Stack
 from kakarot.constants import Constants
 from kakarot.constants import native_token_address, registry_address
-from kakarot.interfaces.interfaces import IEth, IRegistry, IEvm_Contract
+from kakarot.interfaces.interfaces import IEth
 
 // @title ExecutionContext related functions.
 // @notice This file contains functions related to the execution context.
@@ -125,6 +125,7 @@ namespace ExecutionContext {
             );
         return ctx;
     }
+
 
     // @notice Compute the intrinsic gas cost of the current transaction.
     // @dev Update the given execution context with the intrinsic gas cost.
