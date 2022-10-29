@@ -13,6 +13,7 @@ from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.memory_operations import MemoryOperations
+from kakarot.constants import Constants
 
 @view
 func __setup__{
@@ -178,5 +179,32 @@ func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_ms
     let index0 = Stack.peek(result.stack, 0);
     assert_uint256_eq(index0, Uint256(0, 0));
     assert result.memory.bytes_len = test_offset + 32;
+    return ();
+}
+
+@external
+func test__exec_gas_should_return_remaining_gas{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given
+    alloc_locals;
+    let ctx: model.ExecutionContext* = init_context();
+    // Given
+    let stack: model.Stack* = Stack.init();
+    let ctx = ExecutionContext.update_stack(ctx, stack);
+
+    // When
+    local gas_used_before = ctx.gas_used;
+    let result = MemoryOperations.exec_gas(ctx);
+    local gas_used = result.gas_used - gas_used_before;
+
+    // Then
+    assert gas_used = 2;
+    let len: felt = Stack.len(result.stack);
+    assert len = 1;
+    let actual_remaining_gas = Stack.peek(result.stack, 0);
+    let expected_remaining_gas = Constants.TRANSACTION_GAS_LIMIT - gas_used;
+    let expected_remaining_gas_uint256 = Uint256(expected_remaining_gas, 0);
+    assert_uint256_eq(actual_remaining_gas, expected_remaining_gas_uint256);
     return ();
 }

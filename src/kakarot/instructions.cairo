@@ -270,14 +270,14 @@ namespace EVMInstructions {
         // 0x20 - SHA3
         add_instruction(instructions, 0x20, Sha3.exec_sha3);
 
+        // Stack Memory Storage and Flow Operations
+
         // 0x50 - POP
         add_instruction(instructions, 0x50, MemoryOperations.exec_pop);
-
         // 0x51 - MLOAD
         add_instruction(instructions, 0x51, MemoryOperations.exec_mload);
         // 0x52 - MSTORE
         add_instruction(instructions, 0x52, MemoryOperations.exec_mstore);
-
         // 0x53 - MSTORE8
         add_instruction(instructions, 0x53, MemoryOperations.exec_mstore8);
         // 0x56 - JUMP
@@ -288,6 +288,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x58, MemoryOperations.exec_pc);
         // 0x59 - MSIZE
         add_instruction(instructions, 0x59, MemoryOperations.exec_msize);
+        // 0x5A - GAS
+        add_instruction(instructions, 0x5A, MemoryOperations.exec_gas);
         // 0x5b - JUMPDEST
         add_instruction(instructions, 0x5b, MemoryOperations.exec_jumpdest);
 

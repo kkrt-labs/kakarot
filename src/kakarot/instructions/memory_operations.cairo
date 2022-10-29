@@ -31,6 +31,7 @@ namespace MemoryOperations {
     const GAS_COST_JUMPDEST = 1;
     const GAS_COST_POP = 2;
     const GAS_COST_MSTORE8 = 3;
+    const GAS_COST_GAS = 2;
 
     // @notice MLOAD operation
     // @dev Load word from memory and push to stack.
@@ -352,6 +353,40 @@ namespace MemoryOperations {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MSTORE8);
+        return ctx;
+    }
+
+    // @notice GAS operation
+    // @dev Get the amount of available gas, including the corresponding reduction for the cost of this instruction.
+    // @custom: since Frontier
+    // @custom:group Stack Memory Storage and Flow operations.
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @return Updated execution context.
+    func exec_gas{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        %{
+            import logging
+            logging.info("0x5A - GAS")
+        %}
+
+        // Get stack from context.
+        let stack: model.Stack* = ctx.stack;
+
+        // Compute remaining gas.
+        let remaining_gas = ctx.gas_limit - ctx.gas_used - GAS_COST_GAS;
+        let stack: model.Stack* = Stack.push(ctx.stack, Uint256(remaining_gas, 0));
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_GAS);
         return ctx;
     }
 }

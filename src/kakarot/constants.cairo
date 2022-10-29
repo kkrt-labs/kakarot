@@ -30,4 +30,9 @@ namespace Constants {
 
     // GAS METERING
     const TRANSACTION_INTRINSIC_GAS_COST = 21000;
+
+    // TRANSACTION
+    // TODO: handle tx gas limit properly and remove this constant
+    // Temporarily set tx gas limit to 1M gas
+    const TRANSACTION_GAS_LIMIT = 1000000;
 }

@@ -45,3 +45,4 @@ class TestMemoryOperations(IsolatedAsyncioTestCase):
         await self.test_memory_operations.test__exec_mload_should_load_a_value_from_memory().call()
         await self.test_memory_operations.test__exec_mload_should_load_a_value_from_memory_with_memory_expansion().call()
         await self.test_memory_operations.test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_msize().call()
+        await self.test_memory_operations.test__exec_gas_should_return_remaining_gas().call()
