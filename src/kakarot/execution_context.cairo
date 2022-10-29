@@ -75,12 +75,12 @@ namespace ExecutionContext {
     // @param code The code to execute.
     // @param calldata The calldata.
     // @return The initialized execution context.
-    func init_evm{
+    func init_at_address{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, calldata_len: felt, calldata: felt*) -> model.ExecutionContext* {
+    }(address: felt, calldata: felt*) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
 
@@ -95,18 +95,19 @@ namespace ExecutionContext {
 
         // 1. Evm address
         // 2. Get starknet Address
-        // let addr: felt = Helpers.uint256_to_felt(address);
+
         let (registry_address_) = registry_address.read();
         let (starknet_address) = IRegistry.get_starknet_address(
             contract_address=registry_address_, evm_address=address
         );
         // Get the BYTECODE from the Starknet_contract
 
-        let (bytecode_len, bytecode) = IEvm_Contract.code(contract_address=starknet_address);
+        let (code_len, code) = IEvm_Contract.code(contract_address=starknet_address);
+        // Transform byte to array?
 
         local ctx: model.ExecutionContext* = new model.ExecutionContext(
-            code=calldata,
-            code_len=0,
+            code=code,
+            code_len=code_len,
             calldata=calldata,
             calldata_len=Helpers.get_len(calldata),
             program_counter=initial_pc,
@@ -391,10 +392,7 @@ namespace ExecutionContext {
             logging.info("===================================")
         %}
         Memory.dump(self.memory);
-        %{
-            import logging
-            logging.info("===================================")
-        %}
+
         return ();
     }
 

@@ -107,7 +107,7 @@ namespace internal {
     // @notice Store the bytecode of the contract.
     // @param index: The index in the code.
     // @param code_len: The length of the bytecode.
-    // @param code: The bytecode of the contract.
+
     func store_code{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         index: felt, code_len: felt, code: felt*
     ) {

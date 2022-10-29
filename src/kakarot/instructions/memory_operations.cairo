@@ -33,6 +33,7 @@ namespace MemoryOperations {
     const GAS_COST_POP = 2;
     const GAS_COST_MSTORE8 = 3;
     const GAS_COST_SSTORE = 100;
+    const GAS_COST_SLOAD = 100;
 
     // @notice MLOAD operation
     // @dev Load word from memory and push to stack.
@@ -239,9 +240,9 @@ namespace MemoryOperations {
         let (stack, skip_condition) = Stack.pop(stack);
 
         // Update pc if skip_jump is anything other then 0
-        if (skip_condition.low != FALSE) {
+        if (skip_condition.low == 1) {
             // Update pc counter.
-            ExecutionContext.update_program_counter(ctx, offset.low);
+            let ctx = ExecutionContext.update_program_counter(ctx, offset.low);
             // Update context stack.
             let ctx = ExecutionContext.update_stack(ctx, stack);
             // Increment gas used.
@@ -396,16 +397,6 @@ namespace MemoryOperations {
             IEvm_Contract.write_state(contract_address=starknet_address, key=key, value=value);
         }
 
-        %{
-            import logging
-            logging.info("*************STARKNET ADDRESS*****************")
-            logging.info(ids.ctx.starknet_address)
-            logging.info("*************KEY*****************")
-            logging.info(ids.key.low)
-            logging.info("*************VALUE*****************")
-            logging.info(ids.value.low)
-        %}
-
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
@@ -428,11 +419,6 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x55 - SSTORE")
-        %}
-
         let stack = ctx.stack;
 
         // ------- 1. Get starknet address
@@ -444,31 +430,19 @@ namespace MemoryOperations {
         // 0 - key: key of memory.
         // 1 - value: value for given key.
         let (stack, local key) = Stack.pop(stack);
-        local value: Uint256;
+        // local value: Uint256;
         // 3. Get the data and add on the Stack
 
-        with_attr error_message("Contract call failed") {
-            value = IEvm_Contract.state(
-                contract_address=starknet_address, key=key
-                );
-        }
+        let (local value: Uint256) = IEvm_Contract.state(
+            contract_address=starknet_address, key=key
+        );
 
-        let stack: model.Stack* = Stack.push(ctx.stack, value);
-
-        %{
-            import logging
-            logging.info("*************STARKNET ADDRESS*****************")
-            logging.info(ids.ctx.starknet_address)
-            logging.info("*************KEY*****************")
-            logging.info(ids.key.low)
-            logging.info("*************VALUE*****************")
-            logging.info(ids.value.low)
-        %}
+        let stack: model.Stack* = Stack.push(stack, value);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SSTORE);
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SLOAD);
         return ctx;
     }
 }
