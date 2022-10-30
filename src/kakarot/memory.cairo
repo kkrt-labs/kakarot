@@ -165,6 +165,51 @@ namespace Memory {
         return new model.Memory(bytes=new_memory, bytes_len=new_bytes_len);
     }
 
+    // @notice CODECOPY - (Over)write byte array into the memory with zero padding.
+    // @param self - The pointer to the memory.
+    // @param element - The element to push.
+    // @param offset - The offset to store the element at.
+    // @return The new pointer to the memory.
+    func store_bytes{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.Memory*, bytes_len: felt, bytes: felt*, offset: felt) -> model.Memory* {
+        alloc_locals;
+        let (new_memory: felt*) = alloc();
+
+        // Leading block of memory
+        let is_offset_greater_than_length = is_le_felt(self.bytes_len + 1, offset);
+        if (is_offset_greater_than_length == 1) {
+            memcpy(dst=new_memory, src=self.bytes, len=self.bytes_len);
+            Helpers.fill(arr=new_memory + self.bytes_len, value=0, length=offset - self.bytes_len);
+        } else {
+            memcpy(dst=new_memory, src=self.bytes, len=offset);
+        }
+
+        // Copied new block of memory
+        memcpy(dst=new_memory + offset, src=bytes, len=bytes_len);
+
+        // Trailing block of memory
+        let is_memory_expanded: felt = is_le_felt(self.bytes_len + 1, offset + bytes_len);
+        if (is_memory_expanded == 1) {
+            let (_, rem) = unsigned_div_rem(offset + bytes_len, 32);
+            let is_rem_pos: felt = is_le_felt(1, rem);
+            let padding_len: felt = (32 - rem) * is_rem_pos;
+            Helpers.fill(arr=new_memory + offset + bytes_len, value=0, length=padding_len);
+            let new_memory_len: felt = offset + bytes_len + padding_len;
+            return new model.Memory(bytes=new_memory, bytes_len=new_memory_len);
+        } else {
+            memcpy(
+                dst=new_memory + offset + bytes_len,
+                src=self.bytes + offset + bytes_len,
+                len=self.bytes_len - offset - bytes_len,
+            );
+            let new_memory_len: felt = self.bytes_len;
+            return new model.Memory(bytes=new_memory, bytes_len=new_memory_len);
+        }
+    }
     // @notice Load an element from the memory.
     // @param self - The pointer to the memory.
     // @param offset - The offset to load the element from.

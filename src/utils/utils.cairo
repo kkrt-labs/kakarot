@@ -228,6 +228,28 @@ namespace Helpers {
         return (sliced_data);
     }
 
+    // @notice Returns a zero-padded slice of an array
+    // @param array_len Length of the array
+    // @param array Pointer to the array
+    // @param slice_len Number of elements to take
+    // @param offset Take elements in the array starting from this position
+    // @return Pointer to the zero-padded copy of the array slice
+    func array_slice{range_check_ptr}(
+        array_len: felt, array: felt*, slice_len: felt, offset: felt
+    ) -> felt* {
+        alloc_locals;
+        local len: felt;
+        let (local new_array: felt*) = alloc();
+
+        let is_non_empty: felt = is_le_felt(offset, array_len);
+        let max_len: felt = (array_len - offset) * is_non_empty;
+        let is_within_bound: felt = is_le_felt(slice_len, max_len);
+        let len = max_len + (slice_len - max_len) * is_within_bound;
+        memcpy(dst=new_array, src=array + offset, len=len);
+        fill(arr=new_array + len, value=0, length=slice_len - len);
+        return new_array;
+    }
+
     func reverse(old_arr_len: felt, old_arr: felt*, new_arr_len: felt, new_arr: felt*) {
         if (old_arr_len == 0) {
             return ();

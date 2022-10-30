@@ -28,6 +28,7 @@ from kakarot.interfaces.interfaces import IEth, IResgistry
 namespace EnvironmentalInformation {
     // Define constants.
     const GAS_COST_CODESIZE = 2;
+    const GAS_COST_CODECOPY = 3;
     const GAS_COST_CALLER = 2;
     const GAS_COST_RETURNDATASIZE = 2;
     const GAS_COST_CALLDATALOAD = 3;
@@ -329,6 +330,42 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLDATACOPY);
+        return ctx;
+    }
+
+    // @notice CODECOPY (0x39) operation.
+    // @dev Copies slice of code to memory
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 3
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_codecopy{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        %{
+        import logging
+        logging.info("0x39 - CODECOPY")
+        %}
+
+        let (stack: model.Stack*, popped: Uint256*) = Stack.pop_n(ctx.stack, 3);
+        // Arguments are popped in reverse order
+        let destOffset: Uint256 = popped[2];
+        let offset: Uint256 = popped[1];
+        let size: Uint256 = popped[0];
+
+        let offset_f: felt = Helpers.uint256_to_felt(offset);
+        let size_f: felt = Helpers.uint256_to_felt(size);
+        let code_segment: felt* = Helpers.array_slice(ctx.code_len, ctx.code, size_f, offset_f);
+        let new_memory: model.Memory* = Memory.store_bytes(ctx.memory, Helpers.uint256_to_felt(size), code_segment, Helpers.uint256_to_felt(destOffset));
+        let ctx = ExecutionContext.update_memory(ctx, new_memory);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CODECOPY);
         return ctx;
     }
 }
