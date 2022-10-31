@@ -744,7 +744,7 @@ test_cases = [
         "params": {
             "code": "4500",
             "calldata": "",
-            "stack": "20000000",
+            "stack": "1000000",
             "memory": "",
             "return_value": "",
         },
