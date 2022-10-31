@@ -200,7 +200,7 @@ namespace MemoryOperations {
         let (stack, offset) = Stack.pop(stack);
 
         // Update pc counter.
-        ExecutionContext.update_program_counter(ctx, offset.low);
+        let ctx = ExecutionContext.update_program_counter(ctx, offset.low);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -240,7 +240,7 @@ namespace MemoryOperations {
         // Update pc if skip_jump is anything other then 0
         if (skip_condition.low != FALSE) {
             // Update pc counter.
-            ExecutionContext.update_program_counter(ctx, offset.low);
+            let ctx = ExecutionContext.update_program_counter(ctx, offset.low);
             // Update context stack.
             let ctx = ExecutionContext.update_stack(ctx, stack);
             // Increment gas used.
