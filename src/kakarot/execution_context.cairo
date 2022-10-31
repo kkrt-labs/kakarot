@@ -42,7 +42,7 @@ namespace ExecutionContext {
         let initial_pc = 0;
         let gas_used = 0;
         // TODO: Add support for gas limit
-        let gas_limit = 0;
+        let gas_limit = Constants.TRANSACTION_GAS_LIMIT;
 
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();

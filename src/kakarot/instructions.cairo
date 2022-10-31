@@ -20,6 +20,7 @@ from kakarot.instructions.arithmetic_operations import ArithmeticOperations
 from kakarot.instructions.comparison_operations import ComparisonOperations
 from kakarot.instructions.duplication_operations import DuplicationOperations
 from kakarot.instructions.exchange_operations import ExchangeOperations
+from kakarot.instructions.logging_operations import LoggingOperations
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.environmental_information import EnvironmentalInformation
 from kakarot.instructions.block_information import BlockInformation
@@ -361,6 +362,8 @@ namespace EVMInstructions {
         // 0x20 - SHA3
         add_instruction(instructions=instructions, opcode=0x20, function=Sha3.exec_sha3);
 
+        // Stack Memory Storage and Flow Operations
+
         // 0x50 - POP
         add_instruction(instructions=instructions, opcode=0x50, function=MemoryOperations.exec_pop);
 
@@ -368,10 +371,13 @@ namespace EVMInstructions {
         add_instruction(
             instructions=instructions, opcode=0x51, function=MemoryOperations.exec_mload
         );
-
         // 0x52 - MSTORE
         add_instruction(
             instructions=instructions, opcode=0x52, function=MemoryOperations.exec_mstore
+        );
+        // 0x53 - MSTORE8
+        add_instruction(
+            instructions=instructions, opcode=0x53, function=MemoryOperations.exec_mstore8
         );
 
         // 0x55 - SLOAD
@@ -379,10 +385,6 @@ namespace EVMInstructions {
 
         // 0x55 - SSTORE
         add_instruction(instructions, 0x55, MemoryOperations.exec_sstore);
-        // 0x53 - MSTORE8
-        add_instruction(
-            instructions=instructions, opcode=0x53, function=MemoryOperations.exec_mstore8
-        );
         // 0x56 - JUMP
         add_instruction(
             instructions=instructions, opcode=0x56, function=MemoryOperations.exec_jump
@@ -397,6 +399,8 @@ namespace EVMInstructions {
         add_instruction(
             instructions=instructions, opcode=0x59, function=MemoryOperations.exec_msize
         );
+        // 0x5A - GAS
+        add_instruction(instructions, opcode=0x5A, function=MemoryOperations.exec_gas);
         // 0x5b - JUMPDEST
         add_instruction(
             instructions=instructions, opcode=0x5b, function=MemoryOperations.exec_jumpdest
@@ -581,6 +585,13 @@ namespace EVMInstructions {
         add_instruction(
             instructions=instructions, opcode=0x9f, function=ExchangeOperations.exec_swap16
         );
+
+        // Add as: Log operations
+        add_instruction(instructions, 0xa0, LoggingOperations.exec_log_0);
+        add_instruction(instructions, 0xa1, LoggingOperations.exec_log_1);
+        add_instruction(instructions, 0xa2, LoggingOperations.exec_log_2);
+        add_instruction(instructions, 0xa3, LoggingOperations.exec_log_3);
+        add_instruction(instructions, 0xa4, LoggingOperations.exec_log_4);
 
         // Add fs: System operations
         add_instruction(
