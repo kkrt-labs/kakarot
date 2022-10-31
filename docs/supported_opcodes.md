@@ -49,12 +49,12 @@ This document describes the opcodes supported by Kakarot.
 | ------------ | -------------- | --------------------------------------------------------------------------------- | ----------- |
 | 0x30         | ADDRESS        | Get address of currently executing account                                        |             |
 | 0x31         | BALANCE        | Get balance of the given account                                                  | ✅          |
-| 0x32         | ORIGIN         | Get execution origination address                                                 | ✅             |
+| 0x32         | ORIGIN         | Get execution origination address                                                 | ✅          |
 | 0x33         | CALLER         | Get caller address                                                                | ✅          |
 | 0x34         | CALLVALUE      | Get deposited value by the instruction/transaction responsible for this execution |             |
 | 0x35         | CALLDATALOAD   | Get input data of current environment                                             | ✅          |
 | 0x36         | CALLDATASIZE   | Get size of input data in current environment                                     | ✅          |
-| 0x37         | CALLDATACOPY   | Copy input data in current environment to memory                                  |   ✅          |
+| 0x37         | CALLDATACOPY   | Copy input data in current environment to memory                                  | ✅          |
 | 0x38         | CODESIZE       | Get size of code running in current environment                                   | ✅          |
 | 0x39         | CODECOPY       | Copy code running in current environment to memory                                |             |
 | 0x3a         | GASPRICE       | Get price of gas in current environment                                           |             |
@@ -85,14 +85,14 @@ This document describes the opcodes supported by Kakarot.
 | 0x50         | POP         | Remove item from stack                                                                             | ✅          |
 | 0x51         | MLOAD       | Load word from memory                                                                              | ✅          |
 | 0x52         | MSTORE      | Save word to memory                                                                                | ✅          |
-| 0x53         | MSTORE8     | Save byte to memory                                                                                |   ✅          |
+| 0x53         | MSTORE8     | Save byte to memory                                                                                | ✅          |
 | 0x54         | SLOAD       | Load word from storage                                                                             |             |
 | 0x55         | SSTORE      | Save word to storage                                                                               |             |
 | 0x56         | JUMP        | Alter the program counter                                                                          | ✅          |
 | 0x57         | JUMPI       | Conditionally alter the program counter                                                            | ✅          |
 | 0x58         | PC          | Get the value of the program counter prior to the increment                                        | ✅          |
 | 0x59         | MSIZE       | Get the size of active memory in bytes                                                             | ✅          |
-| 0x5a         | GAS         | Get the amount of available gas, including the corresponding reduction the amount of available gas |             |
+| 0x5a         | GAS         | Get the amount of available gas, including the corresponding reduction the amount of available gas | ✅          |
 | 0x5b         | JUMPDEST    | Mark a valid destination for jumps                                                                 | ✅          |
 
 ## Push Operations
@@ -178,11 +178,11 @@ This document describes the opcodes supported by Kakarot.
 
 | Opcode Value | Opcode Name | Description                         | Implemented |
 | ------------ | ----------- | ----------------------------------- | ----------- |
-| 0xa0         | LOG0        | Append log record with no topics    |             |
-| 0xa1         | LOG1        | Append log record with one topic    |             |
-| 0xa2         | LOG2        | Append log record with two topics   |             |
-| 0xa3         | LOG3        | Append log record with three topics |             |
-| 0xa4         | LOG4        | Append log record with four topics  |             |
+| 0xa0         | LOG0        | Append log record with no topics    | ✅          |
+| 0xa1         | LOG1        | Append log record with one topic    | ✅          |
+| 0xa2         | LOG2        | Append log record with two topics   | ✅          |
+| 0xa3         | LOG3        | Append log record with three topics | ✅          |
+| 0xa4         | LOG4        | Append log record with four topics  | ✅          |
 
 ## System Operations
 

@@ -173,10 +173,8 @@ namespace BlockInformation {
             import logging
             logging.info("0x45 - GASLIMIT")
         %}
-        // Get the Gas Limit.
-
+        // Get the Gas Limit
         let gas_limit = Helpers.to_uint256(val=ctx.gas_limit);
-
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=gas_limit);
 
         // Update the execution context.

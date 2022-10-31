@@ -248,7 +248,7 @@ namespace Memory {
         return (new model.Memory(bytes=self.bytes, bytes_len=self.bytes_len + length), cost);
     }
 
-    // @notice Insure that the memory as at least length bytes. Expand if necessary.
+    // @notice Ensure that the memory as at least length bytes. Expand if necessary.
     // @param self - The pointer to the memory.
     // @param offset - The number of bytes to add.
     // @return The new pointer to the memory.
