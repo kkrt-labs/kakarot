@@ -248,6 +248,8 @@ namespace EVMInstructions {
         add_instruction(instructions, 0x37, EnvironmentalInformation.exec_calldatacopy);
         // 0x38 - CODESIZE
         add_instruction(instructions, 0x38, EnvironmentalInformation.exec_codesize);
+        // 0x38 - CODECOPY
+        add_instruction(instructions, 0x39, EnvironmentalInformation.exec_codecopy);
         // 0x3d - RETURNDATASIZE
         add_instruction(instructions, 0x3d, EnvironmentalInformation.exec_returndatasize);
 

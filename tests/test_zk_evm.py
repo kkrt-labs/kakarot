@@ -1119,6 +1119,36 @@ test_cases = [
         },
         "id": "PRElog4-1",
     },
+    {
+        "params": {
+            "code": "7dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f0000000000000000000000000000000000000000000000000000000000000000505060206000600039",
+            "calldata": "",
+            "stack": "",
+            "memory": "7dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f",
+            "return_value": "",
+        },
+        "id": "codecopy1",
+    },
+    {
+        "params": {
+            "code": "60056003600039",
+            "calldata": "",
+            "stack": "",
+            "memory": "0360003900000000000000000000000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "codecopy2",
+    },
+    {
+        "params": {
+            "code": "7dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6008601f600039",
+            "calldata": "",
+            "stack": "1766847064778384329583297500742918515827483896875618958121606201292619775",
+            "memory": "6008601f60003900000000000000000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "codecopy3",
+    },
 ]
 
 
