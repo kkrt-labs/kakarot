@@ -1127,7 +1127,7 @@ test_cases = [
             "memory": "6002000000000000000000000000000000000000000000000000000000000000",
             "return_value": "",
         },
-        "id": "Environment Information - Check CODECOPY (0x39) - code slice within bounds, memory offset > len and padding",
+        "id": "Environment Information - CODECOPY (0x39) - code slice within bounds, memory offset > len with tail padding",
     },
     {
         "params": {
@@ -1137,7 +1137,7 @@ test_cases = [
             "memory": "002233445566778899778899aabbccddeeff00112233445566778899aabbccdd",
             "return_value": "",
         },
-        "id": "Environmental Information - Check CODECOPY (0x39) - code slice within bounds, memory copy within bounds",
+        "id": "Environmental Information - CODECOPY (0x39) - code slice within bounds, memory copy within bounds",
     },
     {
         "params": {
@@ -1147,7 +1147,7 @@ test_cases = [
             "memory": "002233445566778899aabbccddeeff00112233445566778899aabbccdd6000526000000000000000000000000000000000000000000000000000000000000000",
             "return_value": "",
         },
-        "id": "Environmental Information - Check CODECOPY (0x39) - code slice within bounds, memory offset < len < offset + size",
+        "id": "Environmental Information - CODECOPY (0x39) - code slice within bounds, memory offset < len < offset + size",
     },
     {
         "params": {
@@ -1157,7 +1157,7 @@ test_cases = [
             "memory": "00000060026003390000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
             "return_value": "",
         },
-        "id": "Environmental Information - Check CODECOPY (0x39) - code with padding + memory offset > len ",
+        "id": "Environmental Information - CODECOPY (0x39) - code with padding + memory offset > len ",
     },
     {
         "params": {
@@ -1167,7 +1167,7 @@ test_cases = [
             "memory": "000000110000000000778899aabbccddeeff00112233445566778899aabbccdd",
             "return_value": "",
         },
-        "id": "Environmental Information - Check CODECOPY (0x39) - code offset > len, memory offset + size < len",
+        "id": "Environmental Information - CODECOPY (0x39) - code offset > len, memory offset + size < len",
     },
     {
         "params": {
@@ -1177,7 +1177,7 @@ test_cases = [
             "memory": "7dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f0000000000000000000000000000000000000000000000000000000000000000",
             "return_value": "",
         },
-        "id": "Environment Information - Check CODECOPY (0x39) - evmcode example 1",
+        "id": "Environment Information - CODECOPY (0x39) - evmcode example 1",
     },
     {
         "params": {
@@ -1187,7 +1187,7 @@ test_cases = [
             "memory": "7f00000000000000ffffffffffffffffffffffffffffffffffffffffffffff7f0000000000000000000000000000000000000000000000000000000000000000",
             "return_value": "",
         },
-        "id": "Environment Information - Check CODECOPY (0x39) - evmcode example 1+2",
+        "id": "Environment Information - CODECOPY (0x39) - evmcode example 1+2",
     },
 ]
 

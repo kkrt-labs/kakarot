@@ -349,22 +349,37 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         %{
-        import logging
-        logging.info("0x39 - CODECOPY")
+            import logging
+            logging.info("0x39 - CODECOPY")
         %}
 
-        let (stack: model.Stack*, popped: Uint256*) = Stack.pop_n(ctx.stack, 3);
-        // Arguments are popped in reverse order
-        let destOffset: Uint256 = popped[2];
-        let offset: Uint256 = popped[1];
-        let size: Uint256 = popped[0];
+        let stack = ctx.stack;
 
-        let offset_f: felt = Helpers.uint256_to_felt(offset);
-        let size_f: felt = Helpers.uint256_to_felt(size);
-        let code_segment: felt* = Helpers.array_slice(ctx.code_len, ctx.code, size_f, offset_f);
-        let new_memory: model.Memory* = Memory.store_bytes(ctx.memory, Helpers.uint256_to_felt(size), code_segment, Helpers.uint256_to_felt(destOffset));
-        let ctx = ExecutionContext.update_memory(ctx, new_memory);
+        // Stack input:
+        // 0 - offset: memory offset of the work we save.
+        // 1 - code_offset: offset for code from where data will be copied.
+        // 2 - element_len: bytes length of the copied code.
+
+        let (stack, offset) = Stack.pop(stack);
+        let (stack, code_offset) = Stack.pop(stack);
+        let (stack, element_len) = Stack.pop(stack);
+
+        let code: felt* = ctx.code;
+        let code_len: felt = ctx.code_len;
+
+        let sliced_code: felt* = Helpers.slice_data(
+            data_len=code_len, data=code, data_offset=code_offset.low, slice_len=element_len.low
+        );
+
+        let memory: model.Memory* = Memory.store_n(
+            self=ctx.memory, element_len=element_len.low, element=sliced_code, offset=offset.low
+        );
+
+        // Update context memory.
+        let ctx = ExecutionContext.update_memory(ctx, memory);
+        // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CODECOPY);
         return ctx;
     }
