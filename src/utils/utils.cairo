@@ -209,23 +209,21 @@ namespace Helpers {
         data_len: felt, data: felt*, data_offset: felt, slice_len: felt
     ) -> felt* {
         alloc_locals;
-        let (local sliced_data: felt*) = alloc();
+        local len: felt;
+        let (local new_data: felt*) = alloc();
 
-        let diff = data_len - data_offset;
+        // slice's len = min(slice_len, data_len-offset, 0)
+        // which corresponds to full, partial or empty overlap with data
+        // The result is zero-padded in case of partial or empty overlap.
 
-        let is_diff_greater_than_element_len: felt = is_le_felt(slice_len, diff);
+        let is_non_empty: felt = is_le_felt(data_offset, data_len);
+        let max_len: felt = (data_len - data_offset) * is_non_empty;
+        let is_within_bound: felt = is_le_felt(slice_len, max_len);
+        let len = max_len + (slice_len - max_len) * is_within_bound;
 
-        if (is_diff_greater_than_element_len == 0) {
-            memcpy(dst=sliced_data, src=data + data_offset, len=diff);
-
-            let pad_n: felt = slice_len - diff;
-
-            fill(arr=sliced_data + diff, value=0, length=pad_n);
-        } else {
-            memcpy(dst=sliced_data, src=data + data_offset, len=slice_len);
-        }
-
-        return (sliced_data);
+        memcpy(dst=new_data, src=data + data_offset, len=len);
+        fill(arr=new_data + len, value=0, length=slice_len - len);
+        return new_data;
     }
 
     func reverse(old_arr_len: felt, old_arr: felt*, new_arr_len: felt, new_arr: felt*) {

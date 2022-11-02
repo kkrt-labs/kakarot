@@ -28,6 +28,7 @@ from kakarot.interfaces.interfaces import IEth, IResgistry
 namespace EnvironmentalInformation {
     // Define constants.
     const GAS_COST_CODESIZE = 2;
+    const GAS_COST_CODECOPY = 3;
     const GAS_COST_CALLER = 2;
     const GAS_COST_RETURNDATASIZE = 2;
     const GAS_COST_CALLDATALOAD = 3;
@@ -329,6 +330,57 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLDATACOPY);
+        return ctx;
+    }
+
+    // @notice CODECOPY (0x39) operation.
+    // @dev Copies slice of code to memory
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 3
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_codecopy{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        %{
+            import logging
+            logging.info("0x39 - CODECOPY")
+        %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - offset: memory offset of the work we save.
+        // 1 - code_offset: offset for code from where data will be copied.
+        // 2 - element_len: bytes length of the copied code.
+
+        let (stack, offset) = Stack.pop(stack);
+        let (stack, code_offset) = Stack.pop(stack);
+        let (stack, element_len) = Stack.pop(stack);
+
+        let code: felt* = ctx.code;
+        let code_len: felt = ctx.code_len;
+
+        let sliced_code: felt* = Helpers.slice_data(
+            data_len=code_len, data=code, data_offset=code_offset.low, slice_len=element_len.low
+        );
+
+        let memory: model.Memory* = Memory.store_n(
+            self=ctx.memory, element_len=element_len.low, element=sliced_code, offset=offset.low
+        );
+
+        // Update context memory.
+        let ctx = ExecutionContext.update_memory(ctx, memory);
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CODECOPY);
         return ctx;
     }
 }
