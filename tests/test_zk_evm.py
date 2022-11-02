@@ -1168,6 +1168,76 @@ test_cases = [
         },
         "id": "PRElog4-1",
     },
+    {
+        "params": {
+            "code": "60026000600039",
+            "calldata": "",
+            "stack": "",
+            "memory": "6002000000000000000000000000000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "Environment Information - CODECOPY (0x39) - code slice within bounds, memory offset > len with tail padding",
+    },
+    {
+        "params": {
+            "code": "7d00112233445566778899aabbccddeeff00112233445566778899aabbccdd60005260086003600139",
+            "calldata": "",
+            "stack": "",
+            "memory": "002233445566778899778899aabbccddeeff00112233445566778899aabbccdd",
+            "return_value": "",
+        },
+        "id": "Environmental Information - CODECOPY (0x39) - code slice within bounds, memory copy within bounds",
+    },
+    {
+        "params": {
+            "code": "7d00112233445566778899aabbccddeeff00112233445566778899aabbccdd60005260206003600139",
+            "calldata": "",
+            "stack": "",
+            "memory": "002233445566778899aabbccddeeff00112233445566778899aabbccdd6000526000000000000000000000000000000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "Environmental Information - CODECOPY (0x39) - code slice within bounds, memory offset < len < offset + size",
+    },
+    {
+        "params": {
+            "code": "60386002600339",
+            "calldata": "",
+            "stack": "",
+            "memory": "00000060026003390000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "Environmental Information - CODECOPY (0x39) - code with padding + memory offset > len ",
+    },
+    {
+        "params": {
+            "code": "7d00112233445566778899aabbccddeeff00112233445566778899aabbccdd60005260056065600439",
+            "calldata": "",
+            "stack": "",
+            "memory": "000000110000000000778899aabbccddeeff00112233445566778899aabbccdd",
+            "return_value": "",
+        },
+        "id": "Environmental Information - CODECOPY (0x39) - code offset > len, memory offset + size < len",
+    },
+    {
+        "params": {
+            "code": "7dFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7F0000000000000000000000000000000000000000000000000000000000000000505060326000600039",
+            "calldata": "",
+            "stack": "",
+            "memory": "7dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f0000000000000000000000000000000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "Environment Information - CODECOPY (0x39) - evmcode example 1",
+    },
+    {
+        "params": {
+            "code": "7dFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7F00000000000000000000000000000000000000000000000000000000000000005050603260006000396008601f600039",
+            "calldata": "",
+            "stack": "",
+            "memory": "7f00000000000000ffffffffffffffffffffffffffffffffffffffffffffff7f0000000000000000000000000000000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "Environment Information - CODECOPY (0x39) - evmcode example 1+2",
+    },
 ]
 
 

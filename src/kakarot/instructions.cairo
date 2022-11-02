@@ -283,6 +283,9 @@ namespace EVMInstructions {
             instructions=instructions, opcode=0x1D, function=ComparisonOperations.exec_sar
         );
 
+        // 0x20 - SHA3
+        add_instruction(instructions=instructions, opcode=0x20, function=Sha3.exec_sha3);
+
         // Environment Information
         // 0x31 - BALANCE
         add_instruction(
@@ -319,7 +322,7 @@ namespace EVMInstructions {
             instructions=instructions, opcode=0x38, function=EnvironmentalInformation.exec_codesize
         );
         // 0x39 - CODECOPY
-        add_instruction(instructions, 0x39, EnvironmentalInformation.exec_codecopy);
+        add_instruction(instructions, opcode=0x39, function=EnvironmentalInformation.exec_codecopy);
         // 0x3d - RETURNDATASIZE
         add_instruction(
             instructions=instructions,
@@ -359,14 +362,10 @@ namespace EVMInstructions {
             instructions=instructions, opcode=0x48, function=BlockInformation.exec_basefee
         );
 
-        // 0x20 - SHA3
-        add_instruction(instructions=instructions, opcode=0x20, function=Sha3.exec_sha3);
-
         // Stack Memory Storage and Flow Operations
 
         // 0x50 - POP
         add_instruction(instructions=instructions, opcode=0x50, function=MemoryOperations.exec_pop);
-
         // 0x51 - MLOAD
         add_instruction(
             instructions=instructions, opcode=0x51, function=MemoryOperations.exec_mload
@@ -379,12 +378,14 @@ namespace EVMInstructions {
         add_instruction(
             instructions=instructions, opcode=0x53, function=MemoryOperations.exec_mstore8
         );
-
-        // 0x55 - SLOAD
-        add_instruction(instructions, 0x54, MemoryOperations.exec_sload);
-
+        // 0x54 - SLOAD
+        add_instruction(
+            instructions=instructions, opcode=0x54, function=MemoryOperations.exec_sload
+        );
         // 0x55 - SSTORE
-        add_instruction(instructions, 0x55, MemoryOperations.exec_sstore);
+        add_instruction(
+            instructions=instructions, opcode=0x55, function=MemoryOperations.exec_sstore
+        );
         // 0x56 - JUMP
         add_instruction(
             instructions=instructions, opcode=0x56, function=MemoryOperations.exec_jump
@@ -587,11 +588,21 @@ namespace EVMInstructions {
         );
 
         // Add as: Log operations
-        add_instruction(instructions, 0xa0, LoggingOperations.exec_log_0);
-        add_instruction(instructions, 0xa1, LoggingOperations.exec_log_1);
-        add_instruction(instructions, 0xa2, LoggingOperations.exec_log_2);
-        add_instruction(instructions, 0xa3, LoggingOperations.exec_log_3);
-        add_instruction(instructions, 0xa4, LoggingOperations.exec_log_4);
+        add_instruction(
+            instructions=instructions, opcode=0xa0, function=LoggingOperations.exec_log_0
+        );
+        add_instruction(
+            instructions=instructions, opcode=0xa1, function=LoggingOperations.exec_log_1
+        );
+        add_instruction(
+            instructions=instructions, opcode=0xa2, function=LoggingOperations.exec_log_2
+        );
+        add_instruction(
+            instructions=instructions, opcode=0xa3, function=LoggingOperations.exec_log_3
+        );
+        add_instruction(
+            instructions=instructions, opcode=0xa4, function=LoggingOperations.exec_log_4
+        );
 
         // Add fs: System operations
         add_instruction(
