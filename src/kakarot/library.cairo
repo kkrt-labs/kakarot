@@ -45,9 +45,9 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(owner: felt, native_token_address_, class_hash: felt) {
+    }(owner: felt, native_token_address_, evm_contract_class_hash_: felt) {
         Ownable.initializer(owner);
-        evm_contract_class_hash.write(class_hash);
+        evm_contract_class_hash.write(evm_contract_class_hash_);
         native_token_address.write(native_token_address_);
         return ();
     }

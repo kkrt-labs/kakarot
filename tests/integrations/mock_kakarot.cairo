@@ -1,5 +1,3 @@
-// SPDX-License-Identifier: MIT
-
 %lang starknet
 
 // Starkware dependencies
