@@ -207,9 +207,8 @@ namespace Kakarot {
         );
         salt.write(value=current_salt + 1);
         // Generate EVM_contract address from the new cairo contract
-        // TEMPORARY SOLUTION FOR HACK-LISBON !!!
+        // TODO: TEMPORARY SOLUTION FOR HACK-LISBON !!!
         let (_, low) = split_felt(contract_address);
-        // We run the risk to create an address that is 21 bytes
         local mock_evm_address = 0xAbdE100700000000000000000000000000000000 + low;
         // Save address of new contracts
         let (reg_address) = registry_address.read();

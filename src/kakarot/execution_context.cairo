@@ -103,7 +103,6 @@ namespace ExecutionContext {
         // Get the BYTECODE from the Starknet_contract
 
         let (code_len, code) = IEvm_Contract.code(contract_address=starknet_address);
-        // Transform byte to array?
 
         local ctx: model.ExecutionContext* = new model.ExecutionContext(
             code=code,
