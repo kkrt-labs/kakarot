@@ -16,6 +16,8 @@ from kakarot.model import model
 from kakarot.memory import Memory
 from kakarot.stack import Stack
 from kakarot.constants import Constants
+from kakarot.constants import native_token_address, registry_address
+from kakarot.interfaces.interfaces import IEth, IRegistry, IEvm_Contract
 
 // @title ExecutionContext related functions.
 // @notice This file contains functions related to the execution context.
@@ -45,6 +47,10 @@ namespace ExecutionContext {
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();
 
+        // 1. Evm address
+        // 2. Get starknet Address
+        // 3. Get the constant of Evm address mappings
+
         local ctx: model.ExecutionContext* = new model.ExecutionContext(
             code=code,
             code_len=code_len,
@@ -59,6 +65,61 @@ namespace ExecutionContext {
             gas_used=gas_used,
             gas_limit=gas_limit,
             intrinsic_gas_cost=0,
+            starknet_address=0,
+            evm_address=0,
+            );
+        return ctx;
+    }
+
+    // @notice Initialize the execution context.
+    // @param code The code to execute.
+    // @param calldata The calldata.
+    // @return The initialized execution context.
+    func init_at_address{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(address: felt, calldata: felt*) -> model.ExecutionContext* {
+        alloc_locals;
+        let (empty_return_data: felt*) = alloc();
+
+        // Define initial program counter
+        let initial_pc = 0;
+        let gas_used = 0;
+        // TODO: Add support for gas limit
+        let gas_limit = 0;
+
+        let stack: model.Stack* = Stack.init();
+        let memory: model.Memory* = Memory.init();
+
+        // 1. Evm address
+        // 2. Get starknet Address
+
+        let (registry_address_) = registry_address.read();
+        let (starknet_address) = IRegistry.get_starknet_address(
+            contract_address=registry_address_, evm_address=address
+        );
+        // Get the BYTECODE from the Starknet_contract
+
+        let (code_len, code) = IEvm_Contract.code(contract_address=starknet_address);
+
+        local ctx: model.ExecutionContext* = new model.ExecutionContext(
+            code=code,
+            code_len=code_len,
+            calldata=calldata,
+            calldata_len=Helpers.get_len(calldata),
+            program_counter=initial_pc,
+            stopped=FALSE,
+            return_data=empty_return_data,
+            return_data_len=Helpers.get_len(empty_return_data),
+            stack=stack,
+            memory=memory,
+            gas_used=gas_used,
+            gas_limit=gas_limit,
+            intrinsic_gas_cost=0,
+            starknet_address=starknet_address,
+            evm_address=address,
             );
         return ctx;
     }
@@ -84,6 +145,8 @@ namespace ExecutionContext {
             gas_used=gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=intrinsic_gas_cost,
+            starknet_address=self.starknet_address,
+            evm_address=self.evm_address,
             );
     }
 
@@ -119,6 +182,8 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,
+            starknet_address=self.starknet_address,
+            evm_address=self.evm_address,
             );
     }
 
@@ -138,7 +203,7 @@ namespace ExecutionContext {
         // Copy code slice
         memcpy(dst=output, src=self.code + pc, len=len);
         // Move program counter
-        let self = ExecutionContext.increment_program_counter(self, len);
+        let self = ExecutionContext.increment_program_counter(self=self, inc_value=len);
         return (self=self, output=output);
     }
 
@@ -166,6 +231,8 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,
+            starknet_address=self.starknet_address,
+            evm_address=self.evm_address,
             );
     }
 
@@ -193,6 +260,39 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,
+            starknet_address=self.starknet_address,
+            evm_address=self.evm_address,
+            );
+    }
+
+    // @notice Update the return data of the current execution context.
+    // @dev The memory is updated with the given memory.
+    // @param self The pointer to the execution context.
+    // @param memory The pointer to the new memory.
+    func update_return_data{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(
+        self: model.ExecutionContext*, new_return_data_len: felt, new_return_data: felt*
+    ) -> model.ExecutionContext* {
+        return new model.ExecutionContext(
+            code=self.code,
+            code_len=self.code_len,
+            calldata=self.calldata,
+            calldata_len=self.calldata_len,
+            program_counter=self.program_counter,
+            stopped=TRUE,
+            return_data=new_return_data,
+            return_data_len=new_return_data_len,
+            stack=self.stack,
+            memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit,
+            intrinsic_gas_cost=self.intrinsic_gas_cost,
+            starknet_address=self.starknet_address,
+            evm_address=self.evm_address,
             );
     }
 
@@ -218,6 +318,8 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,
+            starknet_address=self.starknet_address,
+            evm_address=self.evm_address,
             );
     }
 
@@ -243,6 +345,8 @@ namespace ExecutionContext {
             gas_used=self.gas_used + inc_value,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,
+            starknet_address=self.starknet_address,
+            evm_address=self.evm_address,
             );
     }
 
@@ -287,10 +391,7 @@ namespace ExecutionContext {
             logging.info("===================================")
         %}
         Memory.dump(self.memory);
-        %{
-            import logging
-            logging.info("===================================")
-        %}
+
         return ();
     }
 
@@ -310,7 +411,7 @@ namespace ExecutionContext {
         }
 
         // Revert if new pc_offset points to something other then JUMPDEST
-        check_jumpdest(self, new_pc_offset);
+        check_jumpdest(self=self, pc_location=new_pc_offset);
 
         return new model.ExecutionContext(
             code=self.code,
@@ -326,6 +427,8 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,
+            starknet_address=self.starknet_address,
+            evm_address=self.evm_address,
             );
     }
 

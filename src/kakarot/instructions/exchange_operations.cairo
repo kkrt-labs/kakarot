@@ -37,12 +37,12 @@ namespace ExchangeOperations {
         let stack: model.Stack* = ctx.stack;
 
         // Get the value top i-th stack item.
-        let stack = Stack.swap(stack, 0, i);
+        let stack = Stack.swap(self=stack, stack_index_1=0, stack_index_2=i);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SWAP);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SWAP);
         return ctx;
     }
 
@@ -59,7 +59,7 @@ namespace ExchangeOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_swap_i(ctx, 1);
+        return exec_swap_i(ctx=ctx, i=1);
     }
 
     // @notice SWAP2 operation

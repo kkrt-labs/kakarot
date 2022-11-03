@@ -5,6 +5,7 @@
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.uint256 import Uint256
 
 // OpenZeppelin dependencies
 from openzeppelin.access.ownable.library import Ownable
@@ -24,6 +25,10 @@ func code_(index: felt) -> (res: felt) {
 func code_len_() -> (res: felt) {
 }
 
+@storage_var
+func state_(key: Uint256) -> (value: Uint256) {
+}
+
 namespace ContractAccount {
     // @notice This function is used to initialize the smart contract account.
     // @param kakarot_address: The address of the Kakarot smart contract.
@@ -39,7 +44,7 @@ namespace ContractAccount {
         Ownable.initializer(kakarot_address);
 
         // Store the bytecode.
-        store_code(code_len, code);
+        internal.store_code(0, code_len, code);
 
         return ();
     }
@@ -56,7 +61,7 @@ namespace ContractAccount {
         // Access control check.
         Ownable.assert_only_owner();
         // Recursively store the code.
-        internal.store_code(0, code_len - 1, code);
+        internal.store_code(0, code_len, code);
         return ();
     }
 
@@ -73,28 +78,46 @@ namespace ContractAccount {
         // Read code length from storage.
         let (code_len) = code_len_.read();
         // Recursively load code into specified memory location.
-        internal.load_code(0, code_len - 1, code);
+        internal.load_code(0, code_len, code);
         return (code_len, code);
+    }
+
+    func read_state{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(key: Uint256) -> (value: Uint256) {
+        let value = state_.read(key);
+        return value;
+    }
+
+    func write_state{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(key: Uint256, value: Uint256) {
+        state_.write(key, value);
+        return ();
     }
 }
 
 namespace internal {
     // @notice Store the bytecode of the contract.
     // @param index: The index in the code.
-    // @param code: The bytecode of the contract.
     // @param code_len: The length of the bytecode.
-    func store_code{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(index: felt, last_index: felt, code: felt*) {
+
+    func store_code{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        index: felt, code_len: felt, code: felt*
+    ) {
         alloc_locals;
-        if (index == last_index) {
+        if (index == code_len) {
+            code_len_.write(code_len);
             return ();
         }
         code_.write(index, code[index]);
-        store_code(index + 1, last_index, code);
+        store_code(index + 1, code_len, code);
         return ();
     }
 
@@ -107,14 +130,14 @@ namespace internal {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(index: felt, last_index: felt, code: felt*) {
+    }(index: felt, code_len: felt, code: felt*) {
         alloc_locals;
-        if (index == last_index) {
+        if (index == code_len) {
             return ();
         }
         let (value) = code_.read(index);
         assert [code + index] = value;
-        load_code(index + 1, last_index, code);
+        load_code(index + 1, code_len, code);
         return ();
     }
 }

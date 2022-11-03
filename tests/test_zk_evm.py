@@ -3,36 +3,85 @@ from time import time
 
 import pytest
 import pytest_asyncio
+from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
+from starkware.starknet.testing.starknet import Starknet
 
 
-@pytest_asyncio.fixture(scope="session")
-async def zk_evm(starknet, eth):
+@pytest_asyncio.fixture(scope="module")
+async def zk_evm(
+    starknet: Starknet, eth: StarknetContract, contract_account_class: DeclaredClass
+):
     start = time()
     _zk_evm = await starknet.deploy(
         source="./src/kakarot/kakarot.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
-        constructor_calldata=[1, eth.contract_address],
+        constructor_calldata=[
+            1,
+            eth.contract_address,
+            contract_account_class.class_hash,
+        ],
     )
     evm_time = time()
     print(f"\nzkEVM deployed in {evm_time - start:.2f}s")
-    registry = await starknet.deploy(
-        source="./src/kakarot/accounts/registry/account_registry.cairo",
-        cairo_path=["src"],
-        disable_hint_validation=True,
-        constructor_calldata=[_zk_evm.contract_address],
-    )
-    registry_time = time()
-    print(f"AccountRegistry deployed in {registry_time - evm_time:.2f}s")
-    await _zk_evm.set_account_registry(
-        registry_address_=registry.contract_address
-    ).execute(caller_address=1)
-    account_time = time()
-    print(f"zkEVM set in {account_time - registry_time:.2f}s")
     return _zk_evm
 
 
+@pytest_asyncio.fixture(scope="module", autouse=True)
+async def set_account_registry(zk_evm, account_registry):
+    await account_registry.transfer_ownership(zk_evm.contract_address).execute(
+        caller_address=1
+    )
+    await zk_evm.set_account_registry(
+        registry_address_=account_registry.contract_address
+    ).execute(caller_address=1)
+    yield
+    await account_registry.transfer_ownership(1).execute(
+        caller_address=zk_evm.contract_address
+    )
+
+
 test_cases = [
+    {
+        "params": {
+            "code": "604260005260206000F3",
+            "calldata": "",
+            "stack": "",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000042",
+            "return_value": "0000000000000000000000000000000000000000000000000000000000000042",
+        },
+        "id": "return",
+    },
+    {
+        "params": {
+            "code": "60016001f3",
+            "calldata": "",
+            "stack": "",
+            "memory": "0000000000000000000000000000000000000000000000000000000000000000",
+            "return_value": "0000000000000000000000000000000000000000000000000000000000000000",
+        },
+        "id": "return2",
+    },
+    {
+        "params": {
+            "code": "60056003600039",
+            "calldata": "",
+            "stack": "",
+            "memory": "0360003900000000000000000000000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "codecopy",
+    },
+    {
+        "params": {
+            "code": "7dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6008601f600039",
+            "calldata": "",
+            "stack": "1766847064778384329583297500742918515827483896875618958121606201292619775",
+            "memory": "6008601f60003900000000000000000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "codecopy2",
+    },
     {
         "params": {
             "code": "6003600401600a02608c036102bc04604605600d066010076005600608601060020960040A60600B00",
@@ -695,7 +744,7 @@ test_cases = [
         "params": {
             "code": "4500",
             "calldata": "",
-            "stack": "20000000",
+            "stack": "1000000",
             "memory": "",
             "return_value": "",
         },
@@ -1207,7 +1256,7 @@ class TestZkEVM:
         "params",
         params,
     )
-    async def test_case(self, zk_evm, params):
+    async def test_execute(self, zk_evm, params):
         Uint256 = zk_evm.struct_manager.get_contract_struct("Uint256")
         res = await zk_evm.execute(
             code=[int(b, 16) for b in wrap(params["code"], 2)],
@@ -1227,3 +1276,43 @@ class TestZkEVM:
                 ]
                 for event in sorted(res.call_info.events, key=lambda x: x.order)
             ] == events
+
+    @pytest.mark.parametrize(
+        "params",
+        params[:2],
+        # TODO: not sure how of those we want to re-run with the execute_at_address because it is very slow
+        # TODO: This is a magic number.
+    )
+    async def test_execute_at_address(self, zk_evm, params):
+        Uint256 = zk_evm.struct_manager.get_contract_struct("Uint256")
+        tx = await zk_evm.deploy(
+            bytes=[int(b, 16) for b in wrap(params["code"], 2)],
+        ).execute(caller_address=1)
+        evm_contract_address = tx.result.evm_contract_address
+
+        res = await zk_evm.execute_at_address(
+            address=evm_contract_address,
+            calldata=[int(b, 16) for b in wrap(params["calldata"], 2)],
+        ).execute(caller_address=1)
+        assert res.result.stack == [
+            Uint256(*self.int_to_uint256(int(s)))
+            for s in (params["stack"].split(",") if params["stack"] else [])
+        ]
+        assert res.result.memory == [int(m, 16) for m in wrap(params["memory"], 2)]
+
+    async def test_deploy(
+        self,
+        starknet: Starknet,
+        zk_evm: StarknetContract,
+        contract_account_class: DeclaredClass,
+    ):
+        code = [1, 12312]
+        tx = await zk_evm.deploy(bytes=code).execute(caller_address=1)
+        starknet_contract_address = tx.result.starknet_contract_address
+        account_contract = StarknetContract(
+            starknet.state,
+            contract_account_class.abi,
+            starknet_contract_address,
+            tx,
+        )
+        assert (await account_contract.code().call()).result.code == code

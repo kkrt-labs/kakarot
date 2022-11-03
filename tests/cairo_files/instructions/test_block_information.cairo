@@ -138,7 +138,7 @@ func test__gaslimit_should_push_gaslimit_to_stack{
     let len: felt = Stack.len(result.stack);
     assert len = 1;
     let index0 = Stack.peek(result.stack, 0);
-    let gas_limit = Helpers.to_uint256(Constants.BLOCK_GAS_LIMIT);
+    let gas_limit = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
     assert index0 = gas_limit;
     return ();
 }

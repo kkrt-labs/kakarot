@@ -19,7 +19,7 @@ from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 from kakarot.memory import Memory
 from kakarot.constants import native_token_address, registry_address
-from kakarot.interfaces.interfaces import IEth, IResgistry
+from kakarot.interfaces.interfaces import IEth, IRegistry
 
 // @title Environmental information opcodes.
 // @notice This file contains the functions to execute for environmental information opcodes.
@@ -27,15 +27,16 @@ from kakarot.interfaces.interfaces import IEth, IResgistry
 // @custom:namespace EnvironmentalInformation
 namespace EnvironmentalInformation {
     // Define constants.
-    const GAS_COST_CODESIZE = 2;
-    const GAS_COST_CODECOPY = 3;
-    const GAS_COST_CALLER = 2;
-    const GAS_COST_RETURNDATASIZE = 2;
-    const GAS_COST_CALLDATALOAD = 3;
-    const GAS_COST_CALLDATASIZE = 2;
-    const GAS_COST_ORIGIN = 2;
     const GAS_COST_BALANCE = 100;
     const GAS_COST_CALLDATACOPY = 3;
+    const GAS_COST_CALLDATALOAD = 3;
+    const GAS_COST_CALLDATASIZE = 2;
+    const GAS_COST_CALLER = 2;
+    const GAS_COST_CODECOPY = 3;
+    const GAS_COST_CODESIZE = 2;
+    const GAS_COST_ORIGIN = 2;
+    const GAS_COST_RETURNDATACOPY = 3;
+    const GAS_COST_RETURNDATASIZE = 2;
 
     // @notice BALANCE opcode.
     // @dev Get ETH balance of the specified address.
@@ -61,7 +62,7 @@ namespace EnvironmentalInformation {
 
         let addr: felt = Helpers.uint256_to_felt(address);
         let (registry_address_) = registry_address.read();
-        let (starknet_address) = IResgistry.get_starknet_address(
+        let (starknet_address) = IRegistry.get_starknet_address(
             contract_address=registry_address_, evm_address=address.low
         );
         let (native_token_address_) = native_token_address.read();
@@ -73,9 +74,9 @@ namespace EnvironmentalInformation {
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_BALANCE);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_BALANCE);
         return ctx;
     }
     // @notice CODESIZE operation.
@@ -99,13 +100,13 @@ namespace EnvironmentalInformation {
 
         // Get the code size.
         let code_size = Helpers.to_uint256(ctx.code_len);
-        let stack: model.Stack* = Stack.push(ctx.stack, code_size);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=code_size);
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CODESIZE);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CODESIZE);
         return ctx;
     }
 
@@ -132,16 +133,16 @@ namespace EnvironmentalInformation {
 
         let (tx_info) = get_tx_info();
         let (registry_address_) = registry_address.read();
-        let (evm_address) = IResgistry.get_evm_address(
-            registry_address_, tx_info.account_contract_address
+        let (evm_address) = IRegistry.get_evm_address(
+            registry_address_, starknet_address=tx_info.account_contract_address
         );
         let origin_address = Helpers.to_uint256(evm_address);
 
         // Update Context stack
-        let stack: model.Stack* = Stack.push(ctx.stack, origin_address);
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=origin_address);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_ORIGIN);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_ORIGIN);
         return ctx;
     }
 
@@ -166,13 +167,13 @@ namespace EnvironmentalInformation {
         // Get caller address.
         let (current_address) = get_caller_address();
         let caller_address = Helpers.to_uint256(current_address);
-        let stack: model.Stack* = Stack.push(ctx.stack, caller_address);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=caller_address);
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLER);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CALLER);
         return ctx;
     }
 
@@ -196,13 +197,13 @@ namespace EnvironmentalInformation {
         %}
         // Get return data size.
         let return_data_size = Helpers.to_uint256(ctx.return_data_len);
-        let stack: model.Stack* = Stack.push(ctx.stack, return_data_size);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=return_data_size);
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_RETURNDATASIZE);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_RETURNDATASIZE);
         return ctx;
     }
 
@@ -241,12 +242,12 @@ namespace EnvironmentalInformation {
         let uint256_sliced_calldata: Uint256 = Helpers.bytes_to_uint256(sliced_calldata);
 
         // Push CallData word onto stack
-        let stack: model.Stack* = Stack.push(stack, uint256_sliced_calldata);
+        let stack: model.Stack* = Stack.push(self=stack, element=uint256_sliced_calldata);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLDATALOAD);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CALLDATALOAD);
         return ctx;
     }
 
@@ -325,9 +326,66 @@ namespace EnvironmentalInformation {
         );
 
         // Update context memory.
-        let ctx = ExecutionContext.update_memory(ctx, memory);
+        let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CALLDATACOPY);
+        return ctx;
+    }
+
+    // @notice RETURNDATACOPY operation
+    // @dev Save word to memory.
+    // @custom:since Frontier
+    // @custom:group Stack Memory Storage and Flow operations.
+    // @custom:gas 3
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 0
+    // @return Updated execution context.
+    func exec_returndatacopy{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        %{
+            import logging
+            logging.info("0x3e - RETURNDATACOPY")
+        %}
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - offset: memory offset of the work we save.
+        // 1 - code_offset: offset for code from where data will be copied.
+        // 2 - element_len: bytes length of the copied code.
+
+        let (stack, offset) = Stack.pop(stack);
+        let (stack, return_data_offset) = Stack.pop(stack);
+        let (stack, element_len) = Stack.pop(stack);
+
+        let return_data: felt* = ctx.return_data;
+        let return_data_len: felt = ctx.return_data_len;
+
+        let sliced_return_data: felt* = Helpers.slice_data(
+            data_len=return_data_len,
+            data=return_data,
+            data_offset=return_data_offset.low,
+            slice_len=element_len.low,
+        );
+
+        let memory: model.Memory* = Memory.store_n(
+            self=ctx.memory,
+            element_len=element_len.low,
+            element=sliced_return_data,
+            offset=offset.low,
+        );
+
+        // Update context memory.
+        let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLDATACOPY);
         return ctx;

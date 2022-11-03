@@ -58,7 +58,7 @@ namespace Stack {
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.Stack*, element: Uint256) -> model.Stack* {
         alloc_locals;
-        Stack.check_overflow(self);
+        Stack.check_overflow(self=self);
         assert [self.elements + self.raw_len] = element;
         return new model.Stack(elements=self.elements, raw_len=self.raw_len + element_size);
     }
@@ -74,9 +74,9 @@ namespace Stack {
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.Stack*) -> (new_stack: model.Stack*, element: Uint256) {
         alloc_locals;
-        Stack.check_underflow(self, 0);
+        Stack.check_underflow(self=self, stack_index=0);
         // Get last element
-        let len = Stack.len(self);
+        let len = Stack.len(self=self);
         let element = self.elements[len - 1];
         // Get new segment for next stack copy
         let (new_elements: Uint256*) = alloc();
@@ -101,7 +101,7 @@ namespace Stack {
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.Stack*, n: felt) -> (new_stack: model.Stack*, elements: Uint256*) {
         alloc_locals;
-        Stack.check_underflow(self, n - 1);
+        Stack.check_underflow(self=self, stack_index=n - 1);
         // Get new segment for next stack copy
         let (new_elements: Uint256*) = alloc();
         // Get length of new stack copy
@@ -127,8 +127,8 @@ namespace Stack {
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.Stack*, stack_index: felt) -> Uint256 {
         alloc_locals;
-        Stack.check_underflow(self, stack_index);
-        let array_index = Stack.get_array_index(self, stack_index);
+        Stack.check_underflow(self=self, stack_index=stack_index);
+        let array_index = Stack.get_array_index(self=self, stack_index=stack_index);
         return self.elements[array_index];
     }
 
@@ -146,15 +146,15 @@ namespace Stack {
     }(self: model.Stack*, stack_index_1: felt, stack_index_2: felt) -> model.Stack* {
         alloc_locals;
         // Retrieve elements at specified indexes
-        let element_1 = Stack.peek(self, stack_index_1);
-        let element_2 = Stack.peek(self, stack_index_2);
+        let element_1 = Stack.peek(self=self, stack_index=stack_index_1);
+        let element_2 = Stack.peek(self=self, stack_index=stack_index_2);
 
         // Source stack is the initial stack
         let src_stack = self;
         // Destination stack is a new stack with no initial elements
         let dst_stack: model.Stack* = Stack.init();
         // Get the lenght of the source stack
-        let stack_len = Stack.len(self);
+        let stack_len = Stack.len(self=self);
         // Start index is the index of the last element in the source stack
         let start_index = stack_len - 1;
         // Last index is the second element of the stack
@@ -167,7 +167,12 @@ namespace Stack {
 
         // Copy stack
         let (src_stack, dst_stack) = Stack.copy_except_at_index(
-            src_stack, dst_stack, start_index, last_index, exception_index, exception_value
+            src_stack=src_stack,
+            dst_stack=dst_stack,
+            start_index=start_index,
+            last_index=last_index,
+            exception_index=exception_index,
+            exception_value=exception_value,
         );
         // Push the top value and return the new stack
         return Stack.push(dst_stack, top_value);
@@ -203,7 +208,7 @@ namespace Stack {
         } else {
             // Otherwise, push the value at the source index
             let element = Stack.peek(src_stack, start_index);
-            let dst_stack = Stack.push(dst_stack, element);
+            let dst_stack = Stack.push(self=dst_stack, element=element);
         }
 
         // If the index is the last index, we are done and we can return the new stacks
@@ -299,7 +304,7 @@ namespace Stack {
             return ();
         }
         let last_index = stack_len - 1;
-        inner_dump(self, 0, last_index);
+        inner_dump(self=self, stack_index=0, last_index=last_index);
         return ();
     }
 
@@ -313,7 +318,7 @@ namespace Stack {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.Stack*, stack_index: felt, last_index: felt) {
-        Stack.print_element_at(self, stack_index);
+        Stack.print_element_at(self=self, stack_index=stack_index);
         if (stack_index == last_index) {
             return ();
         }

@@ -129,7 +129,6 @@ namespace Memory {
         let is_offset_overbound: felt = is_le_felt(self.bytes_len + 1, offset);
         let n_head = offset + (self.bytes_len - offset) * is_offset_overbound;
         let n_head_pad = offset - n_head;
-
         let is_memory_expanded = is_le_felt(self.bytes_len + 1, offset + element_len);
         let n_tail = (self.bytes_len - offset - element_len) * (1 - is_memory_expanded);
         let (_, rem) = unsigned_div_rem(offset + element_len, 32);
@@ -211,15 +210,17 @@ namespace Memory {
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.Memory*, length: felt) -> (new_memory: model.Memory*, cost: felt) {
         Helpers.fill(self.bytes + self.bytes_len, value=0, length=length);
-        let (last_memory_size_word, _) = unsigned_div_rem(self.bytes_len + 31, 32);
+        let (last_memory_size_word, _) = unsigned_div_rem(value=self.bytes_len + 31, div=32);
         let (last_memory_cost, _) = unsigned_div_rem(
-            last_memory_size_word * last_memory_size_word, 512
+            value=last_memory_size_word * last_memory_size_word, div=512
         );
         let last_memory_cost = last_memory_cost + (3 * last_memory_size_word);
 
-        let (new_memory_size_word, _) = unsigned_div_rem(self.bytes_len + length + 31, 32);
+        let (new_memory_size_word, _) = unsigned_div_rem(
+            value=self.bytes_len + length + 31, div=32
+        );
         let (new_memory_cost, _) = unsigned_div_rem(
-            new_memory_size_word * new_memory_size_word, 512
+            value=new_memory_size_word * new_memory_size_word, div=512
         );
         let new_memory_cost = new_memory_cost + (3 * new_memory_size_word);
 
@@ -228,7 +229,7 @@ namespace Memory {
         return (new model.Memory(bytes=self.bytes, bytes_len=self.bytes_len + length), cost);
     }
 
-    // @notice Insure that the memory as at least length bytes. Expand if necessary.
+    // @notice Ensure that the memory as at least length bytes. Expand if necessary.
     // @param self - The pointer to the memory.
     // @param offset - The number of bytes to add.
     // @return The new pointer to the memory.
@@ -241,7 +242,7 @@ namespace Memory {
     }(self: model.Memory*, length: felt) -> (new_memory: model.Memory*, cost: felt) {
         let is_memory_expanding = is_le_felt(self.bytes_len + 1, length);
         if (is_memory_expanding == TRUE) {
-            let (new_memory, cost) = Memory.expand(self, length - self.bytes_len);
+            let (new_memory, cost) = Memory.expand(self=self, length=length - self.bytes_len);
             return (new_memory, cost);
         } else {
             return (new_memory=self, cost=0);
