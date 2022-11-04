@@ -115,12 +115,7 @@ namespace EVMInstructions {
     // @param instructions the instruction set
     // @param opcode The opcode value
     // @param function the function to execute for the specified opcode
-    func add_instruction{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(instructions: felt*, opcode: felt, function: codeoffset) {
+    func add_instruction(instructions: felt*, opcode: felt, function: codeoffset) {
         assert [instructions + opcode] = cast(function, felt);
         return ();
     }
@@ -141,7 +136,8 @@ namespace EVMInstructions {
             import logging
             logging.info("0x00 - STOP")
         %}
-        return ExecutionContext.stop(ctx_ptr);
+        let ctx = ExecutionContext.stop(ctx_ptr);
+        return ctx;
     }
 
     // @notice Prepare arguments for the dynamic call.
@@ -165,12 +161,7 @@ namespace EVMInstructions {
 
     // @notice Generate the instructions set for the EVM.
     // @return The instructions set.
-    func generate_instructions{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }() -> felt* {
+    func generate_instructions() -> felt* {
         alloc_locals;
         // Init instructions
         let (instructions: felt*) = alloc();

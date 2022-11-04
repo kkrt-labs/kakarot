@@ -8,9 +8,6 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 from starkware.cairo.common.uint256 import Uint256
-from starkware.cairo.common.math import assert_lt
-from starkware.cairo.common.math_cmp import is_le_felt
-from starkware.cairo.common.memcpy import memcpy
 
 // Internal dependencies
 from kakarot.model import model
@@ -52,6 +49,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
         %{
             import logging
             logging.info("0x31 - BALANCE")
@@ -60,7 +58,6 @@ namespace EnvironmentalInformation {
         // Get the address.
         let (stack: model.Stack*, address: Uint256) = Stack.pop(ctx.stack);
 
-        let addr: felt = Helpers.uint256_to_felt(address);
         let (registry_address_) = registry_address.read();
         let (starknet_address) = IRegistry.get_starknet_address(
             contract_address=registry_address_, evm_address=address.low
@@ -124,6 +121,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
         %{
             import logging
             logging.info("0x32 - ORIGIN")
@@ -160,6 +158,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
         %{
             import logging
             logging.info("0x33 - CALLER")

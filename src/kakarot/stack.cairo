@@ -4,7 +4,6 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import assert_lt_felt
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.memcpy import memcpy
@@ -23,12 +22,7 @@ namespace Stack {
 
     // @notice Initialize the stack.
     // @return stack_ptr - The pointer to the stack.
-    func init{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }() -> model.Stack* {
+    func init() -> model.Stack* {
         alloc_locals;
         let (elements: Uint256*) = alloc();
         return new model.Stack(elements=elements, raw_len=0);
@@ -37,12 +31,7 @@ namespace Stack {
     // @notice Returns the length of the stack.
     // @param self - The pointer to the stack.
     // @return The length of the stack.
-    func len{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.Stack*) -> felt {
+    func len(self: model.Stack*) -> felt {
         let actual_len = self.raw_len / element_size;
         return actual_len;
     }
@@ -51,12 +40,7 @@ namespace Stack {
     // @param self - The pointer to the stack.
     // @param element - The element to push.
     // @return The new pointer to the stack.
-    func push{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.Stack*, element: Uint256) -> model.Stack* {
+    func push{range_check_ptr}(self: model.Stack*, element: Uint256) -> model.Stack* {
         alloc_locals;
         Stack.check_overflow(self=self);
         assert [self.elements + self.raw_len] = element;
@@ -67,12 +51,7 @@ namespace Stack {
     // @param self - The pointer to the stack.
     // @return The new pointer to the stack.
     // @return The popped element.
-    func pop{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.Stack*) -> (new_stack: model.Stack*, element: Uint256) {
+    func pop{range_check_ptr}(self: model.Stack*) -> (new_stack: model.Stack*, element: Uint256) {
         alloc_locals;
         Stack.check_underflow(self=self, stack_index=0);
         // Get last element
@@ -94,12 +73,9 @@ namespace Stack {
     // @param len - The len of elements to pop.
     // @return The new pointer to the stack.
     // @return elements the pointer to the first popped element.
-    func pop_n{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.Stack*, n: felt) -> (new_stack: model.Stack*, elements: Uint256*) {
+    func pop_n{range_check_ptr}(self: model.Stack*, n: felt) -> (
+        new_stack: model.Stack*, elements: Uint256*
+    ) {
         alloc_locals;
         Stack.check_underflow(self=self, stack_index=n - 1);
         // Get new segment for next stack copy
@@ -120,12 +96,7 @@ namespace Stack {
     // @param self - The pointer to the stack.
     // @param stack_index - The index of the element to return.
     // @return The element at the given index.
-    func peek{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.Stack*, stack_index: felt) -> Uint256 {
+    func peek{range_check_ptr}(self: model.Stack*, stack_index: felt) -> Uint256 {
         alloc_locals;
         Stack.check_underflow(self=self, stack_index=stack_index);
         let array_index = Stack.get_array_index(self=self, stack_index=stack_index);
@@ -135,101 +106,30 @@ namespace Stack {
     // @notice Swap two elements in the stack.
     // @dev stack_index_1 and stack_index_2 are 0-based, 0 is the top of the stack.
     // @param self - The pointer to the stack.
-    // @param stack_index_1 - The index of the first element to swap.
-    // @param stack_index_2 - The index of the second element to swap.
+    // @param i - The index of the second element to swap.
     // @return The new pointer to the stack.
-    func swap{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.Stack*, stack_index_1: felt, stack_index_2: felt) -> model.Stack* {
+    func swap_i{range_check_ptr}(self: model.Stack*, i: felt) -> model.Stack* {
         alloc_locals;
-        // Retrieve elements at specified indexes
-        let element_1 = Stack.peek(self=self, stack_index=stack_index_1);
-        let element_2 = Stack.peek(self=self, stack_index=stack_index_2);
+        let element = Stack.peek(self=self, stack_index=i);
 
-        // Source stack is the initial stack
-        let src_stack = self;
-        // Destination stack is a new stack with no initial elements
-        let dst_stack: model.Stack* = Stack.init();
-        // Get the lenght of the source stack
-        let stack_len = Stack.len(self=self);
-        // Start index is the index of the last element in the source stack
-        let start_index = stack_len - 1;
-        // Last index is the second element of the stack
-        let last_index = 1;
-        // At stack_index_2 we will push element_1
-        let exception_index = stack_index_2;
-        let exception_value = element_1;
-        // After the stack copy, we will push element_2 at the top value of the new stack
-        let top_value = element_2;
+        let (dst_elts: felt*) = alloc();
+        let src_elts = cast(self.elements, felt*);
 
-        // Copy stack
-        let (src_stack, dst_stack) = Stack.copy_except_at_index(
-            src_stack=src_stack,
-            dst_stack=dst_stack,
-            start_index=start_index,
-            last_index=last_index,
-            exception_index=exception_index,
-            exception_value=exception_value,
-        );
-        // Push the top value and return the new stack
-        return Stack.push(dst_stack, top_value);
-    }
+        memcpy(dst=dst_elts, src=src_elts, len=i);
+        assert dst_elts[i] = src_elts[self.raw_len - 2];
+        assert dst_elts[i + 1] = src_elts[self.raw_len - 1];
+        memcpy(dst=dst_elts + i + 2, src=src_elts + i + 2, len=self.raw_len - i - 4);
+        assert dst_elts[self.raw_len - 2] = element.low;
+        assert dst_elts[self.raw_len - 1] = element.high;
 
-    // @notice Copy a segment of the stack except at a given index.
-    // @dev stack_index is 0-based, 0 is the top of the stack.
-    // @param src_stack - The pointer to the source stack.
-    // @param dst_stack - The pointer to the destination stack.
-    // @param start_index - The index of the first element to copy.
-    // @param last_index - The index of the last element to copy.
-    // @param exception_index - The index of the element with an exception value.
-    // @param exception_value - The exception value.
-    // @return The new pointer to the source stack.
-    // @return The new pointer to the destination stack.
-    func copy_except_at_index{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(
-        src_stack: model.Stack*,
-        dst_stack: model.Stack*,
-        start_index: felt,
-        last_index: felt,
-        exception_index: felt,
-        exception_value: Uint256,
-    ) -> (src_stack: model.Stack*, dst_stack: model.Stack*) {
-        alloc_locals;
-        // If the index is the exception index, push the exception value
-        if (start_index == exception_index) {
-            let dst_stack = Stack.push(dst_stack, exception_value);
-        } else {
-            // Otherwise, push the value at the source index
-            let element = Stack.peek(src_stack, start_index);
-            let dst_stack = Stack.push(self=dst_stack, element=element);
-        }
-
-        // If the index is the last index, we are done and we can return the new stacks
-        if (start_index == last_index) {
-            return (src_stack=src_stack, dst_stack=dst_stack);
-        }
-        let new_start_index = start_index - 1;
-        return copy_except_at_index(
-            src_stack, dst_stack, new_start_index, last_index, exception_index, exception_value
-        );
+        let elements = cast(dst_elts, Uint256*);
+        return new model.Stack(elements=elements, raw_len=self.raw_len);
     }
 
     // @notice Check stack overflow.
     // @param self - The pointer to the stack.
     // @custom:revert if stack overflow.
-    func check_overflow{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.Stack*) {
+    func check_overflow{range_check_ptr}(self: model.Stack*) {
         let stack_len = Stack.len(self);
         // Revert if stack overflow
         with_attr error_message("Kakarot: StackOverflow") {
@@ -242,12 +142,7 @@ namespace Stack {
     // @param self - The pointer to the stack.
     // @param stack_index - The index of the element.
     // @custom:revert if stack underflow.
-    func check_underflow{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.Stack*, stack_index: felt) {
+    func check_underflow{range_check_ptr}(self: model.Stack*, stack_index: felt) {
         alloc_locals;
         let stack_len = Stack.len(self);
         // Revert if stack underflow
@@ -261,12 +156,7 @@ namespace Stack {
     // @param self - The pointer to the stack.
     // @param stack_index - The index of the element.
     // @return The array index of the element.
-    func get_array_index{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.Stack*, stack_index: felt) -> felt {
+    func get_array_index(self: model.Stack*, stack_index: felt) -> felt {
         let stack_len = Stack.len(self);
         let array_index = stack_len - 1 - stack_index;
         return array_index;
@@ -276,12 +166,7 @@ namespace Stack {
     // @param self - The pointer to the stack.
     // @param stack_index - The index of the element.
     // @custom:use_hint
-    func print_element_at{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.Stack*, stack_index: felt) {
+    func print_element_at{range_check_ptr}(self: model.Stack*, stack_index: felt) {
         let element = Stack.peek(self, stack_index);
         %{
             import logging
@@ -293,12 +178,7 @@ namespace Stack {
 
     // @notice Print the stack.
     // @param self - The pointer to the stack.
-    func dump{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.Stack*) {
+    func dump{range_check_ptr}(self: model.Stack*) {
         let stack_len = Stack.len(self);
         if (stack_len == 0) {
             return ();
@@ -312,12 +192,7 @@ namespace Stack {
     // @param self - The pointer to the stack.
     // @param stack_index - The index of the element.
     // @param last_index - The index of the last element.
-    func inner_dump{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.Stack*, stack_index: felt, last_index: felt) {
+    func inner_dump{range_check_ptr}(self: model.Stack*, stack_index: felt, last_index: felt) {
         Stack.print_element_at(self=self, stack_index=stack_index);
         if (stack_index == last_index) {
             return ();
