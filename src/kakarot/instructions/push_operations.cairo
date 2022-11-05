@@ -24,12 +24,9 @@ namespace PushOperations {
 
     // @notice Generic PUSH operation
     // @dev Place i bytes items on stack
-    func exec_push_i{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*, i: felt) -> model.ExecutionContext* {
+    func exec_push_i{range_check_ptr}(
+        ctx: model.ExecutionContext*, i: felt
+    ) -> model.ExecutionContext* {
         alloc_locals;
         %{
             import logging
@@ -69,7 +66,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 1);
+        let ctx = exec_push_i(ctx_ptr, 1);
+        return ctx;
     }
 
     // @notice PUSH2 operation.
@@ -86,7 +84,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 2);
+        let ctx = exec_push_i(ctx_ptr, 2);
+        return ctx;
     }
 
     // @notice PUSH3 operation.
@@ -103,7 +102,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 3);
+        let ctx = exec_push_i(ctx_ptr, 3);
+        return ctx;
     }
 
     // @notice PUSH4 operation.
@@ -120,7 +120,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 4);
+        let ctx = exec_push_i(ctx_ptr, 4);
+        return ctx;
     }
 
     // @notice PUSH5 operation.
@@ -137,7 +138,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 5);
+        let ctx = exec_push_i(ctx_ptr, 5);
+        return ctx;
     }
 
     // @notice PUSH6 operation.
@@ -154,7 +156,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 6);
+        let ctx = exec_push_i(ctx_ptr, 6);
+        return ctx;
     }
 
     // @notice PUSH7 operation.
@@ -171,7 +174,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 7);
+        let ctx = exec_push_i(ctx_ptr, 7);
+        return ctx;
     }
 
     // @notice PUSH8 operation.
@@ -188,7 +192,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 8);
+        let ctx = exec_push_i(ctx_ptr, 8);
+        return ctx;
     }
 
     // @notice PUSH9 operation.
@@ -205,7 +210,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 9);
+        let ctx = exec_push_i(ctx_ptr, 9);
+        return ctx;
     }
 
     // @notice PUSH10 operation.
@@ -222,7 +228,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 10);
+        let ctx = exec_push_i(ctx_ptr, 10);
+        return ctx;
     }
 
     // @notice PUSH11 operation.
@@ -239,7 +246,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 11);
+        let ctx = exec_push_i(ctx_ptr, 11);
+        return ctx;
     }
 
     // @notice PUSH12 operation.
@@ -256,7 +264,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 12);
+        let ctx = exec_push_i(ctx_ptr, 12);
+        return ctx;
     }
 
     // @notice PUSH13 operation.
@@ -273,7 +282,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 13);
+        let ctx = exec_push_i(ctx_ptr, 13);
+        return ctx;
     }
 
     // @notice PUSH14 operation.
@@ -290,7 +300,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 14);
+        let ctx = exec_push_i(ctx_ptr, 14);
+        return ctx;
     }
 
     // @notice PUSH15 operation.
@@ -307,7 +318,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 15);
+        let ctx = exec_push_i(ctx_ptr, 15);
+        return ctx;
     }
 
     // @notice PUSH16 operation.
@@ -324,7 +336,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 16);
+        let ctx = exec_push_i(ctx_ptr, 16);
+        return ctx;
     }
 
     // @notice PUSH17 operation.
@@ -341,7 +354,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 17);
+        let ctx = exec_push_i(ctx_ptr, 17);
+        return ctx;
     }
 
     // @notice PUSH18 operation.
@@ -358,7 +372,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 18);
+        let ctx = exec_push_i(ctx_ptr, 18);
+        return ctx;
     }
 
     // @notice PUSH19 operation.
@@ -375,7 +390,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 19);
+        let ctx = exec_push_i(ctx_ptr, 19);
+        return ctx;
     }
 
     // @notice PUSH20 operation.
@@ -392,7 +408,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 20);
+        let ctx = exec_push_i(ctx_ptr, 20);
+        return ctx;
     }
 
     // @notice PUSH21 operation.
@@ -409,7 +426,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 21);
+        let ctx = exec_push_i(ctx_ptr, 21);
+        return ctx;
     }
 
     // @notice PUSH22 operation.
@@ -426,7 +444,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 22);
+        let ctx = exec_push_i(ctx_ptr, 22);
+        return ctx;
     }
 
     // @notice PUSH23 operation.
@@ -443,7 +462,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 23);
+        let ctx = exec_push_i(ctx_ptr, 23);
+        return ctx;
     }
 
     // @notice PUSH24 operation.
@@ -460,7 +480,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 24);
+        let ctx = exec_push_i(ctx_ptr, 24);
+        return ctx;
     }
 
     // @notice PUSH25 operation.
@@ -477,7 +498,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 25);
+        let ctx = exec_push_i(ctx_ptr, 25);
+        return ctx;
     }
 
     // @notice PUSH26 operation.
@@ -494,7 +516,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 26);
+        let ctx = exec_push_i(ctx_ptr, 26);
+        return ctx;
     }
 
     // @notice PUSH27 operation.
@@ -511,7 +534,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 27);
+        let ctx = exec_push_i(ctx_ptr, 27);
+        return ctx;
     }
 
     // @notice PUSH28 operation.
@@ -528,7 +552,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 28);
+        let ctx = exec_push_i(ctx_ptr, 28);
+        return ctx;
     }
 
     // @notice PUSH29 operation.
@@ -545,7 +570,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 29);
+        let ctx = exec_push_i(ctx_ptr, 29);
+        return ctx;
     }
 
     // @notice PUSH30 operation.
@@ -562,7 +588,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 30);
+        let ctx = exec_push_i(ctx_ptr, 30);
+        return ctx;
     }
 
     // @notice PUSH31 operation.
@@ -579,7 +606,8 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 31);
+        let ctx = exec_push_i(ctx_ptr, 31);
+        return ctx;
     }
 
     // @notice PUSH32 operation.
@@ -596,6 +624,7 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_push_i(ctx_ptr, 32);
+        let ctx = exec_push_i(ctx_ptr, 32);
+        return ctx;
     }
 }

@@ -9,7 +9,6 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.starknet.common.syscalls import deploy
-from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import get_contract_address
 // OpenZeppelin dependencies
 from openzeppelin.access.ownable.library import Ownable
@@ -17,7 +16,7 @@ from openzeppelin.access.ownable.library import Ownable
 // Internal dependencies
 from kakarot.model import model
 from kakarot.instructions import EVMInstructions
-from kakarot.interfaces.interfaces import IRegistry, IEvm_Contract
+from kakarot.interfaces.interfaces import IRegistry
 from kakarot.execution_context import ExecutionContext
 from kakarot.constants import native_token_address, registry_address, evm_contract_class_hash
 from utils.utils import Helpers
@@ -40,12 +39,9 @@ func evm_contract_deployed(evm_contract_address: felt, starknet_contract_address
 namespace Kakarot {
     // @notice The constructor of the contract.
     // @param _owner The address of the owner of the contract.
-    func constructor{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(owner: felt, native_token_address_, evm_contract_class_hash_: felt) {
+    func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        owner: felt, native_token_address_, evm_contract_class_hash_: felt
+    ) {
         Ownable.initializer(owner);
         evm_contract_class_hash.write(evm_contract_class_hash_);
         native_token_address.write(native_token_address_);
