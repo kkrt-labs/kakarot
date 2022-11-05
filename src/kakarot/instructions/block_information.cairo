@@ -7,6 +7,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
 from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp
+from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
 from kakarot.model import model
@@ -22,14 +23,14 @@ from kakarot.interfaces.interfaces import IEth
 // @custom:namespace BlockInformation
 namespace BlockInformation {
     // Define constants.
-    const GAS_COST_COINBASE    = 2;
-    const GAS_COST_TIMESTAMP   = 2;
-    const GAS_COST_NUMBER      = 2;
-    const GAS_COST_DIFFICULTY  = 2;
-    const GAS_COST_GASLIMIT    = 2;
-    const GAS_COST_CHAINID     = 2;
+    const GAS_COST_COINBASE = 2;
+    const GAS_COST_TIMESTAMP = 2;
+    const GAS_COST_NUMBER = 2;
+    const GAS_COST_DIFFICULTY = 2;
+    const GAS_COST_GASLIMIT = 2;
+    const GAS_COST_CHAINID = 2;
     const GAS_COST_SELFBALANCE = 5;
-    const GAS_COST_BASEFEE     = 2;
+    const GAS_COST_BASEFEE = 2;
 
     // @notice COINBASE operation.
     // @dev Get the block's beneficiary address.
