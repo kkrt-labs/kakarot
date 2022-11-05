@@ -111,16 +111,25 @@ namespace Stack {
     func swap_i{range_check_ptr}(self: model.Stack*, i: felt) -> model.Stack* {
         alloc_locals;
         let element = Stack.peek(self=self, stack_index=i);
-
+        let array_index = Stack.get_array_index(self=self, stack_index=i);
+        let array_index = 2 * array_index;
         let (dst_elts: felt*) = alloc();
         let src_elts = cast(self.elements, felt*);
 
-        memcpy(dst=dst_elts, src=src_elts, len=i);
-        assert dst_elts[i] = src_elts[self.raw_len - 2];
-        assert dst_elts[i + 1] = src_elts[self.raw_len - 1];
-        memcpy(dst=dst_elts + i + 2, src=src_elts + i + 2, len=self.raw_len - i - 4);
+        memcpy(dst=dst_elts, src=src_elts, len=array_index);
+        assert [dst_elts + array_index] = src_elts[self.raw_len - 2];
+        assert [dst_elts + array_index + 1] = src_elts[self.raw_len - 1];
+        memcpy(
+            dst=dst_elts + array_index + 2,
+            src=src_elts + array_index + 2,
+            len=self.raw_len - array_index - 4,
+        );
         assert dst_elts[self.raw_len - 2] = element.low;
         assert dst_elts[self.raw_len - 1] = element.high;
+        // %{
+        //     print(ids.dst_elts, ids.src_elts)
+        //     breakpoint()
+        // %}
 
         let elements = cast(dst_elts, Uint256*);
         return new model.Stack(elements=elements, raw_len=self.raw_len);
