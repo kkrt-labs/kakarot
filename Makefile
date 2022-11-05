@@ -37,7 +37,7 @@ clean:
 	mkdir build
 
 run-test:
-	poetry run pytest tests/test_zk_evm.py::TestZkEVM -k $(test)
+	poetry run pytest tests/test_zk_evm.py::TestZkEVM -k $(test) -s --log-cli-level=INFO
 
 format-mac:
 	cairo-format src/**/*.cairo -i

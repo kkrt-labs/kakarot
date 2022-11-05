@@ -645,6 +645,17 @@ test_cases = [
     },
     {
         "params": {
+            "code": "4700",
+            "calldata": "",
+            "stack": "420",
+            "memory": "",
+            "return_value": "",
+        },
+        "id": "Get balance of currently executing contract - 0x47 SELFBALANCE",
+        "marks": pytest.mark.execute_at_address,
+    },
+    {
+        "params": {
             "code": "3200",
             "calldata": "",
             "stack": "0",
@@ -1251,7 +1262,18 @@ test_cases = [
 ]
 
 
-params = [pytest.param(case.pop("params"), **case) for case in test_cases]
+params_execute = [
+    pytest.param(case.pop("params"), **case)
+    for case in list(
+        filter(lambda x: x.get("marks") != pytest.mark.execute_at_address, test_cases)
+    )
+]
+params_execute_at_address = [
+    pytest.param(case.pop("params"), **case)
+    for case in list(
+        filter(lambda x: x.get("marks") == pytest.mark.execute_at_address, test_cases)
+    )
+]
 
 
 @pytest.mark.asyncio
@@ -1264,7 +1286,7 @@ class TestZkEVM:
 
     @pytest.mark.parametrize(
         "params",
-        params,
+        params_execute,
     )
     async def test_execute(self, zk_evm, params):
         Uint256 = zk_evm.struct_manager.get_contract_struct("Uint256")
@@ -1289,16 +1311,23 @@ class TestZkEVM:
 
     @pytest.mark.parametrize(
         "params",
-        params[:2],
-        # TODO: not sure how of those we want to re-run with the execute_at_address because it is very slow
-        # TODO: This is a magic number.
+        params_execute_at_address,
     )
-    async def test_execute_at_address(self, zk_evm, params):
+    async def test_execute_at_address(self, zk_evm, eth, params):
         Uint256 = zk_evm.struct_manager.get_contract_struct("Uint256")
         tx = await zk_evm.deploy(
             bytes=[int(b, 16) for b in wrap(params["code"], 2)],
         ).execute(caller_address=1)
         evm_contract_address = tx.result.evm_contract_address
+
+        # Fund executing contract address with 420 ETH from original recipient
+        res = await eth.transfer(
+            recipient=tx.result.starknet_contract_address,
+            amount=Uint256(*self.int_to_uint256(420)),
+        ).execute(
+            caller_address=2
+        )  # Original recipient
+        assert res.result.success == 1
 
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
