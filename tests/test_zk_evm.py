@@ -652,10 +652,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Get balance of currently executing contract - 0x47 SELFBALANCE",
-        # TODO: Unmark skip once testing architecture for test_execute and test_execute_address is decoupled
-        "marks": pytest.mark.skip(
-            "Working for test_execute_at_address but not for test_execute, cannot fund zero address."
-        ),
+        "marks": pytest.mark.execute_at_address,
     },
     {
         "params": {
@@ -1265,7 +1262,18 @@ test_cases = [
 ]
 
 
-params = [pytest.param(case.pop("params"), **case) for case in test_cases]
+params_execute = [
+    pytest.param(case.pop("params"), **case)
+    for case in list(
+        filter(lambda x: x.get("marks") != pytest.mark.execute_at_address, test_cases)
+    )
+]
+params_execute_at_address = [
+    pytest.param(case.pop("params"), **case)
+    for case in list(
+        filter(lambda x: x.get("marks") == pytest.mark.execute_at_address, test_cases)
+    )
+]
 
 
 @pytest.mark.asyncio
@@ -1278,7 +1286,7 @@ class TestZkEVM:
 
     @pytest.mark.parametrize(
         "params",
-        params,
+        params_execute,
     )
     async def test_execute(self, zk_evm, params):
         Uint256 = zk_evm.struct_manager.get_contract_struct("Uint256")
@@ -1303,9 +1311,7 @@ class TestZkEVM:
 
     @pytest.mark.parametrize(
         "params",
-        params[:2],
-        # TODO: not sure how of those we want to re-run with the execute_at_address because it is very slow
-        # TODO: This is a magic number.
+        params_execute_at_address,
     )
     async def test_execute_at_address(self, zk_evm, eth, params):
         Uint256 = zk_evm.struct_manager.get_contract_struct("Uint256")
