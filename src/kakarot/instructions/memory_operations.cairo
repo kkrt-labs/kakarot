@@ -16,6 +16,7 @@ from kakarot.stack import Stack
 from kakarot.memory import Memory
 from kakarot.execution_context import ExecutionContext
 from kakarot.constants import Constants
+from kakarot.interfaces.interfaces import IEvm_Contract
 
 // @title Exchange operations opcodes.
 // @notice This file contains the functions to execute for memory operations opcodes.
@@ -31,6 +32,8 @@ namespace MemoryOperations {
     const GAS_COST_JUMPDEST = 1;
     const GAS_COST_POP = 2;
     const GAS_COST_MSTORE8 = 3;
+    const GAS_COST_SSTORE = 100;
+    const GAS_COST_SLOAD = 100;
     const GAS_COST_GAS = 2;
 
     // @notice MLOAD operation
@@ -60,7 +63,7 @@ namespace MemoryOperations {
         let (stack, offset) = Stack.pop(stack);
 
         // Read word from memory at offset
-        let (new_memory, cost) = Memory.insure_length(ctx.memory, 32 + offset.low);
+        let (new_memory, cost) = Memory.insure_length(self=ctx.memory, length=32 + offset.low);
 
         let value = Memory.load(self=new_memory, offset=offset.low);
 
@@ -238,7 +241,7 @@ namespace MemoryOperations {
         let (stack, skip_condition) = Stack.pop(stack);
 
         // Update pc if skip_jump is anything other then 0
-        if (skip_condition.low != FALSE) {
+        if (skip_condition.low == 1) {
             // Update pc counter.
             let ctx = ExecutionContext.update_program_counter(ctx, offset.low);
             // Update context stack.
@@ -353,6 +356,94 @@ namespace MemoryOperations {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MSTORE8);
+        return ctx;
+    }
+
+    // @notice SSTORE operation
+    // @dev Save word to memory.
+    // @custom:since Frontier
+    // @custom:group Stack Memory Storage and Flow operations.
+    // @custom:gas 3
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 0
+    // @return Updated execution context.
+    func exec_sstore{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        %{
+            import logging
+            logging.info("0x55 - SSTORE")
+        %}
+
+        let stack = ctx.stack;
+
+        // ------- 1. Get starknet address
+        let starknet_address: felt = ctx.starknet_address;
+
+        // ----- 2. Pop 2 values: key and value
+
+        // Stack input:
+        // 0 - key: key of memory.
+        // 1 - value: value for given key.
+        let (stack, local key) = Stack.pop(stack);
+        let (stack, local value) = Stack.pop(stack);
+
+        // 3. Call Write storage on contract with starknet address
+
+        with_attr error_message("Contract call failed") {
+            IEvm_Contract.write_state(contract_address=starknet_address, key=key, value=value);
+        }
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SSTORE);
+        return ctx;
+    }
+
+    // @notice SLOAD operation
+    // @dev Save word to memory.
+    // @custom:since Frontier
+    // @custom:group Stack Memory Storage and Flow operations.
+    // @custom:gas 3
+    // @custom:stack_consumed_elements 2
+    // @custom:stack_produced_elements 0
+    // @return Updated execution context.
+    func exec_sload{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        let stack = ctx.stack;
+
+        // ------- 1. Get starknet address
+        let starknet_address: felt = ctx.starknet_address;
+
+        // ----- 2. Pop 2 values: key and value
+
+        // Stack input:
+        // 0 - key: key of memory.
+        // 1 - value: value for given key.
+        let (stack, local key) = Stack.pop(stack);
+        // local value: Uint256;
+        // 3. Get the data and add on the Stack
+
+        let (local value: Uint256) = IEvm_Contract.state(
+            contract_address=starknet_address, key=key
+        );
+
+        let stack: model.Stack* = Stack.push(stack, value);
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SLOAD);
         return ctx;
     }
 

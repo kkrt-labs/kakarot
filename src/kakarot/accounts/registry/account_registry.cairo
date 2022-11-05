@@ -5,11 +5,11 @@
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
-// Local dependencies
-from kakarot.accounts.registry.library import AccountRegistry
-
 // @title EVM account registry contract.
 // @author @abdelhamidbakhta
+
+// Local dependencies
+from kakarot.accounts.registry.library import AccountRegistry
 
 // Constructor
 @constructor
@@ -26,7 +26,15 @@ func constructor{
 func set_account_entry{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(starknet_address: felt, evm_address: felt) {
-    return AccountRegistry.set_account_entry(starknet_address, evm_address);
+    return AccountRegistry.set_account_entry(starknet_address=starknet_address, evm_address=evm_address);
+}
+
+@external
+func transfer_ownership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    new_address: felt
+) {
+    AccountRegistry.transfer_ownership(new_address);
+    return ();
 }
 
 // @notice Get the starknet address of an EVM address.
@@ -36,7 +44,7 @@ func set_account_entry{
 func get_starknet_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(evm_address: felt) -> (starknet_address: felt) {
-    return AccountRegistry.get_starknet_address(evm_address);
+    return AccountRegistry.get_starknet_address(evm_address=evm_address);
 }
 
 // @notice Get the EVM address of a starknet address.
@@ -46,5 +54,5 @@ func get_starknet_address{
 func get_evm_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(starknet_address: felt) -> (evm_address: felt) {
-    return AccountRegistry.get_evm_address(starknet_address);
+    return AccountRegistry.get_evm_address(starknet_address=starknet_address);
 }

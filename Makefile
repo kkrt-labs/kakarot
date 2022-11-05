@@ -2,10 +2,10 @@
 
 build:
 	$(MAKE) clean
-	starknet-compile ./src/kakarot/kakarot.cairo --output build/kakarot.json --disable_hint_validation --cairo_path ./src
-	starknet-compile ./src/kakarot/accounts/contract/contract_account.cairo --output build/contract_account.json --disable_hint_validation --cairo_path ./src
-	starknet-compile ./src/kakarot/accounts/eoa/externally_owned_account.cairo --output build/externally_owned_account.json --disable_hint_validation --cairo_path ./src
-	starknet-compile ./src/kakarot/accounts/registry/account_registry.cairo --output build/account_registry.json --disable_hint_validation --cairo_path ./src
+	starknet-compile ./src/kakarot/kakarot.cairo --output build/kakarot.json --disable_hint_validation --cairo_path ./src --abi build/kakarot_abi.json
+	starknet-compile ./src/kakarot/accounts/contract/contract_account.cairo --output build/contract_account.json --disable_hint_validation --cairo_path ./src --abi build/contract_account_abi.json
+	starknet-compile ./src/kakarot/accounts/eoa/externally_owned_account.cairo --output build/externally_owned_account.json --disable_hint_validation --cairo_path ./src --abi build/externally_owned_account_abi.json
+	starknet-compile ./src/kakarot/accounts/registry/account_registry.cairo --output build/account_registry.json --disable_hint_validation --cairo_path ./src --abi build/account_registry_abi.json
 
 setup:
 	poetry install --no-root

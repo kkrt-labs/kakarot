@@ -49,14 +49,14 @@ namespace BlockInformation {
             logging.info("0x46 - CHAINID")
         %}
         // Get the chain ID.
-        let chain_id = Helpers.to_uint256(Constants.CHAIN_ID);
-        let stack: model.Stack* = Stack.push(ctx.stack, chain_id);
+        let chain_id = Helpers.to_uint256(val=Constants.CHAIN_ID);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=chain_id);
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CHAINID);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CHAINID);
         return ctx;
     }
 
@@ -80,14 +80,14 @@ namespace BlockInformation {
         %}
         // Get the coinbase address.
         // TODO: switch to real coinbase addr when going to prod
-        let coinbase_address = Helpers.to_uint256(Constants.MOCK_COINBASE_ADDRESS);
-        let stack: model.Stack* = Stack.push(ctx.stack, coinbase_address);
+        let coinbase_address = Helpers.to_uint256(val=Constants.MOCK_COINBASE_ADDRESS);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=coinbase_address);
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_COINBASE);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_COINBASE);
         return ctx;
     }
 
@@ -111,15 +111,15 @@ namespace BlockInformation {
         %}
         // Get the block’s timestamp
         let (current_timestamp) = get_block_timestamp();
-        let block_timestamp = Helpers.to_uint256(current_timestamp);
+        let block_timestamp = Helpers.to_uint256(val=current_timestamp);
 
-        let stack: model.Stack* = Stack.push(ctx.stack, block_timestamp);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=block_timestamp);
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_TIMESTAMP);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_TIMESTAMP);
         return ctx;
     }
 
@@ -143,15 +143,15 @@ namespace BlockInformation {
         %}
         // Get the block number.
         let (current_block) = get_block_number();
-        let block_number = Helpers.to_uint256(current_block);
+        let block_number = Helpers.to_uint256(val=current_block);
 
-        let stack: model.Stack* = Stack.push(ctx.stack, block_number);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=block_number);
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_NUMBER);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_NUMBER);
         return ctx;
     }
 
@@ -173,16 +173,15 @@ namespace BlockInformation {
             import logging
             logging.info("0x45 - GASLIMIT")
         %}
-        // Get the Gas Limit.
-        let gas_limit = Helpers.to_uint256(Constants.BLOCK_GAS_LIMIT);
-
-        let stack: model.Stack* = Stack.push(ctx.stack, gas_limit);
+        // Get the Gas Limit
+        let gas_limit = Helpers.to_uint256(val=ctx.gas_limit);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=gas_limit);
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_GASLIMIT);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_GASLIMIT);
         return ctx;
     }
 
@@ -206,15 +205,15 @@ namespace BlockInformation {
         %}
 
         // Get the Difficulty.
-        let difficulty = Helpers.to_uint256(0);
+        let difficulty = Helpers.to_uint256(val=0);
 
-        let stack: model.Stack* = Stack.push(ctx.stack, difficulty);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=difficulty);
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_DIFFICULTY);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_DIFFICULTY);
         return ctx;
     }
 
@@ -238,15 +237,15 @@ namespace BlockInformation {
         %}
 
         // Get the base fee.
-        let basefee = Helpers.to_uint256(0);
+        let basefee = Helpers.to_uint256(val=0);
 
-        let stack: model.Stack* = Stack.push(ctx.stack, basefee);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=basefee);
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_BASEFEE);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_BASEFEE);
         return ctx;
     }
 }

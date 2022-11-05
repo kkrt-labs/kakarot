@@ -111,58 +111,39 @@ namespace Memory {
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.Memory*, element_len: felt, element: felt*, offset: felt) -> model.Memory* {
         alloc_locals;
-        let (new_memory: felt*) = alloc();
-        if (self.bytes_len == 0) {
-            Helpers.fill(arr=new_memory, value=0, length=offset);
-        }
+        // New memory is composed of 3 parts: head, element and tail
+        // Head are the bytes before offset.
+        // Head is possibly zero-padded if offset is overbound
+        // Tail are the bytes after element (offset + element_len).
+        // Tail is zero-padded in case the total memory is not a multiple of 32.
 
-        let is_offset_greater_than_length = is_le_felt(self.bytes_len, offset);
-        local max_copy: felt;
-        local total_len: felt = offset + element_len;
-        tempvar max_uint256_bytes: felt = 32;
+        local is_memory_expanded: felt;
 
-        // Add all the elements into new_memory
-        Helpers.fill_array(
-            fill_with=element_len, input_arr=element, output_arr=new_memory + offset
+        local n_head: felt;
+        local n_head_pad: felt;
+        local n_tail: felt;
+        local n_tail_pad: felt;
+
+        let (local new_memory: felt*) = alloc();
+
+        let is_offset_overbound: felt = is_le_felt(self.bytes_len + 1, offset);
+        let n_head = offset + (self.bytes_len - offset) * is_offset_overbound;
+        let n_head_pad = offset - n_head;
+        let is_memory_expanded = is_le_felt(self.bytes_len + 1, offset + element_len);
+        let n_tail = (self.bytes_len - offset - element_len) * (1 - is_memory_expanded);
+        let (_, rem) = unsigned_div_rem(offset + element_len, 32);
+        let is_rem_positive = is_le_felt(1, rem);
+        let n_tail_pad = (32 - rem) * is_rem_positive * is_memory_expanded;
+
+        memcpy(dst=new_memory, src=self.bytes, len=n_head);
+        Helpers.fill(arr=new_memory + n_head, value=0, length=n_head_pad);
+        memcpy(dst=new_memory + offset, src=element, len=element_len);
+        memcpy(
+            dst=new_memory + offset + element_len, src=self.bytes + offset + element_len, len=n_tail
         );
-
-        let (local quotient, local remainder) = uint256_unsigned_div_rem(
-            Uint256(offset + element_len, 0), Uint256(max_uint256_bytes, 0)
-        );
-        local diff: felt;
-        if (remainder.low == 0) {
-            diff = 0;
-        } else {
-            diff = max_uint256_bytes - remainder.low;
-        }
-
-        if (is_offset_greater_than_length == 1) {
-            Helpers.fill(arr=new_memory + self.bytes_len, value=0, length=offset - self.bytes_len);
-            // Fill the unused bytes into 0
-            Helpers.fill(arr=new_memory + total_len, value=0, length=diff);
-            max_copy = self.bytes_len;
-        } else {
-            max_copy = offset;
-        }
-
-        if (self.bytes_len != 0) {
-            memcpy(dst=new_memory, src=self.bytes, len=max_copy);
-        }
-
-        let is_memory_growing = is_le_felt(self.bytes_len, total_len);
-
-        local new_bytes_len: felt;
-        if (is_memory_growing == 1) {
-            new_bytes_len = total_len + (diff);
-        } else {
-            memcpy(
-                dst=new_memory + total_len,
-                src=self.bytes + total_len,
-                len=self.bytes_len - (total_len),
-            );
-            new_bytes_len = self.bytes_len;
-        }
-        return new model.Memory(bytes=new_memory, bytes_len=new_bytes_len);
+        Helpers.fill(arr=new_memory + offset + element_len + n_tail, value=0, length=n_tail_pad);
+        let new_memory_len: felt = offset + element_len + n_tail + n_tail_pad;
+        return new model.Memory(bytes=new_memory, bytes_len=new_memory_len);
     }
 
     // @notice Load an element from the memory.
@@ -229,15 +210,17 @@ namespace Memory {
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.Memory*, length: felt) -> (new_memory: model.Memory*, cost: felt) {
         Helpers.fill(self.bytes + self.bytes_len, value=0, length=length);
-        let (last_memory_size_word, _) = unsigned_div_rem(self.bytes_len + 31, 32);
+        let (last_memory_size_word, _) = unsigned_div_rem(value=self.bytes_len + 31, div=32);
         let (last_memory_cost, _) = unsigned_div_rem(
-            last_memory_size_word * last_memory_size_word, 512
+            value=last_memory_size_word * last_memory_size_word, div=512
         );
         let last_memory_cost = last_memory_cost + (3 * last_memory_size_word);
 
-        let (new_memory_size_word, _) = unsigned_div_rem(self.bytes_len + length + 31, 32);
+        let (new_memory_size_word, _) = unsigned_div_rem(
+            value=self.bytes_len + length + 31, div=32
+        );
         let (new_memory_cost, _) = unsigned_div_rem(
-            new_memory_size_word * new_memory_size_word, 512
+            value=new_memory_size_word * new_memory_size_word, div=512
         );
         let new_memory_cost = new_memory_cost + (3 * new_memory_size_word);
 
@@ -246,7 +229,7 @@ namespace Memory {
         return (new model.Memory(bytes=self.bytes, bytes_len=self.bytes_len + length), cost);
     }
 
-    // @notice Insure that the memory as at least length bytes. Expand if necessary.
+    // @notice Ensure that the memory as at least length bytes. Expand if necessary.
     // @param self - The pointer to the memory.
     // @param offset - The number of bytes to add.
     // @return The new pointer to the memory.
@@ -259,7 +242,7 @@ namespace Memory {
     }(self: model.Memory*, length: felt) -> (new_memory: model.Memory*, cost: felt) {
         let is_memory_expanding = is_le_felt(self.bytes_len + 1, length);
         if (is_memory_expanding == TRUE) {
-            let (new_memory, cost) = Memory.expand(self, length - self.bytes_len);
+            let (new_memory, cost) = Memory.expand(self=self, length=length - self.bytes_len);
             return (new_memory, cost);
         } else {
             return (new_memory=self, cost=0);
