@@ -290,6 +290,10 @@ namespace EVMInstructions {
         add_instruction(
             instructions=instructions, opcode=0x33, function=EnvironmentalInformation.exec_caller
         );
+        // 0x34 - CALLVALUE
+        add_instruction(
+            instructions=instructions, opcode=0x34, function=EnvironmentalInformation.exec_callvalue
+        );
         // 0x35 - CALLDATALOAD
         add_instruction(
             instructions=instructions,

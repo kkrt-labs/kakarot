@@ -29,6 +29,7 @@ namespace EnvironmentalInformation {
     const GAS_COST_CALLDATALOAD = 3;
     const GAS_COST_CALLDATASIZE = 2;
     const GAS_COST_CALLER = 2;
+    const GAS_COST_CALLVALUE = 2;
     const GAS_COST_CODECOPY = 3;
     const GAS_COST_CODESIZE = 2;
     const GAS_COST_ORIGIN = 2;
@@ -173,6 +174,35 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CALLER);
+        return ctx;
+    }
+
+    // @notice CALLVALUE operation.
+    // @dev Get deposited value by the instruction/transaction responsible for this execution.
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 2
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_callvalue{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        %{
+            import logging
+            logging.info("0x34 - CALLVALUE")
+        %}
+        let uint256_value: Uint256 = Helpers.to_uint256(ctx.value);
+        let stack: model.Stack* = Stack.push(ctx.stack, uint256_value);
+
+        // Update the execution context.
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLVALUE);
         return ctx;
     }
 

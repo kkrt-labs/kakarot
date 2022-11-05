@@ -868,6 +868,17 @@ test_cases = [
     },
     {
         "params": {
+            "code": "34",
+            "calldata": "",
+            "value": 9000000000,
+            "stack": "9000000000",
+            "memory": "",
+            "return_value": "",
+        },
+        "id": "Get deposited value by the instruction/transaction responsible for this execution - 0x34 CALLVALUE",
+    },
+    {
+        "params": {
             "code": "600035",
             "calldata": "000000000000000000000000000000000000000000000000000000000000000a",
             "value": 0,
