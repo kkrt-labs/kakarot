@@ -235,6 +235,7 @@ namespace BlockInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
         %{
             import logging
             logging.info("0x47 - SELFBALANCE")
