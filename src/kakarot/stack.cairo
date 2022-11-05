@@ -110,24 +110,29 @@ namespace Stack {
     // @return The new pointer to the stack.
     func swap_i{range_check_ptr}(self: model.Stack*, i: felt) -> model.Stack* {
         alloc_locals;
-        let element = Stack.peek(self=self, stack_index=i);
-        let array_index = Stack.get_array_index(self=self, stack_index=i);
-        let array_index = 2 * array_index;
-        let (dst_elts: felt*) = alloc();
-        let src_elts = cast(self.elements, felt*);
+        let element = Stack.peek(self=self, stack_index=i);  // get element to swap
 
-        memcpy(dst=dst_elts, src=src_elts, len=array_index);
-        assert [dst_elts + array_index] = src_elts[self.raw_len - 2];
-        assert [dst_elts + array_index + 1] = src_elts[self.raw_len - 1];
+        // convert stack index to array representing the stack index
+        let array_index = Stack.get_array_index(self=self, stack_index=i);
+        let array_index = 2 * array_index;  // convert the Uint256 array index to felt array index
+        let (dst_elts: felt*) = alloc();  // new segment for stack copy
+        let src_elts = cast(self.elements, felt*);  // convert Uint256* to felt*
+
+        memcpy(dst=dst_elts, src=src_elts, len=array_index);  // copy the stack until the swaped elt
+        assert [dst_elts + array_index] = src_elts[self.raw_len - 2];  // save the swaped elt low
+        assert [dst_elts + array_index + 1] = src_elts[self.raw_len - 1];  // save the swaped elt high
+
+        // copy the reset of the stack
         memcpy(
             dst=dst_elts + array_index + 2,
             src=src_elts + array_index + 2,
             len=self.raw_len - array_index - 4,
         );
-        assert dst_elts[self.raw_len - 2] = element.low;
-        assert dst_elts[self.raw_len - 1] = element.high;
 
-        let elements = cast(dst_elts, Uint256*);
+        assert dst_elts[self.raw_len - 2] = element.low;  // copy swaped elt low to top of the stack
+        assert dst_elts[self.raw_len - 1] = element.high;  // copy swaped elt high to top of the stack
+
+        let elements = cast(dst_elts, Uint256*);  // cast dest to Uint256* to recreate a stack
         return new model.Stack(elements=elements, raw_len=self.raw_len);
     }
 
