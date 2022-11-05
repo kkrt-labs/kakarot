@@ -104,7 +104,7 @@ namespace Stack {
     }
 
     // @notice Swap two elements in the stack.
-    // @dev stack_index_1 and stack_index_2 are 0-based, 0 is the top of the stack.
+    // @dev i is 0-based, 0 is the top of the stack.
     // @param self - The pointer to the stack.
     // @param i - The index of the second element to swap.
     // @return The new pointer to the stack.
@@ -126,10 +126,6 @@ namespace Stack {
         );
         assert dst_elts[self.raw_len - 2] = element.low;
         assert dst_elts[self.raw_len - 1] = element.high;
-        // %{
-        //     print(ids.dst_elts, ids.src_elts)
-        //     breakpoint()
-        // %}
 
         let elements = cast(dst_elts, Uint256*);
         return new model.Stack(elements=elements, raw_len=self.raw_len);
