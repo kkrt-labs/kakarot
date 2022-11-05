@@ -27,8 +27,11 @@ namespace ExecutionContext {
     // @notice Initialize the execution context.
     // @param code The code to execute.
     // @param calldata The calldata.
+    // @param value The value.
     // @return The initialized execution context.
-    func init(code: felt*, code_len: felt, calldata: felt*) -> model.ExecutionContext* {
+    func init(
+        code: felt*, code_len: felt, calldata: felt*, value: felt
+    ) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
 
@@ -50,6 +53,7 @@ namespace ExecutionContext {
             code_len=code_len,
             calldata=calldata,
             calldata_len=Helpers.get_len(calldata),
+            value=value,
             program_counter=initial_pc,
             stopped=FALSE,
             return_data=empty_return_data,
@@ -74,7 +78,7 @@ namespace ExecutionContext {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, calldata: felt*) -> model.ExecutionContext* {
+    }(address: felt, calldata: felt*, value: felt) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
 
@@ -103,6 +107,7 @@ namespace ExecutionContext {
             code_len=code_len,
             calldata=calldata,
             calldata_len=Helpers.get_len(calldata),
+            value=value,
             program_counter=initial_pc,
             stopped=FALSE,
             return_data=empty_return_data,
@@ -129,6 +134,7 @@ namespace ExecutionContext {
             code_len=self.code_len,
             calldata=self.calldata,
             calldata_len=self.calldata_len,
+            value=self.value,
             program_counter=self.program_counter,
             stopped=self.stopped,
             return_data=self.return_data,
@@ -161,6 +167,7 @@ namespace ExecutionContext {
             code_len=self.code_len,
             calldata=self.calldata,
             calldata_len=self.calldata_len,
+            value=self.value,
             program_counter=self.program_counter,
             stopped=TRUE,
             return_data=self.return_data,
@@ -207,6 +214,7 @@ namespace ExecutionContext {
             code_len=self.code_len,
             calldata=self.calldata,
             calldata_len=self.calldata_len,
+            value=self.value,
             program_counter=self.program_counter,
             stopped=self.stopped,
             return_data=self.return_data,
@@ -233,6 +241,7 @@ namespace ExecutionContext {
             code_len=self.code_len,
             calldata=self.calldata,
             calldata_len=self.calldata_len,
+            value=self.value,
             program_counter=self.program_counter,
             stopped=self.stopped,
             return_data=self.return_data,
@@ -259,6 +268,7 @@ namespace ExecutionContext {
             code_len=self.code_len,
             calldata=self.calldata,
             calldata_len=self.calldata_len,
+            value=self.value,
             program_counter=self.program_counter,
             stopped=TRUE,
             return_data=new_return_data,
@@ -286,6 +296,7 @@ namespace ExecutionContext {
             code_len=self.code_len,
             calldata=self.calldata,
             calldata_len=self.calldata_len,
+            value=self.value,
             program_counter=self.program_counter + inc_value,
             stopped=self.stopped,
             return_data=self.return_data,
@@ -313,6 +324,7 @@ namespace ExecutionContext {
             code_len=self.code_len,
             calldata=self.calldata,
             calldata_len=self.calldata_len,
+            value=self.value,
             program_counter=self.program_counter,
             stopped=self.stopped,
             return_data=self.return_data,
@@ -390,6 +402,7 @@ namespace ExecutionContext {
             code_len=self.code_len,
             calldata=self.calldata,
             calldata_len=self.calldata_len,
+            value=self.value,
             program_counter=new_pc_offset,
             stopped=self.stopped,
             return_data=self.return_data,

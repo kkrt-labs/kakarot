@@ -20,7 +20,7 @@ func constructor{
 @view
 func execute{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(code_len: felt, code: felt*, calldata_len: felt, calldata: felt*) -> (
+}(value: felt, code_len: felt, code: felt*, calldata_len: felt, calldata: felt*) -> (
     stack_len: felt, stack: Uint256*, memory_len: felt, memory: felt*, gas_used: felt
 ) {
     alloc_locals;
@@ -50,7 +50,7 @@ func execute{
 @external
 func execute_at_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(address: felt, calldata_len: felt, calldata: felt*) -> (
+}(value: felt, address: felt, calldata_len: felt, calldata: felt*) -> (
     stack_len: felt, stack: Uint256*, memory_len: felt, memory: felt*, gas_used: felt
 ) {
     alloc_locals;

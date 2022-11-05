@@ -17,14 +17,16 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     return Kakarot.constructor(owner, native_token_address_, evm_contract_class_hash);
 }
 
+// value is given as first parameter of the execute() function
+// because when added as the last parameter, calldata is altered and we didn't find why
 @view
 func execute{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(code_len: felt, code: felt*, calldata_len: felt, calldata: felt*) -> (
+}(value: felt, code_len: felt, code: felt*, calldata_len: felt, calldata: felt*) -> (
     stack_len: felt, stack: Uint256*, memory_len: felt, memory: felt*, gas_used: felt
 ) {
     alloc_locals;
-    let context = Kakarot.execute(code_len=code_len, code=code, calldata=calldata);
+    let context = Kakarot.execute(code_len=code_len, code=code, calldata=calldata, value=value);
     let len = Stack.len(context.stack);
     return (
         stack_len=len,
@@ -39,12 +41,12 @@ func execute{
 @external
 func execute_at_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(address: felt, calldata_len: felt, calldata: felt*) -> (
+}(address: felt, calldata_len: felt, calldata: felt*, value: felt) -> (
     stack_len: felt, stack: Uint256*, memory_len: felt, memory: felt*
 ) {
     alloc_locals;
 
-    let context = Kakarot.execute_at_address(address=address, calldata=calldata);
+    let context = Kakarot.execute_at_address(address=address, calldata=calldata, value=value);
     let len = Stack.len(context.stack);
     return (
         stack_len=len,

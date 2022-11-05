@@ -68,7 +68,7 @@ sequenceDiagram
     participant ArithmeticOperations
     participant PushOperations
     participant Stack
-    User->>+Kakarot: execute(code, calldata)
+    User->>+Kakarot: execute(code, calldata, value)
     Kakarot->>+EVMInstructions: generate_instructions()
     EVMInstructions->>-Kakarot: instructions
     Kakarot->>+ExecutionContext: compute_intrinsic_gas_cost()

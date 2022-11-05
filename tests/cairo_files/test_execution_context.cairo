@@ -33,14 +33,16 @@ func test__init__should_return_an_empty_execution_context{
     tempvar code_len = 1;
     let (calldata) = alloc();
     assert [calldata] = '';
+    tempvar value = 0;
 
     // When
-    let result: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
+    let result: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata, value);
 
     // Then
     assert result.code = code;
     assert result.code_len = 1;
     assert result.calldata = calldata;
+    assert result.value = value;
     assert result.program_counter = 0;
     assert result.stopped = FALSE;
     assert result.stack.raw_len = 0;
@@ -68,9 +70,10 @@ func test__update_program_counter__should_set_pc_to_given_value{
     tempvar code_len = 6;
     let (calldata) = alloc();
     assert [calldata] = '';
+    tempvar value = 0;
 
     // When
-    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
+    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata, value);
     let result = ExecutionContext.update_program_counter(ctx, 3);
 
     // Then
@@ -95,9 +98,10 @@ func test__update_program_counter__should_fail__when_given_value_not_in_code_ran
     tempvar code_len = 6;
     let (calldata) = alloc();
     assert [calldata] = '';
+    tempvar value = 0;
 
     // When & Then
-    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
+    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata, value);
     let result = ExecutionContext.update_program_counter(ctx, 6);
     return ();
 }
@@ -119,9 +123,10 @@ func test__update_program_counter__should_fail__when_given_destination_that_is_n
     tempvar code_len = 6;
     let (calldata) = alloc();
     assert [calldata] = '';
+    tempvar value = 0;
 
     // When & Then
-    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
+    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata, value);
     let result = ExecutionContext.update_program_counter(ctx, 2);
     return ();
 }

@@ -46,6 +46,7 @@ test_cases = [
         "params": {
             "code": "604260005260206000F3",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "0000000000000000000000000000000000000000000000000000000000000042",
             "return_value": "0000000000000000000000000000000000000000000000000000000000000042",
@@ -56,6 +57,7 @@ test_cases = [
         "params": {
             "code": "60016001f3",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "0000000000000000000000000000000000000000000000000000000000000000",
             "return_value": "0000000000000000000000000000000000000000000000000000000000000000",
@@ -66,6 +68,7 @@ test_cases = [
         "params": {
             "code": "60056003600039",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "0360003900000000000000000000000000000000000000000000000000000000",
             "return_value": "",
@@ -76,6 +79,7 @@ test_cases = [
         "params": {
             "code": "7dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6008601f600039",
             "calldata": "",
+            "value": 0,
             "stack": "1766847064778384329583297500742918515827483896875618958121606201292619775",
             "memory": "6008601f60003900000000000000000000000000000000000000000000000000",
             "return_value": "",
@@ -86,6 +90,7 @@ test_cases = [
         "params": {
             "code": "6003600401600a02608c036102bc04604605600d066010076005600608601060020960040A60600B00",
             "calldata": "",
+            "value": 0,
             "stack": "16",
             "memory": "",
             "return_value": "",
@@ -96,6 +101,7 @@ test_cases = [
         "params": {
             "code": "60018060036004600260058300",
             "calldata": "",
+            "value": 0,
             "stack": "1,1,3,4,2,5,3",
             "memory": "",
             "return_value": "",
@@ -106,6 +112,7 @@ test_cases = [
         "params": {
             "code": "600160001d",
             "calldata": "",
+            "value": 0,
             "stack": "1",
             "memory": "",
             "return_value": "",
@@ -116,6 +123,7 @@ test_cases = [
         "params": {
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6101001d",
             "calldata": "",
+            "value": 0,
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
             "memory": "",
             "return_value": "",
@@ -126,6 +134,7 @@ test_cases = [
         "params": {
             "code": "600060011d",
             "calldata": "",
+            "value": 0,
             "stack": "0",
             "memory": "",
             "return_value": "",
@@ -136,6 +145,7 @@ test_cases = [
         "params": {
             "code": "7f400000000000000000000000000000000000000000000000000000000000000060fe1d",
             "calldata": "",
+            "value": 0,
             "stack": "1",
             "memory": "",
             "return_value": "",
@@ -146,6 +156,7 @@ test_cases = [
         "params": {
             "code": "7f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60f81d",
             "calldata": "",
+            "value": 0,
             "stack": "127",
             "memory": "",
             "return_value": "",
@@ -156,6 +167,7 @@ test_cases = [
         "params": {
             "code": "7f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60fe1d",
             "calldata": "",
+            "value": 0,
             "stack": "1",
             "memory": "",
             "return_value": "",
@@ -166,6 +178,7 @@ test_cases = [
         "params": {
             "code": "7f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60ff1d",
             "calldata": "",
+            "value": 0,
             "stack": "0",
             "memory": "",
             "return_value": "",
@@ -176,6 +189,7 @@ test_cases = [
         "params": {
             "code": "7f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6101001d",
             "calldata": "",
+            "value": 0,
             "stack": "0",
             "memory": "",
             "return_value": "",
@@ -186,6 +200,7 @@ test_cases = [
         "params": {
             "code": "600160011d",
             "calldata": "",
+            "value": 0,
             "stack": "0",
             "memory": "",
             "return_value": "",
@@ -196,6 +211,7 @@ test_cases = [
         "params": {
             "code": "7f800000000000000000000000000000000000000000000000000000000000000060011d",
             "calldata": "",
+            "value": 0,
             "stack": "86844066927987146567678238756515930889952488499230423029593188005934847229952",
             "memory": "",
             "return_value": "",
@@ -206,6 +222,7 @@ test_cases = [
         "params": {
             "code": "7f800000000000000000000000000000000000000000000000000000000000000060ff1d",
             "calldata": "",
+            "value": 0,
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
             "memory": "",
             "return_value": "",
@@ -216,6 +233,7 @@ test_cases = [
         "params": {
             "code": "7f80000000000000000000000000000000000000000000000000000000000000006101001d",
             "calldata": "",
+            "value": 0,
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
             "memory": "",
             "return_value": "",
@@ -226,6 +244,7 @@ test_cases = [
         "params": {
             "code": "7f80000000000000000000000000000000000000000000000000000000000000006101011d",
             "calldata": "",
+            "value": 0,
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
             "memory": "",
             "return_value": "",
@@ -236,6 +255,7 @@ test_cases = [
         "params": {
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60001d",
             "calldata": "",
+            "value": 0,
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
             "memory": "",
             "return_value": "",
@@ -246,6 +266,7 @@ test_cases = [
         "params": {
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60011d",
             "calldata": "",
+            "value": 0,
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
             "memory": "",
             "return_value": "",
@@ -256,6 +277,7 @@ test_cases = [
         "params": {
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60ff1d",
             "calldata": "",
+            "value": 0,
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
             "memory": "",
             "return_value": "",
@@ -266,6 +288,7 @@ test_cases = [
         "params": {
             "code": "600160001b",
             "calldata": "",
+            "value": 0,
             "stack": "1",
             "memory": "",
             "return_value": "",
@@ -276,6 +299,7 @@ test_cases = [
         "params": {
             "code": "600060011b",
             "calldata": "",
+            "value": 0,
             "stack": "0",
             "memory": "",
             "return_value": "",
@@ -286,6 +310,7 @@ test_cases = [
         "params": {
             "code": "7f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60011b",
             "calldata": "",
+            "value": 0,
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639934",
             "memory": "",
             "return_value": "",
@@ -296,6 +321,7 @@ test_cases = [
         "params": {
             "code": "600160011b",
             "calldata": "",
+            "value": 0,
             "stack": "2",
             "memory": "",
             "return_value": "",
@@ -306,6 +332,7 @@ test_cases = [
         "params": {
             "code": "600160ff1b",
             "calldata": "",
+            "value": 0,
             "stack": "57896044618658097711785492504343953926634992332820282019728792003956564819968",
             "memory": "",
             "return_value": "",
@@ -316,6 +343,7 @@ test_cases = [
         "params": {
             "code": "60016101001b",
             "calldata": "",
+            "value": 0,
             "stack": "0",
             "memory": "",
             "return_value": "",
@@ -326,6 +354,7 @@ test_cases = [
         "params": {
             "code": "60016101011b",
             "calldata": "",
+            "value": 0,
             "stack": "0",
             "memory": "",
             "return_value": "",
@@ -336,6 +365,7 @@ test_cases = [
         "params": {
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60001b",
             "calldata": "",
+            "value": 0,
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
             "memory": "",
             "return_value": "",
@@ -346,6 +376,7 @@ test_cases = [
         "params": {
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60011b",
             "calldata": "",
+            "value": 0,
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639934",
             "memory": "",
             "return_value": "",
@@ -356,6 +387,7 @@ test_cases = [
         "params": {
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60ff1b",
             "calldata": "",
+            "value": 0,
             "stack": "57896044618658097711785492504343953926634992332820282019728792003956564819968",
             "memory": "",
             "return_value": "",
@@ -366,6 +398,7 @@ test_cases = [
         "params": {
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6101001b",
             "calldata": "",
+            "value": 0,
             "stack": "0",
             "memory": "",
             "return_value": "",
@@ -376,6 +409,7 @@ test_cases = [
         "params": {
             "code": "600160001c",
             "calldata": "",
+            "value": 0,
             "stack": "1",
             "memory": "",
             "return_value": "",
@@ -386,6 +420,7 @@ test_cases = [
         "params": {
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6101001c",
             "calldata": "",
+            "value": 0,
             "stack": "0",
             "memory": "",
             "return_value": "",
@@ -396,6 +431,7 @@ test_cases = [
         "params": {
             "code": "600060011c",
             "calldata": "",
+            "value": 0,
             "stack": "0",
             "memory": "",
             "return_value": "",
@@ -406,6 +442,7 @@ test_cases = [
         "params": {
             "code": "600160011c",
             "calldata": "",
+            "value": 0,
             "stack": "0",
             "memory": "",
             "return_value": "",
@@ -416,6 +453,7 @@ test_cases = [
         "params": {
             "code": "7f800000000000000000000000000000000000000000000000000000000000000060011c",
             "calldata": "",
+            "value": 0,
             "stack": "28948022309329048855892746252171976963317496166410141009864396001978282409984",
             "memory": "",
             "return_value": "",
@@ -426,6 +464,7 @@ test_cases = [
         "params": {
             "code": "7f800000000000000000000000000000000000000000000000000000000000000060ff1c",
             "calldata": "",
+            "value": 0,
             "stack": "1",
             "memory": "",
             "return_value": "",
@@ -436,6 +475,7 @@ test_cases = [
         "params": {
             "code": "7f80000000000000000000000000000000000000000000000000000000000000006101001c",
             "calldata": "",
+            "value": 0,
             "stack": "0",
             "memory": "",
             "return_value": "",
@@ -446,6 +486,7 @@ test_cases = [
         "params": {
             "code": "7f80000000000000000000000000000000000000000000000000000000000000006101011c",
             "calldata": "",
+            "value": 0,
             "stack": "0",
             "memory": "",
             "return_value": "",
@@ -456,6 +497,7 @@ test_cases = [
         "params": {
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60001c",
             "calldata": "",
+            "value": 0,
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
             "memory": "",
             "return_value": "",
@@ -466,6 +508,7 @@ test_cases = [
         "params": {
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60011c",
             "calldata": "",
+            "value": 0,
             "stack": "57896044618658097711785492504343953926634992332820282019728792003956564819967",
             "memory": "",
             "return_value": "",
@@ -476,6 +519,7 @@ test_cases = [
         "params": {
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60ff1c",
             "calldata": "",
+            "value": 0,
             "stack": "1",
             "memory": "",
             "return_value": "",
@@ -486,6 +530,7 @@ test_cases = [
         "params": {
             "code": "6005600516",
             "calldata": "",
+            "value": 0,
             "stack": "5",
             "memory": "",
             "return_value": "",
@@ -496,6 +541,7 @@ test_cases = [
         "params": {
             "code": "600a600a146009600a14",
             "calldata": "",
+            "value": 0,
             "stack": "1,0",
             "memory": "",
             "return_value": "",
@@ -506,6 +552,7 @@ test_cases = [
         "params": {
             "code": "600a600a116009600a11",
             "calldata": "",
+            "value": 0,
             "stack": "0,1",
             "memory": "",
             "return_value": "",
@@ -516,6 +563,7 @@ test_cases = [
         "params": {
             "code": "600015",
             "calldata": "",
+            "value": 0,
             "stack": "1",
             "memory": "",
             "return_value": "",
@@ -526,6 +574,7 @@ test_cases = [
         "params": {
             "code": "600a600910600a600a10",
             "calldata": "",
+            "value": 0,
             "stack": "1,0",
             "memory": "",
             "return_value": "",
@@ -536,6 +585,7 @@ test_cases = [
         "params": {
             "code": "600019",
             "calldata": "",
+            "value": 0,
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
             "memory": "",
             "return_value": "",
@@ -546,6 +596,7 @@ test_cases = [
         "params": {
             "code": "6005600317",
             "calldata": "",
+            "value": 0,
             "stack": "7",
             "memory": "",
             "return_value": "",
@@ -556,6 +607,7 @@ test_cases = [
         "params": {
             "code": "60ff600113",
             "calldata": "",
+            "value": 0,
             "stack": "0",
             "memory": "",
             "return_value": "",
@@ -566,6 +618,7 @@ test_cases = [
         "params": {
             "code": "60ff600112",
             "calldata": "",
+            "value": 0,
             "stack": "1",
             "memory": "",
             "return_value": "",
@@ -576,6 +629,7 @@ test_cases = [
         "params": {
             "code": "600360026001916004929200",
             "calldata": "",
+            "value": 0,
             "stack": "1,2,3,4",
             "memory": "",
             "return_value": "",
@@ -586,6 +640,7 @@ test_cases = [
         "params": {
             "code": "60016101023800",
             "calldata": "",
+            "value": 0,
             "stack": "1,258,7",
             "memory": "",
             "return_value": "",
@@ -596,6 +651,7 @@ test_cases = [
         "params": {
             "code": "600160024600",
             "calldata": "",
+            "value": 0,
             "stack": "1,2,1263227476",
             "memory": "",
             "return_value": "",
@@ -606,6 +662,7 @@ test_cases = [
         "params": {
             "code": "4100",
             "calldata": "",
+            "value": 0,
             "stack": "1598625851760128517552627854997699631064626954749952456622017584404508471300",
             "memory": "",
             "return_value": "",
@@ -616,6 +673,7 @@ test_cases = [
         "params": {
             "code": "60016002FE",
             "calldata": "",
+            "value": 0,
             "stack": "1,2",
             "memory": "",
             "return_value": "",
@@ -627,6 +685,7 @@ test_cases = [
         "params": {
             "code": "4300",
             "calldata": "",
+            "value": 0,
             "stack": "1",
             "memory": "",
             "return_value": "",
@@ -637,6 +696,7 @@ test_cases = [
         "params": {
             "code": "4200",
             "calldata": "",
+            "value": 0,
             "stack": "1",
             "memory": "",
             "return_value": "",
@@ -647,6 +707,7 @@ test_cases = [
         "params": {
             "code": "4700",
             "calldata": "",
+            "value": 0,
             "stack": "420",
             "memory": "",
             "return_value": "",
@@ -658,6 +719,7 @@ test_cases = [
         "params": {
             "code": "3200",
             "calldata": "",
+            "value": 0,
             "stack": "0",
             "memory": "",
             "return_value": "",
@@ -668,6 +730,7 @@ test_cases = [
         "params": {
             "code": "3300",
             "calldata": "",
+            "value": 0,
             "stack": "1",
             "memory": "",
             "return_value": "",
@@ -678,6 +741,7 @@ test_cases = [
         "params": {
             "code": "610100600052602060002000",
             "calldata": "",
+            "value": 0,
             "stack": "31605475728638136284098257830937953109142906242585568807375082376557418698875",
             "memory": "0000000000000000000000000000000000000000000000000000000000000100",
             "return_value": "",
@@ -689,6 +753,7 @@ test_cases = [
         "params": {
             "code": "60106000526001601f2000",
             "calldata": "",
+            "value": 0,
             "stack": "68071607937700842810429351077030899797510977729217708600998965445571406158526",
             "memory": "0000000000000000000000000000000000000000000000000000000000000010",
             "return_value": "",
@@ -700,6 +765,7 @@ test_cases = [
         "params": {
             "code": "6010600052600160002000",
             "calldata": "",
+            "value": 0,
             "stack": "85131057757245807317576516368191972321038229705283732634690444270750521936266",
             "memory": "0000000000000000000000000000000000000000000000000000000000000010",
             "return_value": "",
@@ -711,6 +777,7 @@ test_cases = [
         "params": {
             "code": "6010600052600760002000",
             "calldata": "",
+            "value": 0,
             "stack": "101225983456080153511598605893998939348063346639131267901574990367534118792751",
             "memory": "0000000000000000000000000000000000000000000000000000000000000010",
             "return_value": "",
@@ -722,6 +789,7 @@ test_cases = [
         "params": {
             "code": "6010600052600860002000",
             "calldata": "",
+            "value": 0,
             "stack": "500549258012437878224561338362079327067368301550791134293299473726337612750",
             "memory": "0000000000000000000000000000000000000000000000000000000000000010",
             "return_value": "",
@@ -733,6 +801,7 @@ test_cases = [
         "params": {
             "code": "6010600052600960002000",
             "calldata": "",
+            "value": 0,
             "stack": "78337347954576241567341556127836028920764967266964912349540464394612926403441",
             "memory": "0000000000000000000000000000000000000000000000000000000000000010",
             "return_value": "",
@@ -744,6 +813,7 @@ test_cases = [
         "params": {
             "code": "6010600052601160002000",
             "calldata": "",
+            "value": 0,
             "stack": "41382199742381387985558122494590197322490258008471162768551975289239028668781",
             "memory": "0000000000000000000000000000000000000000000000000000000000000010",
             "return_value": "",
@@ -755,6 +825,7 @@ test_cases = [
         "params": {
             "code": "4500",
             "calldata": "",
+            "value": 0,
             "stack": "1000000",
             "memory": "",
             "return_value": "",
@@ -765,6 +836,7 @@ test_cases = [
         "params": {
             "code": "3d00",
             "calldata": "",
+            "value": 0,
             "stack": "0",
             "memory": "",
             "return_value": "",
@@ -775,6 +847,7 @@ test_cases = [
         "params": {
             "code": "600a4400",
             "calldata": "",
+            "value": 0,
             "stack": "10,0",
             "memory": "",
             "return_value": "",
@@ -785,6 +858,7 @@ test_cases = [
         "params": {
             "code": "600a4800",
             "calldata": "",
+            "value": 0,
             "stack": "10,10",
             "memory": "",
             "return_value": "",
@@ -796,6 +870,7 @@ test_cases = [
         "params": {
             "code": "600035",
             "calldata": "000000000000000000000000000000000000000000000000000000000000000a",
+            "value": 0,
             "stack": "10",
             "memory": "",
             "return_value": "",
@@ -806,6 +881,7 @@ test_cases = [
         "params": {
             "code": "3600",
             "calldata": "",
+            "value": 0,
             "stack": "0",
             "memory": "",
             "return_value": "",
@@ -816,6 +892,7 @@ test_cases = [
         "params": {
             "code": "3600",
             "calldata": "ff",
+            "value": 0,
             "stack": "1",
             "memory": "",
             "return_value": "",
@@ -826,6 +903,7 @@ test_cases = [
         "params": {
             "code": "60013100",
             "calldata": "",
+            "value": 0,
             "stack": "0",
             "memory": "",
             "return_value": "",
@@ -836,6 +914,7 @@ test_cases = [
         "params": {
             "code": "600a60005200",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "000000000000000000000000000000000000000000000000000000000000000a",
             "return_value": "",
@@ -846,6 +925,7 @@ test_cases = [
         "params": {
             "code": "600a60005260fa60245200",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "000000000000000000000000000000000000000000000000000000000000000a0000000000000000000000000000000000000000000000000000000000000000000000fa00000000000000000000000000000000000000000000000000000000",
             "return_value": "",
@@ -857,6 +937,7 @@ test_cases = [
         "params": {
             "code": "58600158",
             "calldata": "",
+            "value": 0,
             "stack": "0,1,3",
             "memory": "",
             "return_value": "",
@@ -867,6 +948,7 @@ test_cases = [
         "params": {
             "code": "5900",
             "calldata": "",
+            "value": 0,
             "stack": "0",
             "memory": "",
             "return_value": "",
@@ -877,6 +959,7 @@ test_cases = [
         "params": {
             "code": "600a600052600051",
             "calldata": "",
+            "value": 0,
             "stack": "10",
             "memory": "000000000000000000000000000000000000000000000000000000000000000a",
             "return_value": "",
@@ -887,6 +970,7 @@ test_cases = [
         "params": {
             "code": "5860015b6001600158",
             "calldata": "",
+            "value": 0,
             "stack": "0,1,1,1,8",
             "memory": "",
             "return_value": "",
@@ -897,6 +981,7 @@ test_cases = [
         "params": {
             "code": "600556600a5b600b",
             "calldata": "",
+            "value": 0,
             "stack": "11",
             "memory": "",
             "return_value": "",
@@ -908,6 +993,7 @@ test_cases = [
         "params": {
             "code": "6001600757600a5b600a6000600857600a01",
             "calldata": "",
+            "value": 0,
             "stack": "20",
             "memory": "",
             "return_value": "",
@@ -919,6 +1005,7 @@ test_cases = [
         "params": {
             "code": "601160405200",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011",
             "return_value": "",
@@ -929,6 +1016,7 @@ test_cases = [
         "params": {
             "code": "6011604052602260405200",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000022",
             "return_value": "",
@@ -939,6 +1027,7 @@ test_cases = [
         "params": {
             "code": "7d111111111111111111111111111111111111111111111111111111111111600052",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "0000111111111111111111111111111111111111111111111111111111111111",
             "return_value": "",
@@ -949,6 +1038,7 @@ test_cases = [
         "params": {
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff604052601160355200",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011ffffffffffffffffffffff",
             "return_value": "",
@@ -959,6 +1049,7 @@ test_cases = [
         "params": {
             "code": "611122600353",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "0000002200000000000000000000000000000000000000000000000000000000",
             "return_value": "",
@@ -969,6 +1060,7 @@ test_cases = [
         "params": {
             "code": "7f111111111111111111111111111111111111111111111111111111111111111160005261222260055300",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "1111111111221111111111111111111111111111111111111111111111111111",
             "return_value": "",
@@ -979,6 +1071,7 @@ test_cases = [
         "params": {
             "code": "6020600560063700",
             "calldata": "00112233445566778899aabbcceeddff",
+            "value": 0,
             "stack": "",
             "memory": "0000000000005566778899aabbcceeddff0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
             "return_value": "",
@@ -989,6 +1082,7 @@ test_cases = [
         "params": {
             "code": "7f00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff60005260106003600337",
             "calldata": "11111111111111111111111111111111111111111111111111111111111111111111",
+            "value": 0,
             "stack": "",
             "memory": "0011221111111111111111111111111111111133445566778899aabbccddeeff",
             "return_value": "",
@@ -999,6 +1093,7 @@ test_cases = [
         "params": {
             "code": "60246005600037",
             "calldata": "00112233445566778899aabbcceeddff00112233445566778899aabbccddeeff",
+            "value": 0,
             "stack": "",
             "memory": "5566778899aabbcceeddff00112233445566778899aabbccddeeff00000000000000000000000000000000000000000000000000000000000000000000000000",
             "return_value": "",
@@ -1009,6 +1104,7 @@ test_cases = [
         "params": {
             "code": "60206005600037",
             "calldata": "00112233445566778899aabbcceeddff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
+            "value": 0,
             "stack": "",
             "memory": "5566778899aabbcceeddff00112233445566778899aabbccddeeff0011223344",
             "return_value": "",
@@ -1019,6 +1115,7 @@ test_cases = [
         "params": {
             "code": "60406003600037",
             "calldata": "00112233445566778899aabbcceeddff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
+            "value": 0,
             "stack": "",
             "memory": "33445566778899aabbcceeddff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00000000000000000000000000000000000000",
             "return_value": "",
@@ -1029,6 +1126,7 @@ test_cases = [
         "params": {
             "code": "60106005600037",
             "calldata": "00112233445566778899aabbcceeddff00112233445566778899aabbccddeeff",
+            "value": 0,
             "stack": "",
             "memory": "5566778899aabbcceeddff001122334400000000000000000000000000000000",
             "return_value": "",
@@ -1039,6 +1137,7 @@ test_cases = [
         "params": {
             "code": "60106000526001601fA000",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "0000000000000000000000000000000000000000000000000000000000000010",
             "return_value": "",
@@ -1050,6 +1149,7 @@ test_cases = [
         "params": {
             "code": "601060005260016022A000",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "0000000000000000000000000000000000000000000000000000000000000010000000",
             "return_value": "",
@@ -1061,6 +1161,7 @@ test_cases = [
         "params": {
             "code": "60106000527FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF6001601fA100",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "0000000000000000000000000000000000000000000000000000000000000010",
             "return_value": "",
@@ -1080,6 +1181,7 @@ test_cases = [
         "params": {
             "code": "601060005260FF60016022A100",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "0000000000000000000000000000000000000000000000000000000000000010000000",
             "return_value": "",
@@ -1091,6 +1193,7 @@ test_cases = [
         "params": {
             "code": "60106000527FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF60FF6001601fA200",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "0000000000000000000000000000000000000000000000000000000000000010",
             "return_value": "",
@@ -1112,6 +1215,7 @@ test_cases = [
         "params": {
             "code": "6010600052600060FF60016022A200",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "0000000000000000000000000000000000000000000000000000000000000010000000",
             "return_value": "",
@@ -1123,6 +1227,7 @@ test_cases = [
         "params": {
             "code": "601060005260AB7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF60FF6001601fA300",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "0000000000000000000000000000000000000000000000000000000000000010",
             "return_value": "",
@@ -1146,6 +1251,7 @@ test_cases = [
         "params": {
             "code": "601060005260AB600060FF60016022A300",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "0000000000000000000000000000000000000000000000000000000000000010000000",
             "return_value": "",
@@ -1157,6 +1263,7 @@ test_cases = [
         "params": {
             "code": "6010600052600860AB7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF60FF6001601fA400",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "0000000000000000000000000000000000000000000000000000000000000010",
             "return_value": "",
@@ -1182,6 +1289,7 @@ test_cases = [
         "params": {
             "code": "6010600052600860AB600060FF60016022A400",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "0000000000000000000000000000000000000000000000000000000000000010000000",
             "return_value": "",
@@ -1193,6 +1301,7 @@ test_cases = [
         "params": {
             "code": "60026000600039",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "6002000000000000000000000000000000000000000000000000000000000000",
             "return_value": "",
@@ -1203,6 +1312,7 @@ test_cases = [
         "params": {
             "code": "7d00112233445566778899aabbccddeeff00112233445566778899aabbccdd60005260086003600139",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "002233445566778899778899aabbccddeeff00112233445566778899aabbccdd",
             "return_value": "",
@@ -1213,6 +1323,7 @@ test_cases = [
         "params": {
             "code": "7d00112233445566778899aabbccddeeff00112233445566778899aabbccdd60005260206003600139",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "002233445566778899aabbccddeeff00112233445566778899aabbccdd6000526000000000000000000000000000000000000000000000000000000000000000",
             "return_value": "",
@@ -1223,6 +1334,7 @@ test_cases = [
         "params": {
             "code": "60386002600339",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "00000060026003390000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
             "return_value": "",
@@ -1233,6 +1345,7 @@ test_cases = [
         "params": {
             "code": "7d00112233445566778899aabbccddeeff00112233445566778899aabbccdd60005260056065600439",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "000000110000000000778899aabbccddeeff00112233445566778899aabbccdd",
             "return_value": "",
@@ -1243,6 +1356,7 @@ test_cases = [
         "params": {
             "code": "7dFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7F0000000000000000000000000000000000000000000000000000000000000000505060326000600039",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "7dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f0000000000000000000000000000000000000000000000000000000000000000",
             "return_value": "",
@@ -1253,6 +1367,7 @@ test_cases = [
         "params": {
             "code": "7dFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7F00000000000000000000000000000000000000000000000000000000000000005050603260006000396008601f600039",
             "calldata": "",
+            "value": 0,
             "stack": "",
             "memory": "7f00000000000000ffffffffffffffffffffffffffffffffffffffffffffff7f0000000000000000000000000000000000000000000000000000000000000000",
             "return_value": "",
@@ -1293,6 +1408,7 @@ class TestZkEVM:
         res = await zk_evm.execute(
             code=[int(b, 16) for b in wrap(params["code"], 2)],
             calldata=[int(b, 16) for b in wrap(params["calldata"], 2)],
+            value=int(params["value"]),
         ).call(caller_address=1)
         assert res.result.stack == [
             Uint256(*self.int_to_uint256(int(s)))
@@ -1332,6 +1448,7 @@ class TestZkEVM:
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
             calldata=[int(b, 16) for b in wrap(params["calldata"], 2)],
+            value=int(params["value"]),
         ).execute(caller_address=1)
         assert res.result.stack == [
             Uint256(*self.int_to_uint256(int(s)))

@@ -54,6 +54,10 @@
             {
                 "name": "calldata",
                 "type": "felt*"
+            },
+            {
+                "name": "value",
+                "type": "felt"
             }
         ],
         "name": "execute",
@@ -95,6 +99,10 @@
             {
                 "name": "calldata",
                 "type": "felt*"
+            },
+            {
+                "name": "value",
+                "type": "felt"
             }
         ],
         "name": "execute_at_address",
