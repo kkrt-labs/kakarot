@@ -799,7 +799,17 @@ test_cases = [
             "memory": "",
             "return_value": "",
         },
-        "id": "Get the size of calldata - 0x36 CALLDATASIZE",
+        "id": "Get the size of calldata when empty calldata - 0x36 CALLDATASIZE",
+    },
+    {
+        "params": {
+            "code": "3600",
+            "calldata": "ff",
+            "stack": "1",
+            "memory": "",
+            "return_value": "",
+        },
+        "id": "Get the size of calldata when non empty calldata - 0x36 CALLDATASIZE",
     },
     {
         "params": {
