@@ -3,10 +3,7 @@
 %lang starknet
 
 // Starkware dependencies
-from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math import assert_le
-from starkware.cairo.common.math_cmp import is_le, is_le_felt
 from starkware.cairo.common.uint256 import Uint256, uint256_unsigned_div_rem
 from starkware.cairo.common.alloc import alloc
 
@@ -15,7 +12,6 @@ from utils.utils import Helpers
 from kakarot.stack import Stack
 from kakarot.memory import Memory
 from kakarot.execution_context import ExecutionContext
-from kakarot.constants import Constants
 from kakarot.interfaces.interfaces import IEvm_Contract
 
 // @title Exchange operations opcodes.
@@ -340,7 +336,7 @@ namespace MemoryOperations {
         // 1 - value: value from which the last byte will be extracted and stored in memory.
         let (stack, offset) = Stack.pop(stack);
         let (stack, value) = Stack.pop(stack);
-        let (quotient, remainder) = uint256_unsigned_div_rem(value, Uint256(256, 0));
+        let (_, remainder) = uint256_unsigned_div_rem(value, Uint256(256, 0));
 
         let (value_pointer: felt*) = alloc();
         assert [value_pointer] = remainder.low;

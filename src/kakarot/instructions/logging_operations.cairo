@@ -5,10 +5,7 @@
 // Starkware dependencies
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import emit_event
-
-from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
 from kakarot.model import model
@@ -31,12 +28,9 @@ namespace LoggingOperations {
     // @param ctx The pointer to the execution context.
     // @param Topic length.
     // @return The pointer to the execution context.
-    func exec_log_i{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*, topics_len: felt) -> model.ExecutionContext* {
+    func exec_log_i{syscall_ptr: felt*, range_check_ptr}(
+        ctx: model.ExecutionContext*, topics_len: felt
+    ) -> model.ExecutionContext* {
         alloc_locals;
 
         %{
@@ -87,8 +81,8 @@ namespace LoggingOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-        return exec_log_i(ctx, 0);
+        let ctx = exec_log_i(ctx, 0);
+        return ctx;
     }
 
     // @notice LOG1 operation.
@@ -103,8 +97,8 @@ namespace LoggingOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-        return exec_log_i(ctx, 1);
+        let ctx = exec_log_i(ctx, 1);
+        return ctx;
     }
 
     // @notice LOG2 operation.
@@ -119,8 +113,8 @@ namespace LoggingOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-        return exec_log_i(ctx, 2);
+        let ctx = exec_log_i(ctx, 2);
+        return ctx;
     }
 
     // @notice LOG3 operation.
@@ -135,8 +129,8 @@ namespace LoggingOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-        return exec_log_i(ctx, 3);
+        let ctx = exec_log_i(ctx, 3);
+        return ctx;
     }
 
     // @notice LOG4 operation.
@@ -151,7 +145,7 @@ namespace LoggingOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-        return exec_log_i(ctx, 4);
+        let ctx = exec_log_i(ctx, 4);
+        return ctx;
     }
 }

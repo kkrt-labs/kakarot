@@ -78,7 +78,7 @@ func test__load__should_load_an_element_from_the_memory{
     // When
     let result = Memory.load(memory, 0);
 
-    %{ print(f"result low: {ids.result.low} | result high: {ids.result.high}") %}
+    // %{ print(f"result low: {ids.result.low} | result high: {ids.result.high}") %}
 
     // Then
     assert_uint256_eq(result, Uint256(2, 1));
@@ -86,14 +86,14 @@ func test__load__should_load_an_element_from_the_memory{
     // When
     let result = Memory.load(memory, 32);
 
-    %{ print(f"result low: {ids.result.low} | result high: {ids.result.high}") %}
+    // %{ print(f"result low: {ids.result.low} | result high: {ids.result.high}") %}
     // Then
     assert_uint256_eq(result, Uint256(4, 3));
 
     // When
     let result = Memory.load(memory, 16);
 
-    %{ print(f"result low: {ids.result.low} | result high: {ids.result.high}") %}
+    // %{ print(f"result low: {ids.result.low} | result high: {ids.result.high}") %}
     // Then
     assert_uint256_eq(result, Uint256(3, 2));
 
@@ -113,7 +113,7 @@ func test__load__should_load_an_element_from_the_memory_with_offset{
     // When
     let result = Memory.load(memory, offset);
 
-    %{ print(f"result low: {ids.result.low} | result high: {ids.result.high}") %}
+    // %{ f"result low: {ids.result.low} | result high: {ids.result.high}") %}
 
     // Then
     assert_uint256_eq(result, Uint256(low, high));

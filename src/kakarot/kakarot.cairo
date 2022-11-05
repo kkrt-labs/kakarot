@@ -7,15 +7,13 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 // Local dependencies
 from kakarot.library import Kakarot, evm_contract_deployed
-from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.memory import Memory
 
 // Constructor
 @constructor
-func constructor{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(owner: felt, native_token_address_: felt, evm_contract_class_hash: felt) {
+func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    owner: felt, native_token_address_: felt, evm_contract_class_hash: felt
+) {
     return Kakarot.constructor(owner, native_token_address_, evm_contract_class_hash);
 }
 

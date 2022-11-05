@@ -29,3 +29,5 @@ package.json
 node_modules
 package-lock.json
 tsconfig.json
+
+lint.sarif

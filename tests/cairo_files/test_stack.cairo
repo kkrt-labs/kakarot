@@ -198,7 +198,7 @@ func test__swap__should_swap_2_stacks{
     assert index0 = Uint256(4, 0);
 
     // When
-    let result = Stack.swap(stack, 0, 2);
+    let result = Stack.swap_i(stack, i=2);
 
     // Then
     let index3 = Stack.peek(result, 3);
@@ -220,7 +220,7 @@ func test__swap__should_fail__when_index_1_is_underflow{
     let stack: model.Stack* = Stack.init();
 
     // When & Then
-    let result = Stack.swap(stack, 0, 1);
+    let result = Stack.swap_i(stack, 1);
     return ();
 }
 
@@ -233,7 +233,7 @@ func test__swap__should_fail__when_index_2_is_underflow{
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
 
     // When & Then
-    let result = Stack.swap(stack, 0, 1);
+    let result = Stack.swap_i(stack, 1);
     return ();
 }
 

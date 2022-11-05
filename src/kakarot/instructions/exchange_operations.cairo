@@ -20,12 +20,9 @@ namespace ExchangeOperations {
 
     // @notice Generic SWAP operation
     // @dev Exchange 1st and i-th stack items.
-    func exec_swap_i{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*, i: felt) -> model.ExecutionContext* {
+    func exec_swap_i{range_check_ptr}(
+        ctx: model.ExecutionContext*, i: felt
+    ) -> model.ExecutionContext* {
         alloc_locals;
         %{
             import logging
@@ -37,7 +34,7 @@ namespace ExchangeOperations {
         let stack: model.Stack* = ctx.stack;
 
         // Get the value top i-th stack item.
-        let stack = Stack.swap(self=stack, stack_index_1=0, stack_index_2=i);
+        let stack = Stack.swap_i(self=stack, i=i);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
@@ -59,7 +56,8 @@ namespace ExchangeOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_swap_i(ctx=ctx, i=1);
+        let ctx = exec_swap_i(ctx=ctx, i=1);
+        return ctx;
     }
 
     // @notice SWAP2 operation
@@ -75,7 +73,8 @@ namespace ExchangeOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_swap_i(ctx, 2);
+        let ctx = exec_swap_i(ctx, 2);
+        return ctx;
     }
 
     // @notice SWAP3 operation
@@ -91,7 +90,8 @@ namespace ExchangeOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_swap_i(ctx, 3);
+        let ctx = exec_swap_i(ctx, 3);
+        return ctx;
     }
 
     // @notice SWAP4 operation
@@ -107,7 +107,8 @@ namespace ExchangeOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_swap_i(ctx, 4);
+        let ctx = exec_swap_i(ctx, 4);
+        return ctx;
     }
 
     // @notice SWAP5 operation
@@ -123,7 +124,8 @@ namespace ExchangeOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_swap_i(ctx, 5);
+        let ctx = exec_swap_i(ctx, 5);
+        return ctx;
     }
 
     // @notice SWAP6 operation
@@ -139,7 +141,8 @@ namespace ExchangeOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_swap_i(ctx, 6);
+        let ctx = exec_swap_i(ctx, 6);
+        return ctx;
     }
 
     // @notice SWAP7 operation
@@ -155,7 +158,8 @@ namespace ExchangeOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_swap_i(ctx, 7);
+        let ctx = exec_swap_i(ctx, 7);
+        return ctx;
     }
 
     // @notice SWAP8 operation
@@ -171,7 +175,8 @@ namespace ExchangeOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_swap_i(ctx, 8);
+        let ctx = exec_swap_i(ctx, 8);
+        return ctx;
     }
 
     // @notice SWAP9 operation
@@ -187,7 +192,8 @@ namespace ExchangeOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_swap_i(ctx, 9);
+        let ctx = exec_swap_i(ctx, 9);
+        return ctx;
     }
 
     // @notice SWAP10 operation
@@ -203,7 +209,8 @@ namespace ExchangeOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_swap_i(ctx, 10);
+        let ctx = exec_swap_i(ctx, 10);
+        return ctx;
     }
 
     // @notice SWAP11 operation
@@ -219,7 +226,8 @@ namespace ExchangeOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_swap_i(ctx, 11);
+        let ctx = exec_swap_i(ctx, 11);
+        return ctx;
     }
 
     // @notice SWAP12 operation
@@ -235,7 +243,8 @@ namespace ExchangeOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_swap_i(ctx, 12);
+        let ctx = exec_swap_i(ctx, 12);
+        return ctx;
     }
 
     // @notice SWAP13 operation
@@ -251,7 +260,8 @@ namespace ExchangeOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_swap_i(ctx, 13);
+        let ctx = exec_swap_i(ctx, 13);
+        return ctx;
     }
 
     // @notice SWAP14 operation
@@ -267,7 +277,8 @@ namespace ExchangeOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_swap_i(ctx, 14);
+        let ctx = exec_swap_i(ctx, 14);
+        return ctx;
     }
 
     // @notice SWAP15 operation
@@ -283,7 +294,8 @@ namespace ExchangeOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_swap_i(ctx, 15);
+        let ctx = exec_swap_i(ctx, 15);
+        return ctx;
     }
 
     // @notice SWAP16 operation
@@ -299,6 +311,7 @@ namespace ExchangeOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        return exec_swap_i(ctx, 16);
+        let ctx = exec_swap_i(ctx, 16);
+        return ctx;
     }
 }

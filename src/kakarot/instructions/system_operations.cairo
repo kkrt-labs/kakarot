@@ -6,7 +6,6 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
-from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math_cmp import is_le_felt
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
@@ -69,8 +68,6 @@ namespace SystemOperations {
             import logging
             logging.info("0xF3 - RETURN")
         %}
-        let (local new_return_data: felt*) = alloc();
-        let (local new_memory: model.Memory*) = alloc();
         let (stack, size) = Stack.pop(stack);
         let (stack, offset) = Stack.pop(stack);
         let curr_memory_len: felt = ctx.memory.bytes_len;
@@ -82,6 +79,7 @@ namespace SystemOperations {
             Helpers.fill(arr=memory.bytes, value=0, length=32);
         }
 
+        let (new_return_data: felt*) = alloc();
         memcpy(dst=new_return_data, src=ctx.memory.bytes + offset.low, len=size.low);
         // Pad if offset + size > memory_len pad n
         let is_total_greater_than_memory_len: felt = is_le_felt(curr_memory_len, total_len);
@@ -96,9 +94,9 @@ namespace SystemOperations {
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
         // TODO: GAS IMPLEMENTATION
-
-        return ExecutionContext.update_return_data(
+        let ctx = ExecutionContext.update_return_data(
             ctx, new_return_data_len=size.low, new_return_data=new_return_data
         );
+        return ctx;
     }
 }
