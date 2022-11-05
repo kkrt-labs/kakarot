@@ -357,6 +357,10 @@ namespace EVMInstructions {
         add_instruction(
             instructions=instructions, opcode=0x46, function=BlockInformation.exec_chainid
         );
+        // 0x47 - SELFBALANCE
+        add_instruction(
+            instructions=instructions, opcode=0x47, function=BlockInformation.exec_selfbalance
+        );
         // 0x48 - BASEFEE
         add_instruction(
             instructions=instructions, opcode=0x48, function=BlockInformation.exec_basefee

@@ -14,7 +14,8 @@ from kakarot.model import model
 from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
-from kakarot.constants import Constants
+from kakarot.constants import Constants, native_token_address
+from kakarot.interfaces.interfaces import IEth
 
 // @title BlockInformation information opcodes.
 // @notice This file contains the functions to execute for block information opcodes.
@@ -28,6 +29,7 @@ namespace BlockInformation {
     const GAS_COST_DIFFICULTY  = 2;
     const GAS_COST_GASLIMIT    = 2;
     const GAS_COST_CHAINID     = 2;
+    const GAS_COST_SELFBALANCE = 5;
     const GAS_COST_BASEFEE     = 2;
 
     // @notice COINBASE operation.
@@ -214,6 +216,39 @@ namespace BlockInformation {
         let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CHAINID);
+        return ctx;
+    }
+
+    // @notice SELFBALANCE operation.
+    // @dev Get balance of currently executing contract
+    // @custom:since Istanbul
+    // @custom:group Block Information
+    // @custom:gas 5
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_selfbalance{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        %{
+            import logging
+            logging.info("0x47 - SELFBALANCE")
+        %}
+        // Get balance of current executing contract address balance and push to stack.
+        let (native_token_address_) = native_token_address.read();
+        let (balance: Uint256) = IEth.balanceOf(
+            contract_address=native_token_address_, account=ctx.starknet_address
+        );
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=balance);
+
+        // Update the execution context.
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SELFBALANCE);
         return ctx;
     }
 

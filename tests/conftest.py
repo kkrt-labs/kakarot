@@ -41,6 +41,7 @@ async def eth(starknet):
     return await starknet.deploy(
         source="./tests/utils/ERC20.cairo",
         constructor_calldata=[2] * 6,
+        # Uint256(2, 2) tokens to 2
     )
 
 
