@@ -24,12 +24,9 @@ namespace PushOperations {
 
     // @notice Generic PUSH operation
     // @dev Place i bytes items on stack
-    func exec_push_i{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*, i: felt) -> model.ExecutionContext* {
+    func exec_push_i{range_check_ptr}(
+        ctx: model.ExecutionContext*, i: felt
+    ) -> model.ExecutionContext* {
         alloc_locals;
         %{
             import logging

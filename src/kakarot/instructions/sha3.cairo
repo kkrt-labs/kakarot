@@ -88,7 +88,6 @@ namespace Sha3 {
         let ctx = ExecutionContext.increment_gas_used(
             self=ctx, inc_value=GAS_COST_SHA3 + dynamic_gas
         );
-        let memory_extension = length.low - ctx.memory.bytes_len + offset.low;
 
         return ctx;
     }
