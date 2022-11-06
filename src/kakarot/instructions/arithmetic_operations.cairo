@@ -457,10 +457,10 @@ namespace ArithmeticOperations {
         let stack = ctx.stack;
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let b = popped[1];
-        let x = popped[0];
+        let a = popped[0];
 
         // Value is already a uint256
-        let stack: model.Stack* = Stack.push(self=stack, element=x);
+        let stack: model.Stack* = Stack.push(self=stack, element=a);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_SIGNEXTEND);
         return ctx;
     }

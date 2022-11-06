@@ -14,6 +14,9 @@ from openzeppelin.access.ownable.library import Ownable
 // @custom:namespace ExternallyOwnedAccount
 
 namespace ExternallyOwnedAccount {
+    // @notice This function is used to initialize the externally owned account.
+    // @dev Sets the kakarot smart contract as the owner
+    // @param kakarot_address: The address of the Kakarot smart contract.
     func constructor{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
