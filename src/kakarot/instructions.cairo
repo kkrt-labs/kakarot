@@ -33,7 +33,7 @@ from kakarot.instructions.sha3 import Sha3
 // @custom:namespace EVMInstructions
 namespace EVMInstructions {
     // @notice Decode the current opcode and execute associated function.
-    // @dev The function iterrates through the provided instructions and executed each of them
+    // @dev The function iterates through the provided instructions and executes each of them
     //      whilst also performing safety checks and updating the pc counter after each instruction execution
     // @param instructions The instruction set.
     // @param ctx The pointer to the execution context.
