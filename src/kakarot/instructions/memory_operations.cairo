@@ -199,7 +199,7 @@ namespace MemoryOperations {
         let (stack, offset) = Stack.pop(stack);
 
         // Update pc counter.
-        ExecutionContext.update_program_counter(ctx, offset.low);
+        let ctx = ExecutionContext.update_program_counter(ctx, offset.low);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
