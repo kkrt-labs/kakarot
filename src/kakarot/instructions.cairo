@@ -33,8 +33,9 @@ from kakarot.instructions.sha3 import Sha3
 // @custom:namespace EVMInstructions
 namespace EVMInstructions {
     // @notice Decode the current opcode and execute associated function.
+    // @dev The function iterrates through the provided instructions and executed each of them
+    //      whilst also performing safety checks and updating the pc counter after each instruction execution
     // @param instructions The instruction set.
-    // @param opcode The opcode value.
     // @param ctx The pointer to the execution context.
     // @return The pointer to the updated execution context.
     func decode_and_execute{
@@ -125,7 +126,8 @@ namespace EVMInstructions {
     // @custom:since Frontier
     // @custom:group Stop and Arithmetic Operations
     // @custom:gas 0
-    // @param ctx The pointer to the execution context.
+    // @param ctx The pointer to the execution context
+    // @return Updated execution context.
     func exec_stop{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

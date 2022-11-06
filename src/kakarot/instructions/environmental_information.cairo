@@ -316,9 +316,9 @@ namespace EnvironmentalInformation {
         // 1 - calldata_offset: offset for calldata from where data will be copied.
         // 2 - element_len: bytes length of the copied calldata.
         let (stack, popped) = Stack.pop_n(self=stack, n=3);
-        let offset = popped[0];
+        let offset = popped[2];
         let calldata_offset = popped[1];
-        let element_len = popped[2];
+        let element_len = popped[0];
 
         let calldata: felt* = ctx.calldata;
         let calldata_len: felt = ctx.calldata_len;
@@ -372,10 +372,10 @@ namespace EnvironmentalInformation {
         // 0 - offset: memory offset of the work we save.
         // 1 - code_offset: offset for code from where data will be copied.
         // 2 - element_len: bytes length of the copied code.
-
-        let (stack, offset) = Stack.pop(stack);
-        let (stack, return_data_offset) = Stack.pop(stack);
-        let (stack, element_len) = Stack.pop(stack);
+        let (stack, popped) = Stack.pop_n(self=stack, n=3);
+        let offset = popped[2];
+        let return_data_offset = popped[1];
+        let element_len = popped[0];
 
         let return_data: felt* = ctx.return_data;
         let return_data_len: felt = ctx.return_data_len;
@@ -430,18 +430,19 @@ namespace EnvironmentalInformation {
         // 0 - offset: memory offset of the work we save.
         // 1 - code_offset: offset for code from where data will be copied.
         // 2 - element_len: bytes length of the copied code.
+        let (stack, popped) = Stack.pop_n(self=stack, n=3);
+        let offset = popped[2];
+        let code_offset = popped[1];
+        let element_len = popped[0];
 
-        let (stack, offset) = Stack.pop(stack);
-        let (stack, code_offset) = Stack.pop(stack);
-        let (stack, element_len) = Stack.pop(stack);
-
+        // Get code slice from code_offset to element_len
         let code: felt* = ctx.code;
         let code_len: felt = ctx.code_len;
-
         let sliced_code: felt* = Helpers.slice_data(
             data_len=code_len, data=code, data_offset=code_offset.low, slice_len=element_len.low
         );
 
+        // Write code slice to memory at offset
         let memory: model.Memory* = Memory.store_n(
             self=ctx.memory, element_len=element_len.low, element=sliced_code, offset=offset.low
         );

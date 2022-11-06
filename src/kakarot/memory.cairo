@@ -17,7 +17,7 @@ from utils.utils import Helpers
 // @title Memory related functions.
 // @notice This file contains functions related to the memory.
 // @dev The memory is a region that only exists during the smart contract execution, and is accessed with a byte offset.
-// @dev  While all the 32-byte address space is available and initialized to 0, the size is counted with the highest address that was accessed.
+// @dev While all the 32-byte address space is available and initialized to 0, the size is counted with the highest address that was accessed.
 // @dev It is generally read and written with `MLOAD` and `MSTORE` instructions, but is also used by other instructions like `CREATE` or `EXTCODECOPY`.
 // @author @abdelhamidbakhta
 // @custom:namespace Memory
@@ -32,18 +32,21 @@ namespace Memory {
     }
 
     // @notice Store an element into the memory.
-    // @param self - The pointer to the memory.
-    // @param element - The element to push.
-    // @param offset - The offset to store the element at.
+    // @param self The pointer to the memory.
+    // @param element The element to push.
+    // @param offset The offset to store the element at.
     // @return The new pointer to the memory.
     func store{range_check_ptr}(
         self: model.Memory*, element: Uint256, offset: felt
     ) -> model.Memory* {
         alloc_locals;
         let (new_memory: felt*) = alloc();
+
+        // If current memory is empty initialize current memory to be zeros unitl offset is reached
         if (self.bytes_len == 0) {
             Helpers.fill(arr=new_memory, value=0, length=offset);
         }
+        // If offest is larger then memory length, fill memory with zeros until memory length reaches the offset
         let is_offset_greater_than_length = is_le_felt(self.bytes_len, offset);
         local max_copy: felt;
         if (is_offset_greater_than_length == 1) {
@@ -89,11 +92,11 @@ namespace Memory {
         return new model.Memory(bytes=new_memory, bytes_len=new_bytes_len);
     }
 
-    // @notice store_n - Store N bytes into the memory.
-    // @param self - The pointer to the memory.
-    // @param element_len - byte length of the array to be saved on memory.
-    // @param element - pointer to the array that will be saved on memory.
-    // @param offset - The offset to store the element at.
+    // @notice store_n Store N bytes into the memory.
+    // @param self The pointer to the memory.
+    // @param element_len byte length of the array to be saved on memory.
+    // @param element pointer to the array that will be saved on memory.
+    // @param offset The offset to store the element at.
     // @return The new pointer to the memory.
     func store_n{range_check_ptr}(
         self: model.Memory*, element_len: felt, element: felt*, offset: felt

@@ -22,10 +22,11 @@ namespace LoggingOperations {
     // Define constants.
     const GAS_LOG_STATIC = 350;
 
+    // @notice Generic logging operation
     // @dev Append log record with n topics.
     // @custom:since Frontier
     // @custom:group Logging Operations
-    // @param ctx The pointer to the execution context.
+    // @param ctx The pointer to the execution context
     // @param Topic length.
     // @return The pointer to the execution context.
     func exec_log_i{syscall_ptr: felt*, range_check_ptr}(
@@ -46,12 +47,14 @@ namespace LoggingOperations {
         let offset = popped[1 + topics_len];
         let size = popped[topics_len];
 
+        // Transform data + safety checks
         let actual_size = Helpers.uint256_to_felt(size);
-
         let actual_offset = Helpers.uint256_to_felt(offset);
         let (memory, cost) = Memory.insure_length(
             self=ctx.memory, length=actual_size + actual_offset
         );
+
+        //Log topics by emmiting a starknet event
         emit_event(
             keys_len=topics_len * 2,
             keys=popped,
