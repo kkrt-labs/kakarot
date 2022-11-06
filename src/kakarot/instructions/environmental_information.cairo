@@ -42,6 +42,7 @@ namespace EnvironmentalInformation {
     // @custom:gas 100 || 2600
     // @custom:stack_consumed_elements 1
     // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context
     // @return The pointer to the updated execution context.
     func exec_balance{
         syscall_ptr: felt*,
@@ -55,13 +56,15 @@ namespace EnvironmentalInformation {
             logging.info("0x31 - BALANCE")
         %}
 
-        // Get the address.
+        // Get the evm address.
         let (stack: model.Stack*, address: Uint256) = Stack.pop(ctx.stack);
 
+        // Get the starknet account address from the evm account address
         let (registry_address_) = registry_address.read();
         let (starknet_address) = IRegistry.get_starknet_address(
             contract_address=registry_address_, evm_address=address.low
         );
+        // Get the number of native tokens owned by the given starknet account
         let (native_token_address_) = native_token_address.read();
         let (balance: Uint256) = IEth.balanceOf(
             contract_address=native_token_address_, account=starknet_address
@@ -83,6 +86,7 @@ namespace EnvironmentalInformation {
     // @custom:gas 3
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context
     // @return The pointer to the updated execution context.
     func exec_codesize{
         syscall_ptr: felt*,
@@ -114,6 +118,7 @@ namespace EnvironmentalInformation {
     // @custom:gas 2
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context
     // @return The pointer to the updated execution context.
     func exec_origin{
         syscall_ptr: felt*,
@@ -127,9 +132,9 @@ namespace EnvironmentalInformation {
             logging.info("0x32 - ORIGIN")
         %}
 
-        // Get  EVM address from Starknet address
-
+        // Get the transaction info which contains the starknet origin address
         let (tx_info) = get_tx_info();
+        // Get the EVM address from Starknet address
         let (registry_address_) = registry_address.read();
         let (evm_address) = IRegistry.get_evm_address(
             registry_address_, starknet_address=tx_info.account_contract_address
@@ -151,6 +156,7 @@ namespace EnvironmentalInformation {
     // @custom:gas 2
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context
     // @return The pointer to the updated execution context.
     func exec_caller{
         syscall_ptr: felt*,
@@ -183,6 +189,7 @@ namespace EnvironmentalInformation {
     // @custom:gas 2
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context
     // @return The pointer to the updated execution context.
     func exec_returndatasize{
         syscall_ptr: felt*,
@@ -213,6 +220,7 @@ namespace EnvironmentalInformation {
     // @custom:gas 3
     // @custom:stack_consumed_elements 1
     // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context
     // @return The pointer to the updated execution context.
     func exec_calldataload{
         syscall_ptr: felt*,
@@ -257,6 +265,7 @@ namespace EnvironmentalInformation {
     // @custom:gas 2
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context
     // @return The pointer to the updated execution context.
     func exec_calldatasize{
         syscall_ptr: felt*,
@@ -286,6 +295,7 @@ namespace EnvironmentalInformation {
     // @custom:gas 3
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 0
+    // @param ctx The pointer to the execution context
     // @return Updated execution context.
     func exec_calldatacopy{
         syscall_ptr: felt*,
@@ -305,14 +315,15 @@ namespace EnvironmentalInformation {
         // 0 - offset: memory offset of the work we save.
         // 1 - calldata_offset: offset for calldata from where data will be copied.
         // 2 - element_len: bytes length of the copied calldata.
-
-        let (stack, offset) = Stack.pop(stack);
-        let (stack, calldata_offset) = Stack.pop(stack);
-        let (stack, element_len) = Stack.pop(stack);
+        let (stack, popped) = Stack.pop_n(self=stack, n=3);
+        let offset = popped[2];
+        let calldata_offset = popped[1];
+        let element_len = popped[0];
 
         let calldata: felt* = ctx.calldata;
         let calldata_len: felt = ctx.calldata_len;
 
+        // Get calldata slice from calldata_offset to element_len
         let sliced_calldata: felt* = Helpers.slice_data(
             data_len=calldata_len,
             data=calldata,
@@ -320,6 +331,7 @@ namespace EnvironmentalInformation {
             slice_len=element_len.low,
         );
 
+        // Write caldata slice to memory at offset
         let memory: model.Memory* = Memory.store_n(
             self=ctx.memory, element_len=element_len.low, element=sliced_calldata, offset=offset.low
         );
@@ -340,6 +352,7 @@ namespace EnvironmentalInformation {
     // @custom:gas 3
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 0
+    // @param ctx The pointer to the execution context
     // @return Updated execution context.
     func exec_returndatacopy{
         syscall_ptr: felt*,
@@ -359,10 +372,10 @@ namespace EnvironmentalInformation {
         // 0 - offset: memory offset of the work we save.
         // 1 - code_offset: offset for code from where data will be copied.
         // 2 - element_len: bytes length of the copied code.
-
-        let (stack, offset) = Stack.pop(stack);
-        let (stack, return_data_offset) = Stack.pop(stack);
-        let (stack, element_len) = Stack.pop(stack);
+        let (stack, popped) = Stack.pop_n(self=stack, n=3);
+        let offset = popped[2];
+        let return_data_offset = popped[1];
+        let element_len = popped[0];
 
         let return_data: felt* = ctx.return_data;
         let return_data_len: felt = ctx.return_data_len;
@@ -397,6 +410,7 @@ namespace EnvironmentalInformation {
     // @custom:gas 3
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context
     // @return The pointer to the updated execution context.
     func exec_codecopy{
         syscall_ptr: felt*,
@@ -416,18 +430,19 @@ namespace EnvironmentalInformation {
         // 0 - offset: memory offset of the work we save.
         // 1 - code_offset: offset for code from where data will be copied.
         // 2 - element_len: bytes length of the copied code.
+        let (stack, popped) = Stack.pop_n(self=stack, n=3);
+        let offset = popped[2];
+        let code_offset = popped[1];
+        let element_len = popped[0];
 
-        let (stack, offset) = Stack.pop(stack);
-        let (stack, code_offset) = Stack.pop(stack);
-        let (stack, element_len) = Stack.pop(stack);
-
+        // Get code slice from code_offset to element_len
         let code: felt* = ctx.code;
         let code_len: felt = ctx.code_len;
-
         let sliced_code: felt* = Helpers.slice_data(
             data_len=code_len, data=code, data_offset=code_offset.low, slice_len=element_len.low
         );
 
+        // Write code slice to memory at offset
         let memory: model.Memory* = Memory.store_n(
             self=ctx.memory, element_len=element_len.low, element=sliced_code, offset=offset.low
         );

@@ -29,6 +29,8 @@ func set_account_entry{
     return AccountRegistry.set_account_entry(starknet_address=starknet_address, evm_address=evm_address);
 }
 
+// @notice Transfer ownership of the registry to a new starknet address
+// @param new_address: The new owner of the account registry
 @external
 func transfer_ownership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     new_address: felt

@@ -9,6 +9,10 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math_cmp import is_le_felt
 from starkware.cairo.common.memcpy import memcpy
 
+// @title Helper Functions
+// @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
+// @author @abdelhamidbakhta
+// @custom:namespace Helpers
 namespace Helpers {
     func setup_python_defs() {
         %{

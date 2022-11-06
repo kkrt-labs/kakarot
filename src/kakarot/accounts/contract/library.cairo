@@ -32,8 +32,8 @@ func state_(key: Uint256) -> (value: Uint256) {
 namespace ContractAccount {
     // @notice This function is used to initialize the smart contract account.
     // @param kakarot_address: The address of the Kakarot smart contract.
-    // @param code: The code of the smart contract.
-    // @param code_len: The length of the smart contract code.
+    // @param code: The bytecode stored in this smart contract.
+    // @param code_len: The length of the smart contract bytecode.
     func constructor{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -60,13 +60,13 @@ namespace ContractAccount {
     }(code_len: felt, code: felt*) {
         // Access control check.
         Ownable.assert_only_owner();
-        // Recursively store the code.
+        // Recursively store the bytecode.
         internal.store_code(0, code_len, code);
         return ();
     }
 
-    // @notice This function is used to get the code of the smart contract.
-    // @return The code of the smart contract.
+    // @notice This function is used to get the bytecode of the smart contract.
+    // @return The bytecode of the smart contract.
     func code{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -82,6 +82,10 @@ namespace ContractAccount {
         return (code_len, code);
     }
 
+    // @notice read the contract state
+    // @dev read a storage value from the contract given a specific storage key
+    // @param key The key at which to fetch the storage value
+    // @return The value which was stored at the given key value
     func read_state{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -92,6 +96,10 @@ namespace ContractAccount {
         return value;
     }
 
+    // @notice write to the contract state
+    // @dev write a value at a specific storage key
+    // @param key The key at which to write the storage value
+    // @param value The value to be stored 
     func write_state{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -105,9 +113,9 @@ namespace ContractAccount {
 
 namespace internal {
     // @notice Store the bytecode of the contract.
-    // @param index: The index in the code.
+    // @param index: The index at which to store the individual byte
     // @param code_len: The length of the bytecode.
-
+    // @param code: The bytecode.
     func store_code{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         index: felt, code_len: felt, code: felt*
     ) {
@@ -122,7 +130,7 @@ namespace internal {
     }
 
     // @notice Load the bytecode of the contract in the specified array.
-    // @param index: The index in the code.
+    // @param index: The index in the bytecode.
     // @param code: The bytecode of the contract.
     // @param code_len: The length of the bytecode.
     func load_code{

@@ -24,6 +24,7 @@ func evm_address_(starknet_address: felt) -> (evm_address: felt) {
 
 namespace AccountRegistry {
     // @notice This function is used to initialize the registry.
+    // @dev Sets the kakarot smart contract as the owner
     // @param kakarot_address: The address of the Kakarot smart contract.
     func constructor{
         syscall_ptr: felt*,
@@ -36,6 +37,8 @@ namespace AccountRegistry {
         return ();
     }
 
+    // @notice Transfer ownership of the registry to a new starknet address
+    // @param new_owner The new owner of the account registry
     func transfer_ownership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         new_owner: felt
     ) {

@@ -30,6 +30,7 @@ namespace Sha3 {
     // @custom:gas 30
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context
     // @return The pointer to the updated execution context.
     func exec_sha3{
         syscall_ptr: felt*,
@@ -48,8 +49,9 @@ namespace Sha3 {
         // Stack input:
         // 0 - offset: memory offset for the begining of the hash.
         // 1 - length: how many values we hash.
-        let (stack, offset: Uint256) = Stack.pop(stack);
-        let (stack, length: Uint256) = Stack.pop(stack);
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
+        let offset = popped[1];
+        let length = popped[0];
 
         let (memory, cost) = Memory.insure_length(self=ctx.memory, length=offset.low + length.low);
 

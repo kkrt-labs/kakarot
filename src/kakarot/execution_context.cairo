@@ -25,7 +25,9 @@ from kakarot.interfaces.interfaces import IRegistry, IEvm_Contract
 // @custom:model model.ExecutionContext
 namespace ExecutionContext {
     // @notice Initialize the execution context.
-    // @param code The code to execute.
+    // @dev set the initial values before executing a piece of code
+    // @param code The bytecode to execute.
+    // @param code_len The length of the bytecode
     // @param calldata The calldata.
     // @return The initialized execution context.
     func init(code: felt*, code_len: felt, calldata: felt*) -> model.ExecutionContext* {
@@ -66,7 +68,8 @@ namespace ExecutionContext {
     }
 
     // @notice Initialize the execution context.
-    // @param code The code to execute.
+    // @dev Initialize the execution context of a specific contract
+    // @param address The evm address from which the code will be executed
     // @param calldata The calldata.
     // @return The initialized execution context.
     func init_at_address{
@@ -87,15 +90,13 @@ namespace ExecutionContext {
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();
 
-        // 1. Evm address
-        // 2. Get starknet Address
-
+        // Get the starknet address from the given evm address
         let (registry_address_) = registry_address.read();
         let (starknet_address) = IRegistry.get_starknet_address(
             contract_address=registry_address_, evm_address=address
         );
-        // Get the BYTECODE from the Starknet_contract
 
+        // Get the bytecode from the Starknet_contract
         let (code_len, code) = IEvm_Contract.code(contract_address=starknet_address);
 
         return new model.ExecutionContext(
@@ -405,19 +406,17 @@ namespace ExecutionContext {
     }
 
     // @notice Check if location is a valid Jump destination
-    // @dev The check is done directly on the bytecode.
-    // @param self The pointer to the execution context.
-    // @param pc_location location to check.
-    // @return The pointer to the updated execution context.
-    // @return 1 if location is valid, 0 is location is invalid.
+    // @dev Extract the byte that the current pc is pointing to and revert if it is not a JUMPDEST operation.
+    // @param self The pointer to the execution context
+    // @param pc_location location to check
     func check_jumpdest(self: model.ExecutionContext*, pc_location: felt) {
         alloc_locals;
         let (local output: felt*) = alloc();
 
-        // Copy code slice
+        // Copy bytecode slice
         memcpy(dst=output, src=self.code + pc_location, len=1);
 
-        // Revert if now pc offset is not JUMPDEST
+        // Revert if current pc location is not JUMPDEST
         with_attr error_message("Kakarot: JUMPed to pc offset is not JUMPDEST") {
             assert [output] = 0x5b;
         }
