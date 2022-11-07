@@ -69,7 +69,7 @@ python-versions = ">=3.5"
 dev = ["cloudpickle", "coverage[toml] (>=5.0.2)", "furo", "hypothesis", "mypy (>=0.900,!=0.940)", "pre-commit", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "sphinx", "sphinx-notfound-page", "zope.interface"]
 docs = ["furo", "sphinx", "sphinx-notfound-page", "zope.interface"]
 tests = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy (>=0.900,!=0.940)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "zope.interface"]
-tests_no_zope = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy (>=0.900,!=0.940)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins"]
+tests-no-zope = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy (>=0.900,!=0.940)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins"]
 
 [[package]]
 name = "base58"
@@ -122,7 +122,7 @@ python-versions = "~=3.7"
 
 [[package]]
 name = "cairo-coverage"
-version = "0.1.0"
+version = "0.1.4"
 description = "Cairo coverage module"
 category = "dev"
 optional = false
@@ -181,7 +181,7 @@ optional = false
 python-versions = ">=3.6.0"
 
 [package.extras]
-unicode_backport = ["unicodedata2"]
+unicode-backport = ["unicodedata2"]
 
 [[package]]
 name = "click"
@@ -484,9 +484,9 @@ python-versions = ">=3.6.1,<4.0"
 
 [package.extras]
 colors = ["colorama (>=0.4.3,<0.5.0)"]
-pipfile_deprecated_finder = ["pipreqs", "requirementslib"]
+pipfile-deprecated-finder = ["pipreqs", "requirementslib"]
 plugins = ["setuptools"]
-requirements_deprecated_finder = ["pip-api", "pipreqs"]
+requirements-deprecated-finder = ["pip-api", "pipreqs"]
 
 [[package]]
 name = "jsonschema"
@@ -513,7 +513,7 @@ optional = false
 python-versions = "*"
 
 [package.extras]
-atomic_cache = ["atomicwrites"]
+atomic-cache = ["atomicwrites"]
 nearley = ["js2py"]
 regex = ["regex"]
 
@@ -853,7 +853,7 @@ urllib3 = ">=1.21.1,<1.27"
 
 [package.extras]
 socks = ["PySocks (>=1.5.6,!=1.5.7)"]
-use_chardet_on_py3 = ["chardet (>=3.0.2,<6)"]
+use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
 name = "rlp"
@@ -1027,7 +1027,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "11b82792635a04a9e98bdb1fe00636b9cee199bb8bf9d07cc46f7bfa678a6b50"
+content-hash = "9ff35a5ca559beba9ce3371c42e707427dc16ec71ddb9da166cc04a961bb1862"
 
 [metadata.files]
 aiohttp = [
@@ -1245,8 +1245,8 @@ cachetools = [
     {file = "cachetools-5.2.0.tar.gz", hash = "sha256:6a94c6402995a99c3970cc7e4884bb60b4a8639938157eeed436098bf9831757"},
 ]
 cairo-coverage = [
-    {file = "cairo-coverage-0.1.0.tar.gz", hash = "sha256:d6414ab075acf2786ee79465aba4c81aaaeac8af4571b8c78b8ba30ec95ce2fa"},
-    {file = "cairo_coverage-0.1.0-py3-none-any.whl", hash = "sha256:1258988d53587ac2f8e088b05e80b7fad019386c6ab5db8e936ede1e94dc2ffc"},
+    {file = "cairo-coverage-0.1.4.tar.gz", hash = "sha256:c08b3972429f0f1e372a8ba888a3017ec98b995d9d2c2803330ed76a8a006cf5"},
+    {file = "cairo_coverage-0.1.4-py3-none-any.whl", hash = "sha256:cda82d219b4d9881e5d7a22683d10031ae8fd712b81bdf49694f80010deb043f"},
 ]
 cairo-lang = [
     {file = "cairo-lang-0.10.1.zip", hash = "sha256:6ad68e482eb5b8f0f3f5e674973bcba0815ff87fe35bec7e6a3f9b96d8335616"},
