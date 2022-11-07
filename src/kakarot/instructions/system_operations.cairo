@@ -36,10 +36,6 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{
-            import logging
-            logging.info("0xFE - INVALID")
-        %}
         with_attr error_message("Kakarot: 0xFE: Invalid Opcode") {
             assert TRUE = FALSE;
         }
@@ -66,10 +62,6 @@ namespace SystemOperations {
         alloc_locals;
         let stack = ctx.stack;
         let memory = ctx.memory;
-        %{
-            import logging
-            logging.info("0xF3 - RETURN")
-        %}
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let size = popped[1];
         let offset = popped[0];
@@ -86,7 +78,7 @@ namespace SystemOperations {
         // Get memory to set as returndata
         let (new_return_data: felt*) = alloc();
         memcpy(dst=new_return_data, src=ctx.memory.bytes + offset.low, len=size.low);
-        
+
         // Pad if offset + size > memory_len pad n
         let is_total_greater_than_memory_len: felt = is_le_felt(curr_memory_len, total_len);
         if (is_total_greater_than_memory_len == 0) {

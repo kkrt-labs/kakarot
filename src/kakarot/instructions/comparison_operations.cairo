@@ -63,10 +63,6 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x10 - LT")
-        %}
 
         let stack = ctx.stack;
 
@@ -107,10 +103,6 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x11 - GT")
-        %}
 
         let stack = ctx.stack;
 
@@ -151,10 +143,6 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x12 - SLT")
-        %}
 
         let stack = ctx.stack;
 
@@ -195,10 +183,6 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x13 - SGT")
-        %}
 
         let stack = ctx.stack;
 
@@ -239,10 +223,6 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x14 - EQ")
-        %}
 
         let stack = ctx.stack;
 
@@ -283,10 +263,6 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x15 - ISZERO")
-        %}
 
         let stack = ctx.stack;
 
@@ -324,10 +300,6 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x16 - AND")
-        %}
 
         let stack = ctx.stack;
 
@@ -368,10 +340,6 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x17 - OR")
-        %}
 
         let stack = ctx.stack;
 
@@ -411,10 +379,6 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x18 - XOR")
-        %}
 
         let stack = ctx.stack;
 
@@ -453,10 +417,6 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x1A - BYTE")
-        %}
 
         let stack = ctx.stack;
 
@@ -499,10 +459,6 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x1B - SHL")
-        %}
 
         let stack = ctx.stack;
 
@@ -543,10 +499,6 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x1C - SHR")
-        %}
 
         let stack = ctx.stack;
 
@@ -587,10 +539,6 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x1D - SAR")
-        %}
         let stack = ctx.stack;
 
         // Stack input:
@@ -659,10 +607,6 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x19 - NOT")
-        %}
 
         let stack = ctx.stack;
 

@@ -36,14 +36,6 @@ func init_context{
 }
 
 @external
-func setup__exec_pc__should_update_after_incrementing{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    %{ given(increment = strategy.felts(rc_bound=True)) %}
-    return ();
-}
-
-@external
 func test__exec_pc__should_update_after_incrementing{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(increment) {

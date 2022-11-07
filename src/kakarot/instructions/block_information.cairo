@@ -47,10 +47,6 @@ namespace BlockInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{
-            import logging
-            logging.info("0x41 - COINBASE")
-        %}
         // Get the coinbase address.
         // TODO: switch to real coinbase addr when going to prod
         let coinbase_address = Helpers.to_uint256(val=Constants.MOCK_COINBASE_ADDRESS);
@@ -80,10 +76,7 @@ namespace BlockInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x42 - TIMESTAMP")
-        %}
+
         // Get the block’s timestamp
         let (current_timestamp) = get_block_timestamp();
         let block_timestamp = Helpers.to_uint256(val=current_timestamp);
@@ -114,10 +107,7 @@ namespace BlockInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x43 - NUMBER")
-        %}
+
         // Get the block number.
         let (current_block) = get_block_number();
         let block_number = Helpers.to_uint256(val=current_block);
@@ -147,11 +137,6 @@ namespace BlockInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{
-            import logging
-            logging.info("0x44 - DIFFICULTY")
-        %}
-
         // Get the Difficulty.
         let difficulty = Helpers.to_uint256(val=0);
 
@@ -180,10 +165,6 @@ namespace BlockInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{
-            import logging
-            logging.info("0x45 - GASLIMIT")
-        %}
         // Get the Gas Limit
         let gas_limit = Helpers.to_uint256(val=ctx.gas_limit);
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=gas_limit);
@@ -211,10 +192,6 @@ namespace BlockInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{
-            import logging
-            logging.info("0x46 - CHAINID")
-        %}
         // Get the chain ID.
         let chain_id = Helpers.to_uint256(val=Constants.CHAIN_ID);
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=chain_id);
@@ -243,10 +220,6 @@ namespace BlockInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x47 - SELFBALANCE")
-        %}
         // Get balance of current executing contract address balance and push to stack.
         let (native_token_address_) = native_token_address.read();
         let (balance: Uint256) = IEth.balanceOf(
@@ -277,11 +250,6 @@ namespace BlockInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{
-            import logging
-            logging.info("0x48 - BASEFEE")
-        %}
-
         // Get the base fee.
         let basefee = Helpers.to_uint256(val=0);
 

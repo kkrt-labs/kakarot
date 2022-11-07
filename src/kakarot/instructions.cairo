@@ -123,10 +123,6 @@ namespace EVMInstructions {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{
-            import logging
-            logging.info("0x00 - STOP")
-        %}
         let ctx = ExecutionContext.stop(ctx_ptr);
         return ctx;
     }
