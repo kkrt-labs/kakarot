@@ -31,11 +31,6 @@ namespace PushOperations {
         ctx: model.ExecutionContext*, i: felt
     ) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            opcode_value =  95 + ids.i
-            logging.info(f"0x{opcode_value:02x} - PUSH{ids.i}")
-        %}
 
         // Get stack from context.
         let stack: model.Stack* = ctx.stack;
@@ -43,8 +38,9 @@ namespace PushOperations {
         // Read i bytes.
         let (ctx, data) = ExecutionContext.read_code(self=ctx, len=i);
 
+        let zero = Uint256(0, 0);
         // Convert to Uint256.
-        let stack_element: Uint256 = Helpers.bytes_to_uint256(data);
+        let stack_element: Uint256 = Helpers.bytes_i_to_uint256(val=data, i=i, res=zero);
         // Push to the stack.
         let stack: model.Stack* = Stack.push(stack, stack_element);
 

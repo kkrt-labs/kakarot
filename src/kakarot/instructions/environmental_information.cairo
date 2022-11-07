@@ -52,10 +52,6 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x31 - BALANCE")
-        %}
 
         // Get the evm address.
         let (stack: model.Stack*, address: Uint256) = Stack.pop(ctx.stack);
@@ -95,11 +91,6 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{
-            import logging
-            logging.info("0x38 - CODESIZE")
-        %}
-
         // Get the code size.
         let code_size = Helpers.to_uint256(ctx.code_len);
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=code_size);
@@ -128,10 +119,6 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x32 - ORIGIN")
-        %}
 
         // Get the transaction info which contains the starknet origin address
         let (tx_info) = get_tx_info();
@@ -166,10 +153,6 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x33 - CALLER")
-        %}
         // Get caller address.
         let (current_address) = get_caller_address();
         let caller_address = Helpers.to_uint256(current_address);
@@ -198,10 +181,6 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{
-            import logging
-            logging.info("0x3d - RETURNDATASIZE")
-        %}
         // Get return data size.
         let return_data_size = Helpers.to_uint256(ctx.return_data_len);
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=return_data_size);
@@ -230,10 +209,12 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
+
         %{
             import logging
             logging.info("0x35 - CALLDATALOAD")
         %}
+
 
         let stack = ctx.stack;
 
@@ -250,7 +231,7 @@ namespace EnvironmentalInformation {
         let sliced_calldata: felt* = Helpers.slice_data(
             data_len=calldata_len, data=calldata, data_offset=calldata_offset.low, slice_len=32
         );
-        let uint256_sliced_calldata: Uint256 = Helpers.bytes_to_uint256(sliced_calldata);
+        let uint256_sliced_calldata: Uint256 = Helpers.bytes32_to_uint256(sliced_calldata);
 
         // Push CallData word onto stack
         let stack: model.Stack* = Stack.push(self=stack, element=uint256_sliced_calldata);
@@ -277,10 +258,6 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{
-            import logging
-            logging.info("0x36 - CALLDATASIZE")
-        %}
         let calldata_size = Helpers.to_uint256(ctx.calldata_len);
         let stack: model.Stack* = Stack.push(ctx.stack, calldata_size);
 
@@ -308,10 +285,6 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x37 - CALLDATACOPY")
-        %}
 
         let stack = ctx.stack;
 
@@ -365,10 +338,6 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x3e - RETURNDATACOPY")
-        %}
 
         let stack = ctx.stack;
 
@@ -423,10 +392,6 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x39 - CODECOPY")
-        %}
 
         let stack = ctx.stack;
 

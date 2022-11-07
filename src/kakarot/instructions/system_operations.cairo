@@ -36,10 +36,6 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{
-            import logging
-            logging.info("0xFE - INVALID")
-        %}
         with_attr error_message("Kakarot: 0xFE: Invalid Opcode") {
             assert TRUE = FALSE;
         }
@@ -83,6 +79,7 @@ namespace SystemOperations {
         }
 
         memcpy(dst=new_return_data, src=ctx.memory.bytes + offset.low, len=size.low);
+
         // Pad if offset + size > memory_len pad n
 
         let is_total_greater_than_memory_len: felt = is_le_felt(curr_memory_len, total_len);

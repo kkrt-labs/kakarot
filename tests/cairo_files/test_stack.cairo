@@ -236,19 +236,3 @@ func test__swap__should_fail__when_index_2_is_underflow{
     let result = Stack.swap_i(stack, 1);
     return ();
 }
-
-@external
-func test__dump__should_print_the_stack{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    Helpers.setup_python_defs();
-    let stack: model.Stack* = Stack.init();
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
-
-    // When & Then
-    let result = Stack.dump(stack);
-    return ();
-}

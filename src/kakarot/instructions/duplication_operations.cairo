@@ -26,11 +26,6 @@ namespace DuplicationOperations {
         ctx: model.ExecutionContext*, i: felt
     ) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            opcode_value =  127 + ids.i
-            logging.info(f"0x{opcode_value:02x} - DUP{ids.i}")
-        %}
 
         // Get stack from context.
         let stack: model.Stack* = ctx.stack;

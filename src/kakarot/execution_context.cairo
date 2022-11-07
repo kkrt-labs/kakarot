@@ -30,7 +30,9 @@ namespace ExecutionContext {
     // @param code_len The length of the bytecode
     // @param calldata The calldata.
     // @return The initialized execution context.
-    func init(code: felt*, code_len: felt, calldata: felt*) -> model.ExecutionContext* {
+    func init(
+        code: felt*, code_len: felt, calldata: felt*, calldata_len: felt
+    ) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
 
@@ -51,11 +53,11 @@ namespace ExecutionContext {
             code=code,
             code_len=code_len,
             calldata=calldata,
-            calldata_len=Helpers.get_len(calldata),
+            calldata_len=calldata_len,
             program_counter=initial_pc,
             stopped=FALSE,
             return_data=empty_return_data,
-            return_data_len=Helpers.get_len(empty_return_data),
+            return_data_len=0,
             stack=stack,
             memory=memory,
             gas_used=gas_used,
@@ -77,7 +79,7 @@ namespace ExecutionContext {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, calldata: felt*) -> model.ExecutionContext* {
+    }(address: felt, calldata: felt*, calldata_len: felt) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
 
@@ -103,11 +105,11 @@ namespace ExecutionContext {
             code=code,
             code_len=code_len,
             calldata=calldata,
-            calldata_len=Helpers.get_len(calldata),
+            calldata_len=calldata_len,
             program_counter=initial_pc,
             stopped=FALSE,
             return_data=empty_return_data,
-            return_data_len=Helpers.get_len(empty_return_data),
+            return_data_len=0,
             stack=stack,
             memory=memory,
             gas_used=gas_used,
@@ -332,6 +334,7 @@ namespace ExecutionContext {
             evm_address=self.evm_address,
             );
     }
+
 
     // @notice Dump the current execution context.
     // @dev The execution context is dumped to the debug server if `DEBUG` environment variable is set to `True`.

@@ -34,11 +34,6 @@ namespace LoggingOperations {
     ) -> model.ExecutionContext* {
         alloc_locals;
 
-        %{
-            import logging
-            logging.info(f"0xA{ids.topics_len} - LOG{ids.topics_len}")
-        %}
-
         // Get stack from context.
         let stack: model.Stack* = ctx.stack;
 

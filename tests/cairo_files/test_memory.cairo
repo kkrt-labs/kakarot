@@ -78,22 +78,18 @@ func test__load__should_load_an_element_from_the_memory{
     // When
     let result = Memory.load(memory, 0);
 
-    // %{ print(f"result low: {ids.result.low} | result high: {ids.result.high}") %}
-
     // Then
     assert_uint256_eq(result, Uint256(2, 1));
 
     // When
     let result = Memory.load(memory, 32);
 
-    // %{ print(f"result low: {ids.result.low} | result high: {ids.result.high}") %}
     // Then
     assert_uint256_eq(result, Uint256(4, 3));
 
     // When
     let result = Memory.load(memory, 16);
 
-    // %{ print(f"result low: {ids.result.low} | result high: {ids.result.high}") %}
     // Then
     assert_uint256_eq(result, Uint256(3, 2));
 
@@ -112,8 +108,6 @@ func test__load__should_load_an_element_from_the_memory_with_offset{
 
     // When
     let result = Memory.load(memory, offset);
-
-    // %{ f"result low: {ids.result.low} | result high: {ids.result.high}") %}
 
     // Then
     assert_uint256_eq(result, Uint256(low, high));
@@ -135,31 +129,11 @@ func test__load__should_fail__when_out_of_memory{
 }
 
 @external
-func test__dump__should_print_the_memory{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    Helpers.setup_python_defs();
-    let memory: model.Memory* = Memory.init();
-    let memory: model.Memory* = Memory.store(self=memory, element=Uint256(1, 0), offset=0);
-    let memory: model.Memory* = Memory.store(self=memory, element=Uint256(2, 0), offset=32);
-    let memory: model.Memory* = Memory.store(self=memory, element=Uint256(3, 0), offset=64);
-    let len = memory.bytes_len;
-    assert len = 3 * 32;
-
-    // When & Then
-    Memory.dump(memory);
-    return ();
-}
-
-@external
 func test__expand__should_return_the_same_memory_and_no_cost{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
     alloc_locals;
-    Helpers.setup_python_defs();
     let memory = Memory.init();
     let memory = Memory.store(self=memory, element=Uint256(1, 0), offset=0);
 
@@ -180,7 +154,6 @@ func test__expand__should_return_expanded_memory_and_cost{
 }() {
     // Given
     alloc_locals;
-    Helpers.setup_python_defs();
     let memory = Memory.init();
     let memory = Memory.store(self=memory, element=Uint256(1, 0), offset=0);
 
@@ -202,7 +175,6 @@ func test__insure_length__should_return_the_same_memory_and_no_cost{
 }() {
     // Given
     alloc_locals;
-    Helpers.setup_python_defs();
     let memory = Memory.init();
     let memory = Memory.store(self=memory, element=Uint256(1, 0), offset=0);
 
@@ -223,7 +195,6 @@ func test__insure_length__should_return_expanded_memory_and_cost{
 }() {
     // Given
     alloc_locals;
-    Helpers.setup_python_defs();
     let memory = Memory.init();
     let memory = Memory.store(self=memory, element=Uint256(1, 0), offset=0);
 
