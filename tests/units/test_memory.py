@@ -19,7 +19,7 @@ class TestMemory(IsolatedAsyncioTestCase):
             cls.test_memory = await cls.starknet.deploy(
                 source="./tests/cairo_files/test_memory.cairo",
                 cairo_path=["src"],
-                disable_hint_validation=True,
+                disable_hint_validation=False,
             )
 
         run(_setUpClass(cls))
@@ -28,7 +28,7 @@ class TestMemory(IsolatedAsyncioTestCase):
         cls.test_memory = await cls.starknet.deploy(
             source="./tests/cairo_files/test_memory.cairo",
             cairo_path=["src"],
-            disable_hint_validation=True,
+            disable_hint_validation=False,
         )
 
     @classmethod
