@@ -8,7 +8,6 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 
 // Local dependencies
-from utils.utils import Helpers
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.execution_context import ExecutionContext

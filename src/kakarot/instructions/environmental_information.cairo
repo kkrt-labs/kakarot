@@ -210,12 +210,6 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        %{
-            import logging
-            logging.info("0x35 - CALLDATALOAD")
-        %}
-
-
         let stack = ctx.stack;
 
         // Stack input:
@@ -439,10 +433,6 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        %{
-            import logging
-            logging.info("0x34 - CALLVALUE")
-        %}
         // TOOD: Implement callvalue Get callvalue.
         // let (current_address) = get_caller_address();
         // let caller_address = Helpers.to_uint256(current_address);

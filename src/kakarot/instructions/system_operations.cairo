@@ -61,10 +61,6 @@ namespace SystemOperations {
         alloc_locals;
         let stack = ctx.stack;
         let memory = ctx.memory;
-        %{
-            import logging
-            logging.info("0xF3 - RETURN")
-        %}
 
         let (local new_return_data: felt*) = alloc();
         let (local new_memory: model.Memory*) = alloc();

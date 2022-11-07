@@ -341,49 +341,6 @@ namespace ExecutionContext {
     func dump{range_check_ptr}(self: model.ExecutionContext*) {
         let pc = self.program_counter;
         let stopped = is_stopped(self);
-        %{
-            import json
-            code = cairo_bytes_to_hex(ids.self.code)
-            calldata = cairo_bytes_to_hex(ids.self.calldata)
-            return_data = cairo_bytes_to_hex(ids.self.return_data)
-            json_data = {
-                "pc": f"{ids.pc}",
-                "stopped": f"{ids.stopped}",
-                "return_data": f"{return_data}",
-                "gas_used": f"{ids.self.gas_used}",
-            }
-            json_formatted = json.dumps(json_data, indent=4)
-            # print(json_formatted)
-            post_debug(json_data)
-        %}
-
-        %{
-            import logging
-            logging.info("===================================")
-            logging.info(f"PROGRAM COUNTER:\t{ids.pc}")
-            logging.info(f"INTRINSIC GAS:\t\t{ids.self.intrinsic_gas_cost}")
-            logging.info(f"GAS USED:\t\t{ids.self.gas_used}")
-            logging.info("*************STACK*****************")
-        %}
-        Stack.dump(self.stack);
-        %{
-            import logging
-            logging.info("***********************************")
-            logging.info("===================================")
-        %}
-        Memory.dump(self.memory);
-        // Print return data
-        %{
-            import logging
-            i = 0
-            res = ""
-            for i in range(ids.self.return_data_len):
-                res += " " + str(memory.get(ids.self.return_data + i))
-                i += i
-            logging.info("*************RETURN DATA*****************")
-            logging.info(res)
-            logging.info("************************************")
-        %}
 
         return ();
     }

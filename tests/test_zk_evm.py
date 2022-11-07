@@ -15,7 +15,7 @@ async def zk_evm(
     _zk_evm = await starknet.deploy(
         source="./src/kakarot/kakarot.cairo",
         cairo_path=["src"],
-        disable_hint_validation=False,
+        disable_hint_validation=True,
         constructor_calldata=[
             1,
             eth.contract_address,
@@ -1368,10 +1368,6 @@ class TestZkEVM:
             calldata=[int(b, 16) for b in wrap(params["calldata"], 2)],
         ).execute(caller_address=2)
 
-        # assert res.result.stack == [
-        #     Uint256(*self.int_to_uint256(int(s)))
-        #     for s in (params["stack"].split(",") if params["stack"] else [])
-        # ]
         assert res.result.return_data == [
             int(m, 16) for m in wrap(params["return_value"], 2)
         ]

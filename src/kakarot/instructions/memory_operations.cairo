@@ -395,10 +395,6 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        %{
-            import logging
-            logging.info("0x54 - SLOAD")
-        %}
         let stack = ctx.stack;
 
         // ------- 1. Get starknet address

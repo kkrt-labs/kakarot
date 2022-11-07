@@ -83,12 +83,6 @@ func execute_at_address{
         let (zero_array: felt*) = alloc();
         // Deploy contract
 
-        %{
-            import logging
-            logging.info("*************CALLDATA LEN BEFORE DEPLOY*****************")
-            logging.info(ids.calldata_len)
-            logging.info("************************************")
-        %}
         let (evm_contract_address: felt, starknet_contract_address: felt) = deploy(
             bytes_len=calldata_len, bytes=calldata
         );
@@ -104,7 +98,7 @@ func execute_at_address{
         );
     }
 
-    let context = Kakarot.execute_at_address(address=address, calldata=calldata);
+    let context = Kakarot.execute_at_address(address=address,calldata_len=calldata_len, calldata=calldata);
 
     let len = Stack.len(context.stack);
     return (
@@ -195,7 +189,7 @@ func initiate{
 
     // Run bytecode
     let context: model.ExecutionContext* = Kakarot.execute_at_address(
-        address=evm_address, calldata=bytecode
+        address=evm_address,calldata_len=bytecode_len, calldata=bytecode
     );
 
     // Update evm_contract code
