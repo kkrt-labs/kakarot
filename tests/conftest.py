@@ -1,6 +1,6 @@
 import asyncio
 from time import time
-from typing import AsyncGenerator, List, cast
+from typing import AsyncGenerator
 
 import pytest
 import pytest_asyncio
@@ -23,16 +23,13 @@ async def starknet() -> AsyncGenerator[Starknet, None]:
         BlockInfo.create_for_testing(block_number=1, block_timestamp=1)
     )
     yield starknet
-    files = cast(
-        List[cairo_coverage.CoverageFile],
-        cairo_coverage.report_runs(excluded_file={"site-packages", "cairo_files"}),
-    )
+    files = cairo_coverage.report_runs(excluded_file={"site-packages", "cairo_files"})
     total_covered = []
     for file in files:
         if file.pct_covered < 80:
             print(f"WARNING: {file.name} only {file.pct_covered:.2f}% covered")
         total_covered.append(file.pct_covered)
-    if (val := not sum(total_covered) / len(files)) >= 80:
+    if files and (val := not sum(total_covered) / len(files)) >= 80:
         print(f"WARNING: Project is not covered enough {val:.2f})")
 
 
