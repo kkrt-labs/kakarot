@@ -252,7 +252,12 @@ namespace ExecutionContext {
     // @dev The memory is updated with the given memory.
     // @param self The pointer to the execution context.
     // @param memory The pointer to the new memory.
-    func update_return_data(
+    func update_return_data{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(
         self: model.ExecutionContext*, new_return_data_len: felt, new_return_data: felt*
     ) -> model.ExecutionContext* {
         return new model.ExecutionContext(
@@ -364,6 +369,18 @@ namespace ExecutionContext {
             logging.info("===================================")
         %}
         Memory.dump(self.memory);
+        // Print return data
+        %{
+            import logging
+            i = 0
+            res = ""
+            for i in range(ids.self.return_data_len):
+                res += " " + str(memory.get(ids.self.return_data + i))
+                i += i
+            logging.info("*************RETURN DATA*****************")
+            logging.info(res)
+            logging.info("************************************")
+        %}
 
         return ();
     }

@@ -28,12 +28,15 @@ func code_len_() -> (res: felt) {
 @storage_var
 func state_(key: Uint256) -> (value: Uint256) {
 }
+@storage_var
+func is_initiated_() -> (res: felt) {
+}
 
 namespace ContractAccount {
     // @notice This function is used to initialize the smart contract account.
     // @param kakarot_address: The address of the Kakarot smart contract.
-    // @param code: The bytecode stored in this smart contract.
-    // @param code_len: The length of the smart contract bytecode.
+    // @param code: The code of the smart contract.
+    // @param code_len: The length of the smart contract code.
     func constructor{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -60,13 +63,13 @@ namespace ContractAccount {
     }(code_len: felt, code: felt*) {
         // Access control check.
         Ownable.assert_only_owner();
-        // Recursively store the bytecode.
+        // Recursively store the code.
         internal.store_code(0, code_len, code);
         return ();
     }
 
-    // @notice This function is used to get the bytecode of the smart contract.
-    // @return The bytecode of the smart contract.
+    // @notice This function is used to get the code of the smart contract.
+    // @return The code of the smart contract.
     func code{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -77,15 +80,12 @@ namespace ContractAccount {
         let code: felt* = alloc();
         // Read code length from storage.
         let (code_len) = code_len_.read();
+
         // Recursively load code into specified memory location.
         internal.load_code(0, code_len, code);
         return (code_len, code);
     }
 
-    // @notice read the contract state
-    // @dev read a storage value from the contract given a specific storage key
-    // @param key The key at which to fetch the storage value
-    // @return The value which was stored at the given key value
     func read_state{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -96,26 +96,48 @@ namespace ContractAccount {
         return value;
     }
 
-    // @notice write to the contract state
-    // @dev write a value at a specific storage key
-    // @param key The key at which to write the storage value
-    // @param value The value to be stored 
     func write_state{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(key: Uint256, value: Uint256) {
+        // Access control check.
+        Ownable.assert_only_owner();
+        // Write State
         state_.write(key, value);
+        return ();
+    }
+
+    func is_initiated{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }() -> (is_initiated: felt) {
+        let is_initiated: felt = is_initiated_.read();
+        return (is_initiated=is_initiated);
+    }
+
+    func initiate{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }() {
+        // Access control check.
+        Ownable.assert_only_owner();
+        // Initiate Evm contract
+        is_initiated_.write(1);
         return ();
     }
 }
 
 namespace internal {
     // @notice Store the bytecode of the contract.
-    // @param index: The index at which to store the individual byte
+    // @param index: The index in the code.
     // @param code_len: The length of the bytecode.
-    // @param code: The bytecode.
+
     func store_code{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         index: felt, code_len: felt, code: felt*
     ) {
@@ -130,7 +152,7 @@ namespace internal {
     }
 
     // @notice Load the bytecode of the contract in the specified array.
-    // @param index: The index in the bytecode.
+    // @param index: The index in the code.
     // @param code: The bytecode of the contract.
     // @param code_len: The length of the bytecode.
     func load_code{
@@ -145,6 +167,7 @@ namespace internal {
         }
         let (value) = code_.read(index);
         assert [code + index] = value;
+
         load_code(index + 1, code_len, code);
         return ();
     }

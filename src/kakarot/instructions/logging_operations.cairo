@@ -54,7 +54,7 @@ namespace LoggingOperations {
             self=ctx.memory, length=actual_size + actual_offset
         );
 
-        //Log topics by emmiting a starknet event
+        // Log topics by emmiting a starknet event
         emit_event(
             keys_len=topics_len * 2,
             keys=popped,

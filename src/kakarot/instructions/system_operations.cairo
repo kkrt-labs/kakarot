@@ -49,13 +49,12 @@ namespace SystemOperations {
     }
 
     // @notice RETURN operation.
-    // @dev Read bytes from memory and write them as return data
+    // @dev Designated invalid instruction.
     // @custom:since Frontier
     // @custom:group System Operations
     // @custom:gas NaN
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
-    // @param ctx The pointer to the execution context
     // @return The pointer to the updated execution context.
     func exec_return{
         syscall_ptr: felt*,
@@ -70,41 +69,36 @@ namespace SystemOperations {
             import logging
             logging.info("0xF3 - RETURN")
         %}
-        let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let size = popped[1];
-        let offset = popped[0];
 
+        let (local new_return_data: felt*) = alloc();
+        let (local new_memory: model.Memory*) = alloc();
+        let (stack, offset) = Stack.pop(stack);
+        let (stack, size) = Stack.pop(stack);
         let curr_memory_len: felt = ctx.memory.bytes_len;
         let total_len: felt = offset.low + size.low;
-
         // TODO check in which multiple of 32 bytes it should be.
         // Pad if offset + size > memory_len pad n
         if (memory.bytes_len == 0) {
             Helpers.fill(arr=memory.bytes, value=0, length=32);
         }
 
-        // Get memory to set as returndata
-        let (new_return_data: felt*) = alloc();
         memcpy(dst=new_return_data, src=ctx.memory.bytes + offset.low, len=size.low);
-        
         // Pad if offset + size > memory_len pad n
+
         let is_total_greater_than_memory_len: felt = is_le_felt(curr_memory_len, total_len);
-        if (is_total_greater_than_memory_len == 0) {
+
+        if (is_total_greater_than_memory_len == 1) {
             local diff = total_len - curr_memory_len;
             Helpers.fill(arr=new_return_data + curr_memory_len, value=0, length=diff);
         }
 
-        // Save changes to memory and stack
-        tempvar new_memory = new model.Memory(bytes=memory.bytes, bytes_len=32);
-        let ctx = ExecutionContext.update_memory(ctx, new_memory);
+        // TODO if memory.bytes_len == 0 needs a different approach
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
         // TODO: GAS IMPLEMENTATION
 
-        // Update return data
-        let ctx = ExecutionContext.update_return_data(
+        return ExecutionContext.update_return_data(
             ctx, new_return_data_len=size.low, new_return_data=new_return_data
         );
-        return ctx;
     }
 }
