@@ -27,7 +27,6 @@ func test__init__should_return_an_empty_execution_context{
 }() {
     // Given
     alloc_locals;
-    Helpers.setup_python_defs();
     let (code) = alloc();
     assert [code] = 00;
     tempvar code_len = 1;
@@ -57,7 +56,6 @@ func test__update_program_counter__should_set_pc_to_given_value{
 }() {
     // Given
     alloc_locals;
-    Helpers.setup_python_defs();
     let (code) = alloc();
     assert code[0] = 56;
     assert code[1] = 60;
@@ -84,7 +82,6 @@ func test__update_program_counter__should_fail__when_given_value_not_in_code_ran
 }() {
     // Given
     alloc_locals;
-    Helpers.setup_python_defs();
     let (code) = alloc();
     assert code[0] = 56;
     assert code[1] = 60;
@@ -108,7 +105,6 @@ func test__update_program_counter__should_fail__when_given_destination_that_is_n
 }() {
     // Given
     alloc_locals;
-    Helpers.setup_python_defs();
     let (code) = alloc();
     assert code[0] = 56;
     assert code[1] = 60;

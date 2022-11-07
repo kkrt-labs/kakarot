@@ -330,46 +330,6 @@ namespace ExecutionContext {
             );
     }
 
-    // @notice Dump the current execution context.
-    // @dev The execution context is dumped to the debug server if `DEBUG` environment variable is set to `True`.
-    func dump{range_check_ptr}(self: model.ExecutionContext*) {
-        let pc = self.program_counter;
-        let stopped = is_stopped(self);
-        %{
-            import json
-            code = cairo_bytes_to_hex(ids.self.code)
-            calldata = cairo_bytes_to_hex(ids.self.calldata)
-            return_data = cairo_bytes_to_hex(ids.self.return_data)
-            json_data = {
-                "pc": f"{ids.pc}",
-                "stopped": f"{ids.stopped}",
-                "return_data": f"{return_data}",
-                "gas_used": f"{ids.self.gas_used}",
-            }
-            json_formatted = json.dumps(json_data, indent=4)
-            # print(json_formatted)
-            post_debug(json_data)
-        %}
-
-        %{
-            import logging
-            logging.info("===================================")
-            logging.info(f"PROGRAM COUNTER:\t{ids.pc}")
-            logging.info(f"INTRINSIC GAS:\t\t{ids.self.intrinsic_gas_cost}")
-            logging.info(f"GAS USED:\t\t{ids.self.gas_used}")
-            logging.info("*************STACK*****************")
-        %}
-        Stack.dump(self.stack);
-        %{
-            import logging
-            logging.info("***********************************")
-            logging.info("===================================")
-        %}
-        Memory.dump(self.memory);
-
-        return ();
-    }
-
     // @notice Update the program counter.
     // @dev The program counter is updated to a given value. This is only ever called by JUMP or JUMPI
     // @param self The pointer to the execution context.

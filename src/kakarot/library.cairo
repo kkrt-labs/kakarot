@@ -65,9 +65,6 @@ namespace Kakarot {
     }(code_len: felt, code: felt*, calldata: felt*, calldata_len: felt) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Load helper hints
-        Helpers.setup_python_defs();
-
         // Generate instructions set
         let instructions: felt* = EVMInstructions.generate_instructions();
 
@@ -81,9 +78,6 @@ namespace Kakarot {
 
         // Start execution
         let ctx = run(instructions=instructions, ctx=ctx);
-
-        // For debugging purpose
-        ExecutionContext.dump(self=ctx);
 
         return ctx;
     }
@@ -101,9 +95,6 @@ namespace Kakarot {
     }(address: felt, calldata: felt*, calldata_len: felt) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Load helper hints
-        Helpers.setup_python_defs();
-
         // Generate instructions set
         let instructions: felt* = EVMInstructions.generate_instructions();
 
@@ -117,9 +108,6 @@ namespace Kakarot {
 
         // Start execution
         let ctx = run(instructions, ctx);
-
-        // For debugging purpose
-        ExecutionContext.dump(ctx);
 
         return ctx;
     }

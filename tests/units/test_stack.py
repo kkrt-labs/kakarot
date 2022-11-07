@@ -69,5 +69,3 @@ class TestStack(IsolatedAsyncioTestCase):
 
         with self.raisesStarknetError("Kakarot: StackUnderflow"):
             await self.test_stack.test__swap__should_fail__when_index_2_is_underflow().call()
-
-        await self.test_stack.test__dump__should_print_the_stack().call()
