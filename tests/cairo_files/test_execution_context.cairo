@@ -35,7 +35,7 @@ func test__init__should_return_an_empty_execution_context{
     assert [calldata] = '';
 
     // When
-    let result: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
+    let result: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata, 1);
 
     // Then
     assert result.code = code;
@@ -70,7 +70,7 @@ func test__update_program_counter__should_set_pc_to_given_value{
     assert [calldata] = '';
 
     // When
-    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
+    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata, 1);
     let result = ExecutionContext.update_program_counter(ctx, 3);
 
     // Then
@@ -97,7 +97,7 @@ func test__update_program_counter__should_fail__when_given_value_not_in_code_ran
     assert [calldata] = '';
 
     // When & Then
-    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
+    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata, 1);
     let result = ExecutionContext.update_program_counter(ctx, 6);
     return ();
 }
@@ -121,7 +121,7 @@ func test__update_program_counter__should_fail__when_given_destination_that_is_n
     assert [calldata] = '';
 
     // When & Then
-    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
+    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata, 1);
     let result = ExecutionContext.update_program_counter(ctx, 2);
     return ();
 }

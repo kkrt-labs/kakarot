@@ -62,7 +62,7 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(code_len: felt, code: felt*, calldata: felt*) -> model.ExecutionContext* {
+    }(code_len: felt, code: felt*, calldata: felt*, calldata_len: felt) -> model.ExecutionContext* {
         alloc_locals;
 
         // Load helper hints
@@ -73,7 +73,7 @@ namespace Kakarot {
 
         // Prepare execution context
         let ctx: model.ExecutionContext* = ExecutionContext.init(
-            code=code, code_len=code_len, calldata=calldata
+            code=code, code_len=code_len, calldata=calldata, calldata_len=calldata_len
         );
 
         // Compute intrinsic gas cost and update gas used
@@ -98,7 +98,7 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, calldata: felt*) -> model.ExecutionContext* {
+    }(address: felt, calldata: felt*, calldata_len: felt) -> model.ExecutionContext* {
         alloc_locals;
 
         // Load helper hints
@@ -108,7 +108,9 @@ namespace Kakarot {
         let instructions: felt* = EVMInstructions.generate_instructions();
 
         // Prepare execution context
-        let ctx: model.ExecutionContext* = ExecutionContext.init_at_address(address, calldata);
+        let ctx: model.ExecutionContext* = ExecutionContext.init_at_address(
+            address, calldata, calldata_len
+        );
 
         // Compute intrinsic gas cost and update gas used
         let ctx = ExecutionContext.compute_intrinsic_gas_cost(ctx);

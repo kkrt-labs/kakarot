@@ -34,13 +34,6 @@ namespace Helpers {
                     ]
                 )
 
-            def py_get_len(array):
-                i = 0
-                for key, val in memory.items():
-                    if key.segment_index == array.segment_index and key >= array:
-                        i = i + 1
-                return i
-
             def py_has_entries(array):
                 for key, val in memory.items():
                     if key.segment_index == array.segment_index and key >= array:
@@ -100,18 +93,6 @@ namespace Helpers {
                 ids.res = 0
         %}
         return res;
-    }
-
-    func get_len(array: felt*) -> felt {
-        tempvar res;
-        %{ ids.res = py_get_len(ids.array) %}
-        return res;
-    }
-
-    func get_number_of_elements(array: felt*, element_size: felt) -> felt {
-        let raw_len = get_len(array);
-        let actual_len = raw_len / element_size;
-        return actual_len;
     }
 
     func to_uint256{range_check_ptr}(val: felt) -> Uint256 {
