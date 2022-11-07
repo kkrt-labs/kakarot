@@ -51,7 +51,7 @@ run-test-log:
 	poetry run pytest tests/test_zk_evm.py::TestZkEVM -k $(test) -s --log-cli-level=INFO
 	
 run-test:
-	poetry run pytest -s tests/test_zk_evm.py::TestZkEVM -k $(test)
+	poetry run pytest -s -vvv tests/test_zk_evm.py::TestZkEVM::test_execute["$(test)"]
 
 format-mac:
 	cairo-format src/**/*.cairo -i

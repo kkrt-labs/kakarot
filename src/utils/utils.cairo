@@ -8,7 +8,7 @@ from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math_cmp import is_le_felt
 from starkware.cairo.common.memcpy import memcpy
-
+from starkware.cairo.common.pow import pow
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
 // @author @abdelhamidbakhta
@@ -87,19 +87,6 @@ namespace Helpers {
             def cairo_uint256_to_str(item):
                 b = cairo_uint256_to_bytes32(item)
                 return byte_array_to_hex_string(b)
-
-            def cairo_bytes_to_uint256(array):
-                byte_values = [0] * BYTES32_SIZE
-                len = py_get_len(array)
-                start_offset = BYTES32_SIZE - len
-                mem_idx = 0
-                for i in range (start_offset, start_offset + len):
-                    byte_values[i] = memory[array + mem_idx]
-                    i = i + 1
-                    mem_idx = mem_idx + 1
-                high = int.from_bytes(byte_values[0:16], 'big')
-                low = int.from_bytes(byte_values[16:32], 'big')
-                return (low, high)
         %}
         return ();
     }
@@ -133,18 +120,6 @@ namespace Helpers {
         return res;
     }
 
-    func bytes_to_uint256(bytes: felt*) -> Uint256 {
-        tempvar low;
-        tempvar high;
-        %{
-            uint256_tuple = cairo_bytes_to_uint256(ids.bytes)
-            ids.low = uint256_tuple[0]
-            ids.high = uint256_tuple[1]
-        %}
-        let res = Uint256(low, high);
-        return res;
-    }
-
     func bytes32_to_uint256(val: felt*) -> Uint256 {
         let res = Uint256(
             low=[val + 16] * 256 ** 15 + [val + 17] * 256 ** 14 + [val + 18] * 256 ** 13 + [val + 19] * 256 ** 12 + [val + 20] * 256 ** 11 + [val + 21] * 256 ** 10 + [val + 22] * 256 ** 9 + [val + 23] * 256 ** 8 + [val + 24] * 256 ** 7 + [val + 25] * 256 ** 6 + [val + 26] * 256 ** 5 + [val + 27] * 256 ** 4 + [val + 28] * 256 ** 3 + [val + 29] * 256 ** 2 + [val + 30] * 256 + [val + 31],
@@ -155,21 +130,28 @@ namespace Helpers {
 
     func bytes_i_to_uint256{range_check_ptr}(val: felt*, i: felt, res: Uint256) -> Uint256 {
         alloc_locals;
-        let is_16_le_i = is_le_felt(i, 16);
+        local new_i: felt;
+        local new_val: felt*;
+        local high: felt;
+
+        let is_16_le_i = is_le_felt(16, i);
         if (is_16_le_i == 1) {
-            let (high) = compute_half_uint256(val=val, i=i - 16, res=0);
-            tempvar high = high;
+            assert new_val = val + i - 16;
+            new_i = 16;
+            let (high_temp) = compute_half_uint256(val=val, i=i - 16, res=0);
+            high = high_temp;
             tempvar range_check_ptr = range_check_ptr;
         } else {
-            tempvar high = 0;
+            new_val = val;
+            new_i = i;
+            high = 0;
             tempvar range_check_ptr = range_check_ptr;
         }
 
-        tempvar high = high;
+        let is_i_le_16 = is_le_felt(new_i, 16);
 
-        let is_i_le_16 = is_le_felt(i, 16);
         if (is_i_le_16 == 1) {
-            let (low) = compute_half_uint256(val=val, i=i, res=0);
+            let (low) = compute_half_uint256(val=new_val, i=new_i, res=0);
             let res = Uint256(low=low, high=high);
             return res;
         } else {
@@ -180,14 +162,11 @@ namespace Helpers {
     }
 
     func compute_half_uint256{range_check_ptr}(val: felt*, i: felt, res: felt) -> (res: felt) {
-        %{
-            print(ids.val, ids.i, ids.res)
-            breakpoint()
-        %}
         if (i == 1) {
             return (res=res + [val]);
         } else {
-            let (res) = compute_half_uint256(val + 1, i - 1, res + [val]);
+            let (temp_pow) = pow(256, i - 1);
+            let (res) = compute_half_uint256(val + 1, i - 1, res + [val] * temp_pow);
             return (res=res);
         }
     }
