@@ -30,7 +30,9 @@ namespace ExecutionContext {
     // @param code_len The length of the bytecode
     // @param calldata The calldata.
     // @return The initialized execution context.
-    func init(code: felt*, code_len: felt, calldata: felt*) -> model.ExecutionContext* {
+    func init(
+        code: felt*, code_len: felt, calldata: felt*, calldata_len: felt
+    ) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
 
@@ -51,11 +53,11 @@ namespace ExecutionContext {
             code=code,
             code_len=code_len,
             calldata=calldata,
-            calldata_len=Helpers.get_len(calldata),
+            calldata_len=calldata_len,
             program_counter=initial_pc,
             stopped=FALSE,
             return_data=empty_return_data,
-            return_data_len=Helpers.get_len(empty_return_data),
+            return_data_len=0,
             stack=stack,
             memory=memory,
             gas_used=gas_used,
@@ -77,7 +79,7 @@ namespace ExecutionContext {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, calldata: felt*) -> model.ExecutionContext* {
+    }(address: felt, calldata: felt*, calldata_len: felt) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
 
@@ -103,11 +105,11 @@ namespace ExecutionContext {
             code=code,
             code_len=code_len,
             calldata=calldata,
-            calldata_len=Helpers.get_len(calldata),
+            calldata_len=calldata_len,
             program_counter=initial_pc,
             stopped=FALSE,
             return_data=empty_return_data,
-            return_data_len=Helpers.get_len(empty_return_data),
+            return_data_len=0,
             stack=stack,
             memory=memory,
             gas_used=gas_used,
@@ -326,46 +328,6 @@ namespace ExecutionContext {
             starknet_address=self.starknet_address,
             evm_address=self.evm_address,
             );
-    }
-
-    // @notice Dump the current execution context.
-    // @dev The execution context is dumped to the debug server if `DEBUG` environment variable is set to `True`.
-    func dump{range_check_ptr}(self: model.ExecutionContext*) {
-        let pc = self.program_counter;
-        let stopped = is_stopped(self);
-        %{
-            import json
-            code = cairo_bytes_to_hex(ids.self.code)
-            calldata = cairo_bytes_to_hex(ids.self.calldata)
-            return_data = cairo_bytes_to_hex(ids.self.return_data)
-            json_data = {
-                "pc": f"{ids.pc}",
-                "stopped": f"{ids.stopped}",
-                "return_data": f"{return_data}",
-                "gas_used": f"{ids.self.gas_used}",
-            }
-            json_formatted = json.dumps(json_data, indent=4)
-            # print(json_formatted)
-            post_debug(json_data)
-        %}
-
-        %{
-            import logging
-            logging.info("===================================")
-            logging.info(f"PROGRAM COUNTER:\t{ids.pc}")
-            logging.info(f"INTRINSIC GAS:\t\t{ids.self.intrinsic_gas_cost}")
-            logging.info(f"GAS USED:\t\t{ids.self.gas_used}")
-            logging.info("*************STACK*****************")
-        %}
-        Stack.dump(self.stack);
-        %{
-            import logging
-            logging.info("***********************************")
-            logging.info("===================================")
-        %}
-        Memory.dump(self.memory);
-
-        return ();
     }
 
     // @notice Update the program counter.

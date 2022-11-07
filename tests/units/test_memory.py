@@ -19,7 +19,7 @@ class TestMemory(IsolatedAsyncioTestCase):
             cls.test_memory = await cls.starknet.deploy(
                 source="./tests/cairo_files/test_memory.cairo",
                 cairo_path=["src"],
-                disable_hint_validation=True,
+                disable_hint_validation=False,
             )
 
         run(_setUpClass(cls))
@@ -28,7 +28,7 @@ class TestMemory(IsolatedAsyncioTestCase):
         cls.test_memory = await cls.starknet.deploy(
             source="./tests/cairo_files/test_memory.cairo",
             cairo_path=["src"],
-            disable_hint_validation=True,
+            disable_hint_validation=False,
         )
 
     @classmethod
@@ -67,7 +67,6 @@ class TestMemory(IsolatedAsyncioTestCase):
             500, 0, 0
         ).call()
 
-        await self.test_memory.test__dump__should_print_the_memory().call()
         await self.test_memory.test__expand__should_return_the_same_memory_and_no_cost().call()
         await self.test_memory.test__expand__should_return_expanded_memory_and_cost().call()
         await self.test_memory.test__insure_length__should_return_the_same_memory_and_no_cost().call()

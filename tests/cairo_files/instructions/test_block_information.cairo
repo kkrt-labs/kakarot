@@ -27,13 +27,12 @@ func init_context{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> model.ExecutionContext* {
     alloc_locals;
-    Helpers.setup_python_defs();
     let (code) = alloc();
     assert [code] = 00;
     tempvar code_len = 1;
     let (calldata) = alloc();
     assert [calldata] = '';
-    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata);
+    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata, 1);
     return ctx;
 }
 

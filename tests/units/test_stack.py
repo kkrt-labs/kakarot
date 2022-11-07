@@ -19,7 +19,7 @@ class TestStack(IsolatedAsyncioTestCase):
             cls.test_stack = await cls.starknet.deploy(
                 source="./tests/cairo_files/test_stack.cairo",
                 cairo_path=["src"],
-                disable_hint_validation=True,
+                disable_hint_validation=False,
             )
 
         run(_setUpClass(cls))
@@ -28,7 +28,7 @@ class TestStack(IsolatedAsyncioTestCase):
         cls.test_stack = await cls.starknet.deploy(
             source="./tests/cairo_files/test_stack.cairo",
             cairo_path=["src"],
-            disable_hint_validation=True,
+            disable_hint_validation=False,
         )
 
     @classmethod
@@ -69,5 +69,3 @@ class TestStack(IsolatedAsyncioTestCase):
 
         with self.raisesStarknetError("Kakarot: StackUnderflow"):
             await self.test_stack.test__swap__should_fail__when_index_2_is_underflow().call()
-
-        await self.test_stack.test__dump__should_print_the_stack().call()

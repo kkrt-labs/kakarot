@@ -171,42 +171,4 @@ namespace Stack {
         let array_index = stack_len - 1 - stack_index;
         return array_index;
     }
-
-    // @notice Print the value of an element at a given stack index.
-    // @param self - The pointer to the stack.
-    // @param stack_index - The index of the element.
-    // @custom:use_hint
-    func print_element_at{range_check_ptr}(self: model.Stack*, stack_index: felt) {
-        let element = Stack.peek(self, stack_index);
-        %{
-            import logging
-            element_str = cairo_uint256_to_str(ids.element)
-            logging.info(f"{ids.stack_index} - {element_str}")
-        %}
-        return ();
-    }
-
-    // @notice Print the stack.
-    // @param self - The pointer to the stack.
-    func dump{range_check_ptr}(self: model.Stack*) {
-        let stack_len = Stack.len(self);
-        if (stack_len == 0) {
-            return ();
-        }
-        let last_index = stack_len - 1;
-        inner_dump(self=self, stack_index=0, last_index=last_index);
-        return ();
-    }
-
-    // @notice Recursively print the stack.
-    // @param self - The pointer to the stack.
-    // @param stack_index - The index of the element.
-    // @param last_index - The index of the last element.
-    func inner_dump{range_check_ptr}(self: model.Stack*, stack_index: felt, last_index: felt) {
-        Stack.print_element_at(self=self, stack_index=stack_index);
-        if (stack_index == last_index) {
-            return ();
-        }
-        return inner_dump(self, stack_index + 1, last_index);
-    }
 }

@@ -162,23 +162,6 @@ namespace Memory {
         return res;
     }
 
-    // @notice Print the memory.
-    // @param self - The pointer to the memory.
-    func dump(self: model.Memory*) {
-        %{
-            import logging
-            i = 0
-            res = ""
-            for i in range(ids.self.bytes_len):
-                res += " " + str(memory.get(ids.self.bytes + i))
-                i += i
-            logging.info("*************MEMORY*****************")
-            logging.info(res)
-            logging.info("************************************")
-        %}
-        return ();
-    }
-
     // @notice Expend the memory with length bytes
     // @param self - The pointer to the memory.
     // @param length - The number of bytes to add.

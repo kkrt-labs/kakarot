@@ -17,7 +17,7 @@ class TestComparisonOperations(IsolatedAsyncioTestCase):
             cls.test_comparison_operations = await cls.starknet.deploy(
                 source="./tests/cairo_files/instructions/test_comparison_operations.cairo",
                 cairo_path=["src"],
-                disable_hint_validation=True,
+                disable_hint_validation=False,
             )
 
         run(_setUpClass(cls))
@@ -26,7 +26,7 @@ class TestComparisonOperations(IsolatedAsyncioTestCase):
         cls.test_comparison_operations = await cls.starknet.deploy(
             source="./tests/cairo_files/instructions/test_comparison_operations.cairo",
             cairo_path=["src"],
-            disable_hint_validation=True,
+            disable_hint_validation=False,
         )
 
     @classmethod
