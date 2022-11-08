@@ -41,40 +41,8 @@ async def set_account_registry(zk_evm, account_registry):
     )
 
 
-test_cases = [
-    {
-        "params": {
-            "code": "608060405234801561001057600080fd5b5060405161080d38038061080d83398101604081905261002f91610197565b815161004290600090602085019061005e565b50805161005690600190602084019061005e565b505050610248565b82805461006a906101f7565b90600052602060002090601f01602090048101928261008c57600085556100d2565b82601f106100a557805160ff19168380011785556100d2565b828001600101855582156100d2579182015b828111156100d25782518255916020019190600101906100b7565b506100de9291506100e2565b5090565b5b808211156100de57600081556001016100e3565b600082601f830112610107578081fd5b81516001600160401b038082111561012157610121610232565b6040516020601f8401601f191682018101838111838210171561014657610146610232565b604052838252858401810187101561015c578485fd5b8492505b8383101561017d5785830181015182840182015291820191610160565b8383111561018d57848185840101525b5095945050505050565b600080604083850312156101a9578182fd5b82516001600160401b03808211156101bf578384fd5b6101cb868387016100f7565b935060208501519150808211156101e0578283fd5b506101ed858286016100f7565b9150509250929050565b60028104600182168061020b57607f821691505b6020821081141561022c57634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052604160045260246000fd5b6105b6806102576000396000f3fe608060405234801561001057600080fd5b50600436106100935760003560e01c806340c10f191161006657806340c10f19146100fe57806370a082311461011357806395d89b4114610126578063a9059cbb1461012e578063dd62ed3e1461014157610093565b806306fdde0314610098578063095ea7b3146100b657806318160ddd146100d657806323b872dd146100eb575b600080fd5b6100a0610154565b6040516100ad91906104a4565b60405180910390f35b6100c96100c4366004610470565b6101e2565b6040516100ad9190610499565b6100de61024c565b6040516100ad91906104f7565b6100c96100f9366004610435565b610252565b61011161010c366004610470565b610304565b005b6100de6101213660046103e2565b61033d565b6100a061034f565b6100c961013c366004610470565b61035c565b6100de61014f366004610403565b6103a9565b600080546101619061052f565b80601f016020809104026020016040519081016040528092919081815260200182805461018d9061052f565b80156101da5780601f106101af576101008083540402835291602001916101da565b820191906000526020600020905b8154815290600101906020018083116101bd57829003601f168201915b505050505081565b3360008181526004602090815260408083206001600160a01b038716808552925280832085905551919290917f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b9259061023b9086906104f7565b60405180910390a350600192915050565b60025481565b6001600160a01b038316600090815260046020908152604080832033845290915281205460001981146102ae576102898382610518565b6001600160a01b03861660009081526004602090815260408083203384529091529020555b6001600160a01b038516600090815260036020526040812080548592906102d6908490610518565b9091555050506001600160a01b03831660009081526003602052604090208054830190555060019392505050565b80600260008282546103169190610500565b90915550506001600160a01b03909116600090815260036020526040902080549091019055565b60036020526000908152604090205481565b600180546101619061052f565b3360009081526003602052604081208054839190839061037d908490610518565b9091555050506001600160a01b0382166000908152600360205260409020805482019055600192915050565b600460209081526000928352604080842090915290825290205481565b80356001600160a01b03811681146103dd57600080fd5b919050565b6000602082840312156103f3578081fd5b6103fc826103c6565b9392505050565b60008060408385031215610415578081fd5b61041e836103c6565b915061042c602084016103c6565b90509250929050565b600080600060608486031215610449578081fd5b610452846103c6565b9250610460602085016103c6565b9150604084013590509250925092565b60008060408385031215610482578182fd5b61048b836103c6565b946020939093013593505050565b901515815260200190565b6000602080835283518082850152825b818110156104d0578581018301518582016040015282016104b4565b818111156104e15783604083870101525b50601f01601f1916929092016040019392505050565b90815260200190565b600082198211156105135761051361056a565b500190565b60008282101561052a5761052a61056a565b500390565b60028104600182168061054357607f821691505b6020821081141561056457634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052601160045260246000fdfea26469706673582212204e53876a7abf080ce7b38dffe1572ec4843a83c565efd2feeb856984b5af6fb764736f6c634300080000330000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000074b616b61726f74000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003534a4e0000000000000000000000000000000000000000000000000000000000",
-            "calldata": "40c10f1900000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000164",
-            "stack": "",
-            "memory": "",
-            "return_value": "",
-        },
-        "id": "solmate_erc20_mint",
-        "marks": pytest.mark.execute_at_address,
-    },
-    {
-        "params": {
-            "code": "608060405234801561001057600080fd5b5060405161080d38038061080d83398101604081905261002f91610197565b815161004290600090602085019061005e565b50805161005690600190602084019061005e565b505050610248565b82805461006a906101f7565b90600052602060002090601f01602090048101928261008c57600085556100d2565b82601f106100a557805160ff19168380011785556100d2565b828001600101855582156100d2579182015b828111156100d25782518255916020019190600101906100b7565b506100de9291506100e2565b5090565b5b808211156100de57600081556001016100e3565b600082601f830112610107578081fd5b81516001600160401b038082111561012157610121610232565b6040516020601f8401601f191682018101838111838210171561014657610146610232565b604052838252858401810187101561015c578485fd5b8492505b8383101561017d5785830181015182840182015291820191610160565b8383111561018d57848185840101525b5095945050505050565b600080604083850312156101a9578182fd5b82516001600160401b03808211156101bf578384fd5b6101cb868387016100f7565b935060208501519150808211156101e0578283fd5b506101ed858286016100f7565b9150509250929050565b60028104600182168061020b57607f821691505b6020821081141561022c57634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052604160045260246000fd5b6105b6806102576000396000f3fe608060405234801561001057600080fd5b50600436106100935760003560e01c806340c10f191161006657806340c10f19146100fe57806370a082311461011357806395d89b4114610126578063a9059cbb1461012e578063dd62ed3e1461014157610093565b806306fdde0314610098578063095ea7b3146100b657806318160ddd146100d657806323b872dd146100eb575b600080fd5b6100a0610154565b6040516100ad91906104a4565b60405180910390f35b6100c96100c4366004610470565b6101e2565b6040516100ad9190610499565b6100de61024c565b6040516100ad91906104f7565b6100c96100f9366004610435565b610252565b61011161010c366004610470565b610304565b005b6100de6101213660046103e2565b61033d565b6100a061034f565b6100c961013c366004610470565b61035c565b6100de61014f366004610403565b6103a9565b600080546101619061052f565b80601f016020809104026020016040519081016040528092919081815260200182805461018d9061052f565b80156101da5780601f106101af576101008083540402835291602001916101da565b820191906000526020600020905b8154815290600101906020018083116101bd57829003601f168201915b505050505081565b3360008181526004602090815260408083206001600160a01b038716808552925280832085905551919290917f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b9259061023b9086906104f7565b60405180910390a350600192915050565b60025481565b6001600160a01b038316600090815260046020908152604080832033845290915281205460001981146102ae576102898382610518565b6001600160a01b03861660009081526004602090815260408083203384529091529020555b6001600160a01b038516600090815260036020526040812080548592906102d6908490610518565b9091555050506001600160a01b03831660009081526003602052604090208054830190555060019392505050565b80600260008282546103169190610500565b90915550506001600160a01b03909116600090815260036020526040902080549091019055565b60036020526000908152604090205481565b600180546101619061052f565b3360009081526003602052604081208054839190839061037d908490610518565b9091555050506001600160a01b0382166000908152600360205260409020805482019055600192915050565b600460209081526000928352604080842090915290825290205481565b80356001600160a01b03811681146103dd57600080fd5b919050565b6000602082840312156103f3578081fd5b6103fc826103c6565b9392505050565b60008060408385031215610415578081fd5b61041e836103c6565b915061042c602084016103c6565b90509250929050565b600080600060608486031215610449578081fd5b610452846103c6565b9250610460602085016103c6565b9150604084013590509250925092565b60008060408385031215610482578182fd5b61048b836103c6565b946020939093013593505050565b901515815260200190565b6000602080835283518082850152825b818110156104d0578581018301518582016040015282016104b4565b818111156104e15783604083870101525b50601f01601f1916929092016040019392505050565b90815260200190565b600082198211156105135761051361056a565b500190565b60008282101561052a5761052a61056a565b500390565b60028104600182168061054357607f821691505b6020821081141561056457634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052601160045260246000fdfea26469706673582212204e53876a7abf080ce7b38dffe1572ec4843a83c565efd2feeb856984b5af6fb764736f6c634300080000330000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000074b616b61726f74000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003534a4e0000000000000000000000000000000000000000000000000000000000",
-            "calldata": "70a082310000000000000000000000000000000000000000000000000000000000000001",
-            "stack": "",
-            "memory": "",
-            "return_value": "0000000000000000000000000000000000000000000000000000000000000000",
-        },
-        "id": "solmate_erc20_balanceOf",
-        "marks": pytest.mark.execute_at_address,
-    },
-    {
-        "params": {
-            "code": "608060405234801561001057600080fd5b5060405161080d38038061080d83398101604081905261002f91610197565b815161004290600090602085019061005e565b50805161005690600190602084019061005e565b505050610248565b82805461006a906101f7565b90600052602060002090601f01602090048101928261008c57600085556100d2565b82601f106100a557805160ff19168380011785556100d2565b828001600101855582156100d2579182015b828111156100d25782518255916020019190600101906100b7565b506100de9291506100e2565b5090565b5b808211156100de57600081556001016100e3565b600082601f830112610107578081fd5b81516001600160401b038082111561012157610121610232565b6040516020601f8401601f191682018101838111838210171561014657610146610232565b604052838252858401810187101561015c578485fd5b8492505b8383101561017d5785830181015182840182015291820191610160565b8383111561018d57848185840101525b5095945050505050565b600080604083850312156101a9578182fd5b82516001600160401b03808211156101bf578384fd5b6101cb868387016100f7565b935060208501519150808211156101e0578283fd5b506101ed858286016100f7565b9150509250929050565b60028104600182168061020b57607f821691505b6020821081141561022c57634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052604160045260246000fd5b6105b6806102576000396000f3fe608060405234801561001057600080fd5b50600436106100935760003560e01c806340c10f191161006657806340c10f19146100fe57806370a082311461011357806395d89b4114610126578063a9059cbb1461012e578063dd62ed3e1461014157610093565b806306fdde0314610098578063095ea7b3146100b657806318160ddd146100d657806323b872dd146100eb575b600080fd5b6100a0610154565b6040516100ad91906104a4565b60405180910390f35b6100c96100c4366004610470565b6101e2565b6040516100ad9190610499565b6100de61024c565b6040516100ad91906104f7565b6100c96100f9366004610435565b610252565b61011161010c366004610470565b610304565b005b6100de6101213660046103e2565b61033d565b6100a061034f565b6100c961013c366004610470565b61035c565b6100de61014f366004610403565b6103a9565b600080546101619061052f565b80601f016020809104026020016040519081016040528092919081815260200182805461018d9061052f565b80156101da5780601f106101af576101008083540402835291602001916101da565b820191906000526020600020905b8154815290600101906020018083116101bd57829003601f168201915b505050505081565b3360008181526004602090815260408083206001600160a01b038716808552925280832085905551919290917f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b9259061023b9086906104f7565b60405180910390a350600192915050565b60025481565b6001600160a01b038316600090815260046020908152604080832033845290915281205460001981146102ae576102898382610518565b6001600160a01b03861660009081526004602090815260408083203384529091529020555b6001600160a01b038516600090815260036020526040812080548592906102d6908490610518565b9091555050506001600160a01b03831660009081526003602052604090208054830190555060019392505050565b80600260008282546103169190610500565b90915550506001600160a01b03909116600090815260036020526040902080549091019055565b60036020526000908152604090205481565b600180546101619061052f565b3360009081526003602052604081208054839190839061037d908490610518565b9091555050506001600160a01b0382166000908152600360205260409020805482019055600192915050565b600460209081526000928352604080842090915290825290205481565b80356001600160a01b03811681146103dd57600080fd5b919050565b6000602082840312156103f3578081fd5b6103fc826103c6565b9392505050565b60008060408385031215610415578081fd5b61041e836103c6565b915061042c602084016103c6565b90509250929050565b600080600060608486031215610449578081fd5b610452846103c6565b9250610460602085016103c6565b9150604084013590509250925092565b60008060408385031215610482578182fd5b61048b836103c6565b946020939093013593505050565b901515815260200190565b6000602080835283518082850152825b818110156104d0578581018301518582016040015282016104b4565b818111156104e15783604083870101525b50601f01601f1916929092016040019392505050565b90815260200190565b600082198211156105135761051361056a565b500190565b60008282101561052a5761052a61056a565b500390565b60028104600182168061054357607f821691505b6020821081141561056457634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052601160045260246000fdfea26469706673582212204e53876a7abf080ce7b38dffe1572ec4843a83c565efd2feeb856984b5af6fb764736f6c634300080000330000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000074b616b61726f74000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003534a4e0000000000000000000000000000000000000000000000000000000000",
-            "calldata": "18160ddd",
-            "stack": "",
-            "memory": "",
-            "return_value": "0000000000000000000000000000000000000000000000000000000000000000",
-        },
-        "id": "solmate_erc20_totalSupply",
-        "marks": pytest.mark.execute_at_address,
-    },
+# Test cases for TestZkEVM.test_execute
+test_cases_execute = [
     {
         "params": {
             "code": "604260005260206000F3",
@@ -84,6 +52,7 @@ test_cases = [
             "return_value": "0000000000000000000000000000000000000000000000000000000000000042",
         },
         "id": "return",
+        "marks": [pytest.mark.RETURN, pytest.mark.SystemOperations],
     },
     {
         "params": {
@@ -94,6 +63,7 @@ test_cases = [
             "return_value": "00",
         },
         "id": "return2",
+        "marks": [pytest.mark.RETURN, pytest.mark.SystemOperations],
     },
     {
         "params": {
@@ -104,6 +74,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "codecopy",
+        "marks": [pytest.mark.CODECOPY, pytest.mark.EnvironmentalInformation],
     },
     {
         "params": {
@@ -114,6 +85,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "codecopy2",
+        "marks": [pytest.mark.CODECOPY, pytest.mark.EnvironmentalInformation],
     },
     {
         "params": {
@@ -124,6 +96,20 @@ test_cases = [
             "return_value": "",
         },
         "id": "Arithmetic operations",
+        "marks": [
+            pytest.mark.ADD,
+            pytest.mark.MUL,
+            pytest.mark.SUB,
+            pytest.mark.DIV,
+            pytest.mark.SDIV,
+            pytest.mark.MOD,
+            pytest.mark.SMOD,
+            pytest.mark.ADDMOD,
+            pytest.mark.MULMOD,
+            pytest.mark.EXP,
+            pytest.mark.SIGNEXTEND,
+            pytest.mark.ArithmeticOperations,
+        ],
     },
     {
         "params": {
@@ -134,6 +120,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Duplication operations",
+        "marks": [pytest.mark.DUP, pytest.mark.DuplicationOperations],
     },
     {
         "params": {
@@ -144,6 +131,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SAR",
+        "marks": [pytest.mark.SAR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -154,6 +142,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SAR",
+        "marks": [pytest.mark.SAR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -164,6 +153,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SAR",
+        "marks": [pytest.mark.SAR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -174,6 +164,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SAR",
+        "marks": [pytest.mark.SAR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -184,6 +175,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SAR",
+        "marks": [pytest.mark.SAR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -194,6 +186,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SAR",
+        "marks": [pytest.mark.SAR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -204,6 +197,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SAR",
+        "marks": [pytest.mark.SAR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -214,6 +208,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SAR",
+        "marks": [pytest.mark.SAR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -224,6 +219,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SAR",
+        "marks": [pytest.mark.SAR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -234,6 +230,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHR",
+        "marks": [pytest.mark.SAR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -244,6 +241,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SAR",
+        "marks": [pytest.mark.SAR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -254,6 +252,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SAR",
+        "marks": [pytest.mark.SAR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -264,6 +263,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SAR",
+        "marks": [pytest.mark.SAR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -274,6 +274,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SAR",
+        "marks": [pytest.mark.SAR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -284,6 +285,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SAR",
+        "marks": [pytest.mark.SAR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -294,6 +296,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SAR",
+        "marks": [pytest.mark.SAR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -304,6 +307,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHL",
+        "marks": [pytest.mark.SHL, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -314,6 +318,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHL",
+        "marks": [pytest.mark.SHL, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -324,6 +329,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHL",
+        "marks": [pytest.mark.SHL, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -334,6 +340,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHL",
+        "marks": [pytest.mark.SHL, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -344,6 +351,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHL",
+        "marks": [pytest.mark.SHL, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -354,6 +362,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHL",
+        "marks": [pytest.mark.SHL, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -364,6 +373,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHL",
+        "marks": [pytest.mark.SHL, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -374,6 +384,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHL",
+        "marks": [pytest.mark.SHL, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -384,6 +395,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHL",
+        "marks": [pytest.mark.SHL, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -394,6 +406,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHL",
+        "marks": [pytest.mark.SHL, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -404,6 +417,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHL",
+        "marks": [pytest.mark.SHL, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -414,6 +428,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHR",
+        "marks": [pytest.mark.SHR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -424,6 +439,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHR",
+        "marks": [pytest.mark.SHR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -434,6 +450,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHR",
+        "marks": [pytest.mark.SHR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -444,6 +461,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHR",
+        "marks": [pytest.mark.SHR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -454,6 +472,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHR",
+        "marks": [pytest.mark.SHR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -464,6 +483,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHR",
+        "marks": [pytest.mark.SHR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -474,6 +494,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHR",
+        "marks": [pytest.mark.SHR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -484,6 +505,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHR",
+        "marks": [pytest.mark.SHR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -494,6 +516,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHR",
+        "marks": [pytest.mark.SHR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -504,6 +527,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHR",
+        "marks": [pytest.mark.SHR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -514,6 +538,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SHR",
+        "marks": [pytest.mark.SHR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -524,6 +549,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - AND",
+        "marks": [pytest.mark.AND, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -534,6 +560,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - EQ",
+        "marks": [pytest.mark.EQ, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -544,6 +571,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - GT",
+        "marks": [pytest.mark.GT, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -554,6 +582,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - ISZERO",
+        "marks": [pytest.mark.ISZERO, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -564,6 +593,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - LT",
+        "marks": [pytest.mark.LT, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -574,6 +604,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - NOT",
+        "marks": [pytest.mark.NOT, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -584,6 +615,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - OR",
+        "marks": [pytest.mark.OR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -594,6 +626,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SGT",
+        "marks": [pytest.mark.SGT, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -604,6 +637,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SLT",
+        "marks": [pytest.mark.SLT, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
@@ -614,6 +648,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Exchange operations",
+        "marks": [pytest.mark.SWAP, pytest.mark.ExchangeOperations],
     },
     {
         "params": {
@@ -624,6 +659,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Environmental information",
+        "marks": [pytest.mark.CODESIZE, pytest.mark.EnvironmentalInformation],
     },
     {
         "params": {
@@ -634,6 +670,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Block information CHAINID",
+        "marks": [pytest.mark.CHAINID, pytest.mark.BlockInformation],
     },
     {
         "params": {
@@ -644,6 +681,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Block information COINBASE",
+        "marks": [pytest.mark.COINBASE, pytest.mark.BlockInformation],
     },
     {
         "params": {
@@ -654,7 +692,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "System operations INVALID",
-        "marks": pytest.mark.xfail,
+        "marks": [pytest.mark.INVALID, pytest.mark.SystemOperations, pytest.mark.xfail],
     },
     {
         "params": {
@@ -665,6 +703,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Block information NUMBER",
+        "marks": [pytest.mark.NUMBER, pytest.mark.BlockInformation],
     },
     {
         "params": {
@@ -675,6 +714,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Block information TIMESTAMP",
+        "marks": [pytest.mark.TIMESTAMP, pytest.mark.BlockInformation],
     },
     {
         "params": {
@@ -685,6 +725,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Get balance of currently executing contract - 0x47 SELFBALANCE",
+        "marks": [pytest.mark.SELFBALANCE, pytest.mark.BlockInformation],
     },
     {
         "params": {
@@ -695,6 +736,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Origin Address",
+        "marks": [pytest.mark.ORIGIN, pytest.mark.EnvironmentalInformation],
     },
     {
         "params": {
@@ -705,6 +747,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Caller Address",
+        "marks": [pytest.mark.CALLER, pytest.mark.EnvironmentalInformation],
     },
     {
         "params": {
@@ -715,7 +758,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Hash 32 bytes",
-        "marks": pytest.mark.sha3,
+        "marks": [pytest.mark.SHA3],
     },
     {
         "params": {
@@ -726,7 +769,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Hash 1 byte with offset 1f",
-        "marks": pytest.mark.sha3,
+        "marks": [pytest.mark.SHA3],
     },
     {
         "params": {
@@ -737,7 +780,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Hash 1 byte no offset",
-        "marks": pytest.mark.sha3,
+        "marks": [pytest.mark.SHA3],
     },
     {
         "params": {
@@ -748,7 +791,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Hash 7 bytes",
-        "marks": pytest.mark.sha3,
+        "marks": [pytest.mark.SHA3],
     },
     {
         "params": {
@@ -759,7 +802,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Hash 8 bytes",
-        "marks": pytest.mark.sha3,
+        "marks": [pytest.mark.SHA3],
     },
     {
         "params": {
@@ -770,7 +813,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Hash 9 bytes",
-        "marks": pytest.mark.sha3,
+        "marks": [pytest.mark.SHA3],
     },
     {
         "params": {
@@ -781,7 +824,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Hash 17 bytes",
-        "marks": pytest.mark.sha3,
+        "marks": [pytest.mark.SHA3],
     },
     {
         "params": {
@@ -792,6 +835,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Gas Limit",
+        "marks": [pytest.mark.GASLIMIT, pytest.mark.BlockInformation],
     },
     {
         "params": {
@@ -802,6 +846,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Get the size of return data - 0x3d RETURNDATASIZE",
+        "marks": [pytest.mark.RETURNDATASIZE, pytest.mark.EnvironmentalInformation],
     },
     {
         "params": {
@@ -812,6 +857,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Load Word from Memory",
+        "marks": [pytest.mark.DIFFICULTY, pytest.mark.BlockInformation],
     },
     {
         "params": {
@@ -822,7 +868,11 @@ test_cases = [
             "return_value": "",
         },
         "id": "Load Word from Memory",
-        "marks": pytest.mark.skip("Returned stack is 10,0 instead of 10,10"),
+        "marks": [
+            pytest.mark.BASEFEE,
+            pytest.mark.BlockInformation,
+            pytest.mark.skip("Returned stack is 10,0 instead of 10,10"),
+        ],
     },
     {
         "params": {
@@ -833,6 +883,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Load CallData onto the Stack - 0x35 CALLDATALOAD",
+        "marks": [pytest.mark.CALLDATALOAD, pytest.mark.EnvironmentalInformation],
     },
     {
         "params": {
@@ -843,6 +894,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Get the size of calldata when empty calldata - 0x36 CALLDATASIZE",
+        "marks": [pytest.mark.CALLDATASIZE, pytest.mark.EnvironmentalInformation],
     },
     {
         "params": {
@@ -853,6 +905,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Get the size of calldata when non empty calldata - 0x36 CALLDATASIZE",
+        "marks": [pytest.mark.CALLDATASIZE, pytest.mark.EnvironmentalInformation],
     },
     {
         "params": {
@@ -863,6 +916,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Balance",
+        "marks": [pytest.mark.BALANCE, pytest.mark.EnvironmentalInformation],
     },
     {
         "params": {
@@ -873,6 +927,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Memory operations",
+        "marks": [pytest.mark.MSTORE, pytest.mark.StackMemoryStorageFlowOperations],
     },
     {
         "params": {
@@ -883,7 +938,11 @@ test_cases = [
             "return_value": "",
         },
         "id": "Memory operations",
-        "marks": pytest.mark.skip("Returned memory missed the last empty bytes32"),
+        "marks": [
+            pytest.mark.MSTORE,
+            pytest.mark.StackMemoryStorageFlowOperations,
+            pytest.mark.skip("Returned memory missed the last empty bytes32"),
+        ],
     },
     {
         "params": {
@@ -894,6 +953,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Memory operation - PC",
+        "marks": [pytest.mark.PC, pytest.mark.StackMemoryStorageFlowOperations],
     },
     {
         "params": {
@@ -904,6 +964,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Get Memory Size",
+        "marks": [pytest.mark.MSIZE, pytest.mark.StackMemoryStorageFlowOperations],
     },
     {
         "params": {
@@ -914,6 +975,11 @@ test_cases = [
             "return_value": "",
         },
         "id": "Load Word from Memory",
+        "marks": [
+            pytest.mark.MSTORE,
+            pytest.mark.MLOAD,
+            pytest.mark.StackMemoryStorageFlowOperations,
+        ],
     },
     {
         "params": {
@@ -924,6 +990,10 @@ test_cases = [
             "return_value": "",
         },
         "id": "Jumpdest opcode",
+        "marks": [
+            pytest.mark.JUMPDEST,
+            pytest.mark.StackMemoryStorageFlowOperations,
+        ],
     },
     {
         "params": {
@@ -934,7 +1004,11 @@ test_cases = [
             "return_value": "",
         },
         "id": "JUMP opcode",
-        "marks": pytest.mark.skip("Returned stack is 10,11 instead of 11"),
+        "marks": [
+            pytest.mark.JUMP,
+            pytest.mark.StackMemoryStorageFlowOperations,
+            pytest.mark.skip("Returned stack is 10,11 instead of 11"),
+        ],
     },
     {
         "params": {
@@ -945,7 +1019,11 @@ test_cases = [
             "return_value": "",
         },
         "id": "JUMP if condition is met",
-        "marks": pytest.mark.skip("Returned stack is 10,20 instead of 20"),
+        "marks": [
+            pytest.mark.JUMPI,
+            pytest.mark.StackMemoryStorageFlowOperations,
+            pytest.mark.skip("Returned stack is 10,20 instead of 20"),
+        ],
     },
     {
         "params": {
@@ -956,6 +1034,10 @@ test_cases = [
             "return_value": "",
         },
         "id": "Memory operations - Check very large offsets",
+        "marks": [
+            pytest.mark.MSTORE,
+            pytest.mark.StackMemoryStorageFlowOperations,
+        ],
     },
     {
         "params": {
@@ -966,6 +1048,10 @@ test_cases = [
             "return_value": "",
         },
         "id": "Memory operations - Check Colliding offsets",
+        "marks": [
+            pytest.mark.MSTORE,
+            pytest.mark.StackMemoryStorageFlowOperations,
+        ],
     },
     {
         "params": {
@@ -976,6 +1062,10 @@ test_cases = [
             "return_value": "",
         },
         "id": "Memory operations - Check saving memory with 30 bytes",
+        "marks": [
+            pytest.mark.MSTORE,
+            pytest.mark.StackMemoryStorageFlowOperations,
+        ],
     },
     {
         "params": {
@@ -986,6 +1076,10 @@ test_cases = [
             "return_value": "",
         },
         "id": "Memory operations - Check saving memory in between an already saved memory location",
+        "marks": [
+            pytest.mark.MSTORE,
+            pytest.mark.StackMemoryStorageFlowOperations,
+        ],
     },
     {
         "params": {
@@ -996,6 +1090,10 @@ test_cases = [
             "return_value": "",
         },
         "id": "Memory operations - Check saving memory in between an already saved memory location",
+        "marks": [
+            pytest.mark.MSTORE8,
+            pytest.mark.StackMemoryStorageFlowOperations,
+        ],
     },
     {
         "params": {
@@ -1006,6 +1104,10 @@ test_cases = [
             "return_value": "",
         },
         "id": "Memory operations - Check saving memory in between an already saved memory location",
+        "marks": [
+            pytest.mark.MSTORE8,
+            pytest.mark.StackMemoryStorageFlowOperations,
+        ],
     },
     {
         "params": {
@@ -1016,6 +1118,10 @@ test_cases = [
             "return_value": "",
         },
         "id": "calldatacopy",
+        "marks": [
+            pytest.mark.CALLDATACOPY,
+            pytest.mark.EnvironmentalInformation,
+        ],
     },
     {
         "params": {
@@ -1026,6 +1132,10 @@ test_cases = [
             "return_value": "",
         },
         "id": "calldatacopy1",
+        "marks": [
+            pytest.mark.CALLDATACOPY,
+            pytest.mark.EnvironmentalInformation,
+        ],
     },
     {
         "params": {
@@ -1036,6 +1146,10 @@ test_cases = [
             "return_value": "",
         },
         "id": "calldatacopy2",
+        "marks": [
+            pytest.mark.CALLDATACOPY,
+            pytest.mark.EnvironmentalInformation,
+        ],
     },
     {
         "params": {
@@ -1046,6 +1160,10 @@ test_cases = [
             "return_value": "",
         },
         "id": "calldatacopy3",
+        "marks": [
+            pytest.mark.CALLDATACOPY,
+            pytest.mark.EnvironmentalInformation,
+        ],
     },
     {
         "params": {
@@ -1056,6 +1174,10 @@ test_cases = [
             "return_value": "",
         },
         "id": "calldatacopy4",
+        "marks": [
+            pytest.mark.CALLDATACOPY,
+            pytest.mark.EnvironmentalInformation,
+        ],
     },
     {
         "params": {
@@ -1066,6 +1188,10 @@ test_cases = [
             "return_value": "",
         },
         "id": "calldatacopy5",
+        "marks": [
+            pytest.mark.CALLDATACOPY,
+            pytest.mark.EnvironmentalInformation,
+        ],
     },
     {
         "params": {
@@ -1077,6 +1203,10 @@ test_cases = [
             "events": [[[], [0x10]]],
         },
         "id": "PRElog0",
+        "marks": [
+            pytest.mark.LOG,
+            pytest.mark.LoggingOperations,
+        ],
     },
     {
         "params": {
@@ -1088,6 +1218,10 @@ test_cases = [
             "events": [[[], [0x00]]],
         },
         "id": "PRElog0-1",
+        "marks": [
+            pytest.mark.LOG,
+            pytest.mark.LoggingOperations,
+        ],
     },
     {
         "params": {
@@ -1107,6 +1241,10 @@ test_cases = [
             ],
         },
         "id": "PRElog1",
+        "marks": [
+            pytest.mark.LOG,
+            pytest.mark.LoggingOperations,
+        ],
     },
     {
         "params": {
@@ -1118,6 +1256,10 @@ test_cases = [
             "events": [[[0xFF, 0x00], [0x00]]],
         },
         "id": "PRElog1-1",
+        "marks": [
+            pytest.mark.LOG,
+            pytest.mark.LoggingOperations,
+        ],
     },
     {
         "params": {
@@ -1139,6 +1281,10 @@ test_cases = [
             ],
         },
         "id": "PRElog2",
+        "marks": [
+            pytest.mark.LOG,
+            pytest.mark.LoggingOperations,
+        ],
     },
     {
         "params": {
@@ -1150,6 +1296,10 @@ test_cases = [
             "events": [[[0x00, 0x00, 0xFF, 0x00], [0x00]]],
         },
         "id": "PRElog2-1",
+        "marks": [
+            pytest.mark.LOG,
+            pytest.mark.LoggingOperations,
+        ],
     },
     {
         "params": {
@@ -1173,6 +1323,10 @@ test_cases = [
             ],
         },
         "id": "PRElog3",
+        "marks": [
+            pytest.mark.LOG,
+            pytest.mark.LoggingOperations,
+        ],
     },
     {
         "params": {
@@ -1184,6 +1338,10 @@ test_cases = [
             "events": [[[0xAB, 0x00, 0x00, 0x00, 0xFF, 0x00], [0x00]]],
         },
         "id": "PRElog3-1",
+        "marks": [
+            pytest.mark.LOG,
+            pytest.mark.LoggingOperations,
+        ],
     },
     {
         "params": {
@@ -1209,6 +1367,10 @@ test_cases = [
             ],
         },
         "id": "PRElog4",
+        "marks": [
+            pytest.mark.LOG,
+            pytest.mark.LoggingOperations,
+        ],
     },
     {
         "params": {
@@ -1230,6 +1392,10 @@ test_cases = [
             "return_value": "",
         },
         "id": "Environment Information - CODECOPY (0x39) - code slice within bounds, memory offset > len with tail padding",
+        "marks": [
+            pytest.mark.CODECOPY,
+            pytest.mark.EnvironmentalInformation,
+        ],
     },
     {
         "params": {
@@ -1240,6 +1406,10 @@ test_cases = [
             "return_value": "",
         },
         "id": "Environmental Information - CODECOPY (0x39) - code slice within bounds, memory copy within bounds",
+        "marks": [
+            pytest.mark.CODECOPY,
+            pytest.mark.EnvironmentalInformation,
+        ],
     },
     {
         "params": {
@@ -1250,6 +1420,10 @@ test_cases = [
             "return_value": "",
         },
         "id": "Environmental Information - CODECOPY (0x39) - code slice within bounds, memory offset < len < offset + size",
+        "marks": [
+            pytest.mark.CODECOPY,
+            pytest.mark.EnvironmentalInformation,
+        ],
     },
     {
         "params": {
@@ -1260,6 +1434,10 @@ test_cases = [
             "return_value": "",
         },
         "id": "Environmental Information - CODECOPY (0x39) - code with padding + memory offset > len ",
+        "marks": [
+            pytest.mark.CODECOPY,
+            pytest.mark.EnvironmentalInformation,
+        ],
     },
     {
         "params": {
@@ -1270,6 +1448,10 @@ test_cases = [
             "return_value": "",
         },
         "id": "Environmental Information - CODECOPY (0x39) - code offset > len, memory offset + size < len",
+        "marks": [
+            pytest.mark.CODECOPY,
+            pytest.mark.EnvironmentalInformation,
+        ],
     },
     {
         "params": {
@@ -1280,6 +1462,10 @@ test_cases = [
             "return_value": "",
         },
         "id": "Environment Information - CODECOPY (0x39) - evmcode example 1",
+        "marks": [
+            pytest.mark.CODECOPY,
+            pytest.mark.EnvironmentalInformation,
+        ],
     },
     {
         "params": {
@@ -1290,21 +1476,66 @@ test_cases = [
             "return_value": "",
         },
         "id": "Environment Information - CODECOPY (0x39) - evmcode example 1+2",
+        "marks": [
+            pytest.mark.CODECOPY,
+            pytest.mark.EnvironmentalInformation,
+        ],
     },
 ]
 
+# Test cases for TestZkEVM.test_execute_at_address
+test_cases_execute_at_address = [
+    {
+        "params": {
+            "code": "608060405234801561001057600080fd5b5060405161080d38038061080d83398101604081905261002f91610197565b815161004290600090602085019061005e565b50805161005690600190602084019061005e565b505050610248565b82805461006a906101f7565b90600052602060002090601f01602090048101928261008c57600085556100d2565b82601f106100a557805160ff19168380011785556100d2565b828001600101855582156100d2579182015b828111156100d25782518255916020019190600101906100b7565b506100de9291506100e2565b5090565b5b808211156100de57600081556001016100e3565b600082601f830112610107578081fd5b81516001600160401b038082111561012157610121610232565b6040516020601f8401601f191682018101838111838210171561014657610146610232565b604052838252858401810187101561015c578485fd5b8492505b8383101561017d5785830181015182840182015291820191610160565b8383111561018d57848185840101525b5095945050505050565b600080604083850312156101a9578182fd5b82516001600160401b03808211156101bf578384fd5b6101cb868387016100f7565b935060208501519150808211156101e0578283fd5b506101ed858286016100f7565b9150509250929050565b60028104600182168061020b57607f821691505b6020821081141561022c57634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052604160045260246000fd5b6105b6806102576000396000f3fe608060405234801561001057600080fd5b50600436106100935760003560e01c806340c10f191161006657806340c10f19146100fe57806370a082311461011357806395d89b4114610126578063a9059cbb1461012e578063dd62ed3e1461014157610093565b806306fdde0314610098578063095ea7b3146100b657806318160ddd146100d657806323b872dd146100eb575b600080fd5b6100a0610154565b6040516100ad91906104a4565b60405180910390f35b6100c96100c4366004610470565b6101e2565b6040516100ad9190610499565b6100de61024c565b6040516100ad91906104f7565b6100c96100f9366004610435565b610252565b61011161010c366004610470565b610304565b005b6100de6101213660046103e2565b61033d565b6100a061034f565b6100c961013c366004610470565b61035c565b6100de61014f366004610403565b6103a9565b600080546101619061052f565b80601f016020809104026020016040519081016040528092919081815260200182805461018d9061052f565b80156101da5780601f106101af576101008083540402835291602001916101da565b820191906000526020600020905b8154815290600101906020018083116101bd57829003601f168201915b505050505081565b3360008181526004602090815260408083206001600160a01b038716808552925280832085905551919290917f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b9259061023b9086906104f7565b60405180910390a350600192915050565b60025481565b6001600160a01b038316600090815260046020908152604080832033845290915281205460001981146102ae576102898382610518565b6001600160a01b03861660009081526004602090815260408083203384529091529020555b6001600160a01b038516600090815260036020526040812080548592906102d6908490610518565b9091555050506001600160a01b03831660009081526003602052604090208054830190555060019392505050565b80600260008282546103169190610500565b90915550506001600160a01b03909116600090815260036020526040902080549091019055565b60036020526000908152604090205481565b600180546101619061052f565b3360009081526003602052604081208054839190839061037d908490610518565b9091555050506001600160a01b0382166000908152600360205260409020805482019055600192915050565b600460209081526000928352604080842090915290825290205481565b80356001600160a01b03811681146103dd57600080fd5b919050565b6000602082840312156103f3578081fd5b6103fc826103c6565b9392505050565b60008060408385031215610415578081fd5b61041e836103c6565b915061042c602084016103c6565b90509250929050565b600080600060608486031215610449578081fd5b610452846103c6565b9250610460602085016103c6565b9150604084013590509250925092565b60008060408385031215610482578182fd5b61048b836103c6565b946020939093013593505050565b901515815260200190565b6000602080835283518082850152825b818110156104d0578581018301518582016040015282016104b4565b818111156104e15783604083870101525b50601f01601f1916929092016040019392505050565b90815260200190565b600082198211156105135761051361056a565b500190565b60008282101561052a5761052a61056a565b500390565b60028104600182168061054357607f821691505b6020821081141561056457634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052601160045260246000fdfea26469706673582212204e53876a7abf080ce7b38dffe1572ec4843a83c565efd2feeb856984b5af6fb764736f6c634300080000330000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000074b616b61726f74000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003534a4e0000000000000000000000000000000000000000000000000000000000",
+            "calldata": "40c10f1900000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000164",
+            "stack": "",
+            "memory": "",
+            "return_value": "",
+        },
+        "id": "solmate_erc20_mint",
+        "marks": [pytest.mark.SolmateERC20],
+    },
+    {
+        "params": {
+            "code": "608060405234801561001057600080fd5b5060405161080d38038061080d83398101604081905261002f91610197565b815161004290600090602085019061005e565b50805161005690600190602084019061005e565b505050610248565b82805461006a906101f7565b90600052602060002090601f01602090048101928261008c57600085556100d2565b82601f106100a557805160ff19168380011785556100d2565b828001600101855582156100d2579182015b828111156100d25782518255916020019190600101906100b7565b506100de9291506100e2565b5090565b5b808211156100de57600081556001016100e3565b600082601f830112610107578081fd5b81516001600160401b038082111561012157610121610232565b6040516020601f8401601f191682018101838111838210171561014657610146610232565b604052838252858401810187101561015c578485fd5b8492505b8383101561017d5785830181015182840182015291820191610160565b8383111561018d57848185840101525b5095945050505050565b600080604083850312156101a9578182fd5b82516001600160401b03808211156101bf578384fd5b6101cb868387016100f7565b935060208501519150808211156101e0578283fd5b506101ed858286016100f7565b9150509250929050565b60028104600182168061020b57607f821691505b6020821081141561022c57634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052604160045260246000fd5b6105b6806102576000396000f3fe608060405234801561001057600080fd5b50600436106100935760003560e01c806340c10f191161006657806340c10f19146100fe57806370a082311461011357806395d89b4114610126578063a9059cbb1461012e578063dd62ed3e1461014157610093565b806306fdde0314610098578063095ea7b3146100b657806318160ddd146100d657806323b872dd146100eb575b600080fd5b6100a0610154565b6040516100ad91906104a4565b60405180910390f35b6100c96100c4366004610470565b6101e2565b6040516100ad9190610499565b6100de61024c565b6040516100ad91906104f7565b6100c96100f9366004610435565b610252565b61011161010c366004610470565b610304565b005b6100de6101213660046103e2565b61033d565b6100a061034f565b6100c961013c366004610470565b61035c565b6100de61014f366004610403565b6103a9565b600080546101619061052f565b80601f016020809104026020016040519081016040528092919081815260200182805461018d9061052f565b80156101da5780601f106101af576101008083540402835291602001916101da565b820191906000526020600020905b8154815290600101906020018083116101bd57829003601f168201915b505050505081565b3360008181526004602090815260408083206001600160a01b038716808552925280832085905551919290917f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b9259061023b9086906104f7565b60405180910390a350600192915050565b60025481565b6001600160a01b038316600090815260046020908152604080832033845290915281205460001981146102ae576102898382610518565b6001600160a01b03861660009081526004602090815260408083203384529091529020555b6001600160a01b038516600090815260036020526040812080548592906102d6908490610518565b9091555050506001600160a01b03831660009081526003602052604090208054830190555060019392505050565b80600260008282546103169190610500565b90915550506001600160a01b03909116600090815260036020526040902080549091019055565b60036020526000908152604090205481565b600180546101619061052f565b3360009081526003602052604081208054839190839061037d908490610518565b9091555050506001600160a01b0382166000908152600360205260409020805482019055600192915050565b600460209081526000928352604080842090915290825290205481565b80356001600160a01b03811681146103dd57600080fd5b919050565b6000602082840312156103f3578081fd5b6103fc826103c6565b9392505050565b60008060408385031215610415578081fd5b61041e836103c6565b915061042c602084016103c6565b90509250929050565b600080600060608486031215610449578081fd5b610452846103c6565b9250610460602085016103c6565b9150604084013590509250925092565b60008060408385031215610482578182fd5b61048b836103c6565b946020939093013593505050565b901515815260200190565b6000602080835283518082850152825b818110156104d0578581018301518582016040015282016104b4565b818111156104e15783604083870101525b50601f01601f1916929092016040019392505050565b90815260200190565b600082198211156105135761051361056a565b500190565b60008282101561052a5761052a61056a565b500390565b60028104600182168061054357607f821691505b6020821081141561056457634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052601160045260246000fdfea26469706673582212204e53876a7abf080ce7b38dffe1572ec4843a83c565efd2feeb856984b5af6fb764736f6c634300080000330000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000074b616b61726f74000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003534a4e0000000000000000000000000000000000000000000000000000000000",
+            "calldata": "70a082310000000000000000000000000000000000000000000000000000000000000001",
+            "stack": "",
+            "memory": "",
+            "return_value": "0000000000000000000000000000000000000000000000000000000000000000",
+        },
+        "id": "solmate_erc20_balanceOf",
+        "marks": [pytest.mark.SolmateERC20],
+    },
+    {
+        "params": {
+            "code": "608060405234801561001057600080fd5b5060405161080d38038061080d83398101604081905261002f91610197565b815161004290600090602085019061005e565b50805161005690600190602084019061005e565b505050610248565b82805461006a906101f7565b90600052602060002090601f01602090048101928261008c57600085556100d2565b82601f106100a557805160ff19168380011785556100d2565b828001600101855582156100d2579182015b828111156100d25782518255916020019190600101906100b7565b506100de9291506100e2565b5090565b5b808211156100de57600081556001016100e3565b600082601f830112610107578081fd5b81516001600160401b038082111561012157610121610232565b6040516020601f8401601f191682018101838111838210171561014657610146610232565b604052838252858401810187101561015c578485fd5b8492505b8383101561017d5785830181015182840182015291820191610160565b8383111561018d57848185840101525b5095945050505050565b600080604083850312156101a9578182fd5b82516001600160401b03808211156101bf578384fd5b6101cb868387016100f7565b935060208501519150808211156101e0578283fd5b506101ed858286016100f7565b9150509250929050565b60028104600182168061020b57607f821691505b6020821081141561022c57634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052604160045260246000fd5b6105b6806102576000396000f3fe608060405234801561001057600080fd5b50600436106100935760003560e01c806340c10f191161006657806340c10f19146100fe57806370a082311461011357806395d89b4114610126578063a9059cbb1461012e578063dd62ed3e1461014157610093565b806306fdde0314610098578063095ea7b3146100b657806318160ddd146100d657806323b872dd146100eb575b600080fd5b6100a0610154565b6040516100ad91906104a4565b60405180910390f35b6100c96100c4366004610470565b6101e2565b6040516100ad9190610499565b6100de61024c565b6040516100ad91906104f7565b6100c96100f9366004610435565b610252565b61011161010c366004610470565b610304565b005b6100de6101213660046103e2565b61033d565b6100a061034f565b6100c961013c366004610470565b61035c565b6100de61014f366004610403565b6103a9565b600080546101619061052f565b80601f016020809104026020016040519081016040528092919081815260200182805461018d9061052f565b80156101da5780601f106101af576101008083540402835291602001916101da565b820191906000526020600020905b8154815290600101906020018083116101bd57829003601f168201915b505050505081565b3360008181526004602090815260408083206001600160a01b038716808552925280832085905551919290917f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b9259061023b9086906104f7565b60405180910390a350600192915050565b60025481565b6001600160a01b038316600090815260046020908152604080832033845290915281205460001981146102ae576102898382610518565b6001600160a01b03861660009081526004602090815260408083203384529091529020555b6001600160a01b038516600090815260036020526040812080548592906102d6908490610518565b9091555050506001600160a01b03831660009081526003602052604090208054830190555060019392505050565b80600260008282546103169190610500565b90915550506001600160a01b03909116600090815260036020526040902080549091019055565b60036020526000908152604090205481565b600180546101619061052f565b3360009081526003602052604081208054839190839061037d908490610518565b9091555050506001600160a01b0382166000908152600360205260409020805482019055600192915050565b600460209081526000928352604080842090915290825290205481565b80356001600160a01b03811681146103dd57600080fd5b919050565b6000602082840312156103f3578081fd5b6103fc826103c6565b9392505050565b60008060408385031215610415578081fd5b61041e836103c6565b915061042c602084016103c6565b90509250929050565b600080600060608486031215610449578081fd5b610452846103c6565b9250610460602085016103c6565b9150604084013590509250925092565b60008060408385031215610482578182fd5b61048b836103c6565b946020939093013593505050565b901515815260200190565b6000602080835283518082850152825b818110156104d0578581018301518582016040015282016104b4565b818111156104e15783604083870101525b50601f01601f1916929092016040019392505050565b90815260200190565b600082198211156105135761051361056a565b500190565b60008282101561052a5761052a61056a565b500390565b60028104600182168061054357607f821691505b6020821081141561056457634e487b7160e01b600052602260045260246000fd5b50919050565b634e487b7160e01b600052601160045260246000fdfea26469706673582212204e53876a7abf080ce7b38dffe1572ec4843a83c565efd2feeb856984b5af6fb764736f6c634300080000330000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000074b616b61726f74000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003534a4e0000000000000000000000000000000000000000000000000000000000",
+            "calldata": "18160ddd",
+            "stack": "",
+            "memory": "",
+            "return_value": "0000000000000000000000000000000000000000000000000000000000000000",
+        },
+        "id": "solmate_erc20_totalSupply",
+        "marks": [pytest.mark.SolmateERC20],
+    },
+    {
+        "params": {
+            "code": "4700",
+            "calldata": "",
+            "stack": "",
+            "memory": "",
+            "return_value": "",
+        },
+        "id": "Get balance of currently executing contract - 0x47 SELFBALANCE",
+        "marks": [pytest.mark.SELFBALANCE, pytest.mark.BlockInformation],
+    },
+]
 
 params_execute = [
-    pytest.param(case.pop("params"), **case)
-    for case in list(
-        filter(lambda x: x.get("marks") != pytest.mark.execute_at_address, test_cases)
-    )
+    pytest.param(case.pop("params"), **case) for case in test_cases_execute
 ]
 params_execute_at_address = [
-    pytest.param(case.pop("params"), **case)
-    for case in list(
-        filter(lambda x: x.get("marks") == pytest.mark.execute_at_address, test_cases)
-    )
+    pytest.param(case.pop("params"), **case) for case in test_cases_execute_at_address
 ]
 
 
