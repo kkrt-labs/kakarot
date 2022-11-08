@@ -92,7 +92,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         // Get the code size.
-        let code_size = Helpers.to_uint256(ctx.code_len);
+        let code_size = Helpers.to_uint256(ctx.call_context.code_len);
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=code_size);
 
         // Update the execution context.
@@ -218,8 +218,8 @@ namespace EnvironmentalInformation {
 
         let (sliced_calldata: felt*) = alloc();
 
-        let calldata: felt* = ctx.calldata;
-        let calldata_len: felt = ctx.calldata_len;
+        let calldata: felt* = ctx.call_context.calldata;
+        let calldata_len: felt = ctx.call_context.calldata_len;
 
         // read calldata at offset
         let sliced_calldata: felt* = Helpers.slice_data(
@@ -252,7 +252,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let calldata_size = Helpers.to_uint256(ctx.calldata_len);
+        let calldata_size = Helpers.to_uint256(ctx.call_context.calldata_len);
         let stack: model.Stack* = Stack.push(ctx.stack, calldata_size);
 
         // Update the execution context.
@@ -291,8 +291,8 @@ namespace EnvironmentalInformation {
         let calldata_offset = popped[1];
         let element_len = popped[0];
 
-        let calldata: felt* = ctx.calldata;
-        let calldata_len: felt = ctx.calldata_len;
+        let calldata: felt* = ctx.call_context.calldata;
+        let calldata_len: felt = ctx.call_context.calldata_len;
 
         // Get calldata slice from calldata_offset to element_len
         let sliced_calldata: felt* = Helpers.slice_data(
@@ -399,8 +399,8 @@ namespace EnvironmentalInformation {
         let element_len = popped[0];
 
         // Get code slice from code_offset to element_len
-        let code: felt* = ctx.code;
-        let code_len: felt = ctx.code_len;
+        let code: felt* = ctx.call_context.code;
+        let code_len: felt = ctx.call_context.code_len;
         let sliced_code: felt* = Helpers.slice_data(
             data_len=code_len, data=code, data_offset=code_offset.low, slice_len=element_len.low
         );

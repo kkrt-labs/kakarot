@@ -39,9 +39,10 @@ func execute{
     stack_len: felt, stack: Uint256*, memory_len: felt, memory: felt*, gas_used: felt
 ) {
     alloc_locals;
-    let context = Kakarot.execute(
-        code_len=code_len, code=code, calldata=calldata, calldata_len=calldata_len
-    );
+    local call_context: model.CallContext* = new model.CallContext(
+        code=code, code_len=code_len, calldata=calldata, calldata_len=calldata_len
+        );
+    let context = Kakarot.execute(call_context);
     let len = Stack.len(context.stack);
     return (
         stack_len=len,

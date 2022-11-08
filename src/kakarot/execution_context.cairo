@@ -26,13 +26,9 @@ from kakarot.interfaces.interfaces import IRegistry, IEvm_Contract
 namespace ExecutionContext {
     // @notice Initialize the execution context.
     // @dev set the initial values before executing a piece of code
-    // @param code The bytecode to execute.
-    // @param code_len The length of the bytecode
-    // @param calldata The calldata.
+    // @param call_context The call context.
     // @return The initialized execution context.
-    func init(
-        code: felt*, code_len: felt, calldata: felt*, calldata_len: felt
-    ) -> model.ExecutionContext* {
+    func init(call_context: model.CallContext*) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
 
@@ -50,10 +46,7 @@ namespace ExecutionContext {
         // 3. Get the constant of Evm address mappings
 
         local ctx: model.ExecutionContext* = new model.ExecutionContext(
-            code=code,
-            code_len=code_len,
-            calldata=calldata,
-            calldata_len=calldata_len,
+            call_context=call_context,
             program_counter=initial_pc,
             stopped=FALSE,
             return_data=empty_return_data,
@@ -100,12 +93,12 @@ namespace ExecutionContext {
 
         // Get the bytecode from the Starknet_contract
         let (code_len, code) = IEvm_Contract.code(contract_address=starknet_address);
+        local call_context: model.CallContext* = new model.CallContext(
+            code=code, code_len=code_len, calldata=calldata, calldata_len=calldata_len
+            );
 
         return new model.ExecutionContext(
-            code=code,
-            code_len=code_len,
-            calldata=calldata,
-            calldata_len=calldata_len,
+            call_context=call_context,
             program_counter=initial_pc,
             stopped=FALSE,
             return_data=empty_return_data,
@@ -128,10 +121,7 @@ namespace ExecutionContext {
         let intrinsic_gas_cost = Constants.TRANSACTION_INTRINSIC_GAS_COST;
         let gas_used = self.gas_used + intrinsic_gas_cost;
         return new model.ExecutionContext(
-            code=self.code,
-            code_len=self.code_len,
-            calldata=self.calldata,
-            calldata_len=self.calldata_len,
+            call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=self.stopped,
             return_data=self.return_data,
@@ -160,10 +150,7 @@ namespace ExecutionContext {
     // @return The pointer to the updated execution context.
     func stop(self: model.ExecutionContext*) -> model.ExecutionContext* {
         return new model.ExecutionContext(
-            code=self.code,
-            code_len=self.code_len,
-            calldata=self.calldata,
-            calldata_len=self.calldata_len,
+            call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=TRUE,
             return_data=self.return_data,
@@ -192,7 +179,7 @@ namespace ExecutionContext {
         let pc = self.program_counter;
         let (output: felt*) = alloc();
         // Copy code slice
-        memcpy(dst=output, src=self.code + pc, len=len);
+        memcpy(dst=output, src=self.call_context.code + pc, len=len);
         // Move program counter
         let self = ExecutionContext.increment_program_counter(self=self, inc_value=len);
         return (self=self, output=output);
@@ -206,10 +193,7 @@ namespace ExecutionContext {
         self: model.ExecutionContext*, new_stack: model.Stack*
     ) -> model.ExecutionContext* {
         return new model.ExecutionContext(
-            code=self.code,
-            code_len=self.code_len,
-            calldata=self.calldata,
-            calldata_len=self.calldata_len,
+            call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=self.stopped,
             return_data=self.return_data,
@@ -232,10 +216,7 @@ namespace ExecutionContext {
         self: model.ExecutionContext*, new_memory: model.Memory*
     ) -> model.ExecutionContext* {
         return new model.ExecutionContext(
-            code=self.code,
-            code_len=self.code_len,
-            calldata=self.calldata,
-            calldata_len=self.calldata_len,
+            call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=self.stopped,
             return_data=self.return_data,
@@ -263,10 +244,7 @@ namespace ExecutionContext {
         self: model.ExecutionContext*, new_return_data_len: felt, new_return_data: felt*
     ) -> model.ExecutionContext* {
         return new model.ExecutionContext(
-            code=self.code,
-            code_len=self.code_len,
-            calldata=self.calldata,
-            calldata_len=self.calldata_len,
+            call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=TRUE,
             return_data=new_return_data,
@@ -290,10 +268,7 @@ namespace ExecutionContext {
         self: model.ExecutionContext*, inc_value: felt
     ) -> model.ExecutionContext* {
         return new model.ExecutionContext(
-            code=self.code,
-            code_len=self.code_len,
-            calldata=self.calldata,
-            calldata_len=self.calldata_len,
+            call_context=self.call_context,
             program_counter=self.program_counter + inc_value,
             stopped=self.stopped,
             return_data=self.return_data,
@@ -317,10 +292,7 @@ namespace ExecutionContext {
         self: model.ExecutionContext*, inc_value: felt
     ) -> model.ExecutionContext* {
         return new model.ExecutionContext(
-            code=self.code,
-            code_len=self.code_len,
-            calldata=self.calldata,
-            calldata_len=self.calldata_len,
+            call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=self.stopped,
             return_data=self.return_data,
@@ -356,17 +328,14 @@ namespace ExecutionContext {
         // Revert if new_value points outside of the code range
         with_attr error_message("Kakarot: new pc target out of range") {
             assert_nn(new_pc_offset);
-            assert_le(new_pc_offset, self.code_len - 1);
+            assert_le(new_pc_offset, self.call_context.code_len - 1);
         }
 
         // Revert if new pc_offset points to something other then JUMPDEST
         check_jumpdest(self=self, pc_location=new_pc_offset);
 
         return new model.ExecutionContext(
-            code=self.code,
-            code_len=self.code_len,
-            calldata=self.calldata,
-            calldata_len=self.calldata_len,
+            call_context=self.call_context,
             program_counter=new_pc_offset,
             stopped=self.stopped,
             return_data=self.return_data,
@@ -390,7 +359,7 @@ namespace ExecutionContext {
         let (local output: felt*) = alloc();
 
         // Copy bytecode slice
-        memcpy(dst=output, src=self.code + pc_location, len=1);
+        memcpy(dst=output, src=self.call_context.code + pc_location, len=1);
 
         // Revert if current pc location is not JUMPDEST
         with_attr error_message("Kakarot: JUMPed to pc offset is not JUMPDEST") {
