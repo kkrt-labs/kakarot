@@ -45,6 +45,7 @@ async def set_account_registry(zk_evm, account_registry):
 test_cases_execute = [
     {
         "params": {
+            "value": 0,
             "code": "604260005260206000F3",
             "calldata": "",
             "stack": "",
@@ -56,6 +57,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "60016001f3",
             "calldata": "",
             "stack": "",
@@ -67,6 +69,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "60056003600039",
             "calldata": "",
             "stack": "",
@@ -78,6 +81,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6008601f600039",
             "calldata": "",
             "stack": "1766847064778384329583297500742918515827483896875618958121606201292619775",
@@ -89,6 +93,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "6003600401600a02608c036102bc04604605600d066010076005600608601060020960040A60600B00",
             "calldata": "",
             "stack": "16",
@@ -113,6 +118,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "60018060036004600260058300",
             "calldata": "",
             "stack": "1,1,3,4,2,5,3",
@@ -124,6 +130,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600160001d",
             "calldata": "",
             "stack": "1",
@@ -135,6 +142,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6101001d",
             "calldata": "",
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
@@ -146,6 +154,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600060011d",
             "calldata": "",
             "stack": "0",
@@ -157,6 +166,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7f400000000000000000000000000000000000000000000000000000000000000060fe1d",
             "calldata": "",
             "stack": "1",
@@ -168,6 +178,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60f81d",
             "calldata": "",
             "stack": "127",
@@ -179,6 +190,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60fe1d",
             "calldata": "",
             "stack": "1",
@@ -190,6 +202,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60ff1d",
             "calldata": "",
             "stack": "0",
@@ -201,6 +214,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6101001d",
             "calldata": "",
             "stack": "0",
@@ -212,6 +226,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600160011d",
             "calldata": "",
             "stack": "0",
@@ -223,6 +238,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7f800000000000000000000000000000000000000000000000000000000000000060011d",
             "calldata": "",
             "stack": "86844066927987146567678238756515930889952488499230423029593188005934847229952",
@@ -234,6 +250,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7f800000000000000000000000000000000000000000000000000000000000000060ff1d",
             "calldata": "",
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
@@ -245,6 +262,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7f80000000000000000000000000000000000000000000000000000000000000006101001d",
             "calldata": "",
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
@@ -256,6 +274,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7f80000000000000000000000000000000000000000000000000000000000000006101011d",
             "calldata": "",
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
@@ -267,6 +286,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60001d",
             "calldata": "",
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
@@ -278,6 +298,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60011d",
             "calldata": "",
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
@@ -289,6 +310,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60ff1d",
             "calldata": "",
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
@@ -300,6 +322,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600160001b",
             "calldata": "",
             "stack": "1",
@@ -311,6 +334,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600060011b",
             "calldata": "",
             "stack": "0",
@@ -322,6 +346,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7f7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60011b",
             "calldata": "",
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639934",
@@ -333,6 +358,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600160011b",
             "calldata": "",
             "stack": "2",
@@ -344,6 +370,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600160ff1b",
             "calldata": "",
             "stack": "57896044618658097711785492504343953926634992332820282019728792003956564819968",
@@ -355,6 +382,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "60016101001b",
             "calldata": "",
             "stack": "0",
@@ -366,6 +394,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "60016101011b",
             "calldata": "",
             "stack": "0",
@@ -377,6 +406,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60001b",
             "calldata": "",
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
@@ -388,6 +418,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60011b",
             "calldata": "",
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639934",
@@ -399,6 +430,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60ff1b",
             "calldata": "",
             "stack": "57896044618658097711785492504343953926634992332820282019728792003956564819968",
@@ -410,6 +442,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6101001b",
             "calldata": "",
             "stack": "0",
@@ -421,6 +454,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600160001c",
             "calldata": "",
             "stack": "1",
@@ -432,6 +466,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff6101001c",
             "calldata": "",
             "stack": "0",
@@ -443,6 +478,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600060011c",
             "calldata": "",
             "stack": "0",
@@ -454,6 +490,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600160011c",
             "calldata": "",
             "stack": "0",
@@ -465,6 +502,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7f800000000000000000000000000000000000000000000000000000000000000060011c",
             "calldata": "",
             "stack": "28948022309329048855892746252171976963317496166410141009864396001978282409984",
@@ -476,6 +514,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7f800000000000000000000000000000000000000000000000000000000000000060ff1c",
             "calldata": "",
             "stack": "1",
@@ -487,6 +526,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7f80000000000000000000000000000000000000000000000000000000000000006101001c",
             "calldata": "",
             "stack": "0",
@@ -498,6 +538,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7f80000000000000000000000000000000000000000000000000000000000000006101011c",
             "calldata": "",
             "stack": "0",
@@ -509,6 +550,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60001c",
             "calldata": "",
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
@@ -520,6 +562,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60011c",
             "calldata": "",
             "stack": "57896044618658097711785492504343953926634992332820282019728792003956564819967",
@@ -531,6 +574,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60ff1c",
             "calldata": "",
             "stack": "1",
@@ -542,6 +586,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "6005600516",
             "calldata": "",
             "stack": "5",
@@ -553,6 +598,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600a600a146009600a14",
             "calldata": "",
             "stack": "1,0",
@@ -564,6 +610,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600a600a116009600a11",
             "calldata": "",
             "stack": "0,1",
@@ -575,6 +622,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600015",
             "calldata": "",
             "stack": "1",
@@ -586,6 +634,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600a600910600a600a10",
             "calldata": "",
             "stack": "1,0",
@@ -597,6 +646,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600019",
             "calldata": "",
             "stack": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
@@ -608,6 +658,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "6005600317",
             "calldata": "",
             "stack": "7",
@@ -619,6 +670,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "60ff600113",
             "calldata": "",
             "stack": "0",
@@ -630,6 +682,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "60ff600112",
             "calldata": "",
             "stack": "1",
@@ -641,6 +694,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600360026001916004929200",
             "calldata": "",
             "stack": "1,2,3,4",
@@ -652,6 +706,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "60016101023800",
             "calldata": "",
             "stack": "1,258,7",
@@ -663,6 +718,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600160024600",
             "calldata": "",
             "stack": "1,2,1263227476",
@@ -674,6 +730,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "4100",
             "calldata": "",
             "stack": "1598625851760128517552627854997699631064626954749952456622017584404508471300",
@@ -685,6 +742,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "60016002FE",
             "calldata": "",
             "stack": "1,2",
@@ -696,6 +754,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "4300",
             "calldata": "",
             "stack": "1",
@@ -707,6 +766,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "4200",
             "calldata": "",
             "stack": "1",
@@ -718,6 +778,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "4700",
             "calldata": "",
             "stack": "0000000000000000000000000000000000000000000000000000000000000000",
@@ -729,6 +790,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "3200",
             "calldata": "",
             "stack": "0",
@@ -740,6 +802,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "3300",
             "calldata": "",
             "stack": "1",
@@ -751,6 +814,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "610100600052602060002000",
             "calldata": "",
             "stack": "31605475728638136284098257830937953109142906242585568807375082376557418698875",
@@ -762,6 +826,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "60106000526001601f2000",
             "calldata": "",
             "stack": "68071607937700842810429351077030899797510977729217708600998965445571406158526",
@@ -773,6 +838,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "6010600052600160002000",
             "calldata": "",
             "stack": "85131057757245807317576516368191972321038229705283732634690444270750521936266",
@@ -784,6 +850,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "6010600052600760002000",
             "calldata": "",
             "stack": "101225983456080153511598605893998939348063346639131267901574990367534118792751",
@@ -795,6 +862,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "6010600052600860002000",
             "calldata": "",
             "stack": "500549258012437878224561338362079327067368301550791134293299473726337612750",
@@ -806,6 +874,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "6010600052600960002000",
             "calldata": "",
             "stack": "78337347954576241567341556127836028920764967266964912349540464394612926403441",
@@ -817,6 +886,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "6010600052601160002000",
             "calldata": "",
             "stack": "41382199742381387985558122494590197322490258008471162768551975289239028668781",
@@ -828,6 +898,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "4500",
             "calldata": "",
             "stack": "1000000",
@@ -839,6 +910,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "3d00",
             "calldata": "",
             "stack": "0",
@@ -850,6 +922,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600a4400",
             "calldata": "",
             "stack": "10,0",
@@ -861,6 +934,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600a4800",
             "calldata": "",
             "stack": "10,10",
@@ -876,6 +950,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600035",
             "calldata": "000000000000000000000000000000000000000000000000000000000000000a",
             "stack": "10",
@@ -887,6 +962,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "3600",
             "calldata": "",
             "stack": "0",
@@ -898,6 +974,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "3600",
             "calldata": "ff",
             "stack": "1",
@@ -909,6 +986,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "60013100",
             "calldata": "",
             "stack": "0",
@@ -920,6 +998,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600a60005200",
             "calldata": "",
             "stack": "",
@@ -931,6 +1010,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600a60005260fa60245200",
             "calldata": "",
             "stack": "",
@@ -946,6 +1026,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "58600158",
             "calldata": "",
             "stack": "0,1,3",
@@ -957,6 +1038,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "5900",
             "calldata": "",
             "stack": "0",
@@ -968,6 +1050,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600a600052600051",
             "calldata": "",
             "stack": "10",
@@ -983,6 +1066,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "5860015b6001600158",
             "calldata": "",
             "stack": "0,1,1,1,8",
@@ -997,6 +1081,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "600556600a5b600b",
             "calldata": "",
             "stack": "11",
@@ -1012,6 +1097,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "6001600757600a5b600a6000600857600a01",
             "calldata": "",
             "stack": "20",
@@ -1027,6 +1113,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "601160405200",
             "calldata": "",
             "stack": "",
@@ -1041,6 +1128,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "6011604052602260405200",
             "calldata": "",
             "stack": "",
@@ -1055,6 +1143,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7d111111111111111111111111111111111111111111111111111111111111600052",
             "calldata": "",
             "stack": "",
@@ -1069,6 +1158,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff604052601160355200",
             "calldata": "",
             "stack": "",
@@ -1083,6 +1173,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "611122600353",
             "calldata": "",
             "stack": "",
@@ -1097,6 +1188,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7f111111111111111111111111111111111111111111111111111111111111111160005261222260055300",
             "calldata": "",
             "stack": "",
@@ -1111,6 +1203,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "6020600560063700",
             "calldata": "00112233445566778899aabbcceeddff",
             "stack": "",
@@ -1125,6 +1218,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7f00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff60005260106003600337",
             "calldata": "11111111111111111111111111111111111111111111111111111111111111111111",
             "stack": "",
@@ -1139,6 +1233,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "60246005600037",
             "calldata": "00112233445566778899aabbcceeddff00112233445566778899aabbccddeeff",
             "stack": "",
@@ -1153,6 +1248,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "60206005600037",
             "calldata": "00112233445566778899aabbcceeddff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
             "stack": "",
@@ -1167,6 +1263,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "60406003600037",
             "calldata": "00112233445566778899aabbcceeddff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff",
             "stack": "",
@@ -1181,6 +1278,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "60106005600037",
             "calldata": "00112233445566778899aabbcceeddff00112233445566778899aabbccddeeff",
             "stack": "",
@@ -1195,6 +1293,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "60106000526001601fA000",
             "calldata": "",
             "stack": "",
@@ -1210,6 +1309,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "601060005260016022A000",
             "calldata": "",
             "stack": "",
@@ -1225,6 +1325,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "60106000527FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF6001601fA100",
             "calldata": "",
             "stack": "",
@@ -1248,6 +1349,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "601060005260FF60016022A100",
             "calldata": "",
             "stack": "",
@@ -1263,6 +1365,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "60106000527FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF60FF6001601fA200",
             "calldata": "",
             "stack": "",
@@ -1288,6 +1391,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "6010600052600060FF60016022A200",
             "calldata": "",
             "stack": "",
@@ -1303,6 +1407,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "601060005260AB7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF60FF6001601fA300",
             "calldata": "",
             "stack": "",
@@ -1330,6 +1435,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "601060005260AB600060FF60016022A300",
             "calldata": "",
             "stack": "",
@@ -1345,6 +1451,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "6010600052600860AB7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF60FF6001601fA400",
             "calldata": "",
             "stack": "",
@@ -1374,6 +1481,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "6010600052600860AB600060FF60016022A400",
             "calldata": "",
             "stack": "",
@@ -1385,6 +1493,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "60026000600039",
             "calldata": "",
             "stack": "",
@@ -1399,6 +1508,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7d00112233445566778899aabbccddeeff00112233445566778899aabbccdd60005260086003600139",
             "calldata": "",
             "stack": "",
@@ -1413,6 +1523,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7d00112233445566778899aabbccddeeff00112233445566778899aabbccdd60005260206003600139",
             "calldata": "",
             "stack": "",
@@ -1427,6 +1538,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "60386002600339",
             "calldata": "",
             "stack": "",
@@ -1441,6 +1553,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7d00112233445566778899aabbccddeeff00112233445566778899aabbccdd60005260056065600439",
             "calldata": "",
             "stack": "",
@@ -1455,6 +1568,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7dFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7F0000000000000000000000000000000000000000000000000000000000000000505060326000600039",
             "calldata": "",
             "stack": "",
@@ -1469,6 +1583,7 @@ test_cases_execute = [
     },
     {
         "params": {
+            "value": 0,
             "code": "7dFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7F00000000000000000000000000000000000000000000000000000000000000005050603260006000396008601f600039",
             "calldata": "",
             "stack": "",
@@ -1554,6 +1669,7 @@ class TestZkEVM:
     async def test_execute(self, zk_evm, params):
         Uint256 = zk_evm.struct_manager.get_contract_struct("Uint256")
         res = await zk_evm.execute(
+            value=int(params["value"]),
             code=[int(b, 16) for b in wrap(params["code"], 2)],
             calldata=[int(b, 16) for b in wrap(params["calldata"], 2)],
         ).call(caller_address=1)
@@ -1582,20 +1698,25 @@ class TestZkEVM:
         print("DEPLOYING CONTRACT")
         res = await zk_evm.execute_at_address(
             address=0,
+            value=int(params["value"]),
             calldata=[int(b, 16) for b in wrap(params["code"], 2)],
         ).execute(caller_address=1)
 
         evm_contract_address = res.result.evm_contract_address
         starknet_contract_address = res.result.starknet_contract_address
+        value = int(params["value"])
 
         print("INITIATING CONTRACT")
         res = await zk_evm.initiate(
-            evm_address=evm_contract_address, starknet_address=starknet_contract_address
+            evm_address=evm_contract_address,
+            starknet_address=starknet_contract_address,
+            value=value,
         ).execute(caller_address=1)
 
         print("CALLING transactions TX")
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
+            value=value,
             calldata=[int(b, 16) for b in wrap(params["calldata"], 2)],
         ).execute(caller_address=2)
 

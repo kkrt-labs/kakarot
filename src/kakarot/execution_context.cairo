@@ -72,7 +72,7 @@ namespace ExecutionContext {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, calldata: felt*, calldata_len: felt) -> model.ExecutionContext* {
+    }(address: felt, calldata: felt*, calldata_len: felt, value: felt) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
 
@@ -94,7 +94,7 @@ namespace ExecutionContext {
         // Get the bytecode from the Starknet_contract
         let (code_len, code) = IEvm_Contract.code(contract_address=starknet_address);
         local call_context: model.CallContext* = new model.CallContext(
-            code=code, code_len=code_len, calldata=calldata, calldata_len=calldata_len
+            code=code, code_len=code_len, calldata=calldata, calldata_len=calldata_len, value=value
             );
 
         return new model.ExecutionContext(

@@ -40,6 +40,10 @@
     {
         "inputs": [
             {
+                "name": "value",
+                "type": "felt"
+            },
+            {
                 "name": "code_len",
                 "type": "felt"
             },
@@ -86,6 +90,10 @@
         "inputs": [
             {
                 "name": "address",
+                "type": "felt"
+            },
+            {
+                "name": "value",
                 "type": "felt"
             },
             {

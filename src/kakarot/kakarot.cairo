@@ -23,6 +23,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 
 // @notice Execute EVM bytecode
 // @dev Executes a provided array of evm opcodes/bytes
+// @param value The deposited value by the instruction/transaction responsible for this execution
 // @param code_len The bytecode length
 // @param code The bytecode to be executed
 // @param calldata_len The calldata length
@@ -35,12 +36,12 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 @view
 func execute{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(code_len: felt, code: felt*, calldata_len: felt, calldata: felt*) -> (
+}(value: felt, code_len: felt, code: felt*, calldata_len: felt, calldata: felt*) -> (
     stack_len: felt, stack: Uint256*, memory_len: felt, memory: felt*, gas_used: felt
 ) {
     alloc_locals;
     local call_context: model.CallContext* = new model.CallContext(
-        code=code, code_len=code_len, calldata=calldata, calldata_len=calldata_len
+        code=code, code_len=code_len, calldata=calldata, calldata_len=calldata_len, value=value
         );
     let context = Kakarot.execute(call_context);
     let len = Stack.len(context.stack);
@@ -56,6 +57,7 @@ func execute{
 // @notice execute bytecode of a given contract account
 // @dev reads the bytecode content of an contract account and then executes it
 // @param address The address of the contract whose bytecode will be executed
+// @param value The deposited value by the instruction/transaction responsible for this execution
 // @param calldata_len The calldata length
 // @param calldata The calldata which contains the entry point and method parameters
 // @return stack_len The length of the stack
@@ -66,7 +68,7 @@ func execute{
 @external
 func execute_at_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(address: felt, calldata_len: felt, calldata: felt*) -> (
+}(address: felt, value: felt, calldata_len: felt, calldata: felt*) -> (
     stack_len: felt,
     stack: Uint256*,
     memory_len: felt,
@@ -100,7 +102,7 @@ func execute_at_address{
     }
 
     let context = Kakarot.execute_at_address(
-        address=address, calldata_len=calldata_len, calldata=calldata
+        address=address, calldata_len=calldata_len, calldata=calldata, value=value
     );
 
     let len = Stack.len(context.stack);
@@ -176,7 +178,7 @@ func deploy{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 @external
 func initiate{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(evm_address: felt, starknet_address: felt) -> (
+}(evm_address: felt, starknet_address: felt, value: felt) -> (
     evm_contract_address: felt, starknet_contract_address: felt
 ) {
     alloc_locals;
@@ -192,7 +194,7 @@ func initiate{
 
     // Run bytecode
     let context: model.ExecutionContext* = Kakarot.execute_at_address(
-        address=evm_address, calldata_len=bytecode_len, calldata=bytecode
+        address=evm_address, calldata_len=bytecode_len, calldata=bytecode, value=value
     );
 
     // Update evm_contract code

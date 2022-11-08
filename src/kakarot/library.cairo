@@ -89,7 +89,7 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, calldata_len: felt, calldata: felt*) -> model.ExecutionContext* {
+    }(address: felt, calldata_len: felt, calldata: felt*, value: felt) -> model.ExecutionContext* {
         alloc_locals;
 
         // Generate instructions set
@@ -97,7 +97,7 @@ namespace Kakarot {
 
         // Prepare execution context
         let ctx: model.ExecutionContext* = ExecutionContext.init_at_address(
-            address, calldata=calldata, calldata_len=calldata_len
+            address=address, calldata=calldata, calldata_len=calldata_len, value=value
         );
 
         // Compute intrinsic gas cost and update gas used

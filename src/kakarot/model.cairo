@@ -21,6 +21,7 @@ namespace model {
         code_len: felt,
         calldata: felt*,
         calldata_len: felt,
+        value: felt,
     }
 
     struct ExecutionContext {

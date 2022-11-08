@@ -33,7 +33,7 @@ func init_context{
     let (calldata) = alloc();
     assert [calldata] = '';
     local call_context: model.CallContext* = new model.CallContext(
-        code=code, code_len=code_len, calldata=calldata, calldata_len=1
+        code=code, code_len=code_len, calldata=calldata, calldata_len=1, value=0
     );
     let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
     return ctx;

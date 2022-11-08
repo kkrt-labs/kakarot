@@ -35,7 +35,7 @@ func test__init__should_return_an_empty_execution_context{
 
     // When
     local call_context: model.CallContext* = new model.CallContext(
-        code=code, code_len=code_len, calldata=calldata, calldata_len=1
+        code=code, code_len=code_len, calldata=calldata, calldata_len=1, value=0
     );
     let result: model.ExecutionContext* = ExecutionContext.init(call_context);
 
@@ -72,7 +72,7 @@ func test__update_program_counter__should_set_pc_to_given_value{
 
     // When
     local call_context: model.CallContext* = new model.CallContext(
-        code=code, code_len=code_len, calldata=calldata, calldata_len=1
+        code=code, code_len=code_len, calldata=calldata, calldata_len=1, value=0
     );
     let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
     let result = ExecutionContext.update_program_counter(ctx, 3);
@@ -101,7 +101,7 @@ func test__update_program_counter__should_fail__when_given_value_not_in_code_ran
 
     // When & Then
     local call_context: model.CallContext* = new model.CallContext(
-        code=code, code_len=code_len, calldata=calldata, calldata_len=1
+        code=code, code_len=code_len, calldata=calldata, calldata_len=1, value=0
     );
     let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
     let result = ExecutionContext.update_program_counter(ctx, 6);
@@ -127,7 +127,7 @@ func test__update_program_counter__should_fail__when_given_destination_that_is_n
 
     // When & Then
     local call_context: model.CallContext* = new model.CallContext(
-        code=code, code_len=code_len, calldata=calldata, calldata_len=1
+        code=code, code_len=code_len, calldata=calldata, calldata_len=1, value=0
     );
     let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
     let result = ExecutionContext.update_program_counter(ctx, 2);
