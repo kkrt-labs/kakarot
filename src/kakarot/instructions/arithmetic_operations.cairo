@@ -4,13 +4,7 @@
 
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.uint256 import (
-    Uint256,
-    uint256_signed_div_rem,
-    uint256_le,
-    uint256_eq,
-    uint256_sub,
-)
+from starkware.cairo.common.uint256 import Uint256, uint256_signed_div_rem, uint256_le, uint256_eq, uint256_sub
 
 // Project dependencies
 from openzeppelin.security.safemath.library import SafeUint256
@@ -432,9 +426,7 @@ namespace ArithmeticOperations {
     // @param a The base.
     // @param b The exponent.
     // @return The result of the exponentiation.
-    func internal_exp{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        a: Uint256, b: Uint256
-    ) -> Uint256 {
+    func internal_exp{range_check_ptr}(a: Uint256, b: Uint256) -> Uint256 {
         let one_uint: Uint256 = Uint256(1, 0);
         let zero_uint: Uint256 = Uint256(0, 0);
 

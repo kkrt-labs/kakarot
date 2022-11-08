@@ -38,10 +38,7 @@ namespace Memory {
     // @param offset - The offset to store the element at.
     // @return The new pointer to the memory.
     func store{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
+        range_check_ptr
     }(self: model.Memory*, element: Uint256, offset: felt) -> model.Memory* {
         alloc_locals;
         let (new_memory: felt*) = alloc();
