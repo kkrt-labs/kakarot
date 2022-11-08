@@ -37,9 +37,9 @@ namespace Memory {
     // @param element - The element to push.
     // @param offset - The offset to store the element at.
     // @return The new pointer to the memory.
-    func store{
-        range_check_ptr
-    }(self: model.Memory*, element: Uint256, offset: felt) -> model.Memory* {
+    func store{range_check_ptr}(
+        self: model.Memory*, element: Uint256, offset: felt
+    ) -> model.Memory* {
         alloc_locals;
         let (new_memory: felt*) = alloc();
 

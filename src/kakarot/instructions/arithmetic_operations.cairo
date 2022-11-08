@@ -4,7 +4,13 @@
 
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.uint256 import Uint256, uint256_signed_div_rem, uint256_le, uint256_eq, uint256_sub
+from starkware.cairo.common.uint256 import (
+    Uint256,
+    uint256_signed_div_rem,
+    uint256_le,
+    uint256_eq,
+    uint256_sub,
+)
 
 // Project dependencies
 from openzeppelin.security.safemath.library import SafeUint256
