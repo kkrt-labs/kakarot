@@ -26,7 +26,9 @@ func constructor{
 func set_account_entry{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(starknet_address: felt, evm_address: felt) {
-    return AccountRegistry.set_account_entry(starknet_address=starknet_address, evm_address=evm_address);
+    return AccountRegistry.set_account_entry(
+        starknet_address=starknet_address, evm_address=evm_address
+    );
 }
 
 // @notice Transfer ownership of the registry to a new starknet address

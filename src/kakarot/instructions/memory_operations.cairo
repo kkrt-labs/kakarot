@@ -6,6 +6,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256, uint256_unsigned_div_rem
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.math_cmp import is_le, is_le_felt
 
 from kakarot.model import model
 from utils.utils import Helpers
@@ -220,7 +221,10 @@ namespace MemoryOperations {
         let skip_condition = popped[0];
 
         // Update pc if skip_jump is anything other then 0
-        if (skip_condition.low == 1) {
+
+        let is_condition_valid: felt = is_le(1, skip_condition.low);
+
+        if (is_condition_valid == 1) {
             // Update pc counter.
             let ctx = ExecutionContext.update_program_counter(ctx, offset.low);
             // Update context stack.

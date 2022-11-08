@@ -28,4 +28,10 @@ namespace IEvm_Contract {
     }
     func write_state(key: Uint256, value: Uint256) {
     }
+    func store_code(code_len: felt, code: felt*) {
+    }
+    func initiate(address: felt) {
+    }
+    func is_initiated() -> (is_initiated: felt) {
+    }
 }

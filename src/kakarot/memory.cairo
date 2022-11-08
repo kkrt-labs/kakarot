@@ -4,6 +4,7 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math_cmp import is_le_felt, is_le
 from starkware.cairo.common.math import split_int, unsigned_div_rem
@@ -32,9 +33,9 @@ namespace Memory {
     }
 
     // @notice Store an element into the memory.
-    // @param self The pointer to the memory.
-    // @param element The element to push.
-    // @param offset The offset to store the element at.
+    // @param self - The pointer to the memory.
+    // @param element - The element to push.
+    // @param offset - The offset to store the element at.
     // @return The new pointer to the memory.
     func store{range_check_ptr}(
         self: model.Memory*, element: Uint256, offset: felt
@@ -42,16 +43,16 @@ namespace Memory {
         alloc_locals;
         let (new_memory: felt*) = alloc();
 
-        // If current memory is empty initialize current memory to be zeros unitl offset is reached
-        if (self.bytes_len == 0) {
+        let bytes_len: felt = self.bytes_len;
+
+        if (bytes_len == 0) {
             Helpers.fill(arr=new_memory, value=0, length=offset);
         }
-        // If offest is larger then memory length, fill memory with zeros until memory length reaches the offset
-        let is_offset_greater_than_length = is_le_felt(self.bytes_len, offset);
+        let is_offset_greater_than_length = is_le_felt(bytes_len, offset);
         local max_copy: felt;
         if (is_offset_greater_than_length == 1) {
-            Helpers.fill(arr=new_memory + self.bytes_len, value=0, length=offset - self.bytes_len);
-            max_copy = self.bytes_len;
+            Helpers.fill(arr=new_memory + bytes_len, value=0, length=offset - bytes_len);
+            max_copy = bytes_len;
         } else {
             max_copy = offset;
         }
@@ -64,29 +65,31 @@ namespace Memory {
             n=16,
             base=2 ** 8,
             bound=2 ** 128,
-            output=self.bytes + self.bytes_len + 16,
+            output=self.bytes + bytes_len + 16,
         );
+
         split_int(
-            value=element.low, n=16, base=2 ** 8, bound=2 ** 128, output=self.bytes + self.bytes_len
+            value=element.low, n=16, base=2 ** 8, bound=2 ** 128, output=self.bytes + bytes_len
         );
+
         Helpers.reverse(
             old_arr_len=32,
-            old_arr=self.bytes + self.bytes_len,
+            old_arr=self.bytes + bytes_len,
             new_arr_len=32,
             new_arr=new_memory + offset,
         );
-
         let is_memory_growing = is_le_felt(self.bytes_len, offset + 32);
         local new_bytes_len: felt;
+
         if (is_memory_growing == 1) {
             new_bytes_len = offset + 32;
         } else {
             memcpy(
                 dst=new_memory + offset + 32,
                 src=self.bytes + offset + 32,
-                len=self.bytes_len - (offset),
+                len=bytes_len - (offset) - 32,
             );
-            new_bytes_len = self.bytes_len;
+            new_bytes_len = bytes_len;
         }
 
         return new model.Memory(bytes=new_memory, bytes_len=new_bytes_len);

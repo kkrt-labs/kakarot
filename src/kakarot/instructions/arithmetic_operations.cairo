@@ -4,7 +4,13 @@
 
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.uint256 import Uint256, uint256_signed_div_rem, uint256_le, uint256_eq
+from starkware.cairo.common.uint256 import (
+    Uint256,
+    uint256_signed_div_rem,
+    uint256_le,
+    uint256_eq,
+    uint256_sub,
+)
 
 // Project dependencies
 from openzeppelin.security.safemath.library import SafeUint256
@@ -128,7 +134,7 @@ namespace ArithmeticOperations {
         let b = popped[0];
 
         // Compute the subtraction
-        let (result) = SafeUint256.sub_le(a, b);
+        let (result) = uint256_sub(a, b);
 
         // Stack output:
         // a - b: integer result of the subtraction modulo 2^256

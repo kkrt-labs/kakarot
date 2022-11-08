@@ -34,6 +34,7 @@ namespace EnvironmentalInformation {
     const GAS_COST_ORIGIN = 2;
     const GAS_COST_RETURNDATACOPY = 3;
     const GAS_COST_RETURNDATASIZE = 2;
+    const GAS_COST_CALLVALUE = 2;
 
     // @notice BALANCE opcode.
     // @dev Get ETH balance of the specified address.
@@ -208,6 +209,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
+
         let stack = ctx.stack;
 
         // Stack input:
@@ -414,6 +416,35 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CODECOPY);
+        return ctx;
+    }
+    // TODO IMPLEMENT CALLVALUE
+    // @notice CALLVALUE operation.
+    // @dev Get caller address.
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 2
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_callvalue{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        // TOOD: Implement callvalue Get callvalue.
+        // let (current_address) = get_caller_address();
+        // let caller_address = Helpers.to_uint256(current_address);
+
+        // Push to the stack, currently pushing 0
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=Uint256(0, 0));
+
+        // Update the execution context.
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CALLVALUE);
         return ctx;
     }
 }

@@ -19,7 +19,6 @@ from kakarot.instructions import EVMInstructions
 from kakarot.interfaces.interfaces import IRegistry
 from kakarot.execution_context import ExecutionContext
 from kakarot.constants import native_token_address, registry_address, evm_contract_class_hash
-from utils.utils import Helpers
 
 @storage_var
 func salt() -> (value: felt) {
@@ -92,7 +91,7 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, calldata: felt*, calldata_len: felt) -> model.ExecutionContext* {
+    }(address: felt, calldata_len: felt, calldata: felt*) -> model.ExecutionContext* {
         alloc_locals;
 
         // Generate instructions set
