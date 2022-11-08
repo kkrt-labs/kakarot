@@ -335,7 +335,6 @@ namespace ExecutionContext {
             );
     }
 
-
     // @notice Dump the current execution context.
     // @dev The execution context is dumped to the debug server if `DEBUG` environment variable is set to `True`.
     func dump{range_check_ptr}(self: model.ExecutionContext*) {

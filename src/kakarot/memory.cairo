@@ -45,29 +45,9 @@ namespace Memory {
     }(self: model.Memory*, element: Uint256, offset: felt) -> model.Memory* {
         alloc_locals;
         let (new_memory: felt*) = alloc();
-        let (computation_memory: felt*) = alloc();
-        // TODO: self.bytes_len correctly - probably line 87
-        // let bytes_len: felt = Helpers.get_len(self.bytes);
-        let bytes_len : felt = self.bytes_len;
-        %{
-            import logging
 
-            def py_get_len(array):
-                i = 0
-                for key, val in memory.items():
-                    if key.segment_index == array.segment_index and key >= array:
-                        i = i + 1
-                return i
+        let bytes_len: felt = self.bytes_len;
 
-            logging.info("1.MEMORY BYTES LEN")
-            logging.info(ids.bytes_len)
-            res = py_get_len(ids.self.bytes)
-            logging.info("1.CALCULATED BYTES LEN")
-            logging.info(res)
-            logging.info("1.MEMORY OFFSET + 32")
-            logging.info(ids.offset+32)
-
-        %}
         if (bytes_len == 0) {
             Helpers.fill(arr=new_memory, value=0, length=offset);
         }
@@ -103,41 +83,17 @@ namespace Memory {
         );
         let is_memory_growing = is_le_felt(self.bytes_len, offset + 32);
         local new_bytes_len: felt;
-        local expand_memory: felt;
-        local max_expansion: felt = 64;
-        let (_, rem) = unsigned_div_rem(offset, 32);
-        let is_rem_not_zero = is_le_felt(1,rem);
-        if(is_rem_not_zero ==1){
-            expand_memory = max_expansion - rem;
-        } else {
-            expand_memory = 32;
-        }
+
         if (is_memory_growing == 1) {
-            // TODO: Fix new_bytes_len update
-            new_bytes_len = offset + expand_memory;
+            new_bytes_len = offset + 32;
         } else {
             memcpy(
-                dst=new_memory + offset + 32, src=self.bytes + offset + 32, len=bytes_len - (offset)
+                dst=new_memory + offset + 32,
+                src=self.bytes + offset + 32,
+                len=bytes_len - (offset) - 32,
             );
-            new_bytes_len = bytes_len+32;
+            new_bytes_len = bytes_len;
         }
-
-        %{
-            import logging
-
-            def py_get_len(array):
-                i = 0
-                for key, val in memory.items():
-                    if key.segment_index == array.segment_index and key >= array:
-                        i = i + 1
-                return i
-            logging.info("2.FINAL MEMORY BYTES LEN")
-            logging.info(ids.new_bytes_len)
-            res = py_get_len(ids.new_memory)
-            logging.info("2.FINAL CALCULATED BYTES LEN")
-            logging.info(res)
-   
-        %}
 
         return new model.Memory(bytes=new_memory, bytes_len=new_bytes_len);
     }

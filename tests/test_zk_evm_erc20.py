@@ -85,7 +85,7 @@ class TestZkEVM:
     ):
         Uint256 = zk_evm.struct_manager.get_contract_struct("Uint256")
 
-        #Deploy contract by sending calldata to address 0
+        # Deploy contract by sending calldata to address 0
         print("DEPLOYING CONTRACT")
         res = await zk_evm.execute_at_address(
             address=0,
@@ -95,48 +95,48 @@ class TestZkEVM:
         evm_contract_address = res.result.evm_contract_address
         starknet_contract_address = res.result.starknet_contract_address
 
-        #Deploy initiate deployed contract
+        # Deploy initiate deployed contract
         print("INITIATING CONTRACT")
         res = await zk_evm.initiate(
             evm_address=evm_contract_address, starknet_address=starknet_contract_address
         ).execute(caller_address=1)
 
-        #Call mint function
+        # Call mint function
         print("CALLING mint TX")
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
             calldata=[int(b, 16) for b in wrap(params["mint"], 2)],
         ).execute(caller_address=2)
 
-        #Call approve function
+        # Call approve function
         print("CALLING approve TX")
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
             calldata=[int(b, 16) for b in wrap(params["approve"], 2)],
         ).execute(caller_address=2)
 
-        #Call allowance function
+        # Call allowance function
         print("CALLING allowance TX")
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
             calldata=[int(b, 16) for b in wrap(params["allowance"], 2)],
         ).execute(caller_address=2)
 
-        #Call transferFrom function
+        # Call transferFrom function
         print("CALLING transferFrom TX")
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
             calldata=[int(b, 16) for b in wrap(params["transferFrom"], 2)],
         ).execute(caller_address=1)
 
-        #Call transfer function
+        # Call transfer function
         print("CALLING transfer")
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
             calldata=[int(b, 16) for b in wrap(params["transfer"], 2)],
         ).execute(caller_address=1)
 
-        #Call balanceOf function
+        # Call balanceOf function
         print("CHECKING balanceOf TX")
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,

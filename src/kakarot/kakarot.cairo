@@ -98,7 +98,9 @@ func execute_at_address{
         );
     }
 
-    let context = Kakarot.execute_at_address(address=address,calldata_len=calldata_len, calldata=calldata);
+    let context = Kakarot.execute_at_address(
+        address=address, calldata_len=calldata_len, calldata=calldata
+    );
 
     let len = Stack.len(context.stack);
     return (
@@ -189,7 +191,7 @@ func initiate{
 
     // Run bytecode
     let context: model.ExecutionContext* = Kakarot.execute_at_address(
-        address=evm_address,calldata_len=bytecode_len, calldata=bytecode
+        address=evm_address, calldata_len=bytecode_len, calldata=bytecode
     );
 
     // Update evm_contract code
