@@ -57,12 +57,12 @@ namespace EVMInstructions {
 
         local opcode;
 
-        let is_pc_le_code_len = is_le_felt(ctx.code_len, pc);
+        let is_pc_le_code_len = is_le_felt(ctx.call_context.code_len, pc);
 
         if (is_pc_le_code_len == 1) {
             assert opcode = 0;
         } else {
-            assert opcode = [ctx.code + pc];
+            assert opcode = [ctx.call_context.code + pc];
         }
 
         // move program counter + 1 after opcode is read
@@ -278,6 +278,10 @@ namespace EVMInstructions {
             instructions=instructions, opcode=0x33, function=EnvironmentalInformation.exec_caller
         );
         // 0x33 - CALLVALUE
+        add_instruction(
+            instructions=instructions, opcode=0x34, function=EnvironmentalInformation.exec_callvalue
+        );
+        // 0x34 - CALLVALUE
         add_instruction(
             instructions=instructions, opcode=0x34, function=EnvironmentalInformation.exec_callvalue
         );

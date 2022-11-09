@@ -29,12 +29,12 @@ namespace EnvironmentalInformation {
     const GAS_COST_CALLDATALOAD = 3;
     const GAS_COST_CALLDATASIZE = 2;
     const GAS_COST_CALLER = 2;
+    const GAS_COST_CALLVALUE = 2;
     const GAS_COST_CODECOPY = 3;
     const GAS_COST_CODESIZE = 2;
     const GAS_COST_ORIGIN = 2;
     const GAS_COST_RETURNDATACOPY = 3;
     const GAS_COST_RETURNDATASIZE = 2;
-    const GAS_COST_CALLVALUE = 2;
 
     // @notice BALANCE opcode.
     // @dev Get ETH balance of the specified address.
@@ -92,7 +92,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         // Get the code size.
-        let code_size = Helpers.to_uint256(ctx.code_len);
+        let code_size = Helpers.to_uint256(ctx.call_context.code_len);
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=code_size);
 
         // Update the execution context.
@@ -166,6 +166,31 @@ namespace EnvironmentalInformation {
         return ctx;
     }
 
+    // @notice CALLVALUE operation.
+    // @dev Get deposited value by the instruction/transaction responsible for this execution.
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 2
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_callvalue{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        let uint256_value: Uint256 = Helpers.to_uint256(ctx.call_context.value);
+        let stack: model.Stack* = Stack.push(ctx.stack, uint256_value);
+
+        // Update the execution context.
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLVALUE);
+        return ctx;
+    }
+
     // @notice RETURNDATASIZE operation.
     // @dev Get the size of return data.
     // @custom:since Frontier
@@ -218,8 +243,8 @@ namespace EnvironmentalInformation {
 
         let (sliced_calldata: felt*) = alloc();
 
-        let calldata: felt* = ctx.calldata;
-        let calldata_len: felt = ctx.calldata_len;
+        let calldata: felt* = ctx.call_context.calldata;
+        let calldata_len: felt = ctx.call_context.calldata_len;
 
         // read calldata at offset
         let sliced_calldata: felt* = Helpers.slice_data(
@@ -252,7 +277,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let calldata_size = Helpers.to_uint256(ctx.calldata_len);
+        let calldata_size = Helpers.to_uint256(ctx.call_context.calldata_len);
         let stack: model.Stack* = Stack.push(ctx.stack, calldata_size);
 
         // Update the execution context.
@@ -291,8 +316,8 @@ namespace EnvironmentalInformation {
         let calldata_offset = popped[1];
         let element_len = popped[0];
 
-        let calldata: felt* = ctx.calldata;
-        let calldata_len: felt = ctx.calldata_len;
+        let calldata: felt* = ctx.call_context.calldata;
+        let calldata_len: felt = ctx.call_context.calldata_len;
 
         // Get calldata slice from calldata_offset to element_len
         let sliced_calldata: felt* = Helpers.slice_data(
@@ -399,8 +424,8 @@ namespace EnvironmentalInformation {
         let element_len = popped[0];
 
         // Get code slice from code_offset to element_len
-        let code: felt* = ctx.code;
-        let code_len: felt = ctx.code_len;
+        let code: felt* = ctx.call_context.code;
+        let code_len: felt = ctx.call_context.code_len;
         let sliced_code: felt* = Helpers.slice_data(
             data_len=code_len, data=code, data_offset=code_offset.low, slice_len=element_len.low
         );
@@ -416,35 +441,6 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CODECOPY);
-        return ctx;
-    }
-    // TODO IMPLEMENT CALLVALUE
-    // @notice CALLVALUE operation.
-    // @dev Get caller address.
-    // @custom:since Frontier
-    // @custom:group Environmental Information
-    // @custom:gas 2
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @return The pointer to the updated execution context.
-    func exec_callvalue{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        // TOOD: Implement callvalue Get callvalue.
-        // let (current_address) = get_caller_address();
-        // let caller_address = Helpers.to_uint256(current_address);
-
-        // Push to the stack, currently pushing 0
-        let stack: model.Stack* = Stack.push(self=ctx.stack, element=Uint256(0, 0));
-
-        // Update the execution context.
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CALLVALUE);
         return ctx;
     }
 }

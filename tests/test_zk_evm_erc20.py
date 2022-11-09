@@ -89,6 +89,7 @@ class TestZkEVM:
         print("DEPLOYING CONTRACT")
         res = await zk_evm.execute_at_address(
             address=0,
+            value=0,
             calldata=[int(b, 16) for b in wrap(params["code"], 2)],
         ).execute(caller_address=1)
 
@@ -97,11 +98,14 @@ class TestZkEVM:
 
         evm_contract_address = res.result.evm_contract_address
         starknet_contract_address = res.result.starknet_contract_address
+        value = 0
 
         # Deploy initiate deployed contract
         print("INITIATING CONTRACT")
         res = await zk_evm.initiate(
-            evm_address=evm_contract_address, starknet_address=starknet_contract_address
+            evm_address=evm_contract_address,
+            starknet_address=starknet_contract_address,
+            value=value,
         ).execute(caller_address=1)
 
         print("ERC20 Contract initialization tx infos")
@@ -111,6 +115,7 @@ class TestZkEVM:
         print("CALLING mint TX")
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
+            value=value,
             calldata=[int(b, 16) for b in wrap(params["mint"], 2)],
         ).execute(caller_address=2)
 
@@ -121,6 +126,7 @@ class TestZkEVM:
         print("CALLING approve TX")
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
+            value=value,
             calldata=[int(b, 16) for b in wrap(params["approve"], 2)],
         ).execute(caller_address=2)
 
@@ -131,6 +137,7 @@ class TestZkEVM:
         print("CALLING allowance TX")
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
+            value=value,
             calldata=[int(b, 16) for b in wrap(params["allowance"], 2)],
         ).execute(caller_address=2)
 
@@ -141,6 +148,7 @@ class TestZkEVM:
         print("CALLING transferFrom TX")
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
+            value=value,
             calldata=[int(b, 16) for b in wrap(params["transferFrom"], 2)],
         ).execute(caller_address=1)
 
@@ -151,6 +159,7 @@ class TestZkEVM:
         print("CALLING transfer")
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
+            value=value,
             calldata=[int(b, 16) for b in wrap(params["transfer"], 2)],
         ).execute(caller_address=1)
 
@@ -161,6 +170,7 @@ class TestZkEVM:
         print("CHECKING balanceOf TX")
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
+            value=value,
             calldata=[int(b, 16) for b in wrap(params["balanceOf"], 2)],
         ).execute(caller_address=1)
 
