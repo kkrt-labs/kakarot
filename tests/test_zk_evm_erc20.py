@@ -154,7 +154,7 @@ class TestZkEVM:
             calldata=[int(b, 16) for b in wrap(params["transfer"], 2)],
         ).execute(caller_address=1)
 
-        print("ERC20 trasnfer tx infos")
+        print("ERC20 transfer tx infos")
         print(res.call_info.execution_resources)
 
         # Call balanceOf function
