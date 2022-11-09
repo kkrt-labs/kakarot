@@ -20,6 +20,9 @@ namespace Helpers {
         return res;
     }
 
+    // @notice This function is used to convert a sequence of 32 bytes to Uint256.
+    // @param val: pointer to the first byte of the 32.
+    // @return res: Uint256 representation of the given input in bytes32.
     func bytes32_to_uint256(val: felt*) -> Uint256 {
         let res = Uint256(
             low=[val + 16] * 256 ** 15 + [val + 17] * 256 ** 14 + [val + 18] * 256 ** 13 + [val + 19] * 256 ** 12 + [val + 20] * 256 ** 11 + [val + 21] * 256 ** 10 + [val + 22] * 256 ** 9 + [val + 23] * 256 ** 8 + [val + 24] * 256 ** 7 + [val + 25] * 256 ** 6 + [val + 26] * 256 ** 5 + [val + 27] * 256 ** 4 + [val + 28] * 256 ** 3 + [val + 29] * 256 ** 2 + [val + 30] * 256 + [val + 31],
@@ -27,7 +30,11 @@ namespace Helpers {
         );
         return res;
     }
-
+    // @notice This function is used to convert a sequence of i bytes to Uint256.
+    // @param val: pointer to the first byte.
+    // @param i: pointer to the first byte.
+    // @param res: variable to store the Uint256.
+    // @return res: Uint256 representation of the given input in bytes.
     func bytes_i_to_uint256{range_check_ptr}(val: felt*, i: felt, res: Uint256) -> Uint256 {
         alloc_locals;
         local new_i: felt;
@@ -71,10 +78,17 @@ namespace Helpers {
         }
     }
 
+    // @notice This function is used to convert a sequence of 8 bytes to a felt.
+    // @param val: pointer to the first byte.
+    // @return: felt representation of the input.
     func bytes_to_64_bits_little_felt(bytes: felt*) -> felt {
         return [bytes + 7] * 256 ** 7 + [bytes + 6] * 256 ** 6 + [bytes + 5] * 256 ** 5 + [bytes + 4] * 256 ** 4 + [bytes + 3] * 256 ** 3 + [bytes + 2] * 256 ** 2 + [bytes + 1] * 256 + [bytes];
     }
 
+    // @notice This function is used to make an arbitrary length array of same elements.
+    // @param arr: pointer to the first element
+    // @param value: value to place
+    // @param length: number of elements to add.
     func fill(arr: felt*, value: felt, length: felt) {
         if (length == 0) {
             return ();
@@ -83,6 +97,10 @@ namespace Helpers {
         return fill(arr + 1, value, length - 1);
     }
 
+    // @notice This function fills an empty array with elements from another array
+    // @param fill_with: number of elements to add
+    // @param input_arr: pointer to the input array
+    // @param output_arr: pointer to empty array to be filled with elts from input array
     func fill_array(fill_with: felt, input_arr: felt*, output_arr: felt*) {
         if (fill_with == 0) {
             return ();
@@ -91,12 +109,6 @@ namespace Helpers {
         return fill_array(fill_with - 1, input_arr + 1, output_arr + 1);
     }
 
-    // @notice Read and return a variable number of bytes from calldata.
-    // @param self The pointer to the execution context.
-    // @param offset the location from which to start reading the bytes
-    // @param byte_size number of bytes to read
-    // @param calldata is a pointer to the an array of 32bytes that the results will be written to
-    // @return The data read from calldata
     func slice_data{range_check_ptr}(
         data_len: felt, data: felt*, data_offset: felt, slice_len: felt
     ) -> felt* {
@@ -126,6 +138,9 @@ namespace Helpers {
         return reverse(old_arr_len - 1, &old_arr[1], new_arr_len + 1, new_arr);
     }
 
+    // @notice This function is used to convert a uint256 to a felt.
+    // @param val: value to convert.
+    // @return: felt representation of the input.
     func uint256_to_felt{range_check_ptr}(val: Uint256) -> felt {
         return val.low + val.high * 2 ** 128;
     }

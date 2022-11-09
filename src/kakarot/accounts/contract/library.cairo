@@ -86,6 +86,9 @@ namespace ContractAccount {
         return (code_len, code);
     }
 
+    // @notice This function is used to read the storage at a key.
+    // @param key: The key to the stored value .
+    // @return value: The store value.
     func read_state{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -96,6 +99,9 @@ namespace ContractAccount {
         return value;
     }
 
+    // @notice This function is used to write to the storage of the account.
+    // @param key: The key to the value to store.
+    // @param value: The value to store.
     func write_state{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -108,7 +114,8 @@ namespace ContractAccount {
         state_.write(key, value);
         return ();
     }
-
+    // @notice This function checkes if the account was initiated.
+    // @return is_initiated: 1 if the account has been initiated 0 otherwise.
     func is_initiated{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -118,7 +125,7 @@ namespace ContractAccount {
         let is_initiated: felt = is_initiated_.read();
         return (is_initiated=is_initiated);
     }
-
+    // @notice This function is used to Initiate the smart contract.
     func initiate{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
