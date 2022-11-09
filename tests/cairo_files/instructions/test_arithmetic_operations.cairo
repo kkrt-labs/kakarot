@@ -30,7 +30,10 @@ func init_context{
     tempvar code_len = 1;
     let (calldata) = alloc();
     assert [calldata] = '';
-    let ctx: model.ExecutionContext* = ExecutionContext.init(code, code_len, calldata, 1);
+    local call_context: model.CallContext* = new model.CallContext(
+        code=code, code_len=code_len, calldata=calldata, calldata_len=1, value=0
+    );
+    let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
     let ctx = ExecutionContext.update_stack(ctx, stack);
     return ctx;
 }
