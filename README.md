@@ -171,6 +171,10 @@ make test-integration
 # Run a specific test file
 pytest <PATH_TO_FILE>  # with pytest
 python3 -m unittest <PATH_TO_FILE>  # with unittest
+
+# Run a specific test mark (markers in pyproject.toml)
+make run-test-mark mark=<MARK>
+make run-test-mark-log mark=<MARK> # with log
 ```
 
 ## Deploy
