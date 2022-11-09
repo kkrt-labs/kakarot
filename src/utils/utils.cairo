@@ -41,6 +41,12 @@ namespace Helpers {
         local new_val: felt*;
         local high: felt;
 
+        // Check if i si inferiour to 32
+        let is_le32 = is_le_felt(i, 32);
+        with_attr error_message("number must be shorter than 32 bytes") {
+            assert is_le32 = 1;
+        }
+
         let is_16_le_i = is_le_felt(16, i);
         if (is_16_le_i == 1) {
             assert new_val = val + i - 16;
