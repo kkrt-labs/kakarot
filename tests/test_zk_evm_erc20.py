@@ -104,7 +104,7 @@ class TestZkEVM:
             evm_address=evm_contract_address, starknet_address=starknet_contract_address
         ).execute(caller_address=1)
 
-        print("ERC20 Contract initiation tx infos")
+        print("ERC20 Contract initialization tx infos")
         print(res.call_info.execution_resources)
 
         # Call mint function

@@ -1602,7 +1602,7 @@ class TestZkEVM:
             evm_address=evm_contract_address, starknet_address=starknet_contract_address
         ).execute(caller_address=1)
 
-        print("Contract initiation tx infos")
+        print("Contract initialization tx infos")
         print(res.call_info.execution_resources)
 
         print("CALLING transactions TX")
