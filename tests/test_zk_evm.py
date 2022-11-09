@@ -1689,10 +1689,16 @@ class TestZkEVM:
             code=[int(b, 16) for b in wrap(params["code"], 2)],
             calldata=[int(b, 16) for b in wrap(params["calldata"], 2)],
         ).call(caller_address=1)
+
+        # Print number of steps
+        print("Test tx Infos")
+        print(res.call_info.execution_resources)
+
         assert res.result.stack == [
             Uint256(*self.int_to_uint256(int(s)))
             for s in (params["stack"].split(",") if params["stack"] else [])
         ]
+
         assert res.result.memory == [int(m, 16) for m in wrap(params["memory"], 2)]
         events = params.get("events")
         if events:
@@ -1718,6 +1724,9 @@ class TestZkEVM:
             calldata=[int(b, 16) for b in wrap(params["code"], 2)],
         ).execute(caller_address=1)
 
+        print("Contract Deployment tx infos")
+        print(res.call_info.execution_resources)
+
         evm_contract_address = res.result.evm_contract_address
         starknet_contract_address = res.result.starknet_contract_address
         value = int(params["value"])
@@ -1729,12 +1738,18 @@ class TestZkEVM:
             value=value,
         ).execute(caller_address=1)
 
+        print("Contract initialization tx infos")
+        print(res.call_info.execution_resources)
+
         print("CALLING transactions TX")
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
             value=value,
             calldata=[int(b, 16) for b in wrap(params["calldata"], 2)],
         ).execute(caller_address=2)
+
+        print("Contract call tx infos")
+        print(res.call_info.execution_resources)
 
         assert res.result.return_data == [
             int(m, 16) for m in wrap(params["return_value"], 2)
