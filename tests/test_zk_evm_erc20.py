@@ -89,59 +89,93 @@ class TestZkEVM:
         print("DEPLOYING CONTRACT")
         res = await zk_evm.execute_at_address(
             address=0,
+            value=0,
             calldata=[int(b, 16) for b in wrap(params["code"], 2)],
         ).execute(caller_address=1)
 
+        print("ERC20 Deployment tx infos")
+        print(res.call_info.execution_resources)
+
         evm_contract_address = res.result.evm_contract_address
         starknet_contract_address = res.result.starknet_contract_address
+        value = 0
 
         # Deploy initiate deployed contract
         print("INITIATING CONTRACT")
         res = await zk_evm.initiate(
-            evm_address=evm_contract_address, starknet_address=starknet_contract_address
+            evm_address=evm_contract_address,
+            starknet_address=starknet_contract_address,
+            value=value,
         ).execute(caller_address=1)
+
+        print("ERC20 Contract initialization tx infos")
+        print(res.call_info.execution_resources)
 
         # Call mint function
         print("CALLING mint TX")
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
+            value=value,
             calldata=[int(b, 16) for b in wrap(params["mint"], 2)],
         ).execute(caller_address=2)
+
+        print("ERC20 mint tx infos")
+        print(res.call_info.execution_resources)
 
         # Call approve function
         print("CALLING approve TX")
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
+            value=value,
             calldata=[int(b, 16) for b in wrap(params["approve"], 2)],
         ).execute(caller_address=2)
+
+        print("ERC20 approve tx infos")
+        print(res.call_info.execution_resources)
 
         # Call allowance function
         print("CALLING allowance TX")
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
+            value=value,
             calldata=[int(b, 16) for b in wrap(params["allowance"], 2)],
         ).execute(caller_address=2)
+
+        print("ERC20 allowance tx infos")
+        print(res.call_info.execution_resources)
 
         # Call transferFrom function
         print("CALLING transferFrom TX")
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
+            value=value,
             calldata=[int(b, 16) for b in wrap(params["transferFrom"], 2)],
         ).execute(caller_address=1)
+
+        print("ERC20 transferFrom tx infos")
+        print(res.call_info.execution_resources)
 
         # Call transfer function
         print("CALLING transfer")
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
+            value=value,
             calldata=[int(b, 16) for b in wrap(params["transfer"], 2)],
         ).execute(caller_address=1)
+
+        print("ERC20 transfer tx infos")
+        print(res.call_info.execution_resources)
 
         # Call balanceOf function
         print("CHECKING balanceOf TX")
         res = await zk_evm.execute_at_address(
             address=evm_contract_address,
+            value=value,
             calldata=[int(b, 16) for b in wrap(params["balanceOf"], 2)],
         ).execute(caller_address=1)
+
+        print("ERC20 balanceOf tx infos")
+        print(res.call_info.execution_resources)
 
         assert res.result.return_data == [
             int(m, 16) for m in wrap(params["return_value"], 2)

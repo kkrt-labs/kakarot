@@ -39,8 +39,8 @@ production.
 %%{init: {'theme': 'forest', 'themeVariables': { 'darkMode': 'false'}}}%%
 
 pie title Kakarot EMV opcodes support (123 / 142)
-    "Supported" : 123
-    "Not supported" : 19
+    "Supported" : 124
+    "Not supported" : 18
 
     "Partially supported" : 0
 ```
@@ -68,7 +68,7 @@ sequenceDiagram
     participant ArithmeticOperations
     participant PushOperations
     participant Stack
-    User->>+Kakarot: execute(code, calldata)
+    User->>+Kakarot: execute(value, code, calldata)
     Kakarot->>+EVMInstructions: generate_instructions()
     EVMInstructions->>-Kakarot: instructions
     Kakarot->>+ExecutionContext: compute_intrinsic_gas_cost()

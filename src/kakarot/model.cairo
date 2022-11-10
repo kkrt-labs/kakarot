@@ -16,11 +16,16 @@ namespace model {
         bytes_len: felt,  // The size is counted with the highest address that was accessed.
     }
 
-    struct ExecutionContext {
+    struct CallContext {
         code: felt*,
         code_len: felt,
         calldata: felt*,
         calldata_len: felt,
+        value: felt,
+    }
+
+    struct ExecutionContext {
+        call_context: CallContext*,
         program_counter: felt,
         stopped: felt,
         return_data: felt*,

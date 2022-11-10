@@ -54,6 +54,7 @@ markers = [
     "BALANCE:        Opcode Value 0x31 - Get balance of the given account",
     "ORIGIN:         Opcode Value 0x32 - Get execution origination address",
     "CALLER:         Opcode Value 0x33 - Get caller address",
+    "CALLVALUE:      Opcode Value 0x34 - Get deposited value by the instruction/transaction responsible for this execution",
     "CALLDATALOAD:   Opcode Value 0x35 - Get input data of current environment",
     "CALLDATASIZE:   Opcode Value 0x36 - Get size of input data in current environment",
     "CALLDATACOPY:   Opcode Value 0x37 - Copy input data in current environment to memory",
