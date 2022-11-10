@@ -31,3 +31,4 @@ package-lock.json
 tsconfig.json
 
 lint.sarif
+kakarot.code-workspace
