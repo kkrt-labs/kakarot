@@ -106,7 +106,7 @@ namespace Helpers {
     // @notice This function fills an empty array with elements from another array
     // @param fill_with: number of elements to add
     // @param input_arr: pointer to the input array
-    // @param output_arr: pointer to empty array to be filled with elts from input array
+    // @param output_arr: pointer to empty array to be filled with elements from input array
     func fill_array(fill_with: felt, input_arr: felt*, output_arr: felt*) {
         if (fill_with == 0) {
             return ();

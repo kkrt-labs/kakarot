@@ -58,7 +58,7 @@ func state{
     return ContractAccount.read_state(key);
 }
 
-// @notice This function is used to Initiate the smart contract.
+// @notice This function is used to initialize the smart contract.
 @external
 func initiate{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -66,8 +66,8 @@ func initiate{
     return ContractAccount.initiate();
 }
 
-// @notice This function checkes if the account was initiated.
-// @return is_initiated: 1 if the account has been initiated 0 otherwise.
+// @notice This function checks if the account was initialized.
+// @return is_initiated: 1 if the account has been initialized 0 otherwise.
 @view
 func have_initiaded{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
