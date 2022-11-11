@@ -35,16 +35,23 @@ def timeit(fun):
 def _trace_call(fun, name, *args, **kwargs):
     async def traced_fun(*a, **kw):
         res = await fun(*a, **kw)
+        resources = res.call_info.execution_resources.Schema().dump(
+            res.call_info.execution_resources
+        )
+        resources = {
+            **resources.pop("builtin_instance_counter"),
+            **resources,
+        }
         _resources_report.append(
             {
                 "name": name,
                 "args": args,
                 "kwargs": kwargs,
-                "resources": res.call_info.execution_resources,
+                **resources,
             }
         )
         logger.info(
-            f"{name}({json.dumps(args)}, {json.dumps(kwargs)}) used {res.call_info.execution_resources}"
+            f"{name}({json.dumps(args)}, {json.dumps(kwargs)}) used {resources}"
         )
         return res
 
@@ -82,7 +89,9 @@ def traceit(contract: StarknetContract, name: str):
 
 
 def reports():
-    return pd.DataFrame(_time_report), pd.DataFrame(_resources_report)
+    return pd.DataFrame(_time_report), pd.DataFrame(_resources_report).sort_values(
+        ["n_steps"], ascending=False
+    ).fillna(0)
 
 
 def dump_reports(path: Union[str, Path]):
