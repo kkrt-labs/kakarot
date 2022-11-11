@@ -1,7 +1,7 @@
 import json
 import logging
 from pathlib import Path
-from time import time
+from time import perf_counter
 from typing import Union
 
 import pandas as pd
@@ -17,9 +17,9 @@ _resources_report = []
 
 def timeit(fun):
     async def timed_fun(*args, **kwargs):
-        start = time()
+        start = perf_counter()
         res = await fun(*args, **kwargs)
-        stop = time()
+        stop = perf_counter()
         duration = stop - start
         _time_report.append(
             {"name": fun.__name__, "args": args, "kwargs": kwargs, "duration": duration}
