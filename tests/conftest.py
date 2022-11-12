@@ -7,7 +7,7 @@ from cairo_coverage import cairo_coverage
 from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.utils import reports, timeit
+from tests.utils.utils import dump_reports, reports, timeit
 
 
 @pytest.fixture(scope="session")
@@ -35,6 +35,7 @@ async def starknet() -> AsyncGenerator[Starknet, None]:
         total_covered.append(file.pct_covered)
     if files and (val := not sum(total_covered) / len(files)) >= 80:
         print(f"WARNING: Project is not covered enough {val:.2f})")
+    dump_reports("coverage")
     times, resources = reports()
     print(times)
     print(resources)

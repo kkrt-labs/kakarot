@@ -95,6 +95,8 @@ def reports():
 
 
 def dump_reports(path: Union[str, Path]):
+    p = Path(path)
+    p.mkdir(exist_ok=True, parents=True)
     times, traces = reports()
-    times.to_csv(Path(path) / "times.csv", index=False)
-    traces.to_csv(Path(path) / "resources.csv", index=False)
+    times.to_csv(p / "times.csv")
+    traces.to_csv(p / "resources.csv")
