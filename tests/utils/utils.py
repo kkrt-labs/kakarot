@@ -1,5 +1,6 @@
 import json
 import logging
+from contextlib import contextmanager
 from pathlib import Path
 from time import perf_counter
 from typing import Union
@@ -32,66 +33,93 @@ def timeit(fun):
     return timed_fun
 
 
-def _trace_call(fun, name, *args, **kwargs):
-    async def traced_fun(*a, **kw):
-        res = await fun(*a, **kw)
-        resources = res.call_info.execution_resources.Schema().dump(
-            res.call_info.execution_resources
-        )
-        resources = {
-            **resources.pop("builtin_instance_counter"),
-            **resources,
-        }
-        _resources_report.append(
-            {
-                "name": name,
-                "args": args,
-                "kwargs": kwargs,
+class traceit:
+
+    _context = ""
+
+    @classmethod
+    @property
+    def prefix(cls):
+        return cls._context + ":" if cls._context != "" else ""
+
+    @classmethod
+    def _trace_call(cls, invoke_fun, contract_name, attr_name, *args, **kwargs):
+        async def traced_fun(*a, **kw):
+            res = await invoke_fun(*a, **kw)
+            resources = res.call_info.execution_resources.Schema().dump(
+                res.call_info.execution_resources
+            )
+            resources = {
+                **resources.pop("builtin_instance_counter"),
                 **resources,
             }
-        )
-        logger.info(
-            f"{name}({json.dumps(args)}, {json.dumps(kwargs)}) used {resources}"
-        )
-        return res
+            _resources_report.append(
+                {
+                    **({"context": cls._context} if cls._context != "" else {}),
+                    "contract_name": contract_name,
+                    "function_name": attr_name,
+                    "args": args,
+                    "kwargs": kwargs,
+                    **resources,
+                }
+            )
+            logger.info(
+                f"{cls.prefix}{contract_name}.{attr_name}({json.dumps(args)}, {json.dumps(kwargs)}) used {resources}"
+            )
+            return res
 
-    return traced_fun
+        return traced_fun
 
+    @classmethod
+    def _trace_attr(cls, fun, contract_name):
+        def wrapped(*args, **kwargs):
+            prepared_call = fun(*args, **kwargs)
+            for invoke_fun_name in ["execute", "call"]:
+                if hasattr(prepared_call, invoke_fun_name):
+                    setattr(
+                        prepared_call,
+                        invoke_fun_name,
+                        cls._trace_call(
+                            getattr(prepared_call, invoke_fun_name),
+                            contract_name,
+                            fun.__name__,
+                            *args,
+                            **kwargs,
+                        ),
+                    )
+            return prepared_call
 
-def _trace_attr(fun, name):
-    def wrapped(*args, **kwargs):
-        prepared_call = fun(*args, **kwargs)
-        for f_name in ["execute", "call"]:
-            if hasattr(prepared_call, f_name):
-                setattr(
-                    prepared_call,
-                    f_name,
-                    _trace_call(
-                        getattr(prepared_call, f_name),
-                        f"{name}.{fun.__name__}",
-                        *args,
-                        **kwargs,
-                    ),
-                )
-        return prepared_call
+        return wrapped
 
-    return wrapped
+    @staticmethod
+    def trace(contract: StarknetContract, name: str) -> StarknetContract:
+        for attr_name in contract._abi_function_mapping.keys():
+            setattr(
+                contract,
+                attr_name,
+                traceit._trace_attr(
+                    getattr(contract, attr_name),
+                    contract_name=name,
+                ),
+            )
+        return contract
 
-
-def traceit(contract: StarknetContract, name: str):
-    for attr_name in contract._abi_function_mapping.keys():
-        setattr(
-            contract,
-            attr_name,
-            _trace_attr(getattr(contract, attr_name), name),
-        )
-    return contract
+    @classmethod
+    @contextmanager
+    def context(
+        cls,
+        context,
+    ):
+        prev_context = cls._context
+        cls._context = context
+        yield
+        cls._context = prev_context
 
 
 def reports():
     return pd.DataFrame(_time_report), pd.DataFrame(_resources_report).sort_values(
         ["n_steps"], ascending=False
-    ).fillna(0)
+    ).fillna({"context": ""}).fillna(0)
 
 
 def dump_reports(path: Union[str, Path]):

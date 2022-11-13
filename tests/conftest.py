@@ -1,4 +1,5 @@
 import asyncio
+from pathlib import Path
 from typing import AsyncGenerator
 
 import pytest
@@ -27,6 +28,7 @@ async def starknet() -> AsyncGenerator[Starknet, None]:
     starknet.declare = timeit(starknet.declare)
 
     yield starknet
+
     files = cairo_coverage.report_runs(excluded_file={"site-packages", "cairo_files"})
     total_covered = []
     for file in files:
@@ -35,10 +37,22 @@ async def starknet() -> AsyncGenerator[Starknet, None]:
         total_covered.append(file.pct_covered)
     if files and (val := not sum(total_covered) / len(files)) >= 80:
         print(f"WARNING: Project is not covered enough {val:.2f})")
+
     dump_reports("coverage")
     times, resources = reports()
-    print(times)
-    print(resources)
+    print(
+        times.assign(
+            contract=lambda df: df.kwargs.map(lambda kw: Path(kw["source"]).stem)
+        )
+        .filter(items=["name", "contract", "duration"])
+        .sort_values("duration", ascending=False)
+    )
+    print(
+        resources.groupby("context")
+        .agg("sum", numeric_only=True)
+        .sort_values("n_steps", ascending=False)
+        .astype(int)
+    )
 
 
 @pytest_asyncio.fixture(scope="session")

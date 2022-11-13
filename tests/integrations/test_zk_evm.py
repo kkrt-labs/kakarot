@@ -27,7 +27,7 @@ async def zk_evm(
             contract_account_class.class_hash,
         ],
     )
-    _zk_evm = traceit(_zk_evm, "zk_evm")
+    _zk_evm = traceit.trace(_zk_evm, "zk_evm")
     return _zk_evm
 
 
@@ -59,12 +59,13 @@ class TestZkEVM:
         "params",
         params_execute,
     )
-    async def test_execute(self, zk_evm: StarknetContract, params: dict):
-        res = await zk_evm.execute(
-            value=int(params["value"]),
-            code=[int(b, 16) for b in wrap(params["code"], 2)],
-            calldata=[int(b, 16) for b in wrap(params["calldata"], 2)],
-        ).call(caller_address=1)
+    async def test_execute(self, zk_evm: StarknetContract, params: dict, request):
+        with traceit.context(request.node.callspec.id):
+            res = await zk_evm.execute(
+                value=int(params["value"]),
+                code=[int(b, 16) for b in wrap(params["code"], 2)],
+                calldata=[int(b, 16) for b in wrap(params["calldata"], 2)],
+            ).call(caller_address=1)
 
         Uint256 = zk_evm.struct_manager.get_contract_struct("Uint256")
         assert res.result.stack == [
@@ -87,24 +88,27 @@ class TestZkEVM:
         "params",
         params_execute_at_address,
     )
-    async def test_execute_at_address(self, zk_evm, params):
-        res = await zk_evm.execute_at_address(
-            address=0, value=0, calldata=[int(b, 16) for b in wrap(params["code"], 2)]
-        ).execute(caller_address=1)
-        evm_contract_address = res.result.evm_contract_address
-        starknet_contract_address = res.result.starknet_contract_address
+    async def test_execute_at_address(self, zk_evm, params, request):
+        with traceit.context(request.node.callspec.id):
+            res = await zk_evm.execute_at_address(
+                address=0,
+                value=0,
+                calldata=[int(b, 16) for b in wrap(params["code"], 2)],
+            ).execute(caller_address=1)
+            evm_contract_address = res.result.evm_contract_address
+            starknet_contract_address = res.result.starknet_contract_address
 
-        await zk_evm.initiate(
-            evm_address=evm_contract_address,
-            starknet_address=starknet_contract_address,
-            value=params["value"],
-        ).execute(caller_address=1)
+            await zk_evm.initiate(
+                evm_address=evm_contract_address,
+                starknet_address=starknet_contract_address,
+                value=params["value"],
+            ).execute(caller_address=1)
 
-        res = await zk_evm.execute_at_address(
-            address=evm_contract_address,
-            value=params["value"],
-            calldata=[int(b, 16) for b in wrap(params["calldata"], 2)],
-        ).execute(caller_address=2)
+            res = await zk_evm.execute_at_address(
+                address=evm_contract_address,
+                value=params["value"],
+                calldata=[int(b, 16) for b in wrap(params["calldata"], 2)],
+            ).execute(caller_address=2)
 
         assert res.result.return_data == [
             int(m, 16) for m in wrap(params["return_value"], 2)
@@ -117,72 +121,74 @@ class TestZkEVM:
         contract_account_class: DeclaredClass,
     ):
         code = [1, 12312]
-        tx = await zk_evm.deploy(bytes=code).execute(caller_address=1)
-        starknet_contract_address = tx.result.starknet_contract_address
-        account_contract = StarknetContract(
-            starknet.state,
-            contract_account_class.abi,
-            starknet_contract_address,
-            tx,
-        )
+        with traceit.context("deploy"):
+            tx = await zk_evm.deploy(bytes=code).execute(caller_address=1)
+            starknet_contract_address = tx.result.starknet_contract_address
+            account_contract = StarknetContract(
+                starknet.state,
+                contract_account_class.abi,
+                starknet_contract_address,
+                tx,
+            )
         assert (await account_contract.code().call()).result.code == code
 
     @pytest.mark.parametrize(
         "params",
         params_erc20,
     )
-    async def test_erc20(self, zk_evm: StarknetContract, params):
+    async def test_erc20(self, zk_evm: StarknetContract, params, request):
         value = 0
-        res = await zk_evm.execute_at_address(
-            address=0,
-            value=value,
-            calldata=[int(b, 16) for b in wrap(params["code"], 2)],
-        ).execute(caller_address=1)
+        with traceit.context(request.node.callspec.id):
+            res = await zk_evm.execute_at_address(
+                address=0,
+                value=value,
+                calldata=[int(b, 16) for b in wrap(params["code"], 2)],
+            ).execute(caller_address=1)
 
-        evm_contract_address = res.result.evm_contract_address
-        starknet_contract_address = res.result.starknet_contract_address
+            evm_contract_address = res.result.evm_contract_address
+            starknet_contract_address = res.result.starknet_contract_address
 
-        await zk_evm.initiate(
-            evm_address=evm_contract_address,
-            starknet_address=starknet_contract_address,
-            value=value,
-        ).execute(caller_address=1)
+            await zk_evm.initiate(
+                evm_address=evm_contract_address,
+                starknet_address=starknet_contract_address,
+                value=value,
+            ).execute(caller_address=1)
 
-        await zk_evm.execute_at_address(
-            address=evm_contract_address,
-            value=value,
-            calldata=[int(b, 16) for b in wrap(params["mint"], 2)],
-        ).execute(caller_address=2)
+            await zk_evm.execute_at_address(
+                address=evm_contract_address,
+                value=value,
+                calldata=[int(b, 16) for b in wrap(params["mint"], 2)],
+            ).execute(caller_address=2)
 
-        await zk_evm.execute_at_address(
-            address=evm_contract_address,
-            value=value,
-            calldata=[int(b, 16) for b in wrap(params["approve"], 2)],
-        ).execute(caller_address=2)
+            await zk_evm.execute_at_address(
+                address=evm_contract_address,
+                value=value,
+                calldata=[int(b, 16) for b in wrap(params["approve"], 2)],
+            ).execute(caller_address=2)
 
-        await zk_evm.execute_at_address(
-            address=evm_contract_address,
-            value=value,
-            calldata=[int(b, 16) for b in wrap(params["allowance"], 2)],
-        ).execute(caller_address=2)
+            await zk_evm.execute_at_address(
+                address=evm_contract_address,
+                value=value,
+                calldata=[int(b, 16) for b in wrap(params["allowance"], 2)],
+            ).execute(caller_address=2)
 
-        await zk_evm.execute_at_address(
-            address=evm_contract_address,
-            value=value,
-            calldata=[int(b, 16) for b in wrap(params["transferFrom"], 2)],
-        ).execute(caller_address=1)
+            await zk_evm.execute_at_address(
+                address=evm_contract_address,
+                value=value,
+                calldata=[int(b, 16) for b in wrap(params["transferFrom"], 2)],
+            ).execute(caller_address=1)
 
-        await zk_evm.execute_at_address(
-            address=evm_contract_address,
-            value=value,
-            calldata=[int(b, 16) for b in wrap(params["transfer"], 2)],
-        ).execute(caller_address=1)
+            await zk_evm.execute_at_address(
+                address=evm_contract_address,
+                value=value,
+                calldata=[int(b, 16) for b in wrap(params["transfer"], 2)],
+            ).execute(caller_address=1)
 
-        res = await zk_evm.execute_at_address(
-            address=evm_contract_address,
-            value=value,
-            calldata=[int(b, 16) for b in wrap(params["balanceOf"], 2)],
-        ).execute(caller_address=1)
+            res = await zk_evm.execute_at_address(
+                address=evm_contract_address,
+                value=value,
+                calldata=[int(b, 16) for b in wrap(params["balanceOf"], 2)],
+            ).execute(caller_address=1)
 
         assert res.result.return_data == [
             int(m, 16) for m in wrap(params["return_value"], 2)
