@@ -3,9 +3,10 @@ import logging
 from contextlib import contextmanager
 from pathlib import Path
 from time import perf_counter
-from typing import Union
+from typing import Callable, Union
 
 import pandas as pd
+from starkware.starknet.testing.contract import StarknetContractFunctionInvocation
 from starkware.starknet.testing.starknet import StarknetContract
 
 logging.basicConfig(format="%(levelname)-8s %(message)s")
@@ -34,16 +35,37 @@ def timeit(fun):
 
 
 class traceit:
+    """
+    Record resources used by a StarknetContract
+    """
 
     _context = ""
 
     @classmethod
     @property
     def prefix(cls):
+        """
+        Prefix the log output with the context if used
+        """
         return cls._context + ":" if cls._context != "" else ""
 
     @classmethod
-    def _trace_call(cls, invoke_fun, contract_name, attr_name, *args, **kwargs):
+    def _trace_call(
+        cls,
+        invoke_fun: Callable,
+        contract_name: str,
+        attr_name: str,
+        *args,
+        **kwargs,
+    ):
+        """
+        StarknetContract instances have methods defined in their corresponding cairo file.
+        These methods, once called, return a StarknetContractFunctionInvocation instance.
+        This class defines "call" and "execute" methods for view or external call to the underlying functions.
+        The invoke_fun here is either one or the other.
+        This wrapper will record the ExecutionResource of the corresponding call.
+        """
+
         async def traced_fun(*a, **kw):
             res = await invoke_fun(*a, **kw)
             resources = res.call_info.execution_resources.Schema().dump(
@@ -71,7 +93,11 @@ class traceit:
         return traced_fun
 
     @classmethod
-    def _trace_attr(cls, fun, contract_name):
+    def _trace_attr(cls, fun: Callable, contract_name: str):
+        """
+        Wrapper to be applied to a contract's method to keep track of the ExecutionResources used.
+        """
+
         def wrapped(*args, **kwargs):
             prepared_call = fun(*args, **kwargs)
             for invoke_fun_name in ["execute", "call"]:
@@ -110,6 +136,9 @@ class traceit:
         cls,
         context,
     ):
+        """
+        Context manager to add a context field to the logs and records
+        """
         prev_context = cls._context
         cls._context = context
         yield
