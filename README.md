@@ -56,6 +56,23 @@ list.
 
 ### Architecture
 
+![](resources/img/architecture.png)
+
+- ✅ Kakarot is a smart contract, deployed on Starknet (goerli). It is written
+  in Cairo.
+
+- ✅ Kakarot can: (a) execute arbitrary EVM bytecode, (b) deploy an EVM smart
+  contract as is, (c) call a Kakarot-deployed EVM smart contract's functions
+  (views and write methods).
+
+- ✅ Kakarot is an EVM bytecode interpreter.
+
+- ❌ Kakarot is not a blockchain
+
+- ❌ Kakarot is not a compiler. Check out
+  [Warp](https://github.com/NethermindEth/warp) for a Solidity -> Cairo
+  compiler.
+
 ### Main execution flow
 
 ```mermaid
