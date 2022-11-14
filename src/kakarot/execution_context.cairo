@@ -16,7 +16,7 @@ from kakarot.memory import Memory
 from kakarot.stack import Stack
 from kakarot.constants import Constants
 from kakarot.constants import registry_address
-from kakarot.interfaces.interfaces import IRegistry, IEvm_Contract
+from kakarot.interfaces.interfaces import IRegistry, IEvmContract
 
 // @title ExecutionContext related functions.
 // @notice This file contains functions related to the execution context.
@@ -92,9 +92,9 @@ namespace ExecutionContext {
         );
 
         // Get the bytecode from the Starknet_contract
-        let (code_len, code) = IEvm_Contract.code(contract_address=starknet_address);
+        let (bytecode_len, bytecode) = IEvmContract.bytecode(contract_address=starknet_address);
         local call_context: model.CallContext* = new model.CallContext(
-            code=code, code_len=code_len, calldata=calldata, calldata_len=calldata_len, value=value
+            bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=calldata_len, value=value
             );
 
         return new model.ExecutionContext(
@@ -179,7 +179,7 @@ namespace ExecutionContext {
         let pc = self.program_counter;
         let (output: felt*) = alloc();
         // Copy code slice
-        memcpy(dst=output, src=self.call_context.code + pc, len=len);
+        memcpy(dst=output, src=self.call_context.bytecode + pc, len=len);
         // Move program counter
         let self = ExecutionContext.increment_program_counter(self=self, inc_value=len);
         return (self=self, output=output);
@@ -328,7 +328,7 @@ namespace ExecutionContext {
         // Revert if new_value points outside of the code range
         with_attr error_message("Kakarot: new pc target out of range") {
             assert_nn(new_pc_offset);
-            assert_le(new_pc_offset, self.call_context.code_len - 1);
+            assert_le(new_pc_offset, self.call_context.bytecode_len - 1);
         }
 
         // Revert if new pc_offset points to something other then JUMPDEST
@@ -359,7 +359,7 @@ namespace ExecutionContext {
         let (local output: felt*) = alloc();
 
         // Copy bytecode slice
-        memcpy(dst=output, src=self.call_context.code + pc_location, len=1);
+        memcpy(dst=output, src=self.call_context.bytecode + pc_location, len=1);
 
         // Revert if current pc location is not JUMPDEST
         with_attr error_message("Kakarot: JUMPed to pc offset is not JUMPDEST") {

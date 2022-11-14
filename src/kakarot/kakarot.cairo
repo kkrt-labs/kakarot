@@ -11,7 +11,7 @@ from starkware.cairo.common.alloc import alloc
 from kakarot.library import Kakarot, evm_contract_deployed
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.interfaces.interfaces import IEvm_Contract
+from kakarot.interfaces.interfaces import IEvmContract
 
 // Constructor
 @constructor
@@ -24,8 +24,8 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 // @notice Execute EVM bytecode
 // @dev Executes a provided array of evm opcodes/bytes
 // @param value The deposited value by the instruction/transaction responsible for this execution
-// @param code_len The bytecode length
-// @param code The bytecode to be executed
+// @param bytecode_len The bytecode length
+// @param bytecode The bytecode to be executed
 // @param calldata_len The calldata length
 // @param calldata The calldata which can be referenced by the bytecode
 // @return stack_len The length of the stack
@@ -36,12 +36,12 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 @view
 func execute{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(value: felt, code_len: felt, code: felt*, calldata_len: felt, calldata: felt*) -> (
+}(value: felt, bytecode_len: felt, bytecode: felt*, calldata_len: felt, calldata: felt*) -> (
     stack_len: felt, stack: Uint256*, memory_len: felt, memory: felt*, gas_used: felt
 ) {
     alloc_locals;
     local call_context: model.CallContext* = new model.CallContext(
-        code=code, code_len=code_len, calldata=calldata, calldata_len=calldata_len, value=value
+        bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=calldata_len, value=value
         );
     let context = Kakarot.execute(call_context);
     let len = Stack.len(context.stack);
@@ -173,7 +173,7 @@ func deploy{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
 // @notice deploy starknet contract
 // @dev starknet contract will be mapped to an evm address that is also generated within this function
-// @param bytes: the contract code
+// @param bytes: the contract bytecode
 // @return evm address that is mapped to the actual contract address
 @external
 func initiate{
@@ -184,24 +184,24 @@ func initiate{
     alloc_locals;
 
     // Check if it it inisiated
-    // let (is_initiated) = IEvm_Contract.is_initiated(contract_address=starknet_address);
+    // let (is_initiated) = IEvmContract.is_initiated(contract_address=starknet_address);
     // with_attr error_message("Contract already initiated"){
     //     assert is_initiated = 0;
     // }
 
-    // Get constructor and runtime code
-    let (bytecode_len, bytecode) = IEvm_Contract.code(contract_address=starknet_address);
+    // Get constructor and runtime bytecode
+    let (bytecode_len, bytecode) = IEvmContract.bytecode(contract_address=starknet_address);
 
     // Run bytecode
     let context: model.ExecutionContext* = Kakarot.execute_at_address(
         address=evm_address, calldata_len=bytecode_len, calldata=bytecode, value=value
     );
 
-    // Update evm_contract code
-    IEvm_Contract.store_code(
+    // Update evm_contract bytecode
+    IEvmContract.write_bytecode(
         contract_address=context.starknet_address,
-        code_len=context.return_data_len,
-        code=context.return_data,
+        bytecode_len=context.return_data_len,
+        bytecode=context.return_data,
     );
 
     return (

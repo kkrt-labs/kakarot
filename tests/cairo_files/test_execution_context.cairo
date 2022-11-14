@@ -27,21 +27,21 @@ func test__init__should_return_an_empty_execution_context{
 }() {
     // Given
     alloc_locals;
-    let (code) = alloc();
-    assert [code] = 00;
-    tempvar code_len = 1;
+    let (bytecode) = alloc();
+    assert [bytecode] = 00;
+    tempvar bytecode_len = 1;
     let (calldata) = alloc();
     assert [calldata] = '';
 
     // When
     local call_context: model.CallContext* = new model.CallContext(
-        code=code, code_len=code_len, calldata=calldata, calldata_len=1, value=0
-    );
+        bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
+        );
     let result: model.ExecutionContext* = ExecutionContext.init(call_context);
 
     // Then
-    assert result.call_context.code = code;
-    assert result.call_context.code_len = 1;
+    assert result.call_context.bytecode = bytecode;
+    assert result.call_context.bytecode_len = 1;
     assert result.call_context.calldata = calldata;
     assert result.program_counter = 0;
     assert result.stopped = FALSE;
@@ -59,21 +59,21 @@ func test__update_program_counter__should_set_pc_to_given_value{
 }() {
     // Given
     alloc_locals;
-    let (code) = alloc();
-    assert code[0] = 56;
-    assert code[1] = 60;
-    assert code[2] = 0x0a;
-    assert code[3] = 0x5b;
-    assert code[4] = 60;
-    assert code[5] = 0x0b;
-    tempvar code_len = 6;
+    let (bytecode) = alloc();
+    assert bytecode[0] = 56;
+    assert bytecode[1] = 60;
+    assert bytecode[2] = 0x0a;
+    assert bytecode[3] = 0x5b;
+    assert bytecode[4] = 60;
+    assert bytecode[5] = 0x0b;
+    tempvar bytecode_len = 6;
     let (calldata) = alloc();
     assert [calldata] = '';
 
     // When
     local call_context: model.CallContext* = new model.CallContext(
-        code=code, code_len=code_len, calldata=calldata, calldata_len=1, value=0
-    );
+        bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
+        );
     let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
     let result = ExecutionContext.update_program_counter(ctx, 3);
 
@@ -88,21 +88,21 @@ func test__update_program_counter__should_fail__when_given_value_not_in_code_ran
 }() {
     // Given
     alloc_locals;
-    let (code) = alloc();
-    assert code[0] = 56;
-    assert code[1] = 60;
-    assert code[2] = 0x0a;
-    assert code[3] = 0x5b;
-    assert code[4] = 60;
-    assert code[5] = 0x0b;
-    tempvar code_len = 6;
+    let (bytecode) = alloc();
+    assert bytecode[0] = 56;
+    assert bytecode[1] = 60;
+    assert bytecode[2] = 0x0a;
+    assert bytecode[3] = 0x5b;
+    assert bytecode[4] = 60;
+    assert bytecode[5] = 0x0b;
+    tempvar bytecode_len = 6;
     let (calldata) = alloc();
     assert [calldata] = '';
 
     // When & Then
     local call_context: model.CallContext* = new model.CallContext(
-        code=code, code_len=code_len, calldata=calldata, calldata_len=1, value=0
-    );
+        bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
+        );
     let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
     let result = ExecutionContext.update_program_counter(ctx, 6);
     return ();
@@ -114,21 +114,21 @@ func test__update_program_counter__should_fail__when_given_destination_that_is_n
 }() {
     // Given
     alloc_locals;
-    let (code) = alloc();
-    assert code[0] = 56;
-    assert code[1] = 60;
-    assert code[2] = 0x0a;
-    assert code[3] = 0x5b;
-    assert code[4] = 60;
-    assert code[5] = 0x0b;
-    tempvar code_len = 6;
+    let (bytecode) = alloc();
+    assert bytecode[0] = 56;
+    assert bytecode[1] = 60;
+    assert bytecode[2] = 0x0a;
+    assert bytecode[3] = 0x5b;
+    assert bytecode[4] = 60;
+    assert bytecode[5] = 0x0b;
+    tempvar bytecode_len = 6;
     let (calldata) = alloc();
     assert [calldata] = '';
 
     // When & Then
     local call_context: model.CallContext* = new model.CallContext(
-        code=code, code_len=code_len, calldata=calldata, calldata_len=1, value=0
-    );
+        bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
+        );
     let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
     let result = ExecutionContext.update_program_counter(ctx, 2);
     return ();

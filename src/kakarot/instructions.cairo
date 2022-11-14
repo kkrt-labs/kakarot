@@ -39,6 +39,7 @@ namespace EVMInstructions {
     // @param instructions The instruction set.
     // @param ctx The pointer to the execution context.
     // @return The pointer to the updated execution context.
+
     func decode_and_execute{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -57,12 +58,12 @@ namespace EVMInstructions {
 
         local opcode;
 
-        let is_pc_le_code_len = is_le_felt(ctx.call_context.code_len, pc);
+        let is_pc_le_code_len = is_le_felt(ctx.call_context.bytecode_len, pc);
 
         if (is_pc_le_code_len == 1) {
             assert opcode = 0;
         } else {
-            assert opcode = [ctx.call_context.code + pc];
+            assert opcode = [ctx.call_context.bytecode + pc];
         }
 
         // move program counter + 1 after opcode is read

@@ -63,7 +63,7 @@ class TestZkEVM:
         with traceit.context(request.node.callspec.id):
             res = await zk_evm.execute(
                 value=int(params["value"]),
-                code=[int(b, 16) for b in wrap(params["code"], 2)],
+                bytecode=[int(b, 16) for b in wrap(params["code"], 2)],
                 calldata=[int(b, 16) for b in wrap(params["calldata"], 2)],
             ).call(caller_address=1)
 
@@ -123,14 +123,14 @@ class TestZkEVM:
         code = [1, 12312]
         with traceit.context("deploy"):
             tx = await zk_evm.deploy(bytes=code).execute(caller_address=1)
-            starknet_contract_address = tx.result.starknet_contract_address
-            account_contract = StarknetContract(
-                starknet.state,
-                contract_account_class.abi,
-                starknet_contract_address,
-                tx,
-            )
-        assert (await account_contract.code().call()).result.code == code
+        starknet_contract_address = tx.result.starknet_contract_address
+        contract_account = StarknetContract(
+            starknet.state,
+            contract_account_class.abi,
+            starknet_contract_address,
+            tx,
+        )
+        assert (await contract_account.bytecode().call()).result.bytecode == code
 
     @pytest.mark.parametrize(
         "params",

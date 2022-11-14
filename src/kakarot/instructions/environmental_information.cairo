@@ -77,7 +77,7 @@ namespace EnvironmentalInformation {
         return ctx;
     }
     // @notice CODESIZE operation.
-    // @dev Get size of code running in current environment.
+    // @dev Get size of bytecode running in current environment.
     // @custom:since Frontier
     // @custom:group Environmental Information
     // @custom:gas 3
@@ -91,8 +91,8 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        // Get the code size.
-        let code_size = Helpers.to_uint256(ctx.call_context.code_len);
+        // Get the bytecode size.
+        let code_size = Helpers.to_uint256(ctx.call_context.bytecode_len);
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=code_size);
 
         // Update the execution context.
@@ -362,8 +362,8 @@ namespace EnvironmentalInformation {
 
         // Stack input:
         // 0 - offset: memory offset of the work we save.
-        // 1 - code_offset: offset for code from where data will be copied.
-        // 2 - element_len: bytes length of the copied code.
+        // 1 - code_offset: offset for bytecode from where data will be copied.
+        // 2 - element_len: bytes length of the copied bytecode.
         let (stack, popped) = Stack.pop_n(self=stack, n=3);
         let offset = popped[2];
         let return_data_offset = popped[1];
@@ -396,7 +396,7 @@ namespace EnvironmentalInformation {
     }
 
     // @notice CODECOPY (0x39) operation.
-    // @dev Copies slice of code to memory
+    // @dev Copies slice of bytecode to memory
     // @custom:since Frontier
     // @custom:group Environmental Information
     // @custom:gas 3
@@ -416,21 +416,24 @@ namespace EnvironmentalInformation {
 
         // Stack input:
         // 0 - offset: memory offset of the work we save.
-        // 1 - code_offset: offset for code from where data will be copied.
-        // 2 - element_len: bytes length of the copied code.
+        // 1 - code_offset: offset for bytecode from where data will be copied.
+        // 2 - element_len: bytes length of the copied bytecode.
         let (stack, popped) = Stack.pop_n(self=stack, n=3);
         let offset = popped[2];
         let code_offset = popped[1];
         let element_len = popped[0];
 
-        // Get code slice from code_offset to element_len
-        let code: felt* = ctx.call_context.code;
-        let code_len: felt = ctx.call_context.code_len;
+        // Get bytecode slice from code_offset to element_len
+        let bytecode: felt* = ctx.call_context.bytecode;
+        let bytecode_len: felt = ctx.call_context.bytecode_len;
         let sliced_code: felt* = Helpers.slice_data(
-            data_len=code_len, data=code, data_offset=code_offset.low, slice_len=element_len.low
+            data_len=bytecode_len,
+            data=bytecode,
+            data_offset=code_offset.low,
+            slice_len=element_len.low,
         );
 
-        // Write code slice to memory at offset
+        // Write bytecode slice to memory at offset
         let memory: model.Memory* = Memory.store_n(
             self=ctx.memory, element_len=element_len.low, element=sliced_code, offset=offset.low
         );
