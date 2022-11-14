@@ -183,11 +183,11 @@ func initiate{
 ) {
     alloc_locals;
 
-    // Check if it it inisiated
-    // let (is_initiated) = IEvmContract.is_initiated(contract_address=starknet_address);
-    // with_attr error_message("Contract already initiated"){
-    //     assert is_initiated = 0;
-    // }
+    // Check if it is already initialized
+    let (is_initialized) = IEvmContract.is_initialized(contract_address=starknet_address);
+    with_attr error_message("Contract already initiated") {
+        assert is_initialized = 0;
+    }
 
     // Get constructor and runtime bytecode
     let (bytecode_len, bytecode) = IEvmContract.bytecode(contract_address=starknet_address);

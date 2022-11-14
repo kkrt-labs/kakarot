@@ -32,6 +32,6 @@ namespace IEvmContract {
     }
     func initialize(address: felt) {
     }
-    func is_initialized() -> (is_initiated: felt) {
+    func is_initialized() -> (is_initialized: felt) {
     }
 }
