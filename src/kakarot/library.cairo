@@ -38,15 +38,15 @@ func evm_contract_deployed(evm_contract_address: felt, starknet_contract_address
 namespace Kakarot {
     // @notice The constructor of the contract
     // @dev Setting initial owner, contract account class hash and native token
-    // @param _owner The address of the owner of the contract
+    // @param owner The address of the owner of the contract
     // @param native_token_address_ The ERC20 contract used to emulate ETH
     // @param evm_contract_class_hash_ The clash hash of the contract account
     func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         owner: felt, native_token_address_, evm_contract_class_hash_: felt
     ) {
         Ownable.initializer(owner);
-        evm_contract_class_hash.write(evm_contract_class_hash_);
         native_token_address.write(native_token_address_);
+        evm_contract_class_hash.write(evm_contract_class_hash_);
         return ();
     }
 

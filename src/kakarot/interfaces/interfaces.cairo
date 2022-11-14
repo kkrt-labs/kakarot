@@ -21,17 +21,17 @@ namespace IEth {
 }
 
 @contract_interface
-namespace IEvm_Contract {
-    func code() -> (bytecode_len: felt, bytecode: felt*) {
+namespace IEvmContract {
+    func bytecode() -> (bytecode_len: felt, bytecode: felt*) {
     }
-    func state(key: Uint256) -> (value: Uint256) {
+    func write_bytecode(bytecode_len: felt, bytecode: felt*) {
     }
-    func write_state(key: Uint256, value: Uint256) {
+    func storage(key: Uint256) -> (value: Uint256) {
     }
-    func store_code(code_len: felt, code: felt*) {
+    func write_storage(key: Uint256, value: Uint256) {
     }
-    func initiate(address: felt) {
+    func initialize(address: felt) {
     }
-    func is_initiated() -> (is_initiated: felt) {
+    func is_initialized() -> (is_initialized: felt) {
     }
 }

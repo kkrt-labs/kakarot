@@ -17,7 +17,7 @@ from tests.utils.utils import traceit
 async def zk_evm(
     starknet: Starknet, eth: StarknetContract, contract_account_class: DeclaredClass
 ) -> StarknetContract:
-    _zk_evm = await starknet.deploy(
+    return await starknet.deploy(
         source="./src/kakarot/kakarot.cairo",
         cairo_path=["src"],
         disable_hint_validation=False,
@@ -27,8 +27,6 @@ async def zk_evm(
             contract_account_class.class_hash,
         ],
     )
-    _zk_evm = traceit.trace(_zk_evm, "zk_evm")
-    return _zk_evm
 
 
 @pytest_asyncio.fixture(scope="module", autouse=True)
@@ -63,7 +61,7 @@ class TestZkEVM:
         with traceit.context(request.node.callspec.id):
             res = await zk_evm.execute(
                 value=int(params["value"]),
-                code=[int(b, 16) for b in wrap(params["code"], 2)],
+                bytecode=[int(b, 16) for b in wrap(params["code"], 2)],
                 calldata=[int(b, 16) for b in wrap(params["calldata"], 2)],
             ).call(caller_address=1)
 
@@ -123,14 +121,14 @@ class TestZkEVM:
         code = [1, 12312]
         with traceit.context("deploy"):
             tx = await zk_evm.deploy(bytes=code).execute(caller_address=1)
-            starknet_contract_address = tx.result.starknet_contract_address
-            account_contract = StarknetContract(
-                starknet.state,
-                contract_account_class.abi,
-                starknet_contract_address,
-                tx,
-            )
-        assert (await account_contract.code().call()).result.code == code
+        starknet_contract_address = tx.result.starknet_contract_address
+        contract_account = StarknetContract(
+            starknet.state,
+            contract_account_class.abi,
+            starknet_contract_address,
+            tx,
+        )
+        assert (await contract_account.bytecode().call()).result.bytecode == code
 
     @pytest.mark.parametrize(
         "params",

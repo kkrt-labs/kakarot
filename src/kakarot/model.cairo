@@ -17,8 +17,8 @@ namespace model {
     }
 
     struct CallContext {
-        code: felt*,
-        code_len: felt,
+        bytecode: felt*,
+        bytecode_len: felt,
         calldata: felt*,
         calldata_len: felt,
         value: felt,

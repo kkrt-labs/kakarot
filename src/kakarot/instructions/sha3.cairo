@@ -49,7 +49,7 @@ namespace Sha3 {
         let offset = popped[1];
         let length = popped[0];
 
-        let (memory, cost) = Memory.insure_length(self=ctx.memory, length=offset.low + length.low);
+        let (memory, cost) = Memory.ensure_length(self=ctx.memory, length=offset.low + length.low);
 
         // Update context memory.
         let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);

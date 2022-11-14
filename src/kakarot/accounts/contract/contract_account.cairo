@@ -16,61 +16,61 @@ from kakarot.accounts.contract.library import ContractAccount
 @constructor
 func constructor{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(kakarot_address: felt, code_len: felt, code: felt*) {
-    return ContractAccount.constructor(kakarot_address, code_len, code);
+}(kakarot_address: felt, bytecode_len: felt, bytecode: felt*) {
+    return ContractAccount.constructor(kakarot_address, bytecode_len, bytecode);
 }
 
 // @notice Store the bytecode of the contract.
-// @param code: The bytecode of the contract.
-// @param code_len: The length of the bytecode.
+// @param bytecode: The bytecode of the contract.
+// @param bytecode_len: The length of the bytecode.
 @external
-func store_code{
+func write_bytecode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(code_len: felt, code: felt*) {
-    return ContractAccount.store_code(code_len, code);
+}(bytecode_len: felt, bytecode: felt*) {
+    return ContractAccount.write_bytecode(bytecode_len, bytecode);
 }
 
-// @notice This function is used to get the code of the smart contract.
-// @return The code of the smart contract.
+// @notice This function is used to get the bytecode of the smart contract.
+// @return The bytecode of the smart contract.
 @view
-func code{
+func bytecode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() -> (code_len: felt, code: felt*) {
-    return ContractAccount.code();
+}() -> (bytecode_len: felt, bytecode: felt*) {
+    return ContractAccount.bytecode();
 }
 
 // @notice Store a key-value pair
-// @param code: The bytecode of the contract.
-// @param code_len: The length of the bytecode.
+// @param key: The bytes32 storage key.
+// @param value: The bytes32 stored value.
 @external
-func write_state{
+func write_storage{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(key: Uint256, value: Uint256) {
-    return ContractAccount.write_state(key, value);
+    return ContractAccount.write_storage(key, value);
 }
 
-// @notice This function is used to get the code of the smart contract.
-// @return The code of the smart contract.
+// @notice Read a given storage key
+// @return The stored value if the key exists, 0 otherwise.
 @view
-func state{
+func storage{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(key: Uint256) -> (value: Uint256) {
-    return ContractAccount.read_state(key);
+    return ContractAccount.storage(key);
 }
 
 // @notice This function is used to initialize the smart contract.
 @external
-func initiate{
+func initialize{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
-    return ContractAccount.initiate();
+    return ContractAccount.initialize();
 }
 
 // @notice This function checks if the account was initialized.
-// @return is_initiated: 1 if the account has been initialized 0 otherwise.
+// @return is_initialized: 1 if the account has been initialized 0 otherwise.
 @view
-func have_initiaded{
+func is_initialized{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() -> (is_initiated: felt) {
-    return ContractAccount.is_initiated();
+}() -> (is_initialized: felt) {
+    return ContractAccount.is_initialized();
 }

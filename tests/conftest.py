@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from pathlib import Path
 from typing import AsyncGenerator
 
@@ -9,10 +10,12 @@ from cairo_coverage import cairo_coverage
 from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.utils import dump_reports, reports, timeit
+from tests.utils.utils import dump_reports, reports, timeit, traceit
 
 pd.set_option("display.max_rows", 500)
 pd.set_option("display.max_columns", 500)
+pd.set_option("display.width", 1000)
+logging.getLogger("asyncio").setLevel(logging.ERROR)
 
 
 @pytest.fixture(scope="session")
@@ -28,7 +31,7 @@ async def starknet() -> AsyncGenerator[Starknet, None]:
     starknet.state.state.update_block_info(
         BlockInfo.create_for_testing(block_number=1, block_timestamp=1)
     )
-    starknet.deploy = timeit(starknet.deploy)
+    starknet.deploy = traceit.trace_all(timeit(starknet.deploy))
     starknet.declare = timeit(starknet.declare)
 
     yield starknet

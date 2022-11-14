@@ -5,6 +5,8 @@ import pytest_asyncio
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
+from tests.utils.utils import traceit
+
 random.seed(0)
 
 
@@ -21,9 +23,10 @@ async def contract_account(starknet: Starknet):
 @pytest.mark.asyncio
 class TestContractAccount:
     async def test_should_store_code(self, contract_account: StarknetContract):
-        code_len = 10
-        code = [random.randint(0, 255) for _ in range(code_len)]
+        bytecode_len = 10
+        bytecode = [random.randint(0, 255) for _ in range(bytecode_len)]
 
-        await contract_account.store_code(code).execute(caller_address=1)
-        stored_code = await contract_account.code().call()
-        assert stored_code.result.code == code
+        with traceit.context("contract_account"):
+            await contract_account.write_bytecode(bytecode).execute(caller_address=1)
+        stored_bytecode = await contract_account.bytecode().call()
+        assert stored_bytecode.result.bytecode == bytecode

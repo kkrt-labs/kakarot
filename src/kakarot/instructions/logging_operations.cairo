@@ -45,7 +45,7 @@ namespace LoggingOperations {
         // Transform data + safety checks
         let actual_size = Helpers.uint256_to_felt(size);
         let actual_offset = Helpers.uint256_to_felt(offset);
-        let (memory, cost) = Memory.insure_length(
+        let (memory, cost) = Memory.ensure_length(
             self=ctx.memory, length=actual_size + actual_offset
         );
 

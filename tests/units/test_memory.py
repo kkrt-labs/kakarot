@@ -69,5 +69,5 @@ class TestMemory(IsolatedAsyncioTestCase):
 
         await self.test_memory.test__expand__should_return_the_same_memory_and_no_cost().call()
         await self.test_memory.test__expand__should_return_expanded_memory_and_cost().call()
-        await self.test_memory.test__insure_length__should_return_the_same_memory_and_no_cost().call()
-        await self.test_memory.test__insure_length__should_return_expanded_memory_and_cost().call()
+        await self.test_memory.test__ensure_length__should_return_the_same_memory_and_no_cost().call()
+        await self.test_memory.test__ensure_length__should_return_expanded_memory_and_cost().call()
