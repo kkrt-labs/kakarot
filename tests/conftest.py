@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from pathlib import Path
 from typing import AsyncGenerator
 
@@ -14,6 +15,7 @@ from tests.utils.utils import dump_reports, reports, timeit, traceit
 pd.set_option("display.max_rows", 500)
 pd.set_option("display.max_columns", 500)
 pd.set_option("display.width", 1000)
+logging.getLogger("asyncio").setLevel(logging.ERROR)
 
 
 @pytest.fixture(scope="session")
