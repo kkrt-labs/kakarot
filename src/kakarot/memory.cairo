@@ -198,7 +198,7 @@ namespace Memory {
     // @param offset - The number of bytes to add.
     // @return The new pointer to the memory.
     // @return The gas cost of this expansion.
-    func insure_length{range_check_ptr}(self: model.Memory*, length: felt) -> (
+    func ensure_length{range_check_ptr}(self: model.Memory*, length: felt) -> (
         new_memory: model.Memory*, cost: felt
     ) {
         let is_memory_expanding = is_le_felt(self.bytes_len + 1, length);

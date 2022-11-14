@@ -170,7 +170,7 @@ func test__expand__should_return_expanded_memory_and_cost{
 }
 
 @external
-func test__insure_length__should_return_the_same_memory_and_no_cost{
+func test__ensure_length__should_return_the_same_memory_and_no_cost{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
@@ -179,7 +179,7 @@ func test__insure_length__should_return_the_same_memory_and_no_cost{
     let memory = Memory.store(self=memory, element=Uint256(1, 0), offset=0);
 
     // When
-    let (memory_expanded, cost) = Memory.insure_length(self=memory, length=1);
+    let (memory_expanded, cost) = Memory.ensure_length(self=memory, length=1);
 
     // Then
     assert cost = 0;
@@ -190,7 +190,7 @@ func test__insure_length__should_return_the_same_memory_and_no_cost{
 }
 
 @external
-func test__insure_length__should_return_expanded_memory_and_cost{
+func test__ensure_length__should_return_expanded_memory_and_cost{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
@@ -199,7 +199,7 @@ func test__insure_length__should_return_expanded_memory_and_cost{
     let memory = Memory.store(self=memory, element=Uint256(1, 0), offset=0);
 
     // When
-    let (memory_expanded, cost) = Memory.insure_length(self=memory, length=33);
+    let (memory_expanded, cost) = Memory.ensure_length(self=memory, length=33);
 
     // Then
     assert_nn(cost);
