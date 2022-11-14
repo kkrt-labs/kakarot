@@ -130,6 +130,19 @@ class traceit:
             )
         return contract
 
+    @staticmethod
+    def trace_all(deploy: Callable):
+        async def traced_deploy(*args, **kwargs):
+            contract = await deploy(*args, **kwargs)
+            if args:
+                source = args[0]
+            else:
+                source = kwargs["source"]
+            traceit.trace(contract, Path(source).stem)
+            return contract
+
+        return traced_deploy
+
     @classmethod
     @contextmanager
     def context(

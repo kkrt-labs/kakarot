@@ -1,6 +1,6 @@
 ,name,args,kwargs,duration
-0,deploy,(),"{'source': './src/kakarot/accounts/registry/account_registry.cairo', 'cairo_path': ['src'], 'disable_hint_validation': False, 'constructor_calldata': [1]}",6.630298213
-1,deploy,(),"{'source': './tests/utils/ERC20.cairo', 'constructor_calldata': [2, 2, 2, 2, 2, 2]}",8.707116445999999
-2,declare,(),"{'source': './src/kakarot/accounts/contract/contract_account.cairo', 'cairo_path': ['src'], 'disable_hint_validation': False}",7.363639169999999
-3,deploy,(),"{'source': './src/kakarot/kakarot.cairo', 'cairo_path': ['src'], 'disable_hint_validation': False, 'constructor_calldata': [1, 1690225626435187779547227814961827080260556407984611155962246724685298456135, 628239244963305145291304524201653705182757619393878037002139678676869724713]}",46.481919244000004
-4,deploy,(),"{'source': './src/kakarot/accounts/contract/contract_account.cairo', 'cairo_path': ['src'], 'disable_hint_validation': False, 'constructor_calldata': [1, 0]}",6.2800418839999566
+0,deploy,(),"{'source': './src/kakarot/accounts/registry/account_registry.cairo', 'cairo_path': ['src'], 'disable_hint_validation': False, 'constructor_calldata': [1]}",6.695890578
+1,deploy,(),"{'source': './tests/utils/ERC20.cairo', 'constructor_calldata': [2, 2, 2, 2, 2, 2]}",8.738194912
+2,declare,(),"{'source': './src/kakarot/accounts/contract/contract_account.cairo', 'cairo_path': ['src'], 'disable_hint_validation': False}",7.618050352000001
+3,deploy,(),"{'source': './src/kakarot/kakarot.cairo', 'cairo_path': ['src'], 'disable_hint_validation': False, 'constructor_calldata': [1, 1690225626435187779547227814961827080260556407984611155962246724685298456135, 3617480733607180933923818062179812409354600560454212652700540189156887862788]}",51.962985656
+4,deploy,(),"{'source': './src/kakarot/accounts/contract/contract_account.cairo', 'cairo_path': ['src'], 'disable_hint_validation': False, 'constructor_calldata': [1, 0]}",5.653111226999954

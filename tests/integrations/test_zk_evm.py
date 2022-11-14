@@ -17,7 +17,7 @@ from tests.utils.utils import traceit
 async def zk_evm(
     starknet: Starknet, eth: StarknetContract, contract_account_class: DeclaredClass
 ) -> StarknetContract:
-    _zk_evm = await starknet.deploy(
+    return await starknet.deploy(
         source="./src/kakarot/kakarot.cairo",
         cairo_path=["src"],
         disable_hint_validation=False,
@@ -27,8 +27,6 @@ async def zk_evm(
             contract_account_class.class_hash,
         ],
     )
-    _zk_evm = traceit.trace(_zk_evm, "zk_evm")
-    return _zk_evm
 
 
 @pytest_asyncio.fixture(scope="module", autouse=True)
