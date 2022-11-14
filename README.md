@@ -71,7 +71,7 @@ list.
 
 - ❌ Kakarot is not a compiler. Check out
   [Warp](https://github.com/NethermindEth/warp) for a Solidity -> Cairo
-  compiler.
+  transpiler
 
 ### Main execution flow
 
