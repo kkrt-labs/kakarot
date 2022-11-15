@@ -159,14 +159,35 @@ class traceit:
 
 
 def reports():
-    return pd.DataFrame(_time_report), pd.DataFrame(_resources_report).sort_values(
-        ["n_steps"], ascending=False
-    ).fillna({"context": ""}).fillna(0)
+    return (
+        pd.DataFrame(_time_report)
+        .assign(contract=lambda df: df.kwargs.map(lambda kw: Path(kw["source"]).stem))
+        .reindex(columns=["contract", "name", "duration", "args", "kwargs"]),
+        pd.DataFrame(_resources_report)
+        .sort_values(["n_steps"], ascending=False)
+        .fillna({"context": ""})
+        .fillna(0)
+        .pipe(
+            lambda df: df.reindex(
+                columns=[
+                    "context",
+                    "contract_name",
+                    "function_name",
+                    *df.drop(
+                        ["context", "contract_name", "function_name", "args", "kwargs"],
+                        axis=1,
+                    ).columns,
+                    "args",
+                    "kwargs",
+                ]
+            )
+        ),
+    )
 
 
 def dump_reports(path: Union[str, Path]):
     p = Path(path)
     p.mkdir(exist_ok=True, parents=True)
     times, traces = reports()
-    times.to_csv(p / "times.csv")
-    traces.to_csv(p / "resources.csv")
+    times.to_csv(p / "times.csv", index=False)
+    traces.to_csv(p / "resources.csv", index=False)

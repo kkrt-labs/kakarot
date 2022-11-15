@@ -19,13 +19,13 @@ setup:
 	poetry install --no-root
 
 test:
-	poetry run pytest tests -s --log-cli-level=INFO
+	poetry run pytest tests -s --log-cli-level=INFO -n logical
 
 test-no-log:
-	poetry run pytest tests -s
+	poetry run pytest tests -s -n logical
 
 test-integration:
-	poetry run pytest tests/integrations -s --log-cli-level=INFO
+	poetry run pytest tests/integrations -s --log-cli-level=INFO -n logical
 
 test-units:
 	poetry run pytest tests/units -s --log-cli-level=INFO
