@@ -48,16 +48,16 @@ lint:
 	amarna ./src/kakarot -o lint.sarif -rules unused-imports,dead-store,unknown-decorator,unused-arguments
 
 run-test-log:
-	poetry run pytest tests/test_zk_evm.py::TestZkEVM -k $(test) -s --log-cli-level=INFO
+	poetry run pytest tests/integrations/test_zk_evm.py::TestZkEVM -k $(test) -s --log-cli-level=INFO
 	
 run-test:
-	poetry run pytest -s -vvv tests/test_zk_evm.py::TestZkEVM::test_execute["$(test)"]
+	poetry run pytest -s -vvv tests/integrations/test_zk_evm.py::TestZkEVM::test_execute["$(test)"]
 
 run-test-mark-log:
-	poetry run pytest tests/test_zk_evm.py::TestZkEVM -m $(mark) -s -vvv --log-cli-level=INFO
+	poetry run pytest tests/integrations/test_zk_evm.py::TestZkEVM -m $(mark) -s -vvv --log-cli-level=INFO
 	
 run-test-mark:
-	poetry run pytest -s tests/test_zk_evm.py::TestZkEVM -m $(mark)
+	poetry run pytest -s tests/integrations/test_zk_evm.py::TestZkEVM -m $(mark)
 
 format-mac:
 	cairo-format src/**/*.cairo -i
