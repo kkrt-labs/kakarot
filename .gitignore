@@ -32,3 +32,6 @@ tsconfig.json
 
 lint.sarif
 kakarot.code-workspace
+coverage/*
+!coverage/resources.csv
+!coverage/times.csv

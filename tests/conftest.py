@@ -1,5 +1,7 @@
 import asyncio
 import logging
+import os
+import shutil
 from pathlib import Path
 from typing import AsyncGenerator
 
@@ -17,6 +19,8 @@ pd.set_option("display.max_columns", 500)
 pd.set_option("display.width", 1000)
 logging.getLogger("asyncio").setLevel(logging.ERROR)
 
+logger = logging.getLogger()
+
 
 @pytest.fixture(scope="session")
 def event_loop():
@@ -26,13 +30,15 @@ def event_loop():
 
 
 @pytest_asyncio.fixture(scope="session")
-async def starknet() -> AsyncGenerator[Starknet, None]:
+async def starknet(worker_id) -> AsyncGenerator[Starknet, None]:
     starknet = await Starknet.empty()
     starknet.state.state.update_block_info(
         BlockInfo.create_for_testing(block_number=1, block_timestamp=1)
     )
+
     starknet.deploy = traceit.trace_all(timeit(starknet.deploy))
     starknet.declare = timeit(starknet.declare)
+    shutil.rmtree("coverage", ignore_errors=True)
 
     yield starknet
 
@@ -40,30 +46,31 @@ async def starknet() -> AsyncGenerator[Starknet, None]:
     total_covered = []
     for file in files:
         if file.pct_covered < 80:
-            print(f"WARNING: {file.name} only {file.pct_covered:.2f}% covered")
+            logger.warn(f"{file.name} only {file.pct_covered:.2f}% covered")
         total_covered.append(file.pct_covered)
     if files and (val := not sum(total_covered) / len(files)) >= 80:
-        print(f"WARNING: Project is not covered enough {val:.2f})")
+        logger.warn(f"Project is not covered enough {val:.2f})")
 
-    dump_reports("coverage")
-    times, resources = reports()
-    print(
-        times.assign(
-            contract=lambda df: df.kwargs.map(lambda kw: Path(kw["source"]).stem)
-        )
-        .filter(items=["name", "contract", "duration"])
-        .sort_values("duration", ascending=False)
-    )
-    print(
-        resources.groupby("context")
-        .agg("sum", numeric_only=True)
-        .sort_values("n_steps", ascending=False)
-        .astype(int)
-    )
+    if worker_id == "master":
+        times, resources = reports()
+        dump_reports(Path("coverage"))
+    else:
+        dump_reports(Path("coverage") / worker_id)
+        if len(os.listdir("coverage")) == int(os.environ["PYTEST_XDIST_WORKER_COUNT"]):
+            # This is the last teardown os the testsuite, merge the files
+            resources = pd.concat(
+                [pd.read_csv(f) for f in Path("coverage").glob("**/resources.csv")],
+            ).sort_values(["n_steps"], ascending=False)
+            resources.to_csv(Path("coverage") / "resources.csv", index=False)
+            times = pd.concat(
+                [pd.read_csv(f) for f in Path("coverage").glob("**/times.csv")],
+                ignore_index=True,
+            ).sort_values(["duration"], ascending=False)
+            times.to_csv(Path("coverage") / "times.csv", index=False)
 
 
 @pytest_asyncio.fixture(scope="session")
-async def eth(starknet):
+async def eth(starknet: Starknet):
     return await starknet.deploy(
         source="./tests/utils/ERC20.cairo",
         constructor_calldata=[2] * 6,
