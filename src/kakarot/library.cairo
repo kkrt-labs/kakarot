@@ -200,8 +200,10 @@ namespace Kakarot {
             constructor_calldata=calldata,
             deploy_from_zero=FALSE,
         );
+
         // Increment salt
         salt.write(value=current_salt + 1);
+
         // Generate EVM_contract address from the new cairo contract
         // TODO: TEMPORARY SOLUTION FOR HACK-LISBON !!!
         let (_, low) = split_felt(contract_address);
