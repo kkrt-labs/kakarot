@@ -134,6 +134,7 @@ class TestZkEVM:
         params: dict,
         request,
     ):
+        state = zk_evm.state.copy()
         with traceit.context(request.node.callspec.id):
             res = await zk_evm.execute_at_address(
                 address=erc_20["tx"].result.evm_contract_address,
@@ -144,53 +145,54 @@ class TestZkEVM:
         assert res.result.return_data == self.hex_string_to_bytes_array(
             params["return_value"]
         )
+        zk_evm.state = state
 
     @pytest.mark.parametrize(
         "params",
         params_erc20,
     )
     async def test_erc20(self, zk_evm: StarknetContract, erc_20: dict, params, request):
-        value = 0
+        evm_contract_address = erc_20["tx"].result.evm_contract_address
+        state = zk_evm.state.copy()
         with traceit.context(request.node.callspec.id):
-
-            evm_contract_address = erc_20["tx"].result.evm_contract_address
 
             await zk_evm.execute_at_address(
                 address=evm_contract_address,
-                value=value,
+                value=0,
                 calldata=self.hex_string_to_bytes_array(params["mint"]),
             ).execute(caller_address=2)
 
             await zk_evm.execute_at_address(
                 address=evm_contract_address,
-                value=value,
+                value=0,
                 calldata=self.hex_string_to_bytes_array(params["approve"]),
             ).execute(caller_address=2)
 
             await zk_evm.execute_at_address(
                 address=evm_contract_address,
-                value=value,
+                value=0,
                 calldata=self.hex_string_to_bytes_array(params["allowance"]),
             ).execute(caller_address=2)
 
             await zk_evm.execute_at_address(
                 address=evm_contract_address,
-                value=value,
+                value=0,
                 calldata=self.hex_string_to_bytes_array(params["transferFrom"]),
             ).execute(caller_address=1)
 
             await zk_evm.execute_at_address(
                 address=evm_contract_address,
-                value=value,
+                value=0,
                 calldata=self.hex_string_to_bytes_array(params["transfer"]),
             ).execute(caller_address=1)
 
             res = await zk_evm.execute_at_address(
                 address=evm_contract_address,
-                value=value,
+                value=0,
                 calldata=self.hex_string_to_bytes_array(params["balanceOf"]),
             ).execute(caller_address=1)
 
         assert res.result.return_data == self.hex_string_to_bytes_array(
             params["return_value"]
         )
+        zk_evm.state = state
