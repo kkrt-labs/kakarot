@@ -6,7 +6,6 @@ from time import perf_counter
 from typing import Callable, Union
 
 import pandas as pd
-from starkware.starknet.testing.contract import StarknetContractFunctionInvocation
 from starkware.starknet.testing.starknet import StarknetContract
 
 logging.basicConfig(format="%(levelname)-8s %(message)s")
