@@ -65,4 +65,4 @@ format-mac:
 	isort tests/.
 
 build-sol:
-	docker run -v $(solidity_files):/sources ethereum/solc:stable -o /sources/output --bin --overwrite --opcodes /sources/ERC20.sol /sources/ERC721.sol
+	docker run -v $(solidity_files):/sources ethereum/solc:stable -o /sources/output --abi --bin --overwrite --opcodes /sources/ERC20.sol /sources/ERC721.sol
