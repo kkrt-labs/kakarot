@@ -99,7 +99,7 @@ class TestZkEVM:
         )
         bytecode = [*constructor_bytecode, *contract_bytecode]
 
-        with traceit.context("deploy"):
+        with traceit.context("deploy kakarot erc20"):
             tx = await zk_evm.deploy(bytecode=bytecode).execute(caller_address=1)
         return {
             "constructor_bytecode": constructor_bytecode,
