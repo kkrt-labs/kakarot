@@ -56,6 +56,7 @@ markers = [
     "SAR:            Opcode Value 0x1d - Arithmetic shift right",
     "SHA3:           Opcode Value 0x20 - Compute Keccak-256 hash",
     "EnvironmentalInformation",
+    "ADDRESS:        Opcode Value 0x30 - Get address of currently executing account",
     "BALANCE:        Opcode Value 0x31 - Get balance of the given account",
     "ORIGIN:         Opcode Value 0x32 - Get execution origination address",
     "CALLER:         Opcode Value 0x33 - Get caller address",

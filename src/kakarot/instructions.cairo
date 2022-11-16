@@ -266,6 +266,10 @@ namespace EVMInstructions {
         add_instruction(instructions=instructions, opcode=0x20, function=Sha3.exec_sha3);
 
         // Environment Information
+        // 0x30 - ADDRESS
+        add_instruction(
+            instructions=instructions, opcode=0x30, function=EnvironmentalInformation.exec_address
+        );
         // 0x31 - BALANCE
         add_instruction(
             instructions=instructions, opcode=0x31, function=EnvironmentalInformation.exec_balance

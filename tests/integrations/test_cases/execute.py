@@ -1566,4 +1566,16 @@ test_cases = [
             pytest.mark.EnvironmentalInformation,
         ],
     },
+    {
+        "params": {
+            "value": 0,
+            "code": "3000",
+            "calldata": "",
+            "stack": "0",
+            "memory": "",
+            "return_value": "",
+        },
+        "id": "Get address of currently executing account - 0x30 ADDRESS",
+        "marks": [pytest.mark.ADDRESS, pytest.mark.EnvironmentalInformation],
+    },
 ]

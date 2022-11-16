@@ -24,6 +24,7 @@ from kakarot.interfaces.interfaces import IEth, IRegistry
 // @custom:namespace EnvironmentalInformation
 namespace EnvironmentalInformation {
     // Define constants.
+    const GAS_COST_ADDRESS        = 2;
     const GAS_COST_BALANCE        = 100;
     const GAS_COST_ORIGIN         = 2;
     const GAS_COST_CALLER         = 2;
@@ -35,6 +36,34 @@ namespace EnvironmentalInformation {
     const GAS_COST_CODECOPY       = 3;
     const GAS_COST_RETURNDATASIZE = 2;
     const GAS_COST_RETURNDATACOPY = 3;
+
+    // @notice ADDRESS operation.
+    // @dev Get address of currently executing account.
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 2
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context
+    // @return The pointer to the updated execution context.
+    func exec_address{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+
+        // Get the current execution contract from the context,
+        // convert to Uin256, and push to Stack.
+        let address = Helpers.to_uint256(ctx.starknet_address);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=address);
+        // Update the execution context.
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        // Increment gas used
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_ADDRESS);
+        return ctx;
+    }
 
     // @notice BALANCE opcode.
     // @dev Get ETH balance of the specified address.
