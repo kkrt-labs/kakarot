@@ -19,6 +19,7 @@ cairo-coverage = "^0.1.4"
 pandas = "^1.5.1"
 pytest-xdist = { version = "^3.0.2", extras = ["psutil"] }
 setproctitle = "^1.3.2"
+pysha3 = "^1.0.2"
 
 [tool.pytest.ini_options]
 filterwarnings = [

@@ -596,6 +596,7 @@ namespace EVMInstructions {
         );
 
         // Add fs: System operations
+        // 0xFE - INVALID
         add_instruction(
             instructions=instructions, opcode=0xfe, function=SystemOperations.exec_invalid
         );
