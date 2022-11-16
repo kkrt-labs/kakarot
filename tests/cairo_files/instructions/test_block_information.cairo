@@ -16,13 +16,6 @@ from kakarot.constants import Constants
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.block_information import BlockInformation
 
-@view
-func __setup__{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    return ();
-}
-
 func init_context{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> model.ExecutionContext* {

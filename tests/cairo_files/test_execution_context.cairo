@@ -14,13 +14,6 @@ from kakarot.constants import Constants
 from kakarot.model import model
 from kakarot.execution_context import ExecutionContext
 
-@view
-func __setup__{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    return ();
-}
-
 @external
 func test__init__should_return_an_empty_execution_context{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
