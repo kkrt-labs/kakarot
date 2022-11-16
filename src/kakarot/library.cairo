@@ -8,15 +8,17 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.memcpy import memcpy
-from starkware.starknet.common.syscalls import deploy
+from starkware.starknet.common.syscalls import deploy as deploy_syscall
 from starkware.starknet.common.syscalls import get_contract_address
 // OpenZeppelin dependencies
 from openzeppelin.access.ownable.library import Ownable
 
 // Internal dependencies
 from kakarot.model import model
+from kakarot.memory import Memory
+from kakarot.stack import Stack
 from kakarot.instructions import EVMInstructions
-from kakarot.interfaces.interfaces import IRegistry
+from kakarot.interfaces.interfaces import IRegistry, IEvmContract
 from kakarot.execution_context import ExecutionContext
 from kakarot.constants import native_token_address, registry_address, evm_contract_class_hash
 
@@ -51,7 +53,7 @@ namespace Kakarot {
     }
 
     // @notice Execute EVM bytecode.
-    // @dev Executes a provided array of evm opcodes/bytes
+    // @dev Executes a provided array of evm opcodes/bytecode
     // @param code_len The bytecode length
     // @param code The bytecode to execute
     // @param calldata The calldata which can be referenced by the bytecode
@@ -90,8 +92,6 @@ namespace Kakarot {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(address: felt, calldata_len: felt, calldata: felt*, value: felt) -> model.ExecutionContext* {
-        alloc_locals;
-
         // Generate instructions set
         let instructions: felt* = EVMInstructions.generate_instructions();
 
@@ -119,8 +119,6 @@ namespace Kakarot {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(instructions: felt*, ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-
         // Decode and execute
         let ctx: model.ExecutionContext* = EVMInstructions.decode_and_execute(
             instructions=instructions, ctx=ctx
@@ -170,33 +168,35 @@ namespace Kakarot {
     }
 
     // @notice deploy contract account
-    // @dev Deploys a new starknet contract which functions as a new contract account and
-    //      will be mapped to an evm address
-    // @param bytes_len: the contract bytecode lenght
-    // @param bytes: the contract bytecode
+    // @dev First deploy a contract_account with no bytecode, then run the calldata as bytecode with the new address,
+    //      then set the bytecode with the result of the initial run
+    // @param bytecode_len: the contract bytecode lenght
+    // @param bytecode: the contract bytecode
     // @return evm_contract_address The evm address that is mapped to the newly deployed starknet contract address
     // @return starknet_contract_address The newly deployed starknet contract address
-    @external
-    func deploy_contract{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        bytes_len: felt, bytes: felt*
-    ) -> (evm_contract_address: felt, starknet_contract_address: felt) {
+    func deploy{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(bytecode_len: felt, bytecode: felt*) -> (
+        evm_contract_address: felt, starknet_contract_address: felt
+    ) {
         alloc_locals;
         let (current_salt) = salt.read();
         let (class_hash) = evm_contract_class_hash.read();
 
+        // Prepare constructor data
         let (local calldata: felt*) = alloc();
         let (kakarot_address) = get_contract_address();
-
-        // Prepare constructor data
         assert [calldata] = kakarot_address;
-        assert [calldata + 1] = bytes_len;
-        memcpy(dst=calldata + 2, src=bytes, len=bytes_len);
+        assert [calldata + 1] = 0;
 
-        // Deploy contract account
-        let (contract_address) = deploy(
+        // Deploy contract account with no bytecode
+        let (contract_address) = deploy_syscall(
             class_hash=class_hash,
             contract_address_salt=current_salt,
-            constructor_calldata_size=bytes_len + 2,
+            constructor_calldata_size=2,
             constructor_calldata=calldata,
             deploy_from_zero=FALSE,
         );
@@ -206,9 +206,54 @@ namespace Kakarot {
         // TODO: TEMPORARY SOLUTION FOR HACK-LISBON !!!
         let (_, low) = split_felt(contract_address);
         local mock_evm_address = 0xAbdE100700000000000000000000000000000000 + low;
+
         // Save address of new contracts
         let (reg_address) = registry_address.read();
         IRegistry.set_account_entry(reg_address, contract_address, mock_evm_address);
+
+        // Generate instructions set
+        let instructions: felt* = EVMInstructions.generate_instructions();
+
+        // Prepare execution context
+        let (empty_array: felt*) = alloc();
+        tempvar call_context: model.CallContext* = new model.CallContext(
+            bytecode=bytecode,
+            bytecode_len=bytecode_len,
+            calldata=empty_array,
+            calldata_len=0,
+            value=0,
+            );
+        let (local contract_bytecode: felt*) = alloc();
+        let stack: model.Stack* = Stack.init();
+        let memory: model.Memory* = Memory.init();
+        tempvar ctx: model.ExecutionContext* = new model.ExecutionContext(
+            call_context=call_context,
+            program_counter=0,
+            stopped=FALSE,
+            return_data=contract_bytecode,
+            return_data_len=0,
+            stack=stack,
+            memory=memory,
+            gas_used=0,
+            gas_limit=0,
+            intrinsic_gas_cost=0,
+            starknet_address=contract_address,
+            evm_address=mock_evm_address,
+            );
+
+        // Compute intrinsic gas cost and update gas used
+        let ctx = ExecutionContext.compute_intrinsic_gas_cost(ctx);
+
+        // Start execution
+        let ctx = run(instructions, ctx);
+
+        // Update contract bytecode with execution result
+        IEvmContract.write_bytecode(
+            contract_address=contract_address,
+            bytecode_len=ctx.return_data_len,
+            bytecode=ctx.return_data,
+        );
+
         return (evm_contract_address=mock_evm_address, starknet_contract_address=contract_address);
     }
 }
