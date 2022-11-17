@@ -193,7 +193,7 @@ namespace Kakarot {
         assert [calldata + 1] = 0;
 
         // Deploy contract account with no bytecode
-        let (contract_address) = deploy_syscall(
+        let (starknet_contract_address) = deploy_syscall(
             class_hash=class_hash,
             contract_address_salt=current_salt,
             constructor_calldata_size=2,
@@ -206,12 +206,17 @@ namespace Kakarot {
 
         // Generate EVM_contract address from the new cairo contract
         // TODO: TEMPORARY SOLUTION FOR HACK-LISBON !!!
-        let (_, low) = split_felt(contract_address);
-        local mock_evm_address = 0xAbdE100700000000000000000000000000000000 + low;
+        let (_, low) = split_felt(starknet_contract_address);
+        local evm_contract_address = 0xAbdE100700000000000000000000000000000000 + low;
+
+        evm_contract_deployed.emit(
+            evm_contract_address=evm_contract_address,
+            starknet_contract_address=starknet_contract_address,
+        );
 
         // Save address of new contracts
         let (reg_address) = registry_address.read();
-        IRegistry.set_account_entry(reg_address, contract_address, mock_evm_address);
+        IRegistry.set_account_entry(reg_address, starknet_contract_address, evm_contract_address);
 
         // Generate instructions set
         let instructions: felt* = EVMInstructions.generate_instructions();
@@ -239,8 +244,8 @@ namespace Kakarot {
             gas_used=0,
             gas_limit=0,
             intrinsic_gas_cost=0,
-            starknet_address=contract_address,
-            evm_address=mock_evm_address,
+            starknet_contract_address=starknet_contract_address,
+            evm_contract_address=evm_contract_address,
             );
 
         // Compute intrinsic gas cost and update gas used
@@ -251,11 +256,14 @@ namespace Kakarot {
 
         // Update contract bytecode with execution result
         IEvmContract.write_bytecode(
-            contract_address=contract_address,
+            contract_address=starknet_contract_address,
             bytecode_len=ctx.return_data_len,
             bytecode=ctx.return_data,
         );
 
-        return (evm_contract_address=mock_evm_address, starknet_contract_address=contract_address);
+        return (
+            evm_contract_address=evm_contract_address,
+            starknet_contract_address=starknet_contract_address,
+        );
     }
 }

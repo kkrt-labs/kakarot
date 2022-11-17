@@ -56,8 +56,8 @@ namespace ExecutionContext {
             gas_used=gas_used,
             gas_limit=gas_limit,
             intrinsic_gas_cost=0,
-            starknet_address=0,
-            evm_address=0,
+            starknet_contract_address=0,
+            evm_contract_address=0,
             );
         return ctx;
     }
@@ -87,12 +87,14 @@ namespace ExecutionContext {
 
         // Get the starknet address from the given evm address
         let (registry_address_) = registry_address.read();
-        let (starknet_address) = IRegistry.get_starknet_address(
-            contract_address=registry_address_, evm_address=address
+        let (starknet_contract_address) = IRegistry.get_starknet_contract_address(
+            contract_address=registry_address_, evm_contract_address=address
         );
 
         // Get the bytecode from the Starknet_contract
-        let (bytecode_len, bytecode) = IEvmContract.bytecode(contract_address=starknet_address);
+        let (bytecode_len, bytecode) = IEvmContract.bytecode(
+            contract_address=starknet_contract_address
+        );
         local call_context: model.CallContext* = new model.CallContext(
             bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=calldata_len, value=value
             );
@@ -108,8 +110,8 @@ namespace ExecutionContext {
             gas_used=gas_used,
             gas_limit=gas_limit,
             intrinsic_gas_cost=0,
-            starknet_address=starknet_address,
-            evm_address=address,
+            starknet_contract_address=starknet_contract_address,
+            evm_contract_address=address,
             );
     }
 
@@ -131,8 +133,8 @@ namespace ExecutionContext {
             gas_used=gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=intrinsic_gas_cost,
-            starknet_address=self.starknet_address,
-            evm_address=self.evm_address,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
             );
     }
 
@@ -160,8 +162,8 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,
-            starknet_address=self.starknet_address,
-            evm_address=self.evm_address,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
             );
     }
 
@@ -203,8 +205,8 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,
-            starknet_address=self.starknet_address,
-            evm_address=self.evm_address,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
             );
     }
 
@@ -226,8 +228,8 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,
-            starknet_address=self.starknet_address,
-            evm_address=self.evm_address,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
             );
     }
 
@@ -254,8 +256,8 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,
-            starknet_address=self.starknet_address,
-            evm_address=self.evm_address,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
             );
     }
 
@@ -278,8 +280,8 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,
-            starknet_address=self.starknet_address,
-            evm_address=self.evm_address,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
             );
     }
 
@@ -302,8 +304,8 @@ namespace ExecutionContext {
             gas_used=self.gas_used + inc_value,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,
-            starknet_address=self.starknet_address,
-            evm_address=self.evm_address,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
             );
     }
 
@@ -345,8 +347,8 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
             intrinsic_gas_cost=self.intrinsic_gas_cost,
-            starknet_address=self.starknet_address,
-            evm_address=self.evm_address,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
             );
     }
 

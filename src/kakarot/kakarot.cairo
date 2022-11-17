@@ -8,7 +8,7 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.alloc import alloc
 
 // Local dependencies
-from kakarot.library import Kakarot, evm_contract_deployed
+from kakarot.library import Kakarot
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.interfaces.interfaces import IEvmContract
@@ -88,8 +88,8 @@ func execute_at_address{
         stack=context.stack.elements,
         memory_len=context.memory.bytes_len,
         memory=context.memory.bytes,
-        evm_contract_address=context.evm_address,
-        starknet_contract_address=context.starknet_address,
+        evm_contract_address=context.evm_contract_address,
+        starknet_contract_address=context.starknet_contract_address,
         return_data_len=context.return_data_len,
         return_data=context.return_data,
     );

@@ -15,11 +15,11 @@ from openzeppelin.access.ownable.library import Ownable
 
 // Storage
 @storage_var
-func starknet_address_(evm_address: felt) -> (starknet_address: felt) {
+func starknet_contract_address_(evm_contract_address: felt) -> (starknet_contract_address: felt) {
 }
 
 @storage_var
-func evm_address_(starknet_address: felt) -> (evm_address: felt) {
+func evm_contract_address_(starknet_contract_address: felt) -> (evm_contract_address: felt) {
 }
 
 namespace AccountRegistry {
@@ -49,49 +49,49 @@ namespace AccountRegistry {
     }
 
     // @notice Update or create an entry in the registry.
-    // @param starknet_address: The StarkNet address of the account.
-    // @param evm_address: The EVM address of the account.
+    // @param starknet_contract_address: The StarkNet address of the account.
+    // @param evm_contract_address: The EVM address of the account.
     func set_account_entry{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(starknet_address: felt, evm_address: felt) {
+    }(starknet_contract_address: felt, evm_contract_address: felt) {
         // Access control check.
         Ownable.assert_only_owner();
 
         // Update starknet address mapping.
-        starknet_address_.write(evm_address, starknet_address);
+        starknet_contract_address_.write(evm_contract_address, starknet_contract_address);
 
         // Update evm address mapping.
-        evm_address_.write(starknet_address, evm_address);
+        evm_contract_address_.write(starknet_contract_address, evm_contract_address);
 
         return ();
     }
 
     // @notice Get the starknet address of an EVM address.
-    // @param evm_address: The EVM address.
-    // @return starknet_address: The starknet address.
-    func get_starknet_address{
+    // @param evm_contract_address: The EVM address.
+    // @return starknet_contract_address: The starknet address.
+    func get_starknet_contract_address{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(evm_address: felt) -> (starknet_address: felt) {
-        let starknet_address = starknet_address_.read(evm_address);
-        return starknet_address;
+    }(evm_contract_address: felt) -> (starknet_contract_address: felt) {
+        let starknet_contract_address = starknet_contract_address_.read(evm_contract_address);
+        return starknet_contract_address;
     }
 
     // @notice Get the EVM address of a starknet address.
-    // @param starknet_address: The starknet address.
-    // @return evm_address: The EVM address.
-    func get_evm_address{
+    // @param starknet_contract_address: The starknet address.
+    // @return evm_contract_address: The EVM address.
+    func get_evm_contract_address{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(starknet_address: felt) -> (evm_address: felt) {
-        let evm_address = evm_address_.read(starknet_address);
-        return evm_address;
+    }(starknet_contract_address: felt) -> (evm_contract_address: felt) {
+        let evm_contract_address = evm_contract_address_.read(starknet_contract_address);
+        return evm_contract_address;
     }
 }

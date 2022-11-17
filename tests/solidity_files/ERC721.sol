@@ -3,7 +3,7 @@ pragma solidity >=0.8.0;
 
 /// @notice Modern, minimalist, and gas efficient ERC-721 implementation.
 /// @author Solmate (https://github.com/transmissions11/solmate/blob/main/src/tokens/ERC721.sol)
-abstract contract ERC721 {
+contract ERC721 {
     /*//////////////////////////////////////////////////////////////
                                  EVENTS
     //////////////////////////////////////////////////////////////*/
@@ -34,7 +34,9 @@ abstract contract ERC721 {
 
     string public symbol;
 
-    function tokenURI(uint256 id) public view virtual returns (string memory);
+    function tokenURI(uint256 id) public view virtual returns (string memory) {
+        return string(abi.encodePacked(id));
+    }
 
     /*//////////////////////////////////////////////////////////////
                       ERC721 BALANCE/OWNER STORAGE

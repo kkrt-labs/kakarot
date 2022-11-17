@@ -58,13 +58,13 @@ namespace EnvironmentalInformation {
 
         // Get the starknet account address from the evm account address
         let (registry_address_) = registry_address.read();
-        let (starknet_address) = IRegistry.get_starknet_address(
-            contract_address=registry_address_, evm_address=address.low
+        let (starknet_contract_address) = IRegistry.get_starknet_contract_address(
+            contract_address=registry_address_, evm_contract_address=address.low
         );
         // Get the number of native tokens owned by the given starknet account
         let (native_token_address_) = native_token_address.read();
         let (balance: Uint256) = IEth.balanceOf(
-            contract_address=native_token_address_, account=starknet_address
+            contract_address=native_token_address_, account=starknet_contract_address
         );
 
         let stack: model.Stack* = Stack.push(stack, balance);
@@ -124,10 +124,10 @@ namespace EnvironmentalInformation {
         let (tx_info) = get_tx_info();
         // Get the EVM address from Starknet address
         let (registry_address_) = registry_address.read();
-        let (evm_address) = IRegistry.get_evm_address(
-            registry_address_, starknet_address=tx_info.account_contract_address
+        let (evm_contract_address) = IRegistry.get_evm_contract_address(
+            registry_address_, starknet_contract_address=tx_info.account_contract_address
         );
-        let origin_address = Helpers.to_uint256(evm_address);
+        let origin_address = Helpers.to_uint256(evm_contract_address);
 
         // Update Context stack
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=origin_address);

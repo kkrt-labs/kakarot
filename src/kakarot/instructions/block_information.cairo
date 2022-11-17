@@ -223,7 +223,7 @@ namespace BlockInformation {
         // Get balance of current executing contract address balance and push to stack.
         let (native_token_address_) = native_token_address.read();
         let (balance: Uint256) = IEth.balanceOf(
-            contract_address=native_token_address_, account=ctx.starknet_address
+            contract_address=native_token_address_, account=ctx.starknet_contract_address
         );
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=balance);
 

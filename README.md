@@ -175,6 +175,9 @@ make build
 
 ## Test
 
+Running the tests requires to have docker available in the machine. Check
+[their doc](https://docs.docker.com/get-docker/) for how to install it.
+
 ```bash
 # Run all tests
 make test

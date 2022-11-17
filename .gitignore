@@ -35,4 +35,3 @@ kakarot.code-workspace
 coverage/*
 !coverage/resources.csv
 !coverage/times.csv
-tests/solidity_files/output
