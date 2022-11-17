@@ -356,7 +356,7 @@ namespace MemoryOperations {
         let stack = ctx.stack;
 
         // ------- 1. Get starknet address
-        let starknet_address: felt = ctx.starknet_address;
+        let starknet_contract_address: felt = ctx.starknet_contract_address;
 
         // ----- 2. Pop 2 values: key and value
 
@@ -369,7 +369,9 @@ namespace MemoryOperations {
 
         // 3. Call Write storage on contract with starknet address
         with_attr error_message("Contract call failed") {
-            IEvmContract.write_storage(contract_address=starknet_address, key=key, value=value);
+            IEvmContract.write_storage(
+                contract_address=starknet_contract_address, key=key, value=value
+            );
         }
 
         // Update context stack.
@@ -398,7 +400,7 @@ namespace MemoryOperations {
         let stack = ctx.stack;
 
         // ------- 1. Get starknet address
-        let starknet_address: felt = ctx.starknet_address;
+        let starknet_contract_address: felt = ctx.starknet_contract_address;
 
         // ----- 2. Pop 2 values: key and value
 
@@ -410,7 +412,7 @@ namespace MemoryOperations {
         // 3. Get the data and add on the Stack
 
         let (local value: Uint256) = IEvmContract.storage(
-            contract_address=starknet_address, key=key
+            contract_address=starknet_contract_address, key=key
         );
 
         let stack: model.Stack* = Stack.push(stack, value);

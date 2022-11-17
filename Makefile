@@ -1,4 +1,5 @@
 .PHONY: build test coverage
+solidity_files = $(shell pwd)/tests/solidity_files
 
 build:
 	$(MAKE) clean
@@ -14,17 +15,16 @@ build-mac:
 	starknet-compile ./src/kakarot/accounts/eoa/externally_owned_account.cairo --output build/externally_owned_account.json --cairo_path ./src --abi build/externally_owned_account_abi.json
 	starknet-compile ./src/kakarot/accounts/registry/account_registry.cairo --output build/account_registry.json --cairo_path ./src --abi build/account_registry_abi.json
 
-
 setup:
 	poetry install --no-root
 
-test:
+test: build-sol
 	poetry run pytest tests -s --log-cli-level=INFO -n logical
 
-test-no-log:
+test-no-log: build-sol
 	poetry run pytest tests -s -n logical
 
-test-integration:
+test-integration: build-sol
 	poetry run pytest tests/integrations -s --log-cli-level=INFO -n logical
 
 test-units:
@@ -63,3 +63,6 @@ format-mac:
 	cairo-format src/**/*.cairo -i
 	black tests/.
 	isort tests/.
+
+build-sol:
+	docker run -v $(solidity_files):/sources ethereum/solc:stable -o /sources/output --abi --bin --overwrite --opcodes /sources/ERC20.sol /sources/ERC721.sol

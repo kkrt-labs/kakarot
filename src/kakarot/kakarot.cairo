@@ -8,7 +8,7 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.alloc import alloc
 
 // Local dependencies
-from kakarot.library import Kakarot, evm_contract_deployed
+from kakarot.library import Kakarot
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.interfaces.interfaces import IEvmContract
@@ -78,29 +78,6 @@ func execute_at_address{
     return_data_len: felt,
     return_data: felt*,
 ) {
-    alloc_locals;
-
-    // Check is _to address is 0x0000..00:
-    if (address == 0) {
-        let (stack: Uint256*) = alloc();
-        let (zero_array: felt*) = alloc();
-        // Deploy contract
-
-        let (evm_contract_address: felt, starknet_contract_address: felt) = deploy(
-            bytes_len=calldata_len, bytes=calldata
-        );
-        return (
-            stack_len=0,
-            stack=stack,
-            memory_len=0,
-            memory=zero_array,
-            evm_contract_address=evm_contract_address,
-            starknet_contract_address=starknet_contract_address,
-            return_data_len=0,
-            return_data=zero_array,
-        );
-    }
-
     let context = Kakarot.execute_at_address(
         address=address, calldata_len=calldata_len, calldata=calldata, value=value
     );
@@ -111,8 +88,8 @@ func execute_at_address{
         stack=context.stack.elements,
         memory_len=context.memory.bytes_len,
         memory=context.memory.bytes,
-        evm_contract_address=context.evm_address,
-        starknet_contract_address=context.starknet_address,
+        evm_contract_address=context.evm_contract_address,
+        starknet_contract_address=context.starknet_contract_address,
         return_data_len=context.return_data_len,
         return_data=context.return_data,
     );
@@ -148,63 +125,16 @@ func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     return Kakarot.set_native_token(native_token_address_);
 }
 
-// @notice deploy contract account
-// @dev Deploys a new starknet contract which functions as a new contract account and
-//      will be mapped to an evm address
-// @param bytes_len: the contract bytecode lenght
-// @param bytes: the contract bytecode
+// @notice Deploy a new contract account and execute constructor
+// @param bytes_len: the constructor + contract bytecode lenght
+// @param bytes: the constructor + contract bytecode
 // @return evm_contract_address The evm address that is mapped to the newly deployed starknet contract address
 // @return starknet_contract_address The newly deployed starknet contract address
 @external
-func deploy{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    bytes_len: felt, bytes: felt*
-) -> (evm_contract_address: felt, starknet_contract_address: felt) {
-    // Deploy a new contract account
-    let (evm_contract_address, starknet_contract_address) = Kakarot.deploy_contract(
-        bytes_len, bytes
-    );
-    // Log new contract account deployment
-    evm_contract_deployed.emit(
-        evm_contract_address=evm_contract_address,
-        starknet_contract_address=starknet_contract_address,
-    );
-    return (evm_contract_address, starknet_contract_address);
-}
-
-// @notice deploy starknet contract
-// @dev starknet contract will be mapped to an evm address that is also generated within this function
-// @param bytes: the contract bytecode
-// @return evm address that is mapped to the actual contract address
-@external
-func initiate{
+func deploy{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(evm_address: felt, starknet_address: felt, value: felt) -> (
+}(bytecode_len: felt, bytecode: felt*) -> (
     evm_contract_address: felt, starknet_contract_address: felt
 ) {
-    alloc_locals;
-
-    // Check if it is already initialized
-    let (is_initialized) = IEvmContract.is_initialized(contract_address=starknet_address);
-    with_attr error_message("Contract already initiated") {
-        assert is_initialized = 0;
-    }
-
-    // Get constructor and runtime bytecode
-    let (bytecode_len, bytecode) = IEvmContract.bytecode(contract_address=starknet_address);
-
-    // Run bytecode
-    let context: model.ExecutionContext* = Kakarot.execute_at_address(
-        address=evm_address, calldata_len=bytecode_len, calldata=bytecode, value=value
-    );
-
-    // Update evm_contract bytecode
-    IEvmContract.write_bytecode(
-        contract_address=context.starknet_address,
-        bytecode_len=context.return_data_len,
-        bytecode=context.return_data,
-    );
-
-    return (
-        evm_contract_address=context.evm_address, starknet_contract_address=context.starknet_address
-    );
+    return Kakarot.deploy(bytecode_len, bytecode);
 }
