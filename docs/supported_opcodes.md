@@ -45,38 +45,38 @@ This document describes the opcodes supported by Kakarot.
 
 ## Environmental Information
 
-| Opcode Value | Opcode Name    | Description                                                                       | Implemented |
-| ------------ | -------------- | --------------------------------------------------------------------------------- | ----------- |
-| 0x30         | ADDRESS        | Get address of currently executing account                                        |             |
-| 0x31         | BALANCE        | Get balance of the given account                                                  | ✅          |
-| 0x32         | ORIGIN         | Get execution origination address                                                 | ✅          |
-| 0x33         | CALLER         | Get caller address                                                                | ✅          |
-| 0x34         | CALLVALUE      | Get deposited value by the instruction/transaction responsible for this execution | ✅           |
-| 0x35         | CALLDATALOAD   | Get input data of current environment                                             | ✅          |
-| 0x36         | CALLDATASIZE   | Get size of input data in current environment                                     | ✅          |
-| 0x37         | CALLDATACOPY   | Copy input data in current environment to memory                                  | ✅          |
-| 0x38         | CODESIZE       | Get size of code running in current environment                                   | ✅          |
-| 0x39         | CODECOPY       | Copy code running in current environment to memory                                | ✅          |
-| 0x3a         | GASPRICE       | Get price of gas in current environment                                           |             |
-| 0x3b         | EXTCODESIZE    | Get size of an account's code                                                     |             |
-| 0x3c         | EXTCODECOPY    | Copy an account's code to memory                                                  |             |
-| 0x3d         | RETURNDATASIZE | Get size of output data from the previous call from the current environment       | ✅          |
-| 0x3e         | RETURNDATACOPY | Copy output data from the previous call to memory                                 |             |
-| 0x3f         | EXTCODEHASH    | Get the code hash of an account                                                   |             |
+| Opcode Value | Opcode Name                        | Description                                                                       | Implemented |
+| ------------ | ---------------------------------- | --------------------------------------------------------------------------------- | ----------- |
+| 0x30         | [ADDRESS](/../../issues/3)         | Get address of currently executing account                                        |             |
+| 0x31         | BALANCE                            | Get balance of the given account                                                  | ✅          |
+| 0x32         | ORIGIN                             | Get execution origination address                                                 | ✅          |
+| 0x33         | CALLER                             | Get caller address                                                                | ✅          |
+| 0x34         | CALLVALUE                          | Get deposited value by the instruction/transaction responsible for this execution | ✅          |
+| 0x35         | CALLDATALOAD                       | Get input data of current environment                                             | ✅          |
+| 0x36         | CALLDATASIZE                       | Get size of input data in current environment                                     | ✅          |
+| 0x37         | CALLDATACOPY                       | Copy input data in current environment to memory                                  | ✅          |
+| 0x38         | CODESIZE                           | Get size of code running in current environment                                   | ✅          |
+| 0x39         | CODECOPY                           | Copy code running in current environment to memory                                | ✅          |
+| 0x3a         | [GASPRICE](/../../issues/97)       | Get price of gas in current environment                                           |             |
+| 0x3b         | [EXTCODESIZE](/../../issues/96)    | Get size of an account's code                                                     |             |
+| 0x3c         | [EXTCODECOPY](/../../issues/95)    | Copy an account's code to memory                                                  |             |
+| 0x3d         | RETURNDATASIZE                     | Get size of output data from the previous call from the current environment       | ✅          |
+| 0x3e         | [RETURNDATACOPY](/../../issues/93) | Copy output data from the previous call to memory                                 |             |
+| 0x3f         | [EXTCODEHASH](/../../issues/92)    | Get the code hash of an account                                                   |             |
 
 ## Block Information
 
-| Opcode Value | Opcode Name | Description                                                | Implemented |
-| ------------ | ----------- | ---------------------------------------------------------- | ----------- |
-| 0x40         | BLOCKHASH   | Get the hash of one of the 256 most recent complete blocks |             |
-| 0x41         | COINBASE    | Get the block's beneficiary address                        | ✅          |
-| 0x42         | TIMESTAMP   | Get the block's timestamp                                  | ✅          |
-| 0x43         | NUMBER      | Get the block's number                                     | ✅          |
-| 0x44         | DIFFICULTY  | Get the block's difficulty                                 | ✅          |
-| 0x45         | GASLIMIT    | Get the block's gas limit                                  | ✅          |
-| 0x46         | CHAINID     | Get the chain ID                                           | ✅          |
-| 0x47         | SELFBALANCE | Get the balance of the current contract                    | ✅          |
-| 0x48         | BASEFEE     | Get the base fee of the current block                      | ✅          |
+| Opcode Value | Opcode Name                   | Description                                                | Implemented |
+| ------------ | ----------------------------- | ---------------------------------------------------------- | ----------- |
+| 0x40         | [BLOCKHASH](/../../issues/91) | Get the hash of one of the 256 most recent complete blocks |             |
+| 0x41         | COINBASE                      | Get the block's beneficiary address                        | ✅          |
+| 0x42         | TIMESTAMP                     | Get the block's timestamp                                  | ✅          |
+| 0x43         | NUMBER                        | Get the block's number                                     | ✅          |
+| 0x44         | DIFFICULTY                    | Get the block's difficulty                                 | ✅          |
+| 0x45         | GASLIMIT                      | Get the block's gas limit                                  | ✅          |
+| 0x46         | CHAINID                       | Get the chain ID                                           | ✅          |
+| 0x47         | SELFBALANCE                   | Get the balance of the current contract                    | ✅          |
+| 0x48         | BASEFEE                       | Get the base fee of the current block                      | ✅          |
 
 ## Stack, Memory, Storage and Flow Operations
 
@@ -186,15 +186,15 @@ This document describes the opcodes supported by Kakarot.
 
 ## System Operations
 
-| Opcode Value | Opcode Name  | Description                                                       | Implemented |
-| ------------ | ------------ | ----------------------------------------------------------------- | ----------- |
-| 0xf0         | CREATE       | Create a new account with associated code                         |             |
-| 0xf1         | CALL         | Message-call into an account                                      |             |
-| 0xf2         | CALLCODE     | Message-call into this account with alternative account's code    |             |
-| 0xf3         | RETURN       | Halt execution returning output data                              |             |
-| 0xf4         | DELEGATECALL | Message-call into this account with an alternative account’s code |             |
-| 0xf5         | CREATE2      | Create a new account with associated code                         |             |
-| 0xfa         | STATICCALL   | Static message-call into an account                               |             |
-| 0xfd         | REVERT       | Halt execution reverting state changes                            |             |
-| 0xfe         | INVALID      | Designated invalid instruction                                    | ✅          |
-| 0xff         | SELFDESTRUCT | Halt execution and register account for later deletion            |             |
+| Opcode Value | Opcode Name                        | Description                                                       | Implemented |
+| ------------ | ---------------------------------- | ----------------------------------------------------------------- | ----------- |
+| 0xf0         | [CREATE](/../../issues/253)        | Create a new account with associated code                         |             |
+| 0xf1         | [CALL](/../../issues/255)          | Message-call into an account                                      |             |
+| 0xf2         | [CALLCODE](/../../issues/256)      | Message-call into this account with alternative account's code    |             |
+| 0xf3         | [RETURN](/../../issues/257)        | Halt execution returning output data                              |             |
+| 0xf4         | [DELEGATECALL](/../../issues/258)  | Message-call into this account with an alternative account’s code |             |
+| 0xf5         | [CREATE2](/../../issues/259)       | Create a new account with associated code                         |             |
+| 0xfa         | [STATICCALL](/../../issues/260)    | Static message-call into an account                               |             |
+| 0xfd         | [REVERT](/../../issues/249)        | Halt execution reverting state changes                            |             |
+| 0xfe         | INVALID                            | Designated invalid instruction                                    | ✅          |
+| 0xff         | [SELFDESTRUCT](/../../issues/261)  | Halt execution and register account for later deletion            |             |
