@@ -56,7 +56,7 @@ namespace EnvironmentalInformation {
 
         // Get the current execution contract from the context,
         // convert to Uin256, and push to Stack.
-        let address = Helpers.to_uint256(ctx.starknet_address);
+        let address = Helpers.to_uint256(ctx.evm_address);
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=address);
         // Update the execution context.
         let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
