@@ -2,11 +2,13 @@ import json
 import logging
 from contextlib import contextmanager
 from pathlib import Path
+from textwrap import wrap
 from time import perf_counter
-from typing import Callable, Union
+from typing import Callable, List, Union
 
 import pandas as pd
 from starkware.starknet.testing.starknet import StarknetContract
+from web3 import Web3
 
 logging.basicConfig(format="%(levelname)-8s %(message)s")
 logger = logging.getLogger("timer")
@@ -190,3 +192,64 @@ def dump_reports(path: Union[str, Path]):
     times, traces = reports()
     times.to_csv(p / "times.csv", index=False)
     traces.to_csv(p / "resources.csv", index=False)
+
+
+def wrap_for_kakarot(contract, kakarot, evm_contract_address):
+    def wrap_zk_evm(fun, evm_contract_address):
+        async def _wrapped(contract, *args, **kwargs):
+            abi = contract.get_function_by_name(fun).abi
+            if abi["stateMutability"] == "view":
+                res = await kakarot.execute_at_address(
+                    address=evm_contract_address,
+                    value=kwargs.get("value", 0),
+                    calldata=hex_string_to_bytes_array(
+                        contract.encodeABI(fun, args, kwargs)
+                    ),
+                ).call()
+            else:
+                caller_address = kwargs["caller_address"]
+                del kwargs["caller_address"]
+                res = await kakarot.execute_at_address(
+                    address=evm_contract_address,
+                    value=kwargs.get("value", 0),
+                    calldata=hex_string_to_bytes_array(
+                        contract.encodeABI(fun, args, kwargs)
+                    ),
+                ).execute(caller_address=caller_address)
+
+            return bytes_array_to_bytes32_array(res.result.return_data)
+
+        return _wrapped
+
+    for fun in contract.functions:
+        setattr(
+            contract,
+            fun,
+            classmethod(wrap_zk_evm(fun, evm_contract_address)),
+        )
+    return contract
+
+
+def int_to_uint256(value):
+    low = value & ((1 << 128) - 1)
+    high = value >> 128
+    return low, high
+
+
+def hex_string_to_bytes_array(h: str):
+    if len(h) % 2 != 0:
+        raise ValueError(f"Provided string has an odd length {len(h)}")
+    if h[:2] == "0x":
+        h = h[2:]
+    return [int(b, 16) for b in wrap(h, 2)]
+
+
+def bytes_array_to_bytes32_array(bytes_array: List[int]):
+    return wrap("".join([hex(b)[2:] for b in bytes_array]), 64)
+
+
+def get_contract(contract_name):
+    solidity_output_path = Path("tests") / "solidity_files" / "output"
+    abi = json.load(open(solidity_output_path / f"{contract_name}.abi"))
+    bytecode = (solidity_output_path / f"{contract_name}.bin").read_text()
+    return Web3().eth.contract(abi=abi, bytecode=bytecode)
