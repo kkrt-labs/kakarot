@@ -21,10 +21,10 @@ setup:
 test: build-sol
 	poetry run pytest tests -s --log-cli-level=INFO -n logical
 
-test-no-log:
+test-no-log: build-sol
 	poetry run pytest tests -s -n logical
 
-test-integration:
+test-integration: build-sol
 	poetry run pytest tests/integrations -s --log-cli-level=INFO -n logical
 
 test-units:
