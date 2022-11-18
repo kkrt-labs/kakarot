@@ -47,7 +47,7 @@ This document describes the opcodes supported by Kakarot.
 
 | Opcode Value | Opcode Name                        | Description                                                                       | Implemented |
 | ------------ | ---------------------------------- | --------------------------------------------------------------------------------- | ----------- |
-| 0x30         | [ADDRESS](/../../issues/3)         | Get address of currently executing account                                        |             |
+| 0x30         | ADDRESS                            | Get address of currently executing account                                        | ✅          |
 | 0x31         | BALANCE                            | Get balance of the given account                                                  | ✅          |
 | 0x32         | ORIGIN                             | Get execution origination address                                                 | ✅          |
 | 0x33         | CALLER                             | Get caller address                                                                | ✅          |
