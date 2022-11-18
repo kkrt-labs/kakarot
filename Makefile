@@ -19,16 +19,28 @@ setup:
 	poetry install --no-root
 
 test: build-sol
-	poetry run pytest tests -s --log-cli-level=INFO -n logical
+	poetry run pytest tests --log-cli-level=INFO -n logical
 
 test-no-log: build-sol
-	poetry run pytest tests -s -n logical
+	poetry run pytest tests -n logical
 
 test-integration: build-sol
-	poetry run pytest tests/integrations -s --log-cli-level=INFO -n logical
+	poetry run pytest tests/integrations --log-cli-level=INFO -n logical
 
-test-units:
-	poetry run pytest tests/units -s --log-cli-level=INFO
+test-units: build-sol
+	poetry run pytest tests/units --log-cli-level=INFO
+
+run-test-log: build-sol
+	poetry run pytest -k $(test) --log-cli-level=INFO -vvv
+	
+run-test: build-sol
+	poetry run pytest -k $(test)
+
+run-test-mark-log: build-sol
+	poetry run pytest -m $(mark) --log-cli-level=INFO -vvv
+
+run-test-mark: build-sol
+	poetry run pytest -m $(mark)
 
 format:
 	poetry run cairo-format src/**/*.cairo -i
@@ -46,18 +58,6 @@ clean:
 
 lint:
 	amarna ./src/kakarot -o lint.sarif -rules unused-imports,dead-store,unknown-decorator,unused-arguments
-
-run-test-log:
-	poetry run pytest tests/integrations/test_zk_evm.py::TestZkEVM -k $(test) -s --log-cli-level=INFO
-	
-run-test:
-	poetry run pytest -s -vvv tests/integrations/test_zk_evm.py::TestZkEVM::test_execute["$(test)"]
-
-run-test-mark-log:
-	poetry run pytest tests/integrations/test_zk_evm.py::TestZkEVM -m $(mark) -s -vvv --log-cli-level=INFO
-	
-run-test-mark:
-	poetry run pytest -s tests/integrations/test_zk_evm.py::TestZkEVM -m $(mark)
 
 format-mac:
 	cairo-format src/**/*.cairo -i

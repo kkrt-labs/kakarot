@@ -1,3 +1,5 @@
+import logging
+
 import pytest
 import pytest_asyncio
 from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
@@ -9,6 +11,8 @@ from tests.utils.utils import (
     traceit,
     wrap_for_kakarot,
 )
+
+logger = logging.getLogger()
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -46,12 +50,9 @@ async def set_account_registry(
 @pytest.fixture(scope="module")
 def solidity_contract(starknet, contract_account_class, kakarot):
 
-    print("solidity_contract")
-
     deployed_contracts = {}
 
     async def _factory(name, *args, **kwargs):
-        print(f"_factory({name})")
         if name in deployed_contracts:
             return deployed_contracts[name]
         contract = get_contract(name)
@@ -80,4 +81,7 @@ def solidity_contract(starknet, contract_account_class, kakarot):
 
         return kakarot_contract
 
-    return _factory
+    yield _factory
+
+    logger.info(f"Deployed solidity contracts: {list(deployed_contracts)}")
+    deployed_contracts = {}
