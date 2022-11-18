@@ -48,7 +48,7 @@ async def set_account_registry(
 
 
 @pytest.fixture(scope="module")
-def solidity_contract(starknet, contract_account_class, kakarot):
+def deploy_solidity_contract(starknet, contract_account_class, kakarot):
 
     deployed_contracts = {}
 
@@ -56,13 +56,19 @@ def solidity_contract(starknet, contract_account_class, kakarot):
         if name in deployed_contracts:
             return deployed_contracts[name]
         contract = get_contract(name)
+        if "caller_address" not in kwargs:
+            raise ValueError(
+                "caller_address needs to be given in kwargs for deploying the contract"
+            )
+        caller_address = kwargs["caller_address"]
+        del kwargs["caller_address"]
         deploy_bytecode = hex_string_to_bytes_array(
             contract.constructor(*args, **kwargs).data_in_transaction
         )
 
         with traceit.context(name):
             tx = await kakarot.deploy(bytecode=deploy_bytecode).execute(
-                caller_address=1
+                caller_address=caller_address
             )
 
         starknet_contract_address = tx.result.starknet_contract_address

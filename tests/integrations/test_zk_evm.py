@@ -43,9 +43,11 @@ class TestZkEVM:
     )
     async def test_deploy(
         self,
-        solidity_contract: Callable,
+        deploy_solidity_contract: Callable,
     ):
-        erc_20 = await solidity_contract("ERC20", "name", "symbol", 18)
+        erc_20 = await deploy_solidity_contract(
+            "ERC20", "name", "symbol", 18, caller_address=1
+        )
         stored_bytecode = (
             await erc_20.contract_account.bytecode().call()
         ).result.bytecode
@@ -61,12 +63,14 @@ class TestZkEVM:
 
     @pytest.mark.SolmateERC20
     async def test_erc20(
-        self, kakarot: StarknetContract, solidity_contract: Callable, request
+        self, kakarot: StarknetContract, deploy_solidity_contract: Callable, request
     ):
         state = kakarot.state.copy()
-        erc_20 = await solidity_contract("ERC20", "name", "symbol", 18)
         caller_addresses = list(range(4))
         addresses = ["0x" + "0" * 39 + str(i) for i in caller_addresses]
+        erc_20 = await deploy_solidity_contract(
+            "ERC20", "name", "symbol", 18, caller_address=caller_addresses[1]
+        )
         with traceit.context(request.node.own_markers[0].name):
 
             await erc_20.mint(addresses[2], 0x164, caller_address=caller_addresses[1])
