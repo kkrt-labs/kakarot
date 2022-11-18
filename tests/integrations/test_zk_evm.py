@@ -111,6 +111,12 @@ class TestZkEVM:
         contract_bytecode = hex_string_to_bytes_array(erc_20["contract"].bytecode.hex())
         deployed_bytecode = contract_bytecode[contract_bytecode.index(0xFE) + 1 :]
         assert stored_bytecode == deployed_bytecode
+        name = await erc_20["contract"].name()
+        assert name == "name"
+        symbol = await erc_20["contract"].symbol()
+        assert symbol == "symbol"
+        decimals = await erc_20["contract"].decimals()
+        assert decimals == 18
 
     @pytest.mark.parametrize(
         "params",
@@ -148,32 +154,30 @@ class TestZkEVM:
             )
 
             total_supply = await erc_20["contract"].totalSupply()
-            assert int(total_supply[0], 16) == 0x164
+            assert total_supply == 0x164
 
             await erc_20["contract"].approve(
                 addresses[1], 0xF4240, caller_address=caller_addresses[2]
             )
 
             allowance = await erc_20["contract"].allowance(addresses[2], addresses[1])
-            assert int(allowance[0], 16) == 0xF4240
+            assert allowance == 0xF4240
 
             balances_before = [
-                (await erc_20["contract"].balanceOf(address))[0]
-                for address in addresses
+                await erc_20["contract"].balanceOf(address) for address in addresses
             ]
 
             await erc_20["contract"].transferFrom(
                 addresses[2], addresses[1], 0xA, caller_address=caller_addresses[1]
             )
             balances_after = [
-                (await erc_20["contract"].balanceOf(address))[0]
-                for address in addresses
+                await erc_20["contract"].balanceOf(address) for address in addresses
             ]
 
-            assert int(balances_after[0], 16) - int(balances_before[0], 16) == 0
-            assert int(balances_after[1], 16) - int(balances_before[1], 16) == 0xA
-            assert int(balances_after[2], 16) - int(balances_before[2], 16) == -0xA
-            assert int(balances_after[3], 16) - int(balances_before[3], 16) == 0
+            assert balances_after[0] - balances_before[0] == 0
+            assert balances_after[1] - balances_before[1] == 0xA
+            assert balances_after[2] - balances_before[2] == -0xA
+            assert balances_after[3] - balances_before[3] == 0
 
             balances_before = balances_after
 
@@ -181,13 +185,12 @@ class TestZkEVM:
                 addresses[3], 0x5, caller_address=caller_addresses[1]
             )
             balances_after = [
-                (await erc_20["contract"].balanceOf(address))[0]
-                for address in addresses
+                await erc_20["contract"].balanceOf(address) for address in addresses
             ]
 
-            assert int(balances_after[0], 16) - int(balances_before[0], 16) == 0
-            assert int(balances_after[1], 16) - int(balances_before[1], 16) == -0x5
-            assert int(balances_after[2], 16) - int(balances_before[2], 16) == 0
-            assert int(balances_after[3], 16) - int(balances_before[3], 16) == 0x5
+            assert balances_after[0] - balances_before[0] == 0
+            assert balances_after[1] - balances_before[1] == -0x5
+            assert balances_after[2] - balances_before[2] == 0
+            assert balances_after[3] - balances_before[3] == 0x5
 
         zk_evm.state = state

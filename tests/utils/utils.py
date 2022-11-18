@@ -9,6 +9,8 @@ from typing import Callable, List, Union
 import pandas as pd
 from starkware.starknet.testing.starknet import StarknetContract
 from web3 import Web3
+from web3._utils.abi import map_abi_data
+from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 
 logging.basicConfig(format="%(levelname)-8s %(message)s")
 logger = logging.getLogger("timer")
@@ -194,6 +196,24 @@ def dump_reports(path: Union[str, Path]):
     traces.to_csv(p / "resources.csv", index=False)
 
 
+def int_to_uint256(value):
+    low = value & ((1 << 128) - 1)
+    high = value >> 128
+    return low, high
+
+
+def hex_string_to_bytes_array(h: str):
+    if len(h) % 2 != 0:
+        raise ValueError(f"Provided string has an odd length {len(h)}")
+    if h[:2] == "0x":
+        h = h[2:]
+    return [int(b, 16) for b in wrap(h, 2)]
+
+
+def bytes_array_to_bytes32_array(bytes_array: List[int]):
+    return wrap("".join([hex(b)[2:] for b in bytes_array]), 64)
+
+
 def wrap_for_kakarot(contract, kakarot, evm_contract_address):
     def wrap_zk_evm(fun, evm_contract_address):
         async def _wrapped(contract, *args, **kwargs):
@@ -216,8 +236,11 @@ def wrap_for_kakarot(contract, kakarot, evm_contract_address):
                         contract.encodeABI(fun, args, kwargs)
                     ),
                 ).execute(caller_address=caller_address)
-
-            return bytes_array_to_bytes32_array(res.result.return_data)
+            types = [o["type"] for o in abi["outputs"]]
+            data = bytearray(res.result.return_data)
+            decoded = Web3().codec.decode(types, data)
+            normalized = map_abi_data(BASE_RETURN_NORMALIZERS, types, decoded)
+            return normalized[0] if len(normalized) == 1 else normalized
 
         return _wrapped
 
@@ -228,24 +251,6 @@ def wrap_for_kakarot(contract, kakarot, evm_contract_address):
             classmethod(wrap_zk_evm(fun, evm_contract_address)),
         )
     return contract
-
-
-def int_to_uint256(value):
-    low = value & ((1 << 128) - 1)
-    high = value >> 128
-    return low, high
-
-
-def hex_string_to_bytes_array(h: str):
-    if len(h) % 2 != 0:
-        raise ValueError(f"Provided string has an odd length {len(h)}")
-    if h[:2] == "0x":
-        h = h[2:]
-    return [int(b, 16) for b in wrap(h, 2)]
-
-
-def bytes_array_to_bytes32_array(bytes_array: List[int]):
-    return wrap("".join([hex(b)[2:] for b in bytes_array]), 64)
 
 
 def get_contract(contract_name):
