@@ -14,13 +14,6 @@ from utils.utils import Helpers
 from kakarot.model import model
 from kakarot.memory import Memory
 
-@view
-func __setup__{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    return ();
-}
-
 @external
 func test__init__should_return_an_empty_memory{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*

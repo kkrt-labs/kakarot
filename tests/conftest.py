@@ -46,10 +46,10 @@ async def starknet(worker_id) -> AsyncGenerator[Starknet, None]:
     total_covered = []
     for file in files:
         if file.pct_covered < 80:
-            logger.warn(f"{file.name} only {file.pct_covered:.2f}% covered")
+            logger.warning(f"{file.name} only {file.pct_covered:.2f}% covered")
         total_covered.append(file.pct_covered)
     if files and (val := not sum(total_covered) / len(files)) >= 80:
-        logger.warn(f"Project is not covered enough {val:.2f})")
+        logger.warning(f"Project is not covered enough {val:.2f})")
 
     if worker_id == "master":
         times, resources = reports()

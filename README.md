@@ -38,10 +38,9 @@ production.
 ```mermaid
 %%{init: {'theme': 'forest', 'themeVariables': { 'darkMode': 'false'}}}%%
 
-pie title Kakarot EMV opcodes support (123 / 142)
+pie title Kakarot EMV opcodes support (128 / 142)
     "Supported" : 128
     "Not supported" : 14
-
     "Partially supported" : 0
 ```
 
@@ -174,6 +173,9 @@ make build
 ```
 
 ## Test
+
+Running the tests requires to have docker available in the machine. Check
+[their doc](https://docs.docker.com/get-docker/) for how to install it.
 
 ```bash
 # Run all tests

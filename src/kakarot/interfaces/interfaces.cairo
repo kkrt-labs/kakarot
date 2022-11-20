@@ -4,13 +4,15 @@ from starkware.cairo.common.uint256 import Uint256
 
 @contract_interface
 namespace IRegistry {
-    func get_starknet_address(evm_address: felt) -> (starknet_address: felt) {
+    func get_starknet_contract_address(evm_contract_address: felt) -> (
+        starknet_contract_address: felt
+    ) {
     }
 
-    func get_evm_address(starknet_address: felt) -> (evm_address: felt) {
+    func get_evm_contract_address(starknet_contract_address: felt) -> (evm_contract_address: felt) {
     }
 
-    func set_account_entry(starknet_address: felt, evm_address: felt) -> () {
+    func set_account_entry(starknet_contract_address: felt, evm_contract_address: felt) -> () {
     }
 }
 

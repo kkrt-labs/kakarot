@@ -50,7 +50,7 @@ namespace SystemOperations {
     // @custom:since Frontier
     // @custom:group System Operations
     // @custom:gas NaN
-    // @custom:stack_consumed_elements 0
+    // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 0
     // @return The pointer to the updated execution context.
     func exec_return{

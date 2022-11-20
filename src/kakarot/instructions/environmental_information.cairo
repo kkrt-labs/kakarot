@@ -24,17 +24,46 @@ from kakarot.interfaces.interfaces import IEth, IRegistry
 // @custom:namespace EnvironmentalInformation
 namespace EnvironmentalInformation {
     // Define constants.
-    const GAS_COST_BALANCE = 100;
-    const GAS_COST_CALLDATACOPY = 3;
-    const GAS_COST_CALLDATALOAD = 3;
-    const GAS_COST_CALLDATASIZE = 2;
-    const GAS_COST_CALLER = 2;
-    const GAS_COST_CALLVALUE = 2;
-    const GAS_COST_CODECOPY = 3;
-    const GAS_COST_CODESIZE = 2;
-    const GAS_COST_ORIGIN = 2;
-    const GAS_COST_RETURNDATACOPY = 3;
+    const GAS_COST_ADDRESS        = 2;
+    const GAS_COST_BALANCE        = 100;
+    const GAS_COST_ORIGIN         = 2;
+    const GAS_COST_CALLER         = 2;
+    const GAS_COST_CALLVALUE      = 2;
+    const GAS_COST_CALLDATALOAD   = 3;
+    const GAS_COST_CALLDATASIZE   = 2;
+    const GAS_COST_CALLDATACOPY   = 3;
+    const GAS_COST_CODESIZE       = 2;
+    const GAS_COST_CODECOPY       = 3;
     const GAS_COST_RETURNDATASIZE = 2;
+    const GAS_COST_RETURNDATACOPY = 3;
+
+    // @notice ADDRESS operation.
+    // @dev Get address of currently executing account.
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 2
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context
+    // @return The pointer to the updated execution context.
+    func exec_address{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+
+        // Get the current execution contract from the context,
+        // convert to Uin256, and push to Stack.
+        let address = Helpers.to_uint256(ctx.evm_contract_address);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=address);
+        // Update the execution context.
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        // Increment gas used
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_ADDRESS);
+        return ctx;
+    }
 
     // @notice BALANCE opcode.
     // @dev Get ETH balance of the specified address.
@@ -58,13 +87,13 @@ namespace EnvironmentalInformation {
 
         // Get the starknet account address from the evm account address
         let (registry_address_) = registry_address.read();
-        let (starknet_address) = IRegistry.get_starknet_address(
-            contract_address=registry_address_, evm_address=address.low
+        let (starknet_contract_address) = IRegistry.get_starknet_contract_address(
+            contract_address=registry_address_, evm_contract_address=address.low
         );
         // Get the number of native tokens owned by the given starknet account
         let (native_token_address_) = native_token_address.read();
         let (balance: Uint256) = IEth.balanceOf(
-            contract_address=native_token_address_, account=starknet_address
+            contract_address=native_token_address_, account=starknet_contract_address
         );
 
         let stack: model.Stack* = Stack.push(stack, balance);
@@ -74,32 +103,6 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_BALANCE);
-        return ctx;
-    }
-    // @notice CODESIZE operation.
-    // @dev Get size of bytecode running in current environment.
-    // @custom:since Frontier
-    // @custom:group Environmental Information
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
-    func exec_codesize{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        // Get the bytecode size.
-        let code_size = Helpers.to_uint256(ctx.call_context.bytecode_len);
-        let stack: model.Stack* = Stack.push(self=ctx.stack, element=code_size);
-
-        // Update the execution context.
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CODESIZE);
         return ctx;
     }
 
@@ -124,10 +127,10 @@ namespace EnvironmentalInformation {
         let (tx_info) = get_tx_info();
         // Get the EVM address from Starknet address
         let (registry_address_) = registry_address.read();
-        let (evm_address) = IRegistry.get_evm_address(
-            registry_address_, starknet_address=tx_info.account_contract_address
+        let (evm_contract_address) = IRegistry.get_evm_contract_address(
+            registry_address_, starknet_contract_address=tx_info.account_contract_address
         );
-        let origin_address = Helpers.to_uint256(evm_address);
+        let origin_address = Helpers.to_uint256(evm_contract_address);
 
         // Update Context stack
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=origin_address);
@@ -188,33 +191,6 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLVALUE);
-        return ctx;
-    }
-
-    // @notice RETURNDATASIZE operation.
-    // @dev Get the size of return data.
-    // @custom:since Frontier
-    // @custom:group Environmental Information
-    // @custom:gas 2
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
-    func exec_returndatasize{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        // Get return data size.
-        let return_data_size = Helpers.to_uint256(ctx.return_data_len);
-        let stack: model.Stack* = Stack.push(self=ctx.stack, element=return_data_size);
-
-        // Update the execution context.
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_RETURNDATASIZE);
         return ctx;
     }
 
@@ -293,7 +269,7 @@ namespace EnvironmentalInformation {
     // @custom:since Frontier
     // @custom:group Stack Memory Storage and Flow operations.
     // @custom:gas 3
-    // @custom:stack_consumed_elements 2
+    // @custom:stack_consumed_elements 3
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
     // @return Updated execution context.
@@ -341,12 +317,118 @@ namespace EnvironmentalInformation {
         return ctx;
     }
 
+    // @notice CODESIZE operation.
+    // @dev Get size of bytecode running in current environment.
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 3
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context
+    // @return The pointer to the updated execution context.
+    func exec_codesize{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        // Get the bytecode size.
+        let code_size = Helpers.to_uint256(ctx.call_context.bytecode_len);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=code_size);
+
+        // Update the execution context.
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CODESIZE);
+        return ctx;
+    }
+
+    // @notice CODECOPY (0x39) operation.
+    // @dev Copies slice of bytecode to memory
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 3
+    // @custom:stack_consumed_elements 3
+    // @custom:stack_produced_elements 0
+    // @param ctx The pointer to the execution context
+    // @return The pointer to the updated execution context.
+    func exec_codecopy{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - offset: memory offset of the work we save.
+        // 1 - code_offset: offset for bytecode from where data will be copied.
+        // 2 - element_len: bytes length of the copied bytecode.
+        let (stack, popped) = Stack.pop_n(self=stack, n=3);
+        let offset = popped[2];
+        let code_offset = popped[1];
+        let element_len = popped[0];
+
+        // Get bytecode slice from code_offset to element_len
+        let bytecode: felt* = ctx.call_context.bytecode;
+        let bytecode_len: felt = ctx.call_context.bytecode_len;
+        let sliced_code: felt* = Helpers.slice_data(
+            data_len=bytecode_len,
+            data=bytecode,
+            data_offset=code_offset.low,
+            slice_len=element_len.low,
+        );
+
+        // Write bytecode slice to memory at offset
+        let memory: model.Memory* = Memory.store_n(
+            self=ctx.memory, element_len=element_len.low, element=sliced_code, offset=offset.low
+        );
+
+        // Update context memory.
+        let ctx = ExecutionContext.update_memory(ctx, memory);
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CODECOPY);
+        return ctx;
+    }
+
+    // @notice RETURNDATASIZE operation.
+    // @dev Get the size of return data.
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 2
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context
+    // @return The pointer to the updated execution context.
+    func exec_returndatasize{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        // Get return data size.
+        let return_data_size = Helpers.to_uint256(ctx.return_data_len);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=return_data_size);
+
+        // Update the execution context.
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_RETURNDATASIZE);
+        return ctx;
+    }
+
     // @notice RETURNDATACOPY operation
     // @dev Save word to memory.
     // @custom:since Frontier
     // @custom:group Stack Memory Storage and Flow operations.
     // @custom:gas 3
-    // @custom:stack_consumed_elements 2
+    // @custom:stack_consumed_elements 3
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
     // @return Updated execution context.
@@ -392,58 +474,6 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLDATACOPY);
-        return ctx;
-    }
-
-    // @notice CODECOPY (0x39) operation.
-    // @dev Copies slice of bytecode to memory
-    // @custom:since Frontier
-    // @custom:group Environmental Information
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
-    func exec_codecopy{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-
-        let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - offset: memory offset of the work we save.
-        // 1 - code_offset: offset for bytecode from where data will be copied.
-        // 2 - element_len: bytes length of the copied bytecode.
-        let (stack, popped) = Stack.pop_n(self=stack, n=3);
-        let offset = popped[2];
-        let code_offset = popped[1];
-        let element_len = popped[0];
-
-        // Get bytecode slice from code_offset to element_len
-        let bytecode: felt* = ctx.call_context.bytecode;
-        let bytecode_len: felt = ctx.call_context.bytecode_len;
-        let sliced_code: felt* = Helpers.slice_data(
-            data_len=bytecode_len,
-            data=bytecode,
-            data_offset=code_offset.low,
-            slice_len=element_len.low,
-        );
-
-        // Write bytecode slice to memory at offset
-        let memory: model.Memory* = Memory.store_n(
-            self=ctx.memory, element_len=element_len.low, element=sliced_code, offset=offset.low
-        );
-
-        // Update context memory.
-        let ctx = ExecutionContext.update_memory(ctx, memory);
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CODECOPY);
         return ctx;
     }
 }
