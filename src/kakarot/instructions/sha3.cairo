@@ -90,6 +90,8 @@ namespace Sha3 {
         return ctx;
     }
 
+
+    //TODO: natspec
     func bytes_to_byte8_little_endian{range_check_ptr}(
         bytes_len: felt,
         bytes: felt*,
