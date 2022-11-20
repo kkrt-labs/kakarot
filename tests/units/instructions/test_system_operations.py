@@ -1,14 +1,14 @@
-import pytest
 from asyncio import run
 from unittest import IsolatedAsyncioTestCase
 
+import pytest
 from cairo_coverage import cairo_coverage
 from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 from starkware.starknet.testing.starknet import Starknet
 
 
 class TestSystemOperations(IsolatedAsyncioTestCase):
-    @classmethod    
+    @classmethod
     def setUpClass(cls) -> None:
         async def _setUpClass(cls) -> None:
             cls.starknet = await Starknet.empty()
@@ -34,6 +34,6 @@ class TestSystemOperations(IsolatedAsyncioTestCase):
     def tearDownClass(cls):
         cairo_coverage.report_runs(excluded_file={"site-packages"})
 
-    @pytest.mark.xfail(strict= True)
+    @pytest.mark.xfail(strict=True)
     async def test_revert(self):
         await self.test_system_operations.test_exec_revert(reason=1000).call()
