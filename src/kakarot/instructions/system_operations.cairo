@@ -120,6 +120,8 @@ namespace SystemOperations {
         // 0 - size: byte size to copy
         // 1 - offset: byte offset in the memory in bytes
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
+        // TODO: implement loading of the revert reason based on size value,
+        // currently limited by short string size
         let size = popped[0];
         let offset = popped[1];
 
