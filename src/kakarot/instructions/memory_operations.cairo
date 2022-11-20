@@ -337,7 +337,7 @@ namespace MemoryOperations {
     }
 
     // @notice SSTORE operation
-    // @dev Save word to memory.
+    // @dev Save word to storage.
     // @custom:since Frontier
     // @custom:group Stack Memory Storage and Flow operations.
     // @custom:gas 3
@@ -382,12 +382,12 @@ namespace MemoryOperations {
     }
 
     // @notice SLOAD operation
-    // @dev Save word to memory.
+    // @dev Load from storage.
     // @custom:since Frontier
     // @custom:group Stack Memory Storage and Flow operations.
     // @custom:gas 3
-    // @custom:stack_consumed_elements 2
-    // @custom:stack_produced_elements 0
+    // @custom:stack_consumed_elements 1
+    // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
     // @return Updated execution context.
     func exec_sload{
@@ -402,14 +402,13 @@ namespace MemoryOperations {
         // ------- 1. Get starknet address
         let starknet_contract_address: felt = ctx.starknet_contract_address;
 
-        // ----- 2. Pop 2 values: key and value
+        // ----- 2. Pop 1 value: key 
 
         // Stack input:
-        // 0 - key: key of memory.
-        // 1 - value: value for given key.
+        // key: key of memory.
         let (stack, local key) = Stack.pop(stack);
         // local value: Uint256;
-        // 3. Get the data and add on the Stack
+        // 3. Get the data from storage
 
         let (local value: Uint256) = IEvmContract.storage(
             contract_address=starknet_contract_address, key=key

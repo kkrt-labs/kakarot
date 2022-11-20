@@ -269,7 +269,7 @@ namespace EnvironmentalInformation {
     // @custom:since Frontier
     // @custom:group Stack Memory Storage and Flow operations.
     // @custom:gas 3
-    // @custom:stack_consumed_elements 2
+    // @custom:stack_consumed_elements 3
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
     // @return Updated execution context.
@@ -349,8 +349,8 @@ namespace EnvironmentalInformation {
     // @custom:since Frontier
     // @custom:group Environmental Information
     // @custom:gas 3
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
+    // @custom:stack_consumed_elements 3
+    // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
     // @return The pointer to the updated execution context.
     func exec_codecopy{
@@ -428,7 +428,7 @@ namespace EnvironmentalInformation {
     // @custom:since Frontier
     // @custom:group Stack Memory Storage and Flow operations.
     // @custom:gas 3
-    // @custom:stack_consumed_elements 2
+    // @custom:stack_consumed_elements 3
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
     // @return Updated execution context.
