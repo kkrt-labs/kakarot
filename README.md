@@ -39,8 +39,8 @@ production.
 %%{init: {'theme': 'forest', 'themeVariables': { 'darkMode': 'false'}}}%%
 
 pie title Kakarot EMV opcodes support (123 / 142)
-    "Supported" : 124
-    "Not supported" : 18
+    "Supported" : 128
+    "Not supported" : 14
 
     "Partially supported" : 0
 ```

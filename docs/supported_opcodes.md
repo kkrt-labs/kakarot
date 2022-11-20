@@ -20,22 +20,22 @@ This document describes the opcodes supported by Kakarot.
 
 ## Comparison & bitwise logic operations
 
-| Opcode Value | Opcode Name | Description                     | Implemented |
-| ------------ | ----------- | ------------------------------- | ----------- |
-| 0x10         | LT          | Less-than comparison            | ✅          |
-| 0x11         | GT          | Greater-than comparison         | ✅          |
-| 0x12         | SLT         | Signed less-than comparison     | ✅          |
-| 0x13         | SGT         | Signed greater-than comparison  | ✅          |
-| 0x14         | EQ          | Equality comparison             | ✅          |
-| 0x15         | ISZERO      | Simple not operator             | ✅          |
-| 0x16         | AND         | Bitwise AND operation           | ✅          |
-| 0x17         | OR          | Bitwise OR operation            | ✅          |
-| 0x18         | XOR         | Bitwise XOR operation           | ✅          |
-| 0x19         | NOT         | Bitwise NOT operation           | ✅          |
-| 0x1a         | BYTE        | Retrieve single byte from word  | ✅          |
-| 0x1b         | SHL         | Shift left                      | ✅          |
-| 0x1c         | SHR         | Logical shift right             | ✅          |
-| 0x1d         | SAR         | Arithmetic shift right          | ✅          |
+| Opcode Value | Opcode Name | Description                    | Implemented |
+| ------------ | ----------- | ------------------------------ | ----------- |
+| 0x10         | LT          | Less-than comparison           | ✅          |
+| 0x11         | GT          | Greater-than comparison        | ✅          |
+| 0x12         | SLT         | Signed less-than comparison    | ✅          |
+| 0x13         | SGT         | Signed greater-than comparison | ✅          |
+| 0x14         | EQ          | Equality comparison            | ✅          |
+| 0x15         | ISZERO      | Simple not operator            | ✅          |
+| 0x16         | AND         | Bitwise AND operation          | ✅          |
+| 0x17         | OR          | Bitwise OR operation           | ✅          |
+| 0x18         | XOR         | Bitwise XOR operation          | ✅          |
+| 0x19         | NOT         | Bitwise NOT operation          | ✅          |
+| 0x1a         | BYTE        | Retrieve single byte from word | ✅          |
+| 0x1b         | SHL         | Shift left                     | ✅          |
+| 0x1c         | SHR         | Logical shift right            | ✅          |
+| 0x1d         | SAR         | Arithmetic shift right         | ✅          |
 
 ## SHA3
 
@@ -51,7 +51,7 @@ This document describes the opcodes supported by Kakarot.
 | 0x31         | BALANCE        | Get balance of the given account                                                  | ✅          |
 | 0x32         | ORIGIN         | Get execution origination address                                                 | ✅          |
 | 0x33         | CALLER         | Get caller address                                                                | ✅          |
-| 0x34         | CALLVALUE      | Get deposited value by the instruction/transaction responsible for this execution | ✅           |
+| 0x34         | CALLVALUE      | Get deposited value by the instruction/transaction responsible for this execution | ✅          |
 | 0x35         | CALLDATALOAD   | Get input data of current environment                                             | ✅          |
 | 0x36         | CALLDATASIZE   | Get size of input data in current environment                                     | ✅          |
 | 0x37         | CALLDATACOPY   | Copy input data in current environment to memory                                  | ✅          |
@@ -195,6 +195,6 @@ This document describes the opcodes supported by Kakarot.
 | 0xf4         | DELEGATECALL | Message-call into this account with an alternative account’s code |             |
 | 0xf5         | CREATE2      | Create a new account with associated code                         |             |
 | 0xfa         | STATICCALL   | Static message-call into an account                               |             |
-| 0xfd         | REVERT       | Halt execution reverting state changes                            |             |
+| 0xfd         | REVERT       | Halt execution reverting state changes                            | ✅          |
 | 0xfe         | INVALID      | Designated invalid instruction                                    | ✅          |
 | 0xff         | SELFDESTRUCT | Halt execution and register account for later deletion            |             |
