@@ -15,6 +15,7 @@ from kakarot.model import model
 from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
+from kakarot.memory import Memory
 
 // @title System operations opcodes.
 // @notice This file contains the functions to execute for system operations opcodes.
@@ -93,5 +94,43 @@ namespace SystemOperations {
         return ExecutionContext.update_return_data(
             ctx, new_return_data_len=size.low, new_return_data=new_return_data
         );
+    }
+
+    // @notice REVERT operation.
+    // @dev
+    // @custom:since Byzantium
+    // @custom:group System Operations
+    // @custom:gas 0 + dynamic gas
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 0
+    // @return The pointer to the updated execution context.
+    func exec_revert{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) {
+        alloc_locals;
+
+        // Get stack and memory from context
+        let stack = ctx.stack;
+        let memory = ctx.memory;
+
+        // Stack input:
+        // 0 - size: byte size to copy
+        // 1 - offset: byte offset in the memory in bytes
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
+        let size = popped[0];
+        let offset = popped[1];
+
+        // Load revert reason from offset
+        let revert_reason_uint256 = Memory.load(memory, offset.low);
+        local revert_reason = revert_reason_uint256.low;
+
+        // revert with loaded revert reason short string
+        with_attr error_message("Kakarot: Reverted with reason: {revert_reason}") {
+            assert TRUE = FALSE;
+        }
+        return ();
     }
 }

@@ -596,12 +596,14 @@ namespace EVMInstructions {
         );
 
         // Add fs: System operations
+        // 0xF3 - RETURN
+        add_instruction(instructions, 0xf3, SystemOperations.exec_return);
+        // 0xFD - REVERT
+        add_instruction(instructions, 0xfd, SystemOperations.exec_revert);
         // 0xFE - INVALID
         add_instruction(
             instructions=instructions, opcode=0xfe, function=SystemOperations.exec_invalid
         );
-        // 0xF3 - RETURN
-        add_instruction(instructions, 0xf3, SystemOperations.exec_return);
         return instructions;
     }
 }
