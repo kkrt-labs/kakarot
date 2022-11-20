@@ -96,7 +96,7 @@ markers = [
     "LOG:            Opcodes 0xa0 ~ a4 - Append log record with n topics",
     "SystemOperations",
     "RETURN:         Opcode Value 0xf3 - Halt execution returning output data",
-    "REVERT:         Halt execution reverting state changes",
+    "REVERT:         Opcode value 0xfd - Halt execution reverting state changes",
     "INVALID:        Opcode Value 0xfe - Designated invalid instruction",
     "SolmateERC20",
 ]
