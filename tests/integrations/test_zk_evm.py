@@ -46,7 +46,7 @@ class TestZkEVM:
         deploy_solidity_contract: Callable,
     ):
         erc_20 = await deploy_solidity_contract(
-            "ERC20", name="Kakarot Token", symbol="KKT", decimals=18, caller_address=1
+            "ERC20", "Kakarot Token", "KKT", 18, caller_address=1
         )
         stored_bytecode = (
             await erc_20.contract_account.bytecode().call()
@@ -66,7 +66,7 @@ class TestZkEVM:
         deploy_solidity_contract: Callable,
     ):
         erc_721 = await deploy_solidity_contract(
-            "ERC721", name="Kakarot NFT", symbol="KKNFT", caller_address=1
+            "ERC721", "Kakarot NFT", "KKNFT", caller_address=1
         )
         stored_bytecode = (
             await erc_721.contract_account.bytecode().call()
@@ -87,7 +87,7 @@ class TestZkEVM:
         caller_addresses = list(range(4))
         addresses = ["0x" + "0" * 39 + str(i) for i in caller_addresses]
         erc_20 = await deploy_solidity_contract(
-            "ERC20", name="Kakarot Token", symbol="KKT", decimals=18, caller_address=1
+            "ERC20", "Kakarot Token", "KKT", 18, caller_address=1
         )
         with traceit.context(request.node.own_markers[0].name):
 
