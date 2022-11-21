@@ -41,7 +41,7 @@ class TestZkEVM:
     @pytest.mark.skip(
         "One byte is different, should investigate after resolving the other skipped tests"
     )
-    async def test_deploy(
+    async def test_deploy_erc20(
         self,
         deploy_solidity_contract: Callable,
     ):
@@ -60,6 +60,24 @@ class TestZkEVM:
         assert symbol == "symbol"
         decimals = await erc_20.decimals()
         assert decimals == 18
+
+    async def test_deploy_erc721(
+        self,
+        deploy_solidity_contract: Callable,
+    ):
+        erc_721 = await deploy_solidity_contract(
+            "ERC721", "name", "symbol", caller_address=1
+        )
+        stored_bytecode = (
+            await erc_721.contract_account.bytecode().call()
+        ).result.bytecode
+        contract_bytecode = hex_string_to_bytes_array(erc_721.bytecode.hex())
+        deployed_bytecode = contract_bytecode[contract_bytecode.index(0xFE) + 1 :]
+        assert stored_bytecode == deployed_bytecode
+        name = await erc_721.name()
+        assert name == "name"
+        symbol = await erc_721.symbol()
+        assert symbol == "symbol"
 
     @pytest.mark.SolmateERC20
     async def test_erc20(
