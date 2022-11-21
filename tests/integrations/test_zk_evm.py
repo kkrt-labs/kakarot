@@ -41,12 +41,12 @@ class TestZkEVM:
     @pytest.mark.skip(
         "One byte is different, should investigate after resolving the other skipped tests"
     )
-    async def test_deploy(
+    async def test_deploy_erc20(
         self,
         deploy_solidity_contract: Callable,
     ):
         erc_20 = await deploy_solidity_contract(
-            "ERC20", "name", "symbol", 18, caller_address=1
+            "ERC20", "Kakarot Token", "KKT", 18, caller_address=1
         )
         stored_bytecode = (
             await erc_20.contract_account.bytecode().call()
@@ -55,11 +55,29 @@ class TestZkEVM:
         deployed_bytecode = contract_bytecode[contract_bytecode.index(0xFE) + 1 :]
         assert stored_bytecode == deployed_bytecode
         name = await erc_20.name()
-        assert name == "name"
+        assert name == "Kakarot Token"
         symbol = await erc_20.symbol()
-        assert symbol == "symbol"
+        assert symbol == "KKT"
         decimals = await erc_20.decimals()
         assert decimals == 18
+
+    async def test_deploy_erc721(
+        self,
+        deploy_solidity_contract: Callable,
+    ):
+        erc_721 = await deploy_solidity_contract(
+            "ERC721", "Kakarot NFT", "KKNFT", caller_address=1
+        )
+        stored_bytecode = (
+            await erc_721.contract_account.bytecode().call()
+        ).result.bytecode
+        contract_bytecode = hex_string_to_bytes_array(erc_721.bytecode.hex())
+        deployed_bytecode = contract_bytecode[contract_bytecode.index(0xFE) + 1 :]
+        assert stored_bytecode == deployed_bytecode
+        name = await erc_721.name()
+        assert name == "Kakarot NFT"
+        symbol = await erc_721.symbol()
+        assert symbol == "KKNFT"
 
     @pytest.mark.SolmateERC20
     async def test_erc20(
@@ -69,7 +87,7 @@ class TestZkEVM:
         caller_addresses = list(range(4))
         addresses = ["0x" + "0" * 39 + str(i) for i in caller_addresses]
         erc_20 = await deploy_solidity_contract(
-            "ERC20", "name", "symbol", 18, caller_address=caller_addresses[1]
+            "ERC20", "Kakarot Token", "KKT", 18, caller_address=1
         )
         with traceit.context(request.node.own_markers[0].name):
 

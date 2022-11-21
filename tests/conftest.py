@@ -57,7 +57,7 @@ async def starknet(worker_id) -> AsyncGenerator[Starknet, None]:
     else:
         dump_reports(Path("coverage") / worker_id)
         if len(os.listdir("coverage")) == int(os.environ["PYTEST_XDIST_WORKER_COUNT"]):
-            # This is the last teardown os the testsuite, merge the files
+            # This is the last teardown of the testsuite, merge the files
             resources = pd.concat(
                 [pd.read_csv(f) for f in Path("coverage").glob("**/resources.csv")],
             ).sort_values(["n_steps"], ascending=False)

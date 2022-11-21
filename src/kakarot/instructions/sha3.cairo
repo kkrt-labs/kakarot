@@ -3,7 +3,7 @@
 %lang starknet
 
 // Starkware dependencies
-from starkware.cairo.common.math_cmp import is_le_felt
+from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import keccak_bigend, finalize_keccak
@@ -90,8 +90,7 @@ namespace Sha3 {
         return ctx;
     }
 
-
-    //TODO: natspec
+    // TODO: natspec
     func bytes_to_byte8_little_endian{range_check_ptr}(
         bytes_len: felt,
         bytes: felt*,
@@ -108,7 +107,7 @@ namespace Sha3 {
         }
 
         local current_byte;
-        let out_of_bound = is_le_felt(a=bytes_len, b=index);
+        let out_of_bound = is_le(a=bytes_len, b=index);
         if (out_of_bound == TRUE) {
             current_byte = 0;
         } else {
@@ -119,9 +118,9 @@ namespace Sha3 {
 
         let _byte8 = byte8 + bit_shift * current_byte;
 
-        let byte8_full = is_le_felt(a=7, b=byte8_shift);
-        let end_of_loop = is_le_felt(size, index + 1);
-        let write_to_dest = is_le_felt(1, byte8_full + end_of_loop);
+        let byte8_full = is_le(a=7, b=byte8_shift);
+        let end_of_loop = is_le(size, index + 1);
+        let write_to_dest = is_le(1, byte8_full + end_of_loop);
         if (write_to_dest == TRUE) {
             assert dest[dest_index] = _byte8;
             tempvar _byte8 = 0;

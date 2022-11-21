@@ -64,11 +64,6 @@ namespace Kakarot {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(call_context: model.CallContext*) -> model.ExecutionContext* {
-        alloc_locals;
-
-        // Generate instructions set
-        let instructions: felt* = EVMInstructions.generate_instructions();
-
         // Prepare execution context
         let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
 
@@ -76,7 +71,7 @@ namespace Kakarot {
         let ctx = ExecutionContext.compute_intrinsic_gas_cost(self=ctx);
 
         // Start execution
-        let ctx = run(instructions=instructions, ctx=ctx);
+        let ctx = run(ctx=ctx);
 
         return ctx;
     }
@@ -92,9 +87,6 @@ namespace Kakarot {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(address: felt, calldata_len: felt, calldata: felt*, value: felt) -> model.ExecutionContext* {
-        // Generate instructions set
-        let instructions: felt* = EVMInstructions.generate_instructions();
-
         // Prepare execution context
         let ctx: model.ExecutionContext* = ExecutionContext.init_at_address(
             address=address, calldata=calldata, calldata_len=calldata_len, value=value
@@ -104,13 +96,12 @@ namespace Kakarot {
         let ctx = ExecutionContext.compute_intrinsic_gas_cost(ctx);
 
         // Start execution
-        let ctx = run(instructions, ctx);
+        let ctx = run(ctx);
 
         return ctx;
     }
 
     // @notice Run the execution of the bytecode.
-    // @param instructions The instructions set.
     // @param ctx The pointer to the execution context.
     // @return The pointer to the updated execution context.
     func run{
@@ -118,11 +109,9 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(instructions: felt*, ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         // Decode and execute
-        let ctx: model.ExecutionContext* = EVMInstructions.decode_and_execute(
-            instructions=instructions, ctx=ctx
-        );
+        let ctx: model.ExecutionContext* = EVMInstructions.decode_and_execute(ctx=ctx);
 
         // Check if execution should be stopped
         let stopped: felt = ExecutionContext.is_stopped(self=ctx);
@@ -133,7 +122,7 @@ namespace Kakarot {
         }
 
         // Continue execution
-        return run(instructions=instructions, ctx=ctx);
+        return run(ctx=ctx);
     }
 
     // @notice Set the account registry used by kakarot
@@ -170,8 +159,8 @@ namespace Kakarot {
     // @notice deploy contract account
     // @dev First deploy a contract_account with no bytecode, then run the calldata as bytecode with the new address,
     //      then set the bytecode with the result of the initial run
-    // @param bytecode_len: the contract bytecode lenght
-    // @param bytecode: the contract bytecode
+    // @param bytecode_len: the deploy bytecode length
+    // @param bytecode: the deploy bytecode
     // @return evm_contract_address The evm address that is mapped to the newly deployed starknet contract address
     // @return starknet_contract_address The newly deployed starknet contract address
     func deploy{
@@ -218,9 +207,6 @@ namespace Kakarot {
         let (reg_address) = registry_address.read();
         IRegistry.set_account_entry(reg_address, starknet_contract_address, evm_contract_address);
 
-        // Generate instructions set
-        let instructions: felt* = EVMInstructions.generate_instructions();
-
         // Prepare execution context
         let (empty_array: felt*) = alloc();
         tempvar call_context: model.CallContext* = new model.CallContext(
@@ -252,7 +238,7 @@ namespace Kakarot {
         let ctx = ExecutionContext.compute_intrinsic_gas_cost(ctx);
 
         // Start execution
-        let ctx = run(instructions, ctx);
+        let ctx = run(ctx);
 
         // Update contract bytecode with execution result
         IEvmContract.write_bytecode(
