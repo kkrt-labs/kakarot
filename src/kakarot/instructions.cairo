@@ -40,7 +40,7 @@ namespace EVMInstructions {
     func decode_and_execute{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
-        range_check_ptr: felt,
+        range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
@@ -56,6 +56,9 @@ namespace EVMInstructions {
         } else {
             assert opcode = [ctx.call_context.bytecode + pc];
         }
+
+        // Compute the corresponding offset in the jump table:
+        // count 1 for "next line" and 4 steps per opcode: call, opcode, jmp, end
         tempvar offset = 1 + 4 * opcode;
 
         // move program counter + 1 after opcode is read
@@ -587,7 +590,7 @@ namespace EVMInstructions {
         end:
         let syscall_ptr = cast([ap - 5], felt*);
         let pedersen_ptr = cast([ap - 4], HashBuiltin*);
-        let range_check_ptr = cast([ap - 3], felt);
+        let range_check_ptr = [ap - 3];
         let bitwise_ptr = cast([ap - 2], BitwiseBuiltin*);
         let ctx = cast([ap - 1], model.ExecutionContext*);
 

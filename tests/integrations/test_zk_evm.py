@@ -46,7 +46,7 @@ class TestZkEVM:
         deploy_solidity_contract: Callable,
     ):
         erc_20 = await deploy_solidity_contract(
-            "ERC20", "name", "symbol", 18, caller_address=1
+            "ERC20", name="Kakarot Token", symbol="KKT", decimals=18, caller_address=1
         )
         stored_bytecode = (
             await erc_20.contract_account.bytecode().call()
@@ -55,9 +55,9 @@ class TestZkEVM:
         deployed_bytecode = contract_bytecode[contract_bytecode.index(0xFE) + 1 :]
         assert stored_bytecode == deployed_bytecode
         name = await erc_20.name()
-        assert name == "name"
+        assert name == "Kakarot Token"
         symbol = await erc_20.symbol()
-        assert symbol == "symbol"
+        assert symbol == "KKT"
         decimals = await erc_20.decimals()
         assert decimals == 18
 
@@ -66,7 +66,7 @@ class TestZkEVM:
         deploy_solidity_contract: Callable,
     ):
         erc_721 = await deploy_solidity_contract(
-            "ERC721", "name", "symbol", caller_address=1
+            "ERC721", name="Kakarot NFT", symbol="KKNFT", caller_address=1
         )
         stored_bytecode = (
             await erc_721.contract_account.bytecode().call()
@@ -75,9 +75,9 @@ class TestZkEVM:
         deployed_bytecode = contract_bytecode[contract_bytecode.index(0xFE) + 1 :]
         assert stored_bytecode == deployed_bytecode
         name = await erc_721.name()
-        assert name == "name"
+        assert name == "Kakarot NFT"
         symbol = await erc_721.symbol()
-        assert symbol == "symbol"
+        assert symbol == "KKNFT"
 
     @pytest.mark.SolmateERC20
     async def test_erc20(
