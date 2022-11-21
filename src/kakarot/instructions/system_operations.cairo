@@ -101,7 +101,7 @@ namespace SystemOperations {
     // @custom:since Byzantium
     // @custom:group System Operations
     // @custom:gas 0 + dynamic gas
-    // @custom:stack_consumed_elements 0
+    // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 0
     // @return The pointer to the updated execution context.
     func exec_revert{
