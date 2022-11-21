@@ -7,7 +7,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.invoke import invoke
 from starkware.cairo.common.math import assert_nn
-from starkware.cairo.common.math_cmp import is_le_felt
+from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.bool import TRUE
 from starkware.cairo.common.registers import get_ap
@@ -49,7 +49,7 @@ namespace EVMInstructions {
         let pc = ctx.program_counter;
         local opcode;
 
-        let is_pc_ge_code_len = is_le_felt(ctx.call_context.bytecode_len, pc);
+        let is_pc_ge_code_len = is_le(ctx.call_context.bytecode_len, pc);
 
         if (is_pc_ge_code_len == TRUE) {
             assert opcode = 0;

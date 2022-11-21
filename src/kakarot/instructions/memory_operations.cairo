@@ -6,7 +6,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256, uint256_unsigned_div_rem
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.math_cmp import is_le, is_le_felt
+from starkware.cairo.common.math_cmp import is_le
 
 from kakarot.model import model
 from utils.utils import Helpers
@@ -402,7 +402,7 @@ namespace MemoryOperations {
         // ------- 1. Get starknet address
         let starknet_contract_address: felt = ctx.starknet_contract_address;
 
-        // ----- 2. Pop 1 value: key 
+        // ----- 2. Pop 1 value: key
 
         // Stack input:
         // key: key of memory.

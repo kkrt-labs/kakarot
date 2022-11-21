@@ -87,7 +87,7 @@ class TestZkEVM:
         caller_addresses = list(range(4))
         addresses = ["0x" + "0" * 39 + str(i) for i in caller_addresses]
         erc_20 = await deploy_solidity_contract(
-            "ERC20", "name", "symbol", 18, caller_address=caller_addresses[1]
+            "ERC20", name="Kakarot Token", symbol="KKT", decimals=18, caller_address=1
         )
         with traceit.context(request.node.own_markers[0].name):
 
