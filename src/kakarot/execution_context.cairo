@@ -65,6 +65,7 @@ namespace ExecutionContext {
     // @notice Initialize the execution context.
     // @dev Initialize the execution context of a specific contract
     // @param address The evm address from which the code will be executed
+    // @param calldata_len The calldata length
     // @param calldata The calldata.
     // @return The initialized execution context.
     func init_at_address{
@@ -72,7 +73,7 @@ namespace ExecutionContext {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, calldata: felt*, calldata_len: felt, value: felt) -> model.ExecutionContext* {
+    }(address: felt, calldata_len: felt, calldata: felt*, value: felt) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
 

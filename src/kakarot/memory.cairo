@@ -46,12 +46,12 @@ namespace Memory {
         let bytes_len: felt = self.bytes_len;
 
         if (bytes_len == 0) {
-            Helpers.fill(arr=new_memory, value=0, length=offset);
+            Helpers.fill(arr_len=offset, arr=new_memory, value=0);
         }
         let is_offset_greater_than_length = is_le(bytes_len, offset);
         local max_copy: felt;
         if (is_offset_greater_than_length == 1) {
-            Helpers.fill(arr=new_memory + bytes_len, value=0, length=offset - bytes_len);
+            Helpers.fill(arr_len=offset - bytes_len, arr=new_memory + bytes_len, value=0);
             max_copy = bytes_len;
         } else {
             max_copy = offset;
@@ -130,12 +130,12 @@ namespace Memory {
         let n_tail_pad = (32 - rem) * is_rem_positive * is_memory_expanded;
 
         memcpy(dst=new_memory, src=self.bytes, len=n_head);
-        Helpers.fill(arr=new_memory + n_head, value=0, length=n_head_pad);
+        Helpers.fill(arr_len=n_head_pad, arr=new_memory + n_head, value=0);
         memcpy(dst=new_memory + offset, src=element, len=element_len);
         memcpy(
             dst=new_memory + offset + element_len, src=self.bytes + offset + element_len, len=n_tail
         );
-        Helpers.fill(arr=new_memory + offset + element_len + n_tail, value=0, length=n_tail_pad);
+        Helpers.fill(arr_len=n_tail_pad, arr=new_memory + offset + element_len + n_tail, value=0);
         let new_memory_len: felt = offset + element_len + n_tail + n_tail_pad;
         return new model.Memory(bytes=new_memory, bytes_len=new_memory_len);
     }
@@ -155,7 +155,7 @@ namespace Memory {
             let (local new_memory: felt*) = alloc();
             memcpy(dst=new_memory, src=self.bytes, len=self.bytes_len);
             Helpers.fill(
-                arr=new_memory + self.bytes_len, value=0, length=offset + n - self.bytes_len
+                arr_len=offset + n - self.bytes_len, arr=new_memory + self.bytes_len, value=0
             );
             let res: Uint256 = Helpers.bytes_i_to_uint256(val=new_memory + offset, i=n);
             return res;
@@ -174,7 +174,7 @@ namespace Memory {
     func expand{range_check_ptr}(self: model.Memory*, length: felt) -> (
         new_memory: model.Memory*, cost: felt
     ) {
-        Helpers.fill(self.bytes + self.bytes_len, value=0, length=length);
+        Helpers.fill(arr_len=length, arr=self.bytes + self.bytes_len, value=0);
         let (last_memory_size_word, _) = unsigned_div_rem(value=self.bytes_len + 31, div=32);
         let (last_memory_cost, _) = unsigned_div_rem(
             value=last_memory_size_word * last_memory_size_word, div=512

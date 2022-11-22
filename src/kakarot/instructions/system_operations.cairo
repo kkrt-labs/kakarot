@@ -72,7 +72,7 @@ namespace SystemOperations {
         // TODO check in which multiple of 32 bytes it should be.
         // Pad if offset + size > memory_len pad n
         if (memory.bytes_len == 0) {
-            Helpers.fill(arr=memory.bytes, value=0, length=32);
+            Helpers.fill(arr_len=32, arr=memory.bytes, value=0);
         }
 
         memcpy(dst=new_return_data, src=ctx.memory.bytes + offset.low, len=size.low);
@@ -83,7 +83,7 @@ namespace SystemOperations {
 
         if (is_total_greater_than_memory_len == 1) {
             local diff = total_len - curr_memory_len;
-            Helpers.fill(arr=new_return_data + curr_memory_len, value=0, length=diff);
+            Helpers.fill(arr_len=diff, arr=new_return_data + curr_memory_len, value=0);
         }
 
         // TODO if memory.bytes_len == 0 needs a different approach
