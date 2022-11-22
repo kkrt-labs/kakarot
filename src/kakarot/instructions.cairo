@@ -579,7 +579,7 @@ namespace EVMInstructions {
         jmp end;
         call unknown_opcode;  // 0xfc
         jmp end;
-        call not_implemented_opcode;  // 0xfd
+        call SystemOperations.exec_revert;  // 0xfd
         jmp end;
         call SystemOperations.exec_invalid;  // 0xfe
         jmp end;
