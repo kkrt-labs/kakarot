@@ -91,9 +91,6 @@ namespace Kakarot {
     ) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Generate instructions set
-        let instructions: felt* = EVMInstructions.generate_instructions();
-
         // Prepare execution context
         let ctx: model.ExecutionContext* = ExecutionContext.init_at_address(
             address=address,

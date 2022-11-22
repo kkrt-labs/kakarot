@@ -6,7 +6,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_le, is_le_felt
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
 
@@ -20,6 +20,7 @@ from kakarot.stack import Stack
 from starkware.cairo.common.math import unsigned_div_rem
 from utils.bit_functions import pack_array_bytes
 from starkware.cairo.common.uint256 import Uint256
+
 
 // @title System operations opcodes.
 // @notice This file contains the functions to execute for system operations opcodes.
