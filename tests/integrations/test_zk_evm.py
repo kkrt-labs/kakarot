@@ -4,7 +4,13 @@ import pytest
 from starkware.starknet.testing.contract import StarknetContract
 
 from tests.integrations.test_cases import params_execute
-from tests.utils.utils import hex_string_to_bytes_array, int_to_uint256, hex_string_to_felt_packed_array, bytecode_len, traceit
+from tests.utils.utils import (
+    hex_string_to_bytes_array,
+    int_to_uint256,
+    hex_string_to_felt_packed_array,
+    bytecode_len,
+    traceit,
+)
 
 
 @pytest.mark.asyncio
@@ -18,9 +24,9 @@ class TestZkEVM:
             res = await kakarot.execute(
                 value=int(params["value"]),
                 bytecode=hex_string_to_felt_packed_array(params["code"]),
-                original_bytecode_len = bytecode_len(params["code"]),
+                original_bytecode_len=bytecode_len(params["code"]),
                 calldata=hex_string_to_felt_packed_array(params["calldata"]),
-                original_calldata_len = bytecode_len(params["calldata"])
+                original_calldata_len=bytecode_len(params["calldata"]),
             ).call(caller_address=1)
 
         Uint256 = kakarot.struct_manager.get_contract_struct("Uint256")

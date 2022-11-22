@@ -209,22 +209,24 @@ def hex_string_to_bytes_array(h: str):
         h = h[2:]
     return [int(b, 16) for b in wrap(h, 2)]
 
+
 def hex_string_to_felt_packed_array(h: str):
     if len(h) % 2 != 0:
         raise ValueError(f"Provided string has an odd length {len(h)}")
     if h[:2] == "0x":
         h = h[2:]
     h_len = len(h)
-    h_remainder = (62 - h_len % 62)
-    h_final = h.ljust(h_len+h_remainder,'0')
+    h_remainder = 62 - h_len % 62
+    h_final = h.ljust(h_len + h_remainder, "0")
     return [int(b, 16) for b in wrap(h_final, 62)]
+
 
 def bytecode_len(h: str):
     if len(h) % 2 != 0:
         raise ValueError(f"Provided string has an odd length {len(h)}")
     if h[:2] == "0x":
         h = h[2:]
-    return int(len(h)/2)
+    return int(len(h) / 2)
 
 
 def bytes_array_to_bytes32_array(bytes_array: List[int]):
@@ -250,7 +252,9 @@ def wrap_for_kakarot(contract, kakarot, evm_contract_address):
                     calldata=hex_string_to_felt_packed_array(
                         contract.encodeABI(fun, args, kwargs)
                     ),
-                    original_calldata_len=bytecode_len(contract.encodeABI(fun, args, kwargs)),
+                    original_calldata_len=bytecode_len(
+                        contract.encodeABI(fun, args, kwargs)
+                    ),
                 ).call()
             else:
                 caller_address = kwargs["caller_address"]
@@ -261,7 +265,9 @@ def wrap_for_kakarot(contract, kakarot, evm_contract_address):
                     calldata=hex_string_to_felt_packed_array(
                         contract.encodeABI(fun, args, kwargs)
                     ),
-                    original_calldata_len=bytecode_len(contract.encodeABI(fun, args, kwargs)),
+                    original_calldata_len=bytecode_len(
+                        contract.encodeABI(fun, args, kwargs)
+                    ),
                 ).execute(caller_address=caller_address)
             types = [o["type"] for o in abi["outputs"]]
             data = bytearray(res.result.return_data)

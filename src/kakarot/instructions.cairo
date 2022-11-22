@@ -58,10 +58,11 @@ namespace EVMInstructions {
         let is_pc_ge_code_len = is_le(ctx.call_context.bytecode_len, pc);
 
         // ------------- Felt Packed code
-        let (res,rem) = unsigned_div_rem(pc, 31);
-        let value : felt = [ctx.call_context.bytecode + res];
-        let opcode: felt = get_byte_in_array(offset=rem,felt_packed_code=value,return_byte_length=1);
-
+        let (res, rem) = unsigned_div_rem(pc, 31);
+        let value: felt = [ctx.call_context.bytecode + res];
+        let opcode: felt = get_byte_in_array(
+            offset=rem, felt_packed_code=value, return_byte_length=1
+        );
 
         // Compute the corresponding offset in the jump table:
         // count 1 for "next line" and 4 steps per opcode: call, opcode, jmp, end

@@ -50,7 +50,7 @@ namespace ContractAccount {
         // Initialize access control.
         Ownable.initializer(kakarot_address);
         // Store the bytecode.
-        internal.write_bytecode(0, bytecode_len, bytecode,0);
+        internal.write_bytecode(0, bytecode_len, bytecode, 0);
         return ();
     }
 
@@ -62,11 +62,11 @@ namespace ContractAccount {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(bytecode_len: felt, bytecode: felt*, original_bytecode_len:felt) {
+    }(bytecode_len: felt, bytecode: felt*, original_bytecode_len: felt) {
         // Access control check.
         Ownable.assert_only_owner();
         // Recursively store the bytecode.
-        internal.write_bytecode(0, bytecode_len, bytecode,original_bytecode_len);
+        internal.write_bytecode(0, bytecode_len, bytecode, original_bytecode_len);
         return ();
     }
 
@@ -78,7 +78,7 @@ namespace ContractAccount {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }() -> (bytecode_len: felt, bytecode: felt*,original_bytecode_len:felt) {
+    }() -> (bytecode_len: felt, bytecode: felt*, original_bytecode_len: felt) {
         alloc_locals;
         // Read bytecode length from storage.
         let (bytecode_len) = bytecode_len_.read();
@@ -151,7 +151,7 @@ namespace internal {
     // @param bytecode_len: The length of the bytecode.
     // @param bytecode: The bytecode of the contract.
     func write_bytecode{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        index: felt, bytecode_len: felt, bytecode: felt*, original_bytecode_len:felt
+        index: felt, bytecode_len: felt, bytecode: felt*, original_bytecode_len: felt
     ) {
         alloc_locals;
         if (index == bytecode_len) {
@@ -160,7 +160,7 @@ namespace internal {
             return ();
         }
         bytecode_.write(index, bytecode[index]);
-        write_bytecode(index + 1, bytecode_len, bytecode,original_bytecode_len);
+        write_bytecode(index + 1, bytecode_len, bytecode, original_bytecode_len);
         return ();
     }
 

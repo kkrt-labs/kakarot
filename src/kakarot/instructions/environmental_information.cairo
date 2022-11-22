@@ -27,16 +27,16 @@ from utils.bit_functions import get_byte_in_array, slice_bytes_loop_translator, 
 // @custom:namespace EnvironmentalInformation
 namespace EnvironmentalInformation {
     // Define constants.
-    const GAS_COST_ADDRESS        = 2;
-    const GAS_COST_BALANCE        = 100;
-    const GAS_COST_ORIGIN         = 2;
-    const GAS_COST_CALLER         = 2;
-    const GAS_COST_CALLVALUE      = 2;
-    const GAS_COST_CALLDATALOAD   = 3;
-    const GAS_COST_CALLDATASIZE   = 2;
-    const GAS_COST_CALLDATACOPY   = 3;
-    const GAS_COST_CODESIZE       = 2;
-    const GAS_COST_CODECOPY       = 3;
+    const GAS_COST_ADDRESS = 2;
+    const GAS_COST_BALANCE = 100;
+    const GAS_COST_ORIGIN = 2;
+    const GAS_COST_CALLER = 2;
+    const GAS_COST_CALLVALUE = 2;
+    const GAS_COST_CALLDATALOAD = 3;
+    const GAS_COST_CALLDATASIZE = 2;
+    const GAS_COST_CALLDATACOPY = 3;
+    const GAS_COST_CODESIZE = 2;
+    const GAS_COST_CODECOPY = 3;
     const GAS_COST_RETURNDATASIZE = 2;
     const GAS_COST_RETURNDATACOPY = 3;
 
@@ -226,8 +226,9 @@ namespace EnvironmentalInformation {
         let calldata_len: felt = ctx.call_context.calldata_len;
 
         // read calldata at offset
-        let stack_element: Uint256 = get_uint256_in_array(offset=calldata_offset.low, code_len=calldata_len, code = calldata, len=32);
-
+        let stack_element: Uint256 = get_uint256_in_array(
+            offset=calldata_offset.low, code_len=calldata_len, code=calldata, len=32
+        );
 
         // Push CallData word onto stack
         let stack: model.Stack* = Stack.push(self=stack, element=stack_element);
@@ -297,7 +298,13 @@ namespace EnvironmentalInformation {
         let calldata_len: felt = ctx.call_context.calldata_len;
 
         // Get calldata slice from calldata_offset to element_len
-        slice_bytes_loop_translator(code_offset=calldata_offset.low, code_len=calldata_len, code=calldata, new_array_len=element_len.low - 1, new_array=sliced_calldata);
+        slice_bytes_loop_translator(
+            code_offset=calldata_offset.low,
+            code_len=calldata_len,
+            code=calldata,
+            new_array_len=element_len.low - 1,
+            new_array=sliced_calldata,
+        );
 
         // Write caldata slice to memory at offset
         let memory: model.Memory* = Memory.store_n(
@@ -360,7 +367,6 @@ namespace EnvironmentalInformation {
         let stack = ctx.stack;
         let (local sliced_code: felt*) = alloc();
 
-
         // Stack input:
         // 0 - offset: memory offset of the work we save.
         // 1 - code_offset: offset for bytecode from where data will be copied.
@@ -374,7 +380,13 @@ namespace EnvironmentalInformation {
         let bytecode: felt* = ctx.call_context.bytecode;
         let bytecode_len: felt = ctx.call_context.bytecode_len;
 
-        slice_bytes_loop_translator(code_offset=code_offset.low, code_len=bytecode_len, code=bytecode, new_array_len=element_len.low - 1, new_array=sliced_code);
+        slice_bytes_loop_translator(
+            code_offset=code_offset.low,
+            code_len=bytecode_len,
+            code=bytecode,
+            new_array_len=element_len.low - 1,
+            new_array=sliced_code,
+        );
 
         // Write bytecode slice to memory at offset
         let memory: model.Memory* = Memory.store_n(

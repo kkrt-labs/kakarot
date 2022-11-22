@@ -86,8 +86,7 @@ namespace SystemOperations {
 
         let is_total_greater_than_memory_len: felt = is_le_felt(curr_memory_len, total_len);
         // Set final_len
-        local final_len:felt;
-
+        local final_len: felt;
 
         if (is_total_greater_than_memory_len == 1) {
             local diff = total_len - curr_memory_len;
@@ -97,13 +96,13 @@ namespace SystemOperations {
             assert final_len = curr_memory_len;
         }
         // Pad for 31 bytes
-        let (res,rem) = unsigned_div_rem(size.low,31);
-        Helpers.fill(arr=new_return_data + total_len, value=0, length=(31-rem));
+        let (res, rem) = unsigned_div_rem(size.low, 31);
+        Helpers.fill(arr=new_return_data + total_len, value=0, length=(31 - rem));
 
         // Pack to Felt array
-        pack_array_bytes(code_len=total_len,code=new_return_data, new_array=new_return_data_packed, len=res);
-
-
+        pack_array_bytes(
+            code_len=total_len, code=new_return_data, new_array=new_return_data_packed, len=res
+        );
 
         // TODO if memory.bytes_len == 0 needs a different approach
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -111,7 +110,10 @@ namespace SystemOperations {
         // TODO: GAS IMPLEMENTATION
 
         return ExecutionContext.update_return_data(
-            ctx, new_return_data_len=res+1, new_return_data=new_return_data_packed, original_return_data_len=final_len
+            ctx,
+            new_return_data_len=res + 1,
+            new_return_data=new_return_data_packed,
+            original_return_data_len=final_len,
         );
     }
 }

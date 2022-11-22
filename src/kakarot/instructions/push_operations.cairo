@@ -27,12 +27,12 @@ namespace PushOperations {
     // @param ctx The pointer to the execution context
     // @param i The number of byte items to push on to the stack
     // @return The pointer to the updated execution context.
-    func exec_push_i{ syscall_ptr: felt*,
+    func exec_push_i{
+        syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*}(
-        ctx: model.ExecutionContext*, i: felt
-    ) -> model.ExecutionContext* {
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*, i: felt) -> model.ExecutionContext* {
         alloc_locals;
 
         // Get stack from context.

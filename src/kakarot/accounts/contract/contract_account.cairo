@@ -26,8 +26,8 @@ func constructor{
 @external
 func write_bytecode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(bytecode_len: felt, bytecode: felt*, original_bytecode_len:felt) {
-    return ContractAccount.write_bytecode(bytecode_len, bytecode,original_bytecode_len);
+}(bytecode_len: felt, bytecode: felt*, original_bytecode_len: felt) {
+    return ContractAccount.write_bytecode(bytecode_len, bytecode, original_bytecode_len);
 }
 
 // @notice This function is used to get the bytecode of the smart contract.
@@ -35,7 +35,7 @@ func write_bytecode{
 @view
 func bytecode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() -> (bytecode_len: felt, bytecode: felt*, original_bytecode_len:felt) {
+}() -> (bytecode_len: felt, bytecode: felt*, original_bytecode_len: felt) {
     return ContractAccount.bytecode();
 }
 

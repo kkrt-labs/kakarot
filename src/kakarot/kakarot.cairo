@@ -36,12 +36,18 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 @view
 func execute{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(value: felt, bytecode_len: felt, bytecode: felt*, original_bytecode_len:felt, calldata_len: felt, calldata: felt*, original_calldata_len:felt) -> (
-    stack_len: felt, stack: Uint256*, memory_len: felt, memory: felt*, gas_used: felt
-) {
+}(
+    value: felt,
+    bytecode_len: felt,
+    bytecode: felt*,
+    original_bytecode_len: felt,
+    calldata_len: felt,
+    calldata: felt*,
+    original_calldata_len: felt,
+) -> (stack_len: felt, stack: Uint256*, memory_len: felt, memory: felt*, gas_used: felt) {
     alloc_locals;
     local call_context: model.CallContext* = new model.CallContext(
-        bytecode=bytecode, bytecode_len=bytecode_len, original_bytecode_len=original_bytecode_len, calldata=calldata, calldata_len=calldata_len, original_calldata_len=original_calldata_len ,value=value
+        bytecode=bytecode, bytecode_len=bytecode_len, original_bytecode_len=original_bytecode_len, calldata=calldata, calldata_len=calldata_len, original_calldata_len=original_calldata_len, value=value
         );
     let context = Kakarot.execute(call_context);
     let len = Stack.len(context.stack);
@@ -68,7 +74,7 @@ func execute{
 @external
 func execute_at_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(address: felt, value: felt, calldata_len: felt, calldata: felt*,original_calldata_len:felt) -> (
+}(address: felt, value: felt, calldata_len: felt, calldata: felt*, original_calldata_len: felt) -> (
     stack_len: felt,
     stack: Uint256*,
     memory_len: felt,
@@ -77,10 +83,14 @@ func execute_at_address{
     starknet_contract_address: felt,
     return_data_len: felt,
     return_data: felt*,
-    original_return_data:felt,
+    original_return_data: felt,
 ) {
     let context = Kakarot.execute_at_address(
-        address=address, calldata_len=calldata_len, calldata=calldata,original_calldata_len=original_calldata_len, value=value
+        address=address,
+        calldata_len=calldata_len,
+        calldata=calldata,
+        original_calldata_len=original_calldata_len,
+        value=value,
     );
 
     let len = Stack.len(context.stack);
@@ -135,8 +145,8 @@ func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 @external
 func deploy{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(bytecode_len: felt, bytecode: felt*, original_bytecode_len:felt) -> (
+}(bytecode_len: felt, bytecode: felt*, original_bytecode_len: felt) -> (
     evm_contract_address: felt, starknet_contract_address: felt
 ) {
-    return Kakarot.deploy(bytecode_len, bytecode,original_bytecode_len);
+    return Kakarot.deploy(bytecode_len, bytecode, original_bytecode_len);
 }
