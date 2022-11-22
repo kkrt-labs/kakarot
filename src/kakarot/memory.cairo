@@ -158,11 +158,11 @@ namespace Memory {
             Helpers.fill(
                 arr=new_memory + self.bytes_len, value=0, length=offset + n - self.bytes_len
             );
-            let res: Uint256 = Helpers.bytes_i_to_uint256(new_memory + offset, n, zero);
+            let res: Uint256 = Helpers.bytes_i_to_uint256(val=new_memory + offset, i=n, res=zero);
             return res;
         }
         with_attr error_message("Kakarot: Memory Error") {
-            let res: Uint256 = Helpers.bytes_i_to_uint256(self.bytes + offset, n, zero);
+            let res: Uint256 = Helpers.bytes_i_to_uint256(val=self.bytes + offset, i=n, res=zero);
         }
         return res;
     }
