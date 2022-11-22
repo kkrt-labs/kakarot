@@ -252,10 +252,14 @@ def wrap_for_kakarot(contract, kakarot, evm_contract_address):
                     calldata=hex_string_to_felt_packed_array(
                         contract.encodeABI(fun, args, kwargs)
                     ),
-                    original_calldata_len=bytecode_len(
+                    original_calldata_len=int(bytecode_len(
                         contract.encodeABI(fun, args, kwargs)
-                    ),
+                    )/2),
                 ).call()
+
+                print(int(bytecode_len(
+                        contract.encodeABI(fun, args, kwargs)
+                    )/2))
             else:
                 caller_address = kwargs["caller_address"]
                 del kwargs["caller_address"]
@@ -265,10 +269,11 @@ def wrap_for_kakarot(contract, kakarot, evm_contract_address):
                     calldata=hex_string_to_felt_packed_array(
                         contract.encodeABI(fun, args, kwargs)
                     ),
-                    original_calldata_len=bytecode_len(
+                    original_calldata_len=int(bytecode_len(
                         contract.encodeABI(fun, args, kwargs)
-                    ),
+                    )/2),
                 ).execute(caller_address=caller_address)
+                print(int(bytecode_len(contract.encodeABI(fun, args, kwargs))/2))
             types = [o["type"] for o in abi["outputs"]]
             data = bytearray(res.result.return_data)
             decoded = Web3().codec.decode(types, data)
