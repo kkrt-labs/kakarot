@@ -67,7 +67,7 @@ def deploy_solidity_contract(starknet, contract_account_class, kakarot):
         )
 
         with traceit.context(name):
-            tx = await kakarot.deploy(bytecode=deploy_bytecode).execute(
+            tx = await kakarot.deploy(bytecode=deploy_bytecode,original_bytecode_len=int(len(deploy_bytecode)/2)).execute(
                 caller_address=caller_address
             )
 

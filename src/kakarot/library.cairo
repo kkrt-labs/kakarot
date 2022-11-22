@@ -91,13 +91,15 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, calldata_len: felt, calldata: felt*, value: felt) -> model.ExecutionContext* {
+    }(address: felt, calldata_len: felt, calldata: felt*, original_calldata_len:felt, value: felt) -> model.ExecutionContext* {
+        alloc_locals;
+
         // Generate instructions set
         let instructions: felt* = EVMInstructions.generate_instructions();
 
         // Prepare execution context
         let ctx: model.ExecutionContext* = ExecutionContext.init_at_address(
-            address=address, calldata=calldata, calldata_len=calldata_len, value=value
+            address=address, calldata=calldata, calldata_len=calldata_len,original_calldata_len=original_calldata_len, value=value
         );
 
         // Compute intrinsic gas cost and update gas used
@@ -179,7 +181,7 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(bytecode_len: felt, bytecode: felt*) -> (
+    }(bytecode_len: felt, bytecode: felt*, original_bytecode_len:felt) -> (
         evm_contract_address: felt, starknet_contract_address: felt
     ) {
         alloc_locals;
@@ -226,8 +228,10 @@ namespace Kakarot {
         tempvar call_context: model.CallContext* = new model.CallContext(
             bytecode=bytecode,
             bytecode_len=bytecode_len,
+            original_bytecode_len=original_bytecode_len,
             calldata=empty_array,
             calldata_len=0,
+            original_calldata_len=0,
             value=0,
             );
         let (local contract_bytecode: felt*) = alloc();
@@ -239,6 +243,7 @@ namespace Kakarot {
             stopped=FALSE,
             return_data=contract_bytecode,
             return_data_len=0,
+            original_return_data_len=0,
             stack=stack,
             memory=memory,
             gas_used=0,
@@ -259,6 +264,7 @@ namespace Kakarot {
             contract_address=starknet_contract_address,
             bytecode_len=ctx.return_data_len,
             bytecode=ctx.return_data,
+            original_bytecode_len=ctx.original_return_data_len,
         );
 
         return (

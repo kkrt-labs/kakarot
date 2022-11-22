@@ -18,6 +18,9 @@ from kakarot.memory import Memory
 from kakarot.constants import native_token_address, registry_address
 from kakarot.interfaces.interfaces import IEth, IRegistry
 
+// For Felt Packing
+from utils.bit_functions import get_byte_in_array, slice_bytes_loop_translator, get_uint256_in_array
+
 // @title Environmental information opcodes.
 // @notice This file contains the functions to execute for environmental information opcodes.
 // @author @abdelhamidbakhta
@@ -223,13 +226,11 @@ namespace EnvironmentalInformation {
         let calldata_len: felt = ctx.call_context.calldata_len;
 
         // read calldata at offset
-        let sliced_calldata: felt* = Helpers.slice_data(
-            data_len=calldata_len, data=calldata, data_offset=calldata_offset.low, slice_len=32
-        );
-        let uint256_sliced_calldata: Uint256 = Helpers.bytes32_to_uint256(sliced_calldata);
+        let stack_element: Uint256 = get_uint256_in_array(offset=calldata_offset.low, code_len=calldata_len, code = calldata, len=32);
+
 
         // Push CallData word onto stack
-        let stack: model.Stack* = Stack.push(self=stack, element=uint256_sliced_calldata);
+        let stack: model.Stack* = Stack.push(self=stack, element=stack_element);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
@@ -253,7 +254,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let calldata_size = Helpers.to_uint256(ctx.call_context.calldata_len);
+        let calldata_size = Helpers.to_uint256(ctx.call_context.original_calldata_len);
         let stack: model.Stack* = Stack.push(ctx.stack, calldata_size);
 
         // Update the execution context.
@@ -280,7 +281,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-
+        let (local sliced_calldata: felt*) = alloc();
         let stack = ctx.stack;
 
         // Stack input:
@@ -296,12 +297,7 @@ namespace EnvironmentalInformation {
         let calldata_len: felt = ctx.call_context.calldata_len;
 
         // Get calldata slice from calldata_offset to element_len
-        let sliced_calldata: felt* = Helpers.slice_data(
-            data_len=calldata_len,
-            data=calldata,
-            data_offset=calldata_offset.low,
-            slice_len=element_len.low,
-        );
+        slice_bytes_loop_translator(code_offset=calldata_offset.low, code_len=calldata_len, code=calldata, new_array_len=element_len.low - 1, new_array=sliced_calldata);
 
         // Write caldata slice to memory at offset
         let memory: model.Memory* = Memory.store_n(
@@ -333,7 +329,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         // Get the bytecode size.
-        let code_size = Helpers.to_uint256(ctx.call_context.bytecode_len);
+        let code_size = Helpers.to_uint256(ctx.call_context.original_bytecode_len);
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=code_size);
 
         // Update the execution context.
@@ -362,6 +358,8 @@ namespace EnvironmentalInformation {
         alloc_locals;
 
         let stack = ctx.stack;
+        let (local sliced_code: felt*) = alloc();
+
 
         // Stack input:
         // 0 - offset: memory offset of the work we save.
@@ -375,12 +373,8 @@ namespace EnvironmentalInformation {
         // Get bytecode slice from code_offset to element_len
         let bytecode: felt* = ctx.call_context.bytecode;
         let bytecode_len: felt = ctx.call_context.bytecode_len;
-        let sliced_code: felt* = Helpers.slice_data(
-            data_len=bytecode_len,
-            data=bytecode,
-            data_offset=code_offset.low,
-            slice_len=element_len.low,
-        );
+
+        slice_bytes_loop_translator(code_offset=code_offset.low, code_len=bytecode_len, code=bytecode, new_array_len=element_len.low - 1, new_array=sliced_code);
 
         // Write bytecode slice to memory at offset
         let memory: model.Memory* = Memory.store_n(

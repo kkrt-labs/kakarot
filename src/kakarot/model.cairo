@@ -19,8 +19,10 @@ namespace model {
     struct CallContext {
         bytecode: felt*,
         bytecode_len: felt,
+        original_bytecode_len: felt,
         calldata: felt*,
         calldata_len: felt,
+        original_calldata_len:felt,
         value: felt,
     }
 
@@ -30,6 +32,7 @@ namespace model {
         stopped: felt,
         return_data: felt*,
         return_data_len: felt,
+        original_return_data_len:felt,
         stack: Stack*,
         memory: Memory*,
         gas_used: felt,

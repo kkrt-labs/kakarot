@@ -28,6 +28,12 @@ from kakarot.instructions.block_information import BlockInformation
 from kakarot.instructions.system_operations import SystemOperations
 from kakarot.instructions.sha3 import Sha3
 
+// Packed Felt implementation
+from starkware.cairo.common.bitwise import bitwise_and
+from starkware.cairo.common.math import unsigned_div_rem
+from utils.pow2 import pow2
+from utils.bit_functions import get_byte_in_array
+
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.
 // @author @abdelhamidbakhta
@@ -60,11 +66,10 @@ namespace EVMInstructions {
 
         let is_pc_le_code_len = is_le_felt(ctx.call_context.bytecode_len, pc);
 
-        if (is_pc_le_code_len == 1) {
-            assert opcode = 0;
-        } else {
-            assert opcode = [ctx.call_context.bytecode + pc];
-        }
+        // ------------- Felt Packed code
+        let (res,rem) = unsigned_div_rem(pc, 31);
+        let value : felt = [ctx.call_context.bytecode + res];
+        let opcode: felt = get_byte_in_array(offset=rem,felt_packed_code=value,return_byte_length=1);
 
         // move program counter + 1 after opcode is read
         let ctx = ExecutionContext.increment_program_counter(self=ctx, inc_value=1);

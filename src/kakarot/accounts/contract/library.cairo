@@ -26,6 +26,10 @@ func bytecode_len_() -> (res: felt) {
 }
 
 @storage_var
+func original_bytecode_len_() -> (res: felt) {
+}
+
+@storage_var
 func storage_(key: Uint256) -> (value: Uint256) {
 }
 @storage_var
@@ -46,7 +50,7 @@ namespace ContractAccount {
         // Initialize access control.
         Ownable.initializer(kakarot_address);
         // Store the bytecode.
-        internal.write_bytecode(0, bytecode_len, bytecode);
+        internal.write_bytecode(0, bytecode_len, bytecode,0);
         return ();
     }
 
@@ -58,11 +62,11 @@ namespace ContractAccount {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(bytecode_len: felt, bytecode: felt*) {
+    }(bytecode_len: felt, bytecode: felt*, original_bytecode_len:felt) {
         // Access control check.
         Ownable.assert_only_owner();
         // Recursively store the bytecode.
-        internal.write_bytecode(0, bytecode_len, bytecode);
+        internal.write_bytecode(0, bytecode_len, bytecode,original_bytecode_len);
         return ();
     }
 
@@ -74,14 +78,15 @@ namespace ContractAccount {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }() -> (bytecode_len: felt, bytecode: felt*) {
+    }() -> (bytecode_len: felt, bytecode: felt*,original_bytecode_len:felt) {
         alloc_locals;
         // Read bytecode length from storage.
         let (bytecode_len) = bytecode_len_.read();
+        let (original_bytecode_len) = original_bytecode_len_.read();
         // Recursively load bytecode into specified memory location.
         let bytecode_: felt* = alloc();
         internal.load_bytecode(0, bytecode_len, bytecode_);
-        return (bytecode_len, bytecode_);
+        return (bytecode_len, bytecode_, original_bytecode_len);
     }
 
     // @notice This function is used to read the storage at a key.
@@ -146,15 +151,16 @@ namespace internal {
     // @param bytecode_len: The length of the bytecode.
     // @param bytecode: The bytecode of the contract.
     func write_bytecode{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        index: felt, bytecode_len: felt, bytecode: felt*
+        index: felt, bytecode_len: felt, bytecode: felt*, original_bytecode_len:felt
     ) {
         alloc_locals;
         if (index == bytecode_len) {
             bytecode_len_.write(bytecode_len);
+            original_bytecode_len_.write(original_bytecode_len);
             return ();
         }
         bytecode_.write(index, bytecode[index]);
-        write_bytecode(index + 1, bytecode_len, bytecode);
+        write_bytecode(index + 1, bytecode_len, bytecode,original_bytecode_len);
         return ();
     }
 

@@ -16,6 +16,11 @@ from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 
+// Felt Packing Libraries
+from starkware.cairo.common.math import unsigned_div_rem
+from utils.bit_functions import pack_array_bytes
+from starkware.cairo.common.uint256 import Uint256
+
 // @title System operations opcodes.
 // @notice This file contains the functions to execute for system operations opcodes.
 // @author @abdelhamidbakhta
@@ -63,6 +68,7 @@ namespace SystemOperations {
         let memory = ctx.memory;
 
         let (local new_return_data: felt*) = alloc();
+        let (local new_return_data_packed: model.Memory*) = alloc();
         let (local new_memory: model.Memory*) = alloc();
         let (stack, offset) = Stack.pop(stack);
         let (stack, size) = Stack.pop(stack);
@@ -79,11 +85,25 @@ namespace SystemOperations {
         // Pad if offset + size > memory_len pad n
 
         let is_total_greater_than_memory_len: felt = is_le_felt(curr_memory_len, total_len);
+        // Set final_len
+        local final_len:felt;
+
 
         if (is_total_greater_than_memory_len == 1) {
             local diff = total_len - curr_memory_len;
             Helpers.fill(arr=new_return_data + curr_memory_len, value=0, length=diff);
+            assert final_len = total_len;
+        } else {
+            assert final_len = curr_memory_len;
         }
+        // Pad for 31 bytes
+        let (res,rem) = unsigned_div_rem(size.low,31);
+        Helpers.fill(arr=new_return_data + total_len, value=0, length=(31-rem));
+
+        // Pack to Felt array
+        pack_array_bytes(code_len=total_len,code=new_return_data, new_array=new_return_data_packed, len=res);
+
+
 
         // TODO if memory.bytes_len == 0 needs a different approach
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -91,7 +111,7 @@ namespace SystemOperations {
         // TODO: GAS IMPLEMENTATION
 
         return ExecutionContext.update_return_data(
-            ctx, new_return_data_len=size.low, new_return_data=new_return_data
+            ctx, new_return_data_len=res+1, new_return_data=new_return_data_packed, original_return_data_len=final_len
         );
     }
 }

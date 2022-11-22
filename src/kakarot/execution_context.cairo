@@ -18,6 +18,11 @@ from kakarot.constants import Constants
 from kakarot.constants import registry_address
 from kakarot.interfaces.interfaces import IRegistry, IEvmContract
 
+// Felt Packing Libraries
+from starkware.cairo.common.math import unsigned_div_rem
+from utils.bit_functions import get_byte_in_array, get_uint256_in_array
+from starkware.cairo.common.uint256 import Uint256
+
 // @title ExecutionContext related functions.
 // @notice This file contains functions related to the execution context.
 // @author @abdelhamidbakhta
@@ -51,6 +56,7 @@ namespace ExecutionContext {
             stopped=FALSE,
             return_data=empty_return_data,
             return_data_len=0,
+            original_return_data_len=0,
             stack=stack,
             memory=memory,
             gas_used=gas_used,
@@ -72,7 +78,7 @@ namespace ExecutionContext {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, calldata: felt*, calldata_len: felt, value: felt) -> model.ExecutionContext* {
+    }(address: felt, calldata: felt*, calldata_len: felt,original_calldata_len:felt, value: felt) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
 
@@ -92,11 +98,11 @@ namespace ExecutionContext {
         );
 
         // Get the bytecode from the Starknet_contract
-        let (bytecode_len, bytecode) = IEvmContract.bytecode(
+        let (bytecode_len, bytecode, original_bytecode_len) = IEvmContract.bytecode(
             contract_address=starknet_contract_address
         );
         local call_context: model.CallContext* = new model.CallContext(
-            bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=calldata_len, value=value
+            bytecode=bytecode, bytecode_len=bytecode_len,original_bytecode_len=original_bytecode_len, calldata=calldata, calldata_len=calldata_len,original_calldata_len=original_calldata_len, value=value
             );
 
         return new model.ExecutionContext(
@@ -105,6 +111,7 @@ namespace ExecutionContext {
             stopped=FALSE,
             return_data=empty_return_data,
             return_data_len=0,
+            original_return_data_len=0,
             stack=stack,
             memory=memory,
             gas_used=gas_used,
@@ -128,6 +135,7 @@ namespace ExecutionContext {
             stopped=self.stopped,
             return_data=self.return_data,
             return_data_len=self.return_data_len,
+            original_return_data_len=self.original_return_data_len,            
             stack=self.stack,
             memory=self.memory,
             gas_used=gas_used,
@@ -157,6 +165,7 @@ namespace ExecutionContext {
             stopped=TRUE,
             return_data=self.return_data,
             return_data_len=self.return_data_len,
+            original_return_data_len=self.original_return_data_len,            
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,
@@ -173,18 +182,26 @@ namespace ExecutionContext {
     // @param len The size of the data to read.
     // @return The pointer to the updated execution context.
     // @return The data read from the bytecode.
-    func read_code(self: model.ExecutionContext*, len: felt) -> (
-        self: model.ExecutionContext*, output: felt*
+    func read_code{ syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*}(self: model.ExecutionContext*, len: felt) -> (
+        self: model.ExecutionContext*, stack_element: Uint256
     ) {
         alloc_locals;
         // Get current pc value
         let pc = self.program_counter;
-        let (output: felt*) = alloc();
-        // Copy code slice
-        memcpy(dst=output, src=self.call_context.bytecode + pc, len=len);
+
+        // let (output: felt*) = alloc();
+        // // Copy code slice
+        // memcpy(dst=output, src=self.call_context.bytecode + pc, len=len);
+
+        // Get Uint256 of 31Bytes felt array
+        let stack_element: Uint256 = get_uint256_in_array(offset = pc, code_len=self.call_context.bytecode_len, code = self.call_context.bytecode, len=len);
+
         // Move program counter
         let self = ExecutionContext.increment_program_counter(self=self, inc_value=len);
-        return (self=self, output=output);
+        return (self=self, stack_element=stack_element);
     }
 
     // @notice Update the stack of the current execution context.
@@ -200,6 +217,7 @@ namespace ExecutionContext {
             stopped=self.stopped,
             return_data=self.return_data,
             return_data_len=self.return_data_len,
+            original_return_data_len=self.original_return_data_len,            
             stack=new_stack,
             memory=self.memory,
             gas_used=self.gas_used,
@@ -223,6 +241,7 @@ namespace ExecutionContext {
             stopped=self.stopped,
             return_data=self.return_data,
             return_data_len=self.return_data_len,
+            original_return_data_len=self.original_return_data_len,            
             stack=self.stack,
             memory=new_memory,
             gas_used=self.gas_used,
@@ -243,7 +262,7 @@ namespace ExecutionContext {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(
-        self: model.ExecutionContext*, new_return_data_len: felt, new_return_data: felt*
+        self: model.ExecutionContext*, new_return_data_len: felt, new_return_data: felt*, original_return_data_len:felt
     ) -> model.ExecutionContext* {
         return new model.ExecutionContext(
             call_context=self.call_context,
@@ -251,6 +270,7 @@ namespace ExecutionContext {
             stopped=TRUE,
             return_data=new_return_data,
             return_data_len=new_return_data_len,
+            original_return_data_len=original_return_data_len,            
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,
@@ -274,7 +294,8 @@ namespace ExecutionContext {
             program_counter=self.program_counter + inc_value,
             stopped=self.stopped,
             return_data=self.return_data,
-            return_data_len=self.return_data_len,
+            return_data_len=self.return_data_len,            
+            original_return_data_len=self.original_return_data_len,            
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,
@@ -299,6 +320,7 @@ namespace ExecutionContext {
             stopped=self.stopped,
             return_data=self.return_data,
             return_data_len=self.return_data_len,
+            original_return_data_len=self.original_return_data_len,            
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used + inc_value,
@@ -323,14 +345,19 @@ namespace ExecutionContext {
     // @param self The pointer to the execution context.
     // @param new_pc_offset The value to update the program counter by.
     // @return The pointer to the updated execution context.
-    func update_program_counter{range_check_ptr}(
+    func update_program_counter{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(
         self: model.ExecutionContext*, new_pc_offset: felt
     ) -> model.ExecutionContext* {
         alloc_locals;
         // Revert if new_value points outside of the code range
         with_attr error_message("Kakarot: new pc target out of range") {
             assert_nn(new_pc_offset);
-            assert_le(new_pc_offset, self.call_context.bytecode_len - 1);
+            assert_le(new_pc_offset, self.call_context.original_bytecode_len - 1);
         }
 
         // Revert if new pc_offset points to something other then JUMPDEST
@@ -342,6 +369,7 @@ namespace ExecutionContext {
             stopped=self.stopped,
             return_data=self.return_data,
             return_data_len=self.return_data_len,
+            original_return_data_len=self.original_return_data_len,            
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,
@@ -356,16 +384,23 @@ namespace ExecutionContext {
     // @dev Extract the byte that the current pc is pointing to and revert if it is not a JUMPDEST operation.
     // @param self The pointer to the execution context
     // @param pc_location location to check
-    func check_jumpdest(self: model.ExecutionContext*, pc_location: felt) {
+    func check_jumpdest{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.ExecutionContext*, pc_location: felt) {
         alloc_locals;
-        let (local output: felt*) = alloc();
+        // let (local output: felt*) = alloc();
 
         // Copy bytecode slice
-        memcpy(dst=output, src=self.call_context.bytecode + pc_location, len=1);
+        let (res, rem) = unsigned_div_rem(pc_location,31);
+        let value : felt = [self.call_context.bytecode + res];
+        let output : felt = get_byte_in_array(offset=rem,felt_packed_code=value, return_byte_length=1);
 
         // Revert if current pc location is not JUMPDEST
         with_attr error_message("Kakarot: JUMPed to pc offset is not JUMPDEST") {
-            assert [output] = 0x5b;
+            assert output = 0x5b;
         }
 
         return ();

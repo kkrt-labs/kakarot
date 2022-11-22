@@ -27,6 +27,6 @@ class TestContractAccount:
         bytecode = [random.randint(0, 255) for _ in range(bytecode_len)]
 
         with traceit.context("contract_account"):
-            await contract_account.write_bytecode(bytecode).execute(caller_address=1)
+            await contract_account.write_bytecode(bytecode,10).execute(caller_address=1)
         stored_bytecode = await contract_account.bytecode().call()
         assert stored_bytecode.result.bytecode == bytecode

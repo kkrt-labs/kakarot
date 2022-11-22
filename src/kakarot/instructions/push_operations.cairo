@@ -27,7 +27,10 @@ namespace PushOperations {
     // @param ctx The pointer to the execution context
     // @param i The number of byte items to push on to the stack
     // @return The pointer to the updated execution context.
-    func exec_push_i{range_check_ptr}(
+    func exec_push_i{ syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*}(
         ctx: model.ExecutionContext*, i: felt
     ) -> model.ExecutionContext* {
         alloc_locals;
@@ -35,12 +38,9 @@ namespace PushOperations {
         // Get stack from context.
         let stack: model.Stack* = ctx.stack;
 
-        // Read i bytes.
-        let (ctx, data) = ExecutionContext.read_code(self=ctx, len=i);
+        // Get Uint256 from code
+        let (ctx, stack_element) = ExecutionContext.read_code(self=ctx, len=i);
 
-        let zero = Uint256(0, 0);
-        // Convert to Uint256.
-        let stack_element: Uint256 = Helpers.bytes_i_to_uint256(val=data, i=i, res=zero);
         // Push to the stack.
         let stack: model.Stack* = Stack.push(stack, stack_element);
 

@@ -28,7 +28,7 @@ func init_context{
     let (calldata) = alloc();
     assert [calldata] = '';
     local call_context: model.CallContext* = new model.CallContext(
-        bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
+        bytecode=bytecode, bytecode_len=bytecode_len,original_bytecode_len=1, calldata=calldata, calldata_len=1,original_calldata_len=1, value=0
     );
 
     // Initialize ExecutionContext
@@ -43,6 +43,7 @@ func init_context{
             stopped=FALSE,
             return_data=empty_return_data,
             return_data_len=0,
+            original_return_data_len=0,            
             stack=stack,
             memory=memory,
             gas_used=0,
