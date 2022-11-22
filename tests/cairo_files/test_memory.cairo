@@ -69,19 +69,19 @@ func test__load__should_load_an_element_from_the_memory{
     let memory: model.Memory* = Memory.store(memory, Uint256(low=4, high=3), 32);
 
     // When
-    let result = Memory.load(memory, 0);
+    let result = Memory.load_n(memory, 0, 32);
 
     // Then
     assert_uint256_eq(result, Uint256(2, 1));
 
     // When
-    let result = Memory.load(memory, 32);
+    let result = Memory.load_n(memory, 32, 32);
 
     // Then
     assert_uint256_eq(result, Uint256(4, 3));
 
     // When
-    let result = Memory.load(memory, 16);
+    let result = Memory.load_n(memory, 16, 32);
 
     // Then
     assert_uint256_eq(result, Uint256(3, 2));
@@ -100,7 +100,7 @@ func test__load__should_load_an_element_from_the_memory_with_offset{
     let memory: model.Memory* = Memory.store(memory, Uint256(low=4, high=3), 32);
 
     // When
-    let result = Memory.load(memory, offset);
+    let result = Memory.load_n(memory, offset, 32);
 
     // Then
     assert_uint256_eq(result, Uint256(low, high));
@@ -117,7 +117,7 @@ func test__load__should_fail__when_out_of_memory{
     let memory: model.Memory* = Memory.store(memory, Uint256(1, 0), 0);
 
     // When & Then
-    let result = Memory.load(memory, 2);
+    let result = Memory.load_n(memory, 2, 32);
     return ();
 }
 
