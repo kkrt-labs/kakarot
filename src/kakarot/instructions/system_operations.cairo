@@ -6,7 +6,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
-from starkware.cairo.common.math_cmp import is_le_felt
+from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
 
@@ -79,7 +79,7 @@ namespace SystemOperations {
 
         // Pad if offset + size > memory_len pad n
 
-        let is_total_greater_than_memory_len: felt = is_le_felt(curr_memory_len, total_len);
+        let is_total_greater_than_memory_len: felt = is_le(curr_memory_len, total_len);
 
         if (is_total_greater_than_memory_len == 1) {
             local diff = total_len - curr_memory_len;

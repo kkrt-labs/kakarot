@@ -6,7 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
-from starkware.cairo.common.math_cmp import is_le_felt, is_le
+from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.math import split_int, unsigned_div_rem
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.bool import TRUE
@@ -48,7 +48,7 @@ namespace Memory {
         if (bytes_len == 0) {
             Helpers.fill(arr=new_memory, value=0, length=offset);
         }
-        let is_offset_greater_than_length = is_le_felt(bytes_len, offset);
+        let is_offset_greater_than_length = is_le(bytes_len, offset);
         local max_copy: felt;
         if (is_offset_greater_than_length == 1) {
             Helpers.fill(arr=new_memory + bytes_len, value=0, length=offset - bytes_len);
@@ -78,7 +78,7 @@ namespace Memory {
             new_arr_len=32,
             new_arr=new_memory + offset,
         );
-        let is_memory_growing = is_le_felt(self.bytes_len, offset + 32);
+        let is_memory_growing = is_le(self.bytes_len, offset + 32);
         local new_bytes_len: felt;
 
         if (is_memory_growing == 1) {
@@ -120,13 +120,13 @@ namespace Memory {
 
         let (local new_memory: felt*) = alloc();
 
-        let is_offset_overbound: felt = is_le_felt(self.bytes_len + 1, offset);
+        let is_offset_overbound: felt = is_le(self.bytes_len + 1, offset);
         let n_head = offset + (self.bytes_len - offset) * is_offset_overbound;
         let n_head_pad = offset - n_head;
-        let is_memory_expanded = is_le_felt(self.bytes_len + 1, offset + element_len);
+        let is_memory_expanded = is_le(self.bytes_len + 1, offset + element_len);
         let n_tail = (self.bytes_len - offset - element_len) * (1 - is_memory_expanded);
         let (_, rem) = unsigned_div_rem(offset + element_len, 32);
-        let is_rem_positive = is_le_felt(1, rem);
+        let is_rem_positive = is_le(1, rem);
         let n_tail_pad = (32 - rem) * is_rem_positive * is_memory_expanded;
 
         memcpy(dst=new_memory, src=self.bytes, len=n_head);
@@ -201,7 +201,7 @@ namespace Memory {
     func ensure_length{range_check_ptr}(self: model.Memory*, length: felt) -> (
         new_memory: model.Memory*, cost: felt
     ) {
-        let is_memory_expanding = is_le_felt(self.bytes_len + 1, length);
+        let is_memory_expanding = is_le(self.bytes_len + 1, length);
         if (is_memory_expanding == TRUE) {
             let (new_memory, cost) = Memory.expand(self=self, length=length - self.bytes_len);
             return (new_memory, cost);

@@ -6,7 +6,7 @@
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.math_cmp import is_le_felt
+from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.pow import pow
 // @title Helper Functions
@@ -41,13 +41,13 @@ namespace Helpers {
         local new_val: felt*;
         local high: felt;
 
-        // Check if i si inferiour to 32
-        let is_le32 = is_le_felt(i, 32);
+        // Check if i is lower to 32
+        let is_le32 = is_le(i, 32);
         with_attr error_message("number must be shorter than 32 bytes") {
             assert is_le32 = 1;
         }
 
-        let is_16_le_i = is_le_felt(16, i);
+        let is_16_le_i = is_le(16, i);
         if (is_16_le_i == 1) {
             assert new_val = val + i - 16;
             new_i = 16;
@@ -61,7 +61,7 @@ namespace Helpers {
             tempvar range_check_ptr = range_check_ptr;
         }
 
-        let is_i_le_16 = is_le_felt(new_i, 16);
+        let is_i_le_16 = is_le(new_i, 16);
 
         if (is_i_le_16 == 1) {
             let (low) = compute_half_uint256(val=new_val, i=new_i, res=0);
@@ -126,9 +126,9 @@ namespace Helpers {
         // which corresponds to full, partial or empty overlap with data
         // The result is zero-padded in case of partial or empty overlap.
 
-        let is_non_empty: felt = is_le_felt(data_offset, data_len);
+        let is_non_empty: felt = is_le(data_offset, data_len);
         let max_len: felt = (data_len - data_offset) * is_non_empty;
-        let is_within_bound: felt = is_le_felt(slice_len, max_len);
+        let is_within_bound: felt = is_le(slice_len, max_len);
         let len = max_len + (slice_len - max_len) * is_within_bound;
 
         memcpy(dst=new_data, src=data + data_offset, len=len);
