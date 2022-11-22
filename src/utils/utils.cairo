@@ -93,25 +93,25 @@ namespace Helpers {
     // @notice This function is used to make an arbitrary length array of same elements.
     // @param arr: pointer to the first element
     // @param value: value to place
-    // @param length: number of elements to add.
-    func fill(arr: felt*, value: felt, length: felt) {
-        if (length == 0) {
+    // @param arr_len: number of elements to add.
+    func fill(arr_len: felt, arr: felt*, value: felt) {
+        if (arr_len == 0) {
             return ();
         }
         assert [arr] = value;
-        return fill(arr + 1, value, length - 1);
+        return fill(arr_len - 1, arr + 1, value);
     }
 
     // @notice This function fills an empty array with elements from another array
-    // @param fill_with: number of elements to add
+    // @param fill_len: number of elements to add
     // @param input_arr: pointer to the input array
     // @param output_arr: pointer to empty array to be filled with elements from input array
-    func fill_array(fill_with: felt, input_arr: felt*, output_arr: felt*) {
-        if (fill_with == 0) {
+    func fill_array(fill_len: felt, input_arr: felt*, output_arr: felt*) {
+        if (fill_len == 0) {
             return ();
         }
         assert [output_arr] = [input_arr];
-        return fill_array(fill_with - 1, input_arr + 1, output_arr + 1);
+        return fill_array(fill_len - 1, input_arr + 1, output_arr + 1);
     }
 
     func slice_data{range_check_ptr}(
@@ -131,7 +131,7 @@ namespace Helpers {
         let len = max_len + (slice_len - max_len) * is_within_bound;
 
         memcpy(dst=new_data, src=data + data_offset, len=len);
-        fill(arr=new_data + len, value=0, length=slice_len - len);
+        fill(arr_len=slice_len - len, arr=new_data + len, value=0);
         return new_data;
     }
 

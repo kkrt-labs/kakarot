@@ -89,7 +89,7 @@ namespace Kakarot {
     }(address: felt, calldata_len: felt, calldata: felt*, value: felt) -> model.ExecutionContext* {
         // Prepare execution context
         let ctx: model.ExecutionContext* = ExecutionContext.init_at_address(
-            address=address, calldata=calldata, calldata_len=calldata_len, value=value
+            address=address, calldata_len=calldata_len, calldata=calldata, value=value
         );
 
         // Compute intrinsic gas cost and update gas used
