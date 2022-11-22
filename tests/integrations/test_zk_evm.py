@@ -141,7 +141,7 @@ class TestZkEVM:
             evm_contract_address = await integration_contract.opcodeAddress()
             assert (
                 integration_contract.contract_account.deploy_call_info.result.evm_contract_address
-                == int(evm_contract_address, 0)
+                == int(evm_contract_address, 16)
             )
 
         kakarot.state = state
