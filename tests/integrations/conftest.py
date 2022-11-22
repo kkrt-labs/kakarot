@@ -8,6 +8,7 @@ from starkware.starknet.testing.starknet import Starknet
 from tests.utils.utils import (
     get_contract,
     hex_string_to_bytes_array,
+    hex_string_to_felt_packed_array,
     traceit,
     wrap_for_kakarot,
 )
@@ -77,14 +78,14 @@ def deploy_solidity_contract(starknet, contract_account_class, kakarot):
             )
         caller_address = kwargs["caller_address"]
         del kwargs["caller_address"]
-        deploy_bytecode = hex_string_to_bytes_array(
+        deploy_bytecode = hex_string_to_felt_packed_array(
             contract.constructor(*args, **kwargs).data_in_transaction
         )
 
-        with traceit.context(name):
+        with traceit.context(contract_name):
             tx = await kakarot.deploy(
                 bytecode=deploy_bytecode,
-                original_bytecode_len=int(len(deploy_bytecode) / 2),
+                original_bytecode_len=int(len(contract.constructor(*args, **kwargs).data_in_transaction) / 2),
             ).execute(caller_address=caller_address)
 
         starknet_contract_address = tx.result.starknet_contract_address

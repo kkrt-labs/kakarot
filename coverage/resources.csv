@@ -1,0 +1,4 @@
+context,contract_name,function_name,n_memory_holes,n_steps,args,kwargs
+,account_registry,transfer_ownership,0,223,"(2235686004960590540513489811159768231929605189261967983879133380461244288731,)",{}
+ERC20,account_registry,transfer_ownership,0,223,"(1,)",{}
+,kakarot,set_account_registry,0,93,(),{'registry_address_': 2886833052963579273547603311562511163286573173333730118165592388204472041034}
