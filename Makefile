@@ -1,5 +1,6 @@
 .PHONY: build test coverage
-solidity_files = $(shell pwd)/tests/solidity_files
+solidity_folder = $(shell pwd)/tests/solidity_files
+solidity_files  = $(shell ls ${solidity_folder} | grep .sol)
 
 build:
 	$(MAKE) clean
@@ -65,4 +66,6 @@ format-mac:
 	isort tests/.
 
 build-sol:
-	docker run -v $(solidity_files):/sources ethereum/solc:stable -o /sources/output --abi --bin --overwrite --opcodes /sources/ERC20.sol /sources/ERC721.sol
+	for file in ${solidity_files} ; do \
+		docker run -v ${solidity_folder}:/sources ethereum/solc:stable -o /sources/output --abi --bin --overwrite --opcodes /sources/$$file /sources/$$file; \
+	done

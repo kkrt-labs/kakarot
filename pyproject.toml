@@ -99,6 +99,7 @@ markers = [
     "REVERT:         Opcode value 0xfd - Halt execution reverting state changes",
     "INVALID:        Opcode Value 0xfe - Designated invalid instruction",
     "SolmateERC20",
+    "IntegrationTestContract",
 ]
 
 [tool.isort]

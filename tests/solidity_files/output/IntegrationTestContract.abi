@@ -1,0 +1,1 @@
+[{"inputs":[],"name":"opcodeAddress","outputs":[{"internalType":"address","name":"selfAddress","type":"address"}],"stateMutability":"view","type":"function"}]
