@@ -28,8 +28,9 @@ from kakarot.instructions.logging_operations import LoggingOperations
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.environmental_information import EnvironmentalInformation
 from kakarot.instructions.block_information import BlockInformation
-from kakarot.instructions.system_operations import SystemOperations, CallHelper
+from kakarot.instructions.system_operations import SystemOperations, CallHelper, CreateHelper
 from kakarot.instructions.sha3 import Sha3
+from kakarot.interfaces.interfaces import IEvmContract
 
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.
@@ -612,8 +613,16 @@ namespace EVMInstructions {
             if (is_parent_root != FALSE) {
                 return ctx;
             } else {
-                let ctx = CallHelper.finalize_calling_context(ctx);
-                return run(ctx=ctx);
+                let (bytecode_len) = IEvmContract.bytecode_len(
+                    contract_address=ctx.starknet_contract_address
+                );
+                if (bytecode_len == 0) {
+                    let ctx = CreateHelper.finalize_calling_context(ctx);
+                    return run(ctx=ctx);
+                } else {
+                    let ctx = CallHelper.finalize_calling_context(ctx);
+                    return run(ctx=ctx);
+                }
             }
         }
 

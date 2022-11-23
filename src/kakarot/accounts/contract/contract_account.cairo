@@ -38,6 +38,16 @@ func bytecode{
 }() -> (bytecode_len: felt, bytecode: felt*) {
     return ContractAccount.bytecode();
 }
+// @notice This function is used to get only the bytecode_len of the smart contract.
+// @dev Compared to bytecode, it does not read the code so it's much cheaper is only len is required.
+// @return The bytecode_len of the smart contract.
+@view
+func bytecode_len{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() -> (len: felt) {
+    let len = ContractAccount.bytecode_len();
+    return (len=len);
+}
 
 // @notice Store a key-value pair
 // @param key: The bytes32 storage key.

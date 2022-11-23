@@ -79,6 +79,19 @@ namespace ContractAccount {
         return ();
     }
 
+    // @notice This function is used to get the bytecode_len of the smart contract.
+    // @return bytecode_len: The lenght of the bytecode.
+    func bytecode_len{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }() -> felt {
+        alloc_locals;
+        let (_bytecode_len) = bytecode_len_.read();
+        return _bytecode_len;
+    }
+
     // @notice This function is used to get the bytecode of the smart contract.
     // @return bytecode_len: The lenght of the bytecode.
     // @return bytecode: The bytecode of the smart contract.
