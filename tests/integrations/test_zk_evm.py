@@ -125,3 +125,23 @@ class TestZkEVM:
             assert balances_after[2] - balances_before[2] == 0
             assert balances_after[3] - balances_before[3] == 0x5
         kakarot.state = state
+
+    @pytest.mark.IntegrationTestContract
+    async def test_integration_contract(
+        self, kakarot: StarknetContract, deploy_solidity_contract: Callable, request
+    ):
+        state = kakarot.state.copy()
+        caller_addresses = list(range(4))
+        integration_contract = await deploy_solidity_contract(
+            "IntegrationTestContract", caller_address=caller_addresses[1]
+        )
+
+        with traceit.context(request.node.own_markers[0].name):
+
+            evm_contract_address = await integration_contract.opcodeAddress()
+            assert (
+                integration_contract.contract_account.deploy_call_info.result.evm_contract_address
+                == int(evm_contract_address, 16)
+            )
+
+        kakarot.state = state
