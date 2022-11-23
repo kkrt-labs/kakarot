@@ -1,26 +1,31 @@
 import json
 import logging
+import os
 from contextlib import contextmanager
+from functools import wraps
 from pathlib import Path
 from textwrap import wrap
 from time import perf_counter
-from typing import Callable, List, Union
+from typing import Any, Awaitable, Callable, Iterable, List, Union, cast
 
 import pandas as pd
+from cairo_coverage.cairo_coverage import CoverageFile
+from starkware.starknet.testing.objects import StarknetCallInfo
 from starkware.starknet.testing.starknet import StarknetContract
 from web3 import Web3
 from web3._utils.abi import map_abi_data
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
+from web3.contract import Contract
 
 logging.basicConfig(format="%(levelname)-8s %(message)s")
 logger = logging.getLogger("timer")
 
+_time_report: List[dict] = []
+_resources_report: List[dict] = []
 
-_time_report = []
-_resources_report = []
 
-
-def timeit(fun):
+def timeit(fun: Callable[[Any], Awaitable[Any]]) -> Callable[[Any], Awaitable[Any]]:
+    @wraps(fun)
     async def timed_fun(*args, **kwargs):
         start = perf_counter()
         res = await fun(*args, **kwargs)
@@ -46,11 +51,48 @@ class traceit:
 
     @classmethod
     @property
-    def prefix(cls):
+    def prefix(cls) -> str:
         """
         Prefix the log output with the context if used
         """
         return cls._context + ":" if cls._context != "" else ""
+
+    @classmethod
+    def record_tx(
+        cls,
+        res: StarknetCallInfo,
+        contract_name: str,
+        attr_name: str,
+        args: Iterable,
+        kwargs: dict,
+    ):
+        resources = cast(
+            dict,
+            res.call_info.execution_resources.Schema().dump(
+                res.call_info.execution_resources
+            ),
+        )
+        resources = {
+            **resources.pop("builtin_instance_counter"),
+            **resources,
+        }
+        _resources_report.append(
+            {
+                **({"context": cls._context} if cls._context != "" else {}),
+                "contract_name": contract_name,
+                "function_name": attr_name,
+                "args": args,
+                "kwargs": kwargs,
+                **resources,
+            }
+        )
+        logger.info(
+            f"{cls.prefix}{contract_name}.{attr_name}({json.dumps(args)}, {json.dumps(kwargs)}) used {resources}"
+        )
+
+    @classmethod
+    def pop_record(cls) -> dict:
+        return _resources_report.pop()
 
     @classmethod
     def _trace_call(
@@ -60,7 +102,7 @@ class traceit:
         attr_name: str,
         *args,
         **kwargs,
-    ):
+    ) -> Callable:
         """
         StarknetContract instances have methods defined in their corresponding cairo file.
         These methods, once called, return a StarknetContractFunctionInvocation instance.
@@ -71,26 +113,7 @@ class traceit:
 
         async def traced_fun(*a, **kw):
             res = await invoke_fun(*a, **kw)
-            resources = res.call_info.execution_resources.Schema().dump(
-                res.call_info.execution_resources
-            )
-            resources = {
-                **resources.pop("builtin_instance_counter"),
-                **resources,
-            }
-            _resources_report.append(
-                {
-                    **({"context": cls._context} if cls._context != "" else {}),
-                    "contract_name": contract_name,
-                    "function_name": attr_name,
-                    "args": args,
-                    "kwargs": kwargs,
-                    **resources,
-                }
-            )
-            logger.info(
-                f"{cls.prefix}{contract_name}.{attr_name}({json.dumps(args)}, {json.dumps(kwargs)}) used {resources}"
-            )
+            cls.record_tx(res, contract_name, attr_name, args, kwargs)
             return res
 
         return traced_fun
@@ -116,6 +139,7 @@ class traceit:
                             **kwargs,
                         ),
                     )
+                    setattr(prepared_call, "_traced", True)
             return prepared_call
 
         return wrapped
@@ -134,7 +158,7 @@ class traceit:
         return contract
 
     @staticmethod
-    def trace_all(deploy: Callable):
+    def trace_all(deploy: Callable) -> Callable:
         async def traced_deploy(*args, **kwargs):
             contract = await deploy(*args, **kwargs)
             if args:
@@ -163,26 +187,39 @@ class traceit:
 
 def reports():
     return (
-        pd.DataFrame(_time_report)
-        .assign(contract=lambda df: df.kwargs.map(lambda kw: Path(kw["source"]).stem))
-        .reindex(columns=["contract", "name", "duration", "args", "kwargs"]),
-        pd.DataFrame(_resources_report)
-        .sort_values(["n_steps"], ascending=False)
-        .fillna({"context": ""})
-        .fillna(0)
-        .pipe(
-            lambda df: df.reindex(
-                columns=[
-                    "context",
-                    "contract_name",
-                    "function_name",
-                    *df.drop(
-                        ["context", "contract_name", "function_name", "args", "kwargs"],
-                        axis=1,
-                    ).columns,
-                    "args",
-                    "kwargs",
-                ]
+        (
+            pd.DataFrame(_time_report)
+            .assign(
+                contract=lambda df: df.kwargs.map(lambda kw: Path(kw["source"]).stem)
+            )
+            .reindex(columns=["contract", "name", "duration", "args", "kwargs"])
+        ),
+        (
+            pd.DataFrame(_resources_report)
+            .assign(context=lambda df: df.get("context", ""))
+            .fillna({"context": ""})
+            .sort_values(["n_steps"], ascending=False)
+            .fillna(0)
+            .pipe(
+                lambda df: df.reindex(
+                    columns=[
+                        "context",
+                        "contract_name",
+                        "function_name",
+                        *df.drop(
+                            [
+                                "context",
+                                "contract_name",
+                                "function_name",
+                                "args",
+                                "kwargs",
+                            ],
+                            axis=1,
+                        ).columns,
+                        "args",
+                        "kwargs",
+                    ]
+                )
             )
         ),
     )
@@ -194,6 +231,22 @@ def dump_reports(path: Union[str, Path]):
     times, traces = reports()
     times.to_csv(p / "times.csv", index=False)
     traces.to_csv(p / "resources.csv", index=False)
+
+
+def dump_coverage(path: Union[str, Path], files: List[CoverageFile]):
+    json.dump(
+        {
+            "coverage": {
+                str(Path(file.name).absolute().relative_to(Path(os.getcwd()))): {
+                    **{l: 0 for l in file.missed},
+                    **{l: 1 for l in file.covered},
+                }
+                for file in files
+            }
+        },
+        open(Path(path) / "coverage.json", "w"),
+        indent=2,
+    )
 
 
 def int_to_uint256(value):
@@ -214,12 +267,14 @@ def bytes_array_to_bytes32_array(bytes_array: List[int]):
     return wrap("".join([hex(b)[2:] for b in bytes_array]), 64)
 
 
-def wrap_for_kakarot(contract, kakarot, evm_contract_address):
+def wrap_for_kakarot(
+    contract: Contract, kakarot: StarknetContract, evm_contract_address: int
+):
     """
     Wrap a web3.contract to use kakarot as backend.
     """
 
-    def wrap_zk_evm(fun, evm_contract_address):
+    def wrap_zk_evm(fun: str, evm_contract_address: int):
         """
         Decorator to update contract.fun to target kakarot instead.
         """
@@ -227,23 +282,39 @@ def wrap_for_kakarot(contract, kakarot, evm_contract_address):
         async def _wrapped(contract, *args, **kwargs):
             abi = contract.get_function_by_name(fun).abi
             if abi["stateMutability"] == "view":
-                res = await kakarot.execute_at_address(
+                call = kakarot.execute_at_address(
                     address=evm_contract_address,
-                    value=kwargs.get("value", 0),
+                    value=0,
                     calldata=hex_string_to_bytes_array(
                         contract.encodeABI(fun, args, kwargs)
                     ),
-                ).call()
+                )
+                res = await call.call()
             else:
                 caller_address = kwargs["caller_address"]
                 del kwargs["caller_address"]
-                res = await kakarot.execute_at_address(
+                if "value" in kwargs:
+                    value = kwargs["value"]
+                    del kwargs["value"]
+                else:
+                    value = 0
+                call = kakarot.execute_at_address(
                     address=evm_contract_address,
-                    value=kwargs.get("value", 0),
+                    value=value,
                     calldata=hex_string_to_bytes_array(
                         contract.encodeABI(fun, args, kwargs)
                     ),
-                ).execute(caller_address=caller_address)
+                )
+                res = await call.execute(caller_address=caller_address)
+            if call._traced:
+                traceit.pop_record()
+                traceit.record_tx(
+                    res,
+                    contract_name=contract._contract_name,
+                    attr_name=fun,
+                    args=args,
+                    kwargs=kwargs,
+                )
             types = [o["type"] for o in abi["outputs"]]
             data = bytearray(res.result.return_data)
             decoded = Web3().codec.decode(types, data)
@@ -261,7 +332,7 @@ def wrap_for_kakarot(contract, kakarot, evm_contract_address):
     return contract
 
 
-def get_contract(contract_name):
+def get_contract(contract_name: str) -> Contract:
     """
     Return a web3.contract instance based on the corresponding solidity files
     defined in tests/solidity_files.
@@ -269,4 +340,6 @@ def get_contract(contract_name):
     solidity_output_path = Path("tests") / "solidity_files" / "output"
     abi = json.load(open(solidity_output_path / f"{contract_name}.abi"))
     bytecode = (solidity_output_path / f"{contract_name}.bin").read_text()
-    return Web3().eth.contract(abi=abi, bytecode=bytecode)
+    contract = Web3().eth.contract(abi=abi, bytecode=bytecode)
+    setattr(contract, "_contract_name", contract_name)
+    return cast(Contract, contract)

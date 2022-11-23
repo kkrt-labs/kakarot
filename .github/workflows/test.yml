@@ -73,3 +73,11 @@ jobs:
       - name: Run tests
         run: |
           make test-no-log
+      - name: Upload coverage report to codecov
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./coverage/
+      - name: Store performance artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          path: ./coverage/
