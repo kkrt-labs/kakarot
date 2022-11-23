@@ -126,7 +126,7 @@ namespace SystemOperations {
         let offset = popped[1];
 
         // Load revert reason from offset
-        let revert_reason_uint256 = Memory.load(memory, offset.low);
+        let revert_reason_uint256 = Memory.load_n(memory, offset.low, 32);
         local revert_reason = revert_reason_uint256.low;
 
         // revert with loaded revert reason short string

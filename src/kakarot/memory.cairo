@@ -143,24 +143,25 @@ namespace Memory {
     // @notice Load an element from the memory.
     // @param self - The pointer to the memory.
     // @param offset - The offset to load the element from.
+    // @param n - The number of bytes to load from memory.
     // @return The new pointer to the memory.
     // @return The loaded element.
-    func load{range_check_ptr}(self: model.Memory*, offset: felt) -> Uint256 {
+    func load_n{range_check_ptr}(self: model.Memory*, offset: felt, n: felt) -> Uint256 {
         alloc_locals;
 
-        // Check if the offset + 32 > MSIZE
-        let offset_out_of_bounds = is_le(self.bytes_len, offset + 32 + 1);
+        // Check if the offset + n > MSIZE
+        let offset_out_of_bounds = is_le(self.bytes_len, offset + n + 1);
         if (offset_out_of_bounds == 1) {
             let (local new_memory: felt*) = alloc();
             memcpy(dst=new_memory, src=self.bytes, len=self.bytes_len);
             Helpers.fill(
-                arr=new_memory + self.bytes_len, value=0, length=offset + 32 - self.bytes_len
+                arr=new_memory + self.bytes_len, value=0, length=offset + n - self.bytes_len
             );
-            let res: Uint256 = Helpers.bytes32_to_uint256(new_memory + offset);
+            let res: Uint256 = Helpers.bytes_i_to_uint256(val=new_memory + offset, i=n);
             return res;
         }
         with_attr error_message("Kakarot: Memory Error") {
-            let res: Uint256 = Helpers.bytes32_to_uint256(self.bytes + offset);
+            let res: Uint256 = Helpers.bytes_i_to_uint256(val=self.bytes + offset, i=n);
         }
         return res;
     }

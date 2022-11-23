@@ -33,9 +33,8 @@ namespace Helpers {
     // @notice This function is used to convert a sequence of i bytes to Uint256.
     // @param val: pointer to the first byte.
     // @param i: pointer to the first byte.
-    // @param res: variable to store the Uint256.
     // @return res: Uint256 representation of the given input in bytes.
-    func bytes_i_to_uint256{range_check_ptr}(val: felt*, i: felt, res: Uint256) -> Uint256 {
+    func bytes_i_to_uint256{range_check_ptr}(val: felt*, i: felt) -> Uint256 {
         alloc_locals;
         local new_i: felt;
         local new_val: felt*;

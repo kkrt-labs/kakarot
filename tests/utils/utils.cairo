@@ -44,7 +44,7 @@ namespace test_utils {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*, expected_value: Uint256) {
         alloc_locals;
-        let actual = Memory.load(ctx.memory, ctx.memory.end_index - 32);
+        let actual = Memory.load_n(ctx.memory, ctx.memory.end_index - 32, 32);
         let (are_equal) = uint256_eq(actual, expected_value);
         assert are_equal = TRUE;
         return ();
