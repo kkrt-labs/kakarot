@@ -24,9 +24,9 @@ web3 = "^5.31.1"
 
 [tool.pytest.ini_options]
 filterwarnings = [
-    "ignore:Using or importing the ABCs:DeprecationWarning",                                 # from frozendict
-    "ignore:lexer_state will be removed in subsequent releases. Use lexer_thread instead.",  # from lark
-    "ignore:abi.encode_abi() and abi.encode_abi_packed() are deprecated:DeprecationWarning", # from web3
+    "ignore:Using or importing the ABCs:DeprecationWarning",                                # from frozendict
+    "ignore:lexer_state will be removed in subsequent releases. Use lexer_thread instead.", # from lark
+    'ignore:abi.encode_abi_packed:DeprecationWarning',                                      # from web3
 ]
 asyncio_mode = "auto"
 markers = [

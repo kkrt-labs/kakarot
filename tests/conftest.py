@@ -12,7 +12,7 @@ from cairo_coverage import cairo_coverage
 from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.utils import dump_reports, reports, timeit, traceit
+from tests.utils.utils import dump_coverage, dump_reports, timeit, traceit
 
 pd.set_option("display.max_rows", 500)
 pd.set_option("display.max_columns", 500)
@@ -38,10 +38,12 @@ async def starknet(worker_id) -> AsyncGenerator[Starknet, None]:
 
     starknet.deploy = traceit.trace_all(timeit(starknet.deploy))
     starknet.declare = timeit(starknet.declare)
-    shutil.rmtree("coverage", ignore_errors=True)
+    output_dir = Path("coverage")
+    shutil.rmtree(output_dir, ignore_errors=True)
 
     yield starknet
 
+    output_dir.mkdir(exist_ok=True, parents=True)
     files = cairo_coverage.report_runs(excluded_file={"site-packages", "cairo_files"})
     total_covered = []
     for file in files:
@@ -52,21 +54,22 @@ async def starknet(worker_id) -> AsyncGenerator[Starknet, None]:
         logger.warning(f"Project is not covered enough {val:.2f})")
 
     if worker_id == "master":
-        times, resources = reports()
-        dump_reports(Path("coverage"))
+        dump_reports(output_dir)
+        dump_coverage(output_dir, files)
     else:
-        dump_reports(Path("coverage") / worker_id)
-        if len(os.listdir("coverage")) == int(os.environ["PYTEST_XDIST_WORKER_COUNT"]):
+        dump_reports(output_dir / worker_id)
+        dump_coverage(output_dir / worker_id, files)
+        if len(os.listdir(output_dir)) == int(os.environ["PYTEST_XDIST_WORKER_COUNT"]):
             # This is the last teardown of the testsuite, merge the files
             resources = pd.concat(
-                [pd.read_csv(f) for f in Path("coverage").glob("**/resources.csv")],
+                [pd.read_csv(f) for f in output_dir.glob("**/resources.csv")],
             ).sort_values(["n_steps"], ascending=False)
-            resources.to_csv(Path("coverage") / "resources.csv", index=False)
+            resources.to_csv(output_dir / "resources.csv", index=False)
             times = pd.concat(
-                [pd.read_csv(f) for f in Path("coverage").glob("**/times.csv")],
+                [pd.read_csv(f) for f in output_dir.glob("**/times.csv")],
                 ignore_index=True,
             ).sort_values(["duration"], ascending=False)
-            times.to_csv(Path("coverage") / "times.csv", index=False)
+            times.to_csv(output_dir / "times.csv", index=False)
 
 
 @pytest_asyncio.fixture(scope="session")

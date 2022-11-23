@@ -19,6 +19,7 @@ build
 *logs.json
 
 .DS_Store
+.env
 
 # README
 tests/integrations/README.md
@@ -33,5 +34,4 @@ tsconfig.json
 lint.sarif
 kakarot.code-workspace
 coverage/*
-!coverage/resources.csv
-!coverage/times.csv
+!coverage/mock_coverage.json
