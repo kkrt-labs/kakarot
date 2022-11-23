@@ -1,5 +1,5 @@
 contract,name,duration,args,kwargs
-account_registry,deploy,5.633824751,(),"{'source': './src/kakarot/accounts/registry/account_registry.cairo', 'cairo_path': ['src'], 'disable_hint_validation': False, 'constructor_calldata': [1]}"
-ERC20,deploy,7.633817745,(),"{'source': './tests/utils/ERC20.cairo', 'constructor_calldata': [2, 2, 2, 2, 2, 2]}"
-contract_account,declare,6.916645087000001,(),"{'source': './src/kakarot/accounts/contract/contract_account.cairo', 'cairo_path': ['src'], 'disable_hint_validation': False}"
-kakarot,deploy,44.138731007000004,(),"{'source': './src/kakarot/kakarot.cairo', 'cairo_path': ['src'], 'disable_hint_validation': False, 'constructor_calldata': [1, 1690225626435187779547227814961827080260556407984611155962246724685298456135, 943975274739070267065841043433987499406980922579398746794104728673641062247]}"
+account_registry,deploy,49.565711621999995,(),"{'source': './src/kakarot/accounts/registry/account_registry.cairo', 'cairo_path': ['src'], 'disable_hint_validation': False, 'constructor_calldata': [1]}"
+ERC20,deploy,38.240539603,(),"{'source': './tests/utils/ERC20.cairo', 'constructor_calldata': [2, 2, 2, 2, 2, 2]}"
+contract_account,declare,21.047365209000006,(),"{'source': './src/kakarot/accounts/contract/contract_account.cairo', 'cairo_path': ['src'], 'disable_hint_validation': False}"
+kakarot,deploy,74.559970542,(),"{'source': './src/kakarot/kakarot.cairo', 'cairo_path': ['src'], 'disable_hint_validation': True, 'constructor_calldata': [1, 1690225626435187779547227814961827080260556407984611155962246724685298456135, 943975274739070267065841043433987499406980922579398746794104728673641062247]}"

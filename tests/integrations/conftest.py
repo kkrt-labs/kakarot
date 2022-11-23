@@ -23,7 +23,7 @@ async def kakarot(
     return await starknet.deploy(
         source="./src/kakarot/kakarot.cairo",
         cairo_path=["src"],
-        disable_hint_validation=False,
+        disable_hint_validation=True,
         constructor_calldata=[
             1,
             eth.contract_address,
@@ -50,6 +50,7 @@ async def set_account_registry(
 
 @pytest.fixture(scope="module")
 def deploy_solidity_contract(starknet, contract_account_class, kakarot):
+    print("DEPLOY SOLIDITY CALLED")
     """
     Fixture to deploy a solidity contract in kakarot. The returned contract is a modified
     web3.contract instance with an added `contract_account` attribute that return the actual
@@ -78,14 +79,21 @@ def deploy_solidity_contract(starknet, contract_account_class, kakarot):
             )
         caller_address = kwargs["caller_address"]
         del kwargs["caller_address"]
+
+
         deploy_bytecode = hex_string_to_felt_packed_array(
             contract.constructor(*args, **kwargs).data_in_transaction
         )
-
+        deploy_bytecode2 = hex_string_to_bytes_array(
+            contract.constructor(*args, **kwargs).data_in_transaction
+        )
+        print("DEPLOY BYTECODE")
+        print((deploy_bytecode))
+        print(deploy_bytecode2)
         with traceit.context(contract_name):
             tx = await kakarot.deploy(
                 bytecode=deploy_bytecode,
-                original_bytecode_len=80,
+                original_bytecode_len=5332,
             ).execute(caller_address=caller_address)
 
         starknet_contract_address = tx.result.starknet_contract_address

@@ -1,4 +1,4 @@
-context,contract_name,function_name,n_steps,n_memory_holes,args,kwargs
-,account_registry,transfer_ownership,223,0,"(2235686004960590540513489811159768231929605189261967983879133380461244288731,)",{}
-ERC20,account_registry,transfer_ownership,223,0,"(1,)",{}
-,kakarot,set_account_registry,93,0,(),{'registry_address_': 2886833052963579273547603311562511163286573173333730118165592388204472041034}
+context,contract_name,function_name,n_memory_holes,n_steps,args,kwargs
+,account_registry,transfer_ownership,0,223,"(484374719260502247430681446199458592865043201003313932565859426608631576859,)",{}
+ERC20,account_registry,transfer_ownership,0,223,"(1,)",{}
+,kakarot,set_account_registry,0,93,(),{'registry_address_': 2886833052963579273547603311562511163286573173333730118165592388204472041034}

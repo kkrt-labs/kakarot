@@ -337,6 +337,14 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         // Get the bytecode size.
         let code_size = Helpers.to_uint256(ctx.call_context.original_bytecode_len);
+
+        %{
+            import logging
+            logging.info("CODESIZE DATA")
+            logging.info(ids.code_size.low)
+            logging.info(ids.code_size.high)
+            logging.info(ids.ctx.call_context.original_bytecode_len)
+        %}
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=code_size);
 
         // Update the execution context.
@@ -379,6 +387,18 @@ namespace EnvironmentalInformation {
         // Get bytecode slice from code_offset to element_len
         let bytecode: felt* = ctx.call_context.bytecode;
         let bytecode_len: felt = ctx.call_context.bytecode_len;
+
+        %{
+            import logging
+            logging.info("CODE COPY DATA")
+            logging.info("OFFSET")
+            logging.info(ids.offset.low)
+            logging.info("CODE OFFSET")
+            logging.info(ids.code_offset.low)
+            logging.info("ELEMENT_LEN")
+            logging.info(ids.element_len.low)
+
+        %}
 
         slice_bytes_loop_translator(
             code_offset=code_offset.low,

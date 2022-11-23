@@ -94,6 +94,7 @@ class TestZkEVM:
         state = kakarot.state.copy()
         caller_addresses = list(range(4))
         addresses = ["0x" + "0" * 39 + str(i) for i in caller_addresses]
+        print("CALLING DEPLOY")
         erc_20 = await deploy_solidity_contract(
             "ERC20", "Kakarot Token", "KKT", 18, caller_address=1
         )

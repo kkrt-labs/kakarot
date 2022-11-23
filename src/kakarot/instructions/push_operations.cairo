@@ -41,6 +41,13 @@ namespace PushOperations {
         // Get Uint256 from code
         let (ctx, stack_element) = ExecutionContext.read_code(self=ctx, len=i);
 
+        %{
+            import logging
+            logging.info("PUSH DATA")
+            logging.info(hex(ids.stack_element.low))
+            logging.info(hex(ids.stack_element.high))
+        %}
+
         // Push to the stack.
         let stack: model.Stack* = Stack.push(stack, stack_element);
 
