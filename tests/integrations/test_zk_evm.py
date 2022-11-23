@@ -132,13 +132,16 @@ class TestZkEVM:
     ):
         state = kakarot.state.copy()
         caller_addresses = list(range(4))
-        integration_contract, tx = await deploy_solidity_contract(
+        integration_contract = await deploy_solidity_contract(
             "IntegrationTestContract", caller_address=caller_addresses[1]
         )
 
         with traceit.context(request.node.own_markers[0].name):
 
             evm_contract_address = await integration_contract.opcodeAddress()
-            assert tx.result.evm_contract_address == int(evm_contract_address, 0)
+            assert (
+                integration_contract.contract_account.deploy_call_info.result.evm_contract_address
+                == int(evm_contract_address, 0)
+            )
 
         kakarot.state = state

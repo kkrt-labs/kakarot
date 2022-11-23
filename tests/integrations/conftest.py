@@ -100,7 +100,7 @@ def deploy_solidity_contract(starknet, contract_account_class, kakarot):
         setattr(kakarot_contract, "contract_account", contract_account)
         deployed_contracts[contract_name] = kakarot_contract
 
-        return kakarot_contract, tx
+        return kakarot_contract
 
     yield _factory
 
