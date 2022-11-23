@@ -14,6 +14,7 @@ from starkware.cairo.common.memcpy import memcpy
 from kakarot.model import model
 from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
+from kakarot.library import Kakarot
 from kakarot.stack import Stack
 from kakarot.memory import Memory
 
@@ -22,6 +23,55 @@ from kakarot.memory import Memory
 // @author @abdelhamidbakhta
 // @custom:namespace SystemOperations
 namespace SystemOperations {
+
+    // @notice CREATE operation.
+    // @custom:since Frontier
+    // @custom:group System Operations
+    // @custom:gas 0 + dynamic gas
+    // @custom:stack_consumed_elements 3
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_create{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) {
+        alloc_locals;
+
+        // Get stack and memory from context
+        let stack = ctx.stack;
+        let memory = ctx.memory;
+
+        // Stack input:
+        // 0 - value: value in wei to send to the new account
+        // 1 - offset: byte offset in the memory in bytes (initialization code)
+        // 2 - size: byte size to copy (size of initialization code)
+        let (stack, popped) = Stack.pop_n(self=stack, n=3);
+        
+        let value = popped[0];
+        let offset = popped[1];
+        let size = popped[2];
+
+        // Load initialization code from memory
+        //let (initialization_code : felt*) = Memory.load_n(memory, size, offset.low);
+
+        //ToDo:
+        // -Implement load_n
+        // -Deploy contract with constructor execution and usage of value
+
+        // Deploy new contract and execute initialization/constructor code
+        let (evm_contract_address: felt, starknet_contract_address: felt) = Kakarot.deploy(size, initialization_code);
+        
+        // Push evm address of new contract to the stack
+        let stack: model.Stack* = Stack.push(stack, evm_contract_address);
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+
+        return ();
+    }
+
     // @notice INVALID operation.
     // @dev Designated invalid instruction.
     // @custom:since Frontier
