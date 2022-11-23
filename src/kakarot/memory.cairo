@@ -149,7 +149,6 @@ namespace Memory {
     func load_n{range_check_ptr}(self: model.Memory*, offset: felt, n: felt) -> Uint256 {
         alloc_locals;
 
-        let zero = Uint256(0, 0);
         // Check if the offset + n > MSIZE
         let offset_out_of_bounds = is_le(self.bytes_len, offset + n + 1);
         if (offset_out_of_bounds == 1) {
@@ -158,11 +157,11 @@ namespace Memory {
             Helpers.fill(
                 arr=new_memory + self.bytes_len, value=0, length=offset + n - self.bytes_len
             );
-            let res: Uint256 = Helpers.bytes_i_to_uint256(val=new_memory + offset, i=n, res=zero);
+            let res: Uint256 = Helpers.bytes_i_to_uint256(val=new_memory + offset, i=n);
             return res;
         }
         with_attr error_message("Kakarot: Memory Error") {
-            let res: Uint256 = Helpers.bytes_i_to_uint256(val=self.bytes + offset, i=n, res=zero);
+            let res: Uint256 = Helpers.bytes_i_to_uint256(val=self.bytes + offset, i=n);
         }
         return res;
     }
