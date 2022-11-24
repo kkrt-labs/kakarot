@@ -34,4 +34,3 @@ tsconfig.json
 lint.sarif
 kakarot.code-workspace
 coverage/*
-!coverage/mock_coverage.json
