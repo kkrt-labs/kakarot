@@ -67,7 +67,7 @@ jobs:
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
       - name: Run tests
-        run: make test-units
+        run: make test-no-log
       - name: Upload coverage report to codecov
         uses: codecov/codecov-action@v3
         with:
@@ -114,7 +114,5 @@ jobs:
         with:
           name: coverage
           path: coverage
-      - name: Display structure of downloaded files
-        run: ls -R
       - name: Check resources evolution
         run: GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} make check-resources
