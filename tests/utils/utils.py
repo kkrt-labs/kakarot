@@ -6,7 +6,17 @@ from functools import wraps
 from pathlib import Path
 from textwrap import wrap
 from time import perf_counter
-from typing import Any, Awaitable, Callable, Iterable, List, Union, cast
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Coroutine,
+    Iterable,
+    List,
+    TypeVar,
+    Union,
+    cast,
+)
 
 import pandas as pd
 from cairo_coverage.cairo_coverage import CoverageFile
@@ -23,8 +33,10 @@ logger = logging.getLogger("timer")
 _time_report: List[dict] = []
 _resources_report: List[dict] = []
 
+T = TypeVar("T", bound=Callable[..., Any])
 
-def timeit(fun: Callable[[Any], Awaitable[Any]]) -> Callable[[Any], Awaitable[Any]]:
+
+def timeit(fun: T) -> T:
     @wraps(fun)
     async def timed_fun(*args, **kwargs):
         start = perf_counter()
@@ -39,7 +51,7 @@ def timeit(fun: Callable[[Any], Awaitable[Any]]) -> Callable[[Any], Awaitable[An
         )
         return res
 
-    return timed_fun
+    return cast(T, timed_fun)
 
 
 class traceit:
