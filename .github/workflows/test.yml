@@ -35,8 +35,8 @@ jobs:
         run: make setup
       - name: Compile all the cairo files
         run: |
-        make format-check
-        make build
+          make format-check
+          make build
 
   python-tests:
     runs-on: ubuntu-latest
