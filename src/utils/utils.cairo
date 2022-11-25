@@ -9,6 +9,8 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.pow import pow
+from starkware.cairo.common.math import split_int
+
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
 // @author @abdelhamidbakhta
@@ -148,5 +150,22 @@ namespace Helpers {
     // @return: felt representation of the input.
     func uint256_to_felt{range_check_ptr}(val: Uint256) -> felt {
         return val.low + val.high * 2 ** 128;
+    }
+
+    // @notice This function is used to convert a uint256 to a bytes array represented by an array of felts (1 felt represents 1 byte).
+    // @param value: value to convert.
+    // @return: array length and felt array representation of the value.
+    func uint256_to_bytes_array{range_check_ptr}(value: Uint256) -> (
+        bytes_array_len: felt, bytes_array: felt*
+    ) {
+        alloc_locals;
+        // Split the stack popped value from Uint to bytes array
+        let (local temp_value: felt*) = alloc();
+        let (local value_as_bytes_array: felt*) = alloc();
+        split_int(value=value.high, n=16, base=2 ** 8, bound=2 ** 128, output=temp_value + 16);
+        split_int(value=value.low, n=16, base=2 ** 8, bound=2 ** 128, output=temp_value);
+        // Reverse the temp_value array into value_as_bytes_array as memory is arranged in big endian order.
+        reverse(old_arr_len=32, old_arr=temp_value, new_arr_len=32, new_arr=value_as_bytes_array);
+        return (bytes_array_len=32, bytes_array=value_as_bytes_array);
     }
 }
