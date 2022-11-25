@@ -3,13 +3,13 @@
 %lang starknet
 
 // StarkWare dependencies
-from starkware.cairo.common.uint256 import Uint256
-from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.math import assert_le, split_felt, assert_nn_le, split_int
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.pow import pow
-from starkware.cairo.common.math import split_int
+from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.registers import get_label_location
 
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
@@ -167,5 +167,313 @@ namespace Helpers {
         // Reverse the temp_value array into value_as_bytes_array as memory is arranged in big endian order.
         reverse(old_arr_len=32, old_arr=temp_value, new_arr_len=32, new_arr=value_as_bytes_array);
         return (bytes_array_len=32, bytes_array=value_as_bytes_array);
+    }
+
+    // @notice Loads a sequence of bytes into a single felt in big-endian.
+    // @param len: number of bytes.
+    // @param ptr: pointer to bytes array.
+    // @return: packed felt.
+    func load_word(len: felt, ptr: felt*) -> felt {
+        if (len == 0) {
+            return 0;
+        }
+        tempvar current = 0;
+
+        // len, ptr, ?, ?, current
+        loop:
+        let len = [ap - 5];
+        let ptr = cast([ap - 4], felt*);
+        let current = [ap - 1];
+
+        tempvar len = len - 1;
+        tempvar ptr = ptr + 1;
+        tempvar loaded = [ptr - 1];
+        tempvar tmp = current * 256;
+        tempvar current = tmp + loaded;
+
+        static_assert len == [ap - 5];
+        static_assert ptr == [ap - 4];
+        static_assert current == [ap - 1];
+        jmp loop if len != 0;
+
+        return current;
+    }
+
+    // @notice Divides a 128-bit number with remainder.
+    // @dev This is almost identical to cairo.common.math.unsigned_dev_rem, but supports the case
+    // @dev of div == 2**128 as well.
+    // @param value: 128bit value to divide.
+    // @param div: divisor.
+    // @return: quotient and remainder.
+    func div_rem{range_check_ptr}(value, div) -> (q: felt, r: felt) {
+        if (div == 2 ** 128) {
+            return (0, value);
+        }
+
+        // Copied from unsigned_div_rem.
+        let r = [range_check_ptr];
+        let q = [range_check_ptr + 1];
+        let range_check_ptr = range_check_ptr + 2;
+        %{
+            from starkware.cairo.common.math_utils import assert_integer
+            assert_integer(ids.div)
+            assert 0 < ids.div <= PRIME // range_check_builtin.bound, \
+                f'div={hex(ids.div)} is out of the valid range.'
+            ids.q, ids.r = divmod(ids.value, ids.div)
+        %}
+        assert_le(r, div - 1);
+
+        assert value = q * div + r;
+        return (q, r);
+    }
+
+    // @notice Computes 256 ** (16 - i) for 0 <= i <= 16.
+    func pow256_rev(i: felt) -> felt {
+        let (pow256_rev_address) = get_label_location(pow256_rev_table);
+        return pow256_rev_address[i];
+
+        pow256_rev_table:
+        dw 340282366920938463463374607431768211456;
+        dw 1329227995784915872903807060280344576;
+        dw 5192296858534827628530496329220096;
+        dw 20282409603651670423947251286016;
+        dw 79228162514264337593543950336;
+        dw 309485009821345068724781056;
+        dw 1208925819614629174706176;
+        dw 4722366482869645213696;
+        dw 18446744073709551616;
+        dw 72057594037927936;
+        dw 281474976710656;
+        dw 1099511627776;
+        dw 4294967296;
+        dw 16777216;
+        dw 65536;
+        dw 256;
+        dw 1;
+    }
+
+    // @notice Splits a felt into `len` bytes, big-endien, and outputs to `dst`.
+    func split_word{range_check_ptr}(value: felt, len: felt, dst: felt*) {
+        if (len == 0) {
+            assert value = 0;
+            return ();
+        }
+        tempvar len = len - 1;
+        let output = &dst[len];
+        let base = 256;
+        let bound = 256;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar low_part = [output];
+        assert_nn_le(low_part, 255);
+        return split_word((value - low_part) / 256, len, dst);
+    }
+
+    // @notice Splits a felt into 16 bytes, big-endien, and outputs to `dst`.
+    func split_word_128{range_check_ptr}(start_value: felt, dst: felt*) {
+        // Fill dst using only hints with no opcodes.
+        let value = start_value;
+        let offset = 15;
+        tempvar base = 256;
+        let bound = 256;
+        tempvar max = 255;
+
+        // 0.
+        let output = &dst[offset];
+        let offset = offset - 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+        let range_check_ptr = range_check_ptr + 2;
+        tempvar value = (value - x) / base;
+        // 1.
+        let output = &dst[offset];
+        let offset = offset - 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+        let range_check_ptr = range_check_ptr + 2;
+        tempvar value = (value - x) / base;
+        // 2.
+        let output = &dst[offset];
+        let offset = offset - 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+        let range_check_ptr = range_check_ptr + 2;
+        tempvar value = (value - x) / base;
+        // 3.
+        let output = &dst[offset];
+        let offset = offset - 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+        let range_check_ptr = range_check_ptr + 2;
+        tempvar value = (value - x) / base;
+        // 0.
+        let output = &dst[offset];
+        let offset = offset - 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+        let range_check_ptr = range_check_ptr + 2;
+        tempvar value = (value - x) / base;
+        // 1.
+        let output = &dst[offset];
+        let offset = offset - 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+        let range_check_ptr = range_check_ptr + 2;
+        tempvar value = (value - x) / base;
+        // 2.
+        let output = &dst[offset];
+        let offset = offset - 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+        let range_check_ptr = range_check_ptr + 2;
+        tempvar value = (value - x) / base;
+        // 3.
+        let output = &dst[offset];
+        let offset = offset - 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+        let range_check_ptr = range_check_ptr + 2;
+        tempvar value = (value - x) / base;
+        // 0.
+        let output = &dst[offset];
+        let offset = offset - 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+        let range_check_ptr = range_check_ptr + 2;
+        tempvar value = (value - x) / base;
+        // 1.
+        let output = &dst[offset];
+        let offset = offset - 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+        let range_check_ptr = range_check_ptr + 2;
+        tempvar value = (value - x) / base;
+        // 2.
+        let output = &dst[offset];
+        let offset = offset - 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+        let range_check_ptr = range_check_ptr + 2;
+        tempvar value = (value - x) / base;
+        // 3.
+        let output = &dst[offset];
+        let offset = offset - 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+        let range_check_ptr = range_check_ptr + 2;
+        tempvar value = (value - x) / base;
+        // 0.
+        let output = &dst[offset];
+        let offset = offset - 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+        let range_check_ptr = range_check_ptr + 2;
+        tempvar value = (value - x) / base;
+        // 1.
+        let output = &dst[offset];
+        let offset = offset - 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+        let range_check_ptr = range_check_ptr + 2;
+        tempvar value = (value - x) / base;
+        // 2.
+        let output = &dst[offset];
+        let offset = offset - 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+        let range_check_ptr = range_check_ptr + 2;
+        tempvar value = (value - x) / base;
+        // 3.
+        let output = &dst[offset];
+        let offset = offset - 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+        let range_check_ptr = range_check_ptr + 2;
+        tempvar value = (value - x) / base;
+
+        assert value = 0;
+        return ();
     }
 }

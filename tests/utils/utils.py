@@ -355,3 +355,18 @@ def get_contract(contract_name: str) -> Contract:
     contract = Web3().eth.contract(abi=abi, bytecode=bytecode)
     setattr(contract, "_contract_name", contract_name)
     return cast(Contract, contract)
+
+
+def extract_memory_from_execute(result):
+    mem = [0] * result.memory_bytes_len
+    for i in range(0, len(result.memory_accesses), 3):
+        k = result.memory_accesses[i]  # Word index.
+        assert result.memory_accesses[i + 1] == 0  # Initial value.
+        v = result.memory_accesses[i + 2]  # Final value.
+        for j in range(16):
+            if k * 16 + 15 - j < len(mem):
+                mem[k * 16 + 15 - j] = v % 256
+            else:
+                assert v == 0
+            v //= 256
+    return mem

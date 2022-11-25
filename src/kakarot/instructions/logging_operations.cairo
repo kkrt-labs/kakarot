@@ -3,7 +3,7 @@
 %lang starknet
 
 // Starkware dependencies
-
+from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import emit_event
 
@@ -49,13 +49,12 @@ namespace LoggingOperations {
             self=ctx.memory, length=actual_size + actual_offset
         );
 
-        // Log topics by emmiting a starknet event
-        emit_event(
-            keys_len=topics_len * 2,
-            keys=popped,
-            data_len=actual_size,
-            data=memory.bytes + actual_offset,
+        // Log topics by emitting a starknet event
+        let (data: felt*) = alloc();
+        let memory = Memory.load_n(
+            self=memory, element_len=actual_size, element=data, offset=actual_offset
         );
+        emit_event(keys_len=topics_len * 2, keys=popped, data_len=actual_size, data=data);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
