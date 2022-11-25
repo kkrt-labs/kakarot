@@ -52,7 +52,9 @@ func test__store__should_add_an_element_to_the_memory{
     // When
     let value = Uint256(1, 0);
     let (bytes_array_len, bytes_array) = Helpers.uint256_to_bytes_array(value);
-    let result: model.Memory* = Memory.store_n(self=memory, element_len=bytes_array_len, element=bytes_array, offset=0);
+    let result: model.Memory* = Memory.store_n(
+        self=memory, element_len=bytes_array_len, element=bytes_array, offset=0
+    );
 
     // Then
     let len: felt = result.bytes_len;
@@ -72,24 +74,27 @@ func test__load__should_load_an_element_from_the_memory{
     let second_value = Uint256(low=4, high=3);
     let (first_bytes_array_len, first_bytes_array) = Helpers.uint256_to_bytes_array(first_value);
     let (second_bytes_array_len, second_bytes_array) = Helpers.uint256_to_bytes_array(second_value);
-    let memory: model.Memory* = Memory.store_n(self=memory, element_len=first_bytes_array_len, element=first_bytes_array, offset=0);
-    let memory: model.Memory* = Memory.store_n(self=memory, element_len=second_bytes_array_len, element=second_bytes_array, offset=32);
-    
+    let memory: model.Memory* = Memory.store_n(
+        self=memory, element_len=first_bytes_array_len, element=first_bytes_array, offset=0
+    );
+    let memory: model.Memory* = Memory.store_n(
+        self=memory, element_len=second_bytes_array_len, element=second_bytes_array, offset=32
+    );
 
     // When
-    let result = Memory.load_n(memory, 0, 32);
+    let (memory, result) = Memory.load(memory, 0);
 
     // Then
     assert_uint256_eq(result, Uint256(2, 1));
 
     // When
-    let result = Memory.load_n(memory, 32, 32);
+    let (memory, result) = Memory.load(memory, 32);
 
     // Then
     assert_uint256_eq(result, Uint256(4, 3));
 
     // When
-    let result = Memory.load_n(memory, 16, 32);
+    let (memory, result) = Memory.load(memory, 16);
 
     // Then
     assert_uint256_eq(result, Uint256(3, 2));
@@ -109,18 +114,21 @@ func test__load__should_load_an_element_from_the_memory_with_offset{
     let second_value = Uint256(low=4, high=3);
     let (first_bytes_array_len, first_bytes_array) = Helpers.uint256_to_bytes_array(first_value);
     let (second_bytes_array_len, second_bytes_array) = Helpers.uint256_to_bytes_array(second_value);
-    let memory: model.Memory* = Memory.store_n(self=memory, element_len=first_bytes_array_len, element=first_bytes_array, offset=0);
-    let memory: model.Memory* = Memory.store_n(self=memory, element_len=second_bytes_array_len, element=second_bytes_array, offset=32);
+    let memory: model.Memory* = Memory.store_n(
+        self=memory, element_len=first_bytes_array_len, element=first_bytes_array, offset=0
+    );
+    let memory: model.Memory* = Memory.store_n(
+        self=memory, element_len=second_bytes_array_len, element=second_bytes_array, offset=32
+    );
 
     // When
-    let result = Memory.load_n(memory, offset, 32);
+    let (memory, result) = Memory.load(memory, offset);
 
     // Then
     assert_uint256_eq(result, Uint256(low, high));
 
     return ();
 }
-
 
 @external
 func test__expand__should_return_the_same_memory_and_no_cost{
@@ -131,15 +139,18 @@ func test__expand__should_return_the_same_memory_and_no_cost{
     let memory = Memory.init();
     let value = Uint256(1, 0);
     let (bytes_array_len, bytes_array) = Helpers.uint256_to_bytes_array(value);
-    let memory: model.Memory* = Memory.store_n(self=memory, element_len=bytes_array_len, element=bytes_array, offset=0);
+    let memory: model.Memory* = Memory.store_n(
+        self=memory, element_len=bytes_array_len, element=bytes_array, offset=0
+    );
 
     // When
-    let (memory_expanded, cost) = Memory.expand(self=memory, length=0);
+    let (memory, cost) = Memory.expand(self=memory, length=0);
 
     // Then
     assert cost = 0;
-    assert memory_expanded.bytes_len = memory.bytes_len;
-    assert [memory_expanded.bytes] = [memory.bytes];
+    assert memory.bytes_len = 32;
+    let (memory, value) = Memory.load(self=memory, offset=0);
+    assert value = Uint256(1, 0);
 
     return ();
 }
@@ -153,16 +164,18 @@ func test__expand__should_return_expanded_memory_and_cost{
     let memory = Memory.init();
     let value = Uint256(1, 0);
     let (bytes_array_len, bytes_array) = Helpers.uint256_to_bytes_array(value);
-    let memory: model.Memory* = Memory.store_n(self=memory, element_len=bytes_array_len, element=bytes_array, offset=0);
+    let memory: model.Memory* = Memory.store_n(
+        self=memory, element_len=bytes_array_len, element=bytes_array, offset=0
+    );
 
     // When
-    let (memory_expanded, cost) = Memory.expand(self=memory, length=1);
+    let (memory, cost) = Memory.expand(self=memory, length=1);
 
     // Then
     assert_nn(cost);
-    assert memory_expanded.bytes_len = memory.bytes_len + 1;
-    assert [memory_expanded.bytes] = [memory.bytes];
-    assert [memory_expanded.bytes] = 0;
+    assert memory.bytes_len = 33;
+    let (memory, value) = Memory.load(self=memory, offset=0);
+    assert value = Uint256(1, 0);
 
     return ();
 }
@@ -176,15 +189,18 @@ func test__ensure_length__should_return_the_same_memory_and_no_cost{
     let memory = Memory.init();
     let value = Uint256(1, 0);
     let (bytes_array_len, bytes_array) = Helpers.uint256_to_bytes_array(value);
-    let memory: model.Memory* = Memory.store_n(self=memory, element_len=bytes_array_len, element=bytes_array, offset=0);
+    let memory: model.Memory* = Memory.store_n(
+        self=memory, element_len=bytes_array_len, element=bytes_array, offset=0
+    );
 
     // When
-    let (memory_expanded, cost) = Memory.ensure_length(self=memory, length=1);
+    let (memory, cost) = Memory.ensure_length(self=memory, length=1);
 
     // Then
     assert cost = 0;
-    assert memory_expanded.bytes_len = memory.bytes_len;
-    assert [memory_expanded.bytes] = [memory.bytes];
+    assert memory.bytes_len = 32;
+    let (memory, value) = Memory.load(self=memory, offset=0);
+    assert value = Uint256(1, 0);
 
     return ();
 }
@@ -198,16 +214,18 @@ func test__ensure_length__should_return_expanded_memory_and_cost{
     let memory = Memory.init();
     let value = Uint256(1, 0);
     let (bytes_array_len, bytes_array) = Helpers.uint256_to_bytes_array(value);
-    let memory: model.Memory* = Memory.store_n(self=memory, element_len=bytes_array_len, element=bytes_array, offset=0);
+    let memory: model.Memory* = Memory.store_n(
+        self=memory, element_len=bytes_array_len, element=bytes_array, offset=0
+    );
 
     // When
-    let (memory_expanded, cost) = Memory.ensure_length(self=memory, length=33);
+    let (memory, cost) = Memory.ensure_length(self=memory, length=33);
 
     // Then
     assert_nn(cost);
-    assert memory_expanded.bytes_len = memory.bytes_len + 1;
-    assert [memory_expanded.bytes] = [memory.bytes];
-    assert [memory_expanded.bytes + 32] = 0;
+    assert memory.bytes_len = 33;
+    let (memory, value) = Memory.load(self=memory, offset=0);
+    assert value = Uint256(1, 0);
 
     return ();
 }

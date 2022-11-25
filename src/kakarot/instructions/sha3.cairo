@@ -54,10 +54,14 @@ namespace Sha3 {
         // Update context memory.
         let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
 
+        let (bigendian_data: felt*) = alloc();
+        let memory = Memory.load_n(
+            self=memory, element_len=length.low, element=bigendian_data, offset=offset.low
+        );
         let (local dest: felt*) = alloc();
         bytes_to_byte8_little_endian(
-            bytes_len=memory.bytes_len - offset.low,
-            bytes=memory.bytes + offset.low,
+            bytes_len=length.low,
+            bytes=bigendian_data,
             index=0,
             size=length.low,
             byte8=0,
@@ -78,6 +82,7 @@ namespace Sha3 {
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_memory(ctx, memory);
 
         // Increment gas used.
         let minimum_word_size = (length.low + 31) / 32;

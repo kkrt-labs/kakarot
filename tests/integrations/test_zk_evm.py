@@ -4,7 +4,12 @@ import pytest
 from starkware.starknet.testing.contract import StarknetContract
 
 from tests.integrations.test_cases import params_execute
-from tests.utils.utils import hex_string_to_bytes_array, int_to_uint256, traceit
+from tests.utils.utils import (
+    extract_memory_from_execute,
+    hex_string_to_bytes_array,
+    int_to_uint256,
+    traceit,
+)
 
 
 @pytest.mark.asyncio
@@ -27,7 +32,8 @@ class TestZkEVM:
             for s in (params["stack"].split(",") if params["stack"] else [])
         ]
 
-        assert res.result.memory == hex_string_to_bytes_array(params["memory"])
+        mem = extract_memory_from_execute(res.result)
+        assert mem == hex_string_to_bytes_array(params["memory"])
         events = params.get("events")
         if events:
             assert [
