@@ -8,6 +8,7 @@ from starkware.cairo.common.uint256 import Uint256, uint256_unsigned_div_rem
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math_cmp import is_le
 
+
 from kakarot.model import model
 from utils.utils import Helpers
 from kakarot.stack import Stack
@@ -100,7 +101,10 @@ namespace MemoryOperations {
         let offset = popped[1];
         let value = popped[0];
 
-        let memory: model.Memory* = Memory.store(self=ctx.memory, element=value, offset=offset.low);
+        
+        let (bytes_array_len, bytes_array) = Helpers.uint256_to_bytes_array(value);
+
+        let memory: model.Memory* = Memory.store_n(self=ctx.memory, element_len=bytes_array_len, element=bytes_array, offset=offset.low);
 
         // Update context memory.
         let ctx = ExecutionContext.update_memory(ctx, memory);
