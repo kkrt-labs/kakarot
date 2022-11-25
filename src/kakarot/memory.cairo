@@ -32,69 +32,6 @@ namespace Memory {
         return new model.Memory(bytes=bytes, bytes_len=0);
     }
 
-    // @notice Store an element into the memory.
-    // @param self - The pointer to the memory.
-    // @param element - The element to push.
-    // @param offset - The offset to store the element at.
-    // @return The new pointer to the memory.
-    func store{range_check_ptr}(
-        self: model.Memory*, element: Uint256, offset: felt
-    ) -> model.Memory* {
-        alloc_locals;
-        let (new_memory: felt*) = alloc();
-
-        let bytes_len: felt = self.bytes_len;
-
-        if (bytes_len == 0) {
-            Helpers.fill(arr_len=offset, arr=new_memory, value=0);
-        }
-        let is_offset_greater_than_length = is_le(bytes_len, offset);
-        local max_copy: felt;
-        if (is_offset_greater_than_length == 1) {
-            Helpers.fill(arr_len=offset - bytes_len, arr=new_memory + bytes_len, value=0);
-            max_copy = bytes_len;
-        } else {
-            max_copy = offset;
-        }
-        if (self.bytes_len != 0) {
-            memcpy(dst=new_memory, src=self.bytes, len=max_copy);
-        }
-
-        split_int(
-            value=element.high,
-            n=16,
-            base=2 ** 8,
-            bound=2 ** 128,
-            output=self.bytes + bytes_len + 16,
-        );
-
-        split_int(
-            value=element.low, n=16, base=2 ** 8, bound=2 ** 128, output=self.bytes + bytes_len
-        );
-
-        Helpers.reverse(
-            old_arr_len=32,
-            old_arr=self.bytes + bytes_len,
-            new_arr_len=32,
-            new_arr=new_memory + offset,
-        );
-        let is_memory_growing = is_le(self.bytes_len, offset + 32);
-        local new_bytes_len: felt;
-
-        if (is_memory_growing == 1) {
-            new_bytes_len = offset + 32;
-        } else {
-            memcpy(
-                dst=new_memory + offset + 32,
-                src=self.bytes + offset + 32,
-                len=bytes_len - (offset) - 32,
-            );
-            new_bytes_len = bytes_len;
-        }
-
-        return new model.Memory(bytes=new_memory, bytes_len=new_bytes_len);
-    }
-
     // @notice store_n Store N bytes into the memory.
     // @param self The pointer to the memory.
     // @param element_len byte length of the array to be saved on memory.
