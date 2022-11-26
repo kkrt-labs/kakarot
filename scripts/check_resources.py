@@ -12,6 +12,7 @@ load_dotenv()
 pd.set_option("display.max_rows", 500)
 pd.set_option("display.max_columns", 10)
 pd.set_option("display.width", 1000)
+pd.set_option("max_colwidth", 400)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
