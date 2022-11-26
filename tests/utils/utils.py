@@ -1,3 +1,35 @@
+from starkware.cairo.lang.tracer.profile import profile_from_tracer_data
+from starkware.cairo.lang.tracer.tracer_data import TracerData
+from starkware.starknet.business_logic.execution.execute_entry_point import (
+    ExecuteEntryPoint,
+)
+
+# Override _run() entrypoint for hooking and profiling cairo runner.
+old_run = ExecuteEntryPoint._run
+
+
+def override_run(*args, **kwargs):
+    runner, syscall_handler = old_run(*args, **kwargs)
+
+    if traceit._context:
+        runner.relocate()
+
+        tracer_data = TracerData(
+            program=runner.program,
+            memory=runner.relocated_memory,
+            trace=runner.relocated_trace,
+            program_base=1,
+            debug_info=runner.get_relocated_debug_info(),
+        )
+
+        profile = profile_from_tracer_data(tracer_data)
+        _profile_datas[traceit._context] = profile
+    return runner, syscall_handler
+
+
+ExecuteEntryPoint._run = override_run
+
+
 import json
 import logging
 import os
@@ -32,6 +64,7 @@ logger = logging.getLogger("timer")
 
 _time_report: List[dict] = []
 _resources_report: List[dict] = []
+_profile_datas = {}
 
 T = TypeVar("T", bound=Callable[..., Any])
 
@@ -243,6 +276,9 @@ def dump_reports(path: Union[str, Path]):
     times, traces = reports()
     times.to_csv(p / "times.csv", index=False)
     traces.to_csv(p / "resources.csv", index=False)
+    for label, data in _profile_datas.items():
+        with open(p / f"{label}_prof.pb.gz", "wb") as fp:
+            fp.write(data)
 
 
 def dump_coverage(path: Union[str, Path], files: List[CoverageFile]):
