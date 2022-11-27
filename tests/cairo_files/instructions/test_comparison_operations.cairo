@@ -20,10 +20,12 @@ func test__exec_lt__should_pop_0_and_1_and_push_0__when_0_not_lt_1{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ComparisonOperations.exec_lt(ctx);
@@ -43,10 +45,12 @@ func test__exec_lt__should_pop_0_and_1_and_push_1__when_0_lt_1{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ComparisonOperations.exec_lt(ctx);
@@ -66,10 +70,12 @@ func test__exec_gt__should_pop_0_and_1_and_push_0__when_0_not_gt_1{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ComparisonOperations.exec_gt(ctx);
@@ -89,10 +95,12 @@ func test__exec_gt__should_pop_0_and_1_and_push_1__when_0_gt_1{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ComparisonOperations.exec_gt(ctx);
@@ -112,10 +120,12 @@ func test__exec_slt__should_pop_0_and_1_and_push_0__when_0_not_slt_1{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ComparisonOperations.exec_slt(ctx);
@@ -135,10 +145,12 @@ func test__exec_slt__should_pop_0_and_1_and_push_1__when_0_slt_1{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ComparisonOperations.exec_slt(ctx);
@@ -158,10 +170,12 @@ func test__exec_sgt__should_pop_0_and_1_and_push_0__when_0_not_sgt_1{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ComparisonOperations.exec_sgt(ctx);
@@ -181,10 +195,12 @@ func test__exec_sgt__should_pop_0_and_1_and_push_1__when_0_sgt_1{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ComparisonOperations.exec_sgt(ctx);
@@ -204,10 +220,12 @@ func test__exec_eq__should_pop_0_and_1_and_push_0__when_0_not_eq_1{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ComparisonOperations.exec_eq(ctx);
@@ -227,10 +245,12 @@ func test__exec_eq__should_pop_0_and_1_and_push_1__when_0_eq_1{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ComparisonOperations.exec_eq(ctx);
@@ -250,9 +270,11 @@ func test__exec_iszero__should_pop_0_and_push_0__when_0_is_not_zero{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ComparisonOperations.exec_iszero(ctx);
@@ -272,9 +294,11 @@ func test__exec_iszero__should_pop_0_and_push_1__when_0_is_zero{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ComparisonOperations.exec_iszero(ctx);
@@ -294,10 +318,12 @@ func test__exec_and__should_pop_0_and_1_and_push_0__when_0_and_1_are_not_true{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ComparisonOperations.exec_and(ctx);
@@ -317,10 +343,12 @@ func test__exec_and__should_pop_0_and_1_and_push_1__when_0_and_1_are_true{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ComparisonOperations.exec_and(ctx);
@@ -340,10 +368,12 @@ func test__exec_or__should_pop_0_and_1_and_push_0__when_0_or_1_are_not_true{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ComparisonOperations.exec_or(ctx);
@@ -363,10 +393,12 @@ func test__exec_or__should_pop_0_and_1_and_push_1__when_0_or_1_are_true{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ComparisonOperations.exec_or(ctx);
@@ -386,10 +418,12 @@ func test__exec_shl__should_pop_0_and_1_and_push_left_shift{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(4, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ComparisonOperations.exec_shl(ctx);
@@ -409,10 +443,12 @@ func test__exec_shr__should_pop_0_and_1_and_push_right_shift{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(4, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ComparisonOperations.exec_shr(ctx);
@@ -432,10 +468,12 @@ func test__exec_sar__should_pop_0_and_1_and_push_shr{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(4, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ComparisonOperations.exec_sar(ctx);
