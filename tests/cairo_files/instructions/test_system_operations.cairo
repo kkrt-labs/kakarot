@@ -14,29 +14,7 @@ from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.system_operations import SystemOperations
 from kakarot.constants import Constants
-
-@view
-func __setup__{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    return ();
-}
-
-func init_context{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() -> model.ExecutionContext* {
-    alloc_locals;
-    let (bytecode) = alloc();
-    assert [bytecode] = 00;
-    tempvar bytecode_len = 1;
-    let (calldata) = alloc();
-    assert [calldata] = '';
-    local call_context: model.CallContext* = new model.CallContext(
-        bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
-        );
-    let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
-    return ctx;
-}
+from tests.utils.utils import TestHelpers
 
 @external
 func test_exec_revert{
@@ -44,11 +22,10 @@ func test_exec_revert{
 }(reason: felt) {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = init_context();
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(reason, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
-    let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
 
     // When
     let ctx: model.ExecutionContext* = MemoryOperations.exec_mstore(ctx);

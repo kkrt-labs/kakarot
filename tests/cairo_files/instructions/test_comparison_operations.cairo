@@ -12,23 +12,7 @@ from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.comparison_operations import ComparisonOperations
-
-func init_context{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(stack: model.Stack*) -> model.ExecutionContext* {
-    alloc_locals;
-    let (bytecode) = alloc();
-    assert [bytecode] = 00;
-    tempvar bytecode_len = 1;
-    let (calldata) = alloc();
-    assert [calldata] = '';
-    local call_context: model.CallContext* = new model.CallContext(
-        bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
-    );
-    let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
-    let ctx = ExecutionContext.update_stack(ctx, stack);
-    return ctx;
-}
+from tests.utils.utils import TestHelpers
 
 @external
 func test__exec_lt__should_pop_0_and_1_and_push_0__when_0_not_lt_1{
@@ -39,7 +23,7 @@ func test__exec_lt__should_pop_0_and_1_and_push_0__when_0_not_lt_1{
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let ctx: model.ExecutionContext* = init_context(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
 
     // When
     let result = ComparisonOperations.exec_lt(ctx);
@@ -62,7 +46,7 @@ func test__exec_lt__should_pop_0_and_1_and_push_1__when_0_lt_1{
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let ctx: model.ExecutionContext* = init_context(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
 
     // When
     let result = ComparisonOperations.exec_lt(ctx);
@@ -85,7 +69,7 @@ func test__exec_gt__should_pop_0_and_1_and_push_0__when_0_not_gt_1{
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let ctx: model.ExecutionContext* = init_context(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
 
     // When
     let result = ComparisonOperations.exec_gt(ctx);
@@ -108,7 +92,7 @@ func test__exec_gt__should_pop_0_and_1_and_push_1__when_0_gt_1{
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let ctx: model.ExecutionContext* = init_context(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
 
     // When
     let result = ComparisonOperations.exec_gt(ctx);
@@ -131,7 +115,7 @@ func test__exec_slt__should_pop_0_and_1_and_push_0__when_0_not_slt_1{
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let ctx: model.ExecutionContext* = init_context(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
 
     // When
     let result = ComparisonOperations.exec_slt(ctx);
@@ -154,7 +138,7 @@ func test__exec_slt__should_pop_0_and_1_and_push_1__when_0_slt_1{
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let ctx: model.ExecutionContext* = init_context(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
 
     // When
     let result = ComparisonOperations.exec_slt(ctx);
@@ -177,7 +161,7 @@ func test__exec_sgt__should_pop_0_and_1_and_push_0__when_0_not_sgt_1{
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let ctx: model.ExecutionContext* = init_context(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
 
     // When
     let result = ComparisonOperations.exec_sgt(ctx);
@@ -200,7 +184,7 @@ func test__exec_sgt__should_pop_0_and_1_and_push_1__when_0_sgt_1{
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let ctx: model.ExecutionContext* = init_context(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
 
     // When
     let result = ComparisonOperations.exec_sgt(ctx);
@@ -223,7 +207,7 @@ func test__exec_eq__should_pop_0_and_1_and_push_0__when_0_not_eq_1{
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let ctx: model.ExecutionContext* = init_context(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
 
     // When
     let result = ComparisonOperations.exec_eq(ctx);
@@ -246,7 +230,7 @@ func test__exec_eq__should_pop_0_and_1_and_push_1__when_0_eq_1{
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let ctx: model.ExecutionContext* = init_context(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
 
     // When
     let result = ComparisonOperations.exec_eq(ctx);
@@ -268,7 +252,7 @@ func test__exec_iszero__should_pop_0_and_push_0__when_0_is_not_zero{
     alloc_locals;
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let ctx: model.ExecutionContext* = init_context(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
 
     // When
     let result = ComparisonOperations.exec_iszero(ctx);
@@ -290,7 +274,7 @@ func test__exec_iszero__should_pop_0_and_push_1__when_0_is_zero{
     alloc_locals;
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
-    let ctx: model.ExecutionContext* = init_context(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
 
     // When
     let result = ComparisonOperations.exec_iszero(ctx);
@@ -313,7 +297,7 @@ func test__exec_and__should_pop_0_and_1_and_push_0__when_0_and_1_are_not_true{
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let ctx: model.ExecutionContext* = init_context(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
 
     // When
     let result = ComparisonOperations.exec_and(ctx);
@@ -336,7 +320,7 @@ func test__exec_and__should_pop_0_and_1_and_push_1__when_0_and_1_are_true{
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let ctx: model.ExecutionContext* = init_context(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
 
     // When
     let result = ComparisonOperations.exec_and(ctx);
@@ -359,7 +343,7 @@ func test__exec_or__should_pop_0_and_1_and_push_0__when_0_or_1_are_not_true{
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
-    let ctx: model.ExecutionContext* = init_context(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
 
     // When
     let result = ComparisonOperations.exec_or(ctx);
@@ -382,7 +366,7 @@ func test__exec_or__should_pop_0_and_1_and_push_1__when_0_or_1_are_true{
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let ctx: model.ExecutionContext* = init_context(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
 
     // When
     let result = ComparisonOperations.exec_or(ctx);
@@ -405,7 +389,7 @@ func test__exec_shl__should_pop_0_and_1_and_push_left_shift{
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(4, 0));
-    let ctx: model.ExecutionContext* = init_context(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
 
     // When
     let result = ComparisonOperations.exec_shl(ctx);
@@ -428,7 +412,7 @@ func test__exec_shr__should_pop_0_and_1_and_push_right_shift{
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(4, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let ctx: model.ExecutionContext* = init_context(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
 
     // When
     let result = ComparisonOperations.exec_shr(ctx);
@@ -451,7 +435,7 @@ func test__exec_sar__should_pop_0_and_1_and_push_shr{
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(4, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let ctx: model.ExecutionContext* = init_context(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
 
     // When
     let result = ComparisonOperations.exec_sar(ctx);
