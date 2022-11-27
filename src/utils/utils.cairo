@@ -4,7 +4,13 @@
 
 // StarkWare dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.math import assert_le, split_felt, assert_nn_le, split_int
+from starkware.cairo.common.math import (
+    assert_le,
+    split_felt,
+    assert_nn_le,
+    split_int,
+    unsigned_div_rem,
+)
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.pow import pow
@@ -475,5 +481,14 @@ namespace Helpers {
 
         assert value = 0;
         return ();
+    }
+
+    // @notice Ceil a number of bits to the next word (32 bytes)
+    // ex: ceil_bytes_len_to_next_32_bytes_word(2) = 32
+    // ex: ceil_bytes_len_to_next_32_bytes_word(34) = 64
+    func ceil_bytes_len_to_next_32_bytes_word{range_check_ptr}(bytes_len: felt) -> felt {
+        let (q, r) = unsigned_div_rem(bytes_len + 31, 32);
+
+        return q * 32;
     }
 }
