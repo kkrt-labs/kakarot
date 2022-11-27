@@ -1073,7 +1073,6 @@ test_cases = [
         "marks": [
             pytest.mark.JUMP,
             pytest.mark.StackMemoryStorageFlowOperations,
-            pytest.mark.skip("Returned stack is 10,11 instead of 11"),
         ],
     },
     {
@@ -1089,7 +1088,6 @@ test_cases = [
         "marks": [
             pytest.mark.JUMPI,
             pytest.mark.StackMemoryStorageFlowOperations,
-            pytest.mark.skip("Returned stack is 10,20 instead of 20"),
         ],
     },
     {
