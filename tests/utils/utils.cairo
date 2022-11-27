@@ -39,4 +39,38 @@ namespace TestHelpers {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         return ctx;
     }
+
+    // @notice Init an execution context where bytecode has "bytecode_count" entries of "value".
+    func init_context_with_bytecode{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+    }(bytecode_count: felt, value: felt) -> model.ExecutionContext* {
+        alloc_locals;
+        
+        let (bytecode) = alloc();
+        _fill_bytecode_with_values(bytecode, bytecode_count, value);
+
+        return TestHelpers.init_context(bytecode_count, bytecode);
+    }
+
+    // @notice Fill a bytecode array with "bytecode_count" entries of "value".
+    // ex: _fill_bytecode_with_values(bytecode, 2, 0xFF)
+    // bytecode will be equal to [0xFF, 0xFF]
+    func _fill_bytecode_with_values(bytecode: felt*, bytecode_count: felt, value: felt) {
+        assert bytecode[bytecode_count - 1] = value;
+
+        if (bytecode_count - 1 == 0) {
+            return ();
+        }
+
+        _fill_bytecode_with_values(bytecode, bytecode_count - 1, value);
+
+        return ();
+    }
+    
+    func assert_stack_last_element_contains{range_check_ptr}(stack: model.Stack*, value: felt) {
+        let index0 = Stack.peek(stack, 0);
+        assert index0 = Uint256(value, 0);
+
+        return ();
+    }
 }
