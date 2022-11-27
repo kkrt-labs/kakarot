@@ -14,22 +14,7 @@ from kakarot.stack import Stack
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.constants import Constants
-
-func init_context{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() -> model.ExecutionContext* {
-    alloc_locals;
-    let (bytecode) = alloc();
-    assert [bytecode] = 00;
-    tempvar bytecode_len = 1;
-    let (calldata) = alloc();
-    assert [calldata] = '';
-    local call_context: model.CallContext* = new model.CallContext(
-        bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
-    );
-    let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
-    return ctx;
-}
+from tests.utils.utils import TestHelpers
 
 @external
 func test__exec_pc__should_update_after_incrementing{
@@ -37,7 +22,7 @@ func test__exec_pc__should_update_after_incrementing{
 }(increment) {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = init_context();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context();
     let ctx = ExecutionContext.increment_program_counter(ctx, increment);
 
     // When
@@ -58,7 +43,7 @@ func test__exec_pop_should_pop_an_item_from_execution_context{
 }() {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = init_context();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context();
     // Given
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
@@ -83,7 +68,7 @@ func test__exec_mload_should_load_a_value_from_memory{
 }() {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = init_context();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context();
     // Given
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
@@ -113,7 +98,7 @@ func test__exec_mload_should_load_a_value_from_memory_with_memory_expansion{
 }() {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = init_context();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context();
     let test_offset = 16;
     // Given
     let stack: model.Stack* = Stack.init();
@@ -145,7 +130,7 @@ func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_ms
 }() {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = init_context();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context();
     let test_offset = 684;
     // Given
     let stack: model.Stack* = Stack.init();
@@ -175,7 +160,7 @@ func test__exec_gas_should_return_remaining_gas{
 }() {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = init_context();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context();
     // Given
     let stack: model.Stack* = Stack.init();
     let ctx = ExecutionContext.update_stack(ctx, stack);
