@@ -22,10 +22,12 @@ func test_exec_revert{
 }(reason: felt) {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(reason, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let ctx: model.ExecutionContext* = MemoryOperations.exec_mstore(ctx);

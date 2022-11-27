@@ -22,7 +22,9 @@ func test__exec_pc__should_update_after_incrementing{
 }(increment) {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = TestHelpers.init_context();
+
+    let (bytecode) = alloc();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
     let ctx = ExecutionContext.increment_program_counter(ctx, increment);
 
     // When
@@ -43,9 +45,11 @@ func test__exec_pop_should_pop_an_item_from_execution_context{
 }() {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = TestHelpers.init_context();
+    let (bytecode) = alloc();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
     // Given
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -68,9 +72,11 @@ func test__exec_mload_should_load_a_value_from_memory{
 }() {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = TestHelpers.init_context();
+    let (bytecode) = alloc();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
     // Given
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
     let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -98,10 +104,12 @@ func test__exec_mload_should_load_a_value_from_memory_with_memory_expansion{
 }() {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = TestHelpers.init_context();
+    let (bytecode) = alloc();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
     let test_offset = 16;
     // Given
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
     let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -130,10 +138,12 @@ func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_ms
 }() {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = TestHelpers.init_context();
+    let (bytecode) = alloc();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
     let test_offset = 684;
     // Given
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
     let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -160,9 +170,11 @@ func test__exec_gas_should_return_remaining_gas{
 }() {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = TestHelpers.init_context();
+    let (bytecode) = alloc();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
     // Given
     let stack: model.Stack* = Stack.init();
+
     let ctx = ExecutionContext.update_stack(ctx, stack);
 
     // When

@@ -21,11 +21,13 @@ func test__exec_add__should_add_0_and_1{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ArithmeticOperations.exec_add(ctx);
@@ -47,11 +49,13 @@ func test__exec_mul__should_mul_0_and_1{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ArithmeticOperations.exec_mul(ctx);
@@ -73,11 +77,13 @@ func test__exec_sub__should_sub_0_and_1{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ArithmeticOperations.exec_sub(ctx);
@@ -99,11 +105,13 @@ func test__exec_div__should_div_0_and_1{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ArithmeticOperations.exec_div(ctx);
@@ -125,11 +133,13 @@ func test__exec_sdiv__should_signed_div_0_and_1{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ArithmeticOperations.exec_sdiv(ctx);
@@ -151,11 +161,13 @@ func test__exec_mod__should_mod_0_and_1{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ArithmeticOperations.exec_mod(ctx);
@@ -177,11 +189,13 @@ func test__exec_smod__should_smod_0_and_1{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ArithmeticOperations.exec_smod(ctx);
@@ -203,11 +217,13 @@ func test__exec_addmod__should_add_0_and_1_and_div_rem_by_2{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ArithmeticOperations.exec_addmod(ctx);
@@ -227,11 +243,13 @@ func test__exec_mulmod__should_mul_0_and_1_and_div_rem_by_2{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ArithmeticOperations.exec_mulmod(ctx);
@@ -251,11 +269,13 @@ func test__exec_exp__should_exp_0_and_1{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ArithmeticOperations.exec_exp(ctx);
@@ -277,11 +297,13 @@ func test__exec_signextend__should_signextend_0_and_1{
 }() {
     // Given
     alloc_locals;
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
+
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
     let result = ArithmeticOperations.exec_signextend(ctx);
