@@ -72,7 +72,8 @@ namespace Memory {
         let word_dict = self.word_dict;
 
         // Compute new bytes_len.
-        let new_min_bytes_len = offset + 32;
+        let new_min_bytes_len = Helpers.ceil_bytes_len_to_next_32_bytes_word(offset + 32);
+
         let fits = is_le(new_min_bytes_len, self.bytes_len);
         if (fits == 0) {
             tempvar new_bytes_len = new_min_bytes_len;

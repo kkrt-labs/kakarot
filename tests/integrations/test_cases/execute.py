@@ -981,6 +981,18 @@ test_cases = [
     {
         "params": {
             "value": 0,
+            "code": "600a60015200",
+            "calldata": "",
+            "stack": "",
+            "memory": "00000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000",
+            "return_value": "",
+        },
+        "id": "Memory operations",
+        "marks": [pytest.mark.MSTORE, pytest.mark.StackMemoryStorageFlowOperations],
+    },
+    {
+        "params": {
+            "value": 0,
             "code": "600a60005260fa60245200",
             "calldata": "",
             "stack": "",
@@ -991,7 +1003,6 @@ test_cases = [
         "marks": [
             pytest.mark.MSTORE,
             pytest.mark.StackMemoryStorageFlowOperations,
-            pytest.mark.skip("Returned memory missed the last empty bytes32"),
         ],
     },
     {
