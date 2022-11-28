@@ -120,12 +120,9 @@ namespace SystemOperations {
         let curr_memory_len: felt = ctx.memory.bytes_len;
         let total_len: felt = offset.low + size.low;
         // TODO check in which multiple of 32 bytes it should be.
-        // Pad if offset + size > memory_len pad n
-        if (memory.bytes_len == 0) {
-            Helpers.fill(arr=memory.bytes, value=0, length=32);
-        }
-
-        memcpy(dst=new_return_data, src=ctx.memory.bytes + offset.low, len=size.low);
+        let memory = Memory.load_n(
+            self=memory, element_len=size.low, element=new_return_data, offset=offset.low
+        );
 
         // Pad if offset + size > memory_len pad n
 
@@ -133,7 +130,7 @@ namespace SystemOperations {
 
         if (is_total_greater_than_memory_len == 1) {
             local diff = total_len - curr_memory_len;
-            Helpers.fill(arr=new_return_data + curr_memory_len, value=0, length=diff);
+            Helpers.fill(arr_len=diff, arr=new_return_data + curr_memory_len, value=0);
         }
 
         // TODO if memory.bytes_len == 0 needs a different approach
@@ -141,6 +138,7 @@ namespace SystemOperations {
 
         // TODO: GAS IMPLEMENTATION
 
+        let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
         return ExecutionContext.update_return_data(
             ctx, new_return_data_len=size.low, new_return_data=new_return_data
         );
@@ -159,7 +157,7 @@ namespace SystemOperations {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) {
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
         // Get stack and memory from context
@@ -176,13 +174,14 @@ namespace SystemOperations {
         let offset = popped[1];
 
         // Load revert reason from offset
-        let revert_reason_uint256 = Memory.load(memory, offset.low);
+        let (memory, revert_reason_uint256) = Memory.load(memory, offset.low);
         local revert_reason = revert_reason_uint256.low;
 
         // revert with loaded revert reason short string
         with_attr error_message("Kakarot: Reverted with reason: {revert_reason}") {
             assert TRUE = FALSE;
         }
-        return ();
+        let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
+        return ctx;
     }
 }

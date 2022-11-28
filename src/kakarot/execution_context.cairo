@@ -24,6 +24,17 @@ from kakarot.interfaces.interfaces import IRegistry, IEvmContract
 // @custom:namespace ExecutionContext
 // @custom:model model.ExecutionContext
 namespace ExecutionContext {
+    // Summary of the execution. Created upon finalization of the execution.
+    struct Summary {
+        memory: Memory.Summary*,
+        stack: model.Stack*,
+        return_data: felt*,
+        return_data_len: felt,
+        gas_used: felt,
+        starknet_contract_address: felt,
+        evm_contract_address: felt,
+    }
+
     // @notice Initialize the execution context.
     // @dev set the initial values before executing a piece of code
     // @param call_context The call context.
@@ -62,9 +73,25 @@ namespace ExecutionContext {
         return ctx;
     }
 
+    // @notice Finalizes the execution context.
+    // @return The pointer to the execution Summary.
+    func finalize{range_check_ptr}(self: model.ExecutionContext*) -> Summary* {
+        let memory_summary = Memory.finalize(self.memory);
+        return new Summary(
+            memory=memory_summary,
+            stack=self.stack,
+            return_data=self.return_data,
+            return_data_len=self.return_data_len,
+            gas_used=self.gas_used,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
+            );
+    }
+
     // @notice Initialize the execution context.
     // @dev Initialize the execution context of a specific contract
     // @param address The evm address from which the code will be executed
+    // @param calldata_len The calldata length
     // @param calldata The calldata.
     // @return The initialized execution context.
     func init_at_address{
@@ -72,7 +99,7 @@ namespace ExecutionContext {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, calldata: felt*, calldata_len: felt, value: felt) -> model.ExecutionContext* {
+    }(address: felt, calldata_len: felt, calldata: felt*, value: felt) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
 

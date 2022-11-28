@@ -59,7 +59,7 @@ namespace MemoryOperations {
         // Read word from memory at offset
         let (new_memory, cost) = Memory.ensure_length(self=ctx.memory, length=32 + offset.low);
 
-        let value = Memory.load(self=new_memory, offset=offset.low);
+        let (new_memory, value) = Memory.load(self=new_memory, offset=offset.low);
 
         // Push word to the stack
         let stack: model.Stack* = Stack.push(stack, value);

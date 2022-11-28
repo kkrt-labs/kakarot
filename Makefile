@@ -69,3 +69,6 @@ build-sol:
 	for file in ${solidity_files} ; do \
 		docker run -v ${solidity_folder}:/sources ethereum/solc:stable -o /sources/output --abi --bin --overwrite --opcodes /sources/$$file /sources/$$file; \
 	done
+
+check-resources:
+	poetry run python scripts/check_resources.py
