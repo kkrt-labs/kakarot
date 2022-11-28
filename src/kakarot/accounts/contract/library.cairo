@@ -6,6 +6,8 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.math import unsigned_div_rem
+from starkware.cairo.common.registers import get_label_location
 
 // OpenZeppelin dependencies
 from openzeppelin.access.ownable.library import Ownable
@@ -46,7 +48,7 @@ namespace ContractAccount {
         // Initialize access control.
         Ownable.initializer(kakarot_address);
         // Store the bytecode.
-        internal.write_bytecode(0, bytecode_len, bytecode);
+        internal.write_bytecode(0, bytecode_len, bytecode, 0, 16);
         return ();
     }
 
@@ -62,7 +64,14 @@ namespace ContractAccount {
         // Access control check.
         Ownable.assert_only_owner();
         // Recursively store the bytecode.
-        internal.write_bytecode(0, bytecode_len, bytecode);
+        bytecode_len_.write(bytecode_len);
+        internal.write_bytecode(
+            index=0,
+            bytecode_len=bytecode_len,
+            bytecode=bytecode,
+            current_felt=0,
+            remaining_shift=16,
+        );
         return ();
     }
 
@@ -80,7 +89,13 @@ namespace ContractAccount {
         let (bytecode_len) = bytecode_len_.read();
         // Recursively load bytecode into specified memory location.
         let bytecode_: felt* = alloc();
-        internal.load_bytecode(0, bytecode_len, bytecode_);
+        internal.load_bytecode(
+            index=0,
+            bytecode_len=bytecode_len,
+            bytecode=bytecode_,
+            current_felt=0,
+            remaining_shift=0,
+        );
         return (bytecode_len, bytecode_);
     }
 
@@ -142,20 +157,53 @@ namespace ContractAccount {
 
 namespace internal {
     // @notice Store the bytecode of the contract.
-    // @param index: The index in the bytecode.
+    // @param index: The index in the bytecode_stored.
     // @param bytecode_len: The length of the bytecode.
     // @param bytecode: The bytecode of the contract.
     func write_bytecode{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        index: felt, bytecode_len: felt, bytecode: felt*
+        index: felt, bytecode_len: felt, bytecode: felt*, current_felt: felt, remaining_shift: felt
     ) {
         alloc_locals;
-        if (index == bytecode_len) {
-            bytecode_len_.write(bytecode_len);
+
+        if (bytecode_len == 0) {
+            // end of bytecode case
+            bytecode_.write(index, current_felt);
             return ();
         }
-        bytecode_.write(index, bytecode[index]);
-        write_bytecode(index + 1, bytecode_len, bytecode);
-        return ();
+
+        if (remaining_shift == 0) {
+            // end of packed felt case
+            bytecode_.write(index, current_felt);
+            return write_bytecode(index + 1, bytecode_len, bytecode, 0, 16);
+        }
+
+        let (pow_address) = get_label_location(pow_);
+        let pow = cast(pow_address, felt*);
+
+        let current_felt = pow[remaining_shift] * [bytecode] + current_felt;
+
+        return write_bytecode(
+            index, bytecode_len - 1, bytecode + 1, current_felt, remaining_shift - 1
+        );
+
+        pow_:
+        dw 0;
+        dw 1;
+        dw 2 ** 8;
+        dw 2 ** 16;
+        dw 2 ** 24;
+        dw 2 ** 32;
+        dw 2 ** 40;
+        dw 2 ** 48;
+        dw 2 ** 56;
+        dw 2 ** 64;
+        dw 2 ** 72;
+        dw 2 ** 80;
+        dw 2 ** 88;
+        dw 2 ** 96;
+        dw 2 ** 104;
+        dw 2 ** 112;
+        dw 2 ** 120;
     }
 
     // @notice Load the bytecode of the contract in the specified array.
@@ -167,15 +215,45 @@ namespace internal {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(index: felt, bytecode_len: felt, bytecode: felt*) {
+    }(index: felt, bytecode_len: felt, bytecode: felt*, current_felt: felt, remaining_shift: felt) {
         alloc_locals;
-        if (index == bytecode_len) {
+
+        if (bytecode_len == 0) {
             return ();
         }
-        let (value) = bytecode_.read(index);
-        assert [bytecode + index] = value;
 
-        load_bytecode(index + 1, bytecode_len, bytecode);
-        return ();
+        if (remaining_shift == 0) {
+            let (current_felt) = bytecode_.read(index);
+            return load_bytecode(index + 1, bytecode_len, bytecode, current_felt, 16);
+        }
+
+        let (pow_address) = get_label_location(pow_);
+        let pow = cast(pow_address, felt*);
+
+        let (current_byte, current_felt) = unsigned_div_rem(current_felt, pow[remaining_shift]);
+        assert [bytecode] = current_byte;
+
+        return load_bytecode(
+            index, bytecode_len - 1, bytecode + 1, current_felt, remaining_shift - 1
+        );
+
+        pow_:
+        dw 0;
+        dw 1;
+        dw 2 ** 8;
+        dw 2 ** 16;
+        dw 2 ** 24;
+        dw 2 ** 32;
+        dw 2 ** 40;
+        dw 2 ** 48;
+        dw 2 ** 56;
+        dw 2 ** 64;
+        dw 2 ** 72;
+        dw 2 ** 80;
+        dw 2 ** 88;
+        dw 2 ** 96;
+        dw 2 ** 104;
+        dw 2 ** 112;
+        dw 2 ** 120;
     }
 }
