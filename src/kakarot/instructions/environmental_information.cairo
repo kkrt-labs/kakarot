@@ -334,6 +334,11 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         // Get the bytecode size.
         let code_size = Helpers.to_uint256(ctx.call_context.bytecode_len);
+        %{
+            import logging
+            logging.info("CODESIZE LOW")
+            logging.info(ids.code_size.low)
+        %}
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=code_size);
 
         // Update the execution context.

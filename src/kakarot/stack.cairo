@@ -192,10 +192,19 @@ namespace Stack {
     // @return The element at the given index.
     func peek{range_check_ptr}(self: model.Stack*, stack_index: felt) -> (self:model.Stack*, value: Uint256)  {
         let stack_word_dict = self.stack_word_dict;
+        let position_zero = self.stack_16bytes_len;
         // Read element at stack_index
-        let (el_high) = dict_read{dict_ptr=stack_word_dict}(stack_index*2);
-        let (el_low) = dict_read{dict_ptr=stack_word_dict}(stack_index*2 + 1);
+        let (el_high) = dict_read{dict_ptr=stack_word_dict}(position_zero - stack_index*2);
+        let (el_low) = dict_read{dict_ptr=stack_word_dict}(position_zero - stack_index*2 + 1);
         // Return element
+        %{
+            import logging
+            logging.info("PEEK INDEX")
+            logging.info(ids.stack_index)
+            logging.info("PEEK HIGH AND LOW")
+            logging.info(hex(ids.el_high))
+            logging.info(hex(ids.el_low))
+        %}
         return (
                 new model.Stack(
                     stack_word_dict_start=self.stack_word_dict_start,
@@ -216,15 +225,25 @@ namespace Stack {
         let position_zero = self.stack_16bytes_len;
 
         // Read elements at stack a and b
-        let (el1_high) = dict_read{dict_ptr=stack_word_dict}(position_zero);
-        let (el1_low) = dict_read{dict_ptr=stack_word_dict}(position_zero+1);
+        let (el1_high) = dict_read{dict_ptr=stack_word_dict}(position_zero-2);
+        let (el1_low) = dict_read{dict_ptr=stack_word_dict}(position_zero-1);
 
-        let (el2_high) = dict_read{dict_ptr=stack_word_dict}(i*2);
-        let (el2_low) = dict_read{dict_ptr=stack_word_dict}(i*2 + 1);
+        let (el2_high) = dict_read{dict_ptr=stack_word_dict}(position_zero - i*2);
+        let (el2_low) = dict_read{dict_ptr=stack_word_dict}(position_zero - i*2 + 1);
+
+        %{
+            import logging
+            logging.info("SWAP INDEX")
+            logging.info(ids.i)
+            logging.info("SWAP VALUE LOW")
+            logging.info(ids.el2_low)   
+            logging.info("SWAP VALUE HIGH")
+            logging.info(ids.el2_high)                        
+        %}
 
         // Swap elements
-        dict_write{dict_ptr=stack_word_dict}(position_zero, el2_high);
-        dict_write{dict_ptr=stack_word_dict}(position_zero+1, el2_low);
+        dict_write{dict_ptr=stack_word_dict}(position_zero-2, el2_high);
+        dict_write{dict_ptr=stack_word_dict}(position_zero-1, el2_low);
         dict_write{dict_ptr=stack_word_dict}((position_zero-i*2), el1_high);
         dict_write{dict_ptr=stack_word_dict}((position_zero-i*2+1), el1_low);
 

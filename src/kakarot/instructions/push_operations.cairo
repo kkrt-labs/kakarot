@@ -40,6 +40,11 @@ namespace PushOperations {
 
         // Convert to Uint256.
         let stack_element: Uint256 = Helpers.bytes_i_to_uint256(val=data, i=i);
+
+        %{
+            import logging
+            logging.info(f"PUSH LOW:{hex(ids.stack_element.low)} PUSH HIGH:{hex(ids.stack_element.high)}")
+        %}   
         // Push to the stack.
         let stack: model.Stack* = Stack.push(stack, stack_element);
 
