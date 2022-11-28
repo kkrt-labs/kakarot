@@ -78,7 +78,7 @@ namespace SystemOperations {
 
         let is_total_greater_than_memory_len: felt = is_le(curr_memory_len, total_len);
 
-        if (is_total_greater_than_memory_len == 1) {
+        if (is_total_greater_than_memory_len != FALSE) {
             local diff = total_len - curr_memory_len;
             Helpers.fill(arr_len=diff, arr=new_return_data + curr_memory_len, value=0);
         }

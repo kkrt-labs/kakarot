@@ -9,7 +9,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import keccak_bigend, finalize_keccak
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.pow import pow
-from starkware.cairo.common.bool import TRUE
+from starkware.cairo.common.bool import FALSE
 
 from kakarot.memory import Memory
 from kakarot.model import model
@@ -113,7 +113,7 @@ namespace Sha3 {
 
         local current_byte;
         let out_of_bound = is_le(a=bytes_len, b=index);
-        if (out_of_bound == TRUE) {
+        if (out_of_bound != FALSE) {
             current_byte = 0;
         } else {
             assert current_byte = [bytes + index];
@@ -126,7 +126,7 @@ namespace Sha3 {
         let byte8_full = is_le(a=7, b=byte8_shift);
         let end_of_loop = is_le(size, index + 1);
         let write_to_dest = is_le(1, byte8_full + end_of_loop);
-        if (write_to_dest == TRUE) {
+        if (write_to_dest != FALSE) {
             assert dest[dest_index] = _byte8;
             tempvar _byte8 = 0;
             tempvar _byte8_shift = 0;
