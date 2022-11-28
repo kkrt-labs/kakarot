@@ -70,8 +70,8 @@ namespace ComparisonOperations {
         // 0 - a: left side integer.
         // 1 - b: right side integer.
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[1];
-        let b = popped[0];
+        let a = popped[0];
+        let b = popped[1];
 
         // Compute the comparison
         let (result) = uint256_lt(a, b);
@@ -110,8 +110,8 @@ namespace ComparisonOperations {
         // 0 - a: left side integer.
         // 1 - b: right side integer.
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[1];
-        let b = popped[0];
+        let a = popped[0];
+        let b = popped[1];
 
         // Compute the comparison
         let (result) = uint256_lt(b, a);
@@ -150,8 +150,8 @@ namespace ComparisonOperations {
         // 0 - a: left side signed integer.
         // 1 - b: right side signed integer.
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[1];
-        let b = popped[0];
+        let a = popped[0];
+        let b = popped[1];
 
         // Compute the comparison
         let (result) = uint256_signed_lt(a, b);
@@ -190,8 +190,8 @@ namespace ComparisonOperations {
         // 0 - a: left side integer.
         // 1 - b: right side integer.
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let b = popped[1];
-        let a = popped[0];
+        let b = popped[0];
+        let a = popped[1];
 
         // Compute the comparison
         let (result) = uint256_signed_lt(a, b);
@@ -230,8 +230,8 @@ namespace ComparisonOperations {
         // 0 - a: left side integer.
         // 1 - b: right side integer.
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let b = popped[1];
-        let a = popped[0];
+        let b = popped[0];
+        let a = popped[1];
 
         // Compute the comparison
         let (result) = uint256_eq(a, b);
@@ -307,8 +307,8 @@ namespace ComparisonOperations {
         // a: first binary value.
         // b: second binary value.
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[1];
-        let b = popped[0];
+        let a = popped[0];
+        let b = popped[1];
 
         // a & b: the bitwise AND result.
         let (result) = uint256_and(a, b);
@@ -347,8 +347,8 @@ namespace ComparisonOperations {
         // a: first binary value.
         // b: second binary value.
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[1];
-        let b = popped[0];
+        let a = popped[0];
+        let b = popped[1];
 
         // a & b: the bitwise AND result.
         let (result) = uint256_or(a, b);
@@ -466,8 +466,8 @@ namespace ComparisonOperations {
         // 0 - shift: integer
         // 1 - value: integer
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let shift = popped[1];
-        let value = popped[0];
+        let shift = popped[0];
+        let value = popped[1];
 
         // Left shift `value` by `shift`.
         let (result) = uint256_shl(a=value, b=shift);
@@ -506,8 +506,8 @@ namespace ComparisonOperations {
         // 0 - shift: integer
         // 1 - value: integer
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let shift = popped[1];
-        let value = popped[0];
+        let shift = popped[0];
+        let value = popped[1];
 
         // Right shift `value` by `shift`.
         let (result) = uint256_shr(a=value, b=shift);
@@ -545,8 +545,8 @@ namespace ComparisonOperations {
         // 0 - shift: integer
         // 1 - value: integer
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let shift = popped[1];
-        let value = popped[0];
+        let shift = popped[0];
+        let value = popped[1];
 
         // In C, SAR would be something like that (on a 4 bytes int):
         // ```

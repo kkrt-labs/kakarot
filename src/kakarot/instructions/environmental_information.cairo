@@ -288,9 +288,9 @@ namespace EnvironmentalInformation {
         // 1 - calldata_offset: offset for calldata from where data will be copied.
         // 2 - element_len: bytes length of the copied calldata.
         let (stack, popped) = Stack.pop_n(self=stack, n=3);
-        let offset = popped[2];
+        let offset = popped[0];
         let calldata_offset = popped[1];
-        let element_len = popped[0];
+        let element_len = popped[2];
 
         let calldata: felt* = ctx.call_context.calldata;
         let calldata_len: felt = ctx.call_context.calldata_len;
@@ -368,9 +368,9 @@ namespace EnvironmentalInformation {
         // 1 - code_offset: offset for bytecode from where data will be copied.
         // 2 - element_len: bytes length of the copied bytecode.
         let (stack, popped) = Stack.pop_n(self=stack, n=3);
-        let offset = popped[2];
+        let offset = popped[0];
         let code_offset = popped[1];
-        let element_len = popped[0];
+        let element_len = popped[2];
 
         // Get bytecode slice from code_offset to element_len
         let bytecode: felt* = ctx.call_context.bytecode;
@@ -447,9 +447,9 @@ namespace EnvironmentalInformation {
         // 1 - code_offset: offset for bytecode from where data will be copied.
         // 2 - element_len: bytes length of the copied bytecode.
         let (stack, popped) = Stack.pop_n(self=stack, n=3);
-        let offset = popped[2];
+        let offset = popped[0];
         let return_data_offset = popped[1];
-        let element_len = popped[0];
+        let element_len = popped[2];
 
         let return_data: felt* = ctx.return_data;
         let return_data_len: felt = ctx.return_data_len;

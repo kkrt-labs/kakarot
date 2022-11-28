@@ -97,16 +97,16 @@ namespace MemoryOperations {
         // 0 - offset: memory offset of the work we save.
         // 1 - value: value to store in memory.
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let offset = popped[1];
-        let value = popped[0];
+        let offset = popped[0];
+        let value = popped[1];
 
-        %{
-            import logging
-            logging.info("MSTORE OFFSET")
-            logging.info(ids.offset.low)
-            logging.info("MSTORE VALUE")
-            logging.info(ids.value.low)            
-        %}
+        // %{
+        //     import logging
+        //     logging.info("MSTORE OFFSET")
+        //     logging.info(ids.offset.low)
+        //     logging.info("MSTORE VALUE")
+        //     logging.info(ids.value.low)            
+        // %}
 
         let memory: model.Memory* = Memory.store(self=ctx.memory, element=value, offset=offset.low);
 
@@ -192,6 +192,12 @@ namespace MemoryOperations {
         // 0 - offset: offset in the deployed code where execution will continue from
         let (stack, offset) = Stack.pop(stack);
 
+        %{
+            import logging
+            logging.info("JUMP OFFSET")
+            logging.info(ids.offset.low)
+        %}
+
         // Update pc counter.
         let ctx = ExecutionContext.update_program_counter(ctx, offset.low);
 
@@ -225,8 +231,8 @@ namespace MemoryOperations {
         // 0 - offset: offset in the deployed code where execution will continue from
         // 1 - skip_condition: condition that will trigger a jump if not FALSE
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let offset = popped[1];
-        let skip_condition = popped[0];
+        let offset = popped[0];
+        let skip_condition = popped[1];
 
         // Update pc if skip_jump is anything other then 0
 
@@ -329,8 +335,8 @@ namespace MemoryOperations {
         // 0 - offset: memory offset of the work we save.
         // 1 - value: value from which the last byte will be extracted and stored in memory.
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let offset = popped[1];
-        let value = popped[0];
+        let offset = popped[0];
+        let value = popped[1];
 
         // Extract last byte from stack value
         let (_, remainder) = uint256_unsigned_div_rem(value, Uint256(256, 0));
@@ -380,8 +386,8 @@ namespace MemoryOperations {
         // 0 - key: key of memory.
         // 1 - value: value for given key.
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let key = popped[1];
-        let value = popped[0];
+        let key = popped[0];
+        let value = popped[1];
 
         // 3. Call Write storage on contract with starknet address
         with_attr error_message("Contract call failed") {

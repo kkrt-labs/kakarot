@@ -69,18 +69,18 @@ namespace Stack {
         let stack_word_dict = self.stack_word_dict;
         let position_zero = self.stack_16bytes_len;
 
-        %{
-            import logging
-            logging.info("PUSH - STACK BYTES LEN")
-            logging.info(ids.self.stack_16bytes_len)
-            logging.info("POSITION ZERO")
-            logging.info(ids.position_zero)  
-            logging.info("ELEMENT HIGH")
-            logging.info(ids.element.high)               
-            logging.info("ELEMENT LOW")
-            logging.info(ids.element.low)  
+        // %{
+        //     import logging
+        //     logging.info("PUSH - STACK BYTES LEN")
+        //     logging.info(ids.self.stack_16bytes_len)
+        //     logging.info("POSITION ZERO")
+        //     logging.info(ids.position_zero)  
+        //     logging.info("ELEMENT HIGH")
+        //     logging.info(ids.element.high)               
+        //     logging.info("ELEMENT LOW")
+        //     logging.info(ids.element.low)  
                            
-        %}
+        // %}
 
         // so we optimize for it. Note that no locals were allocated at all.
         dict_write{dict_ptr=stack_word_dict}(position_zero, element.high);
@@ -147,13 +147,13 @@ namespace Stack {
         let n_index = n/2 - 1;
 
 
-        %{
-            import logging
-            logging.info(f"INDEX HIGH:{ids.stack_len - ids.n} INDEX LOW:{ids.stack_len - ids.n + 1}")             
-            logging.info(f"HIGH:{hex(ids.el_high)} LOW:{hex(ids.el_low)}")              
-            logging.info(f"DICT STACK LEN:{ids.stack_len} DICT STACK N:{ids.n}")  
-            logging.info(f"N INDEX:{ids.n_index}")              
-        %}
+        // %{
+        //     import logging
+        //     logging.info(f"INDEX HIGH:{ids.stack_len - ids.n} INDEX LOW:{ids.stack_len - ids.n + 1}")             
+        //     logging.info(f"HIGH:{hex(ids.el_high)} LOW:{hex(ids.el_low)}")              
+        //     logging.info(f"DICT STACK LEN:{ids.stack_len} DICT STACK N:{ids.n}")  
+        //     logging.info(f"N INDEX:{ids.n_index}")              
+        // %}
 
         assert output[n_index] = Uint256(low=el_low,high=el_high); 
 
@@ -170,8 +170,8 @@ namespace Stack {
         let position_zero = self.stack_16bytes_len;
   
         // Read and Copy the last element
-        let (el_high) = dict_read{dict_ptr=stack_word_dict}(position_zero);
-        let (el_low) = dict_read{dict_ptr=stack_word_dict}(position_zero + 1);
+        let (el_high) = dict_read{dict_ptr=stack_word_dict}(position_zero - 2);
+        let (el_low) = dict_read{dict_ptr=stack_word_dict}(position_zero - 1);
 
         // Update and return Stack      
 
