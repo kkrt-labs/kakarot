@@ -15,7 +15,7 @@ namespace model {
     struct Stack {
         stack_word_dict_start: DictAccess*,
         stack_word_dict: DictAccess*,
-        stack_bytes_len: felt,
+        stack_16bytes_len: felt,
     }    
 
     struct Memory {

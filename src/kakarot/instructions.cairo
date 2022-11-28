@@ -57,6 +57,12 @@ namespace EVMInstructions {
             assert opcode = [ctx.call_context.bytecode + pc];
         }
 
+        %{
+            import logging
+            logging.info(f"PC:{hex(ids.pc)} OPCODE:{hex(ids.opcode)}")
+        %}   
+
+
         // Compute the corresponding offset in the jump table:
         // count 1 for "next line" and 4 steps per opcode: call, opcode, jmp, end
         tempvar offset = 1 + 3 * opcode;

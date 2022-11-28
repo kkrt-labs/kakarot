@@ -62,7 +62,7 @@ func execute{
     return (
         stack_accesses_len=stack_accesses_len,
         stack_accesses=summary.stack.stack_squashed_start,
-        stack_len=summary.stack.stack_bytes_len,
+        stack_len=summary.stack.stack_16bytes_len,
         memory_accesses_len=memory_accesses_len,
         memory_accesses=summary.memory.squashed_start,
         memory_bytes_len=summary.memory.bytes_len,
@@ -108,7 +108,7 @@ func execute_at_address{
     return (
         stack_accesses_len=stack_accesses_len,
         stack_accesses=summary.stack.stack_squashed_start,
-        stack_len=summary.stack.stack_bytes_len,
+        stack_len=summary.stack.stack_16bytes_len,
         memory_accesses_len=memory_accesses_len,
         memory_accesses=summary.memory.squashed_start,
         memory_bytes_len=summary.memory.bytes_len,

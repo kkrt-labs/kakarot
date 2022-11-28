@@ -16,6 +16,7 @@ from kakarot.model import model
 from starkware.cairo.common.dict import DictAccess, dict_read, dict_write
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
 from starkware.cairo.common.math import unsigned_div_rem
+from utils.utils import Helpers
 
 
 // @title Stack related functions.
@@ -27,7 +28,7 @@ namespace Stack {
     // New Code
     // Summary of stack. Created upon finalization of the stack.
     struct Summary {
-        stack_bytes_len: felt,
+        stack_16bytes_len: felt,
         stack_squashed_start: DictAccess*,
         stack_squashed_end: DictAccess*,
     }
@@ -41,7 +42,7 @@ namespace Stack {
         return new model.Stack(
             stack_word_dict_start=stack_word_dict_start,
             stack_word_dict=stack_word_dict_start,
-            stack_bytes_len=0);
+            stack_16bytes_len=0);
     }
 
 
@@ -52,7 +53,7 @@ namespace Stack {
             self.stack_word_dict_start, self.stack_word_dict, 0
         );
         return new Summary(
-            stack_bytes_len=self.stack_bytes_len, stack_squashed_start=squashed_start, stack_squashed_end=squashed_end
+            stack_16bytes_len=self.stack_16bytes_len, stack_squashed_start=squashed_start, stack_squashed_end=squashed_end
             );
     }        
 
@@ -66,21 +67,30 @@ namespace Stack {
         self: model.Stack*, element: Uint256
     ) -> model.Stack* {
         let stack_word_dict = self.stack_word_dict;
+        let position_zero = self.stack_16bytes_len;
 
-        // // Compute new bytes_len.
-        // let new_min_bytes_len = Helpers.ceil_bytes_len_to_next_32_bytes_word(offset + 32);
-
-        // Check stack index to push
-        let (chunk_index, offset_in_chunk) = unsigned_div_rem(self.stack_bytes_len+32, 16);
-        // let new_stack_bytes_len = self.stack_bytes_len + 32
+        %{
+            import logging
+            logging.info("PUSH - STACK BYTES LEN")
+            logging.info(ids.self.stack_16bytes_len)
+            logging.info("POSITION ZERO")
+            logging.info(ids.position_zero)  
+            logging.info("ELEMENT HIGH")
+            logging.info(ids.element.high)               
+            logging.info("ELEMENT LOW")
+            logging.info(ids.element.low)  
+                           
+        %}
 
         // so we optimize for it. Note that no locals were allocated at all.
-        dict_write{dict_ptr=stack_word_dict}(chunk_index, element.high);
-        dict_write{dict_ptr=stack_word_dict}(chunk_index, element.low);
+        dict_write{dict_ptr=stack_word_dict}(position_zero, element.high);
+        dict_write{dict_ptr=stack_word_dict}(position_zero+1, element.low);
+
+
         return (new model.Stack(
             stack_word_dict_start=self.stack_word_dict_start,
             stack_word_dict=stack_word_dict,
-            stack_bytes_len=self.stack_bytes_len + 32,
+            stack_16bytes_len=self.stack_16bytes_len + 2,
         ));
 
     }
@@ -96,35 +106,58 @@ namespace Stack {
         alloc_locals;
 
         let stack_word_dict = self.stack_word_dict;
+        let position_zero = self.stack_16bytes_len;
 
-        let (stack_len, stack_rem) = unsigned_div_rem(self.stack_bytes_len, 16);
         let (new_elements : Uint256* ) = alloc();
         // Read and Copy the elements on an array
-        dict_copy(stack_word_dict=stack_word_dict,stack_len=stack_len,n=n, output=new_elements);
-        // Update Len
+
+        // %{
+        //     import logging
+        //     logging.info("POP N - STACK BYTES LEN")
+        //     logging.info(ids.self.stack_16bytes_len)
+        //     logging.info("STACK LEN")
+        //     logging.info(ids.position_zero)
+        //     logging.info("N")
+        //     logging.info(ids.n)                       
+        // %}
+        let (stack_word_dict) = dict_copy(stack_word_dict=stack_word_dict,stack_len=position_zero, n= n*2 , output=new_elements);
         // Return Stack with updated Len
+
+        let reduce = 2*n;
 
         return (
                 new model.Stack(
                     stack_word_dict_start=self.stack_word_dict_start,
                     stack_word_dict=stack_word_dict,
-                    stack_bytes_len=self.stack_bytes_len - 32*n,
+                    stack_16bytes_len = self.stack_16bytes_len - reduce,
                 ),
                 new_elements,
                 );
     }
 
-    func dict_copy{range_check_ptr}(stack_word_dict: DictAccess*,stack_len:felt, n: felt, output:Uint256*){
+    func dict_copy{range_check_ptr}(stack_word_dict: DictAccess*,stack_len:felt, n: felt, output:Uint256*) -> (stack_word_dict: DictAccess*){
+
+        if(n == 0){
+            return(stack_word_dict=stack_word_dict);
+        }    
         
         // N needs to be total (pop_len - 1)
         let (el_high) = dict_read{dict_ptr=stack_word_dict}(stack_len - n);
-        let (el_low) = dict_read{dict_ptr=stack_word_dict}(stack_len-n - 1);
-        assert [output + n] = Uint256(low=el_low,high=el_high); 
-        if(n == 0){
-            return();
-        }
-        dict_copy(stack_word_dict=stack_word_dict,stack_len=stack_len,n=n-2,output=output);
-        return();
+        let (el_low) = dict_read{dict_ptr=stack_word_dict}(stack_len - n + 1);
+        let n_index = n/2 - 1;
+
+
+        %{
+            import logging
+            logging.info(f"INDEX HIGH:{ids.stack_len - ids.n} INDEX LOW:{ids.stack_len - ids.n + 1}")             
+            logging.info(f"HIGH:{hex(ids.el_high)} LOW:{hex(ids.el_low)}")              
+            logging.info(f"DICT STACK LEN:{ids.stack_len} DICT STACK N:{ids.n}")  
+            logging.info(f"N INDEX:{ids.n_index}")              
+        %}
+
+        assert output[n_index] = Uint256(low=el_low,high=el_high); 
+
+        return dict_copy(stack_word_dict=stack_word_dict,stack_len=stack_len,n=n-2,output=output);
     }   
     
 
@@ -134,13 +167,11 @@ namespace Stack {
     // @return The popped element.
     func pop{range_check_ptr}(self: model.Stack*) -> (new_stack: model.Stack*, element: Uint256) {
         let stack_word_dict = self.stack_word_dict;
-
-        let (stack_len, stack_rem) = unsigned_div_rem(self.stack_bytes_len, 16);
-        // let (new_elements : Uint256* ) = alloc();    
-
+        let position_zero = self.stack_16bytes_len;
+  
         // Read and Copy the last element
-        let (el_high) = dict_read{dict_ptr=stack_word_dict}(stack_len);
-        let (el_low) = dict_read{dict_ptr=stack_word_dict}(stack_len + 1);
+        let (el_high) = dict_read{dict_ptr=stack_word_dict}(position_zero);
+        let (el_low) = dict_read{dict_ptr=stack_word_dict}(position_zero + 1);
 
         // Update and return Stack      
 
@@ -148,7 +179,7 @@ namespace Stack {
                 new model.Stack(
                     stack_word_dict_start=self.stack_word_dict_start,
                     stack_word_dict=stack_word_dict,
-                    stack_bytes_len = self.stack_bytes_len - 32,
+                    stack_16bytes_len = self.stack_16bytes_len - 2,
                 ),
                 Uint256(low=el_low,high=el_high),
         );       
@@ -159,13 +190,20 @@ namespace Stack {
     // @param self - The pointer to the stack.
     // @param stack_index - The index of the element to return.
     // @return The element at the given index.
-    func peek{range_check_ptr}(self: model.Stack*, stack_index: felt) -> Uint256 {
+    func peek{range_check_ptr}(self: model.Stack*, stack_index: felt) -> (self:model.Stack*, value: Uint256)  {
         let stack_word_dict = self.stack_word_dict;
         // Read element at stack_index
         let (el_high) = dict_read{dict_ptr=stack_word_dict}(stack_index*2);
         let (el_low) = dict_read{dict_ptr=stack_word_dict}(stack_index*2 + 1);
         // Return element
-        return (Uint256(low=el_low, high=el_high));
+        return (
+                new model.Stack(
+                    stack_word_dict_start=self.stack_word_dict_start,
+                    stack_word_dict=stack_word_dict,
+                    stack_16bytes_len = self.stack_16bytes_len,
+                ),
+                Uint256(low=el_low,high=el_high),
+        );     
     }
 
     // @notice Swap two elements in the stack.
@@ -175,30 +213,29 @@ namespace Stack {
     // @return The new pointer to the stack.
     func swap_i{range_check_ptr}(self: model.Stack*, i: felt) -> model.Stack* {
         let stack_word_dict = self.stack_word_dict;
-
-        // Check stack index to swap
-        let (stack_len, offset_in_chunk) = unsigned_div_rem(self.stack_bytes_len, 16);  
+        let position_zero = self.stack_16bytes_len;
 
         // Read elements at stack a and b
-        let (el1_high) = dict_read{dict_ptr=stack_word_dict}(stack_len);
-        let (el1_low) = dict_read{dict_ptr=stack_word_dict}(stack_len+1);
+        let (el1_high) = dict_read{dict_ptr=stack_word_dict}(position_zero);
+        let (el1_low) = dict_read{dict_ptr=stack_word_dict}(position_zero+1);
 
         let (el2_high) = dict_read{dict_ptr=stack_word_dict}(i*2);
         let (el2_low) = dict_read{dict_ptr=stack_word_dict}(i*2 + 1);
 
         // Swap elements
-        dict_write{dict_ptr=stack_word_dict}(stack_len, el2_high);
-        dict_write{dict_ptr=stack_word_dict}(stack_len+1, el2_low);
-        dict_write{dict_ptr=stack_word_dict}(i*2, el1_high);
-        dict_write{dict_ptr=stack_word_dict}(i*2+1, el1_low);
+        dict_write{dict_ptr=stack_word_dict}(position_zero, el2_high);
+        dict_write{dict_ptr=stack_word_dict}(position_zero+1, el2_low);
+        dict_write{dict_ptr=stack_word_dict}((position_zero-i*2), el1_high);
+        dict_write{dict_ptr=stack_word_dict}((position_zero-i*2+1), el1_low);
 
         // Return Stack
         return (
                 new model.Stack(
                     stack_word_dict_start=self.stack_word_dict_start,
                     stack_word_dict = stack_word_dict,
-                    stack_bytes_len = self.stack_bytes_len,
+                    stack_16bytes_len = self.stack_16bytes_len,
                 )
         );
     }
 }
+

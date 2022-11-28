@@ -31,7 +31,7 @@ namespace DuplicationOperations {
         let stack: model.Stack* = ctx.stack;
 
         // Get the value top i-th stack item.
-        let element = Stack.peek(self=stack, stack_index=i - 1);
+        let (stack,element) = Stack.peek(self=stack, stack_index=i - 1);
 
         // Duplicate the element to the top of the stack.
         let stack = Stack.push(self=stack, element=element);

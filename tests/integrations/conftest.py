@@ -22,7 +22,7 @@ async def kakarot(
     return await starknet.deploy(
         source="./src/kakarot/kakarot.cairo",
         cairo_path=["src"],
-        disable_hint_validation=False,
+        disable_hint_validation=True,
         constructor_calldata=[
             1,
             eth.contract_address,
