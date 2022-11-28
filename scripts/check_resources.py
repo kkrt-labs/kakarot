@@ -63,7 +63,7 @@ def main():
                 head_branch=artifact["head_branch"],
             )
             .drop_duplicates(["id"])
-            .drop(["args", "kwargs", "id"], axis=1)
+            .drop(["contract_name", "function_name", "args", "kwargs"], axis=1)
         )
         for artifact in artifacts.to_dict("records")
     ]
@@ -79,35 +79,39 @@ def main():
                     head_branch="local",
                 )
                 .drop_duplicates(["id"])
-                .drop(["args", "kwargs", "id"], axis=1)
+                .drop(["contract_name", "function_name", "args", "kwargs"], axis=1)
             )
         )
+    else:
+        logger.info("No local resources found to compare against")
 
     resources_change = (
         pd.concat(resources)
-        .groupby("head_branch")
+        .groupby("id")
+        .filter(lambda group: len(group) == len(resources))
+        .drop(["id"], axis=1)
+        .groupby(["head_branch"])
         .agg("mean", numeric_only=True)
         .reset_index()
-        .merge(artifacts[["head_branch", "updated_at"]], on="head_branch")
+        .merge(artifacts[["head_branch", "updated_at"]], on="head_branch", how="left")
+        .fillna({"updated_at": pd.Timestamp.today()})
         .astype({"updated_at": "datetime64"})
         .sort_values("updated_at", ascending=False)
         .drop("updated_at", axis=1)
         .set_index("head_branch")
-        .astype(int)
+        .round(2)
     )
     logger.info(f"Resources summary:\n{resources_change}")
 
     if "local" in resources_change.index:
-        if (
-            not (resources_change.loc["local"] / resources_change.loc[base_branch_name])
-            .le(1)
-            .all()
-        ):
+        ratio = resources_change.loc["local"] / resources_change.loc[base_branch_name]
+        if not ratio.le(1).all():
             raise ValueError("Resources usage increase on average with this update")
         else:
-            logger.info("Resources usage improved!")
-    else:
-        logger.info("No local resources found to compare against")
+            if ratio.eq(1).all():
+                logger.info("No resources usage modification")
+            else:
+                logger.info("Resources usage improved!")
 
 
 if __name__ == "__main__":
