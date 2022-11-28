@@ -9,7 +9,7 @@ from starkware.cairo.common.invoke import invoke
 from starkware.cairo.common.math import assert_nn
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.memcpy import memcpy
-from starkware.cairo.common.bool import TRUE
+from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.registers import get_ap
 from starkware.cairo.common.registers import get_label_location
 
@@ -51,7 +51,7 @@ namespace EVMInstructions {
 
         let is_pc_ge_code_len = is_le(ctx.call_context.bytecode_len, pc);
 
-        if (is_pc_ge_code_len == TRUE) {
+        if (is_pc_ge_code_len != FALSE) {
             assert opcode = 0;
         } else {
             assert opcode = [ctx.call_context.bytecode + pc];

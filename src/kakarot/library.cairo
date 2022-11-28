@@ -5,7 +5,7 @@
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.bool import TRUE, FALSE
+from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.starknet.common.syscalls import deploy as deploy_syscall
@@ -131,7 +131,7 @@ namespace Kakarot {
         let stopped: felt = ExecutionContext.is_stopped(self=ctx);
 
         // Terminate execution
-        if (stopped == TRUE) {
+        if (stopped != FALSE) {
             return ctx;
         }
 
