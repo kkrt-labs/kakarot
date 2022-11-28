@@ -7,10 +7,16 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.dict import DictAccess
 
 namespace model {
+    // struct Stack {
+    //     elements: Uint256*,
+    //     raw_len: felt,
+    // }
+
     struct Stack {
-        elements: Uint256*,
-        raw_len: felt,
-    }
+        stack_word_dict_start: DictAccess*,
+        stack_word_dict: DictAccess*,
+        stack_bytes_len: felt,
+    }    
 
     struct Memory {
         word_dict_start: DictAccess*,
