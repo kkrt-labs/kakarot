@@ -68,7 +68,7 @@ namespace TestHelpers {
     }
     
     func assert_stack_last_element_contains{range_check_ptr}(stack: model.Stack*, value: felt) {
-        let index0 = Stack.peek(stack, 0);
+        let (stack,index0) = Stack.peek(stack, 0);
         assert index0 = Uint256(value, 0);
 
         return ();

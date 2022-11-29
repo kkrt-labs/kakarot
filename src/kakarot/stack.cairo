@@ -4,7 +4,7 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.math import assert_lt_felt
+from starkware.cairo.common.math import assert_le
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.memcpy import memcpy
 
@@ -17,6 +17,8 @@ from starkware.cairo.common.dict import DictAccess, dict_read, dict_write
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
 from starkware.cairo.common.math import unsigned_div_rem
 from utils.utils import Helpers
+
+
 
 // @title Stack related functions.
 // @notice This file contains functions related to the stack.
@@ -65,7 +67,9 @@ namespace Stack {
         let position_zero = self.stack_16bytes_len;
 
         // Check if Stack will overflow
-        Stack.check_overflow(stack_len=position_zero);
+        with_attr error_message("Kakarot: StackOverflow") {
+            assert_le(position_zero, Constants.STACK_MAX_DEPTH * 2);
+        }        
 
         // Add Uint256 low and high to Dict
         dict_write{dict_ptr=stack_word_dict}(position_zero, element.high);
@@ -92,7 +96,9 @@ namespace Stack {
         let position_zero = self.stack_16bytes_len;
 
         // Check if there is underflow
-        Stack.check_underflow(stack_len=position_zero, pop_len=n);
+        with_attr error_message("Kakarot: StackUnderflow") {
+            assert_le(n * 2, position_zero);
+        }        
 
         let (new_elements: Uint256*) = alloc();
         // Read and Copy the elements on an array
@@ -103,7 +109,7 @@ namespace Stack {
         );
 
         // Return Stack with updated Len
-        let reduce = 2 * n;
+        let popped_len = 2 * n;
         return (
             new model.Stack(
             stack_word_dict_start=self.stack_word_dict_start,
@@ -142,7 +148,10 @@ namespace Stack {
         let stack_word_dict = self.stack_word_dict;
         let position_zero = self.stack_16bytes_len;
         // Check if stack will underflow
-        Stack.check_underflow(stack_len=position_zero, pop_len=1);
+        with_attr error_message("Kakarot: StackUnderflow") {
+            assert_le(2, position_zero);
+        }
+
 
         // Read and Copy element at position 1(first on stack)
         let (el_high) = dict_read{dict_ptr=stack_word_dict}(position_zero - 2);
@@ -170,7 +179,9 @@ namespace Stack {
         let stack_word_dict = self.stack_word_dict;
         let position_zero = self.stack_16bytes_len;
         // Check if there is underflow
-        Stack.check_underflow(stack_len=position_zero, pop_len=stack_index);
+        with_attr error_message("Kakarot: StackUnderflow") {
+            assert_le(stack_index * 2, position_zero);
+        }        
         // Read element at position "stack_index"
         let (el_high) = dict_read{dict_ptr=stack_word_dict}(position_zero - stack_index * 2 - 2);
         let (el_low) = dict_read{dict_ptr=stack_word_dict}(position_zero - stack_index * 2 - 1);
@@ -195,7 +206,9 @@ namespace Stack {
         let position_zero = self.stack_16bytes_len;
 
         // Check if there is underflow
-        Stack.check_underflow(stack_len=position_zero, pop_len=i);
+        with_attr error_message("Kakarot: StackUnderflow") {
+            assert_le(i * 2, position_zero);
+        }        
 
         // Read elements at stack postition 1
         let (el1_high) = dict_read{dict_ptr=stack_word_dict}(position_zero - 2);
@@ -219,27 +232,4 @@ namespace Stack {
             ));
     }
 
-    // @notice Check stack overflow.
-    // @param self - The pointer to the stack.
-    // @custom:revert if stack overflow.
-    func check_overflow{range_check_ptr}(stack_len: felt) {
-        // Revert if stack overflow
-        with_attr error_message("Kakarot: StackOverflow") {
-            assert_lt_felt(stack_len, Constants.STACK_MAX_DEPTH * 2);
-        }
-        return ();
-    }
-
-    // @notice Check stack underflow.
-    // @param self - The pointer to the stack.
-    // @param stack_index - The index of the element.
-    // @custom:revert if stack underflow.
-    func check_underflow{range_check_ptr}(stack_len: felt, pop_len: felt) {
-        alloc_locals;
-        // Revert if stack underflow
-        with_attr error_message("Kakarot: StackUnderflow") {
-            assert_lt_felt(pop_len * 2, stack_len + 1);
-        }
-        return ();
-    }
 }
