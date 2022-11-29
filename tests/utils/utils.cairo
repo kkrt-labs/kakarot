@@ -17,37 +17,60 @@ from kakarot.model import model
 from utils.utils import Helpers
 from tests.utils.model import EVMTestCase
 
-namespace test_utils {
-    // @notice Assert that the value at the top of the stack is equal to the expected value.
-    // @param ctx The pointer to the execution context.
-    // @param expected_value The expected value.
-    func assert_top_stack{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*, expected_value: Uint256) {
+namespace TestHelpers {
+    func init_context{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+    }(bytecode_len: felt, bytecode: felt*) -> model.ExecutionContext* {
         alloc_locals;
-        let (stack, actual) = Stack.pop(ctx.stack);
-        let (are_equal) = uint256_eq(actual, expected_value);
-        assert are_equal = TRUE;
-        return ();
+
+        let (calldata) = alloc();
+        assert [calldata] = '';
+        local call_context: model.CallContext* = new model.CallContext(
+            bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
+        );
+        let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
+        return ctx;
     }
 
-    // @notice Assert that the value at the top of the stack is equal to the expected value.
-    // @param ctx The pointer to the execution context.
-    // @param expected_value The expected value.
-    func assert_top_memory{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*, expected_value: Uint256) -> model.ExecutionContext* {
-        alloc_locals;
-        let (memory, actual) = Memory.load(ctx.memory, ctx.memory.end_index - 32);
-        let (are_equal) = uint256_eq(actual, expected_value);
-        assert are_equal = TRUE;
-        let ctx = ExecutionContext.update_memory(memory);
+    func init_context_with_stack{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+    }(bytecode_len: felt, bytecode: felt*, stack: model.Stack*) -> model.ExecutionContext* {
+        let ctx: model.ExecutionContext* = init_context(bytecode_len, bytecode);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         return ctx;
+    }
+
+    // @notice Init an execution context where bytecode has "bytecode_count" entries of "value".
+    func init_context_with_bytecode{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+    }(bytecode_count: felt, value: felt) -> model.ExecutionContext* {
+        alloc_locals;
+        
+        let (bytecode) = alloc();
+        _fill_bytecode_with_values(bytecode, bytecode_count, value);
+
+        return TestHelpers.init_context(bytecode_count, bytecode);
+    }
+
+    // @notice Fill a bytecode array with "bytecode_count" entries of "value".
+    // ex: _fill_bytecode_with_values(bytecode, 2, 0xFF)
+    // bytecode will be equal to [0xFF, 0xFF]
+    func _fill_bytecode_with_values(bytecode: felt*, bytecode_count: felt, value: felt) {
+        assert bytecode[bytecode_count - 1] = value;
+
+        if (bytecode_count - 1 == 0) {
+            return ();
+        }
+
+        _fill_bytecode_with_values(bytecode, bytecode_count - 1, value);
+
+        return ();
+    }
+    
+    func assert_stack_last_element_contains{range_check_ptr}(stack: model.Stack*, value: felt) {
+        let index0 = Stack.peek(stack, 0);
+        assert index0 = Uint256(value, 0);
+
+        return ();
     }
 }

@@ -4,7 +4,7 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.bool import TRUE
+from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.dict import DictAccess, dict_read, dict_write
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
@@ -75,7 +75,7 @@ namespace Memory {
         let new_min_bytes_len = Helpers.ceil_bytes_len_to_next_32_bytes_word(offset + 32);
 
         let fits = is_le(new_min_bytes_len, self.bytes_len);
-        if (fits == 0) {
+        if (fits == FALSE) {
             tempvar new_bytes_len = new_min_bytes_len;
         } else {
             tempvar new_bytes_len = self.bytes_len;
@@ -153,7 +153,7 @@ namespace Memory {
 
         let fits = is_le(new_min_bytes_len, self.bytes_len);
         local new_bytes_len;
-        if (fits == 0) {
+        if (fits == FALSE) {
             new_bytes_len = new_min_bytes_len;
         } else {
             new_bytes_len = self.bytes_len;

@@ -15,22 +15,7 @@ from kakarot.stack import Stack
 from kakarot.constants import Constants
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.block_information import BlockInformation
-
-func init_context{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() -> model.ExecutionContext* {
-    alloc_locals;
-    let (bytecode) = alloc();
-    assert [bytecode] = 00;
-    tempvar bytecode_len = 1;
-    let (calldata) = alloc();
-    assert [calldata] = '';
-    local call_context: model.CallContext* = new model.CallContext(
-        bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
-    );
-    let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
-    return ctx;
-}
+from tests.utils.utils import TestHelpers
 
 @view
 func test__chainId__should_push_chain_id_to_stack{
@@ -38,7 +23,8 @@ func test__chainId__should_push_chain_id_to_stack{
 }() {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = init_context();
+    let (bytecode) = alloc();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
 
     // When
     let result = BlockInformation.exec_chainid(ctx);
@@ -58,7 +44,8 @@ func test__coinbase_should_push_coinbase_address_to_stack{
 }() {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = init_context();
+    let (bytecode) = alloc();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
 
     // When
     let result = BlockInformation.exec_coinbase(ctx);
@@ -79,7 +66,8 @@ func test__timestamp_should_push_block_timestamp_to_stack{
 }() {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = init_context();
+    let (bytecode) = alloc();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
 
     // When
     let result = BlockInformation.exec_timestamp(ctx);
@@ -101,7 +89,8 @@ func test__number_should_push_block_number_to_stack{
 }() {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = init_context();
+    let (bytecode) = alloc();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
 
     // When
     let result = BlockInformation.exec_number(ctx);
@@ -123,7 +112,8 @@ func test__gaslimit_should_push_gaslimit_to_stack{
 }() {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = init_context();
+    let (bytecode) = alloc();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
 
     // When
     let result = BlockInformation.exec_gaslimit(ctx);
@@ -144,7 +134,8 @@ func test__difficulty_should_push_difficulty_to_stack{
 }() {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = init_context();
+    let (bytecode) = alloc();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
 
     // When
     let result = BlockInformation.exec_difficulty(ctx);
@@ -165,7 +156,8 @@ func test__basefee_should_push_basefee_to_stack{
 }() {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = init_context();
+    let (bytecode) = alloc();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
 
     // When
     let result = BlockInformation.exec_basefee(ctx);

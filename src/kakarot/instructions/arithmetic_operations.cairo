@@ -11,6 +11,7 @@ from starkware.cairo.common.uint256 import (
     uint256_eq,
     uint256_sub,
 )
+from starkware.cairo.common.bool import FALSE
 
 // Project dependencies
 from openzeppelin.security.safemath.library import SafeUint256
@@ -437,11 +438,11 @@ namespace ArithmeticOperations {
         let zero_uint: Uint256 = Uint256(0, 0);
 
         let (is_b_one) = uint256_eq(b, zero_uint);
-        if (is_b_one == 1) {
+        if (is_b_one != FALSE) {
             return one_uint;
         }
         let (is_b_ge_than_one) = uint256_le(zero_uint, b);
-        if (is_b_ge_than_one == 1) {
+        if (is_b_ge_than_one != FALSE) {
             let (b_minus_one) = SafeUint256.sub_le(b, one_uint);
             let temp_pow = internal_exp(a=a, b=b_minus_one);
             let (res) = SafeUint256.mul(a, temp_pow);

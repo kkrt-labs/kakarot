@@ -16,6 +16,7 @@ from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.pow import pow
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.registers import get_label_location
+from starkware.cairo.common.bool import FALSE
 
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
@@ -55,7 +56,7 @@ namespace Helpers {
         }
 
         let is_16_le_i = is_le(16, i);
-        if (is_16_le_i == 1) {
+        if (is_16_le_i != FALSE) {
             assert new_val = val + i - 16;
             new_i = 16;
             let (high_temp) = compute_half_uint256(val=val, i=i - 16, res=0);
@@ -70,7 +71,7 @@ namespace Helpers {
 
         let is_i_le_16 = is_le(new_i, 16);
 
-        if (is_i_le_16 == 1) {
+        if (is_i_le_16 != FALSE) {
             let (low) = compute_half_uint256(val=new_val, i=new_i, res=0);
             let res = Uint256(low=low, high=high);
             return res;
