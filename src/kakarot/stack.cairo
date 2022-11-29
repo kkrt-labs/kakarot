@@ -18,8 +18,6 @@ from starkware.cairo.common.default_dict import default_dict_new, default_dict_f
 from starkware.cairo.common.math import unsigned_div_rem
 from utils.utils import Helpers
 
-
-
 // @title Stack related functions.
 // @notice This file contains functions related to the stack.
 // @author @abdelhamidbakhta
@@ -69,7 +67,7 @@ namespace Stack {
         // Check if Stack will overflow
         with_attr error_message("Kakarot: StackOverflow") {
             assert_le(position_zero, Constants.STACK_MAX_DEPTH * 2);
-        }        
+        }
 
         // Add Uint256 low and high to Dict
         dict_write{dict_ptr=stack_word_dict}(position_zero, element.high);
@@ -98,7 +96,7 @@ namespace Stack {
         // Check if there is underflow
         with_attr error_message("Kakarot: StackUnderflow") {
             assert_le(n * 2, position_zero);
-        }        
+        }
 
         let (new_elements: Uint256*) = alloc();
         // Read and Copy the elements on an array
@@ -152,7 +150,6 @@ namespace Stack {
             assert_le(2, position_zero);
         }
 
-
         // Read and Copy element at position 1(first on stack)
         let (el_high) = dict_read{dict_ptr=stack_word_dict}(position_zero - 2);
         let (el_low) = dict_read{dict_ptr=stack_word_dict}(position_zero - 1);
@@ -181,7 +178,7 @@ namespace Stack {
         // Check if there is underflow
         with_attr error_message("Kakarot: StackUnderflow") {
             assert_le(stack_index * 2, position_zero);
-        }        
+        }
         // Read element at position "stack_index"
         let (el_high) = dict_read{dict_ptr=stack_word_dict}(position_zero - stack_index * 2 - 2);
         let (el_low) = dict_read{dict_ptr=stack_word_dict}(position_zero - stack_index * 2 - 1);
@@ -208,7 +205,7 @@ namespace Stack {
         // Check if there is underflow
         with_attr error_message("Kakarot: StackUnderflow") {
             assert_le(i * 2, position_zero);
-        }        
+        }
 
         // Read elements at stack postition 1
         let (el1_high) = dict_read{dict_ptr=stack_word_dict}(position_zero - 2);
@@ -231,5 +228,4 @@ namespace Stack {
             stack_16bytes_len=self.stack_16bytes_len,
             ));
     }
-
 }
