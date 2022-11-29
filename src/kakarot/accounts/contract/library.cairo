@@ -34,6 +34,8 @@ func storage_(key: Uint256) -> (value: Uint256) {
 func is_initialized_() -> (res: felt) {
 }
 
+const byte_size = 16;
+
 namespace ContractAccount {
     // @notice This function is used to initialize the smart contract account.
     // @param kakarot_address: The address of the Kakarot smart contract.
@@ -48,7 +50,7 @@ namespace ContractAccount {
         // Initialize access control.
         Ownable.initializer(kakarot_address);
         // Store the bytecode.
-        internal.write_bytecode(0, bytecode_len, bytecode, 0, 16);
+        internal.write_bytecode(0, bytecode_len, bytecode, 0, byte_size);
         return ();
     }
 
@@ -70,7 +72,7 @@ namespace ContractAccount {
             bytecode_len=bytecode_len,
             bytecode=bytecode,
             current_felt=0,
-            remaining_shift=16,
+            remaining_shift=byte_size,
         );
         return ();
     }
@@ -156,6 +158,25 @@ namespace ContractAccount {
 }
 
 namespace internal {
+    pow_:
+    dw 0;
+    dw 1;
+    dw 2 ** 8;
+    dw 2 ** 16;
+    dw 2 ** 24;
+    dw 2 ** 32;
+    dw 2 ** 40;
+    dw 2 ** 48;
+    dw 2 ** 56;
+    dw 2 ** 64;
+    dw 2 ** 72;
+    dw 2 ** 80;
+    dw 2 ** 88;
+    dw 2 ** 96;
+    dw 2 ** 104;
+    dw 2 ** 112;
+    dw 2 ** 120;
+
     // @notice Store the bytecode of the contract.
     // @param index: The index in the bytecode_stored.
     // @param bytecode_len: The length of the bytecode.
@@ -174,7 +195,7 @@ namespace internal {
         if (remaining_shift == 0) {
             // end of packed felt case
             bytecode_.write(index, current_felt);
-            return write_bytecode(index + 1, bytecode_len, bytecode, 0, 16);
+            return write_bytecode(index + 1, bytecode_len, bytecode, 0, byte_size);
         }
 
         let (pow_address) = get_label_location(pow_);
@@ -185,25 +206,6 @@ namespace internal {
         return write_bytecode(
             index, bytecode_len - 1, bytecode + 1, current_felt, remaining_shift - 1
         );
-
-        pow_:
-        dw 0;
-        dw 1;
-        dw 2 ** 8;
-        dw 2 ** 16;
-        dw 2 ** 24;
-        dw 2 ** 32;
-        dw 2 ** 40;
-        dw 2 ** 48;
-        dw 2 ** 56;
-        dw 2 ** 64;
-        dw 2 ** 72;
-        dw 2 ** 80;
-        dw 2 ** 88;
-        dw 2 ** 96;
-        dw 2 ** 104;
-        dw 2 ** 112;
-        dw 2 ** 120;
     }
 
     // @notice Load the bytecode of the contract in the specified array.
@@ -224,7 +226,7 @@ namespace internal {
 
         if (remaining_shift == 0) {
             let (current_felt) = bytecode_.read(index);
-            return load_bytecode(index + 1, bytecode_len, bytecode, current_felt, 16);
+            return load_bytecode(index + 1, bytecode_len, bytecode, current_felt, byte_size);
         }
 
         let (pow_address) = get_label_location(pow_);
@@ -236,24 +238,5 @@ namespace internal {
         return load_bytecode(
             index, bytecode_len - 1, bytecode + 1, current_felt, remaining_shift - 1
         );
-
-        pow_:
-        dw 0;
-        dw 1;
-        dw 2 ** 8;
-        dw 2 ** 16;
-        dw 2 ** 24;
-        dw 2 ** 32;
-        dw 2 ** 40;
-        dw 2 ** 48;
-        dw 2 ** 56;
-        dw 2 ** 64;
-        dw 2 ** 72;
-        dw 2 ** 80;
-        dw 2 ** 88;
-        dw 2 ** 96;
-        dw 2 ** 104;
-        dw 2 ** 112;
-        dw 2 ** 120;
     }
 }
