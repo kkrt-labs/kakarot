@@ -105,17 +105,28 @@ def main():
         current_name in resources_summary.index
         and base_branch_name in resources_summary.index
     ):
-        detailed_diff = (
+        tests_with_diff = (
             all_resources.loc[
                 lambda df: df.head_branch.isin([current_name, base_branch_name])
             ]  # type: ignore
             .groupby("id")
             .filter(
                 lambda group: len(group) == 2
-                and len(group.drop(["head_branch"], axis=1).drop_duplicates()) == 2
+                and len(
+                    group.drop(["head_branch", "context"], axis=1).drop_duplicates()
+                )
+                == 2
             )
             .drop(["context", "args", "kwargs"], axis=1)
-            .groupby(["id", "contract_name", "function_name"])
+        )
+        if len(tests_with_diff) == 0:
+            logger.info("No resources usage modification")
+            return
+
+        detailed_diff = (
+            tests_with_diff.groupby(
+                ["id", "contract_name", "function_name"], group_keys=True
+            )
             .apply(
                 lambda group: group.set_index("head_branch")
                 .reindex([base_branch_name, current_name])
@@ -126,9 +137,6 @@ def main():
             .loc[lambda df: df.any(axis=1)]
             .sort_index(level=["contract_name", "function_name"])
         )
-        if len(detailed_diff) == 0:
-            logger.info("No resources usage modification")
-            return
 
         # TODO: use actual formula from https://docs.starknet.io/documentation/architecture_and_concepts/Fees/fee-mechanism
         logger.info(f"Detailed difference:\n{detailed_diff}")
