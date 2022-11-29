@@ -1,3 +1,4 @@
+#%% Imports
 import io
 import logging
 import os
@@ -17,6 +18,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+#%% main
 def main():
     #%% Script constants
     coverage_dir = Path("coverage")
@@ -77,6 +79,8 @@ def main():
             )
         )
         .drop_duplicates(["head_branch", "id"])
+        .loc[lambda df: ~df.contract_name.str.contains("test")]  # type: ignore
+        .loc[lambda df: ~df.function_name.str.contains("test")]
     )
     resources_summary = (
         all_resources.drop(["contract_name", "function_name", "args", "kwargs"], axis=1)
