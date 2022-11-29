@@ -73,28 +73,28 @@ class TestZkEVM:
         )
         with traceit.context(request.node.own_markers[0].name):
 
-            await erc_20.mint(addresses[2], 0x164, caller_address=caller_addresses[1])
+            await erc_20.mint(addresses[2], 356, caller_address=caller_addresses[1])
 
             total_supply = await erc_20.totalSupply()
-            assert total_supply == 0x164
+            assert total_supply == 356
 
             await erc_20.approve(
-                addresses[1], 0xF4240, caller_address=caller_addresses[2]
+                addresses[1], 1000000, caller_address=caller_addresses[2]
             )
 
             allowance = await erc_20.allowance(addresses[2], addresses[1])
-            assert allowance == 0xF4240
+            assert allowance == 1000000
 
             balances_before = [await erc_20.balanceOf(address) for address in addresses]
 
             await erc_20.transferFrom(
-                addresses[2], addresses[1], 0xA, caller_address=caller_addresses[1]
+                addresses[2], addresses[1], 10, caller_address=caller_addresses[1]
             )
             balances_after = [await erc_20.balanceOf(address) for address in addresses]
 
             assert balances_after[0] - balances_before[0] == 0
-            assert balances_after[1] - balances_before[1] == 0xA
-            assert balances_after[2] - balances_before[2] == -0xA
+            assert balances_after[1] - balances_before[1] == 10
+            assert balances_after[2] - balances_before[2] == -10
             assert balances_after[3] - balances_before[3] == 0
 
             balances_before = balances_after
@@ -103,7 +103,7 @@ class TestZkEVM:
             balances_after = [await erc_20.balanceOf(address) for address in addresses]
 
             assert balances_after[0] - balances_before[0] == 0
-            assert balances_after[1] - balances_before[1] == -0x5
+            assert balances_after[1] - balances_before[1] == -5
             assert balances_after[2] - balances_before[2] == 0
-            assert balances_after[3] - balances_before[3] == 0x5
+            assert balances_after[3] - balances_before[3] == 5
         kakarot.state = state
