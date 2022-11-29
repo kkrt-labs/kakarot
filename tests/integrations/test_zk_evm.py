@@ -27,20 +27,13 @@ class TestZkEVM:
                 calldata=hex_string_to_bytes_array(params["calldata"]),
             ).call(caller_address=1)
 
-        # Uint256 = kakarot.struct_manager.get_contract_struct("Uint256")
-        # assert res.result.stack == [
-        #     Uint256(*int_to_uint256(int(s)))
-        #     for s in (params["stack"].split(",") if params["stack"] else [])
-        # ]
 
+        stack_result = extract_stack_from_execute(res.result)
+        memory_result = extract_memory_from_execute(res.result)
 
-        mem = extract_memory_from_execute(res.result)
-        # stack_result = extract_stack_from_execute(res.result)
+        assert stack_result == [int(x) for x in params["stack"].split(',')]
+        assert memory_result == hex_string_to_bytes_array(params["memory"])
 
-
-        assert mem == hex_string_to_bytes_array(params["memory"])
-        # TODO: Fix stack assert
-        # assert stack_result == hex_string_to_bytes_array(params["stack"])   
         events = params.get("events")
         if events:
             assert [
