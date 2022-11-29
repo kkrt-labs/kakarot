@@ -64,9 +64,10 @@ namespace Stack {
         let stack_word_dict = self.stack_word_dict;
         let position_zero = self.stack_16bytes_len;
 
-        // Check if Stack will overflow
-        with_attr error_message("Kakarot: StackOverflow") {
-            assert_le(position_zero, Constants.STACK_MAX_DEPTH * 2);
+        if(position_zero == Constants.STACK_MAX_DEPTH * 2 + 2){
+            with_attr error_message("Kakarot: StackOverflow") {
+                assert 1 = 0;
+            }
         }
 
         // Add Uint256 low and high to Dict
@@ -146,8 +147,11 @@ namespace Stack {
         let stack_word_dict = self.stack_word_dict;
         let position_zero = self.stack_16bytes_len;
         // Check if stack will underflow
-        with_attr error_message("Kakarot: StackUnderflow") {
-            assert_le(2, position_zero);
+
+        if(position_zero==0){
+            with_attr error_message("Kakarot: StackUnderflow") {
+                assert 1 = 0;
+            }
         }
 
         // Read and Copy element at position 1(first on stack)
