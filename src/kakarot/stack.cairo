@@ -64,7 +64,7 @@ namespace Stack {
         let stack_word_dict = self.stack_word_dict;
         let position_zero = self.stack_16bytes_len;
 
-        if(position_zero == Constants.STACK_MAX_DEPTH * 2 + 2){
+        if (position_zero == Constants.STACK_MAX_DEPTH * 2 + 2) {
             with_attr error_message("Kakarot: StackOverflow") {
                 assert 1 = 0;
             }
@@ -148,7 +148,7 @@ namespace Stack {
         let position_zero = self.stack_16bytes_len;
         // Check if stack will underflow
 
-        if(position_zero==0){
+        if (position_zero == 0) {
             with_attr error_message("Kakarot: StackUnderflow") {
                 assert 1 = 0;
             }
