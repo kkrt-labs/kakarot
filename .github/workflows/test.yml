@@ -1,12 +1,32 @@
 name: TESTS
 
-on: [push, pull_request]
+on: [push, pull_request_target]
 
 jobs:
   compilation-tests:
     runs-on: ubuntu-latest
+    env:
+      CI_COMMIT_MESSAGE: CI Formatting Auto Commit
+      CI_COMMIT_AUTHOR: ${{ github.event.repository.name }} CI
     steps:
       - uses: actions/checkout@v3
+
+      # Set environment variables based on the last commit
+      - name: Set environment variable "commit-message"
+        run: echo "commit-message=$(git log -1 --pretty=format:'%s')" >> $GITHUB_ENV
+      - name: Display environment variable "commit-message"
+        run: echo "commit-message=${{ env.commit-message }}"
+      - name: Set environment variable "commit-author"
+        run: echo "commit-author=$(git log -1 --pretty=format:'%an')" >> $GITHUB_ENV
+      - name: Display environment variable "commit-author"
+        run: echo "commit-author=${{ env.commit-author }}"
+      - name: Set environment variable "is-auto-commit"
+        if: env.commit-message == env.CI_COMMIT_MESSAGE && env.commit-author == env.CI_COMMIT_AUTHOR
+        run: echo "is-auto-commit=true" >> $GITHUB_ENV
+      - name: Display environment variable "is-auto-commit"
+        run: echo "is-auto-commit=${{ env.is-auto-commit }}"
+
+      # Python setup
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
@@ -33,10 +53,19 @@ jobs:
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
-      - name: Compile all the cairo files
+
+      # Build artifacts
+      - name: Format all the cairo files and commit
+        # Don't run again on already pushed auto commit. Don't run on pull request events.
+        if: env.is-auto-commit == false && ${{ github.event_name }} != 'pull_request'
         run: |
-          make format-check
-          make build
+          make format
+          git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
+          git config --global user.email "sayajin-labs@users.noreply.github.com"
+          git add -A
+          git diff-index --quiet HEAD || git commit -m "${{ env.CI_COMMIT_MESSAGE }}" && git push
+      - name: Compile all the cairo files
+        run: make build
 
   python-tests:
     runs-on: ubuntu-latest
