@@ -194,8 +194,11 @@ namespace Stack {
         let stack_word_dict = self.stack_word_dict;
         let position_zero = self.stack_16bytes_len;
         // Read element at stack_index
-        let (el_high) = dict_read{dict_ptr=stack_word_dict}(position_zero - stack_index*2);
-        let (el_low) = dict_read{dict_ptr=stack_word_dict}(position_zero - stack_index*2 + 1);
+        // let (el_high) = dict_read{dict_ptr=stack_word_dict}(position_zero - stack_index*2);
+        // let (el_low) = dict_read{dict_ptr=stack_word_dict}(position_zero - stack_index*2 + 1);
+
+        let (el_high) = dict_read{dict_ptr=stack_word_dict}(position_zero - stack_index*2 - 2);
+        let (el_low) = dict_read{dict_ptr=stack_word_dict}(position_zero - stack_index*2 - 1);
         // Return element
         // %{
         //     import logging

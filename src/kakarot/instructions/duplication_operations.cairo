@@ -31,7 +31,7 @@ namespace DuplicationOperations {
         let stack: model.Stack* = ctx.stack;
 
         // Get the value top i-th stack item.
-        let (stack,element) = Stack.peek(self=stack, stack_index=i);
+        let (stack,element) = Stack.peek(self=stack, stack_index=i-1);
 
         // %{ 
         //     import logging
