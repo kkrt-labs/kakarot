@@ -45,7 +45,7 @@ func test__exec_pc__should_update_after_incrementing{
 
     // Then
     assert result.gas_used = 2;
-    let len: felt = Stack.len(result.stack);
+    let len: felt =  result.stack.stack_16bytes_len / 2;
     assert len = 1;
     let index0 = Stack.peek(result.stack, 0);
     assert index0 = Uint256(increment - 1, 0);
@@ -70,7 +70,7 @@ func test__exec_pop_should_pop_an_item_from_execution_context{
 
     // Then
     assert result.gas_used = 2;
-    let len: felt = Stack.len(result.stack);
+    let len: felt =  result.stack.stack_16bytes_len / 2;
     assert len = 1;
     let index0 = Stack.peek(result.stack, 0);
     assert_uint256_eq(index0, Uint256(1, 0));
@@ -100,7 +100,7 @@ func test__exec_mload_should_load_a_value_from_memory{
 
     // Then
     assert gas_used = 3;
-    let len: felt = Stack.len(result.stack);
+    let len: felt =  result.stack.stack_16bytes_len / 2;
     assert len = 1;
     let index0 = Stack.peek(result.stack, 0);
     assert_uint256_eq(index0, Uint256(1, 0));
@@ -131,7 +131,7 @@ func test__exec_mload_should_load_a_value_from_memory_with_memory_expansion{
 
     // Then
     assert gas_used = 6;
-    let len: felt = Stack.len(result.stack);
+    let len: felt =  result.stack.stack_16bytes_len / 2;
     assert len = 1;
     let index0 = Stack.peek(result.stack, 0);
     assert_uint256_eq(index0, Uint256(0, 1));
@@ -161,7 +161,7 @@ func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_ms
 
     // Then
     assert result.gas_used = 73;
-    let len: felt = Stack.len(result.stack);
+    let len: felt =  result.stack.stack_16bytes_len / 2;
     assert len = 1;
     let index0 = Stack.peek(result.stack, 0);
     assert_uint256_eq(index0, Uint256(0, 0));
@@ -187,7 +187,7 @@ func test__exec_gas_should_return_remaining_gas{
 
     // Then
     assert gas_used = 2;
-    let len: felt = Stack.len(result.stack);
+    let len: felt =  result.stack.stack_16bytes_len / 2;
     assert len = 1;
     let actual_remaining_gas = Stack.peek(result.stack, 0);
     let expected_remaining_gas = Constants.TRANSACTION_GAS_LIMIT - gas_used;

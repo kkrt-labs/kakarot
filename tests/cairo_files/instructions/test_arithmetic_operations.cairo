@@ -48,7 +48,7 @@ func test__exec_add__should_add_0_and_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = Stack.len(result.stack);
+    let len: felt = result.stack.
     assert len = 2;
     let index0 = Stack.peek(result.stack, 0);
     assert index0 = Uint256(5, 0);
@@ -74,7 +74,7 @@ func test__exec_mul__should_mul_0_and_1{
 
     // Then
     assert result.gas_used = 5;
-    let len: felt = Stack.len(result.stack);
+    let len: felt = result.stack.stack_16bytes_len / 2;
     assert len = 2;
     let index0 = Stack.peek(result.stack, 0);
     assert index0 = Uint256(6, 0);
@@ -100,7 +100,7 @@ func test__exec_sub__should_sub_0_and_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = Stack.len(result.stack);
+    let len: felt = result.stack.stack_16bytes_len / 2;
     assert len = 2;
     let index0 = Stack.peek(result.stack, 0);
     assert index0 = Uint256(1, 0);
@@ -126,7 +126,7 @@ func test__exec_div__should_div_0_and_1{
 
     // Then
     assert result.gas_used = 5;
-    let len: felt = Stack.len(result.stack);
+    let len: felt =  result.stack.stack_16bytes_len / 2;
     assert len = 2;
     let index0 = Stack.peek(result.stack, 0);
     assert index0 = Uint256(1, 0);
@@ -152,7 +152,7 @@ func test__exec_sdiv__should_signed_div_0_and_1{
 
     // Then
     assert result.gas_used = 5;
-    let len: felt = Stack.len(result.stack);
+    let len: felt =  result.stack.stack_16bytes_len / 2;
     assert len = 2;
     let index0 = Stack.peek(result.stack, 0);
     assert index0 = Uint256(1, 0);
@@ -178,7 +178,7 @@ func test__exec_mod__should_mod_0_and_1{
 
     // Then
     assert result.gas_used = 5;
-    let len: felt = Stack.len(result.stack);
+    let len: felt =  result.stack.stack_16bytes_len / 2;
     assert len = 2;
     let index0 = Stack.peek(result.stack, 0);
     assert index0 = Uint256(1, 0);
@@ -204,7 +204,7 @@ func test__exec_smod__should_smod_0_and_1{
 
     // Then
     assert result.gas_used = 5;
-    let len: felt = Stack.len(result.stack);
+    let len: felt =  result.stack.stack_16bytes_len / 2;
     assert len = 2;
     let index0 = Stack.peek(result.stack, 0);
     assert index0 = Uint256(1, 0);
@@ -230,7 +230,7 @@ func test__exec_addmod__should_add_0_and_1_and_div_rem_by_2{
 
     // Then
     assert result.gas_used = 8;
-    let len: felt = Stack.len(result.stack);
+    let len: felt =  result.stack.stack_16bytes_len / 2;
     assert len = 1;
     let index0 = Stack.peek(result.stack, 0);
     assert index0 = Uint256(1, 0);
@@ -254,7 +254,7 @@ func test__exec_mulmod__should_mul_0_and_1_and_div_rem_by_2{
 
     // Then
     assert result.gas_used = 8;
-    let len: felt = Stack.len(result.stack);
+    let len: felt =  result.stack.stack_16bytes_len / 2;
     assert len = 1;
     let index0 = Stack.peek(result.stack, 0);
     assert index0 = Uint256(0, 0);
@@ -278,7 +278,7 @@ func test__exec_exp__should_exp_0_and_1{
 
     // Then
     assert result.gas_used = 10;
-    let len: felt = Stack.len(result.stack);
+    let len: felt =  result.stack.stack_16bytes_len / 2;
     assert len = 2;
     let index0 = Stack.peek(result.stack, 0);
     assert index0 = Uint256(9, 0);
@@ -304,7 +304,7 @@ func test__exec_signextend__should_signextend_0_and_1{
 
     // Then
     assert result.gas_used = 5;
-    let len: felt = Stack.len(result.stack);
+    let len: felt =  result.stack.stack_16bytes_len / 2;
     assert len = 2;
     let index0 = Stack.peek(result.stack, 0);
     assert index0 = Uint256(2, 0);

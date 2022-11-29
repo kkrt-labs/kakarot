@@ -55,7 +55,6 @@ func execute{
         bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=calldata_len, value=value
         );
     let summary = Kakarot.execute(call_context);
-    // let len = Stack.len(summary.stack);
     let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
     let stack_accesses_len = summary.stack.stack_squashed_end - summary.stack.stack_squashed_start;
 
@@ -101,7 +100,6 @@ func execute_at_address{
     let summary = Kakarot.execute_at_address(
         address=address, calldata_len=calldata_len, calldata=calldata, value=value
     );
-    // let len = Stack.len(summary.stack);
     let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
     let stack_accesses_len = summary.stack.stack_squashed_end - summary.stack.stack_squashed_start;
 

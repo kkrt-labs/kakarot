@@ -34,7 +34,7 @@ func test__len__should_return_the_length_of_the_stack{
     let stack: model.Stack* = Stack.init();
 
     // When
-    let result: felt = Stack.len(stack);
+    let result: felt = stack.stack_16bytes_len / 2;
 
     // Then
     assert result = 0;
@@ -52,7 +52,7 @@ func test__push__should_add_an_element_to_the_stack{
     let result: model.Stack* = Stack.push(stack, Uint256(1, 0));
 
     // Then
-    let len: felt = Stack.len(result);
+    let len: felt = result.stack_16bytes_len / 2;
     assert len = 1;
     return ();
 }

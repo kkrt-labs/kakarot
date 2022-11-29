@@ -47,7 +47,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "codecopy2",
-        "marks": [pytest.mark.CODECOPY1, pytest.mark.EnvironmentalInformation],
+        "marks": [pytest.mark.CODECOPY, pytest.mark.EnvironmentalInformation],
     },
     {
         "params": {
