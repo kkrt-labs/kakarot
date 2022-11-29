@@ -133,13 +133,13 @@ namespace ArithmeticOperations {
         let a = popped[0];
         let b = popped[1];
 
-        %{
-            import logging
-            logging.info("SUB A and B LOW")
-            logging.info(hex(ids.a.low))
-            logging.info(hex(ids.b.low))
+        // %{
+        //     import logging
+        //     logging.info("SUB A and B LOW")
+        //     logging.info(hex(ids.a.low))
+        //     logging.info(hex(ids.b.low))
 
-        %}
+        // %}
 
         // Compute the subtraction
         let (result) = uint256_sub(a, b);

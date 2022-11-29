@@ -197,14 +197,14 @@ namespace Stack {
         let (el_high) = dict_read{dict_ptr=stack_word_dict}(position_zero - stack_index*2);
         let (el_low) = dict_read{dict_ptr=stack_word_dict}(position_zero - stack_index*2 + 1);
         // Return element
-        %{
-            import logging
-            logging.info("PEEK INDEX")
-            logging.info(ids.stack_index)
-            logging.info("PEEK HIGH AND LOW")
-            logging.info(hex(ids.el_high))
-            logging.info(hex(ids.el_low))
-        %}
+        // %{
+        //     import logging
+        //     logging.info("PEEK INDEX")
+        //     logging.info(ids.stack_index)
+        //     logging.info("PEEK HIGH AND LOW")
+        //     logging.info(hex(ids.el_high))
+        //     logging.info(hex(ids.el_low))
+        // %}
         return (
                 new model.Stack(
                     stack_word_dict_start=self.stack_word_dict_start,
@@ -231,15 +231,15 @@ namespace Stack {
         let (el2_high) = dict_read{dict_ptr=stack_word_dict}(position_zero - i*2);
         let (el2_low) = dict_read{dict_ptr=stack_word_dict}(position_zero - i*2 + 1);
 
-        %{
-            import logging
-            logging.info("SWAP INDEX")
-            logging.info(ids.i)
-            logging.info("SWAP VALUE LOW")
-            logging.info(ids.el2_low)   
-            logging.info("SWAP VALUE HIGH")
-            logging.info(ids.el2_high)                        
-        %}
+        // %{
+        //     import logging
+        //     logging.info("SWAP INDEX")
+        //     logging.info(ids.i)
+        //     logging.info("SWAP VALUE LOW")
+        //     logging.info(ids.el2_low)   
+        //     logging.info("SWAP VALUE HIGH")
+        //     logging.info(ids.el2_high)                        
+        // %}
 
         // Swap elements
         dict_write{dict_ptr=stack_word_dict}(position_zero-2, el2_high);

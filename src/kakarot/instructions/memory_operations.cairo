@@ -192,11 +192,11 @@ namespace MemoryOperations {
         // 0 - offset: offset in the deployed code where execution will continue from
         let (stack, offset) = Stack.pop(stack);
 
-        %{
-            import logging
-            logging.info("JUMP OFFSET")
-            logging.info(ids.offset.low)
-        %}
+        // %{
+        //     import logging
+        //     logging.info("JUMP OFFSET")
+        //     logging.info(ids.offset.low)
+        // %}
 
         // Update pc counter.
         let ctx = ExecutionContext.update_program_counter(ctx, offset.low);
@@ -236,13 +236,13 @@ namespace MemoryOperations {
 
         // Update pc if skip_jump is anything other then 0
 
-        %{
-            import logging
-            logging.info("JUMPi OFFSET")
-            logging.info(ids.offset.low)
-            logging.info("JUMPi SKIP CONDITION")
-            logging.info(ids.skip_condition.low)            
-        %}
+        // %{
+        //     import logging
+        //     logging.info("JUMPi OFFSET")
+        //     logging.info(ids.offset.low)
+        //     logging.info("JUMPi SKIP CONDITION")
+        //     logging.info(ids.skip_condition.low)            
+        // %}
 
         let is_condition_valid: felt = is_le(1, skip_condition.low);
 
