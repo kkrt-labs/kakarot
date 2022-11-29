@@ -33,15 +33,14 @@ class TestZkEVM:
         #     for s in (params["stack"].split(",") if params["stack"] else [])
         # ]
 
+
         mem = extract_memory_from_execute(res.result)
         # stack_result = extract_stack_from_execute(res.result)
 
-        # print("STACK RESULTS")
-        # print(stack_result)
-        print("STACK COMPARISON")
-        print(params["stack"])
+
         assert mem == hex_string_to_bytes_array(params["memory"])
-        # assert stack_result == hex_string_to_bytes_array(params["stack"])        
+        # TODO: Fix stack assert
+        # assert stack_result == hex_string_to_bytes_array(params["stack"])   
         events = params.get("events")
         if events:
             assert [

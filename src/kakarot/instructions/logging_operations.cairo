@@ -39,8 +39,8 @@ namespace LoggingOperations {
 
         // Pop offset + size.
         let (stack, popped) = Stack.pop_n(stack, topics_len + 2);
-        let offset = popped[1 + topics_len];
-        let size = popped[topics_len];
+        let offset = popped[0];
+        let size = popped[1];
 
         // Transform data + safety checks
         let actual_size = Helpers.uint256_to_felt(size);
@@ -54,7 +54,8 @@ namespace LoggingOperations {
         let memory = Memory.load_n(
             self=memory, element_len=actual_size, element=data, offset=actual_offset
         );
-        emit_event(keys_len=topics_len * 2, keys=popped, data_len=actual_size, data=data);
+
+        emit_event(keys_len=topics_len * 2, keys=popped+4, data_len=actual_size, data=data);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);

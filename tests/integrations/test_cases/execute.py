@@ -47,7 +47,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "codecopy2",
-        "marks": [pytest.mark.CODECOPY, pytest.mark.EnvironmentalInformation],
+        "marks": [pytest.mark.CODECOPY1, pytest.mark.EnvironmentalInformation],
     },
     {
         "params": {
@@ -1353,10 +1353,10 @@ test_cases = [
             "events": [
                 [
                     [
-                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
-                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
                         0xFF,
                         0x00,
+                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,                        
                     ],
                     [0x10],
                 ]
@@ -1376,7 +1376,7 @@ test_cases = [
             "stack": "",
             "memory": "0000000000000000000000000000000000000000000000000000000000000010000000",
             "return_value": "",
-            "events": [[[0x00, 0x00, 0xFF, 0x00], [0x00]]],
+            "events": [[[0xFF, 0x00, 0x00, 0x00 ], [0x00]]],
         },
         "id": "PRElog2-1",
         "marks": [
@@ -1395,12 +1395,13 @@ test_cases = [
             "events": [
                 [
                     [
-                        0xAB,
-                        0x00,
-                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
-                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
                         0xFF,
-                        0x00,
+                        0x00,                        
+                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                        0xAB,
+                        0x00,                        
+
                     ],
                     [0x10],
                 ]
@@ -1420,7 +1421,7 @@ test_cases = [
             "stack": "",
             "memory": "0000000000000000000000000000000000000000000000000000000000000010000000",
             "return_value": "",
-            "events": [[[0xAB, 0x00, 0x00, 0x00, 0xFF, 0x00], [0x00]]],
+            "events": [[[0xFF, 0x00, 0x00, 0x00, 0xAB, 0x00 ], [0x00]]],
         },
         "id": "PRElog3-1",
         "marks": [
@@ -1439,14 +1440,14 @@ test_cases = [
             "events": [
                 [
                     [
-                        0x08,
-                        0x00,
-                        0xAB,
-                        0x00,
-                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
-                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
                         0xFF,
                         0x00,
+                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,  
+                        0xAB,
+                        0x00,
+                        0x08,
+                        0x00,                                                                     
                     ],
                     [0x10],
                 ]
@@ -1466,7 +1467,7 @@ test_cases = [
             "stack": "",
             "memory": "0000000000000000000000000000000000000000000000000000000000000010000000",
             "return_value": "",
-            "events": [[[0x08, 0x00, 0xAB, 0x00, 0x00, 0x00, 0xFF, 0x00], [0x00]]],
+            "events": [[[0xFF, 0x00 ,0x00, 0x00,0xAB, 0x00,  0x08, 0x00 ], [0x00]]],
         },
         "id": "PRElog4-1",
     },
