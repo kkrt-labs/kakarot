@@ -112,7 +112,7 @@ namespace Stack {
             new model.Stack(
             stack_word_dict_start=self.stack_word_dict_start,
             stack_word_dict=stack_word_dict,
-            stack_16bytes_len=self.stack_16bytes_len - reduce,
+            stack_16bytes_len=self.stack_16bytes_len - popped_len,
             ),
             new_elements,
         );
