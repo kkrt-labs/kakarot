@@ -55,7 +55,7 @@ namespace LoggingOperations {
             self=memory, element_len=actual_size, element=data, offset=actual_offset
         );
 
-        emit_event(keys_len=topics_len * 2, keys=popped+4, data_len=actual_size, data=data);
+        emit_event(keys_len=topics_len * 2, keys=popped + 4, data_len=actual_size, data=data);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);

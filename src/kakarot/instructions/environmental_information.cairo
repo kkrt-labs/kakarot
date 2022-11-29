@@ -24,16 +24,16 @@ from kakarot.interfaces.interfaces import IEth, IRegistry
 // @custom:namespace EnvironmentalInformation
 namespace EnvironmentalInformation {
     // Define constants.
-    const GAS_COST_ADDRESS        = 2;
-    const GAS_COST_BALANCE        = 100;
-    const GAS_COST_ORIGIN         = 2;
-    const GAS_COST_CALLER         = 2;
-    const GAS_COST_CALLVALUE      = 2;
-    const GAS_COST_CALLDATALOAD   = 3;
-    const GAS_COST_CALLDATASIZE   = 2;
-    const GAS_COST_CALLDATACOPY   = 3;
-    const GAS_COST_CODESIZE       = 2;
-    const GAS_COST_CODECOPY       = 3;
+    const GAS_COST_ADDRESS = 2;
+    const GAS_COST_BALANCE = 100;
+    const GAS_COST_ORIGIN = 2;
+    const GAS_COST_CALLER = 2;
+    const GAS_COST_CALLVALUE = 2;
+    const GAS_COST_CALLDATALOAD = 3;
+    const GAS_COST_CALLDATASIZE = 2;
+    const GAS_COST_CALLDATACOPY = 3;
+    const GAS_COST_CODESIZE = 2;
+    const GAS_COST_CODECOPY = 3;
     const GAS_COST_RETURNDATASIZE = 2;
     const GAS_COST_RETURNDATACOPY = 3;
 
@@ -334,11 +334,7 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         // Get the bytecode size.
         let code_size = Helpers.to_uint256(ctx.call_context.bytecode_len);
-        // %{
-        //     import logging
-        //     logging.info("CODESIZE LOW")
-        //     logging.info(ids.code_size.low)
-        // %}
+
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=code_size);
 
         // Update the execution context.

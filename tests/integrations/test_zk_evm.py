@@ -26,11 +26,12 @@ class TestZkEVM:
                 calldata=hex_string_to_bytes_array(params["calldata"]),
             ).call(caller_address=1)
 
-
         stack_result = extract_stack_from_execute(res.result)
         memory_result = extract_memory_from_execute(res.result)
 
-        assert stack_result == ([int(x) for x in params["stack"].split(',')] if params["stack"] else [])
+        assert stack_result == (
+            [int(x) for x in params["stack"].split(",")] if params["stack"] else []
+        )
         assert memory_result == hex_string_to_bytes_array(params["memory"])
 
         events = params.get("events")
