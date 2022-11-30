@@ -48,6 +48,7 @@ namespace Helpers {
         local new_i: felt;
         local new_val: felt*;
         local high: felt;
+        local low: felt;
 
         // Check if i is lower to 32
         let is_le32 = is_le(i, 32);
@@ -71,9 +72,9 @@ namespace Helpers {
 
         let is_i_le_16 = is_le(new_i, 16);
 
-        tempvar low;
         if (is_i_le_16 != FALSE) {
-            (low) = compute_half_uint256(val=new_val, i=new_i, res=0);
+            let (low_temp)= compute_half_uint256(val=new_val, i=new_i, res=0);
+            low = low_temp;
         } else {
             low = 0;
         }
