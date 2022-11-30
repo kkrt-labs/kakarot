@@ -14,6 +14,7 @@ from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.memory import Memory
 from kakarot.constants import Constants
+from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.environmental_information import EnvironmentalInformation
 
 func init_context{
@@ -29,28 +30,30 @@ func init_context{
     assert [calldata] = '';
     local call_context: model.CallContext* = new model.CallContext(
         bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
-    );
+        );
 
     // Initialize ExecutionContext
     let (empty_return_data: felt*) = alloc();
     let stack: model.Stack* = Stack.init();
     let memory: model.Memory* = Memory.init();
     let gas_limit = Constants.TRANSACTION_GAS_LIMIT;
+    let parent_context = ExecutionContext.init_root();
 
     local ctx: model.ExecutionContext* = new model.ExecutionContext(
-            call_context=call_context,
-            program_counter=0,
-            stopped=FALSE,
-            return_data=empty_return_data,
-            return_data_len=0,
-            stack=stack,
-            memory=memory,
-            gas_used=0,
-            gas_limit=gas_limit,
-            intrinsic_gas_cost=0,
-            starknet_contract_address=0,
-            evm_contract_address=420,
-    );
+        call_context=call_context,
+        program_counter=0,
+        stopped=FALSE,
+        return_data=empty_return_data,
+        return_data_len=0,
+        stack=stack,
+        memory=memory,
+        gas_used=0,
+        gas_limit=gas_limit,
+        intrinsic_gas_cost=0,
+        starknet_contract_address=0,
+        evm_contract_address=420,
+        parent_context=parent_context,
+        );
     return ctx;
 }
 

@@ -73,7 +73,7 @@ namespace Kakarot {
         let ctx = ExecutionContext.compute_intrinsic_gas_cost(self=ctx);
 
         // Start execution
-        let ctx = run(ctx=ctx);
+        let ctx = EVMInstructions.run(ctx=ctx);
 
         // Finalize
         // TODO: Consider finalizing on `ret` instruction, to get the memory efficiently.
@@ -106,37 +106,13 @@ namespace Kakarot {
         let ctx = ExecutionContext.compute_intrinsic_gas_cost(ctx);
 
         // Start execution
-        let ctx = run(ctx);
+        let ctx = EVMInstructions.run(ctx);
 
         // Finalize
         // TODO: Consider finalizing on `ret` instruction, to get the memory efficiently.
         let summary = ExecutionContext.finalize(self=ctx);
 
         return summary;
-    }
-
-    // @notice Run the execution of the bytecode.
-    // @param ctx The pointer to the execution context.
-    // @return The pointer to the updated execution context.
-    func run{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        // Decode and execute
-        let ctx: model.ExecutionContext* = EVMInstructions.decode_and_execute(ctx=ctx);
-
-        // Check if execution should be stopped
-        let stopped: felt = ExecutionContext.is_stopped(self=ctx);
-
-        // Terminate execution
-        if (stopped != FALSE) {
-            return ctx;
-        }
-
-        // Continue execution
-        return run(ctx=ctx);
     }
 
     // @notice Set the account registry used by kakarot
@@ -233,6 +209,7 @@ namespace Kakarot {
         let (local contract_bytecode: felt*) = alloc();
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();
+        let parent_context = ExecutionContext.init_root();
         tempvar ctx: model.ExecutionContext* = new model.ExecutionContext(
             call_context=call_context,
             program_counter=0,
@@ -246,13 +223,14 @@ namespace Kakarot {
             intrinsic_gas_cost=0,
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=evm_contract_address,
+            parent_context=parent_context,
             );
 
         // Compute intrinsic gas cost and update gas used
         let ctx = ExecutionContext.compute_intrinsic_gas_cost(ctx);
 
         // Start execution
-        let ctx = run(ctx);
+        let ctx = EVMInstructions.run(ctx);
 
         // Update contract bytecode with execution result
         IEvmContract.write_bytecode(

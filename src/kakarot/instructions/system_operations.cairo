@@ -13,8 +13,8 @@ from starkware.cairo.common.memcpy import memcpy
 // Internal dependencies
 from kakarot.model import model
 from utils.utils import Helpers
-from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
+from kakarot.execution_context import ExecutionContext
 from kakarot.memory import Memory
 
 // @title System operations opcodes.

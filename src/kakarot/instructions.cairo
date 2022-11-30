@@ -17,7 +17,7 @@ from starkware.cairo.common.registers import get_label_location
 from kakarot.model import model
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.push_operations import PushOperations
-from kakarot.instructions.arithmetic_operations import StopAndArithmeticOperations
+from kakarot.instructions.stop_and_arithmetic_operations import StopAndArithmeticOperations
 from kakarot.instructions.comparison_operations import ComparisonOperations
 from kakarot.instructions.duplication_operations import DuplicationOperations
 from kakarot.instructions.exchange_operations import ExchangeOperations
@@ -585,6 +585,35 @@ namespace EVMInstructions {
         ret;
         call not_implemented_opcode;  // 0xff
         ret;
+    }
+
+    // @notice Iteratively decode and execute the bytecode of an ExecutionContext
+    // @param ctx The pointer to the execution context.
+    // @return The pointer to the updated execution context.
+    func run{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        // Decode and execute
+        let ctx: model.ExecutionContext* = decode_and_execute(ctx=ctx);
+
+        // Check if execution should be stopped
+        let stopped: felt = ExecutionContext.is_stopped(self=ctx);
+        let is_parent_root: felt = ExecutionContext.is_root(self=ctx.parent_context);
+
+        // Terminate execution
+        if (stopped != FALSE) {
+            if (is_parent_root != FALSE) {
+                return ctx;
+            } else {
+                return run(ctx=ctx.parent_context);
+            }
+        }
+
+        // Continue execution
+        return run(ctx=ctx);
     }
 
     // @notice A placeholder for opcodes that don't exist

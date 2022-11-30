@@ -8,6 +8,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import assert_le, assert_nn
 from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.registers import get_label_location
 
 // Internal dependencies
 from utils.utils import Helpers
@@ -35,6 +36,29 @@ namespace ExecutionContext {
         evm_contract_address: felt,
     }
 
+    // @notice Initialize an empty context to act as a placeholder for main context
+    // @return An stopped execution context
+    func init_root() -> model.ExecutionContext* {
+        let (root_context) = get_label_location(empty_context);
+        let ctx = cast(root_context, model.ExecutionContext*);
+        return ctx;
+
+        empty_context:
+        dw 0;  // call_context
+        dw 0;  // program_counter
+        dw 1;  // stopped
+        dw 0;  // return_data
+        dw 0;  // return_data_len
+        dw 0;  // stack
+        dw 0;  // memory
+        dw 0;  // gas_used
+        dw 0;  // gas_limit
+        dw 0;  // intrinsic_gas_cost
+        dw 0;  // starknet_contract_address
+        dw 0;  // evm_contract_address
+        dw 0;  // parent_context
+    }
+
     // @notice Initialize the execution context.
     // @dev set the initial values before executing a piece of code
     // @param call_context The call context.
@@ -51,6 +75,7 @@ namespace ExecutionContext {
 
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();
+        let parent_context = init_root();
 
         local ctx: model.ExecutionContext* = new model.ExecutionContext(
             call_context=call_context,
@@ -65,6 +90,7 @@ namespace ExecutionContext {
             intrinsic_gas_cost=0,
             starknet_contract_address=0,
             evm_contract_address=0,
+            parent_context=parent_context,
             );
         return ctx;
     }
@@ -125,6 +151,8 @@ namespace ExecutionContext {
             bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=calldata_len, value=value
             );
 
+        let parent_context = init_root();
+
         return new model.ExecutionContext(
             call_context=call_context,
             program_counter=initial_pc,
@@ -138,6 +166,7 @@ namespace ExecutionContext {
             intrinsic_gas_cost=0,
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=address,
+            parent_context=parent_context,
             );
     }
 
@@ -161,6 +190,7 @@ namespace ExecutionContext {
             intrinsic_gas_cost=intrinsic_gas_cost,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            parent_context=self.parent_context,
             );
     }
 
@@ -170,6 +200,17 @@ namespace ExecutionContext {
     // @return TRUE if the execution context is stopped, FALSE otherwise.
     func is_stopped(self: model.ExecutionContext*) -> felt {
         return self.stopped;
+    }
+
+    // @notice Return whether the current execution context is stopped.
+    // @dev When the execution context is stopped, no more instructions can be executed.
+    // @param self The pointer to the execution context.
+    // @return TRUE if the execution context is stopped, FALSE otherwise.
+    func is_root(self: model.ExecutionContext*) -> felt {
+        if (cast(self.parent_context, felt) == 0) {
+            return TRUE;
+        }
+        return FALSE;
     }
 
     // @notice Stop the current execution context.
@@ -190,6 +231,7 @@ namespace ExecutionContext {
             intrinsic_gas_cost=self.intrinsic_gas_cost,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            parent_context=self.parent_context,
             );
     }
 
@@ -233,6 +275,7 @@ namespace ExecutionContext {
             intrinsic_gas_cost=self.intrinsic_gas_cost,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            parent_context=self.parent_context,
             );
     }
 
@@ -256,6 +299,7 @@ namespace ExecutionContext {
             intrinsic_gas_cost=self.intrinsic_gas_cost,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            parent_context=self.parent_context,
             );
     }
 
@@ -284,6 +328,7 @@ namespace ExecutionContext {
             intrinsic_gas_cost=self.intrinsic_gas_cost,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            parent_context=self.parent_context,
             );
     }
 
@@ -308,6 +353,7 @@ namespace ExecutionContext {
             intrinsic_gas_cost=self.intrinsic_gas_cost,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            parent_context=self.parent_context,
             );
     }
 
@@ -332,6 +378,7 @@ namespace ExecutionContext {
             intrinsic_gas_cost=self.intrinsic_gas_cost,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            parent_context=self.parent_context,
             );
     }
 
@@ -375,6 +422,7 @@ namespace ExecutionContext {
             intrinsic_gas_cost=self.intrinsic_gas_cost,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            parent_context=self.parent_context,
             );
     }
 
@@ -395,5 +443,30 @@ namespace ExecutionContext {
         }
 
         return ();
+    }
+
+    // @notice Increment the program counter.
+    // @dev The program counter is incremented by the given value.
+    // @param self The pointer to the execution context.
+    // @param inc_value The value to increment the program counter with.
+    // @return The pointer to the updated execution context.
+    func update_parent_context(
+        self: model.ExecutionContext*, parent_context: model.ExecutionContext*
+    ) -> model.ExecutionContext* {
+        return new model.ExecutionContext(
+            call_context=self.call_context,
+            program_counter=self.program_counter,
+            stopped=self.stopped,
+            return_data=self.return_data,
+            return_data_len=self.return_data_len,
+            stack=self.stack,
+            memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit,
+            intrinsic_gas_cost=self.intrinsic_gas_cost,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
+            parent_context=parent_context,
+            );
     }
 }
