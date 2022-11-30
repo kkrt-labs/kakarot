@@ -153,4 +153,44 @@ func test__exec_swap2__should_fail__when_index_2_is_underflow{
 }
 
 
+@external
+func test__exec_swap8__should_swap_1st_and_9th{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
 
+    alloc_locals;
+    // Given
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+    let top_stack_element_value : Uint256 = Uint256(2, 0);
+    let preswap_element_at_idx : Uint256 = Uint256(1, 0);
+    let prepared_stack : model.Stack* = prepare_stack(stack_len=8, preswap_idx=8, preswap_idx_value=preswap_element_at_idx, top_stack_element_value=top_stack_element_value, stack=stack);
+    
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, prepared_stack);
+
+    // When
+    let result =  ExchangeOperations.exec_swap8(ctx);
+
+    // Then
+    check_swapped_stack(preswap_top_stack_element=Uint256(2, 0), preswap_element_at_swapped_idx=Uint256(1, 0), swapped_idx=8, stack=result.stack);
+    return ();
+}
+
+@external
+func test__exec_swap8__should_fail__when_index_8_is_underflow{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    alloc_locals;
+    // Given
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+    let top_stack_element_value : Uint256 = Uint256(2, 0);
+    let preswap_element_at_idx : Uint256 = Uint256(1, 0);
+    let prepared_stack : model.Stack* = prepare_stack(stack_len=7, preswap_idx=7, preswap_idx_value=preswap_element_at_idx, top_stack_element_value=top_stack_element_value, stack=stack);
+
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+
+    // When & Then
+    let result =  ExchangeOperations.exec_swap8(ctx);
+    return ();
+}
