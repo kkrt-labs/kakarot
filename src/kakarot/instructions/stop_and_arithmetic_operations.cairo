@@ -11,7 +11,7 @@ from starkware.cairo.common.uint256 import (
     uint256_eq,
     uint256_sub,
 )
-from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.bool import FALSE, TRUE
 
 // Project dependencies
 from openzeppelin.security.safemath.library import SafeUint256
@@ -24,8 +24,8 @@ from kakarot.stack import Stack
 // @title Arithmetic operations opcodes.
 // @notice This contract contains the functions to execute for arithmetic operations opcodes.
 // @author @abdelhamidbakhta
-// @custom:namespace ArithmeticOperations
-namespace ArithmeticOperations {
+// @custom:namespace StopAndArithmeticOperations
+namespace StopAndArithmeticOperations {
     // Define constants.
     const GAS_COST_ADD = 3;
     const GAS_COST_MUL = 5;
@@ -38,6 +38,23 @@ namespace ArithmeticOperations {
     const GAS_COST_MULMOD = 8;
     const GAS_COST_EXP = 10;
     const GAS_COST_SIGNEXTEND = 5;
+
+    // @notice 0x00 - STOP
+    // @dev Halts execution
+    // @custom:since Frontier
+    // @custom:group Stop and Arithmetic Operations
+    // @custom:gas 0
+    // @param ctx The pointer to the execution context
+    // @return Updated execution context.
+    func exec_stop{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
+        let ctx = ExecutionContext.stop(ctx_ptr);
+        return ctx;
+    }
 
     // @notice 0x01 - ADD
     // @dev Addition operation

@@ -17,7 +17,7 @@ from starkware.cairo.common.registers import get_label_location
 from kakarot.model import model
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.push_operations import PushOperations
-from kakarot.instructions.arithmetic_operations import ArithmeticOperations
+from kakarot.instructions.arithmetic_operations import StopAndArithmeticOperations
 from kakarot.instructions.comparison_operations import ComparisonOperations
 from kakarot.instructions.duplication_operations import DuplicationOperations
 from kakarot.instructions.exchange_operations import ExchangeOperations
@@ -58,7 +58,7 @@ namespace EVMInstructions {
         }
 
         // Compute the corresponding offset in the jump table:
-        // count 1 for "next line" and 4 steps per opcode: call, opcode, jmp, end
+        // count 1 for "next line" and 4 steps per opcode: call, opcode, ret
         tempvar offset = 1 + 3 * opcode;
 
         // move program counter + 1 after opcode is read
@@ -73,29 +73,29 @@ namespace EVMInstructions {
 
         // call opcode
         jmp rel offset;
-        call exec_stop;  // 0x0
+        call StopAndArithmeticOperations.exec_stop;  // 0x0
         ret;
-        call ArithmeticOperations.exec_add;  // 0x1
+        call StopAndArithmeticOperations.exec_add;  // 0x1
         ret;
-        call ArithmeticOperations.exec_mul;  // 0x2
+        call StopAndArithmeticOperations.exec_mul;  // 0x2
         ret;
-        call ArithmeticOperations.exec_sub;  // 0x3
+        call StopAndArithmeticOperations.exec_sub;  // 0x3
         ret;
-        call ArithmeticOperations.exec_div;  // 0x4
+        call StopAndArithmeticOperations.exec_div;  // 0x4
         ret;
-        call ArithmeticOperations.exec_sdiv;  // 0x5
+        call StopAndArithmeticOperations.exec_sdiv;  // 0x5
         ret;
-        call ArithmeticOperations.exec_mod;  // 0x6
+        call StopAndArithmeticOperations.exec_mod;  // 0x6
         ret;
-        call ArithmeticOperations.exec_smod;  // 0x7
+        call StopAndArithmeticOperations.exec_smod;  // 0x7
         ret;
-        call ArithmeticOperations.exec_addmod;  // 0x8
+        call StopAndArithmeticOperations.exec_addmod;  // 0x8
         ret;
-        call ArithmeticOperations.exec_mulmod;  // 0x9
+        call StopAndArithmeticOperations.exec_mulmod;  // 0x9
         ret;
-        call ArithmeticOperations.exec_exp;  // 0xa
+        call StopAndArithmeticOperations.exec_exp;  // 0xa
         ret;
-        call ArithmeticOperations.exec_signextend;  // 0xb
+        call StopAndArithmeticOperations.exec_signextend;  // 0xb
         ret;
         call unknown_opcode;  // 0xc
         ret;
@@ -603,7 +603,7 @@ namespace EVMInstructions {
         return ();
     }
 
-    // @notice A placeholder for opcodes that don't exist
+    // @notice A placeholder for opcodes that are not implemented yet
     // @dev Halts execution
     // @param ctx The pointer to the execution context
     // @return Updated execution context.
@@ -617,22 +617,5 @@ namespace EVMInstructions {
             assert 0 = 1;
         }
         return ();
-    }
-
-    // @notice 0x00 - STOP
-    // @dev Halts execution
-    // @custom:since Frontier
-    // @custom:group Stop and Arithmetic Operations
-    // @custom:gas 0
-    // @param ctx The pointer to the execution context
-    // @return Updated execution context.
-    func exec_stop{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = ExecutionContext.stop(ctx_ptr);
-        return ctx;
     }
 }
