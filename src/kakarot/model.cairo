@@ -8,9 +8,9 @@ from starkware.cairo.common.dict import DictAccess
 
 namespace model {
     struct Stack {
-        stack_word_dict_start: DictAccess*,
-        stack_word_dict: DictAccess*,
-        stack_16bytes_len: felt,
+        word_dict_start: DictAccess*,
+        word_dict: DictAccess*,
+        len_16bytes: felt,
     }
 
     struct Memory {

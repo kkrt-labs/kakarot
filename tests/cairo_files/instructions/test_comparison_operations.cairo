@@ -32,7 +32,7 @@ func test__exec_lt__should_pop_0_and_1_and_push_0__when_0_not_lt_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(0, 0);
@@ -57,7 +57,7 @@ func test__exec_lt__should_pop_0_and_1_and_push_1__when_0_lt_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(1, 0);
@@ -82,7 +82,7 @@ func test__exec_gt__should_pop_0_and_1_and_push_0__when_0_not_gt_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(0, 0);
@@ -107,7 +107,7 @@ func test__exec_gt__should_pop_0_and_1_and_push_1__when_0_gt_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(1, 0);
@@ -132,7 +132,7 @@ func test__exec_slt__should_pop_0_and_1_and_push_0__when_0_not_slt_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(0, 0);
@@ -157,7 +157,7 @@ func test__exec_slt__should_pop_0_and_1_and_push_1__when_0_slt_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(1, 0);
@@ -182,7 +182,7 @@ func test__exec_sgt__should_pop_0_and_1_and_push_0__when_0_not_sgt_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(0, 0);
@@ -207,7 +207,7 @@ func test__exec_sgt__should_pop_0_and_1_and_push_1__when_0_sgt_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(1, 0);
@@ -232,7 +232,7 @@ func test__exec_eq__should_pop_0_and_1_and_push_0__when_0_not_eq_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(0, 0);
@@ -257,7 +257,7 @@ func test__exec_eq__should_pop_0_and_1_and_push_1__when_0_eq_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(1, 0);
@@ -281,7 +281,7 @@ func test__exec_iszero__should_pop_0_and_push_0__when_0_is_not_zero{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(0, 0);
@@ -305,7 +305,7 @@ func test__exec_iszero__should_pop_0_and_push_1__when_0_is_zero{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(1, 0);
@@ -330,7 +330,7 @@ func test__exec_and__should_pop_0_and_1_and_push_0__when_0_and_1_are_not_true{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(0, 0);
@@ -355,7 +355,7 @@ func test__exec_and__should_pop_0_and_1_and_push_1__when_0_and_1_are_true{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(1, 0);
@@ -380,7 +380,7 @@ func test__exec_or__should_pop_0_and_1_and_push_0__when_0_or_1_are_not_true{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(0, 0);
@@ -405,7 +405,7 @@ func test__exec_or__should_pop_0_and_1_and_push_1__when_0_or_1_are_true{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(1, 0);
@@ -430,7 +430,7 @@ func test__exec_shl__should_pop_0_and_1_and_push_left_shift{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(32, 0);
@@ -455,7 +455,7 @@ func test__exec_shr__should_pop_0_and_1_and_push_right_shift{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(1, 0);
@@ -480,7 +480,7 @@ func test__exec_sar__should_pop_0_and_1_and_push_shr{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(1, 0);

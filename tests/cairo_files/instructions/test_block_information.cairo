@@ -31,7 +31,7 @@ func test__chainId__should_push_chain_id_to_stack{
 
     // Then
     assert result.gas_used = 2;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(1263227476, 0);
@@ -52,7 +52,7 @@ func test__coinbase_should_push_coinbase_address_to_stack{
 
     // Then
     assert result.gas_used = 2;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     let coinbase_address = Helpers.to_uint256(Constants.MOCK_COINBASE_ADDRESS);
@@ -74,7 +74,7 @@ func test__timestamp_should_push_block_timestamp_to_stack{
 
     // Then
     assert result.gas_used = 2;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     let (current_timestamp) = get_block_timestamp();
@@ -97,7 +97,7 @@ func test__number_should_push_block_number_to_stack{
 
     // Then
     assert result.gas_used = 2;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     let (current_block) = get_block_number();
@@ -120,7 +120,7 @@ func test__gaslimit_should_push_gaslimit_to_stack{
 
     // Then
     assert result.gas_used = 2;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     let gas_limit = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
@@ -142,7 +142,7 @@ func test__difficulty_should_push_difficulty_to_stack{
 
     // Then
     assert result.gas_used = 2;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     let difficulty = Helpers.to_uint256(0);
@@ -164,7 +164,7 @@ func test__basefee_should_push_basefee_to_stack{
 
     // Then
     assert result.gas_used = 2;
-    let len: felt =  result.stack.stack_16bytes_len / 2;
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
     let (stack,index0) = Stack.peek(result.stack, 0);
     let basefee = Helpers.to_uint256(0);

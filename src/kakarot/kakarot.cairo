@@ -56,12 +56,12 @@ func execute{
         );
     let summary = Kakarot.execute(call_context);
     let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
-    let stack_accesses_len = summary.stack.stack_squashed_end - summary.stack.stack_squashed_start;
+    let stack_accesses_len = summary.stack.squashed_end - summary.stack.squashed_start;
 
     return (
         stack_accesses_len=stack_accesses_len,
-        stack_accesses=summary.stack.stack_squashed_start,
-        stack_len=summary.stack.stack_16bytes_len,
+        stack_accesses=summary.stack.squashed_start,
+        stack_len=summary.stack.len_16bytes,
         memory_accesses_len=memory_accesses_len,
         memory_accesses=summary.memory.squashed_start,
         memory_bytes_len=summary.memory.bytes_len,
@@ -101,12 +101,12 @@ func execute_at_address{
         address=address, calldata_len=calldata_len, calldata=calldata, value=value
     );
     let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
-    let stack_accesses_len = summary.stack.stack_squashed_end - summary.stack.stack_squashed_start;
+    let stack_accesses_len = summary.stack.squashed_end - summary.stack.squashed_start;
 
     return (
         stack_accesses_len=stack_accesses_len,
-        stack_accesses=summary.stack.stack_squashed_start,
-        stack_len=summary.stack.stack_16bytes_len,
+        stack_accesses=summary.stack.squashed_start,
+        stack_len=summary.stack.len_16bytes,
         memory_accesses_len=memory_accesses_len,
         memory_accesses=summary.memory.squashed_start,
         memory_bytes_len=summary.memory.bytes_len,
