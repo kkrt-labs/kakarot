@@ -48,8 +48,7 @@ namespace Kakarot {
     ) {
         Ownable.initializer(owner);
         native_token_address.write(native_token_address_);
-        evm_contract_class_hash.write(
-        evm_contract_class_hash_);
+        evm_contract_class_hash.write(evm_contract_class_hash_);
         return ();
     }
 
