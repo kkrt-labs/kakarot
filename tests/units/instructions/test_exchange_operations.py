@@ -17,6 +17,7 @@ async def execution_context(starknet: Starknet):
 @pytest.mark.asyncio
 class TestExchangeOperationst:
     async def test_everything_context(self, execution_context):
+        await execution_context.test__util_prepare_stack__should_create_stack_with_top_and_preswapped_elements().call()
         await execution_context.test__exec_swap1__should_swap_1st_and_2nd().call()
         await execution_context.test__exec_swap2__should_swap_1st_and_3rd().call()
 
