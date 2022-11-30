@@ -16,7 +16,7 @@ from kakarot.stack import Stack
 from tests.utils.utils import TestHelpers
 
 // @notice Prepare a stack with `stack_len` elements to test swap logic. 
-func prepare_stack{range_check_ptr}(stack_len : felt, swap_idx: felt, swap_idx_element: Uint256, top_stack_element: Uint256,  stack : model.Stack*) -> (prepared_stack: model.Stack*) {
+func init_stack{range_check_ptr}(stack_len: felt, swap_idx: felt, swap_idx_element: Uint256, top_stack_element: Uint256,  stack : model.Stack*) -> (prepared_stack: model.Stack*) {
     alloc_locals;
     // We set the last prepared_stack_len to a special number so we can test for successful swapping
     if (stack_len == 0) {
@@ -26,13 +26,13 @@ func prepare_stack{range_check_ptr}(stack_len : felt, swap_idx: felt, swap_idx_e
     // As well as user defined prepared_stack_len
     if (swap_idx == stack_len) {
         let _updated_stack: model.Stack* = Stack.push(stack, swap_idx_element);
-        let updated_stack : model.Stack* = prepare_stack(stack_len=stack_len-1, swap_idx=swap_idx, swap_idx_element=swap_idx_element, top_stack_element=top_stack_element, stack=_updated_stack);
+        let updated_stack : model.Stack* = init_stack(stack_len=stack_len-1, swap_idx=swap_idx, swap_idx_element=swap_idx_element, top_stack_element=top_stack_element, stack=_updated_stack);
         return (prepared_stack=updated_stack);
     }
 
     // otherwise we just fill with zero
     let _updated_stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
-    let updated_stack : model.Stack* = prepare_stack(stack_len=stack_len-1, swap_idx=swap_idx, swap_idx_element=swap_idx_element, top_stack_element=top_stack_element, stack=_updated_stack);
+    let updated_stack : model.Stack* = init_stack(stack_len=stack_len-1, swap_idx=swap_idx, swap_idx_element=swap_idx_element, top_stack_element=top_stack_element, stack=_updated_stack);
     return (prepared_stack=updated_stack);
 }
 
@@ -48,7 +48,7 @@ func check_swapped_stack{range_check_ptr}(preswap_top_stack_element: Uint256, pr
 }
 
 @external
-func test__util_prepare_stack__should_create_stack_with_top_and_preswapped_elements{
+func test__util_init_stack__should_create_stack_with_top_and_preswapped_elements{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     alloc_locals;
@@ -60,7 +60,7 @@ func test__util_prepare_stack__should_create_stack_with_top_and_preswapped_eleme
     let length_of_stack_indexed_from_zero = 15;
 
     // When
-    let prepared_stack : model.Stack* = prepare_stack(stack_len=length_of_stack_indexed_from_zero, swap_idx=15, swap_idx_element=preswap_element_at_idx, top_stack_element=top_stack_element, stack=stack);
+    let prepared_stack : model.Stack* = init_stack(stack_len=length_of_stack_indexed_from_zero, swap_idx=15, swap_idx_element=preswap_element_at_idx, top_stack_element=top_stack_element, stack=stack);
 
     // Then 
    let stack_len = Stack.len(prepared_stack);
@@ -85,7 +85,7 @@ func test__exec_swap1__should_swap_1st_and_2nd{
     let stack: model.Stack* = Stack.init();
     let top_stack_element : Uint256 = Uint256(2, 0);
     let preswap_element_at_swap_idx : Uint256 = Uint256(1, 0);
-    let prepped_stack : model.Stack* = prepare_stack(stack_len=1, swap_idx=1, swap_idx_element=preswap_element_at_swap_idx, top_stack_element=top_stack_element, stack=stack);
+    let prepped_stack : model.Stack* = init_stack(stack_len=1, swap_idx=1, swap_idx_element=preswap_element_at_swap_idx, top_stack_element=top_stack_element, stack=stack);
     
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, prepped_stack);
 
@@ -124,7 +124,7 @@ func test__exec_swap2__should_swap_1st_and_3rd{
     let stack: model.Stack* = Stack.init();
     let top_stack_element : Uint256 = Uint256(2, 0);
     let preswap_element_at_swap_idx : Uint256 = Uint256(1, 0);
-    let prepared_stack : model.Stack* = prepare_stack(stack_len=2, swap_idx=2, swap_idx_element=preswap_element_at_swap_idx, top_stack_element=top_stack_element, stack=stack);
+    let prepared_stack : model.Stack* = init_stack(stack_len=2, swap_idx=2, swap_idx_element=preswap_element_at_swap_idx, top_stack_element=top_stack_element, stack=stack);
     
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, prepared_stack);
 
@@ -164,7 +164,7 @@ func test__exec_swap8__should_swap_1st_and_9th{
     let stack: model.Stack* = Stack.init();
     let top_stack_element : Uint256 = Uint256(2, 0);
     let preswap_element_at_swap_idx : Uint256 = Uint256(1, 0);
-    let prepared_stack : model.Stack* = prepare_stack(stack_len=8, swap_idx=8, swap_idx_element=preswap_element_at_swap_idx, top_stack_element=top_stack_element, stack=stack);
+    let prepared_stack : model.Stack* = init_stack(stack_len=8, swap_idx=8, swap_idx_element=preswap_element_at_swap_idx, top_stack_element=top_stack_element, stack=stack);
     
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, prepared_stack);
 
@@ -186,7 +186,7 @@ func test__exec_swap8__should_fail__when_index_8_is_underflow{
     let stack: model.Stack* = Stack.init();
     let top_stack_element : Uint256 = Uint256(2, 0);
     let preswap_element_at_idx : Uint256 = Uint256(1, 0);
-    let prepared_stack : model.Stack* = prepare_stack(stack_len=7, swap_idx=7, swap_idx_element=preswap_element_at_idx, top_stack_element=top_stack_element, stack=stack);
+    let prepared_stack : model.Stack* = init_stack(stack_len=7, swap_idx=7, swap_idx_element=preswap_element_at_idx, top_stack_element=top_stack_element, stack=stack);
 
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
@@ -206,7 +206,7 @@ func test__exec_swap9__should_swap_1st_and_10th{
     let stack: model.Stack* = Stack.init();
     let top_stack_element : Uint256 = Uint256(2, 0);
     let preswap_element_at_swap_idx : Uint256 = Uint256(1, 0);
-    let prepared_stack : model.Stack* = prepare_stack(stack_len=9, swap_idx=9, swap_idx_element=preswap_element_at_swap_idx, top_stack_element=top_stack_element, stack=stack);
+    let prepared_stack : model.Stack* = init_stack(stack_len=9, swap_idx=9, swap_idx_element=preswap_element_at_swap_idx, top_stack_element=top_stack_element, stack=stack);
     
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, prepared_stack);
 
@@ -228,7 +228,7 @@ func test__exec_swap9__should_fail__when_index_9_is_underflow{
     let stack: model.Stack* = Stack.init();
     let top_stack_element : Uint256 = Uint256(2, 0);
     let preswap_element_at_idx : Uint256 = Uint256(1, 0);
-    let prepared_stack : model.Stack* = prepare_stack(stack_len=8, swap_idx=8, swap_idx_element=preswap_element_at_idx, top_stack_element=top_stack_element, stack=stack);
+    let prepared_stack : model.Stack* = init_stack(stack_len=8, swap_idx=8, swap_idx_element=preswap_element_at_idx, top_stack_element=top_stack_element, stack=stack);
 
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
@@ -250,7 +250,7 @@ func test__exec_swap16__should_swap_1st_and_17th{
     let stack: model.Stack* = Stack.init();
     let top_stack_element : Uint256 = Uint256(2, 0);
     let preswap_element_at_swap_idx : Uint256 = Uint256(1, 0);
-    let prepared_stack : model.Stack* = prepare_stack(stack_len=15, swap_idx=15, swap_idx_element=preswap_element_at_swap_idx, top_stack_element=top_stack_element, stack=stack);
+    let prepared_stack : model.Stack* = init_stack(stack_len=15, swap_idx=15, swap_idx_element=preswap_element_at_swap_idx, top_stack_element=top_stack_element, stack=stack);
     
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, prepared_stack);
 
@@ -272,7 +272,7 @@ func test__exec_swap16__should_fail__when_index_16_is_underflow{
     let stack: model.Stack* = Stack.init();
     let top_stack_element : Uint256 = Uint256(2, 0);
     let preswap_element_at_idx : Uint256 = Uint256(1, 0);
-    let prepared_stack : model.Stack* = prepare_stack(stack_len=14, swap_idx=14, swap_idx_element=preswap_element_at_idx, top_stack_element=top_stack_element, stack=stack);
+    let prepared_stack : model.Stack* = init_stack(stack_len=14, swap_idx=14, swap_idx_element=preswap_element_at_idx, top_stack_element=top_stack_element, stack=stack);
 
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
