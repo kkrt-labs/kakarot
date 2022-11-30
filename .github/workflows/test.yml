@@ -5,8 +5,13 @@ on: [push, pull_request]
 jobs:
   compilation-tests:
     runs-on: ubuntu-latest
+    env:
+      CI_COMMIT_MESSAGE: CI Formatting Auto Commit
+      CI_COMMIT_AUTHOR: ${{ github.event.repository.name }} CI
     steps:
       - uses: actions/checkout@v3
+
+      # Python setup
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
@@ -33,6 +38,20 @@ jobs:
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
+
+      # Build artifacts
+      - name: Event name
+        run: echo "github.event_name=${{ github.event_name }}"
+      - name: Format all the cairo files
+        run: make format
+      - name: Commit changes
+        # Run on push events and commit only when there are changes, otherwise it continues
+        if: github.event_name == 'push'
+        run: |
+          git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
+          git config --global user.email "sayajin-labs@users.noreply.github.com"
+          git add -A
+          git diff-index --quiet HEAD || (git commit -m "${{ env.CI_COMMIT_MESSAGE }}" && git push)
       - name: Compile all the cairo files
         run: |
           make format-check
