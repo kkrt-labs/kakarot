@@ -37,7 +37,7 @@ func init_stack{range_check_ptr}(stack_len: felt, swap_idx: felt, swap_idx_eleme
 }
 
 // @notice Checks if previously prepared stack has its values properly swapped.
-func check_swapped_stack{range_check_ptr}(preswap_top_stack_element: Uint256, preswap_element_at_swap_idx: Uint256, swap_idx: felt, stack : model.Stack*) {
+func assert_stack_is_swapped{range_check_ptr}(preswap_top_stack_element: Uint256, preswap_element_at_swap_idx: Uint256, swap_idx: felt, stack : model.Stack*) {
    alloc_locals;
    let swapped_element = Stack.peek(stack, 0);
    let swapped_element_at_swap_idx =  Stack.peek(stack, swap_idx);
@@ -93,7 +93,7 @@ func test__exec_swap1__should_swap_1st_and_2nd{
     let result =  ExchangeOperations.exec_swap1(ctx);
 
     // Then
-    check_swapped_stack(preswap_top_stack_element=top_stack_element, preswap_element_at_swap_idx=preswap_element_at_swap_idx, swap_idx=1, stack=result.stack);
+    assert_stack_is_swapped(preswap_top_stack_element=top_stack_element, preswap_element_at_swap_idx=preswap_element_at_swap_idx, swap_idx=1, stack=result.stack);
     return ();
 }
 
@@ -132,7 +132,7 @@ func test__exec_swap2__should_swap_1st_and_3rd{
     let result =  ExchangeOperations.exec_swap2(ctx);
 
     // Then
-    check_swapped_stack(preswap_top_stack_element=top_stack_element, preswap_element_at_swap_idx=preswap_element_at_swap_idx, swap_idx=2, stack=result.stack);
+    assert_stack_is_swapped(preswap_top_stack_element=top_stack_element, preswap_element_at_swap_idx=preswap_element_at_swap_idx, swap_idx=2, stack=result.stack);
     return ();
 }
 
@@ -172,7 +172,7 @@ func test__exec_swap8__should_swap_1st_and_9th{
     let result =  ExchangeOperations.exec_swap8(ctx);
 
     // Then
-    check_swapped_stack(preswap_top_stack_element=top_stack_element, preswap_element_at_swap_idx=preswap_element_at_swap_idx, swap_idx=8, stack=result.stack);
+    assert_stack_is_swapped(preswap_top_stack_element=top_stack_element, preswap_element_at_swap_idx=preswap_element_at_swap_idx, swap_idx=8, stack=result.stack);
     return ();
 }
 
@@ -214,7 +214,7 @@ func test__exec_swap9__should_swap_1st_and_10th{
     let result =  ExchangeOperations.exec_swap9(ctx);
 
     // Then
-    check_swapped_stack(preswap_top_stack_element=top_stack_element, preswap_element_at_swap_idx=preswap_element_at_swap_idx, swap_idx=9, stack=result.stack);
+    assert_stack_is_swapped(preswap_top_stack_element=top_stack_element, preswap_element_at_swap_idx=preswap_element_at_swap_idx, swap_idx=9, stack=result.stack);
     return ();
 }
 
@@ -258,7 +258,7 @@ func test__exec_swap16__should_swap_1st_and_17th{
     let result =  ExchangeOperations.exec_swap16(ctx);
 
     // Then
-    check_swapped_stack(preswap_top_stack_element=top_stack_element, preswap_element_at_swap_idx=preswap_element_at_swap_idx, swap_idx=15, stack=result.stack);
+    assert_stack_is_swapped(preswap_top_stack_element=top_stack_element, preswap_element_at_swap_idx=preswap_element_at_swap_idx, swap_idx=15, stack=result.stack);
     return ();
 }
 
