@@ -442,13 +442,13 @@ namespace ArithmeticOperations {
             return one_uint;
         }
         let (is_b_ge_than_one) = uint256_le(zero_uint, b);
-        if (is_b_ge_than_one != FALSE) {
-            let (b_minus_one) = SafeUint256.sub_le(b, one_uint);
-            let temp_pow = internal_exp(a=a, b=b_minus_one);
-            let (res) = SafeUint256.mul(a, temp_pow);
-            return res;
+        if (is_b_ge_than_one == FALSE) {
+            return zero_uint;
         }
-        return zero_uint;
+        let (b_minus_one) = SafeUint256.sub_le(b, one_uint);
+        let temp_pow = internal_exp(a=a, b=b_minus_one);
+        let (res) = SafeUint256.mul(a, temp_pow);
+        return res;
     }
 
     // @notice Apply changes to the execution context.

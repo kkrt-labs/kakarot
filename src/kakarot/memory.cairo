@@ -115,8 +115,8 @@ namespace Memory {
         let (w2) = dict_read{dict_ptr=word_dict}(chunk_index + 2);
 
         // Compute the new words.
-        let (w0_h, w0_l) = unsigned_div_rem(w0, mask);
-        let (w2_h, w2_l) = unsigned_div_rem(w2, mask);
+        let (w0_h, _) = unsigned_div_rem(w0, mask);
+        let (_, w2_l) = unsigned_div_rem(w2, mask);
         let new_w0 = w0_h * mask + el_hh;
         let new_w1 = el_hl * mask + el_lh;
         let new_w2 = el_ll * mask + w2_l;
@@ -171,7 +171,7 @@ namespace Memory {
             let (w) = dict_read{dict_ptr=word_dict}(chunk_index_i);
 
             let (w_h, w_l) = Helpers.div_rem(w, mask_i);
-            let (w_lh, w_ll) = Helpers.div_rem(w_l, mask_f);
+            let (_, w_ll) = Helpers.div_rem(w_l, mask_f);
             let x = Helpers.load_word(element_len, element);
             let new_w = w_h * mask_i + x * mask_f + w_ll;
             dict_write{dict_ptr=word_dict}(chunk_index_i, new_w);
@@ -184,13 +184,13 @@ namespace Memory {
         // Otherwise.
         // Fill first word.
         let (w_i) = dict_read{dict_ptr=word_dict}(chunk_index_i);
-        let (w_i_h, w_i_l) = Helpers.div_rem(w_i, mask_i);
+        let (w_i_h, _) = Helpers.div_rem(w_i, mask_i);
         let x_i = Helpers.load_word(16 - offset_in_chunk_i, element);
         dict_write{dict_ptr=word_dict}(chunk_index_i, w_i_h * mask_i + x_i);
 
         // Fill last word.
         let (w_f) = dict_read{dict_ptr=word_dict}(chunk_index_f);
-        let (w_f_h, w_f_l) = Helpers.div_rem(w_f, mask_f);
+        let (_, w_f_l) = Helpers.div_rem(w_f, mask_f);
         let x_f = Helpers.load_word(offset_in_chunk_f, element + element_len - offset_in_chunk_f);
         dict_write{dict_ptr=word_dict}(chunk_index_f, x_f * mask_f + w_f_l);
 
@@ -280,9 +280,9 @@ namespace Memory {
         let (w2) = dict_read{dict_ptr=word_dict}(chunk_index + 2);
 
         // Compute element words.
-        let (w0_h, w0_l) = unsigned_div_rem(w0, mask);
+        let (_, w0_l) = unsigned_div_rem(w0, mask);
         let (w1_h, w1_l) = unsigned_div_rem(w1, mask);
-        let (w2_h, w2_l) = unsigned_div_rem(w2, mask);
+        let (w2_h, _) = unsigned_div_rem(w2, mask);
         let el_h = w0_l * mask_c + w1_h;
         let el_l = w1_l * mask_c + w2_h;
         return (
@@ -321,8 +321,8 @@ namespace Memory {
         // Special case: within the same word.
         if (chunk_index_i == chunk_index_f) {
             let (w) = dict_read{dict_ptr=word_dict}(chunk_index_i);
-            let (w_h, w_l) = Helpers.div_rem(w, mask_i);
-            let (w_lh, w_ll) = Helpers.div_rem(w_l, mask_f);
+            let (_, w_l) = Helpers.div_rem(w, mask_i);
+            let (w_lh, _) = Helpers.div_rem(w_l, mask_f);
             Helpers.split_word(w_lh, element_len, element);
             return (new model.Memory(
                 word_dict_start=self.word_dict_start,
@@ -333,12 +333,12 @@ namespace Memory {
         // Otherwise.
         // Get first word.
         let (w_i) = dict_read{dict_ptr=word_dict}(chunk_index_i);
-        let (w_i_h, w_i_l) = Helpers.div_rem(w_i, mask_i);
+        let (_, w_i_l) = Helpers.div_rem(w_i, mask_i);
         Helpers.split_word(w_i_l, 16 - offset_in_chunk_i, element);
 
         // Get last word.
         let (w_f) = dict_read{dict_ptr=word_dict}(chunk_index_f);
-        let (w_f_h, w_f_l) = Helpers.div_rem(w_f, mask_f);
+        let (w_f_h, _) = Helpers.div_rem(w_f, mask_f);
         Helpers.split_word(w_f_h, offset_in_chunk_f, element + element_len - offset_in_chunk_f);
 
         // Get blocks.
@@ -415,8 +415,7 @@ namespace Memory {
         if (is_memory_expanding != 0) {
             let (new_memory, cost) = Memory.expand(self=self, length=length - self.bytes_len);
             return (new_memory, cost);
-        } else {
-            return (new_memory=self, cost=0);
         }
+        return (new_memory=self, cost=0);
     }
 }
