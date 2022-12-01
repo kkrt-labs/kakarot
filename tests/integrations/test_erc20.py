@@ -9,7 +9,22 @@ from tests.utils.utils import hex_string_to_bytes_array, traceit
 @pytest.mark.asyncio
 @pytest.mark.SolmateERC20
 class TestERC20:
-    async def test_erc20(
+    class TestDeploy:
+        async def test_should_set_name_symbol_and_decimals(
+            self,
+            deploy_solidity_contract: Callable,
+        ):
+            erc_20 = await deploy_solidity_contract(
+                "ERC20", "Kakarot Token", "KKT", 18, caller_address=1
+            )
+            name = await erc_20.name()
+            assert name == "Kakarot Token"
+            symbol = await erc_20.symbol()
+            assert symbol == "KKT"
+            decimals = await erc_20.decimals()
+            assert decimals == 18
+
+    async def test_should_mint_approve_and_transfer(
         self, kakarot: StarknetContract, deploy_solidity_contract: Callable, request
     ):
         state = kakarot.state.copy()

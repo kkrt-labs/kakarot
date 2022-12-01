@@ -156,15 +156,15 @@ namespace SystemOperations {
         let (stack, popped) = Stack.pop_n(self=ctx.stack, n=7);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        let gas = 2 ** 128 * popped[6].high + popped[6].low;
-        let address = 2 ** 128 * popped[5].high + popped[5].low;
-        let value = 2 ** 128 * popped[4].high + popped[4].low;
+        let gas = 2 ** 128 * popped[0].high + popped[0].low;
+        let address = 2 ** 128 * popped[1].high + popped[1].low;
+        let value = 2 ** 128 * popped[2].high + popped[2].low;
         let args_offset = 2 ** 128 * popped[3].high + popped[3].low;
-        let args_size = 2 ** 128 * popped[2].high + popped[2].low;
+        let args_size = 2 ** 128 * popped[4].high + popped[4].low;
         // TODO: use these return data inputs when RETURN is fixed: RETURN should fill the ctx.return_data and set return_data_len
         // TODO: but not alloc a new segment
-        let ret_offset = 2 ** 128 * popped[1].high + popped[1].low;
-        let ret_size = 2 ** 128 * popped[0].high + popped[0].low;
+        let ret_offset = 2 ** 128 * popped[5].high + popped[5].low;
+        let ret_size = 2 ** 128 * popped[6].high + popped[6].low;
 
         // Load calldata from Memory
         let (calldata: felt*) = alloc();
@@ -176,7 +176,11 @@ namespace SystemOperations {
         // Prepare execution sub context
         // TODO: use gas_limit when init_at_address is updated
         let sub_ctx: model.ExecutionContext* = ExecutionContext.init_at_address(
-            address=address, calldata_len=args_size, calldata=calldata, value=value, parent_context=ctx
+            address=address,
+            calldata_len=args_size,
+            calldata=calldata,
+            value=value,
+            parent_context=ctx,
         );
 
         return sub_ctx;
