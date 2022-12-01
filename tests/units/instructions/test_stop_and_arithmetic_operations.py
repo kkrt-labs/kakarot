@@ -52,3 +52,6 @@ class TestArithmeticOperations:
         self, arithmetic_operations
     ):
         await arithmetic_operations.test__exec_signextend__should_signextend_0_and_1().call()
+
+    async def test__exec_stop(self, arithmetic_operations):
+        await arithmetic_operations.test__exec_stop().call()
