@@ -12,10 +12,12 @@ from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.registers import get_ap
 from starkware.cairo.common.registers import get_label_location
+from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
 from kakarot.model import model
 from kakarot.execution_context import ExecutionContext
+from kakarot.stack import Stack
 from kakarot.instructions.push_operations import PushOperations
 from kakarot.instructions.stop_and_arithmetic_operations import StopAndArithmeticOperations
 from kakarot.instructions.comparison_operations import ComparisonOperations
@@ -596,6 +598,7 @@ namespace EVMInstructions {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
         // Decode and execute
         let ctx: model.ExecutionContext* = decode_and_execute(ctx=ctx);
 
@@ -608,7 +611,16 @@ namespace EVMInstructions {
             if (is_parent_root != FALSE) {
                 return ctx;
             } else {
-                return run(ctx=ctx.parent_context);
+                // TODO: success should be taken from ctx but revert is currently just raising so
+                // TODO: writing here TRUE: with the current implementation, a reverting sub_context
+                // TODO: would break the whole computation, so if it does not, it's TRUE
+                // Note: this Stack.push somehow "belongs" the the (static|deletegate)call(code) opcode that
+                // triggered the creationg of the currently ending sub context
+                let success = Uint256(low=1, high=0);
+                local ctx: model.ExecutionContext* = ctx.parent_context;
+                let stack = Stack.push(ctx.stack, success);
+                let ctx = ExecutionContext.update_stack(ctx, stack);
+                return run(ctx=ctx);
             }
         }
 

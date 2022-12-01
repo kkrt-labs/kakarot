@@ -19,7 +19,10 @@ from tests.utils.model import EVMTestCase
 
 namespace TestHelpers {
     func init_context{
-        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
     }(bytecode_len: felt, bytecode: felt*) -> model.ExecutionContext* {
         alloc_locals;
 
@@ -27,13 +30,16 @@ namespace TestHelpers {
         assert [calldata] = '';
         local call_context: model.CallContext* = new model.CallContext(
             bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
-        );
+            );
         let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
         return ctx;
     }
 
     func init_context_with_stack{
-        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
     }(bytecode_len: felt, bytecode: felt*, stack: model.Stack*) -> model.ExecutionContext* {
         let ctx: model.ExecutionContext* = init_context(bytecode_len, bytecode);
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -42,10 +48,13 @@ namespace TestHelpers {
 
     // @notice Init an execution context where bytecode has "bytecode_count" entries of "value".
     func init_context_with_bytecode{
-        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
     }(bytecode_count: felt, value: felt) -> model.ExecutionContext* {
         alloc_locals;
-        
+
         let (bytecode) = alloc();
         _fill_bytecode_with_values(bytecode, bytecode_count, value);
 
@@ -66,11 +75,76 @@ namespace TestHelpers {
 
         return ();
     }
-    
+
     func assert_stack_last_element_contains{range_check_ptr}(stack: model.Stack*, value: felt) {
         let (stack,index0) = Stack.peek(stack, 0);
         assert index0 = Uint256(value, 0);
 
         return ();
+    }
+
+    func assert_array_equal(array_0_len: felt, array_0: felt*, array_1_len: felt, array_1: felt*) {
+        assert array_0_len = array_1_len;
+        if (array_0_len == 0) {
+            return ();
+        }
+        assert [array_0] = [array_1];
+        return assert_array_equal(array_0_len - 1, array_0 + 1, array_1_len - 1, array_1 + 1);
+    }
+
+    func assert_call_context_equal(
+        call_context_0: model.CallContext*, call_context_1: model.CallContext*
+    ) {
+        assert call_context_0.value = call_context_1.value;
+        assert_array_equal(
+            call_context_0.bytecode_len,
+            call_context_0.bytecode,
+            call_context_1.bytecode_len,
+            call_context_1.bytecode,
+        );
+        assert_array_equal(
+            call_context_0.calldata_len,
+            call_context_0.calldata,
+            call_context_1.calldata_len,
+            call_context_1.calldata,
+        );
+        return ();
+    }
+
+    func assert_execution_context_equal(
+        execution_context_0: model.ExecutionContext*, execution_context_1: model.ExecutionContext*
+    ) {
+        let is_context_0_root = ExecutionContext.is_root(execution_context_0);
+        let is_context_1_root = ExecutionContext.is_root(execution_context_1);
+        assert is_context_0_root = is_context_1_root;
+        if (is_context_0_root != FALSE) {
+            return ();
+        }
+
+        assert_call_context_equal(
+            execution_context_0.call_context, execution_context_1.call_context
+        );
+        assert execution_context_0.program_counter = execution_context_1.program_counter;
+        assert execution_context_0.stopped = execution_context_1.stopped;
+
+        assert_array_equal(
+            execution_context_0.return_data_len,
+            execution_context_0.return_data,
+            execution_context_1.return_data_len,
+            execution_context_1.return_data,
+        );
+
+        // TODO: Implement assert_dict_access_equal and finalize this helper one Stack and Memory are stabilized
+        // assert execution_context_0.stack = execution_context_1.stack;
+        // assert execution_context_0.memory = execution_context_1.memory;
+
+        assert execution_context_0.gas_used = execution_context_1.gas_used;
+        assert execution_context_0.gas_limit = execution_context_1.gas_limit;
+        assert execution_context_0.intrinsic_gas_cost = execution_context_1.intrinsic_gas_cost;
+        assert execution_context_0.starknet_contract_address = execution_context_1.starknet_contract_address;
+        assert execution_context_0.evm_contract_address = execution_context_1.evm_contract_address;
+        return assert_execution_context_equal(
+            execution_context_0.parent_context, execution_context_1.parent_context
+        );
     }
 }

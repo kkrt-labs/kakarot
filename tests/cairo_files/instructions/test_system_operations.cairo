@@ -6,8 +6,12 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.math import split_felt
 
 // Local dependencies
+from kakarot.interfaces.interfaces import IKakarot
+from kakarot.library import Kakarot
+from kakarot.constants import evm_contract_class_hash, registry_address
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.execution_context import ExecutionContext
@@ -37,5 +41,64 @@ func test_exec_revert{
     let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
     let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
     SystemOperations.exec_revert(ctx);
+    return ();
+}
+
+@external
+func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(evm_contract_class_hash_: felt, registry_address_: felt, kakarot_address: felt) {
+    // Given
+    alloc_locals;
+    let (bytecode) = alloc();
+
+    evm_contract_class_hash.write(evm_contract_class_hash_);
+    registry_address.write(registry_address_);
+
+    let (local evm_contract_address, local starknet_contract_address) = IKakarot.deploy(
+        kakarot_address, 0, bytecode
+    );
+    let (address_high, address_low) = split_felt(evm_contract_address);
+
+    let stack: model.Stack* = Stack.init();
+    let gas = Uint256(0, 0);
+    let address = Uint256(address_low, address_high);
+    let value = Uint256(2, 0);
+    let args_offset = Uint256(3, 0);
+    let args_size = Uint256(4, 0);
+    let ret_offset = Uint256(5, 0);
+    let ret_size = Uint256(6, 0);
+    // Put some value in memory as it is used for calldata with args_size and args_offset
+    // Word is 0x 11 22 33 44 55 66 77 88 00 00 ... 00
+    // calldata should be 0x 44 55 66 77
+    let memory_word = Uint256(low=0, high=22774453838368691922685013100469420032);
+    let memory_offset = Uint256(0, 0);
+    let stack = Stack.push(stack, ret_size);
+    let stack = Stack.push(stack, ret_offset);
+    let stack = Stack.push(stack, args_size);
+    let stack = Stack.push(stack, args_offset);
+    let stack = Stack.push(stack, value);
+    let stack = Stack.push(stack, address);
+    let stack = Stack.push(stack, gas);
+    let stack = Stack.push(stack, memory_word);
+    let stack = Stack.push(stack, memory_offset);
+
+    let ctx = TestHelpers.init_context_with_stack(0, bytecode, stack);
+    let ctx = MemoryOperations.exec_mstore(ctx);
+
+    // When
+    let sub_ctx = SystemOperations.exec_call(ctx);
+
+    // Then
+    assert sub_ctx.call_context.bytecode_len = 0;
+    assert sub_ctx.call_context.calldata_len = 4;
+    assert [sub_ctx.call_context.calldata] = 0x44;
+    assert [sub_ctx.call_context.calldata + 1] = 0x55;
+    assert [sub_ctx.call_context.calldata + 2] = 0x66;
+    assert [sub_ctx.call_context.calldata + 3] = 0x77;
+    assert sub_ctx.starknet_contract_address = starknet_contract_address;
+    assert sub_ctx.evm_contract_address = evm_contract_address;
+    TestHelpers.assert_execution_context_equal(sub_ctx.parent_context, ctx);
+
     return ();
 }

@@ -37,3 +37,11 @@ namespace IEvmContract {
     func is_initialized() -> (is_initialized: felt) {
     }
 }
+
+@contract_interface
+namespace IKakarot {
+    func deploy(bytecode_len: felt, bytecode: felt*) -> (
+        evm_contract_address: felt, starknet_contract_address: felt
+    ) {
+    }
+}

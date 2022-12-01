@@ -63,6 +63,7 @@ namespace SystemOperations {
         let stack = ctx.stack;
         let memory = ctx.memory;
 
+        // TODO: should not allocate a new segment but use ctx.return_data
         let (local new_return_data: felt*) = alloc();
         let (local new_memory: model.Memory*) = alloc();
         let (stack, offset) = Stack.pop(stack);
@@ -131,7 +132,54 @@ namespace SystemOperations {
         with_attr error_message("Kakarot: Reverted with reason: {revert_reason}") {
             assert TRUE = FALSE;
         }
+        // TODO: this is never reached, raising with cairo prevent from implementing a true REVERT
+        // TODO: that still returns some data. This is especially problematic for sub contexts.
         let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
         return ctx;
+    }
+
+    // @notice CALL operation.
+    // @dev
+    // @custom:since Frontier
+    // @custom:group System Operations
+    // @custom:gas 0 + dynamic gas
+    // @custom:stack_consumed_elements 7
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the sub context.
+    func exec_call{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        let (stack, popped) = Stack.pop_n(self=ctx.stack, n=7);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+
+        let gas = 2 ** 128 * popped[6].high + popped[6].low;
+        let address = 2 ** 128 * popped[5].high + popped[5].low;
+        let value = 2 ** 128 * popped[4].high + popped[4].low;
+        let args_offset = 2 ** 128 * popped[3].high + popped[3].low;
+        let args_size = 2 ** 128 * popped[2].high + popped[2].low;
+        // TODO: use these return data inputs when RETURN is fixed: RETURN should fill the ctx.return_data and set return_data_len
+        // TODO: but not alloc a new segment
+        let ret_offset = 2 ** 128 * popped[1].high + popped[1].low;
+        let ret_size = 2 ** 128 * popped[0].high + popped[0].low;
+
+        // Load calldata from Memory
+        let (calldata: felt*) = alloc();
+        let memory = Memory.load_n(
+            self=ctx.memory, element_len=args_size, element=calldata, offset=args_offset
+        );
+        let ctx = ExecutionContext.update_memory(ctx, memory);
+
+        // Prepare execution sub context
+        // TODO: use gas_limit when init_at_address is updated
+        let sub_ctx: model.ExecutionContext* = ExecutionContext.init_at_address(
+            address=address, calldata_len=args_size, calldata=calldata, value=value
+        );
+        let sub_ctx = ExecutionContext.update_parent_context(self=sub_ctx, parent_context=ctx);
+
+        return sub_ctx;
     }
 }
