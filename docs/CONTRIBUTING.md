@@ -18,7 +18,17 @@ To set up a development environment, please follow these steps:
    git clone https://github.com/sayajin-labs/kakarot
    ```
 
-2. TODO
+2. Install dependencies
+
+   ```sh
+   make setup
+   ```
+
+3. Run tests
+
+   ```sh
+   make test
+   ```
 
 ## Issues and feature requests
 
@@ -48,7 +58,8 @@ Please try to create bug reports that are:
    [Pull Requests](https://github.com/sayajin-labs/kakarot/pulls) that relate to
    your submission. You don't want to duplicate effort.
 2. Fork the project
-3. Create your feature branch (`git checkout -b feat/amazing_feature`)
-4. Commit your changes (`git commit -m 'feat: add amazing_feature'`)
-5. Push to the branch (`git push origin feat/amazing_feature`)
-6. [Open a Pull Request](https://github.com/sayajin-labs/kakarot/compare?expand=1)
+3. **Enable workflows** so CI can add an auto-commit during format checks ![enable-workflow](/resources/img/github_workflows.png)
+4. Create your feature branch (`git checkout -b feat/amazing_feature`)
+5. Commit your changes (`git commit -m 'feat: add amazing_feature'`)
+6. Push to the branch (`git push origin feat/amazing_feature`)
+7. [Open a Pull Request](https://github.com/sayajin-labs/kakarot/compare?expand=1)
