@@ -176,9 +176,8 @@ namespace SystemOperations {
         // Prepare execution sub context
         // TODO: use gas_limit when init_at_address is updated
         let sub_ctx: model.ExecutionContext* = ExecutionContext.init_at_address(
-            address=address, calldata_len=args_size, calldata=calldata, value=value
+            address=address, calldata_len=args_size, calldata=calldata, value=value, parent_context=ctx
         );
-        let sub_ctx = ExecutionContext.update_parent_context(self=sub_ctx, parent_context=ctx);
 
         return sub_ctx;
     }

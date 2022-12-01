@@ -615,7 +615,7 @@ namespace EVMInstructions {
                 // TODO: writing here TRUE: with the current implementation, a reverting sub_context
                 // TODO: would break the whole computation, so if it does not, it's TRUE
                 // Note: this Stack.push somehow "belongs" the the (static|deletegate)call(code) opcode that
-                // triggered the creationg of the currently ending sub context
+                // triggered the creation of the currently ending sub context
                 let success = Uint256(low=1, high=0);
                 local ctx: model.ExecutionContext* = ctx.parent_context;
                 let stack = Stack.push(ctx.stack, success);

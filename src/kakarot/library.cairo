@@ -98,8 +98,13 @@ namespace Kakarot {
         alloc_locals;
 
         // Prepare execution context
+        let root_context = ExecutionContext.init_root();
         let ctx: model.ExecutionContext* = ExecutionContext.init_at_address(
-            address=address, calldata_len=calldata_len, calldata=calldata, value=value
+            address=address,
+            calldata_len=calldata_len,
+            calldata=calldata,
+            value=value,
+            parent_context=root_context,
         );
 
         // Compute intrinsic gas cost and update gas used

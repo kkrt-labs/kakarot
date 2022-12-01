@@ -124,7 +124,13 @@ namespace ExecutionContext {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, calldata_len: felt, calldata: felt*, value: felt) -> model.ExecutionContext* {
+    }(
+        address: felt,
+        calldata_len: felt,
+        calldata: felt*,
+        value: felt,
+        parent_context: model.ExecutionContext*,
+    ) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
 
@@ -150,8 +156,6 @@ namespace ExecutionContext {
         local call_context: model.CallContext* = new model.CallContext(
             bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=calldata_len, value=value
             );
-
-        let parent_context = init_root();
 
         return new model.ExecutionContext(
             call_context=call_context,
@@ -443,30 +447,5 @@ namespace ExecutionContext {
         }
 
         return ();
-    }
-
-    // @notice Update the parent context.
-    // @dev The parent context is set to the given execution context.
-    // @param self The pointer to the execution context.
-    // @param parent_context The new parent context.
-    // @return The pointer to the updated execution context.
-    func update_parent_context(
-        self: model.ExecutionContext*, parent_context: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
-        return new model.ExecutionContext(
-            call_context=self.call_context,
-            program_counter=self.program_counter,
-            stopped=self.stopped,
-            return_data=self.return_data,
-            return_data_len=self.return_data_len,
-            stack=self.stack,
-            memory=self.memory,
-            gas_used=self.gas_used,
-            gas_limit=self.gas_limit,
-            intrinsic_gas_cost=self.intrinsic_gas_cost,
-            starknet_contract_address=self.starknet_contract_address,
-            evm_contract_address=self.evm_contract_address,
-            parent_context=parent_context,
-            );
     }
 }
