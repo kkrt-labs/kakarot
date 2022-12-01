@@ -61,8 +61,8 @@ namespace ArithmeticOperations {
         // 1 - b: second integer value to add.
         let stack = ctx.stack;
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[1];
-        let b = popped[0];
+        let a = popped[0];
+        let b = popped[1];
 
         // Compute the addition
         let (result) = SafeUint256.add(a, b);
@@ -96,8 +96,8 @@ namespace ArithmeticOperations {
         // 1 - b: second integer value to multiply.
         let stack = ctx.stack;
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[1];
-        let b = popped[0];
+        let a = popped[0];
+        let b = popped[1];
 
         // Compute the multiplication
         let (result) = SafeUint256.mul(a, b);
@@ -131,8 +131,8 @@ namespace ArithmeticOperations {
         // 1 - b: second integer value to sub.
         let stack = ctx.stack;
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[1];
-        let b = popped[0];
+        let a = popped[0];
+        let b = popped[1];
 
         // Compute the subtraction
         let (result) = uint256_sub(a, b);
@@ -166,8 +166,8 @@ namespace ArithmeticOperations {
         // 1 - b: denominator.
         let stack = ctx.stack;
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[1];
-        let b = popped[0];
+        let a = popped[0];
+        let b = popped[1];
 
         // Compute the division
         let (result, _) = SafeUint256.div_rem(a, b);
@@ -201,8 +201,8 @@ namespace ArithmeticOperations {
         // 1 - b: denominator.
         let stack = ctx.stack;
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[1];
-        let b = popped[0];
+        let a = popped[0];
+        let b = popped[1];
 
         // Compute the division
         let (result, _) = uint256_signed_div_rem(a, b);
@@ -236,8 +236,8 @@ namespace ArithmeticOperations {
         // 1 - b: modulo.
         let stack = ctx.stack;
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[1];
-        let b = popped[0];
+        let a = popped[0];
+        let b = popped[1];
 
         // Compute the modulo
         let (_, rem) = SafeUint256.div_rem(a, b);
@@ -271,8 +271,8 @@ namespace ArithmeticOperations {
         // 1 - b: modulo.
         let stack = ctx.stack;
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[1];
-        let b = popped[0];
+        let a = popped[0];
+        let b = popped[1];
 
         // Compute the signed modulo
         let (_, rem) = uint256_signed_div_rem(a, b);
@@ -307,9 +307,9 @@ namespace ArithmeticOperations {
         // 1 - c: modulo.
         let stack = ctx.stack;
         let (stack, popped) = Stack.pop_n(self=stack, n=3);
-        let a = popped[2];
+        let a = popped[0];
         let b = popped[1];
-        let c = popped[0];
+        let c = popped[2];
 
         // Compute the addition
         let (result) = SafeUint256.add(a, b);
@@ -346,9 +346,9 @@ namespace ArithmeticOperations {
         // 1 - c: modulos.
         let stack = ctx.stack;
         let (stack, popped) = Stack.pop_n(self=stack, n=3);
-        let a = popped[2];
+        let a = popped[0];
         let b = popped[1];
-        let c = popped[0];
+        let c = popped[2];
 
         // Compute the addition
         let (result) = SafeUint256.mul(a, b);
@@ -384,8 +384,8 @@ namespace ArithmeticOperations {
         // 1 - b: exponent.
         let stack = ctx.stack;
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[1];
-        let b = popped[0];
+        let a = popped[0];
+        let b = popped[1];
 
         // Compute the addition
         let result = internal_exp(a, b);
@@ -419,8 +419,8 @@ namespace ArithmeticOperations {
         // 1 - b: exponent.
         let stack = ctx.stack;
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let b = popped[1];
-        let a = popped[0];
+        let b = popped[0];
+        let a = popped[1];
 
         // Value is already a uint256
         let stack: model.Stack* = Stack.push(self=stack, element=a);

@@ -27,7 +27,7 @@ namespace ExecutionContext {
     // Summary of the execution. Created upon finalization of the execution.
     struct Summary {
         memory: Memory.Summary*,
-        stack: model.Stack*,
+        stack: Stack.Summary*,
         return_data: felt*,
         return_data_len: felt,
         gas_used: felt,
@@ -52,10 +52,6 @@ namespace ExecutionContext {
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();
 
-        // 1. Evm address
-        // 2. Get starknet Address
-        // 3. Get the constant of Evm address mappings
-
         local ctx: model.ExecutionContext* = new model.ExecutionContext(
             call_context=call_context,
             program_counter=initial_pc,
@@ -76,10 +72,13 @@ namespace ExecutionContext {
     // @notice Finalizes the execution context.
     // @return The pointer to the execution Summary.
     func finalize{range_check_ptr}(self: model.ExecutionContext*) -> Summary* {
+        alloc_locals;
         let memory_summary = Memory.finalize(self.memory);
+        let stack_summary = Stack.finalize(self.stack);
+
         return new Summary(
             memory=memory_summary,
-            stack=self.stack,
+            stack=stack_summary,
             return_data=self.return_data,
             return_data_len=self.return_data_len,
             gas_used=self.gas_used,

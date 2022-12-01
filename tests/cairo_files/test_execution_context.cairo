@@ -38,7 +38,7 @@ func test__init__should_return_an_empty_execution_context{
     assert result.call_context.calldata = calldata;
     assert result.program_counter = 0;
     assert result.stopped = FALSE;
-    assert result.stack.raw_len = 0;
+    assert result.stack.len_16bytes = 0;
     assert result.memory.bytes_len = 0;
     assert result.gas_used = 0;
     assert result.gas_limit = Constants.TRANSACTION_GAS_LIMIT;  // TODO: Add support for gas limit

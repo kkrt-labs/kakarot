@@ -46,8 +46,8 @@ namespace Sha3 {
         // 0 - offset: memory offset for the begining of the hash.
         // 1 - length: how many values we hash.
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let offset = popped[1];
-        let length = popped[0];
+        let offset = popped[0];
+        let length = popped[1];
 
         let (memory, cost) = Memory.ensure_length(self=ctx.memory, length=offset.low + length.low);
 

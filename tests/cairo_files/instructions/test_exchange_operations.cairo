@@ -39,8 +39,8 @@ func init_stack{range_check_ptr}(stack_len: felt, swap_idx: felt, swap_idx_eleme
 // @notice Checks if previously prepared stack has its values properly swapped.
 func assert_stack_is_swapped{range_check_ptr}(preswap_top_stack_element: Uint256, preswap_element_at_swap_idx: Uint256, swap_idx: felt, stack : model.Stack*) {
    alloc_locals;
-   let swapped_element = Stack.peek(stack, 0);
-   let swapped_element_at_swap_idx =  Stack.peek(stack, swap_idx);
+   let (stack,swapped_element) = Stack.peek(stack, 0);
+   let (stack,swapped_element_at_swap_idx) =  Stack.peek(stack, swap_idx);
   
    assert_uint256_eq(preswap_top_stack_element, swapped_element_at_swap_idx);
    assert_uint256_eq(preswap_element_at_swap_idx, swapped_element);
@@ -63,9 +63,9 @@ func test__util_init_stack__should_create_stack_with_top_and_preswapped_elements
     let prepared_stack : model.Stack* = init_stack(stack_len=length_of_stack_indexed_from_zero, swap_idx=15, swap_idx_element=preswap_element_at_idx, top_stack_element=top_stack_element, stack=stack);
 
     // Then 
-   let stack_len = Stack.len(prepared_stack);
-   let top_element = Stack.peek(prepared_stack, 0);
-   let element_at_swap_idx =  Stack.peek(prepared_stack, 15);
+   let stack_len = prepared_stack.len_16bytes/2;
+   let (stack,top_element) = Stack.peek(prepared_stack, 0);
+   let (stack,element_at_swap_idx) =  Stack.peek(stack, 15);
   
    assert stack_len = length_of_stack_indexed_from_zero + 1;
    assert_uint256_eq(top_element, top_stack_element);

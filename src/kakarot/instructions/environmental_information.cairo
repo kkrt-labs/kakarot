@@ -24,16 +24,16 @@ from kakarot.interfaces.interfaces import IEth, IRegistry
 // @custom:namespace EnvironmentalInformation
 namespace EnvironmentalInformation {
     // Define constants.
-    const GAS_COST_ADDRESS        = 2;
-    const GAS_COST_BALANCE        = 100;
-    const GAS_COST_ORIGIN         = 2;
-    const GAS_COST_CALLER         = 2;
-    const GAS_COST_CALLVALUE      = 2;
-    const GAS_COST_CALLDATALOAD   = 3;
-    const GAS_COST_CALLDATASIZE   = 2;
-    const GAS_COST_CALLDATACOPY   = 3;
-    const GAS_COST_CODESIZE       = 2;
-    const GAS_COST_CODECOPY       = 3;
+    const GAS_COST_ADDRESS = 2;
+    const GAS_COST_BALANCE = 100;
+    const GAS_COST_ORIGIN = 2;
+    const GAS_COST_CALLER = 2;
+    const GAS_COST_CALLVALUE = 2;
+    const GAS_COST_CALLDATALOAD = 3;
+    const GAS_COST_CALLDATASIZE = 2;
+    const GAS_COST_CALLDATACOPY = 3;
+    const GAS_COST_CODESIZE = 2;
+    const GAS_COST_CODECOPY = 3;
     const GAS_COST_RETURNDATASIZE = 2;
     const GAS_COST_RETURNDATACOPY = 3;
 
@@ -288,9 +288,9 @@ namespace EnvironmentalInformation {
         // 1 - calldata_offset: offset for calldata from where data will be copied.
         // 2 - element_len: bytes length of the copied calldata.
         let (stack, popped) = Stack.pop_n(self=stack, n=3);
-        let offset = popped[2];
+        let offset = popped[0];
         let calldata_offset = popped[1];
-        let element_len = popped[0];
+        let element_len = popped[2];
 
         let calldata: felt* = ctx.call_context.calldata;
         let calldata_len: felt = ctx.call_context.calldata_len;
@@ -334,6 +334,7 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         // Get the bytecode size.
         let code_size = Helpers.to_uint256(ctx.call_context.bytecode_len);
+
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=code_size);
 
         // Update the execution context.
@@ -368,9 +369,9 @@ namespace EnvironmentalInformation {
         // 1 - code_offset: offset for bytecode from where data will be copied.
         // 2 - element_len: bytes length of the copied bytecode.
         let (stack, popped) = Stack.pop_n(self=stack, n=3);
-        let offset = popped[2];
+        let offset = popped[0];
         let code_offset = popped[1];
-        let element_len = popped[0];
+        let element_len = popped[2];
 
         // Get bytecode slice from code_offset to element_len
         let bytecode: felt* = ctx.call_context.bytecode;
@@ -447,9 +448,9 @@ namespace EnvironmentalInformation {
         // 1 - code_offset: offset for bytecode from where data will be copied.
         // 2 - element_len: bytes length of the copied bytecode.
         let (stack, popped) = Stack.pop_n(self=stack, n=3);
-        let offset = popped[2];
+        let offset = popped[0];
         let return_data_offset = popped[1];
-        let element_len = popped[0];
+        let element_len = popped[2];
 
         let return_data: felt* = ctx.return_data;
         let return_data_len: felt = ctx.return_data_len;

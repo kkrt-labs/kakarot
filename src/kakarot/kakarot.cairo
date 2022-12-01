@@ -42,8 +42,9 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 func execute{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(value: felt, bytecode_len: felt, bytecode: felt*, calldata_len: felt, calldata: felt*) -> (
+    stack_accesses_len: felt,
+    stack_accesses: felt*,
     stack_len: felt,
-    stack: Uint256*,
     memory_accesses_len: felt,
     memory_accesses: felt*,
     memory_bytes_len: felt,
@@ -54,11 +55,13 @@ func execute{
         bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=calldata_len, value=value
         );
     let summary = Kakarot.execute(call_context);
-    let len = Stack.len(summary.stack);
     let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
+    let stack_accesses_len = summary.stack.squashed_end - summary.stack.squashed_start;
+
     return (
-        stack_len=len,
-        stack=summary.stack.elements,
+        stack_accesses_len=stack_accesses_len,
+        stack_accesses=summary.stack.squashed_start,
+        stack_len=summary.stack.len_16bytes,
         memory_accesses_len=memory_accesses_len,
         memory_accesses=summary.memory.squashed_start,
         memory_bytes_len=summary.memory.bytes_len,
@@ -82,8 +85,9 @@ func execute{
 func execute_at_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(address: felt, value: felt, calldata_len: felt, calldata: felt*) -> (
+    stack_accesses_len: felt,
+    stack_accesses: felt*,
     stack_len: felt,
-    stack: Uint256*,
     memory_accesses_len: felt,
     memory_accesses: felt*,
     memory_bytes_len: felt,
@@ -96,11 +100,13 @@ func execute_at_address{
     let summary = Kakarot.execute_at_address(
         address=address, calldata_len=calldata_len, calldata=calldata, value=value
     );
-    let len = Stack.len(summary.stack);
     let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
+    let stack_accesses_len = summary.stack.squashed_end - summary.stack.squashed_start;
+
     return (
-        stack_len=len,
-        stack=summary.stack.elements,
+        stack_accesses_len=stack_accesses_len,
+        stack_accesses=summary.stack.squashed_start,
+        stack_len=summary.stack.len_16bytes,
         memory_accesses_len=memory_accesses_len,
         memory_accesses=summary.memory.squashed_start,
         memory_bytes_len=summary.memory.bytes_len,

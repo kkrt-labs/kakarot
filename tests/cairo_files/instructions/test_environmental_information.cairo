@@ -67,9 +67,9 @@ func test__exec_address__should_push_address_to_stack{
 
     // Then
     assert result.gas_used = 2;
-    let len: felt = Stack.len(result.stack);
+    let len: felt =  result.stack.len_16bytes / 2;
     assert len = 1;
-    let index0 = Stack.peek(result.stack, 0);
+    let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(420, 0);
     return ();
 }
