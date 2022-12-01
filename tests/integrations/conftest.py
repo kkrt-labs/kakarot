@@ -72,3 +72,16 @@ def deploy_solidity_contract(starknet, contract_account_class, kakarot):
 
     logger.info(f"Deployed solidity contracts: {list(deployed_contracts)}")
     deployed_contracts = {}
+
+
+@pytest.fixture
+def addresses():
+    _addresses = list(range(4))
+    return [{"int": _a, "hex": "0x" + "0" * 39 + str(_a)} for _a in _addresses]
+
+
+@pytest.fixture
+def kakarot_snapshot(kakarot):
+    state = kakarot.state.copy()
+    yield kakarot
+    kakarot.state = state

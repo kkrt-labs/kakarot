@@ -103,7 +103,7 @@ async def contract_account_class(starknet: Starknet):
     )
 
 
-@pytest_asyncio.fixture(scope="module")
+@pytest_asyncio.fixture(scope="package")
 async def kakarot(
     starknet: Starknet, eth: StarknetContract, contract_account_class: DeclaredClass
 ) -> StarknetContract:
@@ -119,7 +119,7 @@ async def kakarot(
     )
 
 
-@pytest_asyncio.fixture(scope="module", autouse=True)
+@pytest_asyncio.fixture(scope="package", autouse=True)
 async def set_account_registry(
     kakarot: StarknetContract, account_registry: StarknetContract
 ):
