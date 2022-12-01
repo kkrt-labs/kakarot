@@ -233,14 +233,223 @@ func test__exec_swap9__should_fail__when_index_9_is_underflow{
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When & Then
-    let result =  ExchangeOperations.exec_swap8(ctx);
+    let result =  ExchangeOperations.exec_swap9(ctx);
+    return ();
+}
+
+@external
+func test__exec_swap10__should_swap_1st_and_11th{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+
+    alloc_locals;
+    // Given
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+    let top_stack_element : Uint256 = Uint256(2, 0);
+    let preswap_element_at_swap_idx : Uint256 = Uint256(1, 0);
+    let prepared_stack : model.Stack* = init_stack(stack_len=10, swap_idx=10, swap_idx_element=preswap_element_at_swap_idx, top_stack_element=top_stack_element, stack=stack);
+    
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, prepared_stack);
+
+    // When
+    let result =  ExchangeOperations.exec_swap10(ctx);
+
+    // Then
+    assert_stack_is_swapped(preswap_top_stack_element=top_stack_element, preswap_element_at_swap_idx=preswap_element_at_swap_idx, swap_idx=10, stack=result.stack);
+    return ();
+}
+
+@external
+func test__exec_swap10__should_fail__when_index_10_is_underflow{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    alloc_locals;
+    // Given
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+    let top_stack_element : Uint256 = Uint256(2, 0);
+    let preswap_element_at_idx : Uint256 = Uint256(1, 0);
+    let prepared_stack : model.Stack* = init_stack(stack_len=9, swap_idx=9, swap_idx_element=preswap_element_at_idx, top_stack_element=top_stack_element, stack=stack);
+
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+
+    // When & Then
+    let result =  ExchangeOperations.exec_swap10(ctx);
     return ();
 }
 
 
+@external
+func test__exec_swap11__should_swap_1st_and_12th{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+
+    alloc_locals;
+    // Given
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+    let top_stack_element : Uint256 = Uint256(2, 0);
+    let preswap_element_at_swap_idx : Uint256 = Uint256(1, 0);
+    let prepared_stack : model.Stack* = init_stack(stack_len=11, swap_idx=11, swap_idx_element=preswap_element_at_swap_idx, top_stack_element=top_stack_element, stack=stack);
+    
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, prepared_stack);
+
+    // When
+    let result =  ExchangeOperations.exec_swap11(ctx);
+
+    // Then
+    assert_stack_is_swapped(preswap_top_stack_element=top_stack_element, preswap_element_at_swap_idx=preswap_element_at_swap_idx, swap_idx=11, stack=result.stack);
+    return ();
+}
 
 @external
-func test__exec_swap16__should_swap_1st_and_17th{
+func test__exec_swap11__should_fail__when_index_11_is_underflow{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    alloc_locals;
+    // Given
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+    let top_stack_element : Uint256 = Uint256(2, 0);
+    let preswap_element_at_idx : Uint256 = Uint256(1, 0);
+    let prepared_stack : model.Stack* = init_stack(stack_len=10, swap_idx=10, swap_idx_element=preswap_element_at_idx, top_stack_element=top_stack_element, stack=stack);
+
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+
+    // When & Then
+    let result =  ExchangeOperations.exec_swap11(ctx);
+    return ();
+}
+
+@external
+func test__exec_swap12__should_swap_1st_and_13th{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+
+    alloc_locals;
+    // Given
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+    let top_stack_element : Uint256 = Uint256(2, 0);
+    let preswap_element_at_swap_idx : Uint256 = Uint256(1, 0);
+    let prepared_stack : model.Stack* = init_stack(stack_len=12, swap_idx=12, swap_idx_element=preswap_element_at_swap_idx, top_stack_element=top_stack_element, stack=stack);
+    
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, prepared_stack);
+
+    // When
+    let result =  ExchangeOperations.exec_swap12(ctx);
+
+    // Then
+    assert_stack_is_swapped(preswap_top_stack_element=top_stack_element, preswap_element_at_swap_idx=preswap_element_at_swap_idx, swap_idx=12, stack=result.stack);
+    return ();
+}
+
+@external
+func test__exec_swap12__should_fail__when_index_12_is_underflow{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    alloc_locals;
+    // Given
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+    let top_stack_element : Uint256 = Uint256(2, 0);
+    let preswap_element_at_idx : Uint256 = Uint256(1, 0);
+    let prepared_stack : model.Stack* = init_stack(stack_len=11, swap_idx=11, swap_idx_element=preswap_element_at_idx, top_stack_element=top_stack_element, stack=stack);
+
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+
+    // When & Then
+    let result =  ExchangeOperations.exec_swap12(ctx);
+    return ();
+}
+
+@external
+func test__exec_swap13__should_swap_1st_and_14th{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+
+    alloc_locals;
+    // Given
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+    let top_stack_element : Uint256 = Uint256(2, 0);
+    let preswap_element_at_swap_idx : Uint256 = Uint256(1, 0);
+    let prepared_stack : model.Stack* = init_stack(stack_len=13, swap_idx=13, swap_idx_element=preswap_element_at_swap_idx, top_stack_element=top_stack_element, stack=stack);
+    
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, prepared_stack);
+
+    // When
+    let result =  ExchangeOperations.exec_swap13(ctx);
+
+    // Then
+    assert_stack_is_swapped(preswap_top_stack_element=top_stack_element, preswap_element_at_swap_idx=preswap_element_at_swap_idx, swap_idx=13, stack=result.stack);
+    return ();
+}
+
+@external
+func test__exec_swap13__should_fail__when_index_13_is_underflow{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    alloc_locals;
+    // Given
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+    let top_stack_element : Uint256 = Uint256(2, 0);
+    let preswap_element_at_idx : Uint256 = Uint256(1, 0);
+    let prepared_stack : model.Stack* = init_stack(stack_len=12, swap_idx=12, swap_idx_element=preswap_element_at_idx, top_stack_element=top_stack_element, stack=stack);
+
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+
+    // When & Then
+    let result =  ExchangeOperations.exec_swap13(ctx);
+    return ();
+}
+
+@external
+func test__exec_swap14__should_swap_1st_and_15th{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+
+    alloc_locals;
+    // Given
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+    let top_stack_element : Uint256 = Uint256(2, 0);
+    let preswap_element_at_swap_idx : Uint256 = Uint256(1, 0);
+    let prepared_stack : model.Stack* = init_stack(stack_len=14, swap_idx=14, swap_idx_element=preswap_element_at_swap_idx, top_stack_element=top_stack_element, stack=stack);
+    
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, prepared_stack);
+
+    // When
+    let result =  ExchangeOperations.exec_swap14(ctx);
+
+    // Then
+    assert_stack_is_swapped(preswap_top_stack_element=top_stack_element, preswap_element_at_swap_idx=preswap_element_at_swap_idx, swap_idx=14, stack=result.stack);
+    return ();
+}
+
+@external
+func test__exec_swap14__should_fail__when_index_14_is_underflow{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    alloc_locals;
+    // Given
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+    let top_stack_element : Uint256 = Uint256(2, 0);
+    let preswap_element_at_idx : Uint256 = Uint256(1, 0);
+    let prepared_stack : model.Stack* = init_stack(stack_len=13, swap_idx=13, swap_idx_element=preswap_element_at_idx, top_stack_element=top_stack_element, stack=stack);
+
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+
+    // When & Then
+    let result =  ExchangeOperations.exec_swap14(ctx);
+    return ();
+}
+
+@external
+func test__exec_swap15__should_swap_1st_and_16th{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
 
@@ -255,10 +464,52 @@ func test__exec_swap16__should_swap_1st_and_17th{
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, prepared_stack);
 
     // When
-    let result =  ExchangeOperations.exec_swap16(ctx);
+    let result =  ExchangeOperations.exec_swap15(ctx);
 
     // Then
     assert_stack_is_swapped(preswap_top_stack_element=top_stack_element, preswap_element_at_swap_idx=preswap_element_at_swap_idx, swap_idx=15, stack=result.stack);
+    return ();
+}
+
+@external
+func test__exec_swap15__should_fail__when_index_15_is_underflow{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    alloc_locals;
+    // Given
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+    let top_stack_element : Uint256 = Uint256(2, 0);
+    let preswap_element_at_idx : Uint256 = Uint256(1, 0);
+    let prepared_stack : model.Stack* = init_stack(stack_len=13, swap_idx=14, swap_idx_element=preswap_element_at_idx, top_stack_element=top_stack_element, stack=stack);
+
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+
+    // When & Then
+    let result =  ExchangeOperations.exec_swap15(ctx);
+    return ();
+}
+
+@external
+func test__exec_swap16__should_swap_1st_and_17th{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+
+    alloc_locals;
+    // Given
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+    let top_stack_element : Uint256 = Uint256(2, 0);
+    let preswap_element_at_swap_idx : Uint256 = Uint256(1, 0);
+    let prepared_stack : model.Stack* = init_stack(stack_len=16, swap_idx=16, swap_idx_element=preswap_element_at_swap_idx, top_stack_element=top_stack_element, stack=stack);
+    
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, prepared_stack);
+
+    // When
+    let result =  ExchangeOperations.exec_swap16(ctx);
+
+    // Then
+    assert_stack_is_swapped(preswap_top_stack_element=top_stack_element, preswap_element_at_swap_idx=preswap_element_at_swap_idx, swap_idx=16, stack=result.stack);
     return ();
 }
 
