@@ -36,7 +36,7 @@ namespace ExecutionContext {
         evm_contract_address: felt,
     }
 
-    // @notice Initialize an empty context to act as a placeholder for main context
+    // @notice Initialize an empty context to act as a placeholder for root context
     // @return An stopped execution context
     func init_root() -> model.ExecutionContext* {
         let (root_context) = get_label_location(empty_context);
@@ -202,10 +202,10 @@ namespace ExecutionContext {
         return self.stopped;
     }
 
-    // @notice Return whether the current execution context is stopped.
-    // @dev When the execution context is stopped, no more instructions can be executed.
+    // @notice Return whether the current execution context is root.
+    // @dev When the execution context is root, no parent context can be called when this context stops.
     // @param self The pointer to the execution context.
-    // @return TRUE if the execution context is stopped, FALSE otherwise.
+    // @return TRUE if the execution context is root, FALSE otherwise.
     func is_root(self: model.ExecutionContext*) -> felt {
         if (cast(self.parent_context, felt) == 0) {
             return TRUE;
@@ -445,10 +445,10 @@ namespace ExecutionContext {
         return ();
     }
 
-    // @notice Increment the program counter.
-    // @dev The program counter is incremented by the given value.
+    // @notice Update the parent context.
+    // @dev The parent context is set to the given execution context.
     // @param self The pointer to the execution context.
-    // @param inc_value The value to increment the program counter with.
+    // @param parent_context The new parent context.
     // @return The pointer to the updated execution context.
     func update_parent_context(
         self: model.ExecutionContext*, parent_context: model.ExecutionContext*

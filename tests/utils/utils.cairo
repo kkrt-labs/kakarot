@@ -134,7 +134,7 @@ namespace TestHelpers {
             execution_context_1.return_data,
         );
 
-        // TODO: Implement assert_dict_access_equal and finalize this helper one Stack and Memory are stabilized
+        // TODO: Implement assert_dict_access_equal and finalize this helper once Stack and Memory are stabilized
         // assert execution_context_0.stack = execution_context_1.stack;
         // assert execution_context_0.memory = execution_context_1.memory;
 
