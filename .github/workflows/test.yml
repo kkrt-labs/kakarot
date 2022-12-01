@@ -1,6 +1,6 @@
 name: TESTS
 
-on: [push, pull_request]
+on: [push, pull_request, pull_request_target]
 
 jobs:
   compilation-tests:
@@ -45,8 +45,9 @@ jobs:
       - name: Format all the cairo files
         run: make format
       - name: Commit changes
-        # Run on push events and commit only when there are changes, otherwise it continues
-        if: github.event_name == 'push'
+        # Run on pull_request_target events (context with write permission) and commit only when there are changes
+        # Otherwise it continues
+        if: github.event_name == 'pull_request_target'
         run: |
           git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
           git config --global user.email "sayajin-labs@users.noreply.github.com"
