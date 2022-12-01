@@ -48,6 +48,7 @@ namespace Helpers {
         local new_i: felt;
         local new_val: felt*;
         local high: felt;
+        local low: felt;
 
         // Check if i is lower to 32
         let is_le32 = is_le(i, 32);
@@ -72,24 +73,22 @@ namespace Helpers {
         let is_i_le_16 = is_le(new_i, 16);
 
         if (is_i_le_16 != FALSE) {
-            let (low) = compute_half_uint256(val=new_val, i=new_i, res=0);
-            let res = Uint256(low=low, high=high);
-            return res;
+            let (low_temp)= compute_half_uint256(val=new_val, i=new_i, res=0);
+            low = low_temp;
         } else {
-            let low = 0;
-            let res = Uint256(low=low, high=high);
-            return res;
+            low = 0;
         }
+        let res = Uint256(low=low, high=high);
+        return res;
     }
 
     func compute_half_uint256{range_check_ptr}(val: felt*, i: felt, res: felt) -> (res: felt) {
         if (i == 1) {
             return (res=res + [val]);
-        } else {
-            let (temp_pow) = pow(256, i - 1);
-            let (res) = compute_half_uint256(val + 1, i - 1, res + [val] * temp_pow);
-            return (res=res);
-        }
+        } 
+        let (temp_pow) = pow(256, i - 1);
+        let (res) = compute_half_uint256(val + 1, i - 1, res + [val] * temp_pow);
+        return (res=res);
     }
 
     // @notice This function is used to convert a sequence of 8 bytes to a felt.
@@ -488,8 +487,7 @@ namespace Helpers {
     // ex: ceil_bytes_len_to_next_32_bytes_word(2) = 32
     // ex: ceil_bytes_len_to_next_32_bytes_word(34) = 64
     func ceil_bytes_len_to_next_32_bytes_word{range_check_ptr}(bytes_len: felt) -> felt {
-        let (q, r) = unsigned_div_rem(bytes_len + 31, 32);
-
+        let (q, _) = unsigned_div_rem(bytes_len + 31, 32);
         return q * 32;
     }
 }

@@ -128,17 +128,12 @@ namespace Sha3 {
         let write_to_dest = is_le(1, byte8_full + end_of_loop);
         if (write_to_dest != FALSE) {
             assert dest[dest_index] = _byte8;
-            tempvar _byte8 = 0;
-            tempvar _byte8_shift = 0;
-            tempvar _dest_index = dest_index + 1;
-        } else {
-            tempvar _byte8 = _byte8;
-            tempvar _byte8_shift = byte8_shift + 1;
-            tempvar _dest_index = dest_index;
+            return bytes_to_byte8_little_endian(
+                bytes_len, bytes, index + 1, size, 0, 0, dest, dest_index + 1
+            );
         }
-
         return bytes_to_byte8_little_endian(
-            bytes_len, bytes, index + 1, size, _byte8, _byte8_shift, dest, _dest_index
+            bytes_len, bytes, index + 1, size, _byte8, byte8_shift + 1, dest, dest_index
         );
     }
 }
