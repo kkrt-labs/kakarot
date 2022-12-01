@@ -73,7 +73,7 @@ namespace Helpers {
         let is_i_le_16 = is_le(new_i, 16);
 
         if (is_i_le_16 != FALSE) {
-            let (low_temp)= compute_half_uint256(val=new_val, i=new_i, res=0);
+            let (low_temp) = compute_half_uint256(val=new_val, i=new_i, res=0);
             low = low_temp;
         } else {
             low = 0;
@@ -85,7 +85,7 @@ namespace Helpers {
     func compute_half_uint256{range_check_ptr}(val: felt*, i: felt, res: felt) -> (res: felt) {
         if (i == 1) {
             return (res=res + [val]);
-        } 
+        }
         let (temp_pow) = pow(256, i - 1);
         let (res) = compute_half_uint256(val + 1, i - 1, res + [val] * temp_pow);
         return (res=res);
