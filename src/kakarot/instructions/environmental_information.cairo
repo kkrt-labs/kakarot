@@ -397,6 +397,25 @@ namespace EnvironmentalInformation {
         return ctx;
     }
 
+    // @notice EXTCODECOPY operation
+    // @dev Copy an account's code to memory
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 100
+    // TODO: double check correctness of docstring
+    // @custom:stack_consumed_elements 4
+    // @custom:stack_produced_elements 0
+    // @param ctx The pointer to the execution context
+    // @return The pointer to the updated execution context.    
+    func exec_extcodecopy{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        return ctx;
+    }    
+
     // @notice RETURNDATASIZE operation.
     // @dev Get the size of return data.
     // @custom:since Frontier

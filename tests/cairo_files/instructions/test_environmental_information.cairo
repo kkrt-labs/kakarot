@@ -78,3 +78,21 @@ func test__exec_address__should_push_address_to_stack{
     assert index0 = Uint256(420, 0);
     return ();
 }
+
+@external
+func test__exec_extcodecopy__{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // a nonsense test just to get started ;)
+    // Given
+    alloc_locals;
+    let ctx: model.ExecutionContext* = init_context();
+
+    // When
+    let result = EnvironmentalInformation.exec_extcodecopy(ctx);
+
+    // Then
+    assert result.gas_used = ctx.gas_used;
+
+    return ();
+}
