@@ -6,7 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
-from starkware.cairo.common.uint256 import Uint256, uint256_eq
+from starkware.cairo.common.uint256 import Uint256, uint256_eq, assert_uint256_eq
 from starkware.cairo.common.math import split_felt
 
 // Internal dependencies
@@ -76,9 +76,9 @@ namespace TestHelpers {
         return ();
     }
 
-    func assert_stack_last_element_contains{range_check_ptr}(stack: model.Stack*, value: felt) {
-        let (stack,index0) = Stack.peek(stack, 0);
-        assert index0 = Uint256(value, 0);
+    func assert_stack_last_element_contains_uint256{range_check_ptr}(stack: model.Stack*, value: Uint256) {
+        let (stack, result) = Stack.peek(stack, 0);
+        assert_uint256_eq(result, value);
 
         return ();
     }
