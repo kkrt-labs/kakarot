@@ -1,9 +1,7 @@
 import logging
 
 import pytest
-import pytest_asyncio
-from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
-from starkware.starknet.testing.starknet import Starknet
+from starkware.starknet.testing.contract import StarknetContract
 
 from tests.utils.utils import (
     get_contract,
@@ -13,38 +11,6 @@ from tests.utils.utils import (
 )
 
 logger = logging.getLogger()
-
-
-@pytest_asyncio.fixture(scope="module")
-async def kakarot(
-    starknet: Starknet, eth: StarknetContract, contract_account_class: DeclaredClass
-) -> StarknetContract:
-    return await starknet.deploy(
-        source="./src/kakarot/kakarot.cairo",
-        cairo_path=["src"],
-        disable_hint_validation=False,
-        constructor_calldata=[
-            1,
-            eth.contract_address,
-            contract_account_class.class_hash,
-        ],
-    )
-
-
-@pytest_asyncio.fixture(scope="module", autouse=True)
-async def set_account_registry(
-    kakarot: StarknetContract, account_registry: StarknetContract
-):
-    await account_registry.transfer_ownership(kakarot.contract_address).execute(
-        caller_address=1
-    )
-    await kakarot.set_account_registry(
-        registry_address_=account_registry.contract_address
-    ).execute(caller_address=1)
-    yield
-    await account_registry.transfer_ownership(1).execute(
-        caller_address=kakarot.contract_address
-    )
 
 
 @pytest.fixture(scope="module")
@@ -106,3 +72,16 @@ def deploy_solidity_contract(starknet, contract_account_class, kakarot):
 
     logger.info(f"Deployed solidity contracts: {list(deployed_contracts)}")
     deployed_contracts = {}
+
+
+@pytest.fixture
+def addresses():
+    _addresses = list(range(4))
+    return [{"int": _a, "hex": "0x" + "0" * 39 + str(_a)} for _a in _addresses]
+
+
+@pytest.fixture
+def kakarot_snapshot(kakarot):
+    state = kakarot.state.copy()
+    yield kakarot
+    kakarot.state = state

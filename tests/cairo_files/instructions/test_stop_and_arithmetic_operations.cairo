@@ -12,7 +12,7 @@ from utils.utils import Helpers
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.execution_context import ExecutionContext
-from kakarot.instructions.arithmetic_operations import ArithmeticOperations
+from kakarot.instructions.stop_and_arithmetic_operations import StopAndArithmeticOperations
 from tests.utils.utils import TestHelpers
 
 @external
@@ -30,7 +30,7 @@ func test__exec_add__should_add_0_and_1{
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
-    let result = ArithmeticOperations.exec_add(ctx);
+    let result = StopAndArithmeticOperations.exec_add(ctx);
 
     // Then
     assert result.gas_used = 3;
@@ -58,7 +58,7 @@ func test__exec_mul__should_mul_0_and_1{
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
-    let result = ArithmeticOperations.exec_mul(ctx);
+    let result = StopAndArithmeticOperations.exec_mul(ctx);
 
     // Then
     assert result.gas_used = 5;
@@ -86,7 +86,7 @@ func test__exec_sub__should_sub_0_and_1{
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
-    let result = ArithmeticOperations.exec_sub(ctx);
+    let result = StopAndArithmeticOperations.exec_sub(ctx);
 
     // Then
     assert result.gas_used = 3;
@@ -114,7 +114,7 @@ func test__exec_div__should_div_0_and_1{
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
-    let result = ArithmeticOperations.exec_div(ctx);
+    let result = StopAndArithmeticOperations.exec_div(ctx);
 
     // Then
     assert result.gas_used = 5;
@@ -142,7 +142,7 @@ func test__exec_sdiv__should_signed_div_0_and_1{
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
-    let result = ArithmeticOperations.exec_sdiv(ctx);
+    let result = StopAndArithmeticOperations.exec_sdiv(ctx);
 
     // Then
     assert result.gas_used = 5;
@@ -170,7 +170,7 @@ func test__exec_mod__should_mod_0_and_1{
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
-    let result = ArithmeticOperations.exec_mod(ctx);
+    let result = StopAndArithmeticOperations.exec_mod(ctx);
 
     // Then
     assert result.gas_used = 5;
@@ -198,7 +198,7 @@ func test__exec_smod__should_smod_0_and_1{
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
-    let result = ArithmeticOperations.exec_smod(ctx);
+    let result = StopAndArithmeticOperations.exec_smod(ctx);
 
     // Then
     assert result.gas_used = 5;
@@ -226,7 +226,7 @@ func test__exec_addmod__should_add_0_and_1_and_div_rem_by_2{
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
-    let result = ArithmeticOperations.exec_addmod(ctx);
+    let result = StopAndArithmeticOperations.exec_addmod(ctx);
 
     // Then
     assert result.gas_used = 8;
@@ -252,7 +252,7 @@ func test__exec_mulmod__should_mul_0_and_1_and_div_rem_by_2{
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
-    let result = ArithmeticOperations.exec_mulmod(ctx);
+    let result = StopAndArithmeticOperations.exec_mulmod(ctx);
 
     // Then
     assert result.gas_used = 8;
@@ -278,7 +278,7 @@ func test__exec_exp__should_exp_0_and_1{
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
-    let result = ArithmeticOperations.exec_exp(ctx);
+    let result = StopAndArithmeticOperations.exec_exp(ctx);
 
     // Then
     assert result.gas_used = 10;
@@ -304,7 +304,7 @@ func test__exec_signextend__should_signextend_0_and_1{
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
-    let result = ArithmeticOperations.exec_signextend(ctx);
+    let result = StopAndArithmeticOperations.exec_signextend(ctx);
 
     // Then
     assert result.gas_used = 5;

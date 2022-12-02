@@ -1,6 +1,0 @@
-signers:
-  admin: 1000
-  anyone: 1001
-
-sources:
-  Kakarot: ./src/zkairvm/zkairvm.cairo

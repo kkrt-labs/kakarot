@@ -37,3 +37,28 @@ namespace IEvmContract {
     func is_initialized() -> (is_initialized: felt) {
     }
 }
+
+@contract_interface
+namespace IKakarot {
+    func execute(
+        value: felt, bytecode_len: felt, bytecode: felt*, calldata_len: felt, calldata: felt*
+    ) {
+    }
+
+    func execute_at_address(address: felt, value: felt, calldata_len: felt, calldata: felt*) {
+    }
+
+    func set_account_registry(registry_address_: felt) {
+    }
+
+    func get_account_registry() -> (address: felt) {
+    }
+
+    func set_native_token(native_token_address_: felt) {
+    }
+
+    func deploy(bytecode_len: felt, bytecode: felt*) -> (
+        evm_contract_address: felt, starknet_contract_address: felt
+    ) {
+    }
+}

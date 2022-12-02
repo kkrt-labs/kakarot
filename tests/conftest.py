@@ -10,6 +10,7 @@ import pytest
 import pytest_asyncio
 from cairo_coverage import cairo_coverage
 from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
+from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
 from tests.utils.utils import dump_coverage, dump_reports, timeit, traceit
@@ -88,7 +89,7 @@ async def account_registry(starknet: Starknet):
     return await starknet.deploy(
         source="./src/kakarot/accounts/registry/account_registry.cairo",
         cairo_path=["src"],
-        disable_hint_validation=False,
+        disable_hint_validation=True,
         constructor_calldata=[1],
     )
 
@@ -98,5 +99,37 @@ async def contract_account_class(starknet: Starknet):
     return await starknet.declare(
         source="./src/kakarot/accounts/contract/contract_account.cairo",
         cairo_path=["src"],
+        disable_hint_validation=True,
+    )
+
+
+@pytest_asyncio.fixture(scope="package")
+async def kakarot(
+    starknet: Starknet, eth: StarknetContract, contract_account_class: DeclaredClass
+) -> StarknetContract:
+    return await starknet.deploy(
+        source="./src/kakarot/kakarot.cairo",
+        cairo_path=["src"],
         disable_hint_validation=False,
+        constructor_calldata=[
+            1,
+            eth.contract_address,
+            contract_account_class.class_hash,
+        ],
+    )
+
+
+@pytest_asyncio.fixture(scope="package", autouse=True)
+async def set_account_registry(
+    kakarot: StarknetContract, account_registry: StarknetContract
+):
+    await account_registry.transfer_ownership(kakarot.contract_address).execute(
+        caller_address=1
+    )
+    await kakarot.set_account_registry(
+        registry_address_=account_registry.contract_address
+    ).execute(caller_address=1)
+    yield
+    await account_registry.transfer_ownership(1).execute(
+        caller_address=kakarot.contract_address
     )

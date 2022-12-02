@@ -96,7 +96,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Comparison & bitwise logic operations - SAR",
-        "marks": [pytest.mark.SAR1, pytest.mark.ComparisonBitwiseLogicOperations],
+        "marks": [pytest.mark.SAR, pytest.mark.ComparisonBitwiseLogicOperations],
     },
     {
         "params": {
