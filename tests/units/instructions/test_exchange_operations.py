@@ -10,7 +10,7 @@ async def exchange_operations(starknet: Starknet):
     return await starknet.deploy(
         source="./tests/cairo_files/instructions/test_exchange_operations.cairo",
         cairo_path=["src"],
-        disable_hint_validation=False,
+        disable_hint_validation=True,
     )
 
 

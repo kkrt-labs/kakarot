@@ -38,7 +38,7 @@ namespace ExecutionContext {
 
     // @notice Initialize an empty context to act as a placeholder for root context
     // @return An stopped execution context
-    func init_root() -> model.ExecutionContext* {
+    func init_empty() -> model.ExecutionContext* {
         let (root_context) = get_label_location(empty_context);
         let ctx = cast(root_context, model.ExecutionContext*);
         return ctx;
@@ -57,6 +57,7 @@ namespace ExecutionContext {
         dw 0;  // starknet_contract_address
         dw 0;  // evm_contract_address
         dw 0;  // parent_context
+        dw 0;  // child_context
     }
 
     // @notice Initialize the execution context.
@@ -75,7 +76,10 @@ namespace ExecutionContext {
 
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();
-        let parent_context = init_root();
+        // Note: parent_context should theoretically take this context as child_context but this not does really matter
+        // so we keep it easier like that.
+        let parent_context = init_empty();
+        let child_context = init_empty();
 
         local ctx: model.ExecutionContext* = new model.ExecutionContext(
             call_context=call_context,
@@ -91,6 +95,7 @@ namespace ExecutionContext {
             starknet_contract_address=0,
             evm_contract_address=0,
             parent_context=parent_context,
+            child_context=child_context,
             );
         return ctx;
     }
@@ -156,22 +161,27 @@ namespace ExecutionContext {
         local call_context: model.CallContext* = new model.CallContext(
             bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=calldata_len, value=value
             );
+        let ctx: felt* = alloc();
+        let parent_context = ExecutionContext.update_child_context(
+            parent_context, cast(ctx, model.ExecutionContext*)
+        );
 
-        return new model.ExecutionContext(
-            call_context=call_context,
-            program_counter=initial_pc,
-            stopped=FALSE,
-            return_data=empty_return_data,
-            return_data_len=0,
-            stack=stack,
-            memory=memory,
-            gas_used=gas_used,
-            gas_limit=gas_limit,
-            intrinsic_gas_cost=0,
-            starknet_contract_address=starknet_contract_address,
-            evm_contract_address=address,
-            parent_context=parent_context,
-            );
+        let child_context = init_empty();
+        assert [ctx] = cast(call_context, felt);
+        assert [ctx + 1] = initial_pc;  // program_counter
+        assert [ctx + 2] = FALSE;  // stopped
+        assert [ctx + 3] = cast(empty_return_data, felt);  // return_data
+        assert [ctx + 4] = 0;  // return_data_len
+        assert [ctx + 5] = cast(stack, felt);  // stack
+        assert [ctx + 6] = cast(memory, felt);  // memory
+        assert [ctx + 7] = gas_used;  // gas_used
+        assert [ctx + 8] = gas_limit;  // gas_limit
+        assert [ctx + 9] = 0;  // intrinsic_gas_cost
+        assert [ctx + 10] = starknet_contract_address;  // starknet_contract_address
+        assert [ctx + 11] = address;  // evm_contract_address
+        assert [ctx + 12] = cast(parent_context, felt);  // parent_context
+        assert [ctx + 13] = cast(child_context, felt);  // child_context
+        return cast(ctx, model.ExecutionContext*);
     }
 
     // @notice Compute the intrinsic gas cost of the current transaction.
@@ -195,6 +205,7 @@ namespace ExecutionContext {
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
             parent_context=self.parent_context,
+            child_context=self.child_context,
             );
     }
 
@@ -212,6 +223,17 @@ namespace ExecutionContext {
     // @return TRUE if the execution context is root, FALSE otherwise.
     func is_root(self: model.ExecutionContext*) -> felt {
         if (cast(self.parent_context, felt) == 0) {
+            return TRUE;
+        }
+        return FALSE;
+    }
+
+    // @notice Return whether the current execution context is a leaf.
+    // @dev When the execution context is root, no parent context can be called when this context stops.
+    // @param self The pointer to the execution context.
+    // @return TRUE if the execution context is root, FALSE otherwise.
+    func is_leaf(self: model.ExecutionContext*) -> felt {
+        if (cast(self.child_context, felt) == 0) {
             return TRUE;
         }
         return FALSE;
@@ -236,6 +258,7 @@ namespace ExecutionContext {
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
             parent_context=self.parent_context,
+            child_context=self.child_context,
             );
     }
 
@@ -280,6 +303,7 @@ namespace ExecutionContext {
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
             parent_context=self.parent_context,
+            child_context=self.child_context,
             );
     }
 
@@ -304,6 +328,7 @@ namespace ExecutionContext {
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
             parent_context=self.parent_context,
+            child_context=self.child_context,
             );
     }
 
@@ -333,6 +358,7 @@ namespace ExecutionContext {
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
             parent_context=self.parent_context,
+            child_context=self.child_context,
             );
     }
 
@@ -358,6 +384,7 @@ namespace ExecutionContext {
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
             parent_context=self.parent_context,
+            child_context=self.child_context,
             );
     }
 
@@ -383,6 +410,37 @@ namespace ExecutionContext {
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
             parent_context=self.parent_context,
+            child_context=self.child_context,
+            );
+    }
+
+    // @notice Update the child context of the current execution context.
+    // @dev The child_context is updated with the given context.
+    // @param self The pointer to the execution context.
+    // @param memory The pointer to the child context.
+    func update_child_context{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(
+        self: model.ExecutionContext*, child_context: model.ExecutionContext*
+    ) -> model.ExecutionContext* {
+        return new model.ExecutionContext(
+            call_context=self.call_context,
+            program_counter=self.program_counter,
+            stopped=self.stopped,
+            return_data=self.return_data,
+            return_data_len=self.return_data_len,
+            stack=self.stack,
+            memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit,
+            intrinsic_gas_cost=self.intrinsic_gas_cost,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
+            parent_context=self.parent_context,
+            child_context=child_context,
             );
     }
 
@@ -427,6 +485,7 @@ namespace ExecutionContext {
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
             parent_context=self.parent_context,
+            child_context=self.child_context,
             );
     }
 

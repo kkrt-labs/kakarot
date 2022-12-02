@@ -16,6 +16,7 @@ from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
 from kakarot.model import model
+from kakarot.memory import Memory
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 from kakarot.instructions.push_operations import PushOperations
@@ -615,11 +616,15 @@ namespace EVMInstructions {
                 // TODO: writing here TRUE: with the current implementation, a reverting sub_context
                 // TODO: would break the whole computation, so if it does not, it's TRUE
                 // Note: this Stack.push somehow "belongs" the the (static|deletegate)call(code) opcode that
-                // triggered the creation of the currently ending sub context
+                // triggered the creation of the currently ending sub context; as well the memory update
                 let success = Uint256(low=1, high=0);
                 local ctx: model.ExecutionContext* = ctx.parent_context;
                 let stack = Stack.push(ctx.stack, success);
                 let ctx = ExecutionContext.update_stack(ctx, stack);
+                let memory = Memory.store_n(
+                    ctx.memory, ctx.return_data_len, ctx.return_data + 1, [ctx.return_data]
+                );
+                let ctx = ExecutionContext.update_memory(ctx, memory);
                 return run(ctx=ctx);
             }
         }

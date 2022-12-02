@@ -62,17 +62,13 @@ namespace SystemOperations {
         alloc_locals;
         let stack = ctx.stack;
         let memory = ctx.memory;
-
-        // TODO: should not allocate a new segment but use ctx.return_data
-        let (local new_return_data: felt*) = alloc();
-        let (local new_memory: model.Memory*) = alloc();
         let (stack, offset) = Stack.pop(stack);
         let (stack, size) = Stack.pop(stack);
         let curr_memory_len: felt = ctx.memory.bytes_len;
         let total_len: felt = offset.low + size.low;
         // TODO check in which multiple of 32 bytes it should be.
         let memory = Memory.load_n(
-            self=memory, element_len=size.low, element=new_return_data, offset=offset.low
+            self=memory, element_len=size.low, element=ctx.return_data, offset=offset.low
         );
 
         // Pad if offset + size > memory_len pad n
@@ -81,7 +77,7 @@ namespace SystemOperations {
 
         if (is_total_greater_than_memory_len != FALSE) {
             local diff = total_len - curr_memory_len;
-            Helpers.fill(arr_len=diff, arr=new_return_data + curr_memory_len, value=0);
+            Helpers.fill(arr_len=diff, arr=ctx.return_data + curr_memory_len, value=0);
         }
 
         // TODO if memory.bytes_len == 0 needs a different approach
@@ -91,7 +87,8 @@ namespace SystemOperations {
 
         let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
         return ExecutionContext.update_return_data(
-            ctx, new_return_data_len=size.low, new_return_data=new_return_data
+            // Note: only the new data_len is required.
+            ctx, new_return_data_len=size.low, new_return_data=ctx.return_data
         );
     }
 
@@ -161,10 +158,12 @@ namespace SystemOperations {
         let value = 2 ** 128 * popped[2].high + popped[2].low;
         let args_offset = 2 ** 128 * popped[3].high + popped[3].low;
         let args_size = 2 ** 128 * popped[4].high + popped[4].low;
-        // TODO: use these return data inputs when RETURN is fixed: RETURN should fill the ctx.return_data and set return_data_len
-        // TODO: but not alloc a new segment
         let ret_offset = 2 ** 128 * popped[5].high + popped[5].low;
         let ret_size = 2 ** 128 * popped[6].high + popped[6].low;
+        // Note: We store the offset here because we can't pre-allocate a memory segment in cairo
+        // During teardown we update the memory using this offset
+        let return_data: felt* = alloc();
+        assert [return_data] = ret_offset;
 
         // Load calldata from Memory
         let (calldata: felt*) = alloc();
@@ -175,13 +174,14 @@ namespace SystemOperations {
 
         // Prepare execution sub context
         // TODO: use gas_limit when init_at_address is updated
-        let sub_ctx: model.ExecutionContext* = ExecutionContext.init_at_address(
+        let sub_ctx = ExecutionContext.init_at_address(
             address=address,
             calldata_len=args_size,
             calldata=calldata,
             value=value,
             parent_context=ctx,
         );
+        let sub_ctx = ExecutionContext.update_return_data(sub_ctx, ret_size, return_data);
 
         return sub_ctx;
     }

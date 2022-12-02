@@ -8,7 +8,7 @@ async def push_operations(starknet: Starknet):
     return await starknet.deploy(
         source="./tests/cairo_files/instructions/test_push_operations.cairo",
         cairo_path=["src"],
-        disable_hint_validation=False,
+        disable_hint_validation=True,
     )
 
 

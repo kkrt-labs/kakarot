@@ -41,5 +41,6 @@ namespace model {
         starknet_contract_address: felt,
         evm_contract_address: felt,
         parent_context: ExecutionContext*,
+        child_context: ExecutionContext*,
     }
 }

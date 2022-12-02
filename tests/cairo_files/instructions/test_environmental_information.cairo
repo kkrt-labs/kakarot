@@ -37,7 +37,8 @@ func init_context{
     let stack: model.Stack* = Stack.init();
     let memory: model.Memory* = Memory.init();
     let gas_limit = Constants.TRANSACTION_GAS_LIMIT;
-    let parent_context = ExecutionContext.init_root();
+    let parent_context = ExecutionContext.init_empty();
+    let child_context = ExecutionContext.init_empty();
 
     local ctx: model.ExecutionContext* = new model.ExecutionContext(
         call_context=call_context,
@@ -53,6 +54,7 @@ func init_context{
         starknet_contract_address=0,
         evm_contract_address=420,
         parent_context=parent_context,
+        child_context=child_context,
         );
     return ctx;
 }
@@ -70,9 +72,9 @@ func test__exec_address__should_push_address_to_stack{
 
     // Then
     assert result.gas_used = 2;
-    let len: felt =  result.stack.len_16bytes / 2;
+    let len: felt = result.stack.len_16bytes / 2;
     assert len = 1;
-    let (stack,index0) = Stack.peek(result.stack, 0);
+    let (stack, index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(420, 0);
     return ();
 }
