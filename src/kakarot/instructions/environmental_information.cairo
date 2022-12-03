@@ -34,6 +34,7 @@ namespace EnvironmentalInformation {
     const GAS_COST_CALLDATACOPY = 3;
     const GAS_COST_CODESIZE = 2;
     const GAS_COST_CODECOPY = 3;
+    const GAS_COST_EXTCODECOPY = 100;
     const GAS_COST_RETURNDATASIZE = 2;
     const GAS_COST_RETURNDATACOPY = 3;
 
@@ -427,27 +428,32 @@ namespace EnvironmentalInformation {
         let dest_offset = popped[1];
         let offset = popped[2];
         let size = popped[3];
-       
-        // TODO: handle address so it can be looked up in registry to get its corresponding starknet address?
-        // maybe line 212 of library.cairo offers a hint?
-        let address = address_.low;
+      
+        let address = Helpers.uint256_to_felt(address_);
 
         // Get the starknet address from the given evm address
         let (registry_address_) = registry_address.read();
+
         let (starknet_contract_address) = IRegistry.get_starknet_contract_address(
             contract_address=registry_address_, evm_contract_address=address
         );
 
-        // TODO: handle case where there is no eth -> stark address mapping
+        // handle case where there is no eth -> stark address mapping
+        if (starknet_contract_address == 0) {
+            return ctx;
+        }
 
         // Get the bytecode from the Starknet_contract
         let (bytecode_len, bytecode) = IEvmContract.bytecode(
             contract_address=starknet_contract_address
         );
 
-        // TODO: handle case were eth address returns no bytecode: 
-        // For out of bound bytes, 0s will be copied.
-    
+        // handle case were eth address returns no bytecode: 
+        
+        if (bytecode_len == 0) {
+            return ctx;
+        }
+
         // TODO do we have the distinction between precompiles and warm and cold addresses? 
     
         // Get bytecode slice from offset to size
@@ -460,7 +466,7 @@ namespace EnvironmentalInformation {
 
         // Write bytecode slice to memory at dest_offset
         let memory: model.Memory* = Memory.store_n(
-            self=ctx.memory, element_len=size.low, element=sliced_bytecode, offset=size.low
+            self=ctx.memory, element_len=size.low, element=sliced_bytecode, offset=dest_offset.low
         );
 
         // Update context memory.
@@ -469,7 +475,7 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
         // TODO: compute gas (incidentally need to discern whether address is cold)
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=0);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_EXTCODECOPY);
 
         return ctx;
     }    

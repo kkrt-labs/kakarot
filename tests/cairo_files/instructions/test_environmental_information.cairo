@@ -13,7 +13,7 @@ from utils.utils import Helpers
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.memory import Memory
-from kakarot.constants import Constants
+from kakarot.constants import Constants, registry_address
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.environmental_information import EnvironmentalInformation
 from tests.utils.utils import TestHelpers
@@ -85,8 +85,12 @@ func test__exec_extcodecopy__{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // a nonsense test just to get started ;)
-    alloc_locals;
     // Given
+    alloc_locals;
+    
+    // TODO need to initialize/mock a registry contract
+    registry_address.write(1);
+
     let (bytecode) = alloc();    
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 2)); // size

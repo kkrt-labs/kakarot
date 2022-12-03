@@ -16,4 +16,7 @@ async def environmental_information(starknet: Starknet):
 class TestBlockInformation:
     async def test_everything_environmental(self, environmental_information):
         await environmental_information.test__exec_address__should_push_address_to_stack().call()
-        await environmental_information.test__exec_extcodecopy__().call()        
+
+        # TODO need to mock a registry contract to effectively unit test
+        with pytest.raises(Exception) as e:
+            await environmental_information.test__exec_extcodecopy__().call()        
