@@ -83,17 +83,17 @@ func test__exec_address__should_push_address_to_stack{
 @external
 func test__exec_extcodecopy__{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
+}(account_registry_address : felt) {
     // a nonsense test just to get started ;)
     // Given
     alloc_locals;
     
-    // TODO need to initialize/mock a registry contract
-    registry_address.write(1);
+    // make a deployed registry contract available
+    registry_address.write(account_registry_address );
 
     let (bytecode) = alloc();    
     let stack: model.Stack* = Stack.init();
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 2)); // size
+    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0)); // size
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0)); // offset
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0)); // dest_offset
     let stack: model.Stack* = Stack.push(stack, Uint256(3, 0)); // address
@@ -105,7 +105,7 @@ func test__exec_extcodecopy__{
     let result = EnvironmentalInformation.exec_extcodecopy(ctx);
 
     // Then
-    assert result.gas_used = ctx.gas_used;
+    assert result.memory = ctx.memory;
 
     return ();
 }

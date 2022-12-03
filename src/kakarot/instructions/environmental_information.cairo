@@ -424,18 +424,16 @@ namespace EnvironmentalInformation {
         // 2 - offset: byte offset in the code to copy.
         // 3 - size: byte size to copy.
         let (stack, popped) = Stack.pop_n(self=stack, n=4);
-        let address_ = popped[0];
+        let address = popped[0];
         let dest_offset = popped[1];
         let offset = popped[2];
         let size = popped[3];
       
-        let address = Helpers.uint256_to_felt(address_);
-
         // Get the starknet address from the given evm address
         let (registry_address_) = registry_address.read();
 
         let (starknet_contract_address) = IRegistry.get_starknet_contract_address(
-            contract_address=registry_address_, evm_contract_address=address
+            contract_address=registry_address_, evm_contract_address=address.low
         );
 
         // handle case where there is no eth -> stark address mapping
