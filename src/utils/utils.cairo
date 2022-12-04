@@ -16,7 +16,7 @@ from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.pow import pow
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.registers import get_label_location
-from starkware.cairo.common.bool import TRUE, FALSE
+from starkware.cairo.common.bool import FALSE
 
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
@@ -54,7 +54,7 @@ namespace Helpers {
         let is_sequence_16_bytes_or_less = is_le(i, 16);
 
         // 1 - 16 bytes
-        if (is_sequence_16_bytes_or_less == TRUE) {
+        if (is_sequence_16_bytes_or_less != FALSE) {
             let (low) = compute_half_uint256(val=val, i=i, res=0);
             let res = Uint256(low=low, high=0);
 

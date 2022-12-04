@@ -197,6 +197,18 @@ func test__exec_push15_should_add_15_byte_to_stack{
 }
 
 @external
+func test__exec_push16_should_add_16_byte_to_stack{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    alloc_locals;
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(17, 0xFF);
+    let result = PushOperations.exec_push16(ctx);
+    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0));
+
+    return ();
+}
+
+@external
 func test__exec_push17_should_add_17_byte_to_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
