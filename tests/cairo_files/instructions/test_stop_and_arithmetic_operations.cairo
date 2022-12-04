@@ -4,6 +4,7 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 
@@ -312,5 +313,21 @@ func test__exec_signextend__should_signextend_0_and_1{
     assert len = 2;
     let (stack,index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(2, 0);
+    return ();
+}
+
+@external
+func test__exec_stop{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    alloc_locals;
+    let (bytecode) = alloc();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
+    assert ctx.stopped = FALSE;
+
+    let stopped_ctx = StopAndArithmeticOperations.exec_stop(ctx);
+
+    assert stopped_ctx.stopped = TRUE;
+
     return ();
 }
