@@ -45,5 +45,14 @@ func test__bytes_i_to_uint256{
         Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFF)
     );
 
+    let (bytecode) = alloc();
+    TestHelpers._fill_bytecode_with_values(bytecode, 16, 0xFF);
+    let uint256 = Helpers.bytes_i_to_uint256(bytecode, 16);
+
+    assert_uint256_eq(
+        uint256,
+        Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0)
+    );
+
     return ();
 }

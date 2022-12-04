@@ -51,17 +51,17 @@ namespace Helpers {
             assert is_sequence_32_bytes_or_less = 1;
         }
 
-        let is_sequence_15_bytes_or_less = is_le(i, 15);
+        let is_sequence_16_bytes_or_less = is_le(i, 16);
 
-        // 1 - 15 bytes
-        if (is_sequence_15_bytes_or_less == TRUE) {
+        // 1 - 16 bytes
+        if (is_sequence_16_bytes_or_less == TRUE) {
             let (low) = compute_half_uint256(val=val, i=i, res=0);
             let res = Uint256(low=low, high=0);
 
             return res;
         }
 
-        // 16 - 32 bytes
+        // 17 - 32 bytes
         let (low) = compute_half_uint256(val=val + i - 16, i=16, res=0);
         let (high) = compute_half_uint256(val=val, i=i - 16, res=0);
         let res = Uint256(low=low, high=high);
