@@ -403,7 +403,6 @@ namespace EnvironmentalInformation {
     // @custom:since Frontier
     // @custom:group Environmental Information
     // @custom:gas 100
-    // TODO: double check correctness of docstring
     // @custom:stack_consumed_elements 4
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
@@ -424,16 +423,18 @@ namespace EnvironmentalInformation {
         // 2 - offset: byte offset in the code to copy.
         // 3 - size: byte size to copy.
         let (stack, popped) = Stack.pop_n(self=stack, n=4);
-        let address = popped[0];
+        let address_uint256 = popped[0];
         let dest_offset = popped[1];
         let offset = popped[2];
         let size = popped[3];
       
+        let address_felt = Helpers.uint256_to_felt(address_uint256);
+
         // Get the starknet address from the given evm address
         let (registry_address_) = registry_address.read();
 
         let (starknet_contract_address) = IRegistry.get_starknet_contract_address(
-            contract_address=registry_address_, evm_contract_address=address.low
+            contract_address=registry_address_, evm_contract_address=address_felt
         );
 
         // handle case where there is no eth -> stark address mapping
@@ -451,7 +452,7 @@ namespace EnvironmentalInformation {
         if (bytecode_len == 0) {
             return ctx;
         }
-
+    
         // TODO do we have the distinction between precompiles and warm and cold addresses? 
     
         // Get bytecode slice from offset to size

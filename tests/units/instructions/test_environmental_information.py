@@ -18,4 +18,4 @@ class TestBlockInformation:
         await environmental_information.test__exec_address__should_push_address_to_stack().call()
 
         acc_registry_address = account_registry.contract_address
-        await environmental_information.test__exec_extcodecopy__(account_registry_address=acc_registry_address).call()        
+        await environmental_information.test__exec_extcodecopy__should_handle_address_with_no_code(account_registry_address=acc_registry_address).call()        

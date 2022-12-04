@@ -81,10 +81,9 @@ func test__exec_address__should_push_address_to_stack{
 }
 
 @external
-func test__exec_extcodecopy__{
+func test__exec_extcodecopy__should_handle_address_with_no_code{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(account_registry_address : felt) {
-    // a nonsense test just to get started ;)
     // Given
     alloc_locals;
     
@@ -99,7 +98,6 @@ func test__exec_extcodecopy__{
     let stack: model.Stack* = Stack.push(stack, Uint256(3, 0)); // address
 
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
-
 
     // When
     let result = EnvironmentalInformation.exec_extcodecopy(ctx);
