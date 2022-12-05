@@ -433,6 +433,33 @@ namespace ExecutionContext {
             );
     }
 
+    // @notice Update the starknet and evm contract addresses.
+    // @dev No check is made using the registry for these two addresses being actually linked.
+    // @param self The pointer to the execution context.
+    // @param starknet_contract_address The starknet_contract_address to use.
+    // @param evm_contract_address The evm_contract_address to use.
+    // @param memory The pointer to context.
+    func update_addresses(
+        self: model.ExecutionContext*, starknet_contract_address: felt, evm_contract_address: felt
+    ) -> model.ExecutionContext* {
+        return new model.ExecutionContext(
+            call_context=self.call_context,
+            program_counter=self.program_counter,
+            stopped=self.stopped,
+            return_data=self.return_data,
+            return_data_len=self.return_data_len,
+            stack=self.stack,
+            memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit,
+            intrinsic_gas_cost=self.intrinsic_gas_cost,
+            starknet_contract_address=starknet_contract_address,
+            evm_contract_address=evm_contract_address,
+            parent_context=self.parent_context,
+            child_context=self.child_context,
+            );
+    }
+
     // @notice Dump the current execution context.
     // @dev The execution context is dumped to the debug server if `DEBUG` environment variable is set to `True`.
     func dump{range_check_ptr}(self: model.ExecutionContext*) {

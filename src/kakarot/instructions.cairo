@@ -28,7 +28,7 @@ from kakarot.instructions.logging_operations import LoggingOperations
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.environmental_information import EnvironmentalInformation
 from kakarot.instructions.block_information import BlockInformation
-from kakarot.instructions.system_operations import SystemOperations
+from kakarot.instructions.system_operations import SystemOperations, CallHelper
 from kakarot.instructions.sha3 import Sha3
 
 // @title EVM instructions processing.
@@ -558,13 +558,13 @@ namespace EVMInstructions {
         ret;
         call not_implemented_opcode;  // 0xf0
         ret;
-        call not_implemented_opcode;  // 0xf1
+        call SystemOperations.exec_call;  // 0xf1
         ret;
-        call not_implemented_opcode;  // 0xf2
+        call SystemOperations.exec_callcode;  // 0xf2
         ret;
         call SystemOperations.exec_return;  // 0xf3
         ret;
-        call unknown_opcode;  // 0xf4
+        call SystemOperations.exec_delegatecall;  // 0xf4
         ret;
         call not_implemented_opcode;  // 0xf5
         ret;
@@ -576,7 +576,7 @@ namespace EVMInstructions {
         ret;
         call unknown_opcode;  // 0xf9
         ret;
-        call not_implemented_opcode;  // 0xfa
+        call SystemOperations.exec_staticcall;  // 0xfa
         ret;
         call unknown_opcode;  // 0xfb
         ret;
@@ -612,21 +612,7 @@ namespace EVMInstructions {
             if (is_parent_root != FALSE) {
                 return ctx;
             } else {
-                // Note: these are CALLs teardown ops
-                // TODO: success should be taken from ctx but revert is currently just raising so
-                // TODO: writing here TRUE: with the current implementation, a reverting sub_context
-                // TODO: would break the whole computation, so if it does not, it's TRUE
-                let success = Uint256(low=1, high=0);
-                let ctx = ExecutionContext.update_child_context(ctx.parent_context, ctx);
-                let stack = Stack.push(ctx.stack, success);
-                let ctx = ExecutionContext.update_stack(ctx, stack);
-                let memory = Memory.store_n(
-                    ctx.memory,
-                    ctx.child_context.return_data_len,
-                    ctx.child_context.return_data + 1,
-                    [ctx.child_context.return_data],
-                );
-                let ctx = ExecutionContext.update_memory(ctx, memory);
+                let ctx = CallHelper.teardown_call(ctx);
                 return run(ctx=ctx);
             }
         }

@@ -13,7 +13,7 @@ interface ICounter {
 
 /// @notice Contract for integration testing of EVM opcodes.
 /// @author Kakarot9000
-/// @dev Do add functions and storage variables for opcodes accordingly.
+/// @dev Add functions and storage variables for opcodes accordingly.
 contract IntegrationTestContract {
     /*//////////////////////////////////////////////////////////////
                             METADATA STORAGE
@@ -34,7 +34,11 @@ contract IntegrationTestContract {
         return (address(this));
     }
 
-    function opcodeCall() public view returns (uint256) {
+    function opcodeStaticCall() public view returns (uint256) {
         return counter.count();
+    }
+
+    function opcodeCall() public {
+        counter.inc();
     }
 }
