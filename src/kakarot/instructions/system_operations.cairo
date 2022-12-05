@@ -86,10 +86,12 @@ namespace SystemOperations {
         // TODO: GAS IMPLEMENTATION
 
         let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
-        return ExecutionContext.update_return_data(
-            // Note: only the new data_len is required.
+        let ctx = ExecutionContext.update_return_data(
+            // Note: only new data_len needs to be updated indeed.
             ctx, new_return_data_len=size.low, new_return_data=ctx.return_data
         );
+        let ctx = ExecutionContext.stop(ctx);
+        return ctx;
     }
 
     // @notice REVERT operation.
@@ -180,8 +182,9 @@ namespace SystemOperations {
             calldata=calldata,
             value=value,
             parent_context=ctx,
+            return_data_len=ret_size,
+            return_data=return_data,
         );
-        let sub_ctx = ExecutionContext.update_return_data(sub_ctx, ret_size, return_data);
 
         return sub_ctx;
     }

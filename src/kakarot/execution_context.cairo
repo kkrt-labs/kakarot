@@ -135,15 +135,10 @@ namespace ExecutionContext {
         calldata: felt*,
         value: felt,
         parent_context: model.ExecutionContext*,
+        return_data_len: felt,
+        return_data: felt*,
     ) -> model.ExecutionContext* {
         alloc_locals;
-        let (empty_return_data: felt*) = alloc();
-
-        // Define initial program counter
-        let initial_pc = 0;
-        let gas_used = 0;
-        // TODO: Add support for gas limit
-        let gas_limit = 0;
 
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();
@@ -161,27 +156,26 @@ namespace ExecutionContext {
         local call_context: model.CallContext* = new model.CallContext(
             bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=calldata_len, value=value
             );
-        let ctx: felt* = alloc();
-        let parent_context = ExecutionContext.update_child_context(
-            parent_context, cast(ctx, model.ExecutionContext*)
-        );
 
         let child_context = init_empty();
-        assert [ctx] = cast(call_context, felt);
-        assert [ctx + 1] = initial_pc;  // program_counter
-        assert [ctx + 2] = FALSE;  // stopped
-        assert [ctx + 3] = cast(empty_return_data, felt);  // return_data
-        assert [ctx + 4] = 0;  // return_data_len
-        assert [ctx + 5] = cast(stack, felt);  // stack
-        assert [ctx + 6] = cast(memory, felt);  // memory
-        assert [ctx + 7] = gas_used;  // gas_used
-        assert [ctx + 8] = gas_limit;  // gas_limit
-        assert [ctx + 9] = 0;  // intrinsic_gas_cost
-        assert [ctx + 10] = starknet_contract_address;  // starknet_contract_address
-        assert [ctx + 11] = address;  // evm_contract_address
-        assert [ctx + 12] = cast(parent_context, felt);  // parent_context
-        assert [ctx + 13] = cast(child_context, felt);  // child_context
-        return cast(ctx, model.ExecutionContext*);
+
+        return new model.ExecutionContext(
+            call_context=call_context,
+            program_counter=0,
+            stopped=FALSE,
+            return_data=return_data,
+            return_data_len=return_data_len,
+            stack=stack,
+            memory=memory,
+            gas_used=0,
+            // TODO: Add support for gas limit
+            gas_limit=0,
+            intrinsic_gas_cost=0,
+            starknet_contract_address=starknet_contract_address,
+            evm_contract_address=address,
+            parent_context=parent_context,
+            child_context=child_context,
+            );
     }
 
     // @notice Compute the intrinsic gas cost of the current transaction.
@@ -229,9 +223,9 @@ namespace ExecutionContext {
     }
 
     // @notice Return whether the current execution context is a leaf.
-    // @dev When the execution context is root, no parent context can be called when this context stops.
+    // @dev A leaf context is a context without sub context.
     // @param self The pointer to the execution context.
-    // @return TRUE if the execution context is root, FALSE otherwise.
+    // @return TRUE if the execution context is a leaf, FALSE otherwise.
     func is_leaf(self: model.ExecutionContext*) -> felt {
         if (cast(self.child_context, felt) == 0) {
             return TRUE;
@@ -347,7 +341,7 @@ namespace ExecutionContext {
         return new model.ExecutionContext(
             call_context=self.call_context,
             program_counter=self.program_counter,
-            stopped=TRUE,
+            stopped=self.stopped,
             return_data=new_return_data,
             return_data_len=new_return_data_len,
             stack=self.stack,
@@ -418,12 +412,7 @@ namespace ExecutionContext {
     // @dev The child_context is updated with the given context.
     // @param self The pointer to the execution context.
     // @param memory The pointer to the child context.
-    func update_child_context{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(
+    func update_child_context(
         self: model.ExecutionContext*, child_context: model.ExecutionContext*
     ) -> model.ExecutionContext* {
         return new model.ExecutionContext(

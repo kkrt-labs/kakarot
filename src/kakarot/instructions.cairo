@@ -612,17 +612,19 @@ namespace EVMInstructions {
             if (is_parent_root != FALSE) {
                 return ctx;
             } else {
+                // Note: these are CALLs teardown ops
                 // TODO: success should be taken from ctx but revert is currently just raising so
                 // TODO: writing here TRUE: with the current implementation, a reverting sub_context
                 // TODO: would break the whole computation, so if it does not, it's TRUE
-                // Note: this Stack.push somehow "belongs" the the (static|deletegate)call(code) opcode that
-                // triggered the creation of the currently ending sub context; as well the memory update
                 let success = Uint256(low=1, high=0);
-                local ctx: model.ExecutionContext* = ctx.parent_context;
+                let ctx = ExecutionContext.update_child_context(ctx.parent_context, ctx);
                 let stack = Stack.push(ctx.stack, success);
                 let ctx = ExecutionContext.update_stack(ctx, stack);
                 let memory = Memory.store_n(
-                    ctx.memory, ctx.return_data_len, ctx.return_data + 1, [ctx.return_data]
+                    ctx.memory,
+                    ctx.child_context.return_data_len,
+                    ctx.child_context.return_data + 1,
+                    [ctx.child_context.return_data],
                 );
                 let ctx = ExecutionContext.update_memory(ctx, memory);
                 return run(ctx=ctx);

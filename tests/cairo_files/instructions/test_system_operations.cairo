@@ -63,11 +63,11 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     let stack: model.Stack* = Stack.init();
     let gas = Uint256(0, 0);
     let address = Uint256(address_low, address_high);
-    let value = Uint256(2, 0);
+    tempvar value = Uint256(2, 0);
     let args_offset = Uint256(3, 0);
     let args_size = Uint256(4, 0);
-    let ret_offset = Uint256(5, 0);
-    let ret_size = Uint256(6, 0);
+    tempvar ret_offset = Uint256(5, 0);
+    tempvar ret_size = Uint256(6, 0);
     // Put some value in memory as it is used for calldata with args_size and args_offset
     // Word is 0x 11 22 33 44 55 66 77 88 00 00 ... 00
     // calldata should be 0x 44 55 66 77
@@ -96,6 +96,14 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     assert [sub_ctx.call_context.calldata + 1] = 0x55;
     assert [sub_ctx.call_context.calldata + 2] = 0x66;
     assert [sub_ctx.call_context.calldata + 3] = 0x77;
+    assert sub_ctx.call_context.value = value.low;
+    assert sub_ctx.program_counter = 0;
+    assert sub_ctx.stopped = 0;
+    assert sub_ctx.return_data_len = ret_size.low;
+    assert [sub_ctx.return_data] = ret_offset.low;
+    assert sub_ctx.gas_used = 0;
+    assert sub_ctx.gas_limit = 0;
+    assert sub_ctx.intrinsic_gas_cost = 0;
     assert sub_ctx.starknet_contract_address = starknet_contract_address;
     assert sub_ctx.evm_contract_address = evm_contract_address;
     TestHelpers.assert_execution_context_equal(sub_ctx.parent_context, ctx);
