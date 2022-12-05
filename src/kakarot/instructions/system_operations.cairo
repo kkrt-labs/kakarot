@@ -153,12 +153,12 @@ namespace SystemOperations {
         return sub_ctx;
     }
 
-    // @notice CALL operation.
+    // @notice STATICCALL operation.
     // @dev
-    // @custom:since Frontier
+    // @custom:since Homestead
     // @custom:group System Operations
     // @custom:gas 0 + dynamic gas
-    // @custom:stack_consumed_elements 7
+    // @custom:stack_consumed_elements 6
     // @custom:stack_produced_elements 1
     // @return The pointer to the sub context.
     func exec_staticcall{
@@ -205,12 +205,12 @@ namespace SystemOperations {
         return sub_ctx;
     }
 
-    // @notice CALLCODE operation.
+    // @notice DELEGATECALL operation.
     // @dev
-    // @custom:since Frontier
+    // @custom:since Byzantium
     // @custom:group System Operations
     // @custom:gas 0 + dynamic gas
-    // @custom:stack_consumed_elements 7
+    // @custom:stack_consumed_elements 6
     // @custom:stack_produced_elements 1
     // @return The pointer to the sub context.
     func exec_delegatecall{
