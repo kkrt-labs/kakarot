@@ -13,6 +13,7 @@
 ![GitHub top language](https://img.shields.io/github/languages/top/abdelhamidbakhta/kakarot?style=flat-square)
 [![Telegram](https://img.shields.io/badge/telegram-Kakarot-yellow.svg?logo=telegram)](https://t.me/KakarotZkEvm)
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
+[![Read FAQ](https://img.shields.io/badge/Ask%20Question-Read%20FAQ-000000)](https://www.newton.so/view?tags=kakarot)
 ![GitHub Repo stars](https://img.shields.io/github/stars/abdelhamidbakhta/kakarot?style=social)
 [![Twitter Follow](https://img.shields.io/twitter/follow/KakarotZkEvm?style=social)](https://twitter.com/KakarotZkEvm)
 
@@ -26,9 +27,8 @@ StarkNet. Kakarot is the super sayajin ZK-EVM ! Why ? Because:
 production.
 
 [Getting started](#getting-started) • [Supported opcodes](#supported-opcodes) •
-[Build](#build) • [Test](#test) .
-[Report a bug](https://github.com/sayajin-labs/kakarot/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+)
-
+[Build](#build) • [Test](#test) •
+[Report a bug](https://github.com/sayajin-labs/kakarot/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+) • [Questions](https://www.newton.so/view?tags=kakarot)
 </div>
 
 ![](resources/img/kakarot.gif)
@@ -228,6 +228,24 @@ Kakarot is provided **"as is"** without any **warranty**. Use at your own risk.
 
 _For more information and to report security issues, please refer to our
 [security documentation](docs/SECURITY.md)._
+
+## Questions / FAQ
+
+Questions are welcome!
+If you have any questions regarding Kakarot, feel free to ask them using [Newton](https://www.newton.so/view?tags=kakarot).
+
+### FAQ
+- [What is Kakarot, the zkEVM written in Cairo?](https://www.newton.so/view/6384d1e75bfa675b854c3228)
+- [Is Kakarot zkEVM a blockchain?](https://www.newton.so/view/6384d22a5bfa675b854c3229)
+- [When will Kakarot zkEVM launch on mainnet?](https://www.newton.so/view/6384d25fac8f7c40f4f144fd)
+- [Does Kakarot zkEVM have a token?](https://www.newton.so/view/6384d2815bfa675b854c322a)
+- [Is Kakarot zkEVM a smart contract or a blockchain?](https://www.newton.so/view/6384d2a0ac8f7c40f4f144fe)
+- [Is Kakarot a Starkware project?](https://www.newton.so/view/6384d2be5bfa675b854c322b)
+- [Is Kakarot part of the Starknet ecosystem?](https://www.newton.so/view#:~:text=Is%20Kakarot%20part%20of%20the%20Starknet%20ecosystem%3F)
+- [Will Kakarot be an L3 on top of the Starknet validity rollup?](https://www.newton.so/view/6384d3235bfa675b854c322c)
+- [Can I add Kakarot to my metamask?](https://www.newton.so/view/6384d38fac8f7c40f4f14500)
+- [Is Kakarot equivalent to Arbitrum?](https://www.newton.so/view/6384d3d85bfa675b854c322d)
+
 
 ## Contributing
 
