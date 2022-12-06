@@ -6,7 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
-from starkware.cairo.common.uint256 import Uint256, uint256_eq, assert_uint256_eq
+from starkware.cairo.common.uint256 import Uint256, uint256_check, uint256_add, uint256_eq, assert_uint256_eq
 from starkware.cairo.common.math import split_felt
 
 // Internal dependencies
@@ -76,11 +76,37 @@ namespace TestHelpers {
         return ();
     }
 
-    func assert_stack_last_element_contains_uint256{range_check_ptr}(
-        stack: model.Stack*, value: Uint256
-    ) {
+    // @notice Push n element-array starting from a specific value into the stack one at a time
+    // ex: If n = 3 and start = Uint256(0, 0),
+    // resulting stack elements will be [ Uint256(2, 0) ]
+    //                                  [ Uint256(1, 0) ]
+    //                                  [ Uint256(0, 0) ]
+    func push_elements_in_range_to_stack{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(start: Uint256, n: felt, stack: model.Stack*) -> model.Stack* {
+        alloc_locals;
+        if (n == 0) {
+            return stack;
+        }
+
+        uint256_check(start);
+        let updated_stack: model.Stack* = Stack.push(stack, start);
+        let (local element: Uint256, _) = uint256_add(start, Uint256(1, 0));
+        return push_elements_in_range_to_stack(element, n - 1, updated_stack);
+    }
+
+    func assert_stack_last_element_contains_uint256{range_check_ptr}(stack: model.Stack*, value: Uint256) {
         let (stack, result) = Stack.peek(stack, 0);
         assert_uint256_eq(result, value);
+
+        return ();
+    }
+
+    func assert_stack_len_16bytes_equal{range_check_ptr}(stack: model.Stack*, len: felt) {
+        assert stack.len_16bytes / 2 = len;
 
         return ();
     }
