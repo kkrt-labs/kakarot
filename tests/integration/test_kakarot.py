@@ -3,7 +3,7 @@ from starkware.starknet.testing.contract import StarknetContract
 
 from typing import Callable
 
-from tests.integrations.test_cases import params_execute
+from tests.integration.test_cases import params_execute
 from tests.utils.reporting import traceit
 from tests.utils.utils import (
     extract_memory_from_execute,

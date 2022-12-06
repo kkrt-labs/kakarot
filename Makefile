@@ -1,5 +1,5 @@
 .PHONY: build test coverage
-solidity_folder = $(shell pwd)/tests/integrations/solidity_files
+solidity_folder = $(shell pwd)/tests/integration/solidity_files
 solidity_files  = $(shell ls ${solidity_folder} | grep .sol)
 
 build:
@@ -26,10 +26,10 @@ test-no-log: build-sol
 	poetry run pytest tests -n logical
 
 test-integration: build-sol
-	poetry run pytest tests/integrations --log-cli-level=INFO -n logical
+	poetry run pytest tests/integration --log-cli-level=INFO -n logical
 
-test-units: build-sol
-	poetry run pytest tests/units --log-cli-level=INFO
+test-unit: build-sol
+	poetry run pytest tests/unit --log-cli-level=INFO
 
 run-test-log: build-sol
 	poetry run pytest -k $(test) --log-cli-level=INFO -vvv

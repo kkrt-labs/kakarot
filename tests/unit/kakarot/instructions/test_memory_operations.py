@@ -6,7 +6,7 @@ from starkware.starknet.testing.starknet import Starknet
 @pytest_asyncio.fixture(scope="module")
 async def memory_operations(starknet: Starknet):
     return await starknet.deploy(
-        source="./tests/units/kakarot/instructions/test_memory_operations.cairo",
+        source="./tests/unit/kakarot/instructions/test_memory_operations.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
     )

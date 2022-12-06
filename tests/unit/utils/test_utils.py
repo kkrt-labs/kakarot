@@ -7,7 +7,7 @@ import pytest_asyncio
 @pytest_asyncio.fixture
 async def stack(starknet):
     return await starknet.deploy(
-        source="./tests/units/utils/test_utils.cairo",
+        source="./tests/unit/utils/test_utils.cairo",
         cairo_path=["src"],
         disable_hint_validation=False,
     )
