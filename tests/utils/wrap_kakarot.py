@@ -80,9 +80,9 @@ def wrap_for_kakarot(
 def get_contract(contract_name: str) -> Contract:
     """
     Return a web3.contract instance based on the corresponding solidity files
-    defined in tests/solidity_files.
+    defined in tests/integrations/solidity_files.
     """
-    solidity_output_path = Path("tests") / "solidity_files" / "output"
+    solidity_output_path = Path("tests") / "integrations" / "solidity_files" / "output"
     abi = json.load(open(solidity_output_path / f"{contract_name}.abi"))
     bytecode = (solidity_output_path / f"{contract_name}.bin").read_text()
     contract = Web3().eth.contract(abi=abi, bytecode=bytecode)

@@ -1,5 +1,5 @@
 .PHONY: build test coverage
-solidity_folder = $(shell pwd)/tests/solidity_files
+solidity_folder = $(shell pwd)/tests/integrations/solidity_files
 solidity_files  = $(shell ls ${solidity_folder} | grep .sol)
 
 build:
