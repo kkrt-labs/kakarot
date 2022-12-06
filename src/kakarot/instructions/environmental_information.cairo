@@ -464,6 +464,7 @@ namespace EnvironmentalInformation {
         );
 
         // Write bytecode slice to memory at dest_offset
+        // TODO handle dynamic gas for memory expansion
         let memory: model.Memory* = Memory.store_n(
             self=ctx.memory, element_len=size.low, element=sliced_bytecode, offset=dest_offset.low
         );
