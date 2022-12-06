@@ -612,7 +612,7 @@ namespace EVMInstructions {
             if (is_parent_root != FALSE) {
                 return ctx;
             } else {
-                let ctx = CallHelper.teardown_call(ctx);
+                let ctx = CallHelper.finalize_parent_context(ctx);
                 return run(ctx=ctx);
             }
         }

@@ -112,7 +112,7 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     // the instructions RETURNDATASIZE and RETURNDATACOPY (since the Byzantium fork).
     // So it's expected that the RETURN of the sub_ctx does set proper values for return_data_len and return_data
     let sub_ctx = ExecutionContext.update_return_data(sub_ctx, 0, sub_ctx.return_data);
-    let ctx = CallHelper.teardown_call(sub_ctx);
+    let ctx = CallHelper.finalize_calling_context(sub_ctx);
 
     // Then
     let (stack, success) = Stack.peek(ctx.stack, 0);
@@ -190,7 +190,7 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
     // the instructions RETURNDATASIZE and RETURNDATACOPY (since the Byzantium fork).
     // So it's expected that the RETURN of the sub_ctx does set proper values for return_data_len and return_data
     let sub_ctx = ExecutionContext.update_return_data(sub_ctx, 0, sub_ctx.return_data);
-    let ctx = CallHelper.teardown_call(sub_ctx);
+    let ctx = CallHelper.finalize_calling_context(sub_ctx);
 
     // Then
     let (stack, success) = Stack.peek(ctx.stack, 0);
@@ -266,7 +266,7 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
     // the instructions RETURNDATASIZE and RETURNDATACOPY (since the Byzantium fork).
     // So it's expected that the RETURN of the sub_ctx does set proper values for return_data_len and return_data
     let sub_ctx = ExecutionContext.update_return_data(sub_ctx, 0, sub_ctx.return_data);
-    let ctx = CallHelper.teardown_call(sub_ctx);
+    let ctx = CallHelper.finalize_calling_context(sub_ctx);
 
     // Then
     let (stack, success) = Stack.peek(ctx.stack, 0);
@@ -342,7 +342,7 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
     // the instructions RETURNDATASIZE and RETURNDATACOPY (since the Byzantium fork).
     // So it's expected that the RETURN of the sub_ctx does set proper values for return_data_len and return_data
     let sub_ctx = ExecutionContext.update_return_data(sub_ctx, 0, sub_ctx.return_data);
-    let ctx = CallHelper.teardown_call(sub_ctx);
+    let ctx = CallHelper.finalize_calling_context(sub_ctx);
 
     // Then
     let (stack, success) = Stack.peek(ctx.stack, 0);

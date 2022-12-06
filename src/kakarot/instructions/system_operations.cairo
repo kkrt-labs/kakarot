@@ -289,9 +289,9 @@ namespace CallHelper {
         return (ctx, call_args);
     }
 
-    // @notice The teardown of CALLs is made in the run loop of the EVMInstructions.
-    // @return The pointer to the context
-    func teardown_call{
+    // @notice At the end of a sub-context call, the parent context's stack and memory are updated.
+    // @return The pointer to the updated parent context.
+    func finalize_parent_context{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
