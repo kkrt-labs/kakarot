@@ -105,7 +105,7 @@ namespace Kakarot {
             calldata_len=calldata_len,
             calldata=calldata,
             value=value,
-            parent_context=root_context,
+            calling_context=root_context,
             return_data_len=0,
             return_data=return_data,
         );
@@ -217,8 +217,8 @@ namespace Kakarot {
         let (local contract_bytecode: felt*) = alloc();
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();
-        let parent_context = ExecutionContext.init_empty();
-        let child_context = ExecutionContext.init_empty();
+        let calling_context = ExecutionContext.init_empty();
+        let sub_context = ExecutionContext.init_empty();
         tempvar ctx: model.ExecutionContext* = new model.ExecutionContext(
             call_context=call_context,
             program_counter=0,
@@ -232,8 +232,8 @@ namespace Kakarot {
             intrinsic_gas_cost=0,
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=evm_contract_address,
-            parent_context=parent_context,
-            child_context=child_context,
+            calling_context=calling_context,
+            sub_context=sub_context,
             );
 
         // Compute intrinsic gas cost and update gas used

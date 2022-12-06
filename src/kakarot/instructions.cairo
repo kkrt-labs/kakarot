@@ -605,14 +605,14 @@ namespace EVMInstructions {
 
         // Check if execution should be stopped
         let stopped: felt = ExecutionContext.is_stopped(self=ctx);
-        let is_parent_root: felt = ExecutionContext.is_root(self=ctx.parent_context);
+        let is_parent_root: felt = ExecutionContext.is_root(self=ctx.calling_context);
 
         // Terminate execution
         if (stopped != FALSE) {
             if (is_parent_root != FALSE) {
                 return ctx;
             } else {
-                let ctx = CallHelper.finalize_parent_context(ctx);
+                let ctx = CallHelper.finalize_calling_context(ctx);
                 return run(ctx=ctx);
             }
         }

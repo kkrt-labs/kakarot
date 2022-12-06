@@ -146,7 +146,7 @@ namespace TestHelpers {
         assert execution_context_0.starknet_contract_address = execution_context_1.starknet_contract_address;
         assert execution_context_0.evm_contract_address = execution_context_1.evm_contract_address;
         return assert_execution_context_equal(
-            execution_context_0.parent_context, execution_context_1.parent_context
+            execution_context_0.calling_context, execution_context_1.calling_context
         );
     }
 

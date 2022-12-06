@@ -37,8 +37,8 @@ func init_context{
     let stack: model.Stack* = Stack.init();
     let memory: model.Memory* = Memory.init();
     let gas_limit = Constants.TRANSACTION_GAS_LIMIT;
-    let parent_context = ExecutionContext.init_empty();
-    let child_context = ExecutionContext.init_empty();
+    let calling_context = ExecutionContext.init_empty();
+    let sub_context = ExecutionContext.init_empty();
 
     local ctx: model.ExecutionContext* = new model.ExecutionContext(
         call_context=call_context,
@@ -53,8 +53,8 @@ func init_context{
         intrinsic_gas_cost=0,
         starknet_contract_address=0,
         evm_contract_address=420,
-        parent_context=parent_context,
-        child_context=child_context,
+        calling_context=calling_context,
+        sub_context=sub_context,
         );
     return ctx;
 }

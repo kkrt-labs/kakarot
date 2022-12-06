@@ -56,8 +56,8 @@ namespace ExecutionContext {
         dw 0;  // intrinsic_gas_cost
         dw 0;  // starknet_contract_address
         dw 0;  // evm_contract_address
-        dw 0;  // parent_context
-        dw 0;  // child_context
+        dw 0;  // calling_context
+        dw 0;  // sub_context
     }
 
     // @notice Initialize the execution context.
@@ -76,10 +76,10 @@ namespace ExecutionContext {
 
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();
-        // Note: parent_context should theoretically take this context as child_context but this not does really matter
+        // Note: calling_context should theoretically take this context as sub_context but this not does really matter
         // so we keep it easier like that.
-        let parent_context = init_empty();
-        let child_context = init_empty();
+        let calling_context = init_empty();
+        let sub_context = init_empty();
 
         local ctx: model.ExecutionContext* = new model.ExecutionContext(
             call_context=call_context,
@@ -94,8 +94,8 @@ namespace ExecutionContext {
             intrinsic_gas_cost=0,
             starknet_contract_address=0,
             evm_contract_address=0,
-            parent_context=parent_context,
-            child_context=child_context,
+            calling_context=calling_context,
+            sub_context=sub_context,
             );
         return ctx;
     }
@@ -134,7 +134,7 @@ namespace ExecutionContext {
         calldata_len: felt,
         calldata: felt*,
         value: felt,
-        parent_context: model.ExecutionContext*,
+        calling_context: model.ExecutionContext*,
         return_data_len: felt,
         return_data: felt*,
     ) -> model.ExecutionContext* {
@@ -157,7 +157,7 @@ namespace ExecutionContext {
             bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=calldata_len, value=value
             );
 
-        let child_context = init_empty();
+        let sub_context = init_empty();
 
         return new model.ExecutionContext(
             call_context=call_context,
@@ -173,8 +173,8 @@ namespace ExecutionContext {
             intrinsic_gas_cost=0,
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=address,
-            parent_context=parent_context,
-            child_context=child_context,
+            calling_context=calling_context,
+            sub_context=sub_context,
             );
     }
 
@@ -198,8 +198,8 @@ namespace ExecutionContext {
             intrinsic_gas_cost=intrinsic_gas_cost,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
-            parent_context=self.parent_context,
-            child_context=self.child_context,
+            calling_context=self.calling_context,
+            sub_context=self.sub_context,
             );
     }
 
@@ -212,11 +212,11 @@ namespace ExecutionContext {
     }
 
     // @notice Return whether the current execution context is root.
-    // @dev When the execution context is root, no parent context can be called when this context stops.
+    // @dev When the execution context is root, no calling context can be called when this context stops.
     // @param self The pointer to the execution context.
     // @return TRUE if the execution context is root, FALSE otherwise.
     func is_root(self: model.ExecutionContext*) -> felt {
-        if (cast(self.parent_context, felt) == 0) {
+        if (cast(self.calling_context, felt) == 0) {
             return TRUE;
         }
         return FALSE;
@@ -227,7 +227,7 @@ namespace ExecutionContext {
     // @param self The pointer to the execution context.
     // @return TRUE if the execution context is a leaf, FALSE otherwise.
     func is_leaf(self: model.ExecutionContext*) -> felt {
-        if (cast(self.child_context, felt) == 0) {
+        if (cast(self.sub_context, felt) == 0) {
             return TRUE;
         }
         return FALSE;
@@ -251,8 +251,8 @@ namespace ExecutionContext {
             intrinsic_gas_cost=self.intrinsic_gas_cost,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
-            parent_context=self.parent_context,
-            child_context=self.child_context,
+            calling_context=self.calling_context,
+            sub_context=self.sub_context,
             );
     }
 
@@ -296,8 +296,8 @@ namespace ExecutionContext {
             intrinsic_gas_cost=self.intrinsic_gas_cost,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
-            parent_context=self.parent_context,
-            child_context=self.child_context,
+            calling_context=self.calling_context,
+            sub_context=self.sub_context,
             );
     }
 
@@ -321,8 +321,8 @@ namespace ExecutionContext {
             intrinsic_gas_cost=self.intrinsic_gas_cost,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
-            parent_context=self.parent_context,
-            child_context=self.child_context,
+            calling_context=self.calling_context,
+            sub_context=self.sub_context,
             );
     }
 
@@ -351,8 +351,8 @@ namespace ExecutionContext {
             intrinsic_gas_cost=self.intrinsic_gas_cost,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
-            parent_context=self.parent_context,
-            child_context=self.child_context,
+            calling_context=self.calling_context,
+            sub_context=self.sub_context,
             );
     }
 
@@ -377,8 +377,8 @@ namespace ExecutionContext {
             intrinsic_gas_cost=self.intrinsic_gas_cost,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
-            parent_context=self.parent_context,
-            child_context=self.child_context,
+            calling_context=self.calling_context,
+            sub_context=self.sub_context,
             );
     }
 
@@ -403,17 +403,17 @@ namespace ExecutionContext {
             intrinsic_gas_cost=self.intrinsic_gas_cost,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
-            parent_context=self.parent_context,
-            child_context=self.child_context,
+            calling_context=self.calling_context,
+            sub_context=self.sub_context,
             );
     }
 
     // @notice Update the child context of the current execution context.
-    // @dev The child_context is updated with the given context.
+    // @dev The sub_context is updated with the given context.
     // @param self The pointer to the execution context.
     // @param memory The pointer to the child context.
-    func update_child_context(
-        self: model.ExecutionContext*, child_context: model.ExecutionContext*
+    func update_sub_context(
+        self: model.ExecutionContext*, sub_context: model.ExecutionContext*
     ) -> model.ExecutionContext* {
         return new model.ExecutionContext(
             call_context=self.call_context,
@@ -428,8 +428,8 @@ namespace ExecutionContext {
             intrinsic_gas_cost=self.intrinsic_gas_cost,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
-            parent_context=self.parent_context,
-            child_context=child_context,
+            calling_context=self.calling_context,
+            sub_context=sub_context,
             );
     }
 
@@ -455,8 +455,8 @@ namespace ExecutionContext {
             intrinsic_gas_cost=self.intrinsic_gas_cost,
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=evm_contract_address,
-            parent_context=self.parent_context,
-            child_context=self.child_context,
+            calling_context=self.calling_context,
+            sub_context=self.sub_context,
             );
     }
 
@@ -500,8 +500,8 @@ namespace ExecutionContext {
             intrinsic_gas_cost=self.intrinsic_gas_cost,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
-            parent_context=self.parent_context,
-            child_context=self.child_context,
+            calling_context=self.calling_context,
+            sub_context=self.sub_context,
             );
     }
 

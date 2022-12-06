@@ -105,7 +105,7 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     assert sub_ctx.intrinsic_gas_cost = 0;
     assert sub_ctx.starknet_contract_address = starknet_contract_address;
     assert sub_ctx.evm_contract_address = evm_contract_address;
-    TestHelpers.assert_execution_context_equal(sub_ctx.parent_context, ctx);
+    TestHelpers.assert_execution_context_equal(sub_ctx.calling_context, ctx);
 
     // Fake a RETURN in sub_ctx then teardow, see note in evm.codes:
     // If the size of the return data is not known, it can also be retrieved after the call with
@@ -117,7 +117,7 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     // Then
     let (stack, success) = Stack.peek(ctx.stack, 0);
     assert success.low = 1;
-    TestHelpers.assert_execution_context_equal(ctx.child_context, sub_ctx);
+    TestHelpers.assert_execution_context_equal(ctx.sub_context, sub_ctx);
 
     return ();
 }
@@ -183,7 +183,7 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
     assert sub_ctx.intrinsic_gas_cost = 0;
     assert sub_ctx.starknet_contract_address = ctx.starknet_contract_address;
     assert sub_ctx.evm_contract_address = ctx.evm_contract_address;
-    TestHelpers.assert_execution_context_equal(sub_ctx.parent_context, ctx);
+    TestHelpers.assert_execution_context_equal(sub_ctx.calling_context, ctx);
 
     // Fake a RETURN in sub_ctx then teardow, see note in evm.codes:
     // If the size of the return data is not known, it can also be retrieved after the call with
@@ -195,7 +195,7 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
     // Then
     let (stack, success) = Stack.peek(ctx.stack, 0);
     assert success.low = 1;
-    TestHelpers.assert_execution_context_equal(ctx.child_context, sub_ctx);
+    TestHelpers.assert_execution_context_equal(ctx.sub_context, sub_ctx);
 
     return ();
 }
@@ -259,7 +259,7 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
     assert sub_ctx.intrinsic_gas_cost = 0;
     assert sub_ctx.starknet_contract_address = starknet_contract_address;
     assert sub_ctx.evm_contract_address = evm_contract_address;
-    TestHelpers.assert_execution_context_equal(sub_ctx.parent_context, ctx);
+    TestHelpers.assert_execution_context_equal(sub_ctx.calling_context, ctx);
 
     // Fake a RETURN in sub_ctx then teardow, see note in evm.codes:
     // If the size of the return data is not known, it can also be retrieved after the call with
@@ -271,7 +271,7 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
     // Then
     let (stack, success) = Stack.peek(ctx.stack, 0);
     assert success.low = 1;
-    TestHelpers.assert_execution_context_equal(ctx.child_context, sub_ctx);
+    TestHelpers.assert_execution_context_equal(ctx.sub_context, sub_ctx);
 
     return ();
 }
@@ -335,7 +335,7 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
     assert sub_ctx.intrinsic_gas_cost = 0;
     assert sub_ctx.starknet_contract_address = ctx.starknet_contract_address;
     assert sub_ctx.evm_contract_address = ctx.evm_contract_address;
-    TestHelpers.assert_execution_context_equal(sub_ctx.parent_context, ctx);
+    TestHelpers.assert_execution_context_equal(sub_ctx.calling_context, ctx);
 
     // Fake a RETURN in sub_ctx then teardow, see note in evm.codes:
     // If the size of the return data is not known, it can also be retrieved after the call with
@@ -347,7 +347,7 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
     // Then
     let (stack, success) = Stack.peek(ctx.stack, 0);
     assert success.low = 1;
-    TestHelpers.assert_execution_context_equal(ctx.child_context, sub_ctx);
+    TestHelpers.assert_execution_context_equal(ctx.sub_context, sub_ctx);
 
     return ();
 }

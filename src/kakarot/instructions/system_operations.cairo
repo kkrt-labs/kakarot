@@ -145,7 +145,7 @@ namespace SystemOperations {
             calldata_len=call_args.args_size,
             calldata=call_args.calldata,
             value=call_args.value,
-            parent_context=ctx,
+            calling_context=ctx,
             return_data_len=call_args.ret_size,
             return_data=call_args.return_data,
         );
@@ -175,7 +175,7 @@ namespace SystemOperations {
             calldata_len=call_args.args_size,
             calldata=call_args.calldata,
             value=call_args.value,
-            parent_context=ctx,
+            calling_context=ctx,
             return_data_len=call_args.ret_size,
             return_data=call_args.return_data,
         );
@@ -291,7 +291,7 @@ namespace CallHelper {
 
     // @notice At the end of a sub-context call, the parent context's stack and memory are updated.
     // @return The pointer to the updated parent context.
-    func finalize_parent_context{
+    func finalize_calling_context{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
@@ -302,14 +302,14 @@ namespace CallHelper {
         // TODO: writing here TRUE: with the current implementation, a reverting sub_context
         // TODO: would break the whole computation, so if it does not, it's TRUE
         let success = Uint256(low=1, high=0);
-        let ctx = ExecutionContext.update_child_context(ctx.parent_context, ctx);
+        let ctx = ExecutionContext.update_sub_context(ctx.calling_context, ctx);
         let stack = Stack.push(ctx.stack, success);
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let memory = Memory.store_n(
             ctx.memory,
-            ctx.child_context.return_data_len,
-            ctx.child_context.return_data,
-            [ctx.child_context.return_data - 1],  // ret_offset, see prepare_args
+            ctx.sub_context.return_data_len,
+            ctx.sub_context.return_data,
+            [ctx.sub_context.return_data - 1],  // ret_offset, see prepare_args
         );
         let ctx = ExecutionContext.update_memory(ctx, memory);
 
