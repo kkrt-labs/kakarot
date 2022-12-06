@@ -28,8 +28,7 @@ production.
 
 [Getting started](#getting-started) • [Supported opcodes](#supported-opcodes) •
 [Build](#build) • [Test](#test) .
-[Report a bug](https://github.com/sayajin-labs/kakarot/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+)
-
+[Report a bug](https://github.com/sayajin-labs/kakarot/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+) • [Questions](https://www.newton.so/view?tags=kakarot)
 </div>
 
 ![](resources/img/kakarot.gif)
