@@ -32,12 +32,6 @@ def event_loop():
     loop.close()
 
 
-@pytest.fixture(scope="session", autouse=True)
-def trace_run():
-    ExecuteEntryPoint._run = traceit.trace_run(ExecuteEntryPoint._run)
-    return
-
-
 @pytest_asyncio.fixture(scope="session")
 async def starknet(worker_id) -> AsyncGenerator[Starknet, None]:
     starknet = await Starknet.empty()
@@ -47,6 +41,7 @@ async def starknet(worker_id) -> AsyncGenerator[Starknet, None]:
 
     starknet.deploy = traceit.trace_all(timeit(starknet.deploy))
     starknet.declare = timeit(starknet.declare)
+    ExecuteEntryPoint._run = traceit.trace_run(ExecuteEntryPoint._run)
     output_dir = Path("coverage")
     shutil.rmtree(output_dir, ignore_errors=True)
 

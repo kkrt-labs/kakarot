@@ -250,6 +250,7 @@ def dump_reports(path: Union[str, Path]):
     times.to_csv(p / "times.csv", index=False)
     traces.to_csv(p / "resources.csv", index=False)
     for label, runner in _profile_data.items():
+        logger.info(f"Dumping TracerData for runner {label}")
         runner.relocate()
         tracer_data = TracerData(
             program=runner.program,
