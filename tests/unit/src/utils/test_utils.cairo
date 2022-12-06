@@ -10,7 +10,7 @@ from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 // Local dependencies
 from utils.utils import Helpers
 
-from tests.utils.utils import TestHelpers
+from tests.unit.helpers.helpers import TestHelpers
 
 @external
 func test__bytes_i_to_uint256{

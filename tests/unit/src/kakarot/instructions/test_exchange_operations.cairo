@@ -13,7 +13,7 @@ from starkware.cairo.common.math import assert_nn
 from kakarot.instructions.exchange_operations import ExchangeOperations
 from kakarot.model import model
 from kakarot.stack import Stack
-from tests.utils.utils import TestHelpers
+from tests.unit.helpers.helpers import TestHelpers
 
 // @notice Prepare a stack with `stack_len` elements to test swap logic. 
 func init_stack{range_check_ptr}(stack_len: felt, swap_idx: felt, swap_idx_element: Uint256, top_stack_element: Uint256,  stack : model.Stack*) -> (prepared_stack: model.Stack*) {

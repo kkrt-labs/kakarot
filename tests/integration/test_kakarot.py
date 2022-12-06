@@ -5,11 +5,13 @@ from typing import Callable
 
 from tests.integration.test_cases import params_execute
 from tests.utils.reporting import traceit
-from tests.utils.utils import (
+from tests.integration.helpers.helpers import (
     extract_memory_from_execute,
     extract_stack_from_execute,
     hex_string_to_bytes_array,
 )
+from tests.integration.test_cases import params_execute
+from tests.utils.reporting import traceit
 
 @pytest.mark.asyncio
 class TestKakarot:

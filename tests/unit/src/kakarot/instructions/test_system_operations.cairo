@@ -18,7 +18,7 @@ from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.system_operations import SystemOperations, CallHelper
 from kakarot.constants import Constants
-from tests.utils.utils import TestHelpers
+from tests.unit.helpers.helpers import TestHelpers
 
 @external
 func test_exec_revert{

@@ -16,7 +16,7 @@ from kakarot.memory import Memory
 from kakarot.constants import Constants, registry_address
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.environmental_information import EnvironmentalInformation
-from tests.utils.utils import TestHelpers
+from tests.unit.helpers.helpers import TestHelpers
 
 func init_context{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*

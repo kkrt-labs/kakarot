@@ -2,7 +2,7 @@ from typing import Callable
 
 import pytest
 
-from tests.utils.utils import hex_string_to_bytes_array
+from tests.integration.helpers.helpers import hex_string_to_bytes_array
 
 
 @pytest.mark.asyncio

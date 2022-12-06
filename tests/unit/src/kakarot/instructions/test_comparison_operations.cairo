@@ -12,7 +12,7 @@ from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.comparison_operations import ComparisonOperations
-from tests.utils.utils import TestHelpers
+from tests.unit.helpers.helpers import TestHelpers
 
 @external
 func test__exec_lt__should_pop_0_and_1_and_push_0__when_0_not_lt_1{

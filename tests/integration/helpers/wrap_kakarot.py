@@ -8,8 +8,8 @@ from web3._utils.abi import map_abi_data
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.contract import Contract
 
+from tests.integration.helpers.helpers import hex_string_to_bytes_array
 from tests.utils.reporting import traceit
-from tests.utils.utils import hex_string_to_bytes_array
 
 
 def wrap_for_kakarot(

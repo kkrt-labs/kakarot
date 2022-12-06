@@ -5,7 +5,7 @@ import pytest_asyncio
 @pytest_asyncio.fixture(scope="module")
 async def memory(starknet):
     return await starknet.deploy(
-        source="./tests/unit/kakarot/test_memory.cairo",
+        source="./tests/unit/src/kakarot/test_memory.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
     )

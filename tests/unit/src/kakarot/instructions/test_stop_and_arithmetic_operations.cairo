@@ -14,7 +14,7 @@ from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.stop_and_arithmetic_operations import StopAndArithmeticOperations
-from tests.utils.utils import TestHelpers
+from tests.unit.helpers.helpers import TestHelpers
 
 @external
 func test__exec_add__should_add_0_and_1{

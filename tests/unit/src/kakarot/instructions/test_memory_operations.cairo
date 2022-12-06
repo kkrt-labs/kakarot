@@ -14,7 +14,7 @@ from kakarot.stack import Stack
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.constants import Constants
-from tests.utils.utils import TestHelpers
+from tests.unit.helpers.helpers import TestHelpers
 
 @external
 func test__exec_pc__should_update_after_incrementing{

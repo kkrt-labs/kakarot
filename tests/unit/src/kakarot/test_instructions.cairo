@@ -11,7 +11,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from utils.utils import Helpers
 from kakarot.model import model
 from kakarot.instructions import EVMInstructions
-from tests.utils.utils import TestHelpers
+from tests.unit.helpers.helpers import TestHelpers
 
 @external
 func test__unknown_opcode{

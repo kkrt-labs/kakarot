@@ -15,7 +15,7 @@ from kakarot.stack import Stack
 from kakarot.constants import Constants
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.block_information import BlockInformation
-from tests.utils.utils import TestHelpers
+from tests.unit.helpers.helpers import TestHelpers
 
 @view
 func test__chainId__should_push_chain_id_to_stack{

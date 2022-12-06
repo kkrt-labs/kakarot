@@ -13,7 +13,7 @@ from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.duplication_operations import DuplicationOperations
-from tests.utils.utils import TestHelpers
+from tests.unit.helpers.helpers import TestHelpers
 
 @external
 func test__exec_dup1_should_duplicate_1st_item_to_top_of_stack{
