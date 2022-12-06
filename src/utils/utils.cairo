@@ -41,44 +41,31 @@ namespace Helpers {
     }
     // @notice This function is used to convert a sequence of i bytes to Uint256.
     // @param val: pointer to the first byte.
-    // @param i: pointer to the first byte.
+    // @param i: sequence size.
     // @return res: Uint256 representation of the given input in bytes.
     func bytes_i_to_uint256{range_check_ptr}(val: felt*, i: felt) -> Uint256 {
         alloc_locals;
-        local new_i: felt;
-        local new_val: felt*;
-        local high: felt;
-        local low: felt;
 
-        // Check if i is lower to 32
-        let is_le32 = is_le(i, 32);
+        let is_sequence_32_bytes_or_less = is_le(i, 32);
         with_attr error_message("number must be shorter than 32 bytes") {
-            assert is_le32 = 1;
+            assert is_sequence_32_bytes_or_less = 1;
         }
 
-        let is_16_le_i = is_le(16, i);
-        if (is_16_le_i != FALSE) {
-            assert new_val = val + i - 16;
-            new_i = 16;
-            let (high_temp) = compute_half_uint256(val=val, i=i - 16, res=0);
-            high = high_temp;
-            tempvar range_check_ptr = range_check_ptr;
-        } else {
-            new_val = val;
-            new_i = i;
-            high = 0;
-            tempvar range_check_ptr = range_check_ptr;
+        let is_sequence_16_bytes_or_less = is_le(i, 16);
+
+        // 1 - 16 bytes
+        if (is_sequence_16_bytes_or_less != FALSE) {
+            let (low) = compute_half_uint256(val=val, i=i, res=0);
+            let res = Uint256(low=low, high=0);
+
+            return res;
         }
 
-        let is_i_le_16 = is_le(new_i, 16);
-
-        if (is_i_le_16 != FALSE) {
-            let (low_temp) = compute_half_uint256(val=new_val, i=new_i, res=0);
-            low = low_temp;
-        } else {
-            low = 0;
-        }
+        // 17 - 32 bytes
+        let (low) = compute_half_uint256(val=val + i - 16, i=16, res=0);
+        let (high) = compute_half_uint256(val=val, i=i - 16, res=0);
         let res = Uint256(low=low, high=high);
+
         return res;
     }
 
