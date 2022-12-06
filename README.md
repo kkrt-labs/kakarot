@@ -273,6 +273,23 @@ for being involved!
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
+## Questions / FAQ
+
+Questions are welcome!
+If you have any questions regarding Kakarot, feel free to ask them using [Newton](https://www.newton.so/view?tags=kakarot).
+
+### FAQ
+- [What is Kakarot, the zkEVM written in Cairo?](https://www.newton.so/view/6384d1e75bfa675b854c3228)
+- [Is Kakarot zkEVM a blockchain?](https://www.newton.so/view/6384d22a5bfa675b854c3229)
+- [When will Kakarot zkEVM launch on mainnet?](https://www.newton.so/view/6384d25fac8f7c40f4f144fd)
+- [Does Kakarot zkEVM have a token?](https://www.newton.so/view/6384d2815bfa675b854c322a)
+- [Is Kakarot zkEVM a smart contract or a blockchain?](https://www.newton.so/view/6384d2a0ac8f7c40f4f144fe)
+- [Is Kakarot a Starkware project?](https://www.newton.so/view/6384d2be5bfa675b854c322b)
+- [Is Kakarot part of the Starknet ecosystem?](https://www.newton.so/view#:~:text=Is%20Kakarot%20part%20of%20the%20Starknet%20ecosystem%3F)
+- [Will Kakarot be an L3 on top of the Starknet validity rollup?](https://www.newton.so/view/6384d3235bfa675b854c322c)
+- [Can I add Kakarot to my metamask?](https://www.newton.so/view/6384d38fac8f7c40f4f14500)
+- [Is Kakarot equivalent to Arbitrum?](https://www.newton.so/view/6384d3d85bfa675b854c322d)
+
 <p align="center">
     <img src="resources/img/kakarot_github_banner_footer.png" height="200">
 </p>
