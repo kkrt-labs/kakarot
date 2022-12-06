@@ -4,11 +4,11 @@ from starkware.starknet.testing.contract import StarknetContract
 from typing import Callable
 
 from tests.integrations.test_cases import params_execute
+from tests.utils.reporting import traceit
 from tests.utils.utils import (
     extract_memory_from_execute,
     extract_stack_from_execute,
     hex_string_to_bytes_array,
-    traceit,
 )
 
 @pytest.mark.asyncio

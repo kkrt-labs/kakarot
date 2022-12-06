@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 import shutil
 from pathlib import Path
 from typing import AsyncGenerator
@@ -13,7 +13,7 @@ from starkware.starknet.business_logic.execution.execute_entry_point import (
 from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.utils import dump_coverage, dump_reports, timeit, traceit
+from tests.utils.reporting import dump_coverage, dump_reports, timeit, traceit
 
 pd.set_option("display.max_rows", 500)
 pd.set_option("display.max_columns", 500)

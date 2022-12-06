@@ -5,7 +5,7 @@ import pytest_asyncio
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.utils import traceit
+from tests.utils.reporting import traceit
 
 random.seed(0)
 

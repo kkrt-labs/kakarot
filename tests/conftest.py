@@ -6,6 +6,7 @@ import pytest
 logging.getLogger("asyncio").setLevel(logging.ERROR)
 logger = logging.getLogger()
 
+
 def pytest_addoption(parser):
     parser.addoption(
         "--trace-run",
@@ -20,6 +21,7 @@ def event_loop():
     loop = asyncio.get_event_loop()
     yield loop
     loop.close()
+
 
 pytest_plugins = [
     "tests.fixtures.1_starknet",

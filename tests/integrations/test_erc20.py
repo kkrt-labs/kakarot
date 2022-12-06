@@ -3,7 +3,7 @@ from typing import Callable
 import pytest
 from starkware.starknet.testing.contract import StarknetContract
 
-from tests.utils.utils import hex_string_to_bytes_array, traceit
+from tests.utils.reporting import traceit
 
 
 @pytest.mark.asyncio

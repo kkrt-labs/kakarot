@@ -3,12 +3,9 @@ import logging
 import pytest
 from starkware.starknet.testing.contract import StarknetContract
 
-from tests.utils.utils import (
-    get_contract,
-    hex_string_to_bytes_array,
-    traceit,
-    wrap_for_kakarot,
-)
+from tests.utils.reporting import traceit
+from tests.utils.utils import hex_string_to_bytes_array
+from tests.utils.wrap_kakarot import get_contract, wrap_for_kakarot
 
 logger = logging.getLogger()
 
