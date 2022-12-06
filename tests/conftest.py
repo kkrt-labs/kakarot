@@ -25,6 +25,15 @@ logging.getLogger("asyncio").setLevel(logging.ERROR)
 logger = logging.getLogger()
 
 
+def pytest_addoption(parser):
+    parser.addoption(
+        "--trace-run",
+        action="store_true",
+        default=False,
+        help="compute and dump TracerData for the VM runner: True or False",
+    )
+
+
 @pytest.fixture(scope="session")
 def event_loop():
     loop = asyncio.get_event_loop()
@@ -33,7 +42,7 @@ def event_loop():
 
 
 @pytest_asyncio.fixture(scope="session")
-async def starknet(worker_id) -> AsyncGenerator[Starknet, None]:
+async def starknet(worker_id, request) -> AsyncGenerator[Starknet, None]:
     starknet = await Starknet.empty()
     starknet.state.state.update_block_info(
         BlockInfo.create_for_testing(block_number=1, block_timestamp=1)
@@ -41,7 +50,11 @@ async def starknet(worker_id) -> AsyncGenerator[Starknet, None]:
 
     starknet.deploy = traceit.trace_all(timeit(starknet.deploy))
     starknet.declare = timeit(starknet.declare)
-    ExecuteEntryPoint._run = traceit.trace_run(ExecuteEntryPoint._run)
+    if request.config.getoption("trace_run"):
+        logger.info("trace-run option enabled")
+        ExecuteEntryPoint._run = traceit.trace_run(ExecuteEntryPoint._run)
+    else:
+        logger.info("trace-run option disabled")
     output_dir = Path("coverage")
     shutil.rmtree(output_dir, ignore_errors=True)
 
