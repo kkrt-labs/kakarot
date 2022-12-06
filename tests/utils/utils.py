@@ -196,17 +196,7 @@ class traceit:
             runner, syscall_handler = run(*args, **kwargs)
 
             if cls._context:
-                _runner = copy.deepcopy(runner)
-                _runner.relocate()
-                tracer_data = TracerData(
-                    program=_runner.program,
-                    memory=_runner.relocated_memory,
-                    trace=_runner.relocated_trace,
-                    program_base=1,
-                    debug_info=_runner.get_relocated_debug_info(),
-                )
-                profile = profile_from_tracer_data(tracer_data)
-                _profile_data[cls._context] = profile
+                _profile_data[cls._context] = runner
 
             return runner, syscall_handler
 
@@ -259,9 +249,18 @@ def dump_reports(path: Union[str, Path]):
     times, traces = reports()
     times.to_csv(p / "times.csv", index=False)
     traces.to_csv(p / "resources.csv", index=False)
-    for label, data in _profile_data.items():
+    for label, runner in _profile_data.items():
+        runner.relocate()
+        tracer_data = TracerData(
+            program=runner.program,
+            memory=runner.relocated_memory,
+            trace=runner.relocated_trace,
+            program_base=1,
+            debug_info=runner.get_relocated_debug_info(),
+        )
+        profile = profile_from_tracer_data(tracer_data)
         with open(p / f"{label}_prof.pb.gz", "wb") as fp:
-            fp.write(data)
+            fp.write(profile)
 
 
 def dump_coverage(path: Union[str, Path], files: List[CoverageFile]):

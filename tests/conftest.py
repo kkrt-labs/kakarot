@@ -32,7 +32,7 @@ def event_loop():
     loop.close()
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def trace_run():
     ExecuteEntryPoint._run = traceit.trace_run(ExecuteEntryPoint._run)
     return
