@@ -9,6 +9,9 @@ import pandas as pd
 import pytest
 import pytest_asyncio
 from cairo_coverage import cairo_coverage
+from starkware.starknet.business_logic.execution.execute_entry_point import (
+    ExecuteEntryPoint,
+)
 from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
 from starkware.starknet.testing.starknet import Starknet
@@ -19,7 +22,6 @@ pd.set_option("display.max_rows", 500)
 pd.set_option("display.max_columns", 500)
 pd.set_option("display.width", 1000)
 logging.getLogger("asyncio").setLevel(logging.ERROR)
-
 logger = logging.getLogger()
 
 
@@ -28,6 +30,12 @@ def event_loop():
     loop = asyncio.get_event_loop()
     yield loop
     loop.close()
+
+
+@pytest.fixture(autouse=True)
+def trace_run():
+    ExecuteEntryPoint._run = traceit.trace_run(ExecuteEntryPoint._run)
+    return
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -66,13 +74,19 @@ async def starknet(worker_id) -> AsyncGenerator[Starknet, None]:
             # This is the last teardown of the testsuite, merge the files
             resources = pd.concat(
                 [pd.read_csv(f) for f in output_dir.glob("**/resources.csv")],
-            ).sort_values(["n_steps"], ascending=False)
-            resources.to_csv(output_dir / "resources.csv", index=False)
+            )
+            if not resources.empty:
+                resources.sort_values(["n_steps"], ascending=False).to_csv(
+                    output_dir / "resources.csv", index=False
+                )
             times = pd.concat(
                 [pd.read_csv(f) for f in output_dir.glob("**/times.csv")],
                 ignore_index=True,
-            ).sort_values(["duration"], ascending=False)
-            times.to_csv(output_dir / "times.csv", index=False)
+            )
+            if not times.empty:
+                times.sort_values(["duration"], ascending=False).to_csv(
+                    output_dir / "times.csv", index=False
+                )
 
 
 @pytest_asyncio.fixture(scope="session")

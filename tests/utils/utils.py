@@ -1,35 +1,3 @@
-from starkware.cairo.lang.tracer.profile import profile_from_tracer_data
-from starkware.cairo.lang.tracer.tracer_data import TracerData
-from starkware.starknet.business_logic.execution.execute_entry_point import (
-    ExecuteEntryPoint,
-)
-
-# Override _run() entrypoint for hooking and profiling cairo runner.
-old_run = ExecuteEntryPoint._run
-
-
-def override_run(*args, **kwargs):
-    runner, syscall_handler = old_run(*args, **kwargs)
-
-    if traceit._context:
-        runner.relocate()
-
-        tracer_data = TracerData(
-            program=runner.program,
-            memory=runner.relocated_memory,
-            trace=runner.relocated_trace,
-            program_base=1,
-            debug_info=runner.get_relocated_debug_info(),
-        )
-
-        profile = profile_from_tracer_data(tracer_data)
-        _profile_datas[traceit._context] = profile
-    return runner, syscall_handler
-
-
-ExecuteEntryPoint._run = override_run
-
-
 import json
 import logging
 import os
@@ -38,20 +6,12 @@ from functools import wraps
 from pathlib import Path
 from textwrap import wrap
 from time import perf_counter
-from typing import (
-    Any,
-    Awaitable,
-    Callable,
-    Coroutine,
-    Iterable,
-    List,
-    TypeVar,
-    Union,
-    cast,
-)
+from typing import Any, Callable, Iterable, List, TypeVar, Union, cast
 
 import pandas as pd
 from cairo_coverage.cairo_coverage import CoverageFile
+from starkware.cairo.lang.tracer.profile import profile_from_tracer_data
+from starkware.cairo.lang.tracer.tracer_data import TracerData
 from starkware.starknet.testing.objects import StarknetCallInfo
 from starkware.starknet.testing.starknet import StarknetContract
 from web3 import Web3
@@ -64,7 +24,7 @@ logger = logging.getLogger("timer")
 
 _time_report: List[dict] = []
 _resources_report: List[dict] = []
-_profile_datas = {}
+_profile_data = {}
 
 T = TypeVar("T", bound=Callable[..., Any])
 
@@ -89,7 +49,7 @@ def timeit(fun: T) -> T:
 
 class traceit:
     """
-    Record resources used by a StarknetContract
+    Record resources used by a StarknetContract and VM
     """
 
     _context = ""
@@ -229,6 +189,27 @@ class traceit:
         yield
         cls._context = prev_context
 
+    @classmethod
+    def trace_run(cls, run):
+        def _run(*args, **kwargs):
+            runner, syscall_handler = run(*args, **kwargs)
+
+            if cls._context:
+                runner.relocate()
+                tracer_data = TracerData(
+                    program=runner.program,
+                    memory=runner.relocated_memory,
+                    trace=runner.relocated_trace,
+                    program_base=1,
+                    debug_info=runner.get_relocated_debug_info(),
+                )
+                profile = profile_from_tracer_data(tracer_data)
+                _profile_data[cls._context] = profile
+
+            return runner, syscall_handler
+
+        return _run
+
 
 def reports():
     return (
@@ -276,7 +257,7 @@ def dump_reports(path: Union[str, Path]):
     times, traces = reports()
     times.to_csv(p / "times.csv", index=False)
     traces.to_csv(p / "resources.csv", index=False)
-    for label, data in _profile_datas.items():
+    for label, data in _profile_data.items():
         with open(p / f"{label}_prof.pb.gz", "wb") as fp:
             fp.write(data)
 
