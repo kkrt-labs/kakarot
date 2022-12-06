@@ -26,3 +26,21 @@ class TestSystemOperations:
             account_registry.contract_address,
             kakarot.contract_address,
         ).call()
+
+        await system_operations.test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack(
+            contract_account_class.class_hash,
+            account_registry.contract_address,
+            kakarot.contract_address,
+        ).call()
+
+        await system_operations.test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_stack(
+            contract_account_class.class_hash,
+            account_registry.contract_address,
+            kakarot.contract_address,
+        ).call()
+
+        await system_operations.test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_stack(
+            contract_account_class.class_hash,
+            account_registry.contract_address,
+            kakarot.contract_address,
+        ).call()

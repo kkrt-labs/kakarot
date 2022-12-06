@@ -9,7 +9,7 @@ async def stack(starknet):
     return await starknet.deploy(
         source="./tests/cairo_files/test_stack.cairo",
         cairo_path=["src"],
-        disable_hint_validation=False,
+        disable_hint_validation=True,
     )
 
 
