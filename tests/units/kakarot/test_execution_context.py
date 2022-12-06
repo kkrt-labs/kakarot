@@ -8,7 +8,7 @@ from starkware.starknet.testing.starknet import Starknet
 @pytest_asyncio.fixture(scope="module")
 async def execution_context(starknet: Starknet):
     return await starknet.deploy(
-        source="./tests/cairo_files/test_execution_context.cairo",
+        source="./tests/units/kakarot/test_execution_context.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
     )

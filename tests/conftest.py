@@ -62,7 +62,7 @@ async def starknet(worker_id, request) -> AsyncGenerator[Starknet, None]:
 
     output_dir.mkdir(exist_ok=True, parents=True)
     files = cairo_coverage.report_runs(
-        excluded_file={"site-packages", "cairo_files", "ERC20.cairo"}
+        excluded_file={"site-packages", "ERC20.cairo", "tests"}
     )
     total_covered = []
     for file in files:

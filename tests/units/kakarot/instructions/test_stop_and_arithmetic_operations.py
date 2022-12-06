@@ -6,7 +6,7 @@ from starkware.starknet.testing.starknet import Starknet
 @pytest_asyncio.fixture(scope="module")
 async def arithmetic_operations(starknet: Starknet):
     return await starknet.deploy(
-        source="./tests/cairo_files/instructions/test_stop_and_arithmetic_operations.cairo",
+        source="./tests/units/kakarot/instructions/test_stop_and_arithmetic_operations.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
     )

@@ -6,7 +6,7 @@ from starkware.starknet.testing.starknet import Starknet
 @pytest_asyncio.fixture(scope="module")
 async def environmental_information(starknet: Starknet):
     return await starknet.deploy(
-        source="./tests/cairo_files/instructions/test_environmental_information.cairo",
+        source="./tests/units/kakarot/instructions/test_environmental_information.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
     )
