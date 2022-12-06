@@ -15,7 +15,6 @@ from kakarot.stack import Stack
 from kakarot.memory import Memory
 from kakarot.model import model
 from utils.utils import Helpers
-from tests.utils.model import EVMTestCase
 
 namespace TestHelpers {
     func init_context{
