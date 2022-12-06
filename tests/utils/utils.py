@@ -1,3 +1,4 @@
+import copy
 import json
 import logging
 import os
@@ -195,13 +196,14 @@ class traceit:
             runner, syscall_handler = run(*args, **kwargs)
 
             if cls._context:
-                runner.relocate()
+                _runner = copy.deepcopy(runner)
+                _runner.relocate()
                 tracer_data = TracerData(
-                    program=runner.program,
-                    memory=runner.relocated_memory,
-                    trace=runner.relocated_trace,
+                    program=_runner.program,
+                    memory=_runner.relocated_memory,
+                    trace=_runner.relocated_trace,
                     program_base=1,
-                    debug_info=runner.get_relocated_debug_info(),
+                    debug_info=_runner.get_relocated_debug_info(),
                 )
                 profile = profile_from_tracer_data(tracer_data)
                 _profile_data[cls._context] = profile
