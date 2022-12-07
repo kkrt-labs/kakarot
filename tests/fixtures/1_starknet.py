@@ -43,9 +43,7 @@ async def starknet(worker_id, request) -> AsyncGenerator[Starknet, None]:
     yield starknet
 
     output_dir.mkdir(exist_ok=True, parents=True)
-    files = cairo_coverage.report_runs(
-        excluded_file={"site-packages", "tests"}
-    )
+    files = cairo_coverage.report_runs(excluded_file={"site-packages", "tests"})
     total_covered = []
     for file in files:
         if file.pct_covered < 80:
