@@ -398,6 +398,56 @@ namespace EnvironmentalInformation {
         return ctx;
     }
 
+    // @notice EXTCODESIZE operation
+    // @dev Get size of an account’s code
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 100
+    // @custom:stack_consumed_elements 1
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context
+    // @return The pointer to the updated execution context.
+    func exec_extcodesize{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+
+        // Increment gas used.
+        // TODO: compute gas (incidentally need to discern whether address is cold)
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_EXTCODECOPY);
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - address: 20-byte address of the contract to query.
+        let (stack, address_uint256) = Stack.pop(self=stack);
+        let address_felt = Helpers.uint256_to_felt(address_uint256);
+
+        // Get the starknet address from the given evm address
+        let (registry_address_) = registry_address.read();
+        let (starknet_contract_address) = IRegistry.get_starknet_contract_address(
+            contract_address=registry_address_, evm_contract_address=address_felt
+        );
+        if (starknet_contract_address == 0) {
+            let stack = Stack.push(stack, Uint256(low=0, high=0));
+            let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+            return ctx;
+        }
+
+        let (bytecode_len, bytecode) = IEvmContract.bytecode(
+            contract_address=starknet_contract_address
+        );
+        // bytecode_len cannot be greater than 24k in the EVM
+        let stack = Stack.push(stack, Uint256(low=bytecode_len, high=0));
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+
+        return ctx;
+    }
+
     // @notice EXTCODECOPY operation
     // @dev Copy an account's code to memory
     // @custom:since Frontier
