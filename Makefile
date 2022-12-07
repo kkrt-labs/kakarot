@@ -1,6 +1,7 @@
 .PHONY: build test coverage
 solidity_folder = $(shell pwd)/tests/integration/solidity_files
 solidity_files  = $(shell ls ${solidity_folder} | grep .sol)
+cairo_files = $(shell find . -name "*.cairo")
 
 build:
 	$(MAKE) clean
@@ -44,12 +45,12 @@ run-test-mark: build-sol
 	poetry run pytest -m $(mark)
 
 format:
-	poetry run cairo-format src/**/*.cairo -i
+	poetry run cairo-format -i ${cairo_files}
 	poetry run black tests/.
 	poetry run isort tests/.
 
 format-check:
-	poetry run cairo-format src/**/*.cairo -c
+	poetry run cairo-format -c ${cairo_files}
 	poetry run black tests/. --check
 	poetry run isort tests/. --check
 

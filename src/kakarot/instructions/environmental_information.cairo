@@ -406,7 +406,7 @@ namespace EnvironmentalInformation {
     // @custom:stack_consumed_elements 4
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.    
+    // @return The pointer to the updated execution context.
     func exec_extcodecopy{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -417,8 +417,8 @@ namespace EnvironmentalInformation {
 
         let stack = ctx.stack;
 
-        // Stack input:     
-        // 0 - address: 20-byte address of the contract to query. 
+        // Stack input:
+        // 0 - address: 20-byte address of the contract to query.
         // 1 - dest_offset: byte offset in the memory where the result will be copied.
         // 2 - offset: byte offset in the code to copy.
         // 3 - size: byte size to copy.
@@ -427,7 +427,7 @@ namespace EnvironmentalInformation {
         let dest_offset = popped[1];
         let offset = popped[2];
         let size = popped[3];
-      
+
         let address_felt = Helpers.uint256_to_felt(address_uint256);
 
         // Get the starknet address from the given evm address
@@ -447,20 +447,17 @@ namespace EnvironmentalInformation {
             contract_address=starknet_contract_address
         );
 
-        // handle case were eth address returns no bytecode: 
-        
+        // handle case were eth address returns no bytecode:
+
         if (bytecode_len == 0) {
             return ctx;
         }
-    
-        // TODO do we have the distinction between precompiles and warm and cold addresses? 
-    
+
+        // TODO do we have the distinction between precompiles and warm and cold addresses?
+
         // Get bytecode slice from offset to size
         let sliced_bytecode: felt* = Helpers.slice_data(
-            data_len=bytecode_len,
-            data=bytecode,
-            data_offset=offset.low,
-            slice_len=size.low,
+            data_len=bytecode_len, data=bytecode, data_offset=offset.low, slice_len=size.low
         );
 
         // Write bytecode slice to memory at dest_offset
@@ -478,7 +475,7 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_EXTCODECOPY);
 
         return ctx;
-    }    
+    }
 
     // @notice RETURNDATASIZE operation.
     // @dev Get the size of return data.
