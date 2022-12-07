@@ -23,3 +23,4 @@ class TestBlockInformation:
         await environmental_information.test__exec_extcodecopy__should_handle_address_with_no_code(
             account_registry_address=acc_registry_address
         ).call()
+        await environmental_information.test__returndatacopy().call()
