@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="resources/img/kakarot_github_banner.png" height="200">
+    <img src="docs/img/kakarot_github_banner.png" height="200">
 </p>
 <div align="center">
   <h3 align="center">
@@ -31,7 +31,7 @@ production.
 [Report a bug](https://github.com/sayajin-labs/kakarot/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+) • [Questions](https://www.newton.so/view?tags=kakarot)
 </div>
 
-![](resources/img/kakarot.gif)
+![](docs/img/kakarot.gif)
 
 ## Supported opcodes
 
@@ -55,7 +55,7 @@ list.
 
 ### Architecture
 
-![](resources/img/architecture.png)
+![](docs/img/architecture.png)
 
 - ✅ Kakarot is a smart contract, deployed on Starknet (goerli). It is written
   in Cairo.
@@ -141,7 +141,7 @@ Which corresponds to the following EVM program:
 
 Here is the execution trace of the program on Kakarot:
 
-![Tutorial](resources/img/sample_execution.png)
+![Tutorial](docs/img/sample_execution.png)
 
 ## Installation
 
@@ -291,5 +291,5 @@ for being involved!
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 <p align="center">
-    <img src="resources/img/kakarot_github_banner_footer.png" height="200">
+    <img src="docs/img/kakarot_github_banner_footer.png" height="200">
 </p>
