@@ -94,6 +94,26 @@ class TestComparisonOperations:
     ):
         await comparison_operations.test__exec_or__should_pop_0_and_1_and_push_1__when_0_or_1_are_true().call()
 
+    async def test__exec_xor__should_pop_0_and_1_and_push_0__when_0_and_1_are_true(
+        self, comparison_operations
+    ):
+        await comparison_operations.test__exec_xor__should_pop_0_and_1_and_push_0__when_0_and_1_are_true().call()
+
+    async def test__exec_xor__should_pop_0_and_1_and_push_0__when_0_and_1_are_not_true(
+        self, comparison_operations
+    ):
+        await comparison_operations.test__exec_xor__should_pop_0_and_1_and_push_0__when_0_and_1_are_not_true().call()
+
+    async def test__exec_xor__should_pop_0_and_1_and_push_1__when_0_is_true_and_1_is_not_true(
+        self, comparison_operations
+    ):
+        await comparison_operations.test__exec_xor__should_pop_0_and_1_and_push_1__when_0_is_true_and_1_is_not_true().call()
+
+    async def test__exec_xor__should_pop_0_and_1_and_push_1__when_0_is_not_true_and_1_is_true(
+        self, comparison_operations
+    ):
+        await comparison_operations.test__exec_xor__should_pop_0_and_1_and_push_1__when_0_is_not_true_and_1_is_true().call()
+
     async def test__exec_shl__should_pop_0_and_1_and_push_left_shift(
         self, comparison_operations
     ):

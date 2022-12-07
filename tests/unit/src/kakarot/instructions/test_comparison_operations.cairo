@@ -413,6 +413,106 @@ func test__exec_or__should_pop_0_and_1_and_push_1__when_0_or_1_are_true{
 }
 
 @external
+func test__exec_xor__should_pop_0_and_1_and_push_0__when_0_and_1_are_true{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given
+    alloc_locals;
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+
+    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+
+    // When
+    let result = ComparisonOperations.exec_xor(ctx);
+
+    // Then
+    assert result.gas_used = 3;
+    let len: felt = result.stack.len_16bytes / 2;
+    assert len = 1;
+    let (stack, index0) = Stack.peek(result.stack, 0);
+    assert index0 = Uint256(0,0);
+    return ();
+}
+
+@external
+func test__exec_xor__should_pop_0_and_1_and_push_0__when_0_and_1_are_not_true{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given
+    alloc_locals;
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+
+    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+
+    // When
+    let result = ComparisonOperations.exec_xor(ctx);
+
+    // Then
+    assert result.gas_used = 3;
+    let len: felt = result.stack.len_16bytes / 2;
+    assert len = 1;
+    let (stack, index0) = Stack.peek(result.stack, 0);
+    assert index0 = Uint256(0,0);
+    return ();
+}
+
+@external
+func test__exec_xor__should_pop_0_and_1_and_push_1__when_0_is_true_and_1_is_not_true{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given
+    alloc_locals;
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+
+    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+
+    // When
+    let result = ComparisonOperations.exec_xor(ctx);
+
+    // Then
+    assert result.gas_used = 3;
+    let len: felt = result.stack.len_16bytes / 2;
+    assert len = 1;
+    let (stack, index0) = Stack.peek(result.stack, 0);
+    assert index0 = Uint256(1,0);
+    return ();
+}
+
+@external
+func test__exec_xor__should_pop_0_and_1_and_push_1__when_0_is_not_true_and_1_is_true{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given
+    alloc_locals;
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+
+    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+
+    // When
+    let result = ComparisonOperations.exec_xor(ctx);
+
+    // Then
+    assert result.gas_used = 3;
+    let len: felt = result.stack.len_16bytes / 2;
+    assert len = 1;
+    let (stack, index0) = Stack.peek(result.stack, 0);
+    assert index0 = Uint256(1,0);
+    return ();
+}
+
+@external
 func test__exec_shl__should_pop_0_and_1_and_push_left_shift{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
