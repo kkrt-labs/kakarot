@@ -196,7 +196,7 @@ namespace EVMInstructions {
         ret;
         call not_implemented_opcode;  // 0x3b
         ret;
-        call not_implemented_opcode;  // 0x3c
+        call EnvironmentalInformation.exec_extcodecopy;  // 0x3c
         ret;
         call EnvironmentalInformation.exec_returndatasize;  // 0x3d
         ret;

@@ -16,7 +16,7 @@ from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 from kakarot.memory import Memory
 from kakarot.constants import native_token_address, registry_address
-from kakarot.interfaces.interfaces import IEth, IRegistry
+from kakarot.interfaces.interfaces import IEth, IRegistry, IEvmContract
 
 // @title Environmental information opcodes.
 // @notice This file contains the functions to execute for environmental information opcodes.
@@ -34,6 +34,7 @@ namespace EnvironmentalInformation {
     const GAS_COST_CALLDATACOPY = 3;
     const GAS_COST_CODESIZE = 2;
     const GAS_COST_CODECOPY = 3;
+    const GAS_COST_EXTCODECOPY = 100;
     const GAS_COST_RETURNDATASIZE = 2;
     const GAS_COST_RETURNDATACOPY = 3;
 
@@ -396,6 +397,88 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CODECOPY);
         return ctx;
     }
+
+    // @notice EXTCODECOPY operation
+    // @dev Copy an account's code to memory
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 100
+    // @custom:stack_consumed_elements 4
+    // @custom:stack_produced_elements 0
+    // @param ctx The pointer to the execution context
+    // @return The pointer to the updated execution context.    
+    func exec_extcodecopy{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+
+        let stack = ctx.stack;
+
+        // Stack input:     
+        // 0 - address: 20-byte address of the contract to query. 
+        // 1 - dest_offset: byte offset in the memory where the result will be copied.
+        // 2 - offset: byte offset in the code to copy.
+        // 3 - size: byte size to copy.
+        let (stack, popped) = Stack.pop_n(self=stack, n=4);
+        let address_uint256 = popped[0];
+        let dest_offset = popped[1];
+        let offset = popped[2];
+        let size = popped[3];
+      
+        let address_felt = Helpers.uint256_to_felt(address_uint256);
+
+        // Get the starknet address from the given evm address
+        let (registry_address_) = registry_address.read();
+
+        let (starknet_contract_address) = IRegistry.get_starknet_contract_address(
+            contract_address=registry_address_, evm_contract_address=address_felt
+        );
+
+        // handle case where there is no eth -> stark address mapping
+        if (starknet_contract_address == 0) {
+            return ctx;
+        }
+
+        // Get the bytecode from the Starknet_contract
+        let (bytecode_len, bytecode) = IEvmContract.bytecode(
+            contract_address=starknet_contract_address
+        );
+
+        // handle case were eth address returns no bytecode: 
+        
+        if (bytecode_len == 0) {
+            return ctx;
+        }
+    
+        // TODO do we have the distinction between precompiles and warm and cold addresses? 
+    
+        // Get bytecode slice from offset to size
+        let sliced_bytecode: felt* = Helpers.slice_data(
+            data_len=bytecode_len,
+            data=bytecode,
+            data_offset=offset.low,
+            slice_len=size.low,
+        );
+
+        // Write bytecode slice to memory at dest_offset
+        // TODO handle dynamic gas for memory expansion
+        let memory: model.Memory* = Memory.store_n(
+            self=ctx.memory, element_len=size.low, element=sliced_bytecode, offset=dest_offset.low
+        );
+
+        // Update context memory.
+        let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        // Increment gas used.
+        // TODO: compute gas (incidentally need to discern whether address is cold)
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_EXTCODECOPY);
+
+        return ctx;
+    }    
 
     // @notice RETURNDATASIZE operation.
     // @dev Get the size of return data.
