@@ -83,19 +83,19 @@ func test__exec_address__should_push_address_to_stack{
 @external
 func test__exec_extcodecopy__should_handle_address_with_no_code{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(account_registry_address : felt) {
+}(account_registry_address: felt) {
     // Given
     alloc_locals;
-    
-    // make a deployed registry contract available
-    registry_address.write(account_registry_address );
 
-    let (bytecode) = alloc();    
+    // make a deployed registry contract available
+    registry_address.write(account_registry_address);
+
+    let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0)); // size
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0)); // offset
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0)); // dest_offset
-    let stack: model.Stack* = Stack.push(stack, Uint256(3, 0)); // address
+    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));  // size
+    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));  // offset
+    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));  // dest_offset
+    let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));  // address
 
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 

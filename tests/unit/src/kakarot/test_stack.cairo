@@ -133,7 +133,7 @@ func test__peek__should_return_stack_at_given_index__when_value_is_0{
     let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
 
     // When
-    let (stack,result) = Stack.peek(stack, 0);
+    let (stack, result) = Stack.peek(stack, 0);
 
     // Then
     assert result = Uint256(3, 0);
@@ -151,7 +151,7 @@ func test__peek__should_return_stack_at_given_index__when_value_is_1{
     let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
 
     // When
-    let (stack,result) = Stack.peek(stack, 1);
+    let (stack, result) = Stack.peek(stack, 1);
 
     // Then
     assert result = Uint256(2, 0);
@@ -166,7 +166,7 @@ func test__peek__should_fail_when_underflow{
     let stack: model.Stack* = Stack.init();
 
     // When & Then
-    let (stack,result) = Stack.peek(stack, 1);
+    let (stack, result) = Stack.peek(stack, 1);
     return ();
 }
 
@@ -181,26 +181,26 @@ func test__swap__should_swap_2_stacks{
     let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(4, 0));
-    let (stack,index3) = Stack.peek(stack, 3);
+    let (stack, index3) = Stack.peek(stack, 3);
     assert index3 = Uint256(1, 0);
-    let (stack,index2) = Stack.peek(stack, 2);
+    let (stack, index2) = Stack.peek(stack, 2);
     assert index2 = Uint256(2, 0);
-    let (stack,index1) = Stack.peek(stack, 1);
+    let (stack, index1) = Stack.peek(stack, 1);
     assert index1 = Uint256(3, 0);
-    let (stack,index0) = Stack.peek(stack, 0);
+    let (stack, index0) = Stack.peek(stack, 0);
     assert index0 = Uint256(4, 0);
 
     // When
     let result = Stack.swap_i(stack, i=3);
 
     // Then
-    let (stack,index3) = Stack.peek(result, 3);
+    let (stack, index3) = Stack.peek(result, 3);
     assert index3 = Uint256(1, 0);
-    let (stack,index2) = Stack.peek(stack, 2);
+    let (stack, index2) = Stack.peek(stack, 2);
     assert index2 = Uint256(4, 0);
-    let (stack,index1) = Stack.peek(stack, 1);
+    let (stack, index1) = Stack.peek(stack, 1);
     assert index1 = Uint256(3, 0);
-    let (stack,index0) = Stack.peek(stack, 0);
+    let (stack, index0) = Stack.peek(stack, 0);
     assert index0 = Uint256(2, 0);
     return ();
 }

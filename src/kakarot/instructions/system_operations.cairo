@@ -305,11 +305,12 @@ namespace CallHelper {
         let ctx = ExecutionContext.update_sub_context(ctx.calling_context, ctx);
         let stack = Stack.push(ctx.stack, success);
         let ctx = ExecutionContext.update_stack(ctx, stack);
+        // ret_offset, see prepare_args
         let memory = Memory.store_n(
             ctx.memory,
             ctx.sub_context.return_data_len,
             ctx.sub_context.return_data,
-            [ctx.sub_context.return_data - 1],  // ret_offset, see prepare_args
+            [ctx.sub_context.return_data - 1],
         );
         let ctx = ExecutionContext.update_memory(ctx, memory);
 

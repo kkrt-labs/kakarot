@@ -83,7 +83,9 @@ func test__exec_push6_should_add_6_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(7, 0xFF);
     let result = PushOperations.exec_push6(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFF, 0));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFF, 0)
+    );
 
     return ();
 }
@@ -95,7 +97,9 @@ func test__exec_push7_should_add_7_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(8, 0xFF);
     let result = PushOperations.exec_push7(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFF, 0));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFF, 0)
+    );
 
     return ();
 }
@@ -107,7 +111,9 @@ func test__exec_push8_should_add_8_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(9, 0xFF);
     let result = PushOperations.exec_push8(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFF, 0));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFF, 0)
+    );
 
     return ();
 }
@@ -119,7 +125,9 @@ func test__exec_push9_should_add_9_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(10, 0xFF);
     let result = PushOperations.exec_push9(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFF, 0));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFF, 0)
+    );
 
     return ();
 }
@@ -131,7 +139,9 @@ func test__exec_push10_should_add_10_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(11, 0xFF);
     let result = PushOperations.exec_push10(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFF, 0));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFF, 0)
+    );
 
     return ();
 }
@@ -143,7 +153,9 @@ func test__exec_push11_should_add_11_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(12, 0xFF);
     let result = PushOperations.exec_push11(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFF, 0));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFF, 0)
+    );
 
     return ();
 }
@@ -155,7 +167,9 @@ func test__exec_push12_should_add_12_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(13, 0xFF);
     let result = PushOperations.exec_push12(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFF, 0));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFF, 0)
+    );
 
     return ();
 }
@@ -167,7 +181,9 @@ func test__exec_push13_should_add_13_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(14, 0xFF);
     let result = PushOperations.exec_push13(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFF, 0));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFF, 0)
+    );
 
     return ();
 }
@@ -179,7 +195,9 @@ func test__exec_push14_should_add_14_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(15, 0xFF);
     let result = PushOperations.exec_push14(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0)
+    );
 
     return ();
 }
@@ -191,7 +209,9 @@ func test__exec_push15_should_add_15_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(16, 0xFF);
     let result = PushOperations.exec_push15(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0)
+    );
 
     return ();
 }
@@ -203,7 +223,9 @@ func test__exec_push16_should_add_16_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(17, 0xFF);
     let result = PushOperations.exec_push16(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0)
+    );
 
     return ();
 }
@@ -215,7 +237,9 @@ func test__exec_push17_should_add_17_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(18, 0xFF);
     let result = PushOperations.exec_push17(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFF));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFF)
+    );
 
     return ();
 }
@@ -227,7 +251,9 @@ func test__exec_push18_should_add_18_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(19, 0xFF);
     let result = PushOperations.exec_push18(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFF));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFF)
+    );
 
     return ();
 }
@@ -239,7 +265,9 @@ func test__exec_push19_should_add_19_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(20, 0xFF);
     let result = PushOperations.exec_push19(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFF));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFF)
+    );
 
     return ();
 }
@@ -251,7 +279,9 @@ func test__exec_push20_should_add_20_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(21, 0xFF);
     let result = PushOperations.exec_push20(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFF));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFF)
+    );
 
     return ();
 }
@@ -263,7 +293,9 @@ func test__exec_push21_should_add_21_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(22, 0xFF);
     let result = PushOperations.exec_push21(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFF));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFF)
+    );
 
     return ();
 }
@@ -275,7 +307,9 @@ func test__exec_push22_should_add_22_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(23, 0xFF);
     let result = PushOperations.exec_push22(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFF));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFF)
+    );
 
     return ();
 }
@@ -287,7 +321,9 @@ func test__exec_push23_should_add_23_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(24, 0xFF);
     let result = PushOperations.exec_push23(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFF));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFF)
+    );
 
     return ();
 }
@@ -299,7 +335,9 @@ func test__exec_push24_should_add_24_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(25, 0xFF);
     let result = PushOperations.exec_push24(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF)
+    );
 
     return ();
 }
@@ -311,7 +349,9 @@ func test__exec_push25_should_add_25_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(26, 0xFF);
     let result = PushOperations.exec_push25(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFF));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFF)
+    );
 
     return ();
 }
@@ -323,7 +363,9 @@ func test__exec_push26_should_add_26_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(27, 0xFF);
     let result = PushOperations.exec_push26(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFF));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFF)
+    );
 
     return ();
 }
@@ -335,7 +377,9 @@ func test__exec_push27_should_add_27_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(28, 0xFF);
     let result = PushOperations.exec_push27(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFF));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFF)
+    );
 
     return ();
 }
@@ -347,7 +391,9 @@ func test__exec_push28_should_add_28_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(29, 0xFF);
     let result = PushOperations.exec_push28(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFF));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFF)
+    );
 
     return ();
 }
@@ -359,7 +405,9 @@ func test__exec_push29_should_add_29_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(30, 0xFF);
     let result = PushOperations.exec_push29(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFF));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFF)
+    );
 
     return ();
 }
@@ -371,7 +419,9 @@ func test__exec_push30_should_add_30_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(31, 0xFF);
     let result = PushOperations.exec_push30(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF)
+    );
 
     return ();
 }
@@ -383,7 +433,9 @@ func test__exec_push31_should_add_31_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(32, 0xFF);
     let result = PushOperations.exec_push31(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)
+    );
 
     return ();
 }
@@ -395,7 +447,10 @@ func test__exec_push32_should_add_32_byte_to_stack{
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(33, 0xFF);
     let result = PushOperations.exec_push32(ctx);
-    TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF));
+    TestHelpers.assert_stack_last_element_contains_uint256(
+        result.stack,
+        Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF),
+    );
 
     return ();
 }
