@@ -7,14 +7,17 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.math import split_felt
 
 // Local dependencies
 from utils.utils import Helpers
 from kakarot.model import model
+from kakarot.interfaces.interfaces import IKakarot
 from kakarot.stack import Stack
 from kakarot.memory import Memory
-from kakarot.constants import Constants, registry_address
+from kakarot.constants import Constants, registry_address, evm_contract_class_hash
 from kakarot.execution_context import ExecutionContext
+from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.environmental_information import EnvironmentalInformation
 from tests.unit.helpers.helpers import TestHelpers
 
@@ -77,6 +80,36 @@ func test__exec_address__should_push_address_to_stack{
     assert len = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
     assert index0 = Uint256(420, 0);
+    return ();
+}
+
+@external
+func test__exec_extcodesize__should_handle_address_with_no_code{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(account_registry_address: felt) {
+    // Given
+    alloc_locals;
+
+    registry_address.write(account_registry_address);
+
+    let bytecode_len = 0;
+    let (bytecode) = alloc();
+    let address = Uint256(0, 0);
+    let stack = Stack.init();
+    let stack = Stack.push(stack, address);
+
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(
+        bytecode_len, bytecode, stack
+    );
+
+    // When
+    let ctx = EnvironmentalInformation.exec_extcodesize(ctx);
+
+    // Then
+    let (stack, extcodesize) = Stack.peek(ctx.stack, 0);
+    assert extcodesize.low = 0;
+    assert extcodesize.high = 0;
+
     return ();
 }
 
