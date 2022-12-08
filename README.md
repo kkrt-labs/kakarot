@@ -282,6 +282,9 @@ for being involved!
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/Riad15l"><img src="https://avatars.githubusercontent.com/u/116729712?v=4?s=100" width="100px;" alt="Riad15l"/><br /><sub><b>Riad15l</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=Riad15l" title="Code">💻</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=Riad15l" title="Tests">⚠️</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/tyler-smith"><img src="https://avatars.githubusercontent.com/u/2145522?v=4?s=100" width="100px;" alt="Tyler Smith"/><br /><sub><b>Tyler Smith</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=tyler-smith" title="Tests">⚠️</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/spapinistarkware"><img src="https://avatars.githubusercontent.com/u/43779613?v=4?s=100" width="100px;" alt="Shahar Papini"/><br /><sub><b>Shahar Papini</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=spapinistarkware" title="Code">💻</a></td>
+    </tr>
   </tbody>
 </table>
 
