@@ -39,7 +39,7 @@ func bytecode{
     return ContractAccount.bytecode();
 }
 // @notice This function is used to get only the bytecode_len of the smart contract.
-// @dev Compared to bytecode, it does not read the code so it's much cheaper is only len is required.
+// @dev Compared to bytecode, it does not read the code so it's much cheaper if only len is required.
 // @return The bytecode_len of the smart contract.
 @view
 func bytecode_len{

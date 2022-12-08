@@ -47,7 +47,6 @@ namespace SystemOperations {
         // 0 - value: value in wei to send to the new account
         // 1 - offset: byte offset in the memory in bytes (initialization code)
         // 2 - size: byte size to copy (size of initialization code)
-        // 3 - salt: salt for address generation
         let (stack, popped) = Stack.pop_n(self=ctx.stack, n=3);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
@@ -88,7 +87,7 @@ namespace SystemOperations {
         let value = popped[0];
         let offset = popped[1];
         let size = popped[2];
-        let salt = popped[2];
+        let salt = popped[3];
 
         let sub_ctx = CreateHelper.create_sub_context(
             ctx, value.low, offset.low, size.low, salt.low
