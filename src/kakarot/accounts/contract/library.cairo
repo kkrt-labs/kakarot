@@ -3,14 +3,17 @@
 %lang starknet
 
 // Starkware dependencies
+from openzeppelin.access.ownable.library import Ownable
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.uint256 import Uint256
-from starkware.cairo.common.math import unsigned_div_rem
+from starkware.cairo.common.math import unsigned_div_rem, split_felt
 from starkware.cairo.common.registers import get_label_location
+from starkware.cairo.common.uint256 import Uint256
+from starkware.starknet.common.syscalls import deploy as deploy_syscall
+from starkware.starknet.common.syscalls import get_contract_address
 
-// OpenZeppelin dependencies
-from openzeppelin.access.ownable.library import Ownable
+from kakarot.interfaces.interfaces import IRegistry
+from kakarot.constants import native_token_address, registry_address, evm_contract_class_hash
 
 // @title SmartContractAccount main library file.
 // @notice This file contains the EVM smart contract account representation logic.
@@ -35,6 +38,13 @@ func storage_(key: Uint256) -> (value: Uint256) {
 func is_initialized_() -> (res: felt) {
 }
 
+// An event emitted whenever kakarot deploys a evm contract
+// evm_contract_address is the representation of the evm address of the contract
+// starknet_contract_address if the starknet address of the contract
+@event
+func evm_contract_deployed(evm_contract_address: felt, starknet_contract_address: felt) {
+}
+
 // Define the number of bytes per felt. Above 16, the following code won't work as it uses unsigned_div_rem
 // which is bounded by RC_BOUND = 2 ** 128 ~ uint128 ~ bytes16
 const byte_size = 16;
@@ -55,6 +65,49 @@ namespace ContractAccount {
         // Store the bytecode.
         internal.write_bytecode(0, bytecode_len, bytecode, 0, byte_size);
         return ();
+    }
+
+    // @notice This function is a factory to handle salt and registration of EVM<>Starknet binding.
+    // @param salt: The salt for computing the corresponding EVM address
+    func deploy{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(salt: felt) -> (evm_contract_address: felt, starknet_contract_address: felt) {
+        alloc_locals;
+
+        // Prepare constructor data
+        let (local calldata: felt*) = alloc();
+        let (kakarot_address) = get_contract_address();
+        assert [calldata] = kakarot_address;
+        assert [calldata + 1] = 0;
+
+        // Deploy contract account with no bytecode
+        let (class_hash) = evm_contract_class_hash.read();
+        let (starknet_contract_address) = deploy_syscall(
+            class_hash=class_hash,
+            contract_address_salt=salt,
+            constructor_calldata_size=2,
+            constructor_calldata=calldata,
+            deploy_from_zero=0,
+        );
+
+        // Generate EVM_contract address from the new cairo contract
+        // TODO: Use RLP to compute proper EVM address, see https://www.evm.codes/#f0
+        let (_, low) = split_felt(starknet_contract_address);
+        local evm_contract_address = 0xAbdE100700000000000000000000000000000000 + low;
+
+        evm_contract_deployed.emit(
+            evm_contract_address=evm_contract_address,
+            starknet_contract_address=starknet_contract_address,
+        );
+
+        // Save address of new contracts
+        let (reg_address) = registry_address.read();
+        IRegistry.set_account_entry(reg_address, starknet_contract_address, evm_contract_address);
+
+        return (evm_contract_address, starknet_contract_address);
     }
 
     // @notice Store the bytecode of the contract.

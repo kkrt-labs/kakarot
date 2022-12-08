@@ -21,13 +21,7 @@ from kakarot.instructions import EVMInstructions
 from kakarot.interfaces.interfaces import IRegistry, IEvmContract
 from kakarot.execution_context import ExecutionContext
 from kakarot.constants import native_token_address, registry_address, evm_contract_class_hash, salt
-
-// An event emitted whenever kakarot deploys a evm contract
-// evm_contract_address is the representation of the evm address of the contract
-// starknet_contract_address if the starknet address of the contract
-@event
-func evm_contract_deployed(evm_contract_address: felt, starknet_contract_address: felt) {
-}
+from kakarot.accounts.contract.library import ContractAccount
 
 // @title Kakarot main library file.
 // @notice This file contains the core EVM execution logic.
@@ -167,39 +161,10 @@ namespace Kakarot {
     ) {
         alloc_locals;
         let (current_salt) = salt.read();
-        let (class_hash) = evm_contract_class_hash.read();
-
-        // Prepare constructor data
-        let (local calldata: felt*) = alloc();
-        let (kakarot_address) = get_contract_address();
-        assert [calldata] = kakarot_address;
-        assert [calldata + 1] = 0;
-
-        // Deploy contract account with no bytecode
-        let (starknet_contract_address) = deploy_syscall(
-            class_hash=class_hash,
-            contract_address_salt=current_salt,
-            constructor_calldata_size=2,
-            constructor_calldata=calldata,
-            deploy_from_zero=FALSE,
+        let (evm_contract_address, starknet_contract_address) = ContractAccount.deploy(
+            current_salt
         );
-
-        // Increment salt
         salt.write(value=current_salt + 1);
-
-        // Generate EVM_contract address from the new cairo contract
-        // TODO: TEMPORARY SOLUTION FOR HACK-LISBON !!!
-        let (_, low) = split_felt(starknet_contract_address);
-        local evm_contract_address = 0xAbdE100700000000000000000000000000000000 + low;
-
-        evm_contract_deployed.emit(
-            evm_contract_address=evm_contract_address,
-            starknet_contract_address=starknet_contract_address,
-        );
-
-        // Save address of new contracts
-        let (reg_address) = registry_address.read();
-        IRegistry.set_account_entry(reg_address, starknet_contract_address, evm_contract_address);
 
         // Prepare execution context
         let (empty_array: felt*) = alloc();

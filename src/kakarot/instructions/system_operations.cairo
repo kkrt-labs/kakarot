@@ -20,6 +20,7 @@ from kakarot.interfaces.interfaces import IEvmContract, IRegistry
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
+from kakarot.accounts.contract.library import ContractAccount
 from utils.utils import Helpers
 
 // @title System operations opcodes.
@@ -402,6 +403,8 @@ namespace CreateHelper {
     }(
         ctx: model.ExecutionContext*, value: felt, offset: felt, size: felt, salt: felt
     ) -> model.ExecutionContext* {
+        let (evm_contract_address, starknet_contract_address) = ContractAccount.deploy(salt);
+
         // Load bytecode code from memory
         let (bytecode: felt*) = alloc();
         let memory = Memory.load_n(
@@ -409,42 +412,16 @@ namespace CreateHelper {
         );
         let ctx = ExecutionContext.update_memory(ctx, memory);
 
-        let (class_hash) = evm_contract_class_hash.read();
-
-        // Prepare constructor data
-        let (local calldata: felt*) = alloc();
-        let (kakarot_address) = get_contract_address();
-        assert [calldata] = kakarot_address;
-        assert [calldata + 1] = 0;
-
-        // Deploy contract account with no bytecode
-        let (starknet_contract_address) = deploy_syscall(
-            class_hash=class_hash,
-            contract_address_salt=salt,
-            constructor_calldata_size=2,
-            constructor_calldata=calldata,
-            deploy_from_zero=FALSE,
-        );
-
-        // Generate EVM_contract address from the new cairo contract
-        // TODO: TEMPORARY SOLUTION FOR HACK-LISBON !!!
-        let (_, low) = split_felt(starknet_contract_address);
-        local evm_contract_address = 0xAbdE100700000000000000000000000000000000 + low;
-
-        // Save address of new contracts
-        let (reg_address) = registry_address.read();
-        IRegistry.set_account_entry(reg_address, starknet_contract_address, evm_contract_address);
-
         // Prepare execution context
         let (empty_array: felt*) = alloc();
         tempvar call_context: model.CallContext* = new model.CallContext(
             bytecode=bytecode,
-            bytecode_len=size.low,
+            bytecode_len=size,
             calldata=empty_array,
             calldata_len=0,
-            value=value.low,
+            value=value,
             );
-        let (local contract_bytecode: felt*) = alloc();
+        let (local return_data: felt*) = alloc();
         let stack = Stack.init();
         let memory = Memory.init();
         let empty_context = ExecutionContext.init_empty();
@@ -452,7 +429,7 @@ namespace CreateHelper {
             call_context=call_context,
             program_counter=0,
             stopped=FALSE,
-            return_data=contract_bytecode,
+            return_data=return_data,
             return_data_len=0,
             stack=stack,
             memory=memory,
@@ -476,13 +453,15 @@ namespace CreateHelper {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
         IEvmContract.write_bytecode(
             contract_address=ctx.starknet_contract_address,
             bytecode_len=ctx.return_data_len,
             bytecode=ctx.return_data,
         );
-        let ctx = ExecutionContext.update_sub_context(ctx.calling_context, ctx);
-        let stack = Stack.push(ctx.stack, ctx.sub_context.evm_contract_address);
+        local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(ctx.calling_context, ctx);
+        let (address_high, address_low) = split_felt(ctx.sub_context.evm_contract_address);
+        let stack = Stack.push(ctx.stack, Uint256(low=address_low, high=address_high));
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
         return ctx;
