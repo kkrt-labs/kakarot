@@ -30,6 +30,7 @@ func bytecode_len_() -> (res: felt) {
 @storage_var
 func storage_(key: Uint256) -> (value: Uint256) {
 }
+
 @storage_var
 func is_initialized_() -> (res: felt) {
 }

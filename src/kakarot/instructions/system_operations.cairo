@@ -14,7 +14,7 @@ from starkware.starknet.common.syscalls import deploy as deploy_syscall
 from starkware.starknet.common.syscalls import get_contract_address
 
 // Internal dependencies
-from kakarot.constants import registry_address, evm_contract_class_hash
+from kakarot.constants import registry_address, evm_contract_class_hash, salt
 from kakarot.execution_context import ExecutionContext
 from kakarot.interfaces.interfaces import IEvmContract, IRegistry
 from kakarot.memory import Memory
@@ -32,6 +32,40 @@ namespace SystemOperations {
     // @custom:group System Operations
     // @custom:gas 0 + dynamic gas
     // @custom:stack_consumed_elements 3
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_create{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+
+        // Stack input:
+        // 0 - value: value in wei to send to the new account
+        // 1 - offset: byte offset in the memory in bytes (initialization code)
+        // 2 - size: byte size to copy (size of initialization code)
+        // 3 - salt: salt for address generation
+        let (stack, popped) = Stack.pop_n(self=ctx.stack, n=3);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+
+        let value = popped[0];
+        let offset = popped[1];
+        let size = popped[2];
+        let _salt = salt.read();
+
+        let sub_ctx = CreateHelper.create_sub_context(ctx, value.low, offset.low, size.low, _salt);
+        salt.write(_salt + 1);
+
+        return sub_ctx;
+    }
+
+    // @notice CREATE2 operation.
+    // @custom:since Frontier
+    // @custom:group System Operations
+    // @custom:gas 0 + dynamic gas
+    // @custom:stack_consumed_elements 4
     // @custom:stack_produced_elements 1
     // @return The pointer to the updated execution context.
     func exec_create2{
@@ -55,69 +89,9 @@ namespace SystemOperations {
         let size = popped[2];
         let salt = popped[2];
 
-        // Load bytecode code from memory
-        let (bytecode: felt*) = alloc();
-        let memory = Memory.load_n(
-            self=ctx.memory, element_len=size.low, element=bytecode, offset=offset.low
+        let sub_ctx = CreateHelper.create_sub_context(
+            ctx, value.low, offset.low, size.low, salt.low
         );
-        let ctx = ExecutionContext.update_memory(ctx, memory);
-
-        let (current_salt) = salt.low;
-        let (class_hash) = evm_contract_class_hash.read();
-
-        // Prepare constructor data
-        let (local calldata: felt*) = alloc();
-        let (kakarot_address) = get_contract_address();
-        assert [calldata] = kakarot_address;
-        assert [calldata + 1] = 0;
-
-        // Deploy contract account with no bytecode
-        let (starknet_contract_address) = deploy_syscall(
-            class_hash=class_hash,
-            contract_address_salt=current_salt,
-            constructor_calldata_size=2,
-            constructor_calldata=calldata,
-            deploy_from_zero=FALSE,
-        );
-
-        // Generate EVM_contract address from the new cairo contract
-        // TODO: TEMPORARY SOLUTION FOR HACK-LISBON !!!
-        let (_, low) = split_felt(starknet_contract_address);
-        local evm_contract_address = 0xAbdE100700000000000000000000000000000000 + low;
-
-        // Save address of new contracts
-        let (reg_address) = registry_address.read();
-        IRegistry.set_account_entry(reg_address, starknet_contract_address, evm_contract_address);
-
-        // Prepare execution context
-        let (empty_array: felt*) = alloc();
-        tempvar call_context: model.CallContext* = new model.CallContext(
-            bytecode=bytecode,
-            bytecode_len=size.low,
-            calldata=empty_array,
-            calldata_len=0,
-            value=value.low,
-            );
-        let (local contract_bytecode: felt*) = alloc();
-        let stack = Stack.init();
-        let memory = Memory.init();
-        let empty_context = ExecutionContext.init_empty();
-        let sub_ctx = new model.ExecutionContext(
-            call_context=call_context,
-            program_counter=0,
-            stopped=FALSE,
-            return_data=contract_bytecode,
-            return_data_len=0,
-            stack=stack,
-            memory=memory,
-            gas_used=0,
-            gas_limit=0,
-            intrinsic_gas_cost=0,
-            starknet_contract_address=starknet_contract_address,
-            evm_contract_address=evm_contract_address,
-            calling_context=ctx,
-            sub_context=empty_context,
-            );
 
         return sub_ctx;
     }
@@ -418,6 +392,82 @@ namespace CallHelper {
 }
 
 namespace CreateHelper {
+    // @notice At the end of a sub-context initiated with CREATE(2), the calling context's stack and memory are updated.
+    // @return The pointer to the updated calling context.
+    func create_sub_context{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(
+        ctx: model.ExecutionContext*, value: felt, offset: felt, size: felt, salt: felt
+    ) -> model.ExecutionContext* {
+        // Load bytecode code from memory
+        let (bytecode: felt*) = alloc();
+        let memory = Memory.load_n(
+            self=ctx.memory, element_len=size, element=bytecode, offset=offset
+        );
+        let ctx = ExecutionContext.update_memory(ctx, memory);
+
+        let (class_hash) = evm_contract_class_hash.read();
+
+        // Prepare constructor data
+        let (local calldata: felt*) = alloc();
+        let (kakarot_address) = get_contract_address();
+        assert [calldata] = kakarot_address;
+        assert [calldata + 1] = 0;
+
+        // Deploy contract account with no bytecode
+        let (starknet_contract_address) = deploy_syscall(
+            class_hash=class_hash,
+            contract_address_salt=salt,
+            constructor_calldata_size=2,
+            constructor_calldata=calldata,
+            deploy_from_zero=FALSE,
+        );
+
+        // Generate EVM_contract address from the new cairo contract
+        // TODO: TEMPORARY SOLUTION FOR HACK-LISBON !!!
+        let (_, low) = split_felt(starknet_contract_address);
+        local evm_contract_address = 0xAbdE100700000000000000000000000000000000 + low;
+
+        // Save address of new contracts
+        let (reg_address) = registry_address.read();
+        IRegistry.set_account_entry(reg_address, starknet_contract_address, evm_contract_address);
+
+        // Prepare execution context
+        let (empty_array: felt*) = alloc();
+        tempvar call_context: model.CallContext* = new model.CallContext(
+            bytecode=bytecode,
+            bytecode_len=size.low,
+            calldata=empty_array,
+            calldata_len=0,
+            value=value.low,
+            );
+        let (local contract_bytecode: felt*) = alloc();
+        let stack = Stack.init();
+        let memory = Memory.init();
+        let empty_context = ExecutionContext.init_empty();
+        let sub_ctx = new model.ExecutionContext(
+            call_context=call_context,
+            program_counter=0,
+            stopped=FALSE,
+            return_data=contract_bytecode,
+            return_data_len=0,
+            stack=stack,
+            memory=memory,
+            gas_used=0,
+            gas_limit=0,
+            intrinsic_gas_cost=0,
+            starknet_contract_address=starknet_contract_address,
+            evm_contract_address=evm_contract_address,
+            calling_context=ctx,
+            sub_context=empty_context,
+            );
+
+        return sub_ctx;
+    }
+
     // @notice At the end of a sub-context initiated with CREATE(2), the calling context's stack and memory are updated.
     // @return The pointer to the updated calling context.
     func finalize_calling_context{

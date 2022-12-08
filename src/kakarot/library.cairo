@@ -20,11 +20,7 @@ from kakarot.stack import Stack
 from kakarot.instructions import EVMInstructions
 from kakarot.interfaces.interfaces import IRegistry, IEvmContract
 from kakarot.execution_context import ExecutionContext
-from kakarot.constants import native_token_address, registry_address, evm_contract_class_hash
-
-@storage_var
-func salt() -> (value: felt) {
-}
+from kakarot.constants import native_token_address, registry_address, evm_contract_class_hash, salt
 
 // An event emitted whenever kakarot deploys a evm contract
 // evm_contract_address is the representation of the evm address of the contract
