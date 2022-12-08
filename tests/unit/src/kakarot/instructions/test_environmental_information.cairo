@@ -6,7 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from starkware.cairo.common.math import split_felt
 
 // Local dependencies
@@ -137,6 +137,69 @@ func test__exec_extcodecopy__should_handle_address_with_no_code{
 
     // Then
     assert result.memory = ctx.memory;
+
+    return ();
+}
+
+@view
+func test__returndatacopy{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given
+    alloc_locals;
+
+    let (bytecode) = alloc();
+    let (return_data) = alloc();
+    let return_data_len: felt = 32;
+    // filling at return_data + 1 because first first felt is return_data offset
+    TestHelpers.array_fill(return_data + 1, return_data_len, 0xFF);
+    let child_ctx: model.ExecutionContext* = TestHelpers.init_context_with_return_data(
+        0, bytecode, return_data_len, return_data
+    );
+
+    // Pushing parameters needed by RETURNDATACOPY in the stack
+    // size: byte size to copy.
+    // offset: byte offset in the return data from the last executed sub context to copy.
+    // destOffset: byte offset in the memory where the result will be copied.
+    let stack: model.Stack* = Stack.init();
+    let stack: model.Stack* = Stack.push(stack, Uint256(32, 0));
+    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack_and_sub_ctx(
+        0, bytecode, stack, child_ctx
+    );
+
+    // When
+    let result: model.ExecutionContext* = EnvironmentalInformation.exec_returndatacopy(ctx);
+
+    // Then
+    let (memory, data) = Memory.load(result.memory, 0);
+    assert_uint256_eq(
+        data, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)
+    );
+    assert result.gas_used = 3;
+
+    // Pushing parameters for another RETURNDATACOPY
+    let stack: model.Stack* = Stack.init();
+    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let stack: model.Stack* = Stack.push(stack, Uint256(31, 0));
+    let stack: model.Stack* = Stack.push(stack, Uint256(32, 0));
+    let ctx: model.ExecutionContext* = ExecutionContext.update_stack(result, stack);
+    let ctx: model.ExecutionContext* = ExecutionContext.update_memory(ctx, memory);
+
+    // When
+    let result: model.ExecutionContext* = EnvironmentalInformation.exec_returndatacopy(ctx);
+
+    // Then
+    // check first 32 bytes
+    let (memory, data) = Memory.load(result.memory, 0);
+    assert_uint256_eq(
+        data, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)
+    );
+    // check 1 byte more at offset 32
+    let (output_array) = alloc();
+    Memory.load_n(memory, 1, output_array, 32);
+    assert [output_array] = 0xFF;
 
     return ();
 }

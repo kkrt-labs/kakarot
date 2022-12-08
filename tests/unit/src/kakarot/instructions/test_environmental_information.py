@@ -37,3 +37,4 @@ class TestEnvironmentalInformation:
         await environmental_information.test__exec_extcodecopy__should_handle_address_with_no_code(
             account_registry_address=account_registry.contract_address
         ).call()
+        await environmental_information.test__returndatacopy().call()

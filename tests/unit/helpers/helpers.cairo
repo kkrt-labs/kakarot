@@ -61,22 +61,48 @@ namespace TestHelpers {
         alloc_locals;
 
         let (bytecode) = alloc();
-        fill_bytecode_with_values(bytecode, bytecode_count, value);
+        array_fill(bytecode, bytecode_count, value);
 
         return TestHelpers.init_context(bytecode_count, bytecode);
     }
 
+    func init_context_with_stack_and_sub_ctx{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(
+        bytecode_len: felt, bytecode: felt*, stack: model.Stack*, sub_ctx: model.ExecutionContext*
+    ) -> model.ExecutionContext* {
+        let ctx: model.ExecutionContext* = init_context_with_stack(bytecode_len, bytecode, stack);
+        let ctx = ExecutionContext.update_sub_context(ctx, sub_ctx);
+        return ctx;
+    }
+
+    func init_context_with_return_data{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(
+        bytecode_len: felt, bytecode: felt*, return_data_len: felt, return_data: felt*
+    ) -> model.ExecutionContext* {
+        let ctx: model.ExecutionContext* = init_context(bytecode_len, bytecode);
+        let ctx = ExecutionContext.update_return_data(ctx, return_data_len, return_data);
+        return ctx;
+    }
+
     // @notice Fill a bytecode array with "bytecode_count" entries of "value".
-    // ex: fill_bytecode_with_values(bytecode, 2, 0xFF)
+    // ex: array_fill(bytecode, 2, 0xFF)
     // bytecode will be equal to [0xFF, 0xFF]
-    func fill_bytecode_with_values(bytecode: felt*, bytecode_count: felt, value: felt) {
+    func array_fill(bytecode: felt*, bytecode_count: felt, value: felt) {
         assert bytecode[bytecode_count - 1] = value;
 
         if (bytecode_count - 1 == 0) {
             return ();
         }
 
-        fill_bytecode_with_values(bytecode, bytecode_count - 1, value);
+        array_fill(bytecode, bytecode_count - 1, value);
 
         return ();
     }
