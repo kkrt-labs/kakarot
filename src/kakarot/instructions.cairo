@@ -600,7 +600,11 @@ namespace EVMInstructions {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        // Decode and execute
+        // Add 16bytes_array loop
+            //Add 16x loop for decode and execute
+                //decode
+                //execute
+        // Separate decode and execute into different functions
         let ctx: model.ExecutionContext* = decode_and_execute(ctx=ctx);
 
         // Check if execution should be stopped
