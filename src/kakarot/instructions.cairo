@@ -600,7 +600,7 @@ namespace EVMInstructions {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        
+
         let ctx: model.ExecutionContext* = decode_and_execute(ctx=ctx);
 
         // Check if execution should be stopped
