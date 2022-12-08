@@ -116,7 +116,7 @@ func test__returndatacopy{
     alloc_locals;
 
     let (bytecode) = alloc();
-    let return_data: felt* = alloc();  // contient felt qui représentent 128 bits mémoire
+    let return_data: felt* = alloc();
     let return_data_len: felt = 32;
     // filling at return_data + 1 because first first felt is return_data offset
     TestHelpers._fill_bytecode_with_values(return_data + 1, 32, 0xFF);
@@ -125,7 +125,7 @@ func test__returndatacopy{
     );
 
     let stack: model.Stack* = Stack.init();
-    let stack: model.Stack* = Stack.push(stack, Uint256(32, 0));  // taille en bytes
+    let stack: model.Stack* = Stack.push(stack, Uint256(32, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack_and_sub_ctx(
