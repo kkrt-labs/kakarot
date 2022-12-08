@@ -163,7 +163,9 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/43779613?v=4",
       "profile": "https://github.com/spapinistarkware",
       "contributions": [
-        "code"
+        "code",
+        "test",
+        "mentoring"
       ]
     }
   ],
