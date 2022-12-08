@@ -61,7 +61,7 @@ namespace TestHelpers {
         alloc_locals;
 
         let (bytecode) = alloc();
-        _fill_bytecode_with_values(bytecode, bytecode_count, value);
+        fill_bytecode_with_values(bytecode, bytecode_count, value);
 
         return TestHelpers.init_context(bytecode_count, bytecode);
     }
@@ -93,16 +93,16 @@ namespace TestHelpers {
     }
 
     // @notice Fill a bytecode array with "bytecode_count" entries of "value".
-    // ex: _fill_bytecode_with_values(bytecode, 2, 0xFF)
+    // ex: fill_bytecode_with_values(bytecode, 2, 0xFF)
     // bytecode will be equal to [0xFF, 0xFF]
-    func _fill_bytecode_with_values(bytecode: felt*, bytecode_count: felt, value: felt) {
+    func fill_bytecode_with_values(bytecode: felt*, bytecode_count: felt, value: felt) {
         assert bytecode[bytecode_count - 1] = value;
 
         if (bytecode_count - 1 == 0) {
             return ();
         }
 
-        _fill_bytecode_with_values(bytecode, bytecode_count - 1, value);
+        fill_bytecode_with_values(bytecode, bytecode_count - 1, value);
 
         return ();
     }
