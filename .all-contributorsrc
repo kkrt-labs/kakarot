@@ -105,7 +105,8 @@
       "profile": "https://www.linkedin.com/in/clementwalter",
       "contributions": [
         "doc",
-        "test"
+        "test",
+        "code"
       ]
     },
     {
@@ -163,9 +164,63 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/43779613?v=4",
       "profile": "https://github.com/spapinistarkware",
       "contributions": [
+        "mentoring",
         "code",
-        "test",
-        "mentoring"
+        "test"
+      ]
+    },
+    {
+      "login": "Riad-Quadratic",
+      "name": "Riad | Quadratic",
+      "avatar_url": "https://avatars.githubusercontent.com/u/116729712?v=4",
+      "profile": "https://github.com/Riad-Quadratic",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "thomas-quadratic",
+      "name": "thomas-quadratic",
+      "avatar_url": "https://avatars.githubusercontent.com/u/116874460?v=4",
+      "profile": "https://github.com/thomas-quadratic",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "pedrobergamini",
+      "name": "Pedro Bergamini",
+      "avatar_url": "https://avatars.githubusercontent.com/u/41773103?v=4",
+      "profile": "https://www.linkedin.com/in/pedro-bergamini-611496160/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "ptisserand",
+      "name": "ptisserand",
+      "avatar_url": "https://avatars.githubusercontent.com/u/544314?v=4",
+      "profile": "https://github.com/ptisserand",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "hurrikaanig",
+      "name": "TurcFort07",
+      "avatar_url": "https://avatars.githubusercontent.com/u/37303126?v=4",
+      "profile": "https://github.com/hurrikaanig",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "mnekx",
+      "name": "Mnemba Chambuya",
+      "avatar_url": "https://avatars.githubusercontent.com/u/22321030?v=4",
+      "profile": "https://www.linkedin.com/in/mnemba-chambuya",
+      "contributions": [
+        "code"
       ]
     }
   ],
