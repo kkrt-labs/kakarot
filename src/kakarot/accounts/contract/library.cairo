@@ -12,8 +12,8 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import deploy as deploy_syscall
 from starkware.starknet.common.syscalls import get_contract_address
 
-from kakarot.interfaces.interfaces import IRegistry
 from kakarot.constants import native_token_address, registry_address, evm_contract_class_hash
+from kakarot.accounts.registry.library import AccountRegistry
 
 // @title SmartContractAccount main library file.
 // @notice This file contains the EVM smart contract account representation logic.
@@ -105,7 +105,10 @@ namespace ContractAccount {
 
         // Save address of new contracts
         let (reg_address) = registry_address.read();
-        IRegistry.set_account_entry(reg_address, starknet_contract_address, evm_contract_address);
+        AccountRegistry.set_account_entry(
+            starknet_contract_address=starknet_contract_address,
+            evm_contract_address=evm_contract_address,
+        );
 
         return (evm_contract_address, starknet_contract_address);
     }

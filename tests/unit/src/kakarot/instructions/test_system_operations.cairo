@@ -6,7 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
-from starkware.cairo.common.math import split_felt
+from starkware.cairo.common.math import split_felt, assert_not_zero
 
 // Local dependencies
 from kakarot.interfaces.interfaces import IKakarot
@@ -16,9 +16,12 @@ from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.memory_operations import MemoryOperations
-from kakarot.instructions.system_operations import SystemOperations, CallHelper
+from kakarot.instructions.system_operations import SystemOperations, CallHelper, CreateHelper
 from kakarot.constants import Constants
 from tests.unit.helpers.helpers import TestHelpers
+from kakarot.interfaces.interfaces import IEvmContract
+
+from utils.utils import Helpers
 
 @external
 func test_exec_revert{
@@ -348,6 +351,86 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
     let (stack, success) = Stack.peek(ctx.stack, 0);
     assert success.low = 1;
     TestHelpers.assert_execution_context_equal(ctx.sub_context, sub_ctx);
+
+    return ();
+}
+
+@external
+func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at_empty_address{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(evm_contract_class_hash_: felt, registry_address_: felt) {
+    alloc_locals;
+    evm_contract_class_hash.write(evm_contract_class_hash_);
+    registry_address.write(registry_address_);
+
+    // Fill the stack with exec_create args
+    let stack: model.Stack* = Stack.init();
+    tempvar value = Uint256(1, 0);
+    let offset = Uint256(3, 0);
+    let size = Uint256(4, 0);
+    let stack = Stack.push(stack, size);
+    let stack = Stack.push(stack, offset);
+    let stack = Stack.push(stack, value);
+
+    // Put some value in memory as it is used for bytecode with size and offset
+    // Word is 0x 11 22 33 44 55 66 77 88 00 00 ... 00
+    // bytecode should be 0x 44 55 66 77
+    let memory_word = Uint256(low=0, high=22774453838368691922685013100469420032);
+    let memory_offset = Uint256(0, 0);
+    let stack = Stack.push(stack, memory_word);
+    let stack = Stack.push(stack, memory_offset);
+    let bytecode_len = 0;
+    let (bytecode: felt*) = alloc();
+    let ctx = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
+    let ctx = MemoryOperations.exec_mstore(ctx);
+
+    // When
+    let sub_ctx = SystemOperations.exec_create(ctx);
+
+    // Then
+    assert sub_ctx.call_context.bytecode_len = 4;
+    assert sub_ctx.call_context.calldata_len = 0;
+    assert [sub_ctx.call_context.bytecode] = 0x44;
+    assert [sub_ctx.call_context.bytecode + 1] = 0x55;
+    assert [sub_ctx.call_context.bytecode + 2] = 0x66;
+    assert [sub_ctx.call_context.bytecode + 3] = 0x77;
+    assert sub_ctx.call_context.value = value.low;
+    assert sub_ctx.program_counter = 0;
+    assert sub_ctx.stopped = 0;
+    assert sub_ctx.return_data_len = 0;
+    assert sub_ctx.gas_used = 0;
+    assert sub_ctx.gas_limit = 0;
+    assert sub_ctx.intrinsic_gas_cost = 0;
+    assert_not_zero(sub_ctx.starknet_contract_address);
+    assert_not_zero(sub_ctx.evm_contract_address);
+    let (sub_ctx_contract_stored_bytecode) = IEvmContract.bytecode_len(
+        sub_ctx.starknet_contract_address
+    );
+    assert sub_ctx_contract_stored_bytecode = 0;
+    TestHelpers.assert_execution_context_equal(ctx, sub_ctx.calling_context);
+
+    // Fake a RETURN in sub_ctx then finalize
+    let return_data_len = 65;
+    TestHelpers.fill_bytecode_with_values(sub_ctx.return_data, return_data_len, 0xff);
+    let sub_ctx = ExecutionContext.update_return_data(
+        sub_ctx, return_data_len, sub_ctx.return_data
+    );
+    let ctx = CreateHelper.finalize_calling_context(sub_ctx);
+
+    // Then
+    let (stack, address) = Stack.peek(ctx.stack, 0);
+    let evm_contract_address = Helpers.uint256_to_felt(address);
+    assert evm_contract_address = sub_ctx.evm_contract_address;
+    TestHelpers.assert_execution_context_equal(ctx.sub_context, sub_ctx);
+    let (created_contract_bytecode_len, created_contract_bytecode) = IEvmContract.bytecode(
+        sub_ctx.starknet_contract_address
+    );
+    TestHelpers.assert_array_equal(
+        created_contract_bytecode_len,
+        created_contract_bytecode,
+        return_data_len,
+        sub_ctx.return_data,
+    );
 
     return ();
 }

@@ -44,3 +44,11 @@ class TestSystemOperations:
             account_registry.contract_address,
             kakarot.contract_address,
         ).call()
+
+    async def test_create(
+        self, system_operations, contract_account_class, account_registry, kakarot
+    ):
+        await system_operations.test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at_empty_address(
+            contract_account_class.class_hash,
+            account_registry.contract_address,
+        ).call()

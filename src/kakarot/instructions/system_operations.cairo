@@ -54,7 +54,7 @@ namespace SystemOperations {
         let value = popped[0];
         let offset = popped[1];
         let size = popped[2];
-        let _salt = salt.read();
+        let (_salt) = salt.read();
 
         let sub_ctx = CreateHelper.create_sub_context(ctx, value.low, offset.low, size.low, _salt);
         salt.write(_salt + 1);
@@ -403,6 +403,7 @@ namespace CreateHelper {
     }(
         ctx: model.ExecutionContext*, value: felt, offset: felt, size: felt, salt: felt
     ) -> model.ExecutionContext* {
+        alloc_locals;
         let (evm_contract_address, starknet_contract_address) = ContractAccount.deploy(salt);
 
         // Load bytecode code from memory
@@ -425,7 +426,7 @@ namespace CreateHelper {
         let stack = Stack.init();
         let memory = Memory.init();
         let empty_context = ExecutionContext.init_empty();
-        let sub_ctx = new model.ExecutionContext(
+        tempvar sub_ctx = new model.ExecutionContext(
             call_context=call_context,
             program_counter=0,
             stopped=FALSE,

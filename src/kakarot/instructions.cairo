@@ -557,7 +557,7 @@ namespace EVMInstructions {
         ret;
         call unknown_opcode;  // 0xef
         ret;
-        call not_implemented_opcode;  // 0xf0
+        call SystemOperations.exec_create;  // 0xf0
         ret;
         call SystemOperations.exec_call;  // 0xf1
         ret;
@@ -567,7 +567,7 @@ namespace EVMInstructions {
         ret;
         call SystemOperations.exec_delegatecall;  // 0xf4
         ret;
-        call not_implemented_opcode;  // 0xf5
+        call SystemOperations.exec_create2;  // 0xf5
         ret;
         call unknown_opcode;  // 0xf6
         ret;
