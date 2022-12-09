@@ -19,9 +19,38 @@ from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.system_operations import SystemOperations, CallHelper
 from kakarot.constants import Constants
 from tests.unit.helpers.helpers import TestHelpers
+from utils.utils import Helpers
 
 @external
-func test_exec_revert{
+func test__exec_return_should_return_context_with_updated_return_data{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(return_data: felt) {
+    // Given
+    alloc_locals;
+    let bytecode: felt* = alloc();
+    let stack: model.Stack* = Stack.init();
+
+    // When
+    let stack: model.Stack* = Stack.push(stack, Uint256(return_data, 0));
+    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+    let ctx: model.ExecutionContext* = MemoryOperations.exec_mstore(ctx);
+
+    // Then
+    let stack: model.Stack* = Stack.push(ctx.stack, Uint256(32, 0));
+    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
+    let ctx: model.ExecutionContext* = SystemOperations.exec_return(ctx);
+
+    // Then
+    let returned_data = Helpers.load_word(32, ctx.return_data);
+    assert return_data = returned_data;
+
+    return ();
+}
+
+@external
+func test__exec_revert{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(reason: felt) {
     // Given
