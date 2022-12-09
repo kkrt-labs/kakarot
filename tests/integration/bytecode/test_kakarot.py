@@ -1,13 +1,15 @@
 import pytest
 from starkware.starknet.testing.contract import StarknetContract
 
+from tests.integration.bytecode.test_cases import test_cases
 from tests.integration.helpers.helpers import (
     extract_memory_from_execute,
     extract_stack_from_execute,
     hex_string_to_bytes_array,
 )
-from tests.integration.test_cases import params_execute
 from tests.utils.reporting import traceit
+
+params_execute = [pytest.param(case.pop("params"), **case) for case in test_cases]
 
 
 @pytest.mark.asyncio
