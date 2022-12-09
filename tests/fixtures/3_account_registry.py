@@ -1,5 +1,5 @@
 import pytest_asyncio
-from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
+from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
 
@@ -13,7 +13,7 @@ async def account_registry(starknet: Starknet):
     )
 
 
-@pytest_asyncio.fixture(scope="package", autouse=True)
+@pytest_asyncio.fixture(scope="module", autouse=True)
 async def set_account_registry(
     kakarot: StarknetContract, account_registry: StarknetContract
 ):

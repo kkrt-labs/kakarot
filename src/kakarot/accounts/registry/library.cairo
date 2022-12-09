@@ -2,11 +2,8 @@
 
 %lang starknet
 
-// Starkware dependencies
-from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-
-// OpenZeppelin dependencies
 from openzeppelin.access.ownable.library import Ownable
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
 // @title AccountRegistry main library file.
 // @notice This file contains the EVM smart contract account representation logic.
@@ -42,8 +39,6 @@ namespace AccountRegistry {
     func transfer_ownership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         new_owner: felt
     ) {
-        // Access control check.
-        Ownable.assert_only_owner();
         Ownable.transfer_ownership(new_owner);
         return ();
     }
@@ -57,9 +52,6 @@ namespace AccountRegistry {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(starknet_contract_address: felt, evm_contract_address: felt) {
-        // Access control check.
-        Ownable.assert_only_owner();
-
         // Update starknet address mapping.
         starknet_contract_address_.write(evm_contract_address, starknet_contract_address);
 
