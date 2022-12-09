@@ -55,7 +55,7 @@ namespace SystemOperations {
         let size = popped[2];
         let (_salt) = salt.read();
 
-        let sub_ctx = CreateHelper.create_sub_context(ctx, value.low, offset.low, size.low, _salt);
+        let sub_ctx = CreateHelper.initialize_sub_context(ctx, value.low, offset.low, size.low, _salt);
         salt.write(_salt + 1);
 
         return sub_ctx;
@@ -89,7 +89,7 @@ namespace SystemOperations {
         let size = popped[2];
         let salt = popped[3];
 
-        let sub_ctx = CreateHelper.create_sub_context(
+        let sub_ctx = CreateHelper.initialize_sub_context(
             ctx, value.low, offset.low, size.low, salt.low
         );
 
@@ -395,7 +395,7 @@ namespace CreateHelper {
     // @notice Deploy a new Contract account and initialize a sub context at these addresses
     //         with bytecode from calling context memory.
     // @return The pointer to the updated calling context.
-    func create_sub_context{
+    func initialize_sub_context{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
