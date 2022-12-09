@@ -3,12 +3,13 @@
 %lang starknet
 
 // Starkware dependencies
+from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.alloc import alloc
 
 // Local dependencies
-from kakarot.library import Kakarot
+from kakarot.library import Kakarot, kakarot_initialized
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.interfaces.interfaces import IEvmContract
@@ -16,12 +17,19 @@ from kakarot.memory import Memory
 from kakarot.execution_context import ExecutionContext
 from starkware.cairo.common.dict import DictAccess
 
-// Constructor
-@constructor
-func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    owner: felt, native_token_address_: felt, evm_contract_class_hash: felt
+// @notice The initiation function of the contract
+// @dev Setting initial owner, contract account class hash and native token
+//      should always be executed by the proxy constructor.
+// @param owner The address of the owner of the contract
+// @param native_token_address The ERC20 contract used to emulate ETH
+// @param evm_contract_class_hash The clash hash of the contract account
+@external
+func init{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    owner: felt, native_token_address: felt, evm_contract_class_hash: felt
 ) {
-    return Kakarot.constructor(owner, native_token_address_, evm_contract_class_hash);
+    let (is_initialized: felt) = kakarot_initialized.read();
+    assert is_initialized = FALSE;
+    return Kakarot.init(owner, native_token_address, evm_contract_class_hash);
 }
 
 // @notice Execute EVM bytecode

@@ -44,6 +44,9 @@ run-test-mark-log: build-sol
 run-test-mark: build-sol
 	poetry run pytest -m $(mark)
 
+deploy: 
+	poetry run python ./scripts/deploy_protocol.py $(PRIVATE_KEY) $(ACCOUNT_ADDRESS)
+
 format:
 	poetry run cairo-format -i ${cairo_files}
 	poetry run black tests/.
