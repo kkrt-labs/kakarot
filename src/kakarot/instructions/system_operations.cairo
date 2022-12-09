@@ -55,7 +55,9 @@ namespace SystemOperations {
         let size = popped[2];
         let (_salt) = salt.read();
 
-        let sub_ctx = CreateHelper.initialize_sub_context(ctx, value.low, offset.low, size.low, _salt);
+        let sub_ctx = CreateHelper.initialize_sub_context(
+            ctx, value.low, offset.low, size.low, _salt
+        );
         salt.write(_salt + 1);
 
         return sub_ctx;
