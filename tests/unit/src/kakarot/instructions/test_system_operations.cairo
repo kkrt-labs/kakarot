@@ -459,7 +459,7 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     let ctx = MemoryOperations.exec_mstore(ctx);
 
     // When
-    let sub_ctx = SystemOperations.exec_create(ctx);
+    let sub_ctx = SystemOperations.exec_create2(ctx);
 
     // Then
     assert sub_ctx.call_context.bytecode_len = 4;
