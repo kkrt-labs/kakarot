@@ -588,6 +588,56 @@ func test__exec_xor__should_pop_0_and_1_and_push_0x64__when_0_is_0xB9_and_1_is_0
 }
 
 @external
+func test__exec_byte__should_pop_0_and_1_and_push_0__when_0_is_less_than_16_bytes_and_1_is_23{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given
+    alloc_locals;
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+
+    let stack: model.Stack* = Stack.push(stack, Uint256(0xFFEEDDCCBBAA998877665544332211, 0));
+    let stack: model.Stack* = Stack.push(stack, Uint256(23,0));
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+
+    // When
+    let result = ComparisonOperations.exec_byte(ctx);
+
+    // Then
+    assert result.gas_used = 3;
+    let len: felt = result.stack.len_16bytes / 2;
+    assert len = 1;
+    let (stack, index0) = Stack.peek(result.stack, 0);
+    assert index0 = Uint256(0x99, 0);
+    return ();
+}
+
+@external
+func test__exec_byte__should_pop_0_and_1_and_push_0__when_0_is_larger_than_16_bytes_and_1_is_8{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given
+    alloc_locals;
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+
+    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0x123456789ABCDEF0));
+    let stack: model.Stack* = Stack.push(stack, Uint256(8,0));
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+
+    // When
+    let result = ComparisonOperations.exec_byte(ctx);
+
+    // Then
+    assert result.gas_used = 3;
+    let len: felt = result.stack.len_16bytes / 2;
+    assert len = 1;
+    let (stack, index0) = Stack.peek(result.stack, 0);
+    assert index0 = Uint256(0x12, 0);
+    return ();
+}
+
+@external
 func test__exec_shl__should_pop_0_and_1_and_push_left_shift{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
