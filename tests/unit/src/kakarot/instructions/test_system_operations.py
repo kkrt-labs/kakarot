@@ -33,30 +33,22 @@ class TestSystemOperations:
         await system_operations.test_exec_revert(reason=1000).call()
 
     async def test_call(
-        self, system_operations, contract_account_class, account_registry, kakarot
+        self, system_operations, contract_account_class, account_registry
     ):
         await system_operations.test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack(
-            contract_account_class.class_hash,
-            account_registry.contract_address,
-            kakarot.contract_address,
+            contract_account_class.class_hash, account_registry.contract_address
         ).call()
 
         await system_operations.test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack(
-            contract_account_class.class_hash,
-            account_registry.contract_address,
-            kakarot.contract_address,
+            contract_account_class.class_hash, account_registry.contract_address
         ).call()
 
         await system_operations.test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_stack(
-            contract_account_class.class_hash,
-            account_registry.contract_address,
-            kakarot.contract_address,
+            contract_account_class.class_hash, account_registry.contract_address
         ).call()
 
         await system_operations.test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_stack(
-            contract_account_class.class_hash,
-            account_registry.contract_address,
-            kakarot.contract_address,
+            contract_account_class.class_hash, account_registry.contract_address
         ).call()
 
     async def test_create(

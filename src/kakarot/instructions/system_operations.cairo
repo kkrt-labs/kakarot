@@ -14,13 +14,13 @@ from starkware.starknet.common.syscalls import deploy as deploy_syscall
 from starkware.starknet.common.syscalls import get_contract_address
 
 // Internal dependencies
+from kakarot.accounts.contract.library import ContractAccount
 from kakarot.constants import registry_address, evm_contract_class_hash, salt
 from kakarot.execution_context import ExecutionContext
 from kakarot.interfaces.interfaces import IEvmContract, IRegistry
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.accounts.contract.library import ContractAccount
 from utils.utils import Helpers
 
 // @title System operations opcodes.

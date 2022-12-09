@@ -9,18 +9,18 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math import split_felt, assert_not_zero
 
 // Local dependencies
-from kakarot.interfaces.interfaces import IKakarot
-from kakarot.library import Kakarot
+from kakarot.accounts.contract.library import ContractAccount
+from kakarot.constants import Constants
 from kakarot.constants import evm_contract_class_hash, registry_address
-from kakarot.model import model
-from kakarot.stack import Stack
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.system_operations import SystemOperations, CallHelper, CreateHelper
-from kakarot.constants import Constants
-from tests.unit.helpers.helpers import TestHelpers
 from kakarot.interfaces.interfaces import IEvmContract
-
+from kakarot.interfaces.interfaces import IKakarot
+from kakarot.library import Kakarot
+from kakarot.model import model
+from kakarot.stack import Stack
+from tests.unit.helpers.helpers import TestHelpers
 from utils.utils import Helpers
 
 @external
@@ -50,16 +50,14 @@ func test_exec_revert{
 @external
 func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(evm_contract_class_hash_: felt, registry_address_: felt, kakarot_address: felt) {
-    // Deploy another contract
+}(evm_contract_class_hash_: felt, registry_address_: felt) {
+    // Deploy an empty contract
     alloc_locals;
     let (bytecode) = alloc();
     local bytecode_len = 0;
     evm_contract_class_hash.write(evm_contract_class_hash_);
     registry_address.write(registry_address_);
-    let (local evm_contract_address, local starknet_contract_address) = IKakarot.deploy(
-        kakarot_address, bytecode_len, bytecode
-    );
+    let (local evm_contract_address, local starknet_contract_address) = ContractAccount.deploy(0);
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
@@ -128,16 +126,14 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
 @external
 func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(evm_contract_class_hash_: felt, registry_address_: felt, kakarot_address: felt) {
+}(evm_contract_class_hash_: felt, registry_address_: felt) {
     // Deploy another contract
     alloc_locals;
     let (bytecode) = alloc();
     local bytecode_len = 0;
     evm_contract_class_hash.write(evm_contract_class_hash_);
     registry_address.write(registry_address_);
-    let (local evm_contract_address, local starknet_contract_address) = IKakarot.deploy(
-        kakarot_address, bytecode_len, bytecode
-    );
+    let (local evm_contract_address, local starknet_contract_address) = ContractAccount.deploy(0);
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
@@ -206,16 +202,14 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
 @external
 func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(evm_contract_class_hash_: felt, registry_address_: felt, kakarot_address: felt) {
+}(evm_contract_class_hash_: felt, registry_address_: felt) {
     // Deploy another contract
     alloc_locals;
     let (bytecode) = alloc();
     local bytecode_len = 0;
     evm_contract_class_hash.write(evm_contract_class_hash_);
     registry_address.write(registry_address_);
-    let (local evm_contract_address, local starknet_contract_address) = IKakarot.deploy(
-        kakarot_address, bytecode_len, bytecode
-    );
+    let (local evm_contract_address, local starknet_contract_address) = ContractAccount.deploy(0);
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
@@ -282,16 +276,14 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
 @external
 func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(evm_contract_class_hash_: felt, registry_address_: felt, kakarot_address: felt) {
+}(evm_contract_class_hash_: felt, registry_address_: felt) {
     // Deploy another contract
     alloc_locals;
     let (bytecode) = alloc();
     local bytecode_len = 0;
     evm_contract_class_hash.write(evm_contract_class_hash_);
     registry_address.write(registry_address_);
-    let (local evm_contract_address, local starknet_contract_address) = IKakarot.deploy(
-        kakarot_address, bytecode_len, bytecode
-    );
+    let (local evm_contract_address, local starknet_contract_address) = ContractAccount.deploy(0);
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
