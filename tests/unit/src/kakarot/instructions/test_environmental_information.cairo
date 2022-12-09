@@ -6,15 +6,18 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
+from starkware.cairo.common.math import split_felt
 
 // Local dependencies
 from utils.utils import Helpers
 from kakarot.model import model
+from kakarot.interfaces.interfaces import IKakarot
 from kakarot.stack import Stack
 from kakarot.memory import Memory
-from kakarot.constants import Constants, registry_address
+from kakarot.constants import Constants, registry_address, evm_contract_class_hash
 from kakarot.execution_context import ExecutionContext
+from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.environmental_information import EnvironmentalInformation
 from tests.unit.helpers.helpers import TestHelpers
 
@@ -81,6 +84,36 @@ func test__exec_address__should_push_address_to_stack{
 }
 
 @external
+func test__exec_extcodesize__should_handle_address_with_no_code{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(account_registry_address: felt) {
+    // Given
+    alloc_locals;
+
+    registry_address.write(account_registry_address);
+
+    let bytecode_len = 0;
+    let (bytecode) = alloc();
+    let address = Uint256(0, 0);
+    let stack = Stack.init();
+    let stack = Stack.push(stack, address);
+
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(
+        bytecode_len, bytecode, stack
+    );
+
+    // When
+    let ctx = EnvironmentalInformation.exec_extcodesize(ctx);
+
+    // Then
+    let (stack, extcodesize) = Stack.peek(ctx.stack, 0);
+    assert extcodesize.low = 0;
+    assert extcodesize.high = 0;
+
+    return ();
+}
+
+@external
 func test__exec_extcodecopy__should_handle_address_with_no_code{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(account_registry_address: felt) {
@@ -104,6 +137,69 @@ func test__exec_extcodecopy__should_handle_address_with_no_code{
 
     // Then
     assert result.memory = ctx.memory;
+
+    return ();
+}
+
+@view
+func test__returndatacopy{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given
+    alloc_locals;
+
+    let (bytecode) = alloc();
+    let (return_data) = alloc();
+    let return_data_len: felt = 32;
+    // filling at return_data + 1 because first first felt is return_data offset
+    TestHelpers.array_fill(return_data + 1, return_data_len, 0xFF);
+    let child_ctx: model.ExecutionContext* = TestHelpers.init_context_with_return_data(
+        0, bytecode, return_data_len, return_data
+    );
+
+    // Pushing parameters needed by RETURNDATACOPY in the stack
+    // size: byte size to copy.
+    // offset: byte offset in the return data from the last executed sub context to copy.
+    // destOffset: byte offset in the memory where the result will be copied.
+    let stack: model.Stack* = Stack.init();
+    let stack: model.Stack* = Stack.push(stack, Uint256(32, 0));
+    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack_and_sub_ctx(
+        0, bytecode, stack, child_ctx
+    );
+
+    // When
+    let result: model.ExecutionContext* = EnvironmentalInformation.exec_returndatacopy(ctx);
+
+    // Then
+    let (memory, data) = Memory.load(result.memory, 0);
+    assert_uint256_eq(
+        data, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)
+    );
+    assert result.gas_used = 3;
+
+    // Pushing parameters for another RETURNDATACOPY
+    let stack: model.Stack* = Stack.init();
+    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let stack: model.Stack* = Stack.push(stack, Uint256(31, 0));
+    let stack: model.Stack* = Stack.push(stack, Uint256(32, 0));
+    let ctx: model.ExecutionContext* = ExecutionContext.update_stack(result, stack);
+    let ctx: model.ExecutionContext* = ExecutionContext.update_memory(ctx, memory);
+
+    // When
+    let result: model.ExecutionContext* = EnvironmentalInformation.exec_returndatacopy(ctx);
+
+    // Then
+    // check first 32 bytes
+    let (memory, data) = Memory.load(result.memory, 0);
+    assert_uint256_eq(
+        data, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)
+    );
+    // check 1 byte more at offset 32
+    let (output_array) = alloc();
+    Memory.load_n(memory, 1, output_array, 32);
+    assert [output_array] = 0xFF;
 
     return ();
 }

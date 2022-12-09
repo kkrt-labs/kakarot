@@ -6,7 +6,7 @@ from web3 import Web3
 
 @pytest.mark.asyncio
 @pytest.mark.IntegrationTestContract
-class TestIntegrationContract:
+class TestPlainOpcodes:
     class TestAddress:
         async def test_should_return_self_address(
             self,
@@ -23,7 +23,7 @@ class TestIntegrationContract:
                 )[2:].rjust(40, "0")
             )
             integration_contract = await deploy_solidity_contract(
-                "IntegrationTestContract",
+                "PlainOpcodes",
                 counter_address,
                 caller_address=addresses[1]["int"],
             )
@@ -51,14 +51,13 @@ class TestIntegrationContract:
                 )[2:].rjust(40, "0")
             )
             integration_contract = await deploy_solidity_contract(
-                "IntegrationTestContract",
+                "PlainOpcodes",
                 counter_address,
                 caller_address=addresses[1]["int"],
             )
 
             count = await integration_contract.opcodeStaticCall()
             assert count == 0
-            # TODO: uncomment when EXTCODESIZE and EXTCODECOPY are implemented
-            # await integration_contract.opcodeCall(caller_address=addresses[1]["int"])
-            # count = await integration_contract.opcodeStaticCall()
-            # assert count == 1
+            await integration_contract.opcodeCall(caller_address=addresses[1]["int"])
+            count = await integration_contract.opcodeStaticCall()
+            assert count == 1

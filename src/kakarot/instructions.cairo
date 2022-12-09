@@ -28,8 +28,9 @@ from kakarot.instructions.logging_operations import LoggingOperations
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.environmental_information import EnvironmentalInformation
 from kakarot.instructions.block_information import BlockInformation
-from kakarot.instructions.system_operations import SystemOperations, CallHelper
+from kakarot.instructions.system_operations import SystemOperations, CallHelper, CreateHelper
 from kakarot.instructions.sha3 import Sha3
+from kakarot.interfaces.interfaces import IEvmContract
 
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.
@@ -194,7 +195,7 @@ namespace EVMInstructions {
         ret;
         call not_implemented_opcode;  // 0x3a
         ret;
-        call not_implemented_opcode;  // 0x3b
+        call EnvironmentalInformation.exec_extcodesize;  // 0x3b
         ret;
         call EnvironmentalInformation.exec_extcodecopy;  // 0x3c
         ret;
@@ -556,7 +557,7 @@ namespace EVMInstructions {
         ret;
         call unknown_opcode;  // 0xef
         ret;
-        call not_implemented_opcode;  // 0xf0
+        call SystemOperations.exec_create;  // 0xf0
         ret;
         call SystemOperations.exec_call;  // 0xf1
         ret;
@@ -566,7 +567,7 @@ namespace EVMInstructions {
         ret;
         call SystemOperations.exec_delegatecall;  // 0xf4
         ret;
-        call not_implemented_opcode;  // 0xf5
+        call SystemOperations.exec_create2;  // 0xf5
         ret;
         call unknown_opcode;  // 0xf6
         ret;
@@ -612,8 +613,16 @@ namespace EVMInstructions {
             if (is_parent_root != FALSE) {
                 return ctx;
             } else {
-                let ctx = CallHelper.finalize_calling_context(ctx);
-                return run(ctx=ctx);
+                let (bytecode_len) = IEvmContract.bytecode_len(
+                    contract_address=ctx.starknet_contract_address
+                );
+                if (bytecode_len == 0) {
+                    let ctx = CreateHelper.finalize_calling_context(ctx);
+                    return run(ctx=ctx);
+                } else {
+                    let ctx = CallHelper.finalize_calling_context(ctx);
+                    return run(ctx=ctx);
+                }
             }
         }
 

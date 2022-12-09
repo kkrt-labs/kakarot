@@ -2,7 +2,7 @@
 
 %lang starknet
 
-// Starkware dependencies
+from openzeppelin.access.ownable.library import Ownable
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
 // @title EVM account registry contract.
@@ -26,6 +26,7 @@ func constructor{
 func set_account_entry{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(starknet_contract_address: felt, evm_contract_address: felt) {
+    Ownable.assert_only_owner();
     return AccountRegistry.set_account_entry(
         starknet_contract_address=starknet_contract_address,
         evm_contract_address=evm_contract_address,
@@ -38,6 +39,7 @@ func set_account_entry{
 func transfer_ownership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     new_address: felt
 ) {
+    Ownable.assert_only_owner();
     AccountRegistry.transfer_ownership(new_address);
     return ();
 }

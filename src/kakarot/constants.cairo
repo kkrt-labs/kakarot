@@ -14,6 +14,10 @@ func registry_address() -> (res: felt) {
 func evm_contract_class_hash() -> (value: felt) {
 }
 
+@storage_var
+func salt() -> (value: felt) {
+}
+
 // @title Constants file.
 // @notice This file contains global constants.
 // @author @abdelhamidbakhta
