@@ -5,6 +5,7 @@
 // Starkware dependencies
 from openzeppelin.access.ownable.library import Ownable
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import unsigned_div_rem, split_felt
 from starkware.cairo.common.registers import get_label_location
@@ -90,7 +91,7 @@ namespace ContractAccount {
             contract_address_salt=salt,
             constructor_calldata_size=2,
             constructor_calldata=calldata,
-            deploy_from_zero=0,
+            deploy_from_zero=FALSE,
         );
 
         // Generate EVM_contract address from the new cairo contract
