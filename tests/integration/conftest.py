@@ -71,6 +71,7 @@ def deploy_solidity_contract(starknet, contract_account_class, kakarot):
     deployed_contracts = {}
 
 
+
 @pytest.fixture
 def addresses():
     _addresses = list(range(4))
