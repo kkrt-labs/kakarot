@@ -14,7 +14,7 @@ interface ICounter {
 /// @notice Contract for integration testing of EVM opcodes.
 /// @author Kakarot9000
 /// @dev Add functions and storage variables for opcodes accordingly.
-contract IntegrationTestContract {
+contract PlainOpcodes {
     /*//////////////////////////////////////////////////////////////
                             METADATA STORAGE
     //////////////////////////////////////////////////////////////*/

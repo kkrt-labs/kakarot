@@ -1,6 +1,4 @@
 .PHONY: build test coverage
-solidity_folder = $(shell pwd)/tests/integration/solidity_files
-solidity_files  = $(shell ls ${solidity_folder} | grep .sol)
 cairo_files = $(shell find . -name "*.cairo")
 
 build:
@@ -67,9 +65,7 @@ format-mac:
 	isort tests/.
 
 build-sol:
-	for file in ${solidity_files} ; do \
-		docker run -v ${solidity_folder}:/sources ethereum/solc:stable -o /sources/output --abi --bin --overwrite --opcodes /sources/$$file /sources/$$file; \
-	done
+	scripts/compile_integration_contracts.sh
 
 check-resources:
 	poetry run python scripts/check_resources.py

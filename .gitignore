@@ -15,7 +15,7 @@ artifacts
 127.0.0.1.*
 
 # Protostar
-build
+./build
 *logs.json
 
 .DS_Store
