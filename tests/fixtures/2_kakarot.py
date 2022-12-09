@@ -25,13 +25,15 @@ async def contract_account_class(starknet: Starknet):
 async def kakarot(
     starknet: Starknet, eth: StarknetContract, contract_account_class: DeclaredClass
 ) -> StarknetContract:
-    return await starknet.deploy(
+    kakarot_contract = await starknet.deploy(
         source="./src/kakarot/kakarot.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
-        constructor_calldata=[
-            1,
-            eth.contract_address,
-            contract_account_class.class_hash,
-        ],
+        constructor_calldata=[],
     )
+
+    await kakarot_contract.init(
+        1, eth.contract_address, contract_account_class.class_hash  # owner
+    ).execute(caller_address=1)
+
+    return kakarot_contract

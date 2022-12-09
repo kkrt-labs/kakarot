@@ -5,7 +5,7 @@
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.starknet.common.syscalls import deploy as deploy_syscall
@@ -26,6 +26,10 @@ from kakarot.constants import native_token_address, registry_address, evm_contra
 func salt() -> (value: felt) {
 }
 
+@storage_var
+func kakarot_initialized() -> (is_initialized: felt) {
+}
+
 // An event emitted whenever kakarot deploys a evm contract
 // evm_contract_address is the representation of the evm address of the contract
 // starknet_contract_address if the starknet address of the contract
@@ -38,17 +42,18 @@ func evm_contract_deployed(evm_contract_address: felt, starknet_contract_address
 // @author @abdelhamidbakhta
 // @custom:namespace Kakarot
 namespace Kakarot {
-    // @notice The constructor of the contract
+    // @notice The initiation function of the contract
     // @dev Setting initial owner, contract account class hash and native token
     // @param owner The address of the owner of the contract
     // @param native_token_address_ The ERC20 contract used to emulate ETH
     // @param evm_contract_class_hash_ The clash hash of the contract account
-    func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    func init{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         owner: felt, native_token_address_, evm_contract_class_hash_: felt
     ) {
         Ownable.initializer(owner);
         native_token_address.write(native_token_address_);
         evm_contract_class_hash.write(evm_contract_class_hash_);
+        kakarot_initialized.write(TRUE);
         return ();
     }
 
