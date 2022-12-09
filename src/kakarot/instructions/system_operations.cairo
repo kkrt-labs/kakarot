@@ -392,7 +392,8 @@ namespace CallHelper {
 }
 
 namespace CreateHelper {
-    // @notice At the end of a sub-context initiated with CREATE(2), the calling context's stack and memory are updated.
+    // @notice Deploy a new Contract account and initialize a sub context at these addresses
+    //         with bytecode from calling context memory.
     // @return The pointer to the updated calling context.
     func create_sub_context{
         syscall_ptr: felt*,
@@ -445,7 +446,7 @@ namespace CreateHelper {
         return sub_ctx;
     }
 
-    // @notice At the end of a sub-context initiated with CREATE(2), the calling context's stack and memory are updated.
+    // @notice At the end of a sub-context initiated with CREATE(2), the calling context's stack is updated.
     // @return The pointer to the updated calling context.
     func finalize_calling_context{
         syscall_ptr: felt*,
