@@ -3,6 +3,10 @@ from typing import Callable
 import pytest
 from starkware.starknet.testing.contract import StarknetContract
 
+from tests.integration.helpers.helpers import (
+    extract_memory_from_execute,
+    hex_string_to_bytes_array,
+)
 from tests.utils.reporting import traceit
 
 
@@ -69,3 +73,50 @@ class TestERC20:
             assert balances_after[2] - balances_before[2] == 0
             assert balances_after[3] - balances_before[3] == 5
         kakarot.state = state
+
+    # TODO move opcodes testing in the PlainOpcode contract
+    @pytest.mark.skip(
+        "Investigate why there is a difference between local and deployed contract code in the erc20 contract"
+    )
+    async def test_extcodecopy_erc20(
+        self, deploy_solidity_contract: Callable, kakarot: StarknetContract
+    ):
+
+        erc_20 = await deploy_solidity_contract(
+            "ERC20", "Kakarot Token", "KKT", 18, caller_address=1
+        )
+
+        evm_contract_address = (
+            erc_20.contract_account.deploy_call_info.result.evm_contract_address
+        )
+
+        # instructions
+        push1 = 60
+        push20 = 73
+        extcodecopy = "3c"
+
+        # stack elements
+        offset = 0
+        size = 8
+        dest_offset = 0
+
+        byte_code = f"{push1}\
+        {size:02x}\
+        {push1}\
+        {offset:02x}\
+        {push1}\
+        {dest_offset:02x}\
+        {push20}\
+        {evm_contract_address:x}\
+        {extcodecopy}"
+
+        res = await kakarot.execute(
+            value=int(0),
+            bytecode=hex_string_to_bytes_array(byte_code),
+            calldata=hex_string_to_bytes_array(""),
+        ).call(caller_address=1)
+
+        expected_memory_result = hex_string_to_bytes_array(erc_20.bytecode.hex())
+        memory_result = extract_memory_from_execute(res.result)
+        # asserting to the first discrepancy
+        assert memory_result[dest_offset:2] == expected_memory_result[offset:2]
