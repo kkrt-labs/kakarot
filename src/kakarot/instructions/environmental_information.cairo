@@ -34,7 +34,6 @@ namespace EnvironmentalInformation {
     const GAS_COST_CALLDATACOPY = 3;
     const GAS_COST_CODESIZE = 2;
     const GAS_COST_CODECOPY = 3;
-    const GAS_COST_EXTCODECOPY = 100;
     const GAS_COST_RETURNDATASIZE = 2;
     const GAS_COST_RETURNDATACOPY = 3;
 
@@ -415,9 +414,6 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Increment gas used.
-        // TODO: compute gas (incidentally need to discern whether address is cold)
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_EXTCODECOPY);
         let stack = ctx.stack;
 
         // Stack input:
@@ -452,7 +448,7 @@ namespace EnvironmentalInformation {
     // @dev Copy an account's code to memory
     // @custom:since Frontier
     // @custom:group Environmental Information
-    // @custom:gas 100
+    // @custom:gas 100 || 2600
     // @custom:stack_consumed_elements 4
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
@@ -487,42 +483,69 @@ namespace EnvironmentalInformation {
             contract_address=registry_address_, evm_contract_address=address_felt
         );
 
-        // handle case where there is no eth -> stark address mapping
-        if (starknet_contract_address == 0) {
-            return ctx;
+
+        if (starknet_contract_address != 0) {
+            //  we get the bytecode from the Starknet_contract
+            let (bytecode_len, bytecode) = IEvmContract.bytecode(
+                contract_address=starknet_contract_address
+            ); 
+
+            tempvar syscall_ptr=syscall_ptr;
+            tempvar pedersen_ptr=pedersen_ptr;
+            tempvar range_check_ptr=range_check_ptr;                        
+            tempvar bitwise_ptr=bitwise_ptr;
+            tempvar bytecode_len=bytecode_len;
+        } else {
+            // otherwise handle case where there is no eth -> stark address mapping            
+            let bytecode : felt* = alloc();
+            let bytecode_len = 0;
+
+            tempvar syscall_ptr=syscall_ptr;
+            tempvar pedersen_ptr=pedersen_ptr;
+            tempvar range_check_ptr=range_check_ptr;                        
+            tempvar bitwise_ptr=bitwise_ptr;
+            tempvar bytecode_len=bytecode_len;            
+
         }
 
-        // Get the bytecode from the Starknet_contract
-        let (bytecode_len, bytecode) = IEvmContract.bytecode(
-            contract_address=starknet_contract_address
-        );
+        tempvar syscall_ptr=syscall_ptr;
+        tempvar pedersen_ptr=pedersen_ptr;
+        tempvar range_check_ptr=range_check_ptr;                        
+        tempvar bitwise_ptr=bitwise_ptr;
+        tempvar bytecode_len=bytecode_len;            
 
-        // handle case were eth address returns no bytecode:
-
-        if (bytecode_len == 0) {
-            return ctx;
-        }
-
-        // TODO do we have the distinction between precompiles and warm and cold addresses?
-
+    
         // Get bytecode slice from offset to size
+        // in the case were 
+        // eth address returns no bytecode or has no `starknet_contract_address`
+        // the bytecode len would be zero and the byte array empty, 
+        // which would `Helpers.slice_data` would return an array
+        // with the requested `size` of zeroes
+
         let sliced_bytecode: felt* = Helpers.slice_data(
             data_len=bytecode_len, data=bytecode, data_offset=offset.low, slice_len=size.low
         );
 
         // Write bytecode slice to memory at dest_offset
-        // TODO handle dynamic gas for memory expansion
+        let (memory, memory_expansion_cost) = Memory.ensure_length(self=ctx.memory, length=dest_offset.low + size.low);
         let memory: model.Memory* = Memory.store_n(
             self=ctx.memory, element_len=size.low, element=sliced_bytecode, offset=dest_offset.low
         );
+
 
         // Update context memory.
         let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
         // Update context stack.
         let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        // TODO: compute gas (incidentally need to discern whether address is cold)
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_EXTCODECOPY);
+        let (minimum_word_size) = Helpers.compute_minimum_word_size(size);
+        
+    
+        // TODO:distinction between warm and cold addresses determines `address_access_cost`
+        //  for now we assume a warm address, which sets `address_access_cost` to 100
+        let address_access_cost = 100;
+        let dynamic_gas = 3 * minimum_word_size + memory_expansion_cost + address_access_cost;
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=dynamic_gas);
 
         return ctx;
     }

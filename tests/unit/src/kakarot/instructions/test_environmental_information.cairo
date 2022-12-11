@@ -125,18 +125,34 @@ func test__exec_extcodecopy__should_handle_address_with_no_code{
 
     let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));  // size
+    let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));  // size
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));  // offset
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));  // dest_offset
+    let stack: model.Stack* = Stack.push(stack, Uint256(32, 0));  // dest_offset
     let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));  // address
 
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
+    // we are hardcoding an assumption of 'warm' address access, for now.
+    // but the dynamic gas values of  `minimum_word_size` and `memory_expansion_cost`
+    // are being tested
+    let expected_gas = 109;
+
     // When
     let result = EnvironmentalInformation.exec_extcodecopy(ctx);
+    let (memory, value0) = Memory.load(self=result.memory, offset=32);
+    let (memory, value1) = Memory.load(self=memory, offset=33);
+    let (memory, value2) = Memory.load(self=memory, offset=34);
+
 
     // Then
-    assert result.memory = ctx.memory;
+    // ensure stack is consumed/updated
+    assert result.stack.len_16bytes = 0;
+
+    assert result.gas_used = expected_gas;
+
+    assert_uint256_eq(value0, Uint256(0, 0));
+    assert_uint256_eq(value1, Uint256(0, 0));  
+    assert_uint256_eq(value2, Uint256(0, 0));  
 
     return ();
 }
