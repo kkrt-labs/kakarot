@@ -538,12 +538,12 @@ namespace EnvironmentalInformation {
         // Update context stack.
         let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let (minimum_word_size) = Helpers.compute_minimum_word_size(size);
+        let (minimum_word_size) = Helpers.compute_minimum_word_size(size.low);
         
     
         // TODO:distinction between warm and cold addresses determines `address_access_cost`
-        //  for now we assume a warm address, which sets `address_access_cost` to 100
-        let address_access_cost = 100;
+        //  for now we assume a cold address, which sets `address_access_cost` to 2600
+        let address_access_cost = 2600;
         let dynamic_gas = 3 * minimum_word_size + memory_expansion_cost + address_access_cost;
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=dynamic_gas);
 

@@ -135,7 +135,7 @@ func test__exec_extcodecopy__should_handle_address_with_no_code{
     // we are hardcoding an assumption of 'warm' address access, for now.
     // but the dynamic gas values of  `minimum_word_size` and `memory_expansion_cost`
     // are being tested
-    let expected_gas = 109;
+    let expected_gas = 2609;
 
     // When
     let result = EnvironmentalInformation.exec_extcodecopy(ctx);

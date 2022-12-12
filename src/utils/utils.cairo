@@ -14,7 +14,7 @@ from starkware.cairo.common.math import (
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.pow import pow
-from starkware.cairo.common.uint256 import Uint256, uint256_check, uint256_add, uint256_unsigned_div_rem
+from starkware.cairo.common.uint256 import Uint256, uint256_check
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.bool import FALSE
 
@@ -69,14 +69,9 @@ namespace Helpers {
         return res;
     }
 
-    func compute_minimum_word_size{range_check_ptr}(length : Uint256) -> (res : felt) {
-        let thirty_one =  Uint256(31,0);
-        let thirty_two = Uint256(32,0);
-        let (length_plus_thirty_one, carry) = uint256_add(length, thirty_one);
-        let (minimum_word_size_uint256, remainder) = uint256_unsigned_div_rem(length_plus_thirty_one, thirty_two);
-        let minimum_word_size_felt = uint256_to_felt(minimum_word_size_uint256);
-
-        return (res=minimum_word_size_felt);
+    func compute_minimum_word_size{range_check_ptr}(length : felt) -> (res : felt) {
+        let (quotient, remainder) = unsigned_div_rem(length + 31, 32);
+        return (res=quotient);
     }
     
     func compute_half_uint256{range_check_ptr}(val: felt*, i: felt, res: felt) -> (res: felt) {
