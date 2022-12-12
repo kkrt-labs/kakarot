@@ -8,6 +8,8 @@ from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from starkware.cairo.common.math import split_felt
+from starkware.cairo.common.default_dict import default_dict_new
+from starkware.cairo.common.dict import DictAccess
 
 // Local dependencies
 from utils.utils import Helpers
@@ -43,6 +45,7 @@ func init_context{
     let gas_limit = Constants.TRANSACTION_GAS_LIMIT;
     let calling_context = ExecutionContext.init_empty();
     let sub_context = ExecutionContext.init_empty();
+    let (local block_context: DictAccess*) = default_dict_new(default_value=0);
 
     local ctx: model.ExecutionContext* = new model.ExecutionContext(
         call_context=call_context,
@@ -59,6 +62,7 @@ func init_context{
         evm_contract_address=420,
         calling_context=calling_context,
         sub_context=sub_context,
+        block_context=block_context,
         );
     return ctx;
 }

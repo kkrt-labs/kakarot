@@ -13,6 +13,8 @@ from utils.utils import Helpers
 from kakarot.constants import Constants
 from kakarot.model import model
 from kakarot.execution_context import ExecutionContext
+from starkware.cairo.common.default_dict import default_dict_new
+from starkware.cairo.common.dict import DictAccess, dict_write, dict_read
 
 @external
 func test__init__should_return_an_empty_execution_context{
@@ -30,7 +32,9 @@ func test__init__should_return_an_empty_execution_context{
     local call_context: model.CallContext* = new model.CallContext(
         bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
         );
-    let result: model.ExecutionContext* = ExecutionContext.init(call_context);
+    let (local block_context: DictAccess*) = default_dict_new(default_value=0);
+    dict_write{dict_ptr=block_context}(key=1, new_value=2);
+    let result: model.ExecutionContext* = ExecutionContext.init(call_context, block_context);
 
     // Then
     assert result.call_context.bytecode = bytecode;
@@ -43,6 +47,9 @@ func test__init__should_return_an_empty_execution_context{
     assert result.gas_used = 0;
     assert result.gas_limit = Constants.TRANSACTION_GAS_LIMIT;  // TODO: Add support for gas limit
     assert result.intrinsic_gas_cost = 0;
+    let block_context: DictAccess* = result.block_context;
+    let (value) = dict_read{dict_ptr= block_context}(key=1);
+    assert value = 2;
     return ();
 }
 
@@ -67,7 +74,9 @@ func test__update_program_counter__should_set_pc_to_given_value{
     local call_context: model.CallContext* = new model.CallContext(
         bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
         );
-    let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
+    let (local block_context: DictAccess*) = default_dict_new(default_value=0);
+    dict_write{dict_ptr=block_context}(key=1, new_value=2);
+    let ctx: model.ExecutionContext* = ExecutionContext.init(call_context, block_context);
     let result = ExecutionContext.update_program_counter(ctx, 3);
 
     // Then
@@ -96,7 +105,9 @@ func test__update_program_counter__should_fail__when_given_value_not_in_code_ran
     local call_context: model.CallContext* = new model.CallContext(
         bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
         );
-    let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
+    let (local block_context: DictAccess*) = default_dict_new(default_value=0);
+    dict_write{dict_ptr=block_context}(key=1, new_value=2);
+    let ctx: model.ExecutionContext* = ExecutionContext.init(call_context, block_context);
     let result = ExecutionContext.update_program_counter(ctx, 6);
     return ();
 }
@@ -122,7 +133,9 @@ func test__update_program_counter__should_fail__when_given_destination_that_is_n
     local call_context: model.CallContext* = new model.CallContext(
         bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
         );
-    let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
+    let (local block_context: DictAccess*) = default_dict_new(default_value=0);
+    dict_write{dict_ptr=block_context}(key=1, new_value=2);
+    let ctx: model.ExecutionContext* = ExecutionContext.init(call_context, block_context);
     let result = ExecutionContext.update_program_counter(ctx, 2);
     return ();
 }
