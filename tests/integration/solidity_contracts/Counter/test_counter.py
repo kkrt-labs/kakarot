@@ -350,6 +350,7 @@ class TestCounter:
             calldata=hex_string_to_bytes_array(""),
         ).call(caller_address=1)
 
+        # note:
         # we compare the bytecode to how it is stored in the registry
         # due to issues as mentioned in issue number 342
         memory_result = extract_memory_from_execute(match_res.result)
@@ -381,7 +382,8 @@ class TestCounter:
         # finally, we assert that from the `end_of_zeroed_region`
         # to `memory_result_size` the results are the same.
 
-        # note we compare the bytecode to how it is stored in the registry
+        # note (as previously mentioned)
+        # we compare the bytecode to how it is stored in the registry
         # due to issues as mentioned in issue number 342
         assert (
             zeroed_memory_result[end_of_zeroed_region:memory_result_size]
