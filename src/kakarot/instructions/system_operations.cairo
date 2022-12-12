@@ -221,6 +221,7 @@ namespace SystemOperations {
             calldata=call_args.calldata,
             value=call_args.value,
             calling_context=ctx,
+            block_context=ctx.block_context,
             return_data_len=call_args.ret_size,
             return_data=call_args.return_data,
         );
@@ -251,6 +252,7 @@ namespace SystemOperations {
             calldata=call_args.calldata,
             value=call_args.value,
             calling_context=ctx,
+            block_context=ctx.block_context,
             return_data_len=call_args.ret_size,
             return_data=call_args.return_data,
         );
@@ -443,6 +445,7 @@ namespace CreateHelper {
             evm_contract_address=evm_contract_address,
             calling_context=ctx,
             sub_context=empty_context,
+            block_context=ctx.block_context,
             );
 
         return sub_ctx;

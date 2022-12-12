@@ -42,5 +42,6 @@ namespace model {
         evm_contract_address: felt,
         calling_context: ExecutionContext*,
         sub_context: ExecutionContext*,
+        block_context: DictAccess*,
     }
 }

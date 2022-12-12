@@ -6,6 +6,8 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.dict import DictAccess
+from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
 
 // Local dependencies
 from kakarot.library import Kakarot
@@ -14,7 +16,6 @@ from kakarot.stack import Stack
 from kakarot.interfaces.interfaces import IEvmContract
 from kakarot.memory import Memory
 from kakarot.execution_context import ExecutionContext
-from starkware.cairo.common.dict import DictAccess
 
 // Constructor
 @constructor
@@ -41,7 +42,17 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 @view
 func execute{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(value: felt, bytecode_len: felt, bytecode: felt*, calldata_len: felt, calldata: felt*) -> (
+}(
+    value: felt,
+    bytecode_len: felt,
+    bytecode: felt*,
+    calldata_len: felt,
+    calldata: felt*,
+    block_number_len: felt,
+    block_number: felt*,
+    block_hash_len: felt,
+    block_hash: felt*,
+) -> (
     stack_accesses_len: felt,
     stack_accesses: felt*,
     stack_len: felt,
@@ -51,10 +62,19 @@ func execute{
     gas_used: felt,
 ) {
     alloc_locals;
+    // Prepare call context
     local call_context: model.CallContext* = new model.CallContext(
         bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=calldata_len, value=value
         );
-    let summary = Kakarot.execute(call_context);
+    // Prepare block context
+    let (local block_context_dict_start: DictAccess*) = default_dict_new(default_value=0);
+    let block_context_dict_end: DictAccess* = Kakarot.init_block_context(
+        block_number_len, block_number, block_hash_len, block_hash, block_context_dict_start
+    );
+    let (_, block_context: DictAccess*) = default_dict_finalize(
+        block_context_dict_start, block_context_dict_end, 0
+    );
+    let summary = Kakarot.execute(call_context, block_context);
     let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
     let stack_accesses_len = summary.stack.squashed_end - summary.stack.squashed_start;
 
@@ -84,7 +104,16 @@ func execute{
 @external
 func execute_at_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(address: felt, value: felt, calldata_len: felt, calldata: felt*) -> (
+}(
+    address: felt,
+    value: felt,
+    calldata_len: felt,
+    calldata: felt*,
+    block_number_len: felt,
+    block_number: felt*,
+    block_hash_len: felt,
+    block_hash: felt*,
+) -> (
     stack_accesses_len: felt,
     stack_accesses: felt*,
     stack_len: felt,
@@ -97,8 +126,20 @@ func execute_at_address{
     return_data: felt*,
 ) {
     alloc_locals;
+    // Prepare block context
+    let (local block_context_dict_start: DictAccess*) = default_dict_new(default_value=0);
+    let block_context_dict_end: DictAccess* = Kakarot.init_block_context(
+        block_number_len, block_number, block_hash_len, block_hash, block_context_dict_start
+    );
+    let (_, block_context: DictAccess*) = default_dict_finalize(
+        block_context_dict_start, block_context_dict_end, 0
+    );
     let summary = Kakarot.execute_at_address(
-        address=address, calldata_len=calldata_len, calldata=calldata, value=value
+        address=address,
+        calldata_len=calldata_len,
+        calldata=calldata,
+        value=value,
+        block_context=block_context,
     );
     let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
     let stack_accesses_len = summary.stack.squashed_end - summary.stack.squashed_start;
@@ -155,8 +196,22 @@ func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 @external
 func deploy{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(bytecode_len: felt, bytecode: felt*) -> (
-    evm_contract_address: felt, starknet_contract_address: felt
-) {
-    return Kakarot.deploy(bytecode_len, bytecode);
+}(
+    bytecode_len: felt,
+    bytecode: felt*,
+    block_number_len: felt,
+    block_number: felt*,
+    block_hash_len: felt,
+    block_hash: felt*,
+) -> (evm_contract_address: felt, starknet_contract_address: felt) {
+    alloc_locals;
+    // Prepare block context
+    let (local block_context_dict_start: DictAccess*) = default_dict_new(default_value=0);
+    let block_context_dict_end: DictAccess* = Kakarot.init_block_context(
+        block_number_len, block_number, block_hash_len, block_hash, block_context_dict_start
+    );
+    let (_, block_context: DictAccess*) = default_dict_finalize(
+        block_context_dict_start, block_context_dict_end, 0
+    );
+    return Kakarot.deploy(bytecode_len, bytecode, block_context);
 }

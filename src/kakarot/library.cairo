@@ -10,6 +10,8 @@ from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.starknet.common.syscalls import deploy as deploy_syscall
 from starkware.starknet.common.syscalls import get_contract_address
+from starkware.cairo.common.dict import DictAccess, dict_write
+
 // OpenZeppelin dependencies
 from openzeppelin.access.ownable.library import Ownable
 
@@ -53,11 +55,11 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(call_context: model.CallContext*) -> ExecutionContext.Summary* {
+    }(call_context: model.CallContext*, block_context: DictAccess*) -> ExecutionContext.Summary* {
         alloc_locals;
 
         // Prepare execution context
-        let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
+        let ctx: model.ExecutionContext* = ExecutionContext.init(call_context, block_context);
 
         // Compute intrinsic gas cost and update gas used
         let ctx = ExecutionContext.compute_intrinsic_gas_cost(self=ctx);
@@ -83,7 +85,7 @@ namespace Kakarot {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(
-        address: felt, calldata_len: felt, calldata: felt*, value: felt
+        address: felt, calldata_len: felt, calldata: felt*, value: felt, block_context: DictAccess*
     ) -> ExecutionContext.Summary* {
         alloc_locals;
 
@@ -96,6 +98,7 @@ namespace Kakarot {
             calldata=calldata,
             value=value,
             calling_context=root_context,
+            block_context=block_context,
             return_data_len=0,
             return_data=return_data,
         );
@@ -156,7 +159,7 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(bytecode_len: felt, bytecode: felt*) -> (
+    }(bytecode_len: felt, bytecode: felt*, block_context: DictAccess*) -> (
         evm_contract_address: felt, starknet_contract_address: felt
     ) {
         alloc_locals;
@@ -195,6 +198,7 @@ namespace Kakarot {
             evm_contract_address=evm_contract_address,
             calling_context=calling_context,
             sub_context=sub_context,
+            block_context=block_context,
             );
 
         // Compute intrinsic gas cost and update gas used
@@ -213,6 +217,40 @@ namespace Kakarot {
         return (
             evm_contract_address=evm_contract_address,
             starknet_contract_address=starknet_contract_address,
+        );
+    }
+
+    // @notice Initialize block context
+    // @dev This is an internal function, only use it to create a dictionary of block numbers and block hashes
+    // @param block_number_len: the length of block numbers
+    // @param block_number: the block numbers
+    // @param block_hash_len: the length of block hashes
+    // @param block_hash: the block hashes
+    // @param dict: dictionary with default values
+    // @return The updated dictionary of block numbers and block hashes
+    func init_block_context(
+        block_number_len: felt,
+        block_number: felt*,
+        block_hash_len: felt,
+        block_hash: felt*,
+        dict: DictAccess*,
+    ) -> DictAccess* {
+        alloc_locals;
+
+        with_attr error_message(
+                "Kakarot: blockhash keys and values arrays must be of same length") {
+            if (block_number_len != block_hash_len) {
+                assert 1 = 0;
+            }
+        }
+
+        if (block_number_len == 0) {
+            return dict;
+        }
+
+        dict_write{dict_ptr=dict}(key=[block_number], new_value=[block_hash]);
+        return init_block_context(
+            block_number_len - 1, &block_number[1], block_hash_len - 1, block_hash + 1, dict
         );
     }
 }

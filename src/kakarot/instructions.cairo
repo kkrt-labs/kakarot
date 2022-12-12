@@ -205,7 +205,7 @@ namespace EVMInstructions {
         ret;
         call not_implemented_opcode;  // 0x3f
         ret;
-        call not_implemented_opcode;  // 0x40
+        call BlockInformation.exec_blockhash;  // 0x40
         ret;
         call BlockInformation.exec_coinbase;  // 0x41
         ret;

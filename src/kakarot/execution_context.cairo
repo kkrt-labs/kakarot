@@ -9,6 +9,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import assert_le, assert_nn
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_label_location
+from starkware.cairo.common.dict import DictAccess
 
 // Internal dependencies
 from utils.utils import Helpers
@@ -58,13 +59,16 @@ namespace ExecutionContext {
         dw 0;  // evm_contract_address
         dw 0;  // calling_context
         dw 0;  // sub_context
+        dw 0;  // block_context
     }
 
     // @notice Initialize the execution context.
     // @dev set the initial values before executing a piece of code
     // @param call_context The call context.
     // @return The initialized execution context.
-    func init(call_context: model.CallContext*) -> model.ExecutionContext* {
+    func init{range_check_ptr}(
+        call_context: model.CallContext*, block_context: DictAccess*
+    ) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
 
@@ -96,6 +100,7 @@ namespace ExecutionContext {
             evm_contract_address=0,
             calling_context=calling_context,
             sub_context=sub_context,
+            block_context=block_context,
             );
         return ctx;
     }
@@ -135,6 +140,7 @@ namespace ExecutionContext {
         calldata: felt*,
         value: felt,
         calling_context: model.ExecutionContext*,
+        block_context: DictAccess*,
         return_data_len: felt,
         return_data: felt*,
     ) -> model.ExecutionContext* {
@@ -175,6 +181,7 @@ namespace ExecutionContext {
             evm_contract_address=address,
             calling_context=calling_context,
             sub_context=sub_context,
+            block_context=block_context,
             );
     }
 
@@ -200,6 +207,7 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
+            block_context=self.block_context,
             );
     }
 
@@ -253,6 +261,7 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
+            block_context=self.block_context,
             );
     }
 
@@ -298,6 +307,7 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
+            block_context=self.block_context,
             );
     }
 
@@ -323,6 +333,7 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
+            block_context=self.block_context,
             );
     }
 
@@ -353,6 +364,7 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
+            block_context=self.block_context,
             );
     }
 
@@ -379,6 +391,7 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
+            block_context=self.block_context,
             );
     }
 
@@ -405,6 +418,7 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
+            block_context=self.block_context,
             );
     }
 
@@ -430,6 +444,7 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
             sub_context=sub_context,
+            block_context=self.block_context,
             );
     }
 
@@ -457,6 +472,7 @@ namespace ExecutionContext {
             evm_contract_address=evm_contract_address,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
+            block_context=self.block_context,
             );
     }
 
@@ -502,6 +518,7 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
+            block_context=self.block_context,
             );
     }
 
