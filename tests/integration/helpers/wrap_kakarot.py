@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import cast
+from typing import Dict, cast
 
 from starkware.starknet.testing.starknet import StarknetContract
 from web3 import Web3
@@ -13,7 +13,10 @@ from tests.utils.reporting import traceit
 
 
 def wrap_for_kakarot(
-    contract: Contract, kakarot: StarknetContract, evm_contract_address: int
+    contract: Contract,
+    kakarot: StarknetContract,
+    evm_contract_address: int,
+    blockhashes: Dict,
 ):
     """
     Wrap a web3.contract to use kakarot as backend.
@@ -33,6 +36,10 @@ def wrap_for_kakarot(
                     calldata=hex_string_to_bytes_array(
                         contract.encodeABI(fun, args, kwargs)
                     ),
+                    block_number=[
+                        int(x) for x in blockhashes["last_256_blocks"].keys()
+                    ],
+                    block_hash=list(blockhashes["last_256_blocks"].values()),
                 )
                 res = await call.call()
             else:
@@ -49,6 +56,10 @@ def wrap_for_kakarot(
                     calldata=hex_string_to_bytes_array(
                         contract.encodeABI(fun, args, kwargs)
                     ),
+                    block_number=[
+                        int(x) for x in blockhashes["last_256_blocks"].keys()
+                    ],
+                    block_hash=list(blockhashes["last_256_blocks"].values()),
                 )
                 res = await call.execute(caller_address=caller_address)
             if call._traced:

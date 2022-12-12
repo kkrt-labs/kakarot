@@ -11,7 +11,7 @@ logger = logging.getLogger()
 
 
 @pytest.fixture(scope="module")
-def deploy_solidity_contract(starknet, contract_account_class, kakarot):
+def deploy_solidity_contract(starknet, contract_account_class, kakarot, blockhashes):
     """
     Fixture to deploy a solidity contract in kakarot. The returned contract is a modified
     web3.contract instance with an added `contract_account` attribute that return the actual
@@ -45,9 +45,11 @@ def deploy_solidity_contract(starknet, contract_account_class, kakarot):
         )
 
         with traceit.context(contract_name):
-            tx = await kakarot.deploy(bytecode=deploy_bytecode).execute(
-                caller_address=caller_address
-            )
+            tx = await kakarot.deploy(
+                bytecode=deploy_bytecode,
+                block_number=[int(x) for x in blockhashes["last_256_blocks"].keys()],
+                block_hash=list(blockhashes["last_256_blocks"].values()),
+            ).execute(caller_address=caller_address)
 
         starknet_contract_address = tx.result.starknet_contract_address
         contract_account = StarknetContract(
@@ -58,7 +60,7 @@ def deploy_solidity_contract(starknet, contract_account_class, kakarot):
         )
 
         kakarot_contract = wrap_for_kakarot(
-            contract, kakarot, tx.result.evm_contract_address
+            contract, kakarot, tx.result.evm_contract_address, blockhashes
         )
         setattr(kakarot_contract, "contract_account", contract_account)
         deployed_contracts[contract_name] = kakarot_contract

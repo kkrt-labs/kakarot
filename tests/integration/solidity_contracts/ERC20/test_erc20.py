@@ -114,6 +114,8 @@ class TestERC20:
             value=int(0),
             bytecode=hex_string_to_bytes_array(byte_code),
             calldata=hex_string_to_bytes_array(""),
+            block_number=[int(x) for x in blockhashes["last_256_blocks"].keys()],
+            block_hash=list(blockhashes["last_256_blocks"].values()),
         ).call(caller_address=1)
 
         expected_memory_result = hex_string_to_bytes_array(erc_20.bytecode.hex())

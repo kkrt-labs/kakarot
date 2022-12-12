@@ -13,7 +13,10 @@ from tests.integration.helpers.helpers import (
 class TestCounter:
     # TODO move opcodes testing in the PlainOpcode contract
     async def test_extcodecopy_counter(
-        self, deploy_solidity_contract: Callable, kakarot: StarknetContract
+        self,
+        deploy_solidity_contract: Callable,
+        kakarot: StarknetContract,
+        blockhashes: dict,
     ):
 
         counter = await deploy_solidity_contract("Counter", "Counter", caller_address=1)
@@ -46,6 +49,8 @@ class TestCounter:
             value=int(0),
             bytecode=hex_string_to_bytes_array(byte_code),
             calldata=hex_string_to_bytes_array(""),
+            block_number=[int(x) for x in blockhashes["last_256_blocks"].keys()],
+            block_hash=list(blockhashes["last_256_blocks"].values()),
         ).call(caller_address=1)
 
         expected_memory_result = hex_string_to_bytes_array(counter.bytecode.hex())
@@ -80,6 +85,8 @@ class TestCounter:
             value=int(0),
             bytecode=hex_string_to_bytes_array(byte_code),
             calldata=hex_string_to_bytes_array(""),
+            block_number=[int(x) for x in blockhashes["last_256_blocks"].keys()],
+            block_hash=list(blockhashes["last_256_blocks"].values()),
         ).call(caller_address=1)
 
         memory_result = extract_memory_from_execute(res.result)
@@ -93,7 +100,10 @@ class TestCounter:
         "Investigate why memory results differ in cases where offset and size are gte twenty"
     )
     async def test_extcodecopy_offset_and_size_gte_twenty_a(
-        self, deploy_solidity_contract: Callable, kakarot: StarknetContract
+        self,
+        deploy_solidity_contract: Callable,
+        kakarot: StarknetContract,
+        blockhashes: dict,
     ):
         counter = await deploy_solidity_contract("Counter", "Counter", caller_address=1)
 
@@ -126,6 +136,8 @@ class TestCounter:
             value=int(0),
             bytecode=hex_string_to_bytes_array(byte_code),
             calldata=hex_string_to_bytes_array(""),
+            block_number=[int(x) for x in blockhashes["last_256_blocks"].keys()],
+            block_hash=list(blockhashes["last_256_blocks"].values()),
         ).call(caller_address=1)
 
         memory_result = extract_memory_from_execute(res.result)
@@ -139,7 +151,10 @@ class TestCounter:
         "Investigate why memory results differ in cases where offset and size are gte twenty"
     )
     async def test_extcodecopy_offset_and_size_gte_twenty_b(
-        self, deploy_solidity_contract: Callable, kakarot: StarknetContract
+        self,
+        deploy_solidity_contract: Callable,
+        kakarot: StarknetContract,
+        blockhashes: dict,
     ):
         counter = await deploy_solidity_contract("Counter", "Counter", caller_address=1)
 
@@ -172,6 +187,8 @@ class TestCounter:
             value=int(0),
             bytecode=hex_string_to_bytes_array(byte_code),
             calldata=hex_string_to_bytes_array(""),
+            block_number=[int(x) for x in blockhashes["last_256_blocks"].keys()],
+            block_hash=list(blockhashes["last_256_blocks"].values()),
         ).call(caller_address=1)
 
         memory_result = extract_memory_from_execute(res.result)
@@ -185,7 +202,10 @@ class TestCounter:
         "Investigate why memory results differ in cases where offset and size are gte twenty"
     )
     async def test_extcodecopy_offset_and_size_gte_twenty_c(
-        self, deploy_solidity_contract: Callable, kakarot: StarknetContract
+        self,
+        deploy_solidity_contract: Callable,
+        kakarot: StarknetContract,
+        blockhashes: dict,
     ):
         counter = await deploy_solidity_contract("Counter", "Counter", caller_address=1)
 
@@ -218,6 +238,8 @@ class TestCounter:
             value=int(0),
             bytecode=hex_string_to_bytes_array(byte_code),
             calldata=hex_string_to_bytes_array(""),
+            block_number=[int(x) for x in blockhashes["last_256_blocks"].keys()],
+            block_hash=list(blockhashes["last_256_blocks"].values()),
         ).call(caller_address=1)
 
         memory_result = extract_memory_from_execute(res.result)
