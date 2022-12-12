@@ -506,7 +506,6 @@ namespace EnvironmentalInformation {
 
         tempvar syscall_ptr = syscall_ptr;
         tempvar pedersen_ptr = pedersen_ptr;
-        tempvar bitwise_ptr = bitwise_ptr;
 
         // Get bytecode slice from offset to size
         // in the case were
