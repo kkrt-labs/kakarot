@@ -69,3 +69,6 @@ build-sol:
 
 check-resources:
 	poetry run python scripts/check_resources.py
+
+get-blockhashes:
+	poetry run python scripts/get_latest_blockhashes.py
