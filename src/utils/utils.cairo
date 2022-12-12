@@ -69,11 +69,11 @@ namespace Helpers {
         return res;
     }
 
-    func compute_minimum_word_size{range_check_ptr}(length : felt) -> (res : felt) {
+    func compute_minimum_word_size{range_check_ptr}(length: felt) -> (res: felt) {
         let (quotient, remainder) = unsigned_div_rem(length + 31, 32);
         return (res=quotient);
     }
-    
+
     func compute_half_uint256{range_check_ptr}(val: felt*, i: felt, res: felt) -> (res: felt) {
         if (i == 1) {
             return (res=res + [val]);

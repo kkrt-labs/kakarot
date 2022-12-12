@@ -139,10 +139,8 @@ func test__exec_extcodecopy__should_handle_address_with_no_code{
 
     // When
     let result = EnvironmentalInformation.exec_extcodecopy(ctx);
-    let (memory, value0) = Memory.load(self=result.memory, offset=32);
-    let (memory, value1) = Memory.load(self=memory, offset=33);
-    let (memory, value2) = Memory.load(self=memory, offset=34);
-
+    let (output_array) = alloc();
+    Memory.load_n(result.memory, 3, output_array, 32);
 
     // Then
     // ensure stack is consumed/updated
@@ -150,9 +148,9 @@ func test__exec_extcodecopy__should_handle_address_with_no_code{
 
     assert result.gas_used = expected_gas;
 
-    assert_uint256_eq(value0, Uint256(0, 0));
-    assert_uint256_eq(value1, Uint256(0, 0));  
-    assert_uint256_eq(value2, Uint256(0, 0));  
+    assert [output_array] = 0;
+    assert [output_array + 1] = 0;
+    assert [output_array + 2] = 0;
 
     return ();
 }

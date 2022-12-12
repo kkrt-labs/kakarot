@@ -222,144 +222,169 @@ class TestCounter:
 
         memory_result = extract_memory_from_execute(res.result)
 
-        assert memory_result[dest_offset:size+dest_offset] == expected_memory_result[offset:offset+size]
-
-    async def test_extcodecopy_should_pad_zeroes_on_no_account_match(self, deploy_solidity_contract: Callable, kakarot: StarknetContract):
-
-        counter = await deploy_solidity_contract(
-            "Counter", caller_address=1
-        )
-        
-        # instructions
-        push1 = 60
-        push20 = 73        
-        extcodecopy = "3c"
-
-        # stack elements
-        offset = 0
-        size = 32
-        dest_offset = 0
-        evm_contract_address = counter.contract_account.deploy_call_info.result.evm_contract_address
-
-        offset1 = 0
-        size1 = 8
-        dest_offset1 = 1
-        evm_contract_address1 = 981189583494067065842568011418895108651581577619
-
-        # we set up instructions to have bytecode in the memory
-        # in this case the bytecode of the deployed counter contract
-        byte_code_match = f"{push1}\
-        {size:02x}\
-        {push1}\
-        {offset:02x}\
-        {push1}\
-        {dest_offset:02x}\
-        {push20}\
-        {evm_contract_address:x}\
-        {extcodecopy}"
-
-        assert evm_contract_address1 != evm_contract_address
-        
-        # then we set up instructions to attempt to copy code from an account that doesn't exist
-        # we set the dest_offset to 1 and length to 8
-        byte_code_empty = f"{push1}\
-        {size1:02x}\
-        {push1}\
-        {offset1:02x}\
-        {push1}\
-        {dest_offset1:02x}\
-        {push20}\
-        {evm_contract_address1:x}\
-        {extcodecopy}"
-        
-        res = await kakarot.execute(
-            value=int(0),
-            bytecode=hex_string_to_bytes_array(byte_code_match+byte_code_empty),
-            calldata=hex_string_to_bytes_array(""),
-        ).call(caller_address=1)
-
-        expected_memory_result = hex_string_to_bytes_array(counter.bytecode.hex())
-        memory_result = extract_memory_from_execute(res.result)
-
-        # we write in zeros at an dest_offset of one, so we expect the contract byte code to still match for the first element
-        assert memory_result[0] == expected_memory_result[0]
-        # we assert that from the dest_offset to the size of the extcodecopy for an address without code, we get zeros
-        assert memory_result[dest_offset1:dest_offset1+size1] == [0] * size1
-        # this assert fails because of discrepancies between locally deployed contract and compiled.
-        # will investigate, but we would the assert that the rest of memory matches with the copied bytecode of the first contract
-        # where 'rest' is the end of the zero'ed out memory dest_offset+size1+1
-        end_of_zero_padded_region = dest_offset+size1+1
-        # assert memory_result[end_of_zero_padded_region:size] == expected_memory_result[end_of_zero_padded_region:size]
-        # but we can atleast assert same length
-        assert len(memory_result[end_of_zero_padded_region:size]) == len(expected_memory_result[end_of_zero_padded_region:size])
-
-    async def test_extcodecopy_should_pad_zeroes_where_not_enough_bytes(self, deploy_solidity_contract: Callable, kakarot: StarknetContract):
-
-        counter = await deploy_solidity_contract(
-            "Counter", caller_address=1
+        assert (
+            memory_result[dest_offset : size + dest_offset]
+            == expected_memory_result[offset : offset + size]
         )
 
-        expected_memory_result = hex_string_to_bytes_array(counter.bytecode.hex())        
-        evm_contract_address = counter.contract_account.deploy_call_info.result.evm_contract_address
+    @pytest.mark.parametrize(
+        "case",
+        [
+            {
+                "bytecode_match": {
+                    "offset": 0,
+                    "size": 32,
+                    "dest_offset": 0,
+                },
+                "bytecode_zeroed": {
+                    "offset": 0,
+                    "size": 8,
+                    "dest_offset": 1,
+                    "contract_address": "mock",
+                },
+                "id": "no account match",
+            },
+            {
+                "bytecode_match": {
+                    "offset": 0,
+                    "size": 32,
+                    "dest_offset": 0,
+                },
+                "bytecode_zeroed": {
+                    "offset": 0,
+                    "size": 8,
+                    "dest_offset": 1,
+                    "contract_address": "counter",
+                },
+                "id": "offset exceeds match length",
+            },
+        ],
+    )
+    async def test_extcodecopy_should_pad_zeroes(
+        self,
+        deploy_solidity_contract: Callable,
+        kakarot: StarknetContract,
+        addresses,
+        case,
+    ):
+
+        counter = await deploy_solidity_contract("Counter", caller_address=1)
 
         # instructions
         push1 = 60
         push2 = 61
         push20 = 73
         extcodecopy = "3c"
+        opcode_template = "{}\
+        {size}\
+        {}\
+        {offset}\
+        {}\
+        {dest_offset}\
+        {}\
+        {evm_contract_address}\
+        3c"
 
-        # stack elements
-        offset = 0
-        size = 32
-        dest_offset = 0
+        bytecode_match_evm_contract_address = (
+            counter.contract_account.deploy_call_info.result.evm_contract_address
+        )
+        local_bytecode = hex_string_to_bytes_array(counter.bytecode.hex())
 
-        # we request an offset at the end of the deployed contract length
-        offset1 = len(expected_memory_result)
-        size1 = 8
-        dest_offset1 = 1
+        # format params for bytecode string
 
+        if case["bytecode_zeroed"]["contract_address"] == "counter":
+            zeroed_contract_address_push_opcode = push20
+            zeroed_evm_contract_address = f"{bytecode_match_evm_contract_address:x}"
+            zeroed_contract_offset_push_opcode = push2
+            # when a case requests a deployed contract,
+            # we set its offset to the length of the deployed contract
+            zeroed_contract_offset = f"{len(local_bytecode):04x}"
+        else:
+            zeroed_contract_address_push_opcode = push1
+            zeroed_evm_contract_address = f"{addresses[0]['int']:02x}"
+            zeroed_contract_offset_push_opcode = push1
+            zeroed_contract_offset = f"{case['bytecode_zeroed']['offset']:02x}"
+
+        match_size = f"{case['bytecode_match']['size']:02x}"
+        match_offset = f"{case['bytecode_match']['offset']:02x}"
+        match_dest_offset = f"{case['bytecode_match']['dest_offset']:02x}"
+        match_address = f"{bytecode_match_evm_contract_address:x}"
+
+        zeroed_dest_offset = f"{case['bytecode_zeroed']['dest_offset']:02x}"
         # we set up instructions to have bytecode in the memory
         # in this case the bytecode of the deployed counter contract
-        byte_code_match = f"{push1}\
-        {size:02x}\
-        {push1}\
-        {offset:02x}\
-        {push1}\
-        {dest_offset:02x}\
-        {push20}\
-        {evm_contract_address:x}\
-        {extcodecopy}"
+        bytecode_match = opcode_template.format(
+            push1,
+            push1,
+            push1,
+            push20,
+            size=match_size,
+            offset=match_offset,
+            dest_offset=match_dest_offset,
+            evm_contract_address=match_address,
+        )
 
         # then we set up instructions to attempt to copy code
-        # from the deployed contract at an offset that exceeds its length
-        # we set the dest_offset to 1 and size to 8
-        byte_code_empty = f"{push1}\
-        {size1:02x}\
-        {push2}\
-        {offset1:04x}\
-        {push1}\
-        {dest_offset1:02x}\
-        {push20}\
-        {evm_contract_address:x}\
-        {extcodecopy}"
+        # from an account that doesn't exist
+        # we set the dest_offset to 1 and length to 8
+        bytecode_empty = opcode_template.format(
+            push1,
+            zeroed_contract_offset_push_opcode,
+            push1,
+            zeroed_contract_address_push_opcode,
+            size=f"{case['bytecode_zeroed']['size']:02x}",
+            offset=zeroed_contract_offset,
+            dest_offset=zeroed_dest_offset,
+            evm_contract_address=zeroed_evm_contract_address,
+        )
 
-        res = await kakarot.execute(
+        match_res = await kakarot.execute(
             value=int(0),
-            bytecode=hex_string_to_bytes_array(byte_code_match+byte_code_empty),
+            bytecode=hex_string_to_bytes_array(bytecode_match),
             calldata=hex_string_to_bytes_array(""),
         ).call(caller_address=1)
 
+        res = await kakarot.execute(
+            value=int(0),
+            bytecode=hex_string_to_bytes_array(bytecode_match + bytecode_empty),
+            calldata=hex_string_to_bytes_array(""),
+        ).call(caller_address=1)
 
-        memory_result = extract_memory_from_execute(res.result)
+        # we compare the bytecode to how it is stored in the registry
+        # due to issues as mentioned in issue number 342
+        memory_result = extract_memory_from_execute(match_res.result)
+        zeroed_memory_result = extract_memory_from_execute(res.result)
 
-        # we write in zeros at an dest_offset of one, so we expect the contract byte code to still match for the first element
-        assert memory_result[0] == expected_memory_result[0]
-        # we assert that from the dest_offset to the size of the extcodecopy for an offset that exceeds the length of the stored bytecode, we get zeros
-        assert memory_result[dest_offset1:dest_offset1+size1] == [0] * size1
-        # this assert fails because of discrepancies between locally deployed contract and compiled.
-        # will investigate, but we would the assert that the rest of memory matches with the copied bytecode of the first contract
-        # where 'rest' is the end of the zero'ed out memory dest_offset+size1+1
-        end_of_zero_padded_region = dest_offset+size1+1
-        # assert memory_result[end_of_zero_padded_region:size] == expected_memory_result[end_of_zero_padded_region:size]
-        # but we can atleast assert same length
-        assert len(memory_result[end_of_zero_padded_region:size]) == len(expected_memory_result[end_of_zero_padded_region:size])        
+        # we write in zeros at an dest_offset of one,
+        # so we expect the contract byte code to still match up till `dest_offset`
+        # as defined in the zeroed case
+        zeroed_dest_offset = case["bytecode_zeroed"]["dest_offset"]
+
+        assert (
+            zeroed_memory_result[0:zeroed_dest_offset]
+            == memory_result[0:zeroed_dest_offset]
+        )
+
+        # we assert that from the `zeroed_dest_offset`
+        # to the zeroed case size, we get zeroes
+
+        zeroed_region_size = case["bytecode_zeroed"]["size"]
+        zeroed_region_boundary = zeroed_dest_offset + zeroed_region_size
+
+        assert (
+            zeroed_memory_result[zeroed_dest_offset:zeroed_region_boundary]
+            == [0] * zeroed_region_size
+        )
+
+        end_of_zeroed_region = zeroed_region_boundary + 1
+        memory_result_size = case["bytecode_match"]["size"]
+
+        # finally, we assert that from the `end_of_zeroed_region`
+        # to `memory_result_size` the results are the same.
+
+        # note we compare the bytecode to how it is stored in the registry
+        # due to issues as mentioned in issue number 342
+        assert (
+            zeroed_memory_result[end_of_zeroed_region:memory_result_size]
+            == memory_result[end_of_zeroed_region:memory_result_size]
+        )

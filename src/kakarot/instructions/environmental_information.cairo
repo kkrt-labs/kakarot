@@ -483,42 +483,35 @@ namespace EnvironmentalInformation {
             contract_address=registry_address_, evm_contract_address=address_felt
         );
 
-
         if (starknet_contract_address != 0) {
-            //  we get the bytecode from the Starknet_contract
+            // we get the bytecode from the Starknet_contract
             let (bytecode_len, bytecode) = IEvmContract.bytecode(
                 contract_address=starknet_contract_address
-            ); 
+            );
 
-            tempvar syscall_ptr=syscall_ptr;
-            tempvar pedersen_ptr=pedersen_ptr;
-            tempvar range_check_ptr=range_check_ptr;                        
-            tempvar bitwise_ptr=bitwise_ptr;
-            tempvar bytecode_len=bytecode_len;
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+            tempvar bytecode_len = bytecode_len;
         } else {
-            // otherwise handle case where there is no eth -> stark address mapping            
-            let bytecode : felt* = alloc();
+            // otherwise handle case where there is no eth -> stark address mapping
+            let bytecode: felt* = alloc();
             let bytecode_len = 0;
 
-            tempvar syscall_ptr=syscall_ptr;
-            tempvar pedersen_ptr=pedersen_ptr;
-            tempvar range_check_ptr=range_check_ptr;                        
-            tempvar bitwise_ptr=bitwise_ptr;
-            tempvar bytecode_len=bytecode_len;            
-
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+            tempvar bytecode_len = bytecode_len;
         }
 
-        tempvar syscall_ptr=syscall_ptr;
-        tempvar pedersen_ptr=pedersen_ptr;
-        tempvar range_check_ptr=range_check_ptr;                        
-        tempvar bitwise_ptr=bitwise_ptr;
-        tempvar bytecode_len=bytecode_len;            
+        tempvar syscall_ptr = syscall_ptr;
+        tempvar pedersen_ptr = pedersen_ptr;
+        tempvar bitwise_ptr = bitwise_ptr;
 
-    
         // Get bytecode slice from offset to size
-        // in the case were 
+        // in the case were
         // eth address returns no bytecode or has no `starknet_contract_address`
-        // the bytecode len would be zero and the byte array empty, 
+        // the bytecode len would be zero and the byte array empty,
         // which `Helpers.slice_data` would return an array
         // with the requested `size` of zeroes
 
@@ -527,11 +520,12 @@ namespace EnvironmentalInformation {
         );
 
         // Write bytecode slice to memory at dest_offset
-        let (memory, memory_expansion_cost) = Memory.ensure_length(self=ctx.memory, length=dest_offset.low + size.low);
+        let (memory, memory_expansion_cost) = Memory.ensure_length(
+            self=ctx.memory, length=dest_offset.low + size.low
+        );
         let memory: model.Memory* = Memory.store_n(
             self=ctx.memory, element_len=size.low, element=sliced_bytecode, offset=dest_offset.low
         );
-
 
         // Update context memory.
         let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
@@ -539,8 +533,7 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
         let (minimum_word_size) = Helpers.compute_minimum_word_size(size.low);
-        
-    
+
         // TODO:distinction between warm and cold addresses determines `address_access_cost`
         //  for now we assume a cold address, which sets `address_access_cost` to 2600
         let address_access_cost = 2600;
