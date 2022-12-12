@@ -519,7 +519,7 @@ namespace EnvironmentalInformation {
         // in the case were 
         // eth address returns no bytecode or has no `starknet_contract_address`
         // the bytecode len would be zero and the byte array empty, 
-        // which would `Helpers.slice_data` would return an array
+        // which `Helpers.slice_data` would return an array
         // with the requested `size` of zeroes
 
         let sliced_bytecode: felt* = Helpers.slice_data(
