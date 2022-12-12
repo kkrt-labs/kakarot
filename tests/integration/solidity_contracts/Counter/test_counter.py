@@ -311,6 +311,7 @@ class TestCounter:
         match_address = f"{bytecode_match_evm_contract_address:x}"
 
         zeroed_dest_offset = f"{case['bytecode_zeroed']['dest_offset']:02x}"
+        zeroed_size = f"{case['bytecode_zeroed']['size']:02x}"
         # we set up instructions to have bytecode in the memory
         # in this case the bytecode of the deployed counter contract
         bytecode_match = opcode_template.format(
@@ -325,14 +326,13 @@ class TestCounter:
         )
 
         # then we set up instructions to attempt to copy code
-        # from an account that doesn't exist
-        # we set the dest_offset to 1 and length to 8
-        bytecode_empty = opcode_template.format(
+        # in a case where we should see zeroed in memory
+        bytecode_zeroed = opcode_template.format(
             push1,
             zeroed_contract_offset_push_opcode,
             push1,
             zeroed_contract_address_push_opcode,
-            size=f"{case['bytecode_zeroed']['size']:02x}",
+            size=zeroed_size,
             offset=zeroed_contract_offset,
             dest_offset=zeroed_dest_offset,
             evm_contract_address=zeroed_evm_contract_address,
@@ -346,7 +346,7 @@ class TestCounter:
 
         res = await kakarot.execute(
             value=int(0),
-            bytecode=hex_string_to_bytes_array(bytecode_match + bytecode_empty),
+            bytecode=hex_string_to_bytes_array(bytecode_match + bytecode_zeroed),
             calldata=hex_string_to_bytes_array(""),
         ).call(caller_address=1)
 
@@ -355,8 +355,7 @@ class TestCounter:
         memory_result = extract_memory_from_execute(match_res.result)
         zeroed_memory_result = extract_memory_from_execute(res.result)
 
-        # we write in zeros at an dest_offset of one,
-        # so we expect the contract byte code to still match up till `dest_offset`
+        # we expect the contract byte code to match up till `dest_offset`
         # as defined in the zeroed case
         zeroed_dest_offset = case["bytecode_zeroed"]["dest_offset"]
 
