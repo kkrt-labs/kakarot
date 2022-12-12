@@ -18,6 +18,49 @@ from kakarot.instructions.block_information import BlockInformation
 from tests.unit.helpers.helpers import TestHelpers
 
 @view
+func test__blockhash_should_push_blockhash_to_stack{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Given # 1
+    alloc_locals;
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+
+    let stack: model.Stack* = Stack.push(stack, Uint256(503595, 0));
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+
+    // When
+    let result = BlockInformation.exec_blockhash(ctx);
+
+    // Then
+    assert result.gas_used = 20;
+    let len: felt = result.stack.len_16bytes / 2;
+    assert len = 1;
+    let (stack, index0) = Stack.peek(result.stack, 0);
+    assert index0 = Uint256(123, 0);
+
+    // Given # 2
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+
+    let stack: model.Stack* = Stack.push(stack, Uint256(10, 0));
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+
+
+    // When
+    let result = BlockInformation.exec_blockhash(ctx);
+
+    // Then
+    assert result.gas_used = 20;
+    let len: felt = result.stack.len_16bytes / 2;
+    assert len = 1;
+    let (stack, index0) = Stack.peek(result.stack, 0);
+    assert index0 = Uint256(0, 0);
+
+    return ();
+}
+
+@view
 func test__chainId__should_push_chain_id_to_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
