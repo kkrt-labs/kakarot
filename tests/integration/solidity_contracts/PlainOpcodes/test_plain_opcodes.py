@@ -66,6 +66,10 @@ class TestPlainOpcodes:
                 == blockhashes["last_256_blocks"]["503594"]
             )
 
+            blockhash_invalid_number = await integration_contract.opcodeBlockHash(1)
+
+            assert int.from_bytes(blockhash_invalid_number, byteorder="big") == 0
+
     class TestCall:
         async def test_should_return_counter_count_and_increase_it(
             self,

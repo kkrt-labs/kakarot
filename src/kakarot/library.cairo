@@ -10,7 +10,6 @@ from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.starknet.common.syscalls import deploy as deploy_syscall
 from starkware.starknet.common.syscalls import get_contract_address
-from starkware.cairo.common.dict import DictAccess, dict_write
 
 // OpenZeppelin dependencies
 from openzeppelin.access.ownable.library import Ownable
@@ -55,7 +54,9 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(call_context: model.CallContext*, block_context: DictAccess*) -> ExecutionContext.Summary* {
+    }(
+        call_context: model.CallContext*, block_context: model.BlockContext*
+    ) -> ExecutionContext.Summary* {
         alloc_locals;
 
         // Prepare execution context
@@ -85,7 +86,11 @@ namespace Kakarot {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(
-        address: felt, calldata_len: felt, calldata: felt*, value: felt, block_context: DictAccess*
+        address: felt,
+        calldata_len: felt,
+        calldata: felt*,
+        value: felt,
+        block_context: model.BlockContext*,
     ) -> ExecutionContext.Summary* {
         alloc_locals;
 
@@ -159,7 +164,7 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(bytecode_len: felt, bytecode: felt*, block_context: DictAccess*) -> (
+    }(bytecode_len: felt, bytecode: felt*, block_context: model.BlockContext*) -> (
         evm_contract_address: felt, starknet_contract_address: felt
     ) {
         alloc_locals;
@@ -217,40 +222,6 @@ namespace Kakarot {
         return (
             evm_contract_address=evm_contract_address,
             starknet_contract_address=starknet_contract_address,
-        );
-    }
-
-    // @notice Initialize block context
-    // @dev This is an internal function, only use it to create a dictionary of block numbers and block hashes
-    // @param block_number_len: the length of block numbers
-    // @param block_number: the block numbers
-    // @param block_hash_len: the length of block hashes
-    // @param block_hash: the block hashes
-    // @param dict: dictionary with default values
-    // @return The updated dictionary of block numbers and block hashes
-    func init_block_context(
-        block_number_len: felt,
-        block_number: felt*,
-        block_hash_len: felt,
-        block_hash: felt*,
-        dict: DictAccess*,
-    ) -> DictAccess* {
-        alloc_locals;
-
-        with_attr error_message(
-                "Kakarot: blockhash keys and values arrays must be of same length") {
-            if (block_number_len != block_hash_len) {
-                assert 1 = 0;
-            }
-        }
-
-        if (block_number_len == 0) {
-            return dict;
-        }
-
-        dict_write{dict_ptr=dict}(key=[block_number], new_value=[block_hash]);
-        return init_block_context(
-            block_number_len - 1, &block_number[1], block_hash_len - 1, block_hash + 1, dict
         );
     }
 }

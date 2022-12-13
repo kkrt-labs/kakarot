@@ -14,8 +14,6 @@ from starkware.cairo.common.uint256 import (
     assert_uint256_eq,
 )
 from starkware.cairo.common.math import split_felt
-from starkware.cairo.common.default_dict import default_dict_new
-from starkware.cairo.common.dict import DictAccess, dict_write
 
 // Internal dependencies
 from kakarot.execution_context import ExecutionContext
@@ -38,9 +36,10 @@ namespace TestHelpers {
         local call_context: model.CallContext* = new model.CallContext(
             bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
             );
-        let (local block_context: DictAccess*) = default_dict_new(default_value=0);
-        // For testing, key should be a block number in sequencer/blockhashes.json
-        dict_write{dict_ptr=block_context}(key=503595, new_value=123);
+        // For testing, block number should be in sequencer/blockhashes.json
+        tempvar block_number: felt* = new (503595);
+        tempvar block_hash: felt* = new (123);
+        tempvar block_context: model.BlockContext* = new model.BlockContext(1, block_number, 1, block_hash);
         let ctx: model.ExecutionContext* = ExecutionContext.init(call_context, block_context);
         return ctx;
     }

@@ -17,6 +17,7 @@ from starkware.cairo.common.pow import pow
 from starkware.cairo.common.uint256 import Uint256, uint256_check
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.dict import DictAccess, dict_write
 
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
@@ -486,5 +487,39 @@ namespace Helpers {
     func ceil_bytes_len_to_next_32_bytes_word{range_check_ptr}(bytes_len: felt) -> felt {
         let (q, _) = unsigned_div_rem(bytes_len + 31, 32);
         return q * 32;
+    }
+
+    // @notice Initialize block context
+    // @dev This is an internal function, only use it to create a dictionary of block numbers and block hashes
+    // @param block_number_len: the length of block numbers
+    // @param block_number: the block numbers
+    // @param block_hash_len: the length of block hashes
+    // @param block_hash: the block hashes
+    // @param dict: dictionary with default values
+    // @return The updated dictionary of block numbers and block hashes
+    func init_block_context(
+        block_number_len: felt,
+        block_number: felt*,
+        block_hash_len: felt,
+        block_hash: felt*,
+        dict: DictAccess*,
+    ) -> DictAccess* {
+        alloc_locals;
+
+        with_attr error_message(
+                "Kakarot: blockhash keys and values arrays must be of same length") {
+            if (block_number_len != block_hash_len) {
+                assert 1 = 0;
+            }
+        }
+
+        if (block_number_len == 0) {
+            return dict;
+        }
+
+        dict_write{dict_ptr=dict}(key=[block_number], new_value=[block_hash]);
+        return init_block_context(
+            block_number_len - 1, &block_number[1], block_hash_len - 1, block_hash + 1, dict
+        );
     }
 }

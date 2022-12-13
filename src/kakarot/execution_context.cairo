@@ -67,7 +67,7 @@ namespace ExecutionContext {
     // @param call_context The call context.
     // @return The initialized execution context.
     func init{range_check_ptr}(
-        call_context: model.CallContext*, block_context: DictAccess*
+        call_context: model.CallContext*, block_context: model.BlockContext*
     ) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
@@ -140,7 +140,7 @@ namespace ExecutionContext {
         calldata: felt*,
         value: felt,
         calling_context: model.ExecutionContext*,
-        block_context: DictAccess*,
+        block_context: model.BlockContext*,
         return_data_len: felt,
         return_data: felt*,
     ) -> model.ExecutionContext* {

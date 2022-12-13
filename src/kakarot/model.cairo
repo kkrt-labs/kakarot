@@ -27,6 +27,13 @@ namespace model {
         value: felt,
     }
 
+    struct BlockContext {
+        block_number_len: felt,
+        block_number: felt*,
+        block_hash_len: felt,
+        block_hash: felt*,
+    }
+
     struct ExecutionContext {
         call_context: CallContext*,
         program_counter: felt,
@@ -42,6 +49,6 @@ namespace model {
         evm_contract_address: felt,
         calling_context: ExecutionContext*,
         sub_context: ExecutionContext*,
-        block_context: DictAccess*,
+        block_context: BlockContext*,
     }
 }

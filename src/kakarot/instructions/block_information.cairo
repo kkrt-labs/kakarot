@@ -10,6 +10,7 @@ from starkware.starknet.common.syscalls import get_block_number, get_block_times
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.dict import DictAccess, dict_read
+from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
 
 // Internal dependencies
 from kakarot.model import model
@@ -65,8 +66,20 @@ namespace BlockInformation {
             let blockhash: Uint256 =  Helpers.to_uint256(val=0);
         } else {
             // Get blockhash from corresponding block number and push to stack
-            let block_context: DictAccess* = ctx.block_context;
-            let (_blockhash: felt) = dict_read{dict_ptr=block_context}(key=block_number.low);
+            let block_context: model.BlockContext* = ctx.block_context;
+
+            let (local block_context_dict_start: DictAccess*) = default_dict_new(default_value=0);
+            let block_context_dict_end: DictAccess* = Helpers.init_block_context(
+                block_number_len=block_context.block_number_len,
+                block_number=block_context.block_number,
+                block_hash_len=block_context.block_hash_len,
+                block_hash=block_context.block_hash,
+                dict=block_context_dict_start,
+            );
+            let (_, block_context_dict: DictAccess*) = default_dict_finalize(
+                block_context_dict_start, block_context_dict_end, 0
+            );
+            let (_blockhash: felt) = dict_read{dict_ptr=block_context_dict}(key=block_number.low);
             let blockhash: Uint256 =  Helpers.to_uint256(val=_blockhash);
         }
         let stack: model.Stack* = Stack.push(self=stack, element=blockhash);
