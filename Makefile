@@ -9,6 +9,8 @@ build:
 	poetry run starknet-compile ./src/kakarot/accounts/contract/contract_account.cairo --output build/contract_account.json --cairo_path ./src --abi build/contract_account_abi.json
 	poetry run starknet-compile ./src/kakarot/accounts/eoa/externally_owned_account.cairo --output build/externally_owned_account.json --cairo_path ./src --abi build/externally_owned_account_abi.json
 	poetry run starknet-compile ./src/kakarot/accounts/registry/account_registry.cairo --output build/account_registry.json --cairo_path ./src --abi build/account_registry_abi.json
+	poetry run starknet-compile ./src/kakarot/kakarot_proxy.cairo --output build/kakarot_proxy.json --cairo_path ./src --abi build/kakarot_proxy_abi.json
+
 
 build-mac:
 	$(MAKE) clean
@@ -16,6 +18,7 @@ build-mac:
 	starknet-compile ./src/kakarot/accounts/contract/contract_account.cairo --output build/contract_account.json --cairo_path ./src --abi build/contract_account_abi.json
 	starknet-compile ./src/kakarot/accounts/eoa/externally_owned_account.cairo --output build/externally_owned_account.json --cairo_path ./src --abi build/externally_owned_account_abi.json
 	starknet-compile ./src/kakarot/accounts/registry/account_registry.cairo --output build/account_registry.json --cairo_path ./src --abi build/account_registry_abi.json
+	starknet-compile ./src/kakarot/kakarot_proxy.cairo --output build/kakarot_proxy.json --cairo_path ./src --abi build/kakarot_proxy_abi.json
 
 setup:
 	poetry install --no-root
@@ -45,7 +48,7 @@ run-test-mark: build-sol
 	poetry run pytest -m $(mark)
 
 deploy: 
-	poetry run python ./scripts/deploy_protocol.py $(PRIVATE_KEY) $(ACCOUNT_ADDRESS)
+	poetry run python ./scripts/deploy_protocol.py
 
 format:
 	poetry run cairo-format -i ${cairo_files}

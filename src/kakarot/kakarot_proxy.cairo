@@ -94,10 +94,9 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 func transfer_admin_role{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     user: felt
 ) {
-    alloc_locals;
     AccessControl.assert_only_role(ADMIN);
-    let (local caller) = get_caller_address();
     AccessControl._grant_role(ADMIN, user);
+    let (caller) = get_caller_address();
     AccessControl._revoke_role(ADMIN, caller);
     return ();
 }

@@ -42,7 +42,7 @@ func evm_contract_deployed(evm_contract_address: felt, starknet_contract_address
 // @author @abdelhamidbakhta
 // @custom:namespace Kakarot
 namespace Kakarot {
-    // @notice The initiation function of the contract
+    // @notice The initialization function of the contract
     // @dev Setting initial owner, contract account class hash and native token
     // @param owner The address of the owner of the contract
     // @param native_token_address_ The ERC20 contract used to emulate ETH

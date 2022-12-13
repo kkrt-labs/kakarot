@@ -17,7 +17,7 @@ from kakarot.memory import Memory
 from kakarot.execution_context import ExecutionContext
 from starkware.cairo.common.dict import DictAccess
 
-// @notice The initiation function of the contract
+// @notice The initialization function of the contract
 // @dev Setting initial owner, contract account class hash and native token
 //      should always be executed by the proxy constructor.
 // @param owner The address of the owner of the contract

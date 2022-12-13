@@ -199,8 +199,12 @@ make run-test-mark-log mark=<MARK> # with log
 ## Deploy
 
 ```bash
-# On testnet
-./scripts/deploy_kakarot.sh -p testnet -a admin
+
+Copy the `.env_example` file and rename it to `.env`.
+Replace the example variables with your private key, account address and the network that you want to deploy on.
+
+Then deploy the protocol with:
+`make deploy`
 ```
 
 With:
