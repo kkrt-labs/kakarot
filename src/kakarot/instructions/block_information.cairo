@@ -59,11 +59,13 @@ namespace BlockInformation {
         // Check if blockNumber is within bounds by checking with current block number
         // Valid range is the last 256 blocks (not including the current one)
         let (local current_block_number: felt) = get_block_number();
-        let in_range = is_in_range(block_number.low, current_block_number - 256, current_block_number);
+        let in_range = is_in_range(
+            block_number.low, current_block_number - 256, current_block_number
+        );
 
         // If not in range, return 0
         if (in_range == FALSE) {
-            let blockhash: Uint256 =  Helpers.to_uint256(val=0);
+            let blockhash: Uint256 = Helpers.to_uint256(val=0);
         } else {
             // Get blockhash from corresponding block number and push to stack
             let block_context: model.BlockContext* = ctx.call_context.block_context;
@@ -80,7 +82,7 @@ namespace BlockInformation {
                 block_context_dict_start, block_context_dict_end, 0
             );
             let (_blockhash: felt) = dict_read{dict_ptr=block_context_dict}(key=block_number.low);
-            let blockhash: Uint256 =  Helpers.to_uint256(val=_blockhash);
+            let blockhash: Uint256 = Helpers.to_uint256(val=_blockhash);
         }
         let stack: model.Stack* = Stack.push(self=stack, element=blockhash);
 

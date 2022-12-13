@@ -41,7 +41,7 @@ func init_context{
         calldata_len=1,
         value=0,
         block_context=new model.BlockContext(1, block_number, 1, block_hash),
-    );
+        );
 
     // Initialize ExecutionContext
     let (empty_return_data: felt*) = alloc();

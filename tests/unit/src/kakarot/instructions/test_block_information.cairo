@@ -46,7 +46,6 @@ func test__blockhash_should_push_blockhash_to_stack{
     let stack: model.Stack* = Stack.push(stack, Uint256(10, 0));
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
-
     // When
     let result = BlockInformation.exec_blockhash(ctx);
 

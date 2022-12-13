@@ -36,7 +36,7 @@ func test__init__should_return_an_empty_execution_context{
         calldata_len=1,
         value=0,
         block_context=new model.BlockContext(1, block_number, 1, block_hash),
-    );
+        );
     let result: model.ExecutionContext* = ExecutionContext.init(call_context);
 
     // Then
@@ -84,7 +84,7 @@ func test__update_program_counter__should_set_pc_to_given_value{
         calldata_len=1,
         value=0,
         block_context=new model.BlockContext(1, block_number, 1, block_hash),
-    );
+        );
     let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
     let result = ExecutionContext.update_program_counter(ctx, 3);
 
@@ -120,7 +120,7 @@ func test__update_program_counter__should_fail__when_given_value_not_in_code_ran
         calldata_len=1,
         value=0,
         block_context=new model.BlockContext(1, block_number, 1, block_hash),
-    );
+        );
     let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
     let result = ExecutionContext.update_program_counter(ctx, 6);
     return ();
@@ -153,7 +153,7 @@ func test__update_program_counter__should_fail__when_given_destination_that_is_n
         calldata_len=1,
         value=0,
         block_context=new model.BlockContext(1, block_number, 1, block_hash),
-    );
+        );
     let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
     let result = ExecutionContext.update_program_counter(ctx, 2);
     return ();

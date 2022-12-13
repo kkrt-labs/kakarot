@@ -532,9 +532,7 @@ namespace EnvironmentalInformation {
         // Update context stack.
         let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let (minimum_word_size) = Helpers.minimum_word_count(
-            size.low
-        );
+        let (minimum_word_size) = Helpers.minimum_word_count(size.low);
 
         // TODO:distinction between warm and cold addresses determines `address_access_cost`
         //  for now we assume a cold address, which sets `address_access_cost` to 2600
