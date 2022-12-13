@@ -14,7 +14,7 @@ class TestERC721:
             deploy_solidity_contract: Callable,
         ):
             erc_721 = await deploy_solidity_contract(
-                "ERC721", "Kakarot NFT", "KKNFT", caller_address=1
+                "ERC721", "ERC721", "Kakarot NFT", "KKNFT", caller_address=1
             )
             name = await erc_721.name()
             assert name == "Kakarot NFT"

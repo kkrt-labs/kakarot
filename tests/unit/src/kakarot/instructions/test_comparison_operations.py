@@ -88,7 +88,7 @@ class TestComparisonOperations:
         self, comparison_operations
     ):
         await comparison_operations.test__exec_and__should_pop_0_and_1_and_push_0x89__when_0_is_0xC9_and_1_is_0xBD().call()
-    
+
     async def test__exec_or__should_pop_0_and_1_and_push_0__when_0_or_1_are_not_true(
         self, comparison_operations
     ):
@@ -103,7 +103,7 @@ class TestComparisonOperations:
         self, comparison_operations
     ):
         await comparison_operations.test__exec_or__should_pop_0_and_1_and_push_0xCD__when_0_is_0x89_and_1_is_0xC5().call()
-    
+
     async def test__exec_xor__should_pop_0_and_1_and_push_0__when_0_and_1_are_true(
         self, comparison_operations
     ):
@@ -128,17 +128,17 @@ class TestComparisonOperations:
         self, comparison_operations
     ):
         await comparison_operations.test__exec_xor__should_pop_0_and_1_and_push_0x64__when_0_is_0xB9_and_1_is_0xDD().call()
-    
+
     async def test__exec_byte__should_pop_0_and_1_and_push_0__when_0_is_less_than_16_bytes_and_1_is_23(
         self, comparison_operations
     ):
         await comparison_operations.test__exec_byte__should_pop_0_and_1_and_push_0__when_0_is_less_than_16_bytes_and_1_is_23().call()
-    
+
     async def test__exec_byte__should_pop_0_and_1_and_push_0__when_0_is_larger_than_16_bytes_and_1_is_8(
         self, comparison_operations
     ):
         await comparison_operations.test__exec_byte__should_pop_0_and_1_and_push_0__when_0_is_larger_than_16_bytes_and_1_is_8().call()
-    
+
     async def test__exec_shl__should_pop_0_and_1_and_push_left_shift(
         self, comparison_operations
     ):

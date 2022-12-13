@@ -14,7 +14,7 @@ class TestPlainOpcodes:
             addresses,
         ):
             counter = await deploy_solidity_contract(
-                "Counter", caller_address=addresses[1]["int"]
+                "Counter", "Counter", caller_address=addresses[1]["int"]
             )
             counter_address = Web3.toChecksumAddress(
                 "0x"
@@ -23,6 +23,7 @@ class TestPlainOpcodes:
                 )[2:].rjust(40, "0")
             )
             integration_contract = await deploy_solidity_contract(
+                "PlainOpcodes",
                 "PlainOpcodes",
                 counter_address,
                 caller_address=addresses[1]["int"],
@@ -42,7 +43,7 @@ class TestPlainOpcodes:
             addresses,
         ):
             counter = await deploy_solidity_contract(
-                "Counter", caller_address=addresses[1]["int"]
+                "Counter", "Counter", caller_address=addresses[1]["int"]
             )
             counter_address = Web3.toChecksumAddress(
                 "0x"
@@ -51,6 +52,7 @@ class TestPlainOpcodes:
                 )[2:].rjust(40, "0")
             )
             integration_contract = await deploy_solidity_contract(
+                "PlainOpcodes",
                 "PlainOpcodes",
                 counter_address,
                 caller_address=addresses[1]["int"],
