@@ -114,6 +114,43 @@ func test__exec_extcodesize__should_handle_address_with_no_code{
 }
 
 @external
+func test__exec_extcodecopy__should_handle_address_with_code{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(
+    account_registry_address: felt,
+    evm_contract_address: felt,
+    size: felt,
+    offset: felt,
+    dest_offset: felt,
+) -> (memory_len: felt, memory: felt*) {
+    // Given
+    alloc_locals;
+
+    // make a deployed registry contract available
+    registry_address.write(account_registry_address);
+
+    let (bytecode) = alloc();
+    let stack: model.Stack* = Stack.init();
+    let stack: model.Stack* = Stack.push(stack, Uint256(size, 0));  // size
+    let stack: model.Stack* = Stack.push(stack, Uint256(offset, 0));  // offset
+    let stack: model.Stack* = Stack.push(stack, Uint256(dest_offset, 0));  // dest_offset
+    let stack: model.Stack* = Stack.push(stack, Uint256(evm_contract_address, 0));  // address
+
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+
+    // When
+    let result = EnvironmentalInformation.exec_extcodecopy(ctx);
+
+    // Then
+    assert result.stack.len_16bytes = 0;
+
+    let (output_array) = alloc();
+    Memory.load_n(result.memory, size, output_array, dest_offset);
+
+    return (memory_len=size, memory=output_array);
+}
+
+@external
 func test__exec_extcodecopy__should_handle_address_with_no_code{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(account_registry_address: felt) {
