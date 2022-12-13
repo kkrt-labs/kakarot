@@ -16,7 +16,7 @@ class TestCounter:
         self, deploy_solidity_contract: Callable, kakarot: StarknetContract
     ):
 
-        counter = await deploy_solidity_contract("Counter", caller_address=1)
+        counter = await deploy_solidity_contract("Counter", "Counter", caller_address=1)
 
         evm_contract_address = (
             counter.contract_account.deploy_call_info.result.evm_contract_address
@@ -95,7 +95,7 @@ class TestCounter:
     async def test_extcodecopy_offset_and_size_gte_twenty_a(
         self, deploy_solidity_contract: Callable, kakarot: StarknetContract
     ):
-        counter = await deploy_solidity_contract("Counter", caller_address=1)
+        counter = await deploy_solidity_contract("Counter", "Counter", caller_address=1)
 
         evm_contract_address = (
             counter.contract_account.deploy_call_info.result.evm_contract_address
@@ -141,7 +141,7 @@ class TestCounter:
     async def test_extcodecopy_offset_and_size_gte_twenty_b(
         self, deploy_solidity_contract: Callable, kakarot: StarknetContract
     ):
-        counter = await deploy_solidity_contract("Counter", caller_address=1)
+        counter = await deploy_solidity_contract("Counter", "Counter", caller_address=1)
 
         evm_contract_address = (
             counter.contract_account.deploy_call_info.result.evm_contract_address
@@ -187,7 +187,7 @@ class TestCounter:
     async def test_extcodecopy_offset_and_size_gte_twenty_c(
         self, deploy_solidity_contract: Callable, kakarot: StarknetContract
     ):
-        counter = await deploy_solidity_contract("Counter", caller_address=1)
+        counter = await deploy_solidity_contract("Counter", "Counter", caller_address=1)
 
         evm_contract_address = (
             counter.contract_account.deploy_call_info.result.evm_contract_address

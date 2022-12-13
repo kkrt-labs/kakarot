@@ -19,7 +19,7 @@ class TestERC20:
             deploy_solidity_contract: Callable,
         ):
             erc_20 = await deploy_solidity_contract(
-                "ERC20", "Kakarot Token", "KKT", 18, caller_address=1
+                "ERC20", "ERC20", "Kakarot Token", "KKT", 18, caller_address=1
             )
             name = await erc_20.name()
             assert name == "Kakarot Token"
@@ -35,7 +35,7 @@ class TestERC20:
         caller_addresses = list(range(4))
         addresses = ["0x" + "0" * 39 + str(i) for i in caller_addresses]
         erc_20 = await deploy_solidity_contract(
-            "ERC20", "Kakarot Token", "KKT", 18, caller_address=1
+            "ERC20", "ERC20", "Kakarot Token", "KKT", 18, caller_address=1
         )
         with traceit.context(request.node.own_markers[0].name):
 
@@ -83,7 +83,7 @@ class TestERC20:
     ):
 
         erc_20 = await deploy_solidity_contract(
-            "ERC20", "Kakarot Token", "KKT", 18, caller_address=1
+            "ERC20", "ERC20", "Kakarot Token", "KKT", 18, caller_address=1
         )
 
         evm_contract_address = (
