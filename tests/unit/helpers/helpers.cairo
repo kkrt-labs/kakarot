@@ -33,14 +33,18 @@ namespace TestHelpers {
 
         let (calldata) = alloc();
         assert [calldata] = '';
-        local call_context: model.CallContext* = new model.CallContext(
-            bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
-            );
         // For testing, block number should be in sequencer/blockhashes.json
         tempvar block_number: felt* = new (503595);
         tempvar block_hash: felt* = new (123);
-        tempvar block_context: model.BlockContext* = new model.BlockContext(1, block_number, 1, block_hash);
-        let ctx: model.ExecutionContext* = ExecutionContext.init(call_context, block_context);
+        local call_context: model.CallContext* = new model.CallContext(
+            bytecode=bytecode,
+            bytecode_len=bytecode_len,
+            calldata=calldata,
+            calldata_len=1,
+            value=0,
+            block_context=new model.BlockContext(1, block_number, 1, block_hash),
+            );
+        let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
         return ctx;
     }
 

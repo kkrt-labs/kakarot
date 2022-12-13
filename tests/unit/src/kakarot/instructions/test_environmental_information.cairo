@@ -32,9 +32,16 @@ func init_context{
     tempvar bytecode_len = 1;
     let (calldata) = alloc();
     assert [calldata] = '';
+    tempvar block_number: felt* = new (1);
+    tempvar block_hash: felt* = new (1);
     local call_context: model.CallContext* = new model.CallContext(
-        bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
-        );
+        bytecode=bytecode,
+        bytecode_len=bytecode_len,
+        calldata=calldata,
+        calldata_len=1,
+        value=0,
+        block_context=new model.BlockContext(1, block_number, 1, block_hash),
+    );
 
     // Initialize ExecutionContext
     let (empty_return_data: felt*) = alloc();
@@ -43,9 +50,6 @@ func init_context{
     let gas_limit = Constants.TRANSACTION_GAS_LIMIT;
     let calling_context = ExecutionContext.init_empty();
     let sub_context = ExecutionContext.init_empty();
-    tempvar block_number: felt* = new (1);
-    tempvar block_hash: felt* = new (1);
-    tempvar block_context: model.BlockContext* = new model.BlockContext(1, block_number, 1, block_hash);
 
     local ctx: model.ExecutionContext* = new model.ExecutionContext(
         call_context=call_context,
@@ -62,7 +66,6 @@ func init_context{
         evm_contract_address=420,
         calling_context=calling_context,
         sub_context=sub_context,
-        block_context=block_context,
         );
     return ctx;
 }

@@ -62,13 +62,16 @@ func execute{
     alloc_locals;
     // Prepare call context
     local call_context: model.CallContext* = new model.CallContext(
-        bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=calldata_len, value=value
+        bytecode=bytecode,
+        bytecode_len=bytecode_len,
+        calldata=calldata,
+        calldata_len=calldata_len,
+        value=value,
+        block_context=new model.BlockContext(
+            block_number_len=block_number_len, block_number=block_number, block_hash_len=block_hash_len, block_hash=block_hash,
+            ),
         );
-    // Prepare block context
-    local block_context: model.BlockContext* = new model.BlockContext(
-        block_number_len=block_number_len, block_number=block_number, block_hash_len=block_hash_len, block_hash=block_hash,
-        );
-    let summary = Kakarot.execute(call_context, block_context);
+    let summary = Kakarot.execute(call_context);
     let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
     let stack_accesses_len = summary.stack.squashed_end - summary.stack.squashed_start;
 
@@ -120,16 +123,15 @@ func execute_at_address{
     return_data: felt*,
 ) {
     alloc_locals;
-    // Prepare block context
-    local block_context: model.BlockContext* = new model.BlockContext(
-        block_number_len=block_number_len, block_number=block_number, block_hash_len=block_hash_len, block_hash=block_hash,
-        );
     let summary = Kakarot.execute_at_address(
         address=address,
         calldata_len=calldata_len,
         calldata=calldata,
         value=value,
-        block_context=block_context,
+        block_number_len=block_number_len,
+        block_number=block_number,
+        block_hash_len=block_hash_len,
+        block_hash=block_hash,
     );
     let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
     let stack_accesses_len = summary.stack.squashed_end - summary.stack.squashed_start;
@@ -195,9 +197,7 @@ func deploy{
     block_hash: felt*,
 ) -> (evm_contract_address: felt, starknet_contract_address: felt) {
     alloc_locals;
-    // Prepare block context
-    local block_context: model.BlockContext* = new model.BlockContext(
-        block_number_len=block_number_len, block_number=block_number, block_hash_len=block_hash_len, block_hash=block_hash,
-        );
-    return Kakarot.deploy(bytecode_len, bytecode, block_context);
+    return Kakarot.deploy(
+        bytecode_len, bytecode, block_number_len, block_number, block_hash_len, block_hash
+    );
 }

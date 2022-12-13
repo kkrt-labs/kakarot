@@ -66,7 +66,7 @@ namespace BlockInformation {
             let blockhash: Uint256 =  Helpers.to_uint256(val=0);
         } else {
             // Get blockhash from corresponding block number and push to stack
-            let block_context: model.BlockContext* = ctx.block_context;
+            let block_context: model.BlockContext* = ctx.call_context.block_context;
 
             let (local block_context_dict_start: DictAccess*) = default_dict_new(default_value=0);
             let block_context_dict_end: DictAccess* = Helpers.init_block_context(

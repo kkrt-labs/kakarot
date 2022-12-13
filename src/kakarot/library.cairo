@@ -54,13 +54,11 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(
-        call_context: model.CallContext*, block_context: model.BlockContext*
-    ) -> ExecutionContext.Summary* {
+    }(call_context: model.CallContext*) -> ExecutionContext.Summary* {
         alloc_locals;
 
         // Prepare execution context
-        let ctx: model.ExecutionContext* = ExecutionContext.init(call_context, block_context);
+        let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
 
         // Compute intrinsic gas cost and update gas used
         let ctx = ExecutionContext.compute_intrinsic_gas_cost(self=ctx);
@@ -90,7 +88,10 @@ namespace Kakarot {
         calldata_len: felt,
         calldata: felt*,
         value: felt,
-        block_context: model.BlockContext*,
+        block_number_len: felt,
+        block_number: felt*,
+        block_hash_len: felt,
+        block_hash: felt*,
     ) -> ExecutionContext.Summary* {
         alloc_locals;
 
@@ -102,8 +103,11 @@ namespace Kakarot {
             calldata_len=calldata_len,
             calldata=calldata,
             value=value,
+            block_number_len=block_number_len,
+            block_number=block_number,
+            block_hash_len=block_hash_len,
+            block_hash=block_hash,
             calling_context=root_context,
-            block_context=block_context,
             return_data_len=0,
             return_data=return_data,
         );
@@ -164,9 +168,14 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(bytecode_len: felt, bytecode: felt*, block_context: model.BlockContext*) -> (
-        evm_contract_address: felt, starknet_contract_address: felt
-    ) {
+    }(
+        bytecode_len: felt,
+        bytecode: felt*,
+        block_number_len: felt,
+        block_number: felt*,
+        block_hash_len: felt,
+        block_hash: felt*,
+    ) -> (evm_contract_address: felt, starknet_contract_address: felt) {
         alloc_locals;
         let (current_salt) = salt.read();
         let (evm_contract_address, starknet_contract_address) = ContractAccount.deploy(
@@ -182,6 +191,9 @@ namespace Kakarot {
             calldata=empty_array,
             calldata_len=0,
             value=0,
+            block_context=new model.BlockContext(
+                block_number_len=block_number_len, block_number=block_number, block_hash_len=block_hash_len, block_hash=block_hash,
+                ),
             );
         let (local contract_bytecode: felt*) = alloc();
         let stack: model.Stack* = Stack.init();
@@ -203,7 +215,6 @@ namespace Kakarot {
             evm_contract_address=evm_contract_address,
             calling_context=calling_context,
             sub_context=sub_context,
-            block_context=block_context,
             );
 
         // Compute intrinsic gas cost and update gas used

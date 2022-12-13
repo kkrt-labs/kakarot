@@ -220,8 +220,11 @@ namespace SystemOperations {
             calldata_len=call_args.args_size,
             calldata=call_args.calldata,
             value=call_args.value,
+            block_number_len=ctx.call_context.block_context.block_number_len,
+            block_number=ctx.call_context.block_context.block_number,
+            block_hash_len=ctx.call_context.block_context.block_hash_len,
+            block_hash=ctx.call_context.block_context.block_hash,
             calling_context=ctx,
-            block_context=ctx.block_context,
             return_data_len=call_args.ret_size,
             return_data=call_args.return_data,
         );
@@ -251,8 +254,11 @@ namespace SystemOperations {
             calldata_len=call_args.args_size,
             calldata=call_args.calldata,
             value=call_args.value,
+            block_number_len=ctx.call_context.block_context.block_number_len,
+            block_number=ctx.call_context.block_context.block_number,
+            block_hash_len=ctx.call_context.block_context.block_hash_len,
+            block_hash=ctx.call_context.block_context.block_hash,
             calling_context=ctx,
-            block_context=ctx.block_context,
             return_data_len=call_args.ret_size,
             return_data=call_args.return_data,
         );
@@ -425,6 +431,12 @@ namespace CreateHelper {
             calldata=empty_array,
             calldata_len=0,
             value=value,
+            block_context=new model.BlockContext(
+                block_number_len=ctx.call_context.block_context.block_number_len,
+                block_number=ctx.call_context.block_context.block_number,
+                block_hash_len=ctx.call_context.block_context.block_hash_len,
+                block_hash=ctx.call_context.block_context.block_hash,
+                ),
             );
         let (local return_data: felt*) = alloc();
         let stack = Stack.init();
@@ -445,7 +457,6 @@ namespace CreateHelper {
             evm_contract_address=evm_contract_address,
             calling_context=ctx,
             sub_context=empty_context,
-            block_context=ctx.block_context,
             );
 
         return sub_ctx;

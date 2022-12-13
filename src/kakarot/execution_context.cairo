@@ -59,16 +59,13 @@ namespace ExecutionContext {
         dw 0;  // evm_contract_address
         dw 0;  // calling_context
         dw 0;  // sub_context
-        dw 0;  // block_context
     }
 
     // @notice Initialize the execution context.
     // @dev set the initial values before executing a piece of code
     // @param call_context The call context.
     // @return The initialized execution context.
-    func init{range_check_ptr}(
-        call_context: model.CallContext*, block_context: model.BlockContext*
-    ) -> model.ExecutionContext* {
+    func init{range_check_ptr}(call_context: model.CallContext*) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
 
@@ -100,7 +97,6 @@ namespace ExecutionContext {
             evm_contract_address=0,
             calling_context=calling_context,
             sub_context=sub_context,
-            block_context=block_context,
             );
         return ctx;
     }
@@ -139,8 +135,11 @@ namespace ExecutionContext {
         calldata_len: felt,
         calldata: felt*,
         value: felt,
+        block_number_len: felt,
+        block_number: felt*,
+        block_hash_len: felt,
+        block_hash: felt*,
         calling_context: model.ExecutionContext*,
-        block_context: model.BlockContext*,
         return_data_len: felt,
         return_data: felt*,
     ) -> model.ExecutionContext* {
@@ -160,7 +159,14 @@ namespace ExecutionContext {
             contract_address=starknet_contract_address
         );
         local call_context: model.CallContext* = new model.CallContext(
-            bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=calldata_len, value=value
+            bytecode=bytecode,
+            bytecode_len=bytecode_len,
+            calldata=calldata,
+            calldata_len=calldata_len,
+            value=value,
+            block_context=new model.BlockContext(
+                block_number_len=block_number_len, block_number=block_number, block_hash_len=block_hash_len, block_hash=block_hash,
+                ),
             );
 
         let sub_context = init_empty();
@@ -181,7 +187,6 @@ namespace ExecutionContext {
             evm_contract_address=address,
             calling_context=calling_context,
             sub_context=sub_context,
-            block_context=block_context,
             );
     }
 
@@ -207,7 +212,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
-            block_context=self.block_context,
             );
     }
 
@@ -261,7 +265,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
-            block_context=self.block_context,
             );
     }
 
@@ -307,7 +310,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
-            block_context=self.block_context,
             );
     }
 
@@ -333,7 +335,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
-            block_context=self.block_context,
             );
     }
 
@@ -364,7 +365,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
-            block_context=self.block_context,
             );
     }
 
@@ -391,7 +391,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
-            block_context=self.block_context,
             );
     }
 
@@ -418,7 +417,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
-            block_context=self.block_context,
             );
     }
 
@@ -444,7 +442,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
             sub_context=sub_context,
-            block_context=self.block_context,
             );
     }
 
@@ -472,7 +469,6 @@ namespace ExecutionContext {
             evm_contract_address=evm_contract_address,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
-            block_context=self.block_context,
             );
     }
 
@@ -518,7 +514,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
-            block_context=self.block_context,
             );
     }
 

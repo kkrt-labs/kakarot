@@ -25,15 +25,19 @@ func test__init__should_return_an_empty_execution_context{
     tempvar bytecode_len = 1;
     let (calldata) = alloc();
     assert [calldata] = '';
+    tempvar block_number: felt* = new (1);
+    tempvar block_hash: felt* = new (1);
 
     // When
     local call_context: model.CallContext* = new model.CallContext(
-        bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
-        );
-    tempvar block_number: felt* = new (0);
-    tempvar block_hash: felt* = new (0);
-    tempvar block_context: model.BlockContext* = new model.BlockContext(1, block_number, 1, block_hash);
-    let result: model.ExecutionContext* = ExecutionContext.init(call_context, block_context);
+        bytecode=bytecode,
+        bytecode_len=bytecode_len,
+        calldata=calldata,
+        calldata_len=1,
+        value=0,
+        block_context=new model.BlockContext(1, block_number, 1, block_hash),
+    );
+    let result: model.ExecutionContext* = ExecutionContext.init(call_context);
 
     // Then
     assert result.call_context.bytecode = bytecode;
@@ -46,10 +50,10 @@ func test__init__should_return_an_empty_execution_context{
     assert result.gas_used = 0;
     assert result.gas_limit = Constants.TRANSACTION_GAS_LIMIT;  // TODO: Add support for gas limit
     assert result.intrinsic_gas_cost = 0;
-    assert result.block_context.block_number_len = 1;
-    assert result.block_context.block_number = block_number;
-    assert result.block_context.block_hash_len = 1;
-    assert result.block_context.block_hash = block_hash;
+    assert result.call_context.block_context.block_number_len = 1;
+    assert result.call_context.block_context.block_number = block_number;
+    assert result.call_context.block_context.block_hash_len = 1;
+    assert result.call_context.block_context.block_hash = block_hash;
     return ();
 }
 
@@ -69,15 +73,19 @@ func test__update_program_counter__should_set_pc_to_given_value{
     tempvar bytecode_len = 6;
     let (calldata) = alloc();
     assert [calldata] = '';
+    tempvar block_number: felt* = new (1);
+    tempvar block_hash: felt* = new (1);
 
     // When
     local call_context: model.CallContext* = new model.CallContext(
-        bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
-        );
-    tempvar block_number: felt* = new (1);
-    tempvar block_hash: felt* = new (1);
-    tempvar block_context: model.BlockContext* = new model.BlockContext(1, block_number, 1, block_hash);
-    let ctx: model.ExecutionContext* = ExecutionContext.init(call_context, block_context);
+        bytecode=bytecode,
+        bytecode_len=bytecode_len,
+        calldata=calldata,
+        calldata_len=1,
+        value=0,
+        block_context=new model.BlockContext(1, block_number, 1, block_hash),
+    );
+    let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
     let result = ExecutionContext.update_program_counter(ctx, 3);
 
     // Then
@@ -101,15 +109,19 @@ func test__update_program_counter__should_fail__when_given_value_not_in_code_ran
     tempvar bytecode_len = 6;
     let (calldata) = alloc();
     assert [calldata] = '';
+    tempvar block_number: felt* = new (1);
+    tempvar block_hash: felt* = new (1);
 
     // When & Then
     local call_context: model.CallContext* = new model.CallContext(
-        bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
-        );
-    tempvar block_number: felt* = new (1);
-    tempvar block_hash: felt* = new (1);
-    tempvar block_context: model.BlockContext* = new model.BlockContext(1, block_number, 1, block_hash);
-    let ctx: model.ExecutionContext* = ExecutionContext.init(call_context, block_context);
+        bytecode=bytecode,
+        bytecode_len=bytecode_len,
+        calldata=calldata,
+        calldata_len=1,
+        value=0,
+        block_context=new model.BlockContext(1, block_number, 1, block_hash),
+    );
+    let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
     let result = ExecutionContext.update_program_counter(ctx, 6);
     return ();
 }
@@ -130,15 +142,19 @@ func test__update_program_counter__should_fail__when_given_destination_that_is_n
     tempvar bytecode_len = 6;
     let (calldata) = alloc();
     assert [calldata] = '';
+    tempvar block_number: felt* = new (1);
+    tempvar block_hash: felt* = new (1);
 
     // When & Then
     local call_context: model.CallContext* = new model.CallContext(
-        bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
-        );
-    tempvar block_number: felt* = new (1);
-    tempvar block_hash: felt* = new (1);
-    tempvar block_context: model.BlockContext* = new model.BlockContext(1, block_number, 1, block_hash);
-    let ctx: model.ExecutionContext* = ExecutionContext.init(call_context, block_context);
+        bytecode=bytecode,
+        bytecode_len=bytecode_len,
+        calldata=calldata,
+        calldata_len=1,
+        value=0,
+        block_context=new model.BlockContext(1, block_number, 1, block_hash),
+    );
+    let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
     let result = ExecutionContext.update_program_counter(ctx, 2);
     return ();
 }
