@@ -77,12 +77,21 @@ def wrap_for_kakarot(
     return contract
 
 
-def get_contract(contract_name: str) -> Contract:
+# When fetching a contract, you need to provide a contract_app and contract_name
+# to get the corresponding solidity file.
+# An app is a group of solidity files living in tests/integration/solidity_contracts.
+#
+# Example: get_contract("ERC721", "ERC721") will load the ERC721.sol file in the tests/integration/solidity_contracts/ERC721 folder
+# Example: get_contract("StarkEx", "StarkExchange") will load the StarkExchange.sol file in the tests/integration/solidity_contracts/StarkEx folder
+#
+def get_contract(contract_app: str, contract_name: str) -> Contract:
     """
     Return a web3.contract instance based on the corresponding solidity files
     defined in tests/integration/solidity_files.
     """
-    solidity_output_path = Path("tests") / "integration" / "solidity_files" / "output"
+    solidity_output_path = (
+        Path("tests") / "integration" / "solidity_contracts" / contract_app / "build"
+    )
     abi = json.load(open(solidity_output_path / f"{contract_name}.abi"))
     bytecode = (solidity_output_path / f"{contract_name}.bin").read_text()
     contract = Web3().eth.contract(abi=abi, bytecode=bytecode)

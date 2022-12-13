@@ -196,6 +196,12 @@ make run-test-mark mark=<MARK>
 make run-test-mark-log mark=<MARK> # with log
 ```
 
+Test architecture is the following:
+
+- tests/unit/src contains cairo tests for each cairo function in the kakarot codebase
+- tests/integration/bytecode contains python tests for kakarot execute() function with forged bytecode
+- tests/integration/solidity_contracts contains python tests for solidity contracts that are compiled, deployed on kakarot local node and interacted with kakarot execute_at_adress()
+
 ## Deploy
 
 ```bash

@@ -6,7 +6,7 @@ from web3 import Web3
 
 @pytest.mark.asyncio
 @pytest.mark.IntegrationTestContract
-class TestIntegrationContract:
+class TestPlainOpcodes:
     class TestAddress:
         async def test_should_return_self_address(
             self,
@@ -14,7 +14,7 @@ class TestIntegrationContract:
             addresses,
         ):
             counter = await deploy_solidity_contract(
-                "Counter", caller_address=addresses[1]["int"]
+                "Counter", "Counter", caller_address=addresses[1]["int"]
             )
             counter_address = Web3.toChecksumAddress(
                 "0x"
@@ -23,7 +23,8 @@ class TestIntegrationContract:
                 )[2:].rjust(40, "0")
             )
             integration_contract = await deploy_solidity_contract(
-                "IntegrationTestContract",
+                "PlainOpcodes",
+                "PlainOpcodes",
                 counter_address,
                 caller_address=addresses[1]["int"],
             )
@@ -42,7 +43,7 @@ class TestIntegrationContract:
             addresses,
         ):
             counter = await deploy_solidity_contract(
-                "Counter", caller_address=addresses[1]["int"]
+                "Counter", "Counter", caller_address=addresses[1]["int"]
             )
             counter_address = Web3.toChecksumAddress(
                 "0x"
@@ -51,7 +52,8 @@ class TestIntegrationContract:
                 )[2:].rjust(40, "0")
             )
             integration_contract = await deploy_solidity_contract(
-                "IntegrationTestContract",
+                "PlainOpcodes",
+                "PlainOpcodes",
                 counter_address,
                 caller_address=addresses[1]["int"],
             )

@@ -3,26 +3,101 @@
 %lang starknet
 
 // Starkware dependencies
-
-from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.bool import TRUE, FALSE
-from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.bool import TRUE, FALSE
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.math import split_felt
+from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
+from starkware.starknet.common.syscalls import deploy as deploy_syscall
+from starkware.starknet.common.syscalls import get_contract_address
 
 // Internal dependencies
-from kakarot.model import model
-from utils.utils import Helpers
-from kakarot.stack import Stack
+from kakarot.accounts.contract.library import ContractAccount
+from kakarot.constants import registry_address, evm_contract_class_hash, salt
 from kakarot.execution_context import ExecutionContext
+from kakarot.interfaces.interfaces import IEvmContract, IRegistry
 from kakarot.memory import Memory
+from kakarot.model import model
+from kakarot.stack import Stack
+from utils.utils import Helpers
 
 // @title System operations opcodes.
 // @notice This file contains the functions to execute for system operations opcodes.
 // @author @abdelhamidbakhta
 // @custom:namespace SystemOperations
 namespace SystemOperations {
+    // @notice CREATE operation.
+    // @custom:since Frontier
+    // @custom:group System Operations
+    // @custom:gas 0 + dynamic gas
+    // @custom:stack_consumed_elements 3
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_create{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+
+        // Stack input:
+        // 0 - value: value in wei to send to the new account
+        // 1 - offset: byte offset in the memory in bytes (initialization code)
+        // 2 - size: byte size to copy (size of initialization code)
+        let (stack, popped) = Stack.pop_n(self=ctx.stack, n=3);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+
+        let value = popped[0];
+        let offset = popped[1];
+        let size = popped[2];
+        let (_salt) = salt.read();
+
+        let sub_ctx = CreateHelper.initialize_sub_context(
+            ctx, value.low, offset.low, size.low, _salt
+        );
+        salt.write(_salt + 1);
+
+        return sub_ctx;
+    }
+
+    // @notice CREATE2 operation.
+    // @custom:since Frontier
+    // @custom:group System Operations
+    // @custom:gas 0 + dynamic gas
+    // @custom:stack_consumed_elements 4
+    // @custom:stack_produced_elements 1
+    // @return The pointer to the updated execution context.
+    func exec_create2{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+
+        // Stack input:
+        // 0 - value: value in wei to send to the new account
+        // 1 - offset: byte offset in the memory in bytes (initialization code)
+        // 2 - size: byte size to copy (size of initialization code)
+        // 3 - salt: salt for address generation
+        let (stack, popped) = Stack.pop_n(self=ctx.stack, n=4);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+
+        let value = popped[0];
+        let offset = popped[1];
+        let size = popped[2];
+        let salt = popped[3];
+
+        let sub_ctx = CreateHelper.initialize_sub_context(
+            ctx, value.low, offset.low, size.low, salt.low
+        );
+
+        return sub_ctx;
+    }
+
     // @notice INVALID operation.
     // @dev Designated invalid instruction.
     // @custom:since Frontier
@@ -289,8 +364,8 @@ namespace CallHelper {
         return (ctx, call_args);
     }
 
-    // @notice At the end of a sub-context call, the parent context's stack and memory are updated.
-    // @return The pointer to the updated parent context.
+    // @notice At the end of a sub-context call, the calling context's stack and memory are updated.
+    // @return The pointer to the updated calling context.
     func finalize_calling_context{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -313,6 +388,84 @@ namespace CallHelper {
             [ctx.sub_context.return_data - 1],
         );
         let ctx = ExecutionContext.update_memory(ctx, memory);
+
+        return ctx;
+    }
+}
+
+namespace CreateHelper {
+    // @notice Deploy a new Contract account and initialize a sub context at these addresses
+    //         with bytecode from calling context memory.
+    // @return The pointer to the updated calling context.
+    func initialize_sub_context{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(
+        ctx: model.ExecutionContext*, value: felt, offset: felt, size: felt, salt: felt
+    ) -> model.ExecutionContext* {
+        alloc_locals;
+        let (evm_contract_address, starknet_contract_address) = ContractAccount.deploy(salt);
+
+        // Load bytecode code from memory
+        let (bytecode: felt*) = alloc();
+        let memory = Memory.load_n(
+            self=ctx.memory, element_len=size, element=bytecode, offset=offset
+        );
+        let ctx = ExecutionContext.update_memory(ctx, memory);
+
+        // Prepare execution context
+        let (empty_array: felt*) = alloc();
+        tempvar call_context: model.CallContext* = new model.CallContext(
+            bytecode=bytecode,
+            bytecode_len=size,
+            calldata=empty_array,
+            calldata_len=0,
+            value=value,
+            );
+        let (local return_data: felt*) = alloc();
+        let stack = Stack.init();
+        let memory = Memory.init();
+        let empty_context = ExecutionContext.init_empty();
+        tempvar sub_ctx = new model.ExecutionContext(
+            call_context=call_context,
+            program_counter=0,
+            stopped=FALSE,
+            return_data=return_data,
+            return_data_len=0,
+            stack=stack,
+            memory=memory,
+            gas_used=0,
+            gas_limit=0,
+            intrinsic_gas_cost=0,
+            starknet_contract_address=starknet_contract_address,
+            evm_contract_address=evm_contract_address,
+            calling_context=ctx,
+            sub_context=empty_context,
+            );
+
+        return sub_ctx;
+    }
+
+    // @notice At the end of a sub-context initiated with CREATE(2), the calling context's stack is updated.
+    // @return The pointer to the updated calling context.
+    func finalize_calling_context{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        IEvmContract.write_bytecode(
+            contract_address=ctx.starknet_contract_address,
+            bytecode_len=ctx.return_data_len,
+            bytecode=ctx.return_data,
+        );
+        local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(ctx.calling_context, ctx);
+        let (address_high, address_low) = split_felt(ctx.sub_context.evm_contract_address);
+        let stack = Stack.push(ctx.stack, Uint256(low=address_low, high=address_high));
+        let ctx = ExecutionContext.update_stack(ctx, stack);
 
         return ctx;
     }
