@@ -339,6 +339,7 @@ namespace SystemOperations {
             self=ctx,
             destroy_contracts_len= ctx.destroy_contracts_len + 1,
             destroy_contracts=ctx.destroy_contracts,
+            stop=TRUE,
         );
         
         return ctx;
@@ -431,6 +432,7 @@ namespace CallHelper {
             self=ctx,
             destroy_contracts_len=ctx.destroy_contracts_len + ctx.sub_context.destroy_contracts_len,
             destroy_contracts=ctx.destroy_contracts,
+            stop=FALSE,
         );
         
         let stack = Stack.push(ctx.stack, success);
@@ -532,6 +534,7 @@ namespace CreateHelper {
             self=ctx,
             destroy_contracts_len=ctx.destroy_contracts_len + ctx.sub_context.destroy_contracts_len,
             destroy_contracts=ctx.destroy_contracts,
+            stop=FALSE,
         );
 
         let (address_high, address_low) = split_felt(ctx.sub_context.evm_contract_address);
@@ -585,6 +588,7 @@ namespace SelfDestructHelper {
             self=ctx,
             destroy_contracts_len= ctx.destroy_contracts_len - 1,
             destroy_contracts=ctx.destroy_contracts + 1,
+            stop=TRUE,
         );
 
         return selfdestruct(ctx);

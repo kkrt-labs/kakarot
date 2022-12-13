@@ -490,12 +490,15 @@ namespace ExecutionContext {
     // @param destroy_contracts_len Array new length.
     // @param destroy_contracts The pointer to the new array of contracts.
     func update_destroy_contracts(
-        self: model.ExecutionContext*, destroy_contracts_len: felt, destroy_contracts: felt*
+        self: model.ExecutionContext*,
+        destroy_contracts_len: felt,
+        destroy_contracts: felt*,
+        stop: felt,
     ) -> model.ExecutionContext* {
         return new model.ExecutionContext(
             call_context=self.call_context,
             program_counter=self.program_counter,
-            stopped=TRUE,
+            stopped=stop,
             return_data=self.return_data,
             return_data_len=self.return_data_len,
             stack=self.stack,
