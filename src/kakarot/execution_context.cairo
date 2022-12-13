@@ -131,6 +131,7 @@ namespace ExecutionContext {
         bitwise_ptr: BitwiseBuiltin*,
     }(
         address: felt,
+        gas_limit: felt,
         calldata_len: felt,
         calldata: felt*,
         value: felt,
@@ -168,8 +169,7 @@ namespace ExecutionContext {
             stack=stack,
             memory=memory,
             gas_used=0,
-            // TODO: Add support for gas limit
-            gas_limit=0,
+            gas_limit=gas_limit,
             intrinsic_gas_cost=0,
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=address,
