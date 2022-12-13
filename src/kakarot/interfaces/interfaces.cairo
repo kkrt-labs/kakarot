@@ -20,6 +20,9 @@ namespace IRegistry {
 namespace IEth {
     func balanceOf(account: felt) -> (balance: Uint256) {
     }
+    
+    func transfer(recipient: felt, amount: Uint256) -> (success: felt) {
+    }
 }
 
 @contract_interface

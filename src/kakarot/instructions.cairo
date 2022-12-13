@@ -28,7 +28,7 @@ from kakarot.instructions.logging_operations import LoggingOperations
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.environmental_information import EnvironmentalInformation
 from kakarot.instructions.block_information import BlockInformation
-from kakarot.instructions.system_operations import SystemOperations, CallHelper, CreateHelper
+from kakarot.instructions.system_operations import SystemOperations, CallHelper, CreateHelper, SelfDestructHelper
 from kakarot.instructions.sha3 import Sha3
 from kakarot.interfaces.interfaces import IEvmContract
 
@@ -611,6 +611,7 @@ namespace EVMInstructions {
         // Terminate execution
         if (stopped != FALSE) {
             if (is_parent_root != FALSE) {
+                let ctx = SelfDestructHelper.selfdestruct(ctx);
                 return ctx;
             } else {
                 let (bytecode_len) = IEvmContract.bytecode_len(

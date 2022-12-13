@@ -42,5 +42,7 @@ namespace model {
         evm_contract_address: felt,
         calling_context: ExecutionContext*,
         sub_context: ExecutionContext*,
+        destroy_contracts_len: felt,
+        destroy_contracts: felt*,
     }
 }
