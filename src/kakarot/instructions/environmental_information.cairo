@@ -34,6 +34,7 @@ namespace EnvironmentalInformation {
     const GAS_COST_CALLDATACOPY = 3;
     const GAS_COST_CODESIZE = 2;
     const GAS_COST_CODECOPY = 3;
+    const GAS_COST_EXTCODECOPY = 2600;
     const GAS_COST_RETURNDATASIZE = 2;
     const GAS_COST_RETURNDATACOPY = 3;
 
@@ -531,14 +532,14 @@ namespace EnvironmentalInformation {
         // Update context stack.
         let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let (minimum_word_size) = Helpers.compute_minimum_word_for_size_of_minimum_word_count(
+        let (minimum_word_size) = Helpers.minimum_word_count(
             size.low
         );
 
         // TODO:distinction between warm and cold addresses determines `address_access_cost`
         //  for now we assume a cold address, which sets `address_access_cost` to 2600
         let ctx = ExecutionContext.increment_gas_used(
-            self=ctx, inc_value=3 * minimum_word_size + memory_expansion_cost + 2600
+            self=ctx, inc_value=3 * minimum_word_size + memory_expansion_cost + GAS_COST_EXTCODECOPY
         );
 
         return ctx;

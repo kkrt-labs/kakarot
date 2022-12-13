@@ -242,7 +242,6 @@ class TestCounter:
                     "dest_offset": 1,
                     "contract_address": "mock",
                 },
-                "id": "no account match",
             },
             {
                 "bytecode_match": {
@@ -256,7 +255,6 @@ class TestCounter:
                     "dest_offset": 1,
                     "contract_address": "counter",
                 },
-                "id": "offset exceeds match length",
             },
         ],
     )

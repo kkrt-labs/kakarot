@@ -71,7 +71,7 @@ namespace Helpers {
     // @notice: This helper returns the minimal number of EVM words for a given bytes length
     // @param length: a given bytes length
     // @return res: the minimal number of EVM words
-    func compute_minimum_word_for_size_of_minimum_word_count{range_check_ptr}(length: felt) -> (
+    func minimum_word_count{range_check_ptr}(length: felt) -> (
         res: felt
     ) {
         let (quotient, remainder) = unsigned_div_rem(length + 31, 32);

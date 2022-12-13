@@ -50,21 +50,19 @@ class TestEnvironmentalInformation:
                 "size": 31,
                 "offset": 0,
                 "dest_offset": 0,
-                "id": "size is bytecodelen-1",
             },
             {
                 "size": 33,
                 "offset": 0,
                 "dest_offset": 0,
-                "id": "size is bytecodelen+1",
             },
             {
                 "size": 1,
                 "offset": 32,
                 "dest_offset": 0,
-                "id": "offset is bytecodelen",
             },
         ],
+        ids=["size_is_bytecodelen-1", "size_is_bytecodelen+1", "offset_is_bytecodelen"]
     )
     async def test_excodecopy_should_handle_address_with_code(
         self,
