@@ -30,6 +30,7 @@ def wrap_for_kakarot(
                 call = kakarot.execute_at_address(
                     address=evm_contract_address,
                     value=0,
+                    gas_limit=1000000,
                     calldata=hex_string_to_bytes_array(
                         contract.encodeABI(fun, args, kwargs)
                     ),
@@ -46,6 +47,7 @@ def wrap_for_kakarot(
                 call = kakarot.execute_at_address(
                     address=evm_contract_address,
                     value=value,
+                    gas_limit=1000000,
                     calldata=hex_string_to_bytes_array(
                         contract.encodeABI(fun, args, kwargs)
                     ),

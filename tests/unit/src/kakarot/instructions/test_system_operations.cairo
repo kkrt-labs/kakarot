@@ -6,7 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
-from starkware.cairo.common.math import split_felt, assert_not_zero
+from starkware.cairo.common.math import split_felt, assert_not_zero, assert_le_felt
 
 // Local dependencies
 from kakarot.accounts.contract.library import ContractAccount
@@ -61,7 +61,7 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
-    let gas = Uint256(0, 0);
+    let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
     let (address_high, address_low) = split_felt(evm_contract_address);
     let address = Uint256(address_low, address_high);
     tempvar value = Uint256(2, 0);
@@ -102,7 +102,8 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     assert sub_ctx.return_data_len = ret_size.low;
     assert [sub_ctx.return_data] = ret_offset.low;
     assert sub_ctx.gas_used = 0;
-    assert sub_ctx.gas_limit = 0;
+    let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
+    assert_le_felt(sub_ctx.gas_limit, gas_felt);
     assert sub_ctx.intrinsic_gas_cost = 0;
     assert sub_ctx.starknet_contract_address = starknet_contract_address;
     assert sub_ctx.evm_contract_address = evm_contract_address;
@@ -137,7 +138,7 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
-    let gas = Uint256(0, 0);
+    let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
     let (address_high, address_low) = split_felt(evm_contract_address);
     let address = Uint256(address_low, address_high);
     tempvar value = Uint256(2, 0);
@@ -178,7 +179,8 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
     assert sub_ctx.return_data_len = ret_size.low;
     assert [sub_ctx.return_data] = ret_offset.low;
     assert sub_ctx.gas_used = 0;
-    assert sub_ctx.gas_limit = 0;
+    let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
+    assert_le_felt(sub_ctx.gas_limit, gas_felt);
     assert sub_ctx.intrinsic_gas_cost = 0;
     assert sub_ctx.starknet_contract_address = ctx.starknet_contract_address;
     assert sub_ctx.evm_contract_address = ctx.evm_contract_address;
@@ -213,7 +215,7 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
-    let gas = Uint256(0, 0);
+    let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
     let (address_high, address_low) = split_felt(evm_contract_address);
     let address = Uint256(address_low, address_high);
     let args_offset = Uint256(3, 0);
@@ -252,7 +254,8 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
     assert sub_ctx.return_data_len = ret_size.low;
     assert [sub_ctx.return_data] = ret_offset.low;
     assert sub_ctx.gas_used = 0;
-    assert sub_ctx.gas_limit = 0;
+    let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
+    assert_le_felt(sub_ctx.gas_limit, gas_felt);
     assert sub_ctx.intrinsic_gas_cost = 0;
     assert sub_ctx.starknet_contract_address = starknet_contract_address;
     assert sub_ctx.evm_contract_address = evm_contract_address;
@@ -287,7 +290,7 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
-    let gas = Uint256(0, 0);
+    let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
     let (address_high, address_low) = split_felt(evm_contract_address);
     let address = Uint256(address_low, address_high);
     let args_offset = Uint256(3, 0);
@@ -326,7 +329,8 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
     assert sub_ctx.return_data_len = ret_size.low;
     assert [sub_ctx.return_data] = ret_offset.low;
     assert sub_ctx.gas_used = 0;
-    assert sub_ctx.gas_limit = 0;
+    let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
+    assert_le_felt(sub_ctx.gas_limit, gas_felt);
     assert sub_ctx.intrinsic_gas_cost = 0;
     assert sub_ctx.starknet_contract_address = ctx.starknet_contract_address;
     assert sub_ctx.evm_contract_address = ctx.evm_contract_address;
