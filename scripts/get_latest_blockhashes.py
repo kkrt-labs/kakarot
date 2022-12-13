@@ -20,10 +20,10 @@ async def main():
 
     # Get the latest block
     # Sometimes get_block returns "null" as value
-    latest_block = "null"
-    while latest_block == "null":
-        latest_block = await feeder_gateway_client.get_block()
-        logger.info(f"Latest block number: {latest_block.block_number}")
+    # Walrus operator for assignment expression
+    while (latest_block := await feeder_gateway_client.get_block()) == "null":
+        continue
+    logger.info(f"Latest block number: {latest_block.block_number}")
 
     # Get the last 256 blocks excluding the current block
     # Convert the list of blockhashes in to dictionary { block_number: block_hash }
