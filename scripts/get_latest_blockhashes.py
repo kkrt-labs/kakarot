@@ -26,14 +26,16 @@ async def main():
         logger.info(f"Latest block number: {latest_block.block_number}")
 
     # Get the last 256 blocks excluding the current block
-    last_256_blocks_list = []
-    for i in range(1, 257):
-        block = await feeder_gateway_client.get_block(block_number=latest_block.block_number - i)
-        last_256_blocks_list.append((block.block_number, block.block_hash))
-
     # Convert the list of blockhashes in to dictionary { block_number: block_hash }
-    last_256_blockhashes = dict(last_256_blocks_list)
-
+    last_256_blocks = [
+        await feeder_gateway_client.get_block(block_number=latest_block.block_number - i)
+        for i in range(1, 257)
+    ]
+    last_256_blockhashes = {
+        block.block_number: block.block_hash
+        for block in last_256_blocks
+    }
+    
     # Dump JSON to file
     with open(Path("sequencer") / "blockhashes.json", "w") as file:
         context = {
