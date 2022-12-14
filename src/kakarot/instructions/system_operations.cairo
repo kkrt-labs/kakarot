@@ -15,7 +15,8 @@ from starkware.starknet.common.syscalls import get_contract_address
 
 // Internal dependencies
 from kakarot.accounts.contract.library import ContractAccount
-from kakarot.constants import registry_address, evm_contract_class_hash, salt
+from kakarot.constants import registry_address, evm_contract_class_hash, salt, Constants
+from kakarot.precompiles.datacopy import PrecompileDataCopy
 from kakarot.execution_context import ExecutionContext
 from kakarot.interfaces.interfaces import IEvmContract, IRegistry
 from kakarot.memory import Memory
@@ -242,7 +243,18 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        // Parse call arguments
         let (ctx, call_args) = CallHelper.prepare_args(ctx=ctx, with_value=0);
+
+        // Check if the called address is a precompiled contract
+        let is_precompile = is_le(call_args.address, Constants.LAST_PRECOMPILE_ADDRESS);
+        if (is_precompile == TRUE) {
+            // TODO: find which precompile is called and call it
+            if (call_args.address == PrecompileDataCopy.PRECOMPILE_ADDRESS) {
+               return PrecompileDataCopy.run(ctx=ctx);
+            }
+            return ctx;
+        }
 
         // TODO: use gas_limit when init_at_address is updated
         let sub_ctx = ExecutionContext.init_at_address(
