@@ -242,8 +242,20 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        // Parse call arguments
         let (ctx, call_args) = CallHelper.prepare_args(ctx=ctx, with_value=0);
 
+        // Check if the called address is a precompiled contract
+        let is_precompile = is_le(call_args.address, Constants.LAST_PRECOMPILE_ADDRESS);
+        if (is_precompile == TRUE) {
+            // TODO: find which precompile is called and call it
+            if (call_args.address == PrecompileDataCopy.PRECOMPILE_ADDRESS) {
+               return PrecompileDataCopy.run(ctx=ctx);
+            }
+            return ctx;
+        }
+
+        // TODO: use gas_limit when init_at_address is updated
         let sub_ctx = ExecutionContext.init_at_address(
             address=call_args.address,
             gas_limit=call_args.gas,

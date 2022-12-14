@@ -47,4 +47,8 @@ namespace Constants {
     // TODO: handle tx gas limit properly and remove this constant
     // Temporarily set tx gas limit to 1M gas
     const TRANSACTION_GAS_LIMIT = 1000000;
+
+    // PRECOMPILES
+    // There is no gap between precompiles addresses so we can use the last address as a reference point to determine whether an address is a precompile or not
+    const LAST_PRECOMPILE_ADDRESS = 0x04;
 }
