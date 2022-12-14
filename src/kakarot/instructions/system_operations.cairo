@@ -336,8 +336,8 @@ namespace SystemOperations {
             assert success = TRUE;
         }
 
-        // Save contract to be destroyed at the end of the transaction in a new array
-        // Directly filling ctx.destroy_contract produces "Expected memory address to be relocatable value. Found: 0."
+        // Save contract to be destroyed at the end of the transaction in a NEW array
+        // Directly filling ctx.destroy_contract produces error "Expected memory address to be relocatable value. Found: 0."
         let (destroy_contracts) = alloc();
         Helpers.fill_array(
             fill_len=ctx.destroy_contracts_len,

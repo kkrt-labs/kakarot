@@ -550,9 +550,8 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     registry_address.write(registry_address_);
     native_token_address.write(eth_address);
 
-    // Create sub_ctx with direct memory access because need to update calling_context
+    // Create sub_ctx writing directly in memory because need to update calling_context
     let (bytecode) = alloc();
-    // Fill the stack with address to receive destructed contract balance
     let stack: model.Stack* = Stack.init();
     let memory: model.Memory* = Memory.init();
     let (bytecode) = alloc();
@@ -581,7 +580,6 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     assert [sub_ctx + 15] = 0;  // destroy_contracts
 
     // Simulate contract creation
-
     let (evm_contract_address, starknet_contract_address) = ContractAccount.deploy(0);
 
     IRegistry.set_account_entry(
@@ -610,7 +608,6 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     let sub_ctx_object: model.ExecutionContext* = cast(sub_ctx, model.ExecutionContext*);
 
     // When
-    // THIS LINE PRODUCES ERROR "Expected memory address to be relocatable value. Found: 0."
     let sub_ctx_object: model.ExecutionContext* = SystemOperations.exec_selfdestruct(sub_ctx_object);
 
     // Simulate run
