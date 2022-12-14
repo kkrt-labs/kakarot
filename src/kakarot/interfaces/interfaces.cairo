@@ -18,7 +18,9 @@ namespace IRegistry {
 
 @contract_interface
 namespace IBlockhashRegistry {
-    func set_blockhashes(block_number_len: felt, block_number: Uint256*, block_hash_len: felt, block_hash: felt*) -> () {
+    func set_blockhashes(
+        block_number_len: felt, block_number: Uint256*, block_hash_len: felt, block_hash: felt*
+    ) -> () {
     }
 
     func get_blockhash(block_number: Uint256) -> (blockhash: felt) {

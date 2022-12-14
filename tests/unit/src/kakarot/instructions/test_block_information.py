@@ -1,11 +1,15 @@
 import pytest
 import pytest_asyncio
-from starkware.starknet.testing.starknet import Starknet
 from starkware.starknet.testing.contract import StarknetContract
+from starkware.starknet.testing.starknet import Starknet
+
 from tests.integration.helpers.helpers import int_to_uint256
 
+
 @pytest_asyncio.fixture(scope="module")
-async def block_information(starknet: Starknet,  blockhashes: dict, blockhash_registry: StarknetContract):
+async def block_information(
+    starknet: Starknet, blockhashes: dict, blockhash_registry: StarknetContract
+):
     block_number = max(blockhashes["last_256_blocks"].keys())
     return await starknet.deploy(
         source="./tests/unit/src/kakarot/instructions/test_block_information.cairo",
@@ -15,7 +19,7 @@ async def block_information(starknet: Starknet,  blockhashes: dict, blockhash_re
             *int_to_uint256(int(block_number)),
             blockhashes["last_256_blocks"][block_number],
             blockhash_registry.contract_address,
-        ]
+        ],
     )
 
 

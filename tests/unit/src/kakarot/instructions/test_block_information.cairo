@@ -17,7 +17,6 @@ from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.block_information import BlockInformation
 from tests.unit.helpers.helpers import TestHelpers
 
-
 // Storage for testing BLOCKHASH
 @storage_var
 func block_number() -> (block_number: Uint256) {
@@ -27,14 +26,10 @@ func block_number() -> (block_number: Uint256) {
 func blockhash() -> (blockhash: felt) {
 }
 
-
 // Constructor
 @constructor
 func constructor{
-    syscall_ptr: felt*,
-    pedersen_ptr: HashBuiltin*,
-    range_check_ptr,
-    bitwise_ptr: BitwiseBuiltin*,
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(block_number_: Uint256, blockhash_: felt, blockhash_registry_address_: felt) {
     block_number.write(block_number_);
     blockhash.write(blockhash_);

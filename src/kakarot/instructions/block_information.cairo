@@ -34,7 +34,7 @@ namespace BlockInformation {
     const GAS_COST_SELFBALANCE = 5;
     const GAS_COST_BASEFEE = 2;
 
-// @notice COINBASE operation.
+    // @notice COINBASE operation.
     // @dev Get the hash of one of the 256 most recent complete blocks.
     // @dev 0 if the block number is not in the valid range.
     // @custom:since Frontier
@@ -58,9 +58,7 @@ namespace BlockInformation {
         // Check if blockNumber is within bounds by checking with current block number
         // Valid range is the last 256 blocks (not including the current one)
         let (local current_block_number: felt) = get_block_number();
-        let in_range = is_in_range(
-            block_number, current_block_number - 256, current_block_number
-        );
+        let in_range = is_in_range(block_number, current_block_number - 256, current_block_number);
 
         // If not in range, return 0
         if (in_range == FALSE) {
@@ -79,8 +77,7 @@ namespace BlockInformation {
         // Then push it to stack
         let (blockhash_registry_address_: felt) = blockhash_registry_address.read();
         let (blockhash_: felt) = IBlockhashRegistry.get_blockhash(
-            contract_address=blockhash_registry_address_,
-            block_number=_block_number,
+            contract_address=blockhash_registry_address_, block_number=_block_number
         );
         let blockhash: Uint256 = Helpers.to_uint256(val=blockhash_);
         let stack: model.Stack* = Stack.push(self=stack, element=blockhash);

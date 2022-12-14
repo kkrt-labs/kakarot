@@ -19,11 +19,9 @@ namespace BlockhashRegistry {
     // @notice This function is used to initialize the registry.
     // @dev Sets the kakarot smart contract as the owner
     // @param kakarot_address: The address of the Kakarot smart contract.
-    func constructor{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr
-    }(kakarot_address: felt) {
+    func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        kakarot_address: felt
+    ) {
         // Initialize access control.
         Ownable.initializer(kakarot_address);
         return ();
@@ -43,11 +41,9 @@ namespace BlockhashRegistry {
     // @param block_number: the block numbers
     // @param block_hash_len: the length of block hashes
     // @param block_hash: the block hashes
-    func set_blockhashes{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr
-    }(block_number_len: felt, block_number: Uint256*, block_hash_len: felt, block_hash: felt*) {
+    func set_blockhashes{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        block_number_len: felt, block_number: Uint256*, block_hash_len: felt, block_hash: felt*
+    ) {
         with_attr error_message(
                 "BlockhashRegistry: blockhash keys and values arrays must be of same length") {
             if (block_number_len != block_hash_len) {
@@ -70,11 +66,9 @@ namespace BlockhashRegistry {
 
     // @notice Get the blockhash of a certain block number.
     // @param block_number: the block number
-    func get_blockhash{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr
-    }(block_number: Uint256) -> (blockhash: felt) {
+    func get_blockhash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        block_number: Uint256
+    ) -> (blockhash: felt) {
         let blockhash = blockhash_.read(block_number);
         return blockhash;
     }
