@@ -1,3 +1,11 @@
+import json
+from pathlib import Path
+
+import pytest
+
+with open(Path("sequencer") / "mock_blockhashes.json") as file:
+    blockhashes = json.load(file)
+
 import pytest
 
 test_cases = [
@@ -715,7 +723,7 @@ test_cases = [
             "value": 0,
             "code": "4300",
             "calldata": "",
-            "stack": "1",
+            "stack": str(blockhashes["current_block"]["block_number"]),
             "memory": "",
             "return_value": "",
         },
@@ -727,7 +735,7 @@ test_cases = [
             "value": 0,
             "code": "4200",
             "calldata": "",
-            "stack": "1",
+            "stack": str(blockhashes["current_block"]["timestamp"]),
             "memory": "",
             "return_value": "",
         },

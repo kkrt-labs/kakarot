@@ -1,20 +1,28 @@
 import pytest
 import pytest_asyncio
 from starkware.starknet.testing.starknet import Starknet
-
+from starkware.starknet.testing.contract import StarknetContract
+from tests.integration.helpers.helpers import int_to_uint256
 
 @pytest_asyncio.fixture(scope="module")
-async def block_information(starknet: Starknet):
+async def block_information(starknet: Starknet,  blockhashes: dict, blockhash_registry: StarknetContract):
+    block_number = max(blockhashes["last_256_blocks"].keys())
     return await starknet.deploy(
         source="./tests/unit/src/kakarot/instructions/test_block_information.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
+        constructor_calldata=[
+            *int_to_uint256(int(block_number)),
+            blockhashes["last_256_blocks"][block_number],
+            blockhash_registry.contract_address,
+        ]
     )
 
 
 @pytest.mark.asyncio
 class TestBlockInformation:
     async def test_everything_block(self, block_information):
+        await block_information.test__blockhash_should_push_blockhash_to_stack().call()
         await block_information.test__chainId__should_push_chain_id_to_stack().call()
         await block_information.test__coinbase_should_push_coinbase_address_to_stack().call()
         await block_information.test__timestamp_should_push_block_timestamp_to_stack().call()
