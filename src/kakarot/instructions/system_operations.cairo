@@ -443,7 +443,7 @@ namespace CallHelper {
             self=ctx,
             destroy_contracts_len=ctx.destroy_contracts_len + ctx.sub_context.destroy_contracts_len,
             destroy_contracts=ctx.destroy_contracts,
-            stop=FALSE,
+            stop=ctx.stopped,
         );
         
         let stack = Stack.push(ctx.stack, success);
@@ -545,7 +545,7 @@ namespace CreateHelper {
             self=ctx,
             destroy_contracts_len=ctx.destroy_contracts_len + ctx.sub_context.destroy_contracts_len,
             destroy_contracts=ctx.destroy_contracts,
-            stop=FALSE,
+            stop=ctx.stopped,
         );
 
         let (address_high, address_low) = split_felt(ctx.sub_context.evm_contract_address);
@@ -589,10 +589,6 @@ namespace SelfDestructHelper {
 
         // Remove contract from registry
         let (registry_address_) = registry_address.read();
-        let (evm_contract_address) = IRegistry.get_evm_contract_address(
-            contract_address=registry_address_,
-            starknet_contract_address=starknet_contract_address,
-        );
         IRegistry.set_account_entry(
             contract_address=registry_address_,
             starknet_contract_address=starknet_contract_address,
@@ -603,7 +599,7 @@ namespace SelfDestructHelper {
             self=ctx,
             destroy_contracts_len= ctx.destroy_contracts_len - 1,
             destroy_contracts=ctx.destroy_contracts + 1,
-            stop=TRUE,
+            stop=ctx.stopped,
         );
 
         return selfdestruct(ctx);
