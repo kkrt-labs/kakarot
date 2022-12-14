@@ -17,6 +17,15 @@ namespace IRegistry {
 }
 
 @contract_interface
+namespace IBlockhashRegistry {
+    func set_blockhashes(block_number_len: felt, block_number: Uint256*, block_hash_len: felt, block_hash: felt*) -> () {
+    }
+
+    func get_blockhash(block_number: Uint256) -> (blockhash: felt) {
+    }
+}
+
+@contract_interface
 namespace IEth {
     func balanceOf(account: felt) -> (balance: Uint256) {
     }
@@ -54,6 +63,12 @@ namespace IKakarot {
     }
 
     func get_account_registry() -> (address: felt) {
+    }
+
+    func set_blockhash_registry(blockhash_registry_address_: felt) -> () {
+    }
+
+    func get_blockhash_registry() -> (address: felt) {
     }
 
     func set_native_token(native_token_address_: felt) {

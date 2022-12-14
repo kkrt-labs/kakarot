@@ -20,7 +20,13 @@ from kakarot.stack import Stack
 from kakarot.instructions import EVMInstructions
 from kakarot.interfaces.interfaces import IRegistry, IEvmContract
 from kakarot.execution_context import ExecutionContext
-from kakarot.constants import native_token_address, registry_address, evm_contract_class_hash, salt
+from kakarot.constants import (
+    native_token_address,
+    registry_address,
+    evm_contract_class_hash,
+    salt,
+    blockhash_registry_address,
+)
 from kakarot.accounts.contract.library import ContractAccount
 
 // @title Kakarot main library file.
@@ -131,6 +137,25 @@ namespace Kakarot {
         ) -> (address: felt) {
         let (reg_address) = registry_address.read();
         return (reg_address,);
+    }
+
+    // @notice Set the blockhash registry used by kakarot
+    // @dev Set the blockhash registry which will be used to get the blockhashes
+    // @param blockhash_registry_address_ The address of the new blockhash registry contract
+    func set_blockhash_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        blockhash_registry_address_: felt
+    ) {
+        Ownable.assert_only_owner();
+        blockhash_registry_address.write(blockhash_registry_address_);
+        return ();
+    }
+
+    // @notice Get the blockhash registry used by kakarot
+    // @return address The address of the current blockhash registry contract
+    func get_blockhash_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ) -> (address: felt) {
+        let (blockhash_registry_address_) = blockhash_registry_address.read();
+        return (blockhash_registry_address_,);
     }
 
     // @notice Set the native token used by kakarot
