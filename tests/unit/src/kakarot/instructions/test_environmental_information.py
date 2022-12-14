@@ -62,7 +62,7 @@ class TestEnvironmentalInformation:
                 "dest_offset": 0,
             },
         ],
-        ids=["size_is_bytecodelen-1", "size_is_bytecodelen+1", "offset_is_bytecodelen"]
+        ids=["size_is_bytecodelen-1", "size_is_bytecodelen+1", "offset_is_bytecodelen"],
     )
     async def test_excodecopy_should_handle_address_with_code(
         self,
