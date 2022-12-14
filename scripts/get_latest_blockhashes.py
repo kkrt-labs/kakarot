@@ -2,6 +2,7 @@ import asyncio
 import logging
 import json
 from pathlib import Path
+from argparse import ArgumentParser
 
 from starkware.starknet.services.api.feeder_gateway.feeder_gateway_client import FeederGatewayClient
 from services.external_api.client import RetryConfig
@@ -9,14 +10,21 @@ from services.external_api.client import RetryConfig
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-FEEDER_GATEWAY_URL = "https://alpha4.starknet.io/feeder_gateway" # alpha-goerli
+NETWORKS = {
+    "goerli": "https://alpha4.starknet.io/feeder_gateway", # alpha-goerli
+    "mainnet": "https://alpha-mainnet.starknet.io/feeder_gateway/" # mainnet
+}
 
+
+parser = ArgumentParser(description="Get block information from sequencer")
+parser.add_argument("--network", "-n", default="goerli", type=str, help=f"Select network, one of {list(NETWORKS.keys())}")
+args = parser.parse_args()
 
 async def main():
     # Instantiate a FeederGatewayClient object
     # -1 means unlimited retries
     retry_config = RetryConfig(n_retries=-1)
-    feeder_gateway_client = FeederGatewayClient(url=FEEDER_GATEWAY_URL, retry_config=retry_config)
+    feeder_gateway_client = FeederGatewayClient(url=NETWORKS[args.network], retry_config=retry_config)
 
     # Get the latest block
     # Sometimes get_block returns "null" as value
