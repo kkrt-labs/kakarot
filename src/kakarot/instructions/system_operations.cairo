@@ -331,15 +331,25 @@ namespace SystemOperations {
         let (balance: Uint256) = IEth.balanceOf(
             contract_address=native_token_address_, account=ctx.starknet_contract_address
         );
-        IEth.transfer(contract_address=native_token_address_, recipient=address_felt, amount=balance);
+        let (success) = IEth.transfer(contract_address=native_token_address_, recipient=address_felt, amount=balance);
+        with_attr error_message("Kakarot: Transfer failed") {
+            assert success = TRUE;
+        }
 
-        // Save contract to be destroyed at the end of the transaction
-        assert ctx.destroy_contracts[ctx.destroy_contracts_len] = ctx.starknet_contract_address;
-
+        // Save contract to be destroyed at the end of the transaction in a new array
+        // Directly filling ctx.destroy_contract produces "Expected memory address to be relocatable value. Found: 0."
+        let (destroy_contracts) = alloc();
+        Helpers.fill_array(
+            fill_len=ctx.destroy_contracts_len,
+            input_arr=ctx.destroy_contracts,
+            output_arr=destroy_contracts,
+        );
+        assert [destroy_contracts + ctx.destroy_contracts_len] = ctx.starknet_contract_address;
+        
         let ctx = ExecutionContext.update_destroy_contracts(
             self=ctx,
             destroy_contracts_len= ctx.destroy_contracts_len + 1,
-            destroy_contracts=ctx.destroy_contracts,
+            destroy_contracts=destroy_contracts,
             stop=TRUE,
         );
         

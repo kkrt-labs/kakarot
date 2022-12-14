@@ -579,10 +579,11 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     let ctx = TestHelpers.init_context_with_stack_and_sub_ctx(0, bytecode, stack, cast(sub_ctx, model.ExecutionContext*));
     assert [sub_ctx + 12] = cast(ctx, felt);  // calling_context
 
-    let sub_ctx_object = cast(sub_ctx, model.ExecutionContext*);
+    let sub_ctx_object: model.ExecutionContext* = cast(sub_ctx, model.ExecutionContext*);
 
     // When
-    let sub_ctx_object = SystemOperations.exec_selfdestruct(sub_ctx_object);
+    // THIS LINE PRODUCES ERROR "Expected memory address to be relocatable value. Found: 0."
+    let sub_ctx_object: model.ExecutionContext* = SystemOperations.exec_selfdestruct(sub_ctx_object);
 
     // Simulate run
     let ctx = CallHelper.finalize_calling_context(sub_ctx_object);
