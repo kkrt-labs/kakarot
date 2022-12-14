@@ -314,7 +314,7 @@ namespace SystemOperations {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext {
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
         // Get stack and memory from context
@@ -322,18 +322,19 @@ namespace SystemOperations {
 
         // Stack input:
         // 0 - address: account to send the current balance to
-        let (stack, address) = Stack.pop(stack);
-
+        let (stack, address_uint256) = Stack.pop(stack);
+        let address_felt = Helpers.uint256_to_felt(address_uint256);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Get the number of native tokens owned by the given starknet
         // account and transfer them to receiver
         let (native_token_address_) = native_token_address.read();
         let (balance: Uint256) = IEth.balanceOf(
             contract_address=native_token_address_, account=ctx.starknet_contract_address
         );
-        IEth.transfer(recipient=address, amount=balance);
+        IEth.transfer(contract_address=native_token_address_, recipient=address_felt, amount=balance);
 
         // Save contract to be destroyed at the end of the transaction
-        assert ctx.destroy_contracts[ctx.destroy_contracts_len + 1] = ctx.starknet_contract_address;
+        assert ctx.destroy_contracts[ctx.destroy_contracts_len] = ctx.starknet_contract_address;
 
         let ctx = ExecutionContext.update_destroy_contracts(
             self=ctx,
@@ -422,7 +423,7 @@ namespace CallHelper {
         let success = Uint256(low=1, high=0);
         let ctx = ExecutionContext.update_sub_context(ctx.calling_context, ctx);
 
-        // Append contracts to selfdestruct to the calling_context
+        // Append contracts selfdestruct to the calling_context
         Helpers.fill_array(
             fill_len=ctx.sub_context.destroy_contracts_len,
             input_arr=ctx.sub_context.destroy_contracts,
@@ -549,7 +550,7 @@ namespace SelfDestructHelper {
 
     // @notice helper for SELFDESTRUCT operation.
     // @notice overwrite contract account bytecode with 0s
-    // @notice overwrite registry contract with 0s
+    // @notice remove contract from registry
     // @return The pointer to the updated execution_context.
     func selfdestruct{
         syscall_ptr: felt*,
@@ -572,12 +573,16 @@ namespace SelfDestructHelper {
         Helpers.fill(bytecode_len, erase_data, 0);
         IEvmContract.write_bytecode(
             contract_address=starknet_contract_address,
-            bytecode_len=bytecode_len,
+            bytecode_len=0,
             bytecode=erase_data
         );
 
         // Remove contract from registry
         let (registry_address_) = registry_address.read();
+        let (evm_contract_address) = IRegistry.get_evm_contract_address(
+            contract_address=registry_address_,
+            starknet_contract_address=starknet_contract_address,
+        );
         IRegistry.set_account_entry(
             contract_address=registry_address_,
             starknet_contract_address=starknet_contract_address,

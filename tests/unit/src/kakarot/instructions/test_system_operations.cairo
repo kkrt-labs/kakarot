@@ -7,19 +7,20 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math import split_felt, assert_not_zero
+from starkware.starknet.common.syscalls import deploy
 
 // Local dependencies
 from kakarot.accounts.contract.library import ContractAccount
-from kakarot.constants import Constants
+from kakarot.constants import Constants, native_token_address
 from kakarot.constants import evm_contract_class_hash, registry_address
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.memory_operations import MemoryOperations
-from kakarot.instructions.system_operations import SystemOperations, CallHelper, CreateHelper
-from kakarot.interfaces.interfaces import IEvmContract
-from kakarot.interfaces.interfaces import IKakarot
+from kakarot.instructions.system_operations import SystemOperations, CallHelper, CreateHelper, SelfDestructHelper
+from kakarot.interfaces.interfaces import IEvmContract, IKakarot, IRegistry
 from kakarot.library import Kakarot
 from kakarot.model import model
 from kakarot.stack import Stack
+from kakarot.memory import Memory
 from tests.unit.helpers.helpers import TestHelpers
 from utils.utils import Helpers
 
@@ -508,4 +509,94 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     );
 
     return ();
+}
+
+@external
+func test__exec_selfdestruct__should_delete_account_bytecode{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(
+    eth_address: felt, evm_contract_class_hash_: felt, registry_address_: felt
+) {
+    alloc_locals;
+    evm_contract_class_hash.write(evm_contract_class_hash_);
+    registry_address.write(registry_address_);
+    native_token_address.write(eth_address);
+
+    // Create sub_ctx with direct memory access because need to update calling_context
+    let (bytecode) = alloc();
+    // Fill the stack with address to receive destructed contract balance
+    let stack: model.Stack* = Stack.init();
+    let memory: model.Memory* = Memory.init();
+    let (bytecode) = alloc();
+    let (return_data) = alloc();
+    assert [return_data] = 0;
+    assert [return_data + 1] = 10;
+    let (calldata) = alloc();
+    assert [calldata] = '';
+    local call_context: model.CallContext* = new model.CallContext(
+        bytecode=bytecode, bytecode_len=0, calldata=calldata, calldata_len=1, value=0
+    );
+    let stack = Stack.push(stack, Uint256(10,0));
+    let (sub_ctx: felt*) = alloc();
+    assert [sub_ctx] = cast(call_context, felt);   // call_context
+    assert [sub_ctx + 1] = 0;   // program_counter
+    assert [sub_ctx + 2] = 0;   // stopped
+    assert [sub_ctx + 3] = cast(return_data + 1, felt);   // return_data
+    assert [sub_ctx + 4] = 1;   // return_data_len
+    assert [sub_ctx + 5] = cast(stack, felt);   // stack
+    assert [sub_ctx + 6] = cast(memory, felt);   // memory
+    assert [sub_ctx + 7] = 0;   // gas_used
+    assert [sub_ctx + 8] = 0;   // gas_limit
+    assert [sub_ctx + 9] = 0;   // intrinsic_gas_cost
+    assert [sub_ctx + 13] = 0;  // sub_context
+    assert [sub_ctx + 14] = 0;  // destroy_contracts_len
+    assert [sub_ctx + 15] = 0;  // destroy_contracts
+
+    // Simulate contract creation
+
+    let (evm_contract_address, starknet_contract_address) = ContractAccount.deploy(0);
+
+    IRegistry.set_account_entry(
+        contract_address=registry_address_,
+        starknet_contract_address=starknet_contract_address,
+        evm_contract_address=evm_contract_address,
+    );
+    assert [sub_ctx + 10] = starknet_contract_address;  // starknet_contract_address
+    assert [sub_ctx + 11] = evm_contract_address;  // evm_contract_address
+
+    // Fill contract bytecode
+    let (bytecode) = alloc();
+    assert [bytecode] = 1907;
+    IEvmContract.write_bytecode(
+        contract_address=starknet_contract_address,
+        bytecode_len=1,
+        bytecode=bytecode
+    );
+
+    // Create context
+    let stack: model.Stack* = Stack.init();
+    let (bytecode) = alloc();
+    let ctx = TestHelpers.init_context_with_stack_and_sub_ctx(0, bytecode, stack, cast(sub_ctx, model.ExecutionContext*));
+    assert [sub_ctx + 12] = cast(ctx, felt);  // calling_context
+
+    let sub_ctx_object = cast(sub_ctx, model.ExecutionContext*);
+
+    // When
+    let sub_ctx_object = SystemOperations.exec_selfdestruct(sub_ctx_object);
+
+    // Simulate run
+    let ctx = CallHelper.finalize_calling_context(sub_ctx_object);
+    let ctx = SelfDestructHelper.selfdestruct(ctx);
+
+    // Then
+    let (evm_contract_address) = IRegistry.get_evm_contract_address(
+        contract_address=registry_address_, starknet_contract_address=starknet_contract_address
+    );
+    let (evm_contract_byte_len) = IEvmContract.bytecode_len(
+        contract_address=starknet_contract_address
+    );
+
+    assert evm_contract_address = 0;
+    assert evm_contract_byte_len = 0;
+    return();
 }
