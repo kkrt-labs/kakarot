@@ -212,14 +212,11 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
         let (ctx, call_args) = CallHelper.prepare_args(ctx=ctx, with_value=1);
-        let remaining_gas = ctx.gas_limit - ctx.gas_used;
-        let (max_allowed_gas, _) = Helpers.div_rem(remaining_gas, 64);
-        let gas_limit = Helpers.min(call_args.gas, max_allowed_gas);
+
         let sub_ctx = ExecutionContext.init_at_address(
             address=call_args.address,
-            gas_limit=gas_limit,
+            gas_limit=call_args.gas,
             calldata_len=call_args.args_size,
             calldata=call_args.calldata,
             value=call_args.value,
@@ -245,16 +242,11 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
         let (ctx, call_args) = CallHelper.prepare_args(ctx=ctx, with_value=0);
-
-        let remaining_gas = ctx.gas_limit - ctx.gas_used;
-        let (max_allowed_gas, _) = Helpers.div_rem(remaining_gas, 64);
-        let gas_limit = Helpers.min(call_args.gas, max_allowed_gas);
 
         let sub_ctx = ExecutionContext.init_at_address(
             address=call_args.address,
-            gas_limit=gas_limit,
+            gas_limit=call_args.gas,
             calldata_len=call_args.args_size,
             calldata=call_args.calldata,
             value=call_args.value,
@@ -357,8 +349,12 @@ namespace CallHelper {
             self=ctx.memory, element_len=args_size, element=calldata, offset=args_offset
         );
 
+        let remaining_gas = ctx.gas_limit - ctx.gas_used;
+        let (max_allowed_gas, _) = Helpers.div_rem(remaining_gas, 64);
+        let gas_limit = Helpers.min(gas, max_allowed_gas);
+
         let call_args = CallArgs(
-            gas=gas,
+            gas=gas_limit,
             address=address,
             value=value,
             args_size=args_size,
