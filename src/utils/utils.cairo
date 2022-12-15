@@ -480,8 +480,8 @@ namespace Helpers {
     }
 
     // @notice Returns the min value between a and b
-    func min{range_check_ptr}(a:felt, b: felt) -> felt {
-        if(is_le(a, b) == 0) {
+    func min{range_check_ptr}(a: felt, b: felt) -> felt {
+        if (is_le(a, b) == 0) {
             return b;
         } else {
             return a;
