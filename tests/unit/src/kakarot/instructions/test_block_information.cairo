@@ -5,7 +5,8 @@
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, uint256_sub
+from starkware.cairo.common.math import assert_nn
 from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp
 
 // Local dependencies
@@ -67,7 +68,11 @@ func test__blockhash_should_push_blockhash_to_stack{
     let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(10, 0));
+    let (current_block_number: felt) = get_block_number();
+    let out_of_range_block = current_block_number - 260;
+    assert_nn(out_of_range_block);
+    let block_number_: Uint256 = Helpers.to_uint256(val=out_of_range_block);
+    let stack: model.Stack* = Stack.push(stack, block_number_);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
