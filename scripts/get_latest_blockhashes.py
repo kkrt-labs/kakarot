@@ -45,7 +45,8 @@ async def main():
     }
     
     # Dump JSON to file
-    with open(Path("sequencer") / "mock_blockhashes.json", "w") as file:
+    # If you want to use the created file for testing, rename that file to mock_blockhashes.json
+    with open(Path("sequencer") / "blockhashes.json", "w") as file:
         context = {
             "current_block": {
                 "block_number": latest_block.block_number,

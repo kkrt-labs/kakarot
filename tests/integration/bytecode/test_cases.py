@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+# For testing, we use the mock file
 with open(Path("sequencer") / "mock_blockhashes.json") as file:
     blockhashes = json.load(file)
 
