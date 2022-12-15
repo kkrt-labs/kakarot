@@ -47,7 +47,9 @@ namespace IKakarot {
     ) {
     }
 
-    func execute_at_address(address: felt, value: felt, calldata_len: felt, calldata: felt*) {
+    func execute_at_address(
+        address: felt, value: felt, gas_limit: felt, calldata_len: felt, calldata: felt*
+    ) {
     }
 
     func set_account_registry(registry_address_: felt) {

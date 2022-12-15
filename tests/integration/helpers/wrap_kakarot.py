@@ -26,10 +26,17 @@ def wrap_for_kakarot(
 
         async def _wrapped(contract, *args, **kwargs):
             abi = contract.get_function_by_name(fun).abi
+            if "gas_limit" in kwargs:
+                gas_limit = kwargs["gas_limit"]
+                del kwargs["gas_limit"]
+            else:
+                gas_limit = 1000000
+
             if abi["stateMutability"] == "view":
                 call = kakarot.execute_at_address(
                     address=evm_contract_address,
                     value=0,
+                    gas_limit=gas_limit,
                     calldata=hex_string_to_bytes_array(
                         contract.encodeABI(fun, args, kwargs)
                     ),
@@ -46,6 +53,7 @@ def wrap_for_kakarot(
                 call = kakarot.execute_at_address(
                     address=evm_contract_address,
                     value=value,
+                    gas_limit=1000000,
                     calldata=hex_string_to_bytes_array(
                         contract.encodeABI(fun, args, kwargs)
                     ),
