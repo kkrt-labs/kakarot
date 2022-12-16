@@ -33,7 +33,9 @@ class TestSystemOperations:
         await system_operations.test__exec_revert(1000).call()
 
     async def test_return(self, system_operations):
-        await system_operations.test__exec_return_should_return_context_with_updated_return_data(1000).call()
+        await system_operations.test__exec_return_should_return_context_with_updated_return_data(
+            1000
+        ).call()
 
     async def test_call(
         self, system_operations, contract_account_class, account_registry
