@@ -4,9 +4,6 @@ import pytest
 import pytest_asyncio
 from starkware.starknet.testing.starknet import Starknet
 
-random.seed(0)
-
-
 @pytest_asyncio.fixture(scope="module")
 async def environmental_information(starknet: Starknet):
     return await starknet.deploy(
@@ -72,6 +69,7 @@ class TestEnvironmentalInformation:
         environmental_information,
         case,
     ):
+        random.seed(0)
         bytecode = [random.randint(0, 255) for _ in range(32)]
 
         contract_account = await contract_account.write_bytecode(bytecode).execute(
@@ -110,6 +108,7 @@ class TestEnvironmentalInformation:
         ids=["only_zeroes", "only_nonzeroes", "both_zeroes_and_nonzeroes"],
     )
     async def test_gasprice(self, environmental_information, zeroes, nonzeroes):
+        random.seed(0)
         random_nonzeroes = [random.randint(1, 255) for _ in range(nonzeroes)]
         calldata = [0] * zeroes + random_nonzeroes
         random.shuffle(calldata)
