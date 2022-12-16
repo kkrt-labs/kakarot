@@ -37,7 +37,7 @@ namespace model {
         memory: Memory*,
         gas_used: felt,
         gas_limit: felt,
-        intrinsic_gas_cost: felt,
+        gas_price: felt,
         starknet_contract_address: felt,
         evm_contract_address: felt,
         calling_context: ExecutionContext*,

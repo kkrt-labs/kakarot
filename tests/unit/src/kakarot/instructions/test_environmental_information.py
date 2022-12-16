@@ -62,7 +62,7 @@ class TestEnvironmentalInformation:
                 "dest_offset": 0,
             },
         ],
-        ids=["size_is_bytecodelen-1", "size_is_bytecodelen+1", "offset_is_bytecodelen"]
+        ids=["size_is_bytecodelen-1", "size_is_bytecodelen+1", "offset_is_bytecodelen"],
     )
     async def test_excodecopy_should_handle_address_with_code(
         self,
@@ -103,3 +103,17 @@ class TestEnvironmentalInformation:
         expected = (bytecode + [0] * (offset + size))[offset : (offset + size)]
 
         assert memory_result == expected
+
+    @pytest.mark.parametrize(
+        "zeroes,nonzeroes",
+        [(4, 0), (0, 4), (4, 4)],
+        ids=["only_zeroes", "only_nonzeroes", "both_zeroes_and_nonzeroes"],
+    )
+    async def test_gasprice(self, environmental_information, zeroes, nonzeroes):
+        random_nonzeroes = [random.randint(1, 255) for _ in range(nonzeroes)]
+        calldata = [0] * zeroes + random_nonzeroes
+        random.shuffle(calldata)
+
+        await environmental_information.test__exec_gasprice(
+            zeroes=zeroes, nonzeroes=nonzeroes, calldata=calldata
+        ).call()
