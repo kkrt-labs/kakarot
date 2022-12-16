@@ -9,7 +9,8 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.alloc import alloc
 
 // Local dependencies
-from kakarot.library import Kakarot, kakarot_initialized
+from kakarot.library import Kakarot
+from kakarot.constants import kakarot_initialized
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.interfaces.interfaces import IEvmContract

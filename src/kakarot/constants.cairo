@@ -18,6 +18,10 @@ func evm_contract_class_hash() -> (value: felt) {
 func salt() -> (value: felt) {
 }
 
+@storage_var
+func kakarot_initialized() -> (res: felt) {
+}
+
 // @title Constants file.
 // @notice This file contains global constants.
 // @author @abdelhamidbakhta

@@ -20,7 +20,13 @@ from kakarot.stack import Stack
 from kakarot.instructions import EVMInstructions
 from kakarot.interfaces.interfaces import IRegistry, IEvmContract
 from kakarot.execution_context import ExecutionContext
-from kakarot.constants import native_token_address, registry_address, evm_contract_class_hash, salt
+from kakarot.constants import (
+    native_token_address,
+    registry_address,
+    evm_contract_class_hash,
+    salt,
+    kakarot_initialized,
+)
 from kakarot.accounts.contract.library import ContractAccount
 
 // @title Kakarot main library file.
