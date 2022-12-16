@@ -10,16 +10,6 @@ from tests.utils.reporting import traceit
 random.seed(0)
 
 
-@pytest_asyncio.fixture(scope="session")
-async def contract_account(starknet: Starknet):
-    return await starknet.deploy(
-        source="./src/kakarot/accounts/contract/contract_account.cairo",
-        cairo_path=["src"],
-        disable_hint_validation=True,
-        constructor_calldata=[1, 0],
-    )
-
-
 @pytest.mark.asyncio
 class TestContractAccount:
     @pytest.mark.parametrize("bytecode_len", [0, 15, 16, 17, 30, 31, 32, 33])

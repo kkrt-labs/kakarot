@@ -77,6 +77,7 @@ namespace Kakarot {
     // @dev reads the bytecode content of an EVM contract and then executes it
     // @param address The address of the contract whose bytecode will be executed
     // @param calldata The calldata which contains the entry point and method parameters
+    // @param gas_limit Max gas the transaction can use
     // @return The pointer to the updated execution context.
     func execute_at_address{
         syscall_ptr: felt*,
@@ -84,7 +85,7 @@ namespace Kakarot {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(
-        address: felt, calldata_len: felt, calldata: felt*, value: felt
+        address: felt, calldata_len: felt, calldata: felt*, value: felt, gas_limit: felt
     ) -> ExecutionContext.Summary* {
         alloc_locals;
 
@@ -93,6 +94,7 @@ namespace Kakarot {
         let return_data: felt* = alloc();
         let ctx: model.ExecutionContext* = ExecutionContext.init_at_address(
             address=address,
+            gas_limit=gas_limit,
             calldata_len=calldata_len,
             calldata=calldata,
             value=value,

@@ -81,6 +81,7 @@ func execute{
 // @dev reads the bytecode content of an contract account and then executes it
 // @param address The address of the contract whose bytecode will be executed
 // @param value The deposited value by the instruction/transaction responsible for this execution
+// @param gas_limit Max gas the transaction can use
 // @param calldata_len The calldata length
 // @param calldata The calldata which contains the entry point and method parameters
 // @return stack_len The length of the stack
@@ -92,7 +93,7 @@ func execute{
 @external
 func execute_at_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(address: felt, value: felt, calldata_len: felt, calldata: felt*) -> (
+}(address: felt, value: felt, gas_limit: felt, calldata_len: felt, calldata: felt*) -> (
     stack_accesses_len: felt,
     stack_accesses: felt*,
     stack_len: felt,
@@ -106,7 +107,11 @@ func execute_at_address{
 ) {
     alloc_locals;
     let summary = Kakarot.execute_at_address(
-        address=address, calldata_len=calldata_len, calldata=calldata, value=value
+        address=address,
+        calldata_len=calldata_len,
+        calldata=calldata,
+        value=value,
+        gas_limit=gas_limit,
     );
     let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
     let stack_accesses_len = summary.stack.squashed_end - summary.stack.squashed_start;

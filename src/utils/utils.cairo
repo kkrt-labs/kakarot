@@ -68,6 +68,15 @@ namespace Helpers {
 
         return res;
     }
+    // @notice: This helper returns the minimal number of EVM words for a given bytes length
+    // @param length: a given bytes length
+    // @return res: the minimal number of EVM words
+    func minimum_word_count{range_check_ptr}(length: felt) -> (
+        res: felt
+    ) {
+        let (quotient, remainder) = unsigned_div_rem(length + 31, 32);
+        return (res=quotient);
+    }
 
     func compute_half_uint256{range_check_ptr}(val: felt*, i: felt, res: felt) -> (res: felt) {
         if (i == 1) {
@@ -477,5 +486,14 @@ namespace Helpers {
     func ceil_bytes_len_to_next_32_bytes_word{range_check_ptr}(bytes_len: felt) -> felt {
         let (q, _) = unsigned_div_rem(bytes_len + 31, 32);
         return q * 32;
+    }
+
+    // @notice Returns the min value between a and b
+    func min{range_check_ptr}(a: felt, b: felt) -> felt {
+        if (is_le(a, b) == 0) {
+            return b;
+        } else {
+            return a;
+        }
     }
 }
