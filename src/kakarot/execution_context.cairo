@@ -67,7 +67,7 @@ namespace ExecutionContext {
     func init(call_context: model.CallContext*) -> model.ExecutionContext* {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
-        let (empty_destroy_contract: felt*) = alloc();
+        let (empty_destroy_contracts: felt*) = alloc();
 
         // Define initial program counter
         let initial_pc = 0;
@@ -98,7 +98,7 @@ namespace ExecutionContext {
             calling_context=calling_context,
             sub_context=sub_context,
             destroy_contracts_len=0,
-            destroy_contracts=empty_destroy_contract,
+            destroy_contracts=empty_destroy_contracts,
             );
         return ctx;
     }
@@ -144,7 +144,7 @@ namespace ExecutionContext {
     ) -> model.ExecutionContext* {
         alloc_locals;
 
-        let (empty_destroy_contract: felt*) = alloc();
+        let (empty_destroy_contracts: felt*) = alloc();
 
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();
@@ -181,7 +181,7 @@ namespace ExecutionContext {
             calling_context=calling_context,
             sub_context=sub_context,
             destroy_contracts_len=0,
-            destroy_contracts=empty_destroy_contract,
+            destroy_contracts=empty_destroy_contracts,
             );
     }
 

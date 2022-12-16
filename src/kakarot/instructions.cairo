@@ -611,7 +611,10 @@ namespace EVMInstructions {
         // Terminate execution
         if (stopped != FALSE) {
             if (is_parent_root != FALSE) {
-                let ctx = SelfDestructHelper.selfdestruct(ctx);
+                if (ctx.destroy_contracts_len != 0) {
+                    let ctx = SelfDestructHelper.selfdestruct(ctx);
+                    return ctx;
+                }
                 return ctx;
             } else {
                 let (bytecode_len) = IEvmContract.bytecode_len(

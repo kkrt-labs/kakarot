@@ -497,7 +497,7 @@ namespace CreateHelper {
             value=value,
             );
         let (local return_data: felt*) = alloc();
-        let (empty_destroy_contract: felt*) = alloc();
+        let (empty_destroy_contracts: felt*) = alloc();
         let stack = Stack.init();
         let memory = Memory.init();
         let empty_context = ExecutionContext.init_empty();
@@ -517,7 +517,7 @@ namespace CreateHelper {
             calling_context=ctx,
             sub_context=empty_context,
             destroy_contracts_len=0,
-            destroy_contracts=empty_destroy_contract,
+            destroy_contracts=empty_destroy_contracts,
             );
 
         return sub_ctx;
