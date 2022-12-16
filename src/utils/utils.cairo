@@ -487,4 +487,13 @@ namespace Helpers {
         let (q, _) = unsigned_div_rem(bytes_len + 31, 32);
         return q * 32;
     }
+
+    // @notice Returns the min value between a and b
+    func min{range_check_ptr}(a: felt, b: felt) -> felt {
+        if (is_le(a, b) == 0) {
+            return b;
+        } else {
+            return a;
+        }
+    }
 }
