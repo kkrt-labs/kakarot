@@ -69,7 +69,7 @@ async def main():
 
     # Deploy Kakarot Proxy
     logging.info("Deploying Kakarot Proxy")
-    compiled_contract = Path("./build/", "kakarot_proxy.json").read_text("utf-8")
+    compiled_contract = Path(BUILD_PATH, "kakarot_proxy.json").read_text("utf-8")
     contract_address = await declare_and_deploy_contract(client=client,compiled_contract=compiled_contract,calldata=[
         kakarot_class_hash,        
         1679326747767113184781509514654930448714911516044653930322593061206440237873, # init selector
