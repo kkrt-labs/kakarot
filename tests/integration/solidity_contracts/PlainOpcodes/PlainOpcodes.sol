@@ -30,6 +30,10 @@ contract PlainOpcodes {
     /*//////////////////////////////////////////////////////////////
                             FUNCTIONS FOR OPCODES
     //////////////////////////////////////////////////////////////*/
+    function opcodeBlockHash(uint256 blockNumber) public view returns (bytes32 _blockhash) {
+        return (blockhash(blockNumber));
+    }
+
     function opcodeAddress() public view returns (address selfAddress) {
         return (address(this));
     }

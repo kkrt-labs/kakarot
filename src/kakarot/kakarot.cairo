@@ -142,6 +142,25 @@ func get_account_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
     return Kakarot.get_account_registry();
 }
 
+// @notice Set the blockhash registry used by kakarot
+// @dev Set the blockhash registry which will be used to get the blockhashes
+// @param blockhash_registry_address_ The address of the new blockhash registry contract
+@external
+func set_blockhash_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    blockhash_registry_address_: felt
+) {
+    return Kakarot.set_blockhash_registry(blockhash_registry_address_);
+}
+
+// @notice Get the blockhash registry used by kakarot
+// @return address The address of the current blockhash registry contract
+@view
+func get_blockhash_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    address: felt
+) {
+    return Kakarot.get_blockhash_registry();
+}
+
 // @notice Set the native token used by kakarot
 // @dev Set the native token which will emulate the role of ETH on Ethereum
 // @param native_token_address_ The address of the native token

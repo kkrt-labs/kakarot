@@ -27,4 +27,6 @@ pytest_plugins = [
     "tests.fixtures.1_starknet",
     "tests.fixtures.2_kakarot",
     "tests.fixtures.3_account_registry",
+    "tests.fixtures.4_blockhash_registry",
+    "tests.fixtures.5_blockhashes",
 ]

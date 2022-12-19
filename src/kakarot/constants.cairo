@@ -11,6 +11,10 @@ func registry_address() -> (res: felt) {
 }
 
 @storage_var
+func blockhash_registry_address() -> (res: felt) {
+}
+
+@storage_var
 func evm_contract_class_hash() -> (value: felt) {
 }
 

@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import shutil
@@ -24,10 +25,14 @@ logger = logging.getLogger()
 
 
 @pytest_asyncio.fixture(scope="session")
-async def starknet(worker_id, request) -> AsyncGenerator[Starknet, None]:
+async def starknet(worker_id, request, blockhashes) -> AsyncGenerator[Starknet, None]:
     starknet = await Starknet.empty()
+    current_block_number = blockhashes["current_block"]["block_number"]
+    current_block_timestamp = blockhashes["current_block"]["timestamp"]
     starknet.state.state.update_block_info(
-        BlockInfo.create_for_testing(block_number=1, block_timestamp=1)
+        BlockInfo.create_for_testing(
+            block_number=current_block_number, block_timestamp=current_block_timestamp
+        )
     )
 
     starknet.deploy = traceit.trace_all(timeit(starknet.deploy))

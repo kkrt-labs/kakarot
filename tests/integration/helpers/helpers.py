@@ -37,3 +37,9 @@ def extract_stack_from_execute(result):
         stack[index] = 2**128 * high + low
 
     return stack
+
+
+def int_to_uint256(value):
+    low = value & ((1 << 128) - 1)
+    high = value >> 128
+    return low, high

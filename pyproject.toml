@@ -70,6 +70,7 @@ markers = [
     "CODECOPY:       Opcode Value 0x39 - Copy code running in current environment to memory",
     "RETURNDATASIZE: Opcode Value 0x3d - Get size of output data from the previous call from the current environment",
     "BlockInformation",
+    "BLOCKHASH:      Opcode Value 0x40 - Get the hash of one of the 256 most recent complete blocks",
     "COINBASE:       Opcode Value 0x41 - Get the block's beneficiary address",
     "TIMESTAMP:      Opcode Value 0x42 - Get the block's timestamp",
     "NUMBER:         Opcode Value 0x43 - Get the block's number",

@@ -5,7 +5,8 @@
 // Starkware dependencies
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-
+from starkware.cairo.common.math_cmp import is_in_range
+from starkware.cairo.common.bool import FALSE
 from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp
 from starkware.cairo.common.uint256 import Uint256
 
@@ -14,8 +15,8 @@ from kakarot.model import model
 from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
-from kakarot.constants import Constants, native_token_address
-from kakarot.interfaces.interfaces import IEth
+from kakarot.constants import Constants, native_token_address, blockhash_registry_address
+from kakarot.interfaces.interfaces import IEth, IBlockhashRegistry
 
 // @title BlockInformation information opcodes.
 // @notice This file contains the functions to execute for block information opcodes.
@@ -23,6 +24,7 @@ from kakarot.interfaces.interfaces import IEth
 // @custom:namespace BlockInformation
 namespace BlockInformation {
     // Define constants.
+    const GAS_COST_BLOCKHASH = 20;
     const GAS_COST_COINBASE = 2;
     const GAS_COST_TIMESTAMP = 2;
     const GAS_COST_NUMBER = 2;
@@ -31,6 +33,62 @@ namespace BlockInformation {
     const GAS_COST_CHAINID = 2;
     const GAS_COST_SELFBALANCE = 5;
     const GAS_COST_BASEFEE = 2;
+
+    // @notice COINBASE operation.
+    // @dev Get the hash of one of the 256 most recent complete blocks.
+    // @dev 0 if the block number is not in the valid range.
+    // @custom:since Frontier
+    // @custom:group Block Information
+    // @custom:gas 20
+    // @custom:stack_consumed_elements 1
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context
+    // @return The pointer to the updated execution context.
+    func exec_blockhash{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+        // Get the blockNumber
+        let (stack: model.Stack*, _block_number: Uint256) = Stack.pop(ctx.stack);
+        let block_number: felt = Helpers.uint256_to_felt(val=_block_number);
+
+        // Check if blockNumber is within bounds by checking with current block number
+        // Valid range is the last 256 blocks (not including the current one)
+        let (local current_block_number: felt) = get_block_number();
+        let in_range = is_in_range(block_number, current_block_number - 256, current_block_number);
+
+        // If not in range, return 0
+        if (in_range == FALSE) {
+            let blockhash: Uint256 = Helpers.to_uint256(val=0);
+            let stack: model.Stack* = Stack.push(self=stack, element=blockhash);
+
+            // Update the execution context.
+            // Update context stack.
+            let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+            // Increment gas used.
+            let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_BLOCKHASH);
+            return ctx;
+        }
+
+        // Get blockhash from corresponding block number from registry
+        // Then push it to stack
+        let (blockhash_registry_address_: felt) = blockhash_registry_address.read();
+        let (blockhash_: felt) = IBlockhashRegistry.get_blockhash(
+            contract_address=blockhash_registry_address_, block_number=_block_number
+        );
+        let blockhash: Uint256 = Helpers.to_uint256(val=blockhash_);
+        let stack: model.Stack* = Stack.push(self=stack, element=blockhash);
+
+        // Update the execution context.
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_BLOCKHASH);
+        return ctx;
+    }
 
     // @notice COINBASE operation.
     // @dev Get the block's beneficiary address.

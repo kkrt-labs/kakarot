@@ -9,7 +9,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 // @author @abdelhamidbakhta
 
 // Local dependencies
-from kakarot.accounts.registry.library import AccountRegistry
+from kakarot.accounts.registry.account.library import AccountRegistry
 
 // Constructor
 @constructor
