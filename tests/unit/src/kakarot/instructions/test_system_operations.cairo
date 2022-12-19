@@ -562,6 +562,7 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     let (return_data) = alloc();
     assert [return_data] = 0;
     assert [return_data + 1] = 10;
+    let (destroy_contracts) = alloc();
     let (calldata) = alloc();
     assert [calldata] = '';
     local call_context: model.CallContext* = new model.CallContext(
@@ -581,7 +582,7 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     assert [sub_ctx + 9] = 0;   // intrinsic_gas_cost
     assert [sub_ctx + 13] = 0;  // sub_context
     assert [sub_ctx + 14] = 0;  // destroy_contracts_len
-    assert [sub_ctx + 15] = 0;  // destroy_contracts
+    assert [sub_ctx + 15] = cast(destroy_contracts, felt);  // destroy_contracts
 
     // Simulate contract creation
     let (evm_contract_address, starknet_contract_address) = ContractAccount.deploy(0);

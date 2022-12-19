@@ -337,19 +337,12 @@ namespace SystemOperations {
         }
 
         // Save contract to be destroyed at the end of the transaction in a NEW array
-        // Directly filling ctx.destroy_contract produces error "Expected memory address to be relocatable value. Found: 0."
-        let (destroy_contracts) = alloc();
-        Helpers.fill_array(
-            fill_len=ctx.destroy_contracts_len,
-            input_arr=ctx.destroy_contracts,
-            output_arr=destroy_contracts,
-        );
-        assert [destroy_contracts + ctx.destroy_contracts_len] = ctx.starknet_contract_address;
+        assert ctx.destroy_contracts[ctx.destroy_contracts_len] = ctx.starknet_contract_address;
         
         let ctx = ExecutionContext.update_destroy_contracts(
             self=ctx,
-            destroy_contracts_len= ctx.destroy_contracts_len + 1,
-            destroy_contracts=destroy_contracts,
+            destroy_contracts_len=ctx.destroy_contracts_len + 1,
+            destroy_contracts=ctx.destroy_contracts,
             stop=TRUE,
         );
         
