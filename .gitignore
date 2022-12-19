@@ -24,3 +24,6 @@ artifacts
 lint.sarif
 kakarot.code-workspace
 coverage/*
+
+# Scripts artifacts
+blockhashes.json

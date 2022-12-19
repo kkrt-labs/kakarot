@@ -201,7 +201,7 @@ namespace TestHelpers {
 
         assert execution_context_0.gas_used = execution_context_1.gas_used;
         assert execution_context_0.gas_limit = execution_context_1.gas_limit;
-        assert execution_context_0.intrinsic_gas_cost = execution_context_1.intrinsic_gas_cost;
+        assert execution_context_0.gas_price = execution_context_1.gas_price;
         assert execution_context_0.starknet_contract_address = execution_context_1.starknet_contract_address;
         assert execution_context_0.evm_contract_address = execution_context_1.evm_contract_address;
         return assert_execution_context_equal(
@@ -243,7 +243,7 @@ namespace TestHelpers {
         %{
             print(f"{ids.execution_context.gas_used=}")
             print(f"{ids.execution_context.gas_limit=}")
-            print(f"{ids.execution_context.intrinsic_gas_cost=}")
+            print(f"{ids.execution_context.gas_price}")
             print(f"{ids.execution_context.starknet_contract_address=}")
             print(f"{ids.execution_context.evm_contract_address=}")
         %}

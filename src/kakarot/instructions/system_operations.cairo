@@ -494,7 +494,7 @@ namespace CreateHelper {
             memory=memory,
             gas_used=0,
             gas_limit=0,
-            intrinsic_gas_cost=0,
+            gas_price=0,
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=evm_contract_address,
             calling_context=ctx,

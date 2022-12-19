@@ -11,7 +11,7 @@ from starkware.cairo.common.math import (
     split_int,
     unsigned_div_rem,
 )
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_le, is_not_zero
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.pow import pow
 from starkware.cairo.common.uint256 import Uint256, uint256_check
@@ -68,12 +68,30 @@ namespace Helpers {
 
         return res;
     }
+
+    // @notice: This helper returns count of nonzero elements in an array
+    // @param nonzeroes: count of nonzero elements in an array
+    // @param idx: index that is recursively incremented of array
+    // @param arr_len: length of array
+    // @param arr: array whose nonzero elements are counted
+    // @return nonzeroes: count of nonzero elements in an array
+    func count_nonzeroes(nonzeroes: felt, idx: felt, arr_len: felt, arr: felt*) -> (
+        nonzeroes: felt, index: felt, arr_len: felt, arr: felt*
+    ) {
+        if (idx == arr_len) {
+            return (nonzeroes, idx, arr_len, arr);
+        }
+
+        let arr_element = [arr];
+        let not_zero = is_not_zero(arr_element);
+        let res = count_nonzeroes(nonzeroes + not_zero, idx + 1, arr_len, arr + 1);
+        return res;
+    }
+
     // @notice: This helper returns the minimal number of EVM words for a given bytes length
     // @param length: a given bytes length
     // @return res: the minimal number of EVM words
-    func minimum_word_count{range_check_ptr}(length: felt) -> (
-        res: felt
-    ) {
+    func minimum_word_count{range_check_ptr}(length: felt) -> (res: felt) {
         let (quotient, remainder) = unsigned_div_rem(length + 31, 32);
         return (res=quotient);
     }

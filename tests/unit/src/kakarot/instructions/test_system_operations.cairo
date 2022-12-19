@@ -133,7 +133,7 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     assert sub_ctx.gas_used = 0;
     let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
     assert_le(sub_ctx.gas_limit, gas_felt);
-    assert sub_ctx.intrinsic_gas_cost = 0;
+    assert sub_ctx.gas_price = 0;
     assert sub_ctx.starknet_contract_address = starknet_contract_address;
     assert sub_ctx.evm_contract_address = evm_contract_address;
     TestHelpers.assert_execution_context_equal(sub_ctx.calling_context, ctx);
@@ -210,7 +210,7 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
     assert sub_ctx.gas_used = 0;
     let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
     assert_le(sub_ctx.gas_limit, gas_felt);
-    assert sub_ctx.intrinsic_gas_cost = 0;
+    assert sub_ctx.gas_price = 0;
     assert sub_ctx.starknet_contract_address = ctx.starknet_contract_address;
     assert sub_ctx.evm_contract_address = ctx.evm_contract_address;
     TestHelpers.assert_execution_context_equal(sub_ctx.calling_context, ctx);
@@ -285,7 +285,7 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
     assert sub_ctx.gas_used = 0;
     let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
     assert_le(sub_ctx.gas_limit, gas_felt);
-    assert sub_ctx.intrinsic_gas_cost = 0;
+    assert sub_ctx.gas_price = 0;
     assert sub_ctx.starknet_contract_address = starknet_contract_address;
     assert sub_ctx.evm_contract_address = evm_contract_address;
     TestHelpers.assert_execution_context_equal(sub_ctx.calling_context, ctx);
@@ -360,7 +360,7 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
     assert sub_ctx.gas_used = 0;
     let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
     assert_le(sub_ctx.gas_limit, gas_felt);
-    assert sub_ctx.intrinsic_gas_cost = 0;
+    assert sub_ctx.gas_price = 0;
     assert sub_ctx.starknet_contract_address = ctx.starknet_contract_address;
     assert sub_ctx.evm_contract_address = ctx.evm_contract_address;
     TestHelpers.assert_execution_context_equal(sub_ctx.calling_context, ctx);
@@ -425,7 +425,7 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
     assert sub_ctx.return_data_len = 0;
     assert sub_ctx.gas_used = 0;
     assert sub_ctx.gas_limit = 0;
-    assert sub_ctx.intrinsic_gas_cost = 0;
+    assert sub_ctx.gas_price = 0;
     assert_not_zero(sub_ctx.starknet_contract_address);
     assert_not_zero(sub_ctx.evm_contract_address);
     let (sub_ctx_contract_stored_bytecode) = IEvmContract.bytecode_len(
@@ -507,7 +507,7 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     assert sub_ctx.return_data_len = 0;
     assert sub_ctx.gas_used = 0;
     assert sub_ctx.gas_limit = 0;
-    assert sub_ctx.intrinsic_gas_cost = 0;
+    assert sub_ctx.gas_price = 0;
     assert_not_zero(sub_ctx.starknet_contract_address);
     assert_not_zero(sub_ctx.evm_contract_address);
     let (sub_ctx_contract_stored_bytecode) = IEvmContract.bytecode_len(
