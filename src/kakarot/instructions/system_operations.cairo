@@ -336,14 +336,10 @@ namespace SystemOperations {
             assert success = TRUE;
         }
 
-        // Save contract to be destroyed at the end of the transaction in a NEW array
-        assert ctx.destroy_contracts[ctx.destroy_contracts_len] = ctx.starknet_contract_address;
-        
-        let ctx = ExecutionContext.update_destroy_contracts(
+        // Save contract to be destroyed at the end of the transaction
+        let ctx = ExecutionContext.add_destroy_contract(
             self=ctx,
-            destroy_contracts_len=ctx.destroy_contracts_len + 1,
-            destroy_contracts=ctx.destroy_contracts,
-            stop=TRUE,
+            destroy_contract=ctx.starknet_contract_address,
         );
         
         return ctx;
@@ -431,16 +427,10 @@ namespace CallHelper {
         let ctx = ExecutionContext.update_sub_context(ctx.calling_context, ctx);
 
         // Append contracts selfdestruct to the calling_context
-        Helpers.fill_array(
-            fill_len=ctx.sub_context.destroy_contracts_len,
-            input_arr=ctx.sub_context.destroy_contracts,
-            output_arr=ctx.destroy_contracts + ctx.destroy_contracts_len,
-        );
-        let ctx = ExecutionContext.update_destroy_contracts(
+        let ctx = ExecutionContext.add_n_destroy_contracts(
             self=ctx,
-            destroy_contracts_len=ctx.destroy_contracts_len + ctx.sub_context.destroy_contracts_len,
-            destroy_contracts=ctx.destroy_contracts,
-            stop=ctx.stopped,
+            destroy_contracts_len=ctx.sub_context.destroy_contracts_len,
+            destroy_contracts=ctx.sub_context.destroy_contracts,
         );
         
         let stack = Stack.push(ctx.stack, success);
@@ -533,16 +523,10 @@ namespace CreateHelper {
         local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(ctx.calling_context, ctx);
         
         // Append contracts to selfdestruct to the calling_context
-        Helpers.fill_array(
-            fill_len=ctx.sub_context.destroy_contracts_len,
-            input_arr=ctx.sub_context.destroy_contracts,
-            output_arr=ctx.destroy_contracts + ctx.destroy_contracts_len,
-        );
-        let ctx = ExecutionContext.update_destroy_contracts(
+        let ctx = ExecutionContext.add_n_destroy_contracts(
             self=ctx,
-            destroy_contracts_len=ctx.destroy_contracts_len + ctx.sub_context.destroy_contracts_len,
-            destroy_contracts=ctx.destroy_contracts,
-            stop=ctx.stopped,
+            destroy_contracts_len=ctx.sub_context.destroy_contracts_len,
+            destroy_contracts=ctx.sub_context.destroy_contracts,
         );
 
         let (address_high, address_low) = split_felt(ctx.sub_context.evm_contract_address);
@@ -555,24 +539,20 @@ namespace CreateHelper {
 
 namespace SelfDestructHelper {
 
-    // @notice helper for SELFDESTRUCT operation.
-    // @notice overwrite contract account bytecode with 0s
-    // @notice remove contract from registry
-    // @return The pointer to the updated execution_context.
-    func selfdestruct{
+
+    func _finalize_loop{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+    }(destroy_contracts_len: felt, destroy_contracts: felt*) -> felt* {
         alloc_locals;
 
-        if (ctx.destroy_contracts_len == 0) {
-            return (ctx);
+        if (destroy_contracts_len == 0) {
+            return (destroy_contracts);
         }
 
-        // Get bytecode_len from the EVM contract
-        let starknet_contract_address = [ctx.destroy_contracts];
+        let starknet_contract_address = [destroy_contracts];
         let (bytecode_len) = IEvmContract.bytecode_len(
             contract_address=starknet_contract_address
         );
@@ -592,13 +572,40 @@ namespace SelfDestructHelper {
             evm_contract_address=0
         );
 
-        let ctx = ExecutionContext.update_destroy_contracts(
-            self=ctx,
-            destroy_contracts_len= ctx.destroy_contracts_len - 1,
-            destroy_contracts=ctx.destroy_contracts + 1,
-            stop=ctx.stopped,
-        );
+        return _finalize_loop(destroy_contracts_len - 1, destroy_contracts + 1);
+    }
 
-        return selfdestruct(ctx);
+    // @notice helper for SELFDESTRUCT operation.
+    // @notice overwrite contract account bytecode with 0s
+    // @notice remove contract from registry
+    // @return The pointer to the updated execution_context.
+    func finalize{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+
+        let empty_destroy_contracts = _finalize_loop(ctx.destroy_contracts_len, ctx.destroy_contracts);
+
+        return new model.ExecutionContext(
+            call_context=ctx.call_context,
+            program_counter=ctx.program_counter,
+            stopped=ctx.stopped,
+            return_data=ctx.return_data,
+            return_data_len=ctx.return_data_len,
+            stack=ctx.stack,
+            memory=ctx.memory,
+            gas_used=ctx.gas_used,
+            gas_limit=ctx.gas_limit,
+            intrinsic_gas_cost=ctx.intrinsic_gas_cost,
+            starknet_contract_address=ctx.starknet_contract_address,
+            evm_contract_address=ctx.evm_contract_address,
+            calling_context=ctx.calling_context,
+            sub_context=ctx.sub_context,
+            destroy_contracts_len=0,
+            destroy_contracts=empty_destroy_contracts,
+        );
     }
 }

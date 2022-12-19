@@ -612,7 +612,7 @@ namespace EVMInstructions {
         if (stopped != FALSE) {
             if (is_parent_root != FALSE) {
                 if (ctx.destroy_contracts_len != 0) {
-                    let ctx = SelfDestructHelper.selfdestruct(ctx);
+                    let ctx = SelfDestructHelper.finalize(ctx);
                     return ctx;
                 }
                 return ctx;

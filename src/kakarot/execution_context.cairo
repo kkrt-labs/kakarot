@@ -487,18 +487,22 @@ namespace ExecutionContext {
 
     // @notice Update the array of contracts to destroy.
     // @param self The pointer to the execution context.
-    // @param destroy_contracts_len Array new length.
-    // @param destroy_contracts The pointer to the new array of contracts.
-    func update_destroy_contracts(
+    // @param destroy_contracts_len Array length of destroy_contracts to add.
+    // @param destroy_contracts The pointer to the new array of contracts to destroy.
+    func add_n_destroy_contracts(
         self: model.ExecutionContext*,
         destroy_contracts_len: felt,
         destroy_contracts: felt*,
-        stop: felt,
     ) -> model.ExecutionContext* {
+        Helpers.fill_array(
+            fill_len=destroy_contracts_len,
+            input_arr=destroy_contracts,
+            output_arr=self.destroy_contracts + self.destroy_contracts_len,
+        );
         return new model.ExecutionContext(
             call_context=self.call_context,
             program_counter=self.program_counter,
-            stopped=stop,
+            stopped=self.stopped,
             return_data=self.return_data,
             return_data_len=self.return_data_len,
             stack=self.stack,
@@ -510,9 +514,37 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
-            destroy_contracts_len=destroy_contracts_len,
-            destroy_contracts=destroy_contracts,
-            );
+            destroy_contracts_len=self.destroy_contracts_len + destroy_contracts_len,
+            destroy_contracts=self.destroy_contracts,
+        ); 
+    }
+
+    // @notice Add one contract to the array of contracts to destroy.
+    // @param self The pointer to the execution context.
+    // @param destroy_contract contract to destroy.
+    func add_destroy_contract(
+        self: model.ExecutionContext*,
+        destroy_contract: felt,
+    ) -> model.ExecutionContext* {
+        assert [self.destroy_contracts + self.destroy_contracts_len] = destroy_contract;
+        return new model.ExecutionContext(
+            call_context=self.call_context,
+            program_counter=self.program_counter,
+            stopped=TRUE,
+            return_data=self.return_data,
+            return_data_len=self.return_data_len,
+            stack=self.stack,
+            memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit,
+            intrinsic_gas_cost=self.intrinsic_gas_cost,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
+            calling_context=self.calling_context,
+            sub_context=self.sub_context,
+            destroy_contracts_len=self.destroy_contracts_len + 1,
+            destroy_contracts=self.destroy_contracts,
+        ); 
     }
 
     // @notice Dump the current execution context.

@@ -617,7 +617,7 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
 
     // Simulate run
     let ctx = CallHelper.finalize_calling_context(sub_ctx_object);
-    let ctx = SelfDestructHelper.selfdestruct(ctx);
+    let ctx = SelfDestructHelper.finalize(ctx);
 
     // Then
     let (evm_contract_address) = IRegistry.get_evm_contract_address(
