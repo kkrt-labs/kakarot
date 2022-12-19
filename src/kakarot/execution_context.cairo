@@ -53,7 +53,7 @@ namespace ExecutionContext {
         dw 0;  // memory
         dw 0;  // gas_used
         dw 0;  // gas_limit
-        dw 0;  // intrinsic_gas_cost
+        dw 0;  // gas_price
         dw 0;  // starknet_contract_address
         dw 0;  // evm_contract_address
         dw 0;  // calling_context
@@ -91,7 +91,7 @@ namespace ExecutionContext {
             memory=memory,
             gas_used=gas_used,
             gas_limit=gas_limit,
-            intrinsic_gas_cost=0,
+            gas_price=0,
             starknet_contract_address=0,
             evm_contract_address=0,
             calling_context=calling_context,
@@ -170,7 +170,7 @@ namespace ExecutionContext {
             memory=memory,
             gas_used=0,
             gas_limit=gas_limit,
-            intrinsic_gas_cost=0,
+            gas_price=0,
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=address,
             calling_context=calling_context,
@@ -179,28 +179,17 @@ namespace ExecutionContext {
     }
 
     // @notice Compute the intrinsic gas cost of the current transaction.
-    // @dev Update the given execution context with the intrinsic gas cost.
+    // @dev Computes with the intrinsic gas cost based on per transaction constant and cost of input data (16 gas per non-zero byte and 4 gas per zero byte).
     // @param self The execution context.
-    // @return The updated execution context.
-    func compute_intrinsic_gas_cost(self: model.ExecutionContext*) -> model.ExecutionContext* {
-        let intrinsic_gas_cost = Constants.TRANSACTION_INTRINSIC_GAS_COST;
-        let gas_used = self.gas_used + intrinsic_gas_cost;
-        return new model.ExecutionContext(
-            call_context=self.call_context,
-            program_counter=self.program_counter,
-            stopped=self.stopped,
-            return_data=self.return_data,
-            return_data_len=self.return_data_len,
-            stack=self.stack,
-            memory=self.memory,
-            gas_used=gas_used,
-            gas_limit=self.gas_limit,
-            intrinsic_gas_cost=intrinsic_gas_cost,
-            starknet_contract_address=self.starknet_contract_address,
-            evm_contract_address=self.evm_contract_address,
-            calling_context=self.calling_context,
-            sub_context=self.sub_context,
-            );
+    // @return intrinsic gas cost.
+    func compute_intrinsic_gas_cost(self: model.ExecutionContext*) -> felt {
+        let calldata = self.call_context.calldata;
+        let calldata_len = self.call_context.calldata_len;
+        let count = Helpers.count_nonzeroes(nonzeroes=0, idx=0, arr_len=calldata_len, arr=calldata);
+        let zeroes = calldata_len - count.nonzeroes;
+        let calldata_cost = zeroes * 4 + count.nonzeroes * 16;
+
+        return (Constants.TRANSACTION_INTRINSIC_GAS_COST + calldata_cost);
     }
 
     // @notice Return whether the current execution context is stopped.
@@ -248,7 +237,7 @@ namespace ExecutionContext {
             memory=self.memory,
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
-            intrinsic_gas_cost=self.intrinsic_gas_cost,
+            gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
@@ -293,7 +282,7 @@ namespace ExecutionContext {
             memory=self.memory,
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
-            intrinsic_gas_cost=self.intrinsic_gas_cost,
+            gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
@@ -318,7 +307,7 @@ namespace ExecutionContext {
             memory=new_memory,
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
-            intrinsic_gas_cost=self.intrinsic_gas_cost,
+            gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
@@ -348,7 +337,7 @@ namespace ExecutionContext {
             memory=self.memory,
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
-            intrinsic_gas_cost=self.intrinsic_gas_cost,
+            gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
@@ -374,7 +363,7 @@ namespace ExecutionContext {
             memory=self.memory,
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
-            intrinsic_gas_cost=self.intrinsic_gas_cost,
+            gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
@@ -400,7 +389,7 @@ namespace ExecutionContext {
             memory=self.memory,
             gas_used=self.gas_used + inc_value,
             gas_limit=self.gas_limit,
-            intrinsic_gas_cost=self.intrinsic_gas_cost,
+            gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
@@ -425,7 +414,7 @@ namespace ExecutionContext {
             memory=self.memory,
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
-            intrinsic_gas_cost=self.intrinsic_gas_cost,
+            gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,
@@ -452,7 +441,7 @@ namespace ExecutionContext {
             memory=self.memory,
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
-            intrinsic_gas_cost=self.intrinsic_gas_cost,
+            gas_price=self.gas_price,
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=evm_contract_address,
             calling_context=self.calling_context,
@@ -497,7 +486,7 @@ namespace ExecutionContext {
             memory=self.memory,
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
-            intrinsic_gas_cost=self.intrinsic_gas_cost,
+            gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
             calling_context=self.calling_context,

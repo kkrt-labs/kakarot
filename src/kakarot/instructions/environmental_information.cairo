@@ -34,6 +34,7 @@ namespace EnvironmentalInformation {
     const GAS_COST_CALLDATACOPY = 3;
     const GAS_COST_CODESIZE = 2;
     const GAS_COST_CODECOPY = 3;
+    const GAS_COST_GASPRICE = 2;
     const GAS_COST_EXTCODECOPY = 2600;
     const GAS_COST_RETURNDATASIZE = 2;
     const GAS_COST_RETURNDATACOPY = 3;
@@ -398,6 +399,37 @@ namespace EnvironmentalInformation {
         return ctx;
     }
 
+    // @notice GASPRICE operation
+    // @dev Get price of gas in current environment
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 2
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context
+    // @return The pointer to the updated execution context.
+    func exec_gasprice{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+
+        // Get the gasprice.
+        let cost_felt = ExecutionContext.compute_intrinsic_gas_cost(ctx);
+        let cost_uint256 = Helpers.to_uint256(cost_felt);
+
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=cost_uint256);
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_GASPRICE);
+
+        return ctx;
+    }
+
     // @notice EXTCODESIZE operation
     // @dev Get size of an account’s code
     // @custom:since Frontier
@@ -532,9 +564,7 @@ namespace EnvironmentalInformation {
         // Update context stack.
         let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
-        let (minimum_word_size) = Helpers.minimum_word_count(
-            size.low
-        );
+        let (minimum_word_size) = Helpers.minimum_word_count(size.low);
 
         // TODO:distinction between warm and cold addresses determines `address_access_cost`
         //  for now we assume a cold address, which sets `address_access_cost` to 2600

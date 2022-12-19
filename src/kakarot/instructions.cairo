@@ -193,7 +193,7 @@ namespace EVMInstructions {
         ret;
         call EnvironmentalInformation.exec_codecopy;  // 0x39
         ret;
-        call not_implemented_opcode;  // 0x3a
+        call EnvironmentalInformation.exec_gasprice;  // 0x3a
         ret;
         call EnvironmentalInformation.exec_extcodesize;  // 0x3b
         ret;

@@ -60,7 +60,8 @@ namespace Kakarot {
         let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
 
         // Compute intrinsic gas cost and update gas used
-        let ctx = ExecutionContext.compute_intrinsic_gas_cost(self=ctx);
+        let cost = ExecutionContext.compute_intrinsic_gas_cost(self=ctx);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=cost);
 
         // Start execution
         let ctx = EVMInstructions.run(ctx=ctx);
@@ -103,7 +104,8 @@ namespace Kakarot {
         );
 
         // Compute intrinsic gas cost and update gas used
-        let ctx = ExecutionContext.compute_intrinsic_gas_cost(ctx);
+        let cost = ExecutionContext.compute_intrinsic_gas_cost(ctx);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=cost);
 
         // Start execution
         let ctx = EVMInstructions.run(ctx);
@@ -192,7 +194,7 @@ namespace Kakarot {
             memory=memory,
             gas_used=0,
             gas_limit=0,
-            intrinsic_gas_cost=0,
+            gas_price=0,
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=evm_contract_address,
             calling_context=calling_context,
@@ -200,7 +202,8 @@ namespace Kakarot {
             );
 
         // Compute intrinsic gas cost and update gas used
-        let ctx = ExecutionContext.compute_intrinsic_gas_cost(ctx);
+        let cost = ExecutionContext.compute_intrinsic_gas_cost(ctx);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=cost);
 
         // Start execution
         let ctx = EVMInstructions.run(ctx);
