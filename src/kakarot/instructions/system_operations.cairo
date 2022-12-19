@@ -337,7 +337,7 @@ namespace SystemOperations {
         }
 
         // Save contract to be destroyed at the end of the transaction
-        let ctx = ExecutionContext.add_destroy_contract(
+        let ctx = ExecutionContext.push_to_destroy_contract(
             self=ctx,
             destroy_contract=ctx.starknet_contract_address,
         );
@@ -427,7 +427,7 @@ namespace CallHelper {
         let ctx = ExecutionContext.update_sub_context(ctx.calling_context, ctx);
 
         // Append contracts selfdestruct to the calling_context
-        let ctx = ExecutionContext.add_n_destroy_contracts(
+        let ctx = ExecutionContext.push_to_destroy_contracts(
             self=ctx,
             destroy_contracts_len=ctx.sub_context.destroy_contracts_len,
             destroy_contracts=ctx.sub_context.destroy_contracts,
@@ -523,7 +523,7 @@ namespace CreateHelper {
         local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(ctx.calling_context, ctx);
         
         // Append contracts to selfdestruct to the calling_context
-        let ctx = ExecutionContext.add_n_destroy_contracts(
+        let ctx = ExecutionContext.push_to_destroy_contracts(
             self=ctx,
             destroy_contracts_len=ctx.sub_context.destroy_contracts_len,
             destroy_contracts=ctx.sub_context.destroy_contracts,

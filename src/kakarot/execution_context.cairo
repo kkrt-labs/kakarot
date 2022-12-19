@@ -476,7 +476,7 @@ namespace ExecutionContext {
     // @param self The pointer to the execution context.
     // @param destroy_contracts_len Array length of destroy_contracts to add.
     // @param destroy_contracts The pointer to the new array of contracts to destroy.
-    func add_n_destroy_contracts(
+    func push_to_destroy_contracts(
         self: model.ExecutionContext*,
         destroy_contracts_len: felt,
         destroy_contracts: felt*,
@@ -509,7 +509,7 @@ namespace ExecutionContext {
     // @notice Add one contract to the array of contracts to destroy.
     // @param self The pointer to the execution context.
     // @param destroy_contract contract to destroy.
-    func add_destroy_contract(
+    func push_to_destroy_contract(
         self: model.ExecutionContext*,
         destroy_contract: felt,
     ) -> model.ExecutionContext* {
