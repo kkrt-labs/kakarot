@@ -599,7 +599,7 @@ namespace SelfDestructHelper {
             memory=ctx.memory,
             gas_used=ctx.gas_used,
             gas_limit=ctx.gas_limit,
-            intrinsic_gas_cost=ctx.intrinsic_gas_cost,
+            gas_price=ctx.gas_price,
             starknet_contract_address=ctx.starknet_contract_address,
             evm_contract_address=ctx.evm_contract_address,
             calling_context=ctx.calling_context,
