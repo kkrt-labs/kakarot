@@ -38,6 +38,7 @@ func init_context{
 
     // Initialize ExecutionContext
     let (empty_return_data: felt*) = alloc();
+    let (empty_destroy_contracts: felt*) = alloc();
     let stack: model.Stack* = Stack.init();
     let memory: model.Memory* = Memory.init();
     let gas_limit = Constants.TRANSACTION_GAS_LIMIT;
@@ -59,6 +60,8 @@ func init_context{
         evm_contract_address=420,
         calling_context=calling_context,
         sub_context=sub_context,
+        destroy_contracts_len=0,
+        destroy_contracts=empty_destroy_contracts,
         );
     return ctx;
 }

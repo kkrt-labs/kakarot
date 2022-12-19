@@ -71,3 +71,11 @@ class TestSystemOperations:
             contract_account_class.class_hash,
             account_registry.contract_address,
         ).call()
+    async def test_selfdestruct(
+        self, system_operations, contract_account_class, account_registry, eth
+    ):
+        await system_operations.test__exec_selfdestruct__should_delete_account_bytecode(
+            eth.contract_address,
+            contract_account_class.class_hash,
+            account_registry.contract_address,
+        ).call()
