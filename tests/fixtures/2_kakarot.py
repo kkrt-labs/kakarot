@@ -22,6 +22,15 @@ async def contract_account_class(starknet: Starknet):
 
 
 @pytest_asyncio.fixture(scope="session")
+async def kakarot_class(starknet: Starknet):
+    return await starknet.declare(
+        source="./src/kakarot/kakarot.cairo",
+        cairo_path=["src"],
+        disable_hint_validation=True,
+    )
+
+
+@pytest_asyncio.fixture(scope="session")
 async def contract_account(starknet: Starknet):
     return await starknet.deploy(
         source="./src/kakarot/accounts/contract/contract_account.cairo",
@@ -33,8 +42,12 @@ async def contract_account(starknet: Starknet):
 
 @pytest_asyncio.fixture(scope="package")
 async def kakarot(
-    starknet: Starknet, eth: StarknetContract, contract_account_class: DeclaredClass
+    starknet: Starknet,
+    eth: StarknetContract,
+    contract_account_class: DeclaredClass,
+    kakarot_class: DeclaredClass,
 ) -> StarknetContract:
+
     kakarot_contract = await starknet.deploy(
         source="./src/kakarot/kakarot.cairo",
         cairo_path=["src"],
@@ -43,7 +56,7 @@ async def kakarot(
     )
 
     await kakarot_contract.init(
-        1, eth.contract_address, contract_account_class.class_hash  # owner
+        1, eth.contract_address, contract_account_class.class_hash
     ).execute(caller_address=1)
 
     return kakarot_contract

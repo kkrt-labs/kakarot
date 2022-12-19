@@ -21,12 +21,11 @@ ETH_ADDRESS = 208702142472261977711950947494347264576765999634876957812056451901
 MAX_FEE = int(1e16)
 
 # Loading .env file
-dotenv_path = os.path.join('./', '.env')
-load_dotenv(dotenv_path)
+load_dotenv()
 
 # Get env variables
 private_key = int(os.environ.get("PRIVATE_KEY"))
-account_address = int(os.environ.get("ACCOUNT_ADDRESS"),16)
+account_address = int(os.environ.get("ACCOUNT_ADDRESS"), 16)
 network = os.getenv('NETWORK')
 
 #Current starknet.py version does not support testnet2 as a default network
@@ -38,9 +37,8 @@ public_key = private_to_stark_key(private_key)
 signer_key_pair = KeyPair(private_key,public_key)
 client = AccountClient(address=account_address, client=GatewayClient(net=network), key_pair=signer_key_pair, chain=StarknetChainId.TESTNET, supported_tx_version=1)
 #Get Kakarot ABI
-file = open("build/kakarot_abi.json")
-kakarot_abi = json.load(file)
-file.close()
+with open('build/kakarot_abi.json') as abi_file:
+    kakarot_abi = json.load(abi_file)
 
 async def main():
 
@@ -80,14 +78,14 @@ async def main():
             evm_account_class_hash
         ]
     ])
-    kakarotProxy = Contract(address=contract_address, abi=kakarot_abi, client=client)
+    kakarot_proxy = Contract(address=contract_address, abi=kakarot_abi, client=client)
     logging.info("Kakarot Proxy Address: %s",contract_address)
 
     # Deploy Registry
     logging.info("Deploying Account Registry")
     compiled_contract = Path("./build/", "account_registry.json").read_text("utf-8")
-    contract_address = await declare_and_deploy_contract(client=client,compiled_contract=compiled_contract,calldata=[kakarotProxy.address])
-    registryContract = await Contract.from_address(address=int(contract_address,16),client=client)
+    contract_address = await declare_and_deploy_contract(client=client,compiled_contract=compiled_contract,calldata=[kakarot_proxy.address])
+    registry_contract = await Contract.from_address(address=int(contract_address,16),client=client)
     logging.info("Account Registry Address: %s",contract_address)
 
     ##########################
@@ -97,7 +95,7 @@ async def main():
     ##########################   
 
     # Set Account Registry in Kakarot 
-    invocation = await kakarotProxy.functions["set_account_registry"].invoke(registryContract.address,max_fee=MAX_FEE)
+    invocation = await kakarot_proxy.functions["set_account_registry"].invoke(registry_contract.address,max_fee=MAX_FEE)
     logging.info("Set account registry in Kakarot...")
     await invocation.wait_for_acceptance()
 

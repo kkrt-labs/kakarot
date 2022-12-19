@@ -10,7 +10,6 @@ python = "^3.9"
 cairo-lang = "^0.10.1"
 openzeppelin-cairo-contracts = "0.5.0"
 amarna = "^0.1.5"
-python-dotenv = "^0.21.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"
