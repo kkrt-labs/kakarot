@@ -19,6 +19,7 @@ logging.basicConfig(level = logging.INFO)
 ETH_ADDRESS = 2087021424722619777119509474943472645767659996348769578120564519014510906823
 # Set a high max fee for the deployments
 MAX_FEE = int(1e16)
+BUILD_PATH = Path("build")
 
 # Loading .env file
 load_dotenv()
@@ -37,7 +38,7 @@ public_key = private_to_stark_key(private_key)
 signer_key_pair = KeyPair(private_key,public_key)
 client = AccountClient(address=account_address, client=GatewayClient(net=network), key_pair=signer_key_pair, chain=StarknetChainId.TESTNET, supported_tx_version=1)
 #Get Kakarot ABI
-with open('build/kakarot_abi.json') as abi_file:
+with open(Path(BUILD_PATH, 'kakarot_abi.json')) as abi_file:
     kakarot_abi = json.load(abi_file)
 
 async def main():
@@ -58,12 +59,12 @@ async def main():
 
     # Declare EVM Contract
     logging.info("⏳ Declaring EVM Contract Account... ")
-    evm_account_class_hash = await declare_contract(client,Path("./build/", "contract_account.json").read_text("utf-8"))
+    evm_account_class_hash = await declare_contract(client,Path(BUILD_PATH, "contract_account.json").read_text("utf-8"))
     logging.info("Contract Account Class Hash: %s", hex(evm_account_class_hash))
 
     # Declare Kakarot
     logging.info("⏳ Declaring Kakarot Contract...: ")
-    kakarot_class_hash = await declare_contract(client,Path("./build/", "kakarot.json").read_text("utf-8"))
+    kakarot_class_hash = await declare_contract(client,Path(BUILD_PATH, "kakarot.json").read_text("utf-8"))
     logging.info("Kakarot Class Hash: %s", hex(kakarot_class_hash))
 
     # Deploy Kakarot Proxy
@@ -83,7 +84,7 @@ async def main():
 
     # Deploy Registry
     logging.info("Deploying Account Registry")
-    compiled_contract = Path("./build/", "account_registry.json").read_text("utf-8")
+    compiled_contract = Path(BUILD_PATH, "account_registry.json").read_text("utf-8")
     contract_address = await declare_and_deploy_contract(client=client,compiled_contract=compiled_contract,calldata=[kakarot_proxy.address])
     registry_contract = await Contract.from_address(address=int(contract_address,16),client=client)
     logging.info("Account Registry Address: %s",contract_address)
