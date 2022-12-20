@@ -30,4 +30,7 @@ Resolves #<Issue number>
 
 ## Other information
 
+<!-- Give an estimate of the time you spent on this PR in terms of work days. Did you spend 0.5 days on this PR or rather 2 days?  -->
+Time spent on this PR:  
+
 <!-- Any other information that is important to this PR such as screenshots of how the component looks before and after the change. -->
