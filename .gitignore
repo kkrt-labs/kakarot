@@ -10,6 +10,7 @@ venv
 node.json
 *.deployments.txt
 artifacts
+/build
 
 # nile
 127.0.0.1.*

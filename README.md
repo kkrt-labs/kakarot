@@ -143,27 +143,14 @@ Here is the execution trace of the program on Kakarot:
 
 ![Tutorial](docs/img/sample_execution.png)
 
-## Installation
+## Getting started
 
-Install the requirements:
+To contribute, please check out [the contribution guide](./docs/CONTRIBUTING.md).
 
 ```bash
 # install poetry if you don't have it already
 # curl -sSL https://install.python-poetry.org | python3 -
 make setup
-```
-
-For Mac M1s (using
-[brew, miniforge and conda](https://towardsdatascience.com/how-to-easily-set-up-python-on-any-m1-mac-5ea885b73fab)):
-
-```bash
-brew install gmp
-conda create --name cairo python=3.9
-conda activate cairo
-conda update -n base -c conda-forge conda
-conda install pip
-CFLAGS=-I`brew --prefix gmp`/include LDFLAGS=-L`brew --prefix gmp`/lib /opt/homebrew/Caskroom/miniforge/base/envs/cairo/bin/pip install ecdsa fastecdsa sympy
-CFLAGS=-I`brew --prefix gmp`/include LDFLAGS=-L`brew --prefix gmp`/lib /opt/homebrew/Caskroom/miniforge/base/envs/cairo/bin/pip install cairo-lang cairo_coverage openzeppelin-cairo-contracts
 ```
 
 ## Build
@@ -201,27 +188,6 @@ Test architecture is the following:
 - tests/unit/src contains cairo tests for each cairo function in the kakarot codebase
 - tests/integration/bytecode contains python tests for kakarot execute() function with forged bytecode
 - tests/integration/solidity_contracts contains python tests for solidity contracts that are compiled, deployed on kakarot local node and interacted with kakarot execute_at_adress()
-
-## Deploy
-
-```bash
-# On testnet
-./scripts/deploy_kakarot.sh -p testnet -a admin
-```
-
-With:
-
-- `testnet` profile defined in protostar config file (testnet for alpha-goerli)
-- `admin` alias to the admin account (optional if it is your `__default__`
-  account, see also starknet account
-  [documentation](https://starknet.io/docs/hello_starknet/account_setup.html))
-
-Contract addresses will be logged into the prompt.
-
-### Inputs
-
-To manage inputs sent to constructor during the deployment, you can customize
-the [config files](./scripts/configs/).
 
 ## License
 
