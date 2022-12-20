@@ -22,13 +22,16 @@
 **Kakarot** is an Ethereum Virtual Machine written in Cairo. It means it can be
 deployed on StarkNet, a layer 2 scaling solution for Ethereum, and run an EVM
 bytecode program. Hence, Kakarot can be used to run Ethereum smart contracts on
-StarkNet. Kakarot is the super sayajin ZK-EVM ! Why ? Because:
-`It's over 9000!!!!!`. It is a work in progress, and it is not ready for
-production.
+StarkNet. Kakarot is the super sayajin zkEVM! Why? Because:
+`It's over 9000!!!!!`.
+
+It is a work in progress, and it is not ready for production.
 
 [Getting started](#getting-started) • [Supported opcodes](#supported-opcodes) •
 [Build](#build) • [Test](#test) •
-[Report a bug](https://github.com/sayajin-labs/kakarot/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+) • [Questions](https://www.newton.so/view?tags=kakarot)
+[Report a bug](https://github.com/sayajin-labs/kakarot/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+)
+• [Questions](https://www.newton.so/view?tags=kakarot)
+
 </div>
 
 ![](docs/img/kakarot.gif)
@@ -38,10 +41,10 @@ production.
 ```mermaid
 %%{init: {'theme': 'forest', 'themeVariables': { 'darkMode': 'false'}}}%%
 
-pie title Kakarot EMV opcodes support (139 / 142)
-    "Supported" : 139
-    "Not supported" : 3
-    "Partially supported" : 0
+pie title Kakarot EMV opcodes support (141 / 142)
+    "Supported" : 137
+    "Not supported" : 1
+    "Partially supported" : 4
 ```
 
 Here is the list of supported opcodes: [opcodes](docs/supported_opcodes.md)
@@ -198,9 +201,13 @@ make run-test-mark-log mark=<MARK> # with log
 
 Test architecture is the following:
 
-- tests/unit/src contains cairo tests for each cairo function in the kakarot codebase
-- tests/integration/bytecode contains python tests for kakarot execute() function with forged bytecode
-- tests/integration/solidity_contracts contains python tests for solidity contracts that are compiled, deployed on kakarot local node and interacted with kakarot execute_at_adress()
+- tests/unit/src contains cairo tests for each cairo function in the kakarot
+  codebase
+- tests/integration/bytecode contains python tests for kakarot execute()
+  function with forged bytecode
+- tests/integration/solidity_contracts contains python tests for solidity
+  contracts that are compiled, deployed on kakarot local node and interacted
+  with kakarot execute_at_adress()
 
 ## Deploy
 
@@ -237,10 +244,11 @@ _For more information and to report security issues, please refer to our
 
 ## Questions / FAQ
 
-Questions are welcome!
-If you have any questions regarding Kakarot, feel free to ask them using [Newton](https://www.newton.so/view?tags=kakarot).
+Questions are welcome! If you have any questions regarding Kakarot, feel free to
+ask them using [Newton](https://www.newton.so/view?tags=kakarot).
 
 ### FAQ
+
 - [What is Kakarot, the zkEVM written in Cairo?](https://www.newton.so/view/6384d1e75bfa675b854c3228)
 - [Is Kakarot zkEVM a blockchain?](https://www.newton.so/view/6384d22a5bfa675b854c3229)
 - [When will Kakarot zkEVM launch on mainnet?](https://www.newton.so/view/6384d25fac8f7c40f4f144fd)
@@ -251,7 +259,6 @@ If you have any questions regarding Kakarot, feel free to ask them using [Newton
 - [Will Kakarot be an L3 on top of the Starknet validity rollup?](https://www.newton.so/view/6384d3235bfa675b854c322c)
 - [Can I add Kakarot to my metamask?](https://www.newton.so/view/6384d38fac8f7c40f4f14500)
 - [Is Kakarot equivalent to Arbitrum?](https://www.newton.so/view/6384d3d85bfa675b854c322d)
-
 
 ## Contributing
 

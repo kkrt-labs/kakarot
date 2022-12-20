@@ -9,9 +9,8 @@ We will use the code of simple contracts as a reference for the MVP:
 
 - a simple Counter contract (increment, decrement)
 - ERC-20 token
+- ERC-721 token
+- UniswapV2 smart contract
 
 Base implementation:
 [transmissions11/solmate](https://github.com/transmissions11/solmate)
-
-Deployed code:
-[KakarotERC20](https://goerli.etherscan.io/address/0x3814EaBD9cf0E30e766d7cDaF911af6c56A7A5dA#code)

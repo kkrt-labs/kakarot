@@ -6,12 +6,12 @@
 | --------------- | ----------- |
 | ADD             | ✅          |
 | ADDMOD          | ✅          |
-| ADDRESS         |             |
+| ADDRESS         | ✅          |
 | AND             | ✅          |
-| CALLDATALOAD    |             |
-| CALLDATASIZE    |             |
-| CALLER          |             |
-| CALLVALUE       |             |
+| CALLDATALOAD    | ✅          |
+| CALLDATASIZE    | ✅          |
+| CALLER          | ✅          |
+| CALLVALUE       | ✅          |
 | CHAINID         | ✅          |
 | DIV             | ✅          |
 | DUP1            | ✅          |
@@ -29,15 +29,15 @@
 | DUP8            | ✅          |
 | DUP9            | ✅          |
 | EQ              | ✅          |
-| GAS             |             |
+| GAS             | ✅          |
 | GT              | ✅          |
 | ISZERO          | ✅          |
 | JUMP            | ✅          |
 | JUMPDESTINATION | ✅          |
 | JUMPI           | ✅          |
-| LOG1            |             |
-| LOG2            |             |
-| LOG3            |             |
+| LOG1            | ✅          |
+| LOG2            | ✅          |
+| LOG3            | ✅          |
 | LT              | ✅          |
 | MLOAD           | ✅          |
 | MOD             | ✅          |
@@ -52,17 +52,17 @@
 | PUSH3           | ✅          |
 | PUSH4           | ✅          |
 | PUSH5           | ✅          |
-| RETURN          |             |
-| RETURNDATACOPY  |             |
-| RETURNDATASIZE  |             |
-| REVERT          |             |
+| RETURN          | ✅          |
+| RETURNDATACOPY  | ✅          |
+| RETURNDATASIZE  | ✅          |
+| REVERT          | ✅          |
 | SHA3            | ✅          |
 | SHL             | ✅          |
 | SHR             | ✅          |
-| SLOAD           |             |
+| SLOAD           | ✅          |
 | SLT             | ✅          |
-| SSTORE          |             |
-| STATICCALL      |             |
+| SSTORE          | ✅          |
+| STATICCALL      | ✅          |
 | STOP            | ✅          |
 | SUB             | ✅          |
 | SWAP1           | ✅          |
