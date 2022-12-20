@@ -6,6 +6,7 @@
 
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.cairo_keccak.keccak import keccak_bigend, finalize_keccak
 from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 from starkware.cairo.common.uint256 import Uint256
 
@@ -38,6 +39,7 @@ namespace EnvironmentalInformation {
     const GAS_COST_EXTCODECOPY = 2600;
     const GAS_COST_RETURNDATASIZE = 2;
     const GAS_COST_RETURNDATACOPY = 3;
+    const GAS_COST_EXTCODEHASH = 2600;
 
     // @notice ADDRESS operation.
     // @dev Get address of currently executing account.
@@ -654,6 +656,77 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLDATACOPY);
+        return ctx;
+    }
+
+    // @notice EXTCODEHASH operation
+    // @dev Get hash of a contract's code
+    // @custom:since Frontier
+    // @custom:group Environmental Information
+    // @custom:gas 100 || 2600
+    // @custom:stack_consumed_elements 1
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context
+    // @return The pointer to the updated execution context
+    func exec_extcodehash{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+
+        let stack = ctx.stack;
+
+        // Stack input:
+        // 0 - address: 20-byte address of the contract to query.
+        let (stack, address_uint256) = Stack.pop(self=stack);
+        let address_felt = Helpers.uint256_to_felt(address_uint256);
+
+        // Get the starknet address from the given evm address
+        let (registry_address_) = registry_address.read();
+        let (starknet_contract_address) = IRegistry.get_starknet_contract_address(
+            contract_address=registry_address_, evm_contract_address=address_felt
+        );
+        if (starknet_contract_address == 0) {
+            let stack = Stack.push(stack, Uint256(low=0, high=0));
+            let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+            // Increment gas used (COLD ACCESS)
+            let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_EXTCODEHASH);
+            return ctx;
+        }
+
+        let (bytecode_len, bytecode) = IEvmContract.bytecode(
+            contract_address=starknet_contract_address
+        );
+
+        let (local dest: felt*) = alloc();
+        // convert to little endian
+        Helpers.bytes_to_byte8_little_endian(
+            bytes_len=bytecode_len,
+            bytes=bytecode,
+            index=0,
+            size=bytecode_len,
+            byte8=0,
+            byte8_shift=0,
+            dest=dest,
+            dest_index=0,
+        );
+
+        let (keccak_ptr: felt*) = alloc();
+        local keccak_ptr_start: felt* = keccak_ptr;
+
+        with keccak_ptr {
+            let (result) = keccak_bigend(inputs=dest, n_bytes=bytecode_len);
+
+            finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
+        }
+
+        let stack: model.Stack* = Stack.push(self=stack, element=result);
+        // Update context stack
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        // Increment gas used (COLD ACCESS)
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_EXTCODEHASH);
         return ctx;
     }
 }
