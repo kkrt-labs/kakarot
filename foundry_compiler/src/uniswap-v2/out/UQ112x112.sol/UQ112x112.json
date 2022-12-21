@@ -1,17 +1,17 @@
 {
   "abi": [],
   "bytecode": {
-    "object": "0x60556023600b82828239805160001a607314601657fe5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a7231582088c5e1dd19aec13575078a328212e7ede479c5d76e7ce7a8a87c803bd922dd2a64736f6c63430005100032",
+    "object": "0x60556023600b82828239805160001a607314601657fe5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a72315820c27090ac1a1091b0915a2f42e0cacfb637f0ce84acd82d2f45ea5eb74a29717164736f6c63430005100032",
     "sourceMap": "183:394:10:-;;132:2:-1;166:7;155:9;146:7;137:37;255:7;249:14;246:1;241:23;235:4;232:33;222:2;;269:9;222:2;293:9;290:1;283:20;323:4;314:7;306:22;347:7;338;331:24",
     "linkReferences": {}
   },
   "deployedBytecode": {
-    "object": "0x73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a7231582088c5e1dd19aec13575078a328212e7ede479c5d76e7ce7a8a87c803bd922dd2a64736f6c63430005100032",
+    "object": "0x73000000000000000000000000000000000000000030146080604052600080fdfea265627a7a72315820c27090ac1a1091b0915a2f42e0cacfb637f0ce84acd82d2f45ea5eb74a29717164736f6c63430005100032",
     "sourceMap": "183:394:10:-;;;;;;;;",
     "linkReferences": {}
   },
   "methodIdentifiers": {},
-  "rawMetadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"src/uniswap-v2/libraries/UQ112x112.sol\":\"UQ112x112\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":forge-std/=lib/forge-std/src/\"]},\"sources\":{\"src/uniswap-v2/libraries/UQ112x112.sol\":{\"keccak256\":\"0x2240694530251ab376ae468d0a2d3ee8b3109e56f2acadbc203cdf341506dd31\",\"urls\":[\"bzz-raw://56f55c411faa2924df0915ff77129b9d8c64d3e4d28554e7234f3774ac95958a\",\"dweb:/ipfs/QmYrzUurXL8ijzS8EnLtQTVD7fKPReosg2DsEPXXCY7ec3\"]}},\"version\":1}",
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.5.16+commit.9c3226ce\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"foundry_compiler/src/uniswap-v2/libraries/UQ112x112.sol\":\"UQ112x112\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"foundry_compiler/src/uniswap-v2/libraries/UQ112x112.sol\":{\"keccak256\":\"0x2240694530251ab376ae468d0a2d3ee8b3109e56f2acadbc203cdf341506dd31\",\"urls\":[\"bzz-raw://56f55c411faa2924df0915ff77129b9d8c64d3e4d28554e7234f3774ac95958a\",\"dweb:/ipfs/QmYrzUurXL8ijzS8EnLtQTVD7fKPReosg2DsEPXXCY7ec3\"]}},\"version\":1}",
   "metadata": {
     "compiler": {
       "version": "0.5.16+commit.9c3226ce"
@@ -27,21 +27,18 @@
       }
     },
     "settings": {
-      "remappings": [
-        ":ds-test/=lib/forge-std/lib/ds-test/src/",
-        ":forge-std/=lib/forge-std/src/"
-      ],
+      "remappings": [],
       "optimizer": {
         "enabled": true,
         "runs": 200
       },
       "compilationTarget": {
-        "src/uniswap-v2/libraries/UQ112x112.sol": "UQ112x112"
+        "foundry_compiler/src/uniswap-v2/libraries/UQ112x112.sol": "UQ112x112"
       },
       "libraries": {}
     },
     "sources": {
-      "src/uniswap-v2/libraries/UQ112x112.sol": {
+      "foundry_compiler/src/uniswap-v2/libraries/UQ112x112.sol": {
         "keccak256": "0x2240694530251ab376ae468d0a2d3ee8b3109e56f2acadbc203cdf341506dd31",
         "urls": [
           "bzz-raw://56f55c411faa2924df0915ff77129b9d8c64d3e4d28554e7234f3774ac95958a",
@@ -53,7 +50,7 @@
     "version": 1
   },
   "ast": {
-    "absolutePath": "src/uniswap-v2/libraries/UQ112x112.sol",
+    "absolutePath": "foundry_compiler/src/uniswap-v2/libraries/UQ112x112.sol",
     "id": 2335,
     "exportedSymbols": {
       "UQ112x112": [

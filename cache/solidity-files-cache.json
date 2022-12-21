@@ -1,0 +1,523 @@
+{
+  "_format": "ethers-rs-sol-cache-3",
+  "paths": {
+    "artifacts": "foundry_compiler/src/uniswap-v2/out",
+    "build_infos": "foundry_compiler/src/uniswap-v2/out/build-info",
+    "sources": "foundry_compiler/src/uniswap-v2",
+    "tests": "test",
+    "scripts": "script",
+    "libraries": [
+      "lib"
+    ]
+  },
+  "files": {
+    "foundry_compiler/src/uniswap-v2/UniswapV2ERC20.sol": {
+      "lastModificationDate": 1671644468266,
+      "contentHash": "4c24d958cf49846da9fd36a99d81f9fc",
+      "sourceName": "foundry_compiler/src/uniswap-v2/UniswapV2ERC20.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "foundry_compiler/src/uniswap-v2/interfaces/IUniswapV2ERC20.sol",
+        "foundry_compiler/src/uniswap-v2/libraries/SafeMath.sol"
+      ],
+      "versionRequirement": "=0.5.16",
+      "artifacts": {
+        "UniswapV2ERC20": {
+          "0.5.16+commit.9c3226ce.Darwin.appleclang": "UniswapV2ERC20.sol/UniswapV2ERC20.json"
+        }
+      }
+    },
+    "foundry_compiler/src/uniswap-v2/UniswapV2Factory.sol": {
+      "lastModificationDate": 1671644468268,
+      "contentHash": "bbd1d6d8cec14355db9a75d10b0d6802",
+      "sourceName": "foundry_compiler/src/uniswap-v2/UniswapV2Factory.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "foundry_compiler/src/uniswap-v2/UniswapV2ERC20.sol",
+        "foundry_compiler/src/uniswap-v2/UniswapV2Pair.sol",
+        "foundry_compiler/src/uniswap-v2/interfaces/IERC20.sol",
+        "foundry_compiler/src/uniswap-v2/interfaces/IUniswapV2Callee.sol",
+        "foundry_compiler/src/uniswap-v2/interfaces/IUniswapV2ERC20.sol",
+        "foundry_compiler/src/uniswap-v2/interfaces/IUniswapV2Factory.sol",
+        "foundry_compiler/src/uniswap-v2/interfaces/IUniswapV2Pair.sol",
+        "foundry_compiler/src/uniswap-v2/libraries/Math.sol",
+        "foundry_compiler/src/uniswap-v2/libraries/SafeMath.sol",
+        "foundry_compiler/src/uniswap-v2/libraries/UQ112x112.sol"
+      ],
+      "versionRequirement": "=0.5.16",
+      "artifacts": {
+        "UniswapV2Factory": {
+          "0.5.16+commit.9c3226ce.Darwin.appleclang": "UniswapV2Factory.sol/UniswapV2Factory.json"
+        }
+      }
+    },
+    "foundry_compiler/src/uniswap-v2/UniswapV2Pair.sol": {
+      "lastModificationDate": 1671644468269,
+      "contentHash": "04b129f0ab195c778c2717f368acc162",
+      "sourceName": "foundry_compiler/src/uniswap-v2/UniswapV2Pair.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "foundry_compiler/src/uniswap-v2/UniswapV2ERC20.sol",
+        "foundry_compiler/src/uniswap-v2/interfaces/IERC20.sol",
+        "foundry_compiler/src/uniswap-v2/interfaces/IUniswapV2Callee.sol",
+        "foundry_compiler/src/uniswap-v2/interfaces/IUniswapV2ERC20.sol",
+        "foundry_compiler/src/uniswap-v2/interfaces/IUniswapV2Factory.sol",
+        "foundry_compiler/src/uniswap-v2/interfaces/IUniswapV2Pair.sol",
+        "foundry_compiler/src/uniswap-v2/libraries/Math.sol",
+        "foundry_compiler/src/uniswap-v2/libraries/SafeMath.sol",
+        "foundry_compiler/src/uniswap-v2/libraries/UQ112x112.sol"
+      ],
+      "versionRequirement": "=0.5.16",
+      "artifacts": {
+        "UniswapV2Pair": {
+          "0.5.16+commit.9c3226ce.Darwin.appleclang": "UniswapV2Pair.sol/UniswapV2Pair.json"
+        }
+      }
+    },
+    "foundry_compiler/src/uniswap-v2/interfaces/IERC20.sol": {
+      "lastModificationDate": 1671644468271,
+      "contentHash": "3d2b948a9266ee66b6e739de97c7e6e9",
+      "sourceName": "foundry_compiler/src/uniswap-v2/interfaces/IERC20.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": ">=0.5.0",
+      "artifacts": {
+        "IERC20": {
+          "0.5.16+commit.9c3226ce.Darwin.appleclang": "IERC20.sol/IERC20.json"
+        }
+      }
+    },
+    "foundry_compiler/src/uniswap-v2/interfaces/IUniswapV2Callee.sol": {
+      "lastModificationDate": 1671644468272,
+      "contentHash": "30a4aed15b3fa3ce5588118b7cecfa7f",
+      "sourceName": "foundry_compiler/src/uniswap-v2/interfaces/IUniswapV2Callee.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": ">=0.5.0",
+      "artifacts": {
+        "IUniswapV2Callee": {
+          "0.5.16+commit.9c3226ce.Darwin.appleclang": "IUniswapV2Callee.sol/IUniswapV2Callee.json"
+        }
+      }
+    },
+    "foundry_compiler/src/uniswap-v2/interfaces/IUniswapV2ERC20.sol": {
+      "lastModificationDate": 1671644468274,
+      "contentHash": "752c725168e1a5b73a8209897f18c5b9",
+      "sourceName": "foundry_compiler/src/uniswap-v2/interfaces/IUniswapV2ERC20.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": ">=0.5.0",
+      "artifacts": {
+        "IUniswapV2ERC20": {
+          "0.5.16+commit.9c3226ce.Darwin.appleclang": "IUniswapV2ERC20.sol/IUniswapV2ERC20.json"
+        }
+      }
+    },
+    "foundry_compiler/src/uniswap-v2/interfaces/IUniswapV2Factory.sol": {
+      "lastModificationDate": 1671644468275,
+      "contentHash": "ec39b5372f4f4d52101b4da561e2aee6",
+      "sourceName": "foundry_compiler/src/uniswap-v2/interfaces/IUniswapV2Factory.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": ">=0.5.0",
+      "artifacts": {
+        "IUniswapV2Factory": {
+          "0.5.16+commit.9c3226ce.Darwin.appleclang": "IUniswapV2Factory.sol/IUniswapV2Factory.json"
+        }
+      }
+    },
+    "foundry_compiler/src/uniswap-v2/interfaces/IUniswapV2Pair.sol": {
+      "lastModificationDate": 1671644468276,
+      "contentHash": "3fa31c3860f2b9585c3a98c64850829e",
+      "sourceName": "foundry_compiler/src/uniswap-v2/interfaces/IUniswapV2Pair.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": ">=0.5.0",
+      "artifacts": {
+        "IUniswapV2Pair": {
+          "0.5.16+commit.9c3226ce.Darwin.appleclang": "IUniswapV2Pair.sol/IUniswapV2Pair.json"
+        }
+      }
+    },
+    "foundry_compiler/src/uniswap-v2/libraries/Math.sol": {
+      "lastModificationDate": 1671644468278,
+      "contentHash": "bee6c1959728d5d42c14151076cebd83",
+      "sourceName": "foundry_compiler/src/uniswap-v2/libraries/Math.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "=0.5.16",
+      "artifacts": {
+        "Math": {
+          "0.5.16+commit.9c3226ce.Darwin.appleclang": "Math.sol/Math.json"
+        }
+      }
+    },
+    "foundry_compiler/src/uniswap-v2/libraries/SafeMath.sol": {
+      "lastModificationDate": 1671644468279,
+      "contentHash": "a65356c329efeffba75210664f5df3cd",
+      "sourceName": "foundry_compiler/src/uniswap-v2/libraries/SafeMath.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "=0.5.16",
+      "artifacts": {
+        "SafeMath": {
+          "0.5.16+commit.9c3226ce.Darwin.appleclang": "SafeMath.sol/SafeMath.json"
+        }
+      }
+    },
+    "foundry_compiler/src/uniswap-v2/libraries/UQ112x112.sol": {
+      "lastModificationDate": 1671644468281,
+      "contentHash": "2a703244e9f645c6fb297a983ce7c9c4",
+      "sourceName": "foundry_compiler/src/uniswap-v2/libraries/UQ112x112.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "=0.5.16",
+      "artifacts": {
+        "UQ112x112": {
+          "0.5.16+commit.9c3226ce.Darwin.appleclang": "UQ112x112.sol/UQ112x112.json"
+        }
+      }
+    },
+    "foundry_compiler/src/uniswap-v2/test/ERC20.sol": {
+      "lastModificationDate": 1671644468325,
+      "contentHash": "5ad37a09a9d83a1255b7b71bc650a86a",
+      "sourceName": "foundry_compiler/src/uniswap-v2/test/ERC20.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "foundry_compiler/src/uniswap-v2/UniswapV2ERC20.sol",
+        "foundry_compiler/src/uniswap-v2/interfaces/IUniswapV2ERC20.sol",
+        "foundry_compiler/src/uniswap-v2/libraries/SafeMath.sol"
+      ],
+      "versionRequirement": "=0.5.16",
+      "artifacts": {
+        "ERC20": {
+          "0.5.16+commit.9c3226ce.Darwin.appleclang": "ERC20.sol/ERC20.json"
+        }
+      }
+    }
+  }
+}
