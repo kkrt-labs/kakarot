@@ -15,7 +15,12 @@ from kakarot.constants import Constants, native_token_address
 from kakarot.constants import evm_contract_class_hash, registry_address
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.memory_operations import MemoryOperations
-from kakarot.instructions.system_operations import SystemOperations, CallHelper, CreateHelper, SelfDestructHelper
+from kakarot.instructions.system_operations import (
+    SystemOperations,
+    CallHelper,
+    CreateHelper,
+    SelfDestructHelper,
+)
 from kakarot.interfaces.interfaces import IEvmContract, IKakarot, IRegistry
 from kakarot.library import Kakarot
 from kakarot.model import model
@@ -546,9 +551,7 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
 @external
 func test__exec_selfdestruct__should_delete_account_bytecode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(
-    eth_address: felt, evm_contract_class_hash_: felt, registry_address_: felt
-) {
+}(eth_address: felt, evm_contract_class_hash_: felt, registry_address_: felt) {
     alloc_locals;
     evm_contract_class_hash.write(evm_contract_class_hash_);
     registry_address.write(registry_address_);
@@ -567,19 +570,19 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     assert [calldata] = '';
     local call_context: model.CallContext* = new model.CallContext(
         bytecode=bytecode, bytecode_len=0, calldata=calldata, calldata_len=1, value=0
-    );
-    let stack = Stack.push(stack, Uint256(10,0));
+        );
+    let stack = Stack.push(stack, Uint256(10, 0));
     let (sub_ctx: felt*) = alloc();
-    assert [sub_ctx] = cast(call_context, felt);   // call_context
-    assert [sub_ctx + 1] = 0;   // program_counter
-    assert [sub_ctx + 2] = 0;   // stopped
-    assert [sub_ctx + 3] = cast(return_data + 1, felt);   // return_data
-    assert [sub_ctx + 4] = 1;   // return_data_len
-    assert [sub_ctx + 5] = cast(stack, felt);   // stack
-    assert [sub_ctx + 6] = cast(memory, felt);   // memory
-    assert [sub_ctx + 7] = 0;   // gas_used
-    assert [sub_ctx + 8] = 0;   // gas_limit
-    assert [sub_ctx + 9] = 0;   // intrinsic_gas_cost
+    assert [sub_ctx] = cast(call_context, felt);  // call_context
+    assert [sub_ctx + 1] = 0;  // program_counter
+    assert [sub_ctx + 2] = 0;  // stopped
+    assert [sub_ctx + 3] = cast(return_data + 1, felt);  // return_data
+    assert [sub_ctx + 4] = 1;  // return_data_len
+    assert [sub_ctx + 5] = cast(stack, felt);  // stack
+    assert [sub_ctx + 6] = cast(memory, felt);  // memory
+    assert [sub_ctx + 7] = 0;  // gas_used
+    assert [sub_ctx + 8] = 0;  // gas_limit
+    assert [sub_ctx + 9] = 0;  // intrinsic_gas_cost
     assert [sub_ctx + 13] = 0;  // sub_context
     assert [sub_ctx + 14] = 0;  // destroy_contracts_len
     assert [sub_ctx + 15] = cast(destroy_contracts, felt);  // destroy_contracts
@@ -599,21 +602,23 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     let (bytecode) = alloc();
     assert [bytecode] = 1907;
     IEvmContract.write_bytecode(
-        contract_address=starknet_contract_address,
-        bytecode_len=1,
-        bytecode=bytecode
+        contract_address=starknet_contract_address, bytecode_len=1, bytecode=bytecode
     );
 
     // Create context
     let stack: model.Stack* = Stack.init();
     let (bytecode) = alloc();
-    let ctx = TestHelpers.init_context_with_stack_and_sub_ctx(0, bytecode, stack, cast(sub_ctx, model.ExecutionContext*));
+    let ctx = TestHelpers.init_context_with_stack_and_sub_ctx(
+        0, bytecode, stack, cast(sub_ctx, model.ExecutionContext*)
+    );
     assert [sub_ctx + 12] = cast(ctx, felt);  // calling_context
 
     let sub_ctx_object: model.ExecutionContext* = cast(sub_ctx, model.ExecutionContext*);
 
     // When
-    let sub_ctx_object: model.ExecutionContext* = SystemOperations.exec_selfdestruct(sub_ctx_object);
+    let sub_ctx_object: model.ExecutionContext* = SystemOperations.exec_selfdestruct(
+        sub_ctx_object
+    );
 
     // Simulate run
     let ctx = CallHelper.finalize_calling_context(sub_ctx_object);
@@ -629,5 +634,5 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
 
     assert evm_contract_address = 0;
     assert evm_contract_byte_len = 0;
-    return();
+    return ();
 }

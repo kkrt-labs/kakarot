@@ -28,7 +28,12 @@ from kakarot.instructions.logging_operations import LoggingOperations
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.environmental_information import EnvironmentalInformation
 from kakarot.instructions.block_information import BlockInformation
-from kakarot.instructions.system_operations import SystemOperations, CallHelper, CreateHelper, SelfDestructHelper
+from kakarot.instructions.system_operations import (
+    SystemOperations,
+    CallHelper,
+    CreateHelper,
+    SelfDestructHelper,
+)
 from kakarot.instructions.sha3 import Sha3
 from kakarot.interfaces.interfaces import IEvmContract
 
