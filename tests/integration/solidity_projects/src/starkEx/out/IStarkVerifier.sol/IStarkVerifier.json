@@ -1,0 +1,297 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256[]",
+          "name": "proofParams",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "proof",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "publicInput",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "verifyProof",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "verifyProof(uint256[],uint256[],uint256[])": "6b4e14ea"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.6.12+commit.27d51765\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"uint256[]\",\"name\":\"proofParams\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"proof\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"publicInput\",\"type\":\"uint256[]\"}],\"name\":\"verifyProof\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"tests/integration/solidity_projects/src/starkEx/src/interfaces/IStarkVerifier.sol\":\"IStarkVerifier\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"tests/integration/solidity_projects/src/starkEx/src/interfaces/IStarkVerifier.sol\":{\"keccak256\":\"0x14291cc1f35d2d5bd9b7e8202b383daf4c07747e4211e231788e5f21044a1e22\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://9de1b2a70f59b6002f622a9ca2655ca1b3c0f5033c4a09285cb53949cd49e6bd\",\"dweb:/ipfs/QmS6u9m125YFnCCkskrLiaHEc3CRvHywrzbKGKEHiWdzsR\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.6.12+commit.27d51765"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "uint256[]",
+              "name": "proofParams",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "proof",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "publicInput",
+              "type": "uint256[]"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "verifyProof"
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "tests/integration/solidity_projects/src/starkEx/src/interfaces/IStarkVerifier.sol": "IStarkVerifier"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "tests/integration/solidity_projects/src/starkEx/src/interfaces/IStarkVerifier.sol": {
+        "keccak256": "0x14291cc1f35d2d5bd9b7e8202b383daf4c07747e4211e231788e5f21044a1e22",
+        "urls": [
+          "bzz-raw://9de1b2a70f59b6002f622a9ca2655ca1b3c0f5033c4a09285cb53949cd49e6bd",
+          "dweb:/ipfs/QmS6u9m125YFnCCkskrLiaHEc3CRvHywrzbKGKEHiWdzsR"
+        ],
+        "license": "Apache-2.0."
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "tests/integration/solidity_projects/src/starkEx/src/interfaces/IStarkVerifier.sol",
+    "id": 6618,
+    "exportedSymbols": {
+      "IStarkVerifier": [
+        6617
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "40:210:44",
+    "nodes": [
+      {
+        "id": 6604,
+        "nodeType": "PragmaDirective",
+        "src": "40:24:44",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          "^",
+          "0.6",
+          ".12"
+        ]
+      },
+      {
+        "id": 6617,
+        "nodeType": "ContractDefinition",
+        "src": "66:183:44",
+        "nodes": [
+          {
+            "id": 6616,
+            "nodeType": "FunctionDefinition",
+            "src": "97:150:44",
+            "nodes": [],
+            "documentation": null,
+            "functionSelector": "6b4e14ea",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "verifyProof",
+            "overrides": null,
+            "parameters": {
+              "id": 6614,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6607,
+                  "mutability": "mutable",
+                  "name": "proofParams",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 6616,
+                  "src": "127:30:44",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_uint256_$dyn_calldata_ptr",
+                    "typeString": "uint256[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 6605,
+                      "name": "uint256",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "127:7:44",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "id": 6606,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "127:9:44",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                      "typeString": "uint256[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 6610,
+                  "mutability": "mutable",
+                  "name": "proof",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 6616,
+                  "src": "167:24:44",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_uint256_$dyn_calldata_ptr",
+                    "typeString": "uint256[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 6608,
+                      "name": "uint256",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "167:7:44",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "id": 6609,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "167:9:44",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                      "typeString": "uint256[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 6613,
+                  "mutability": "mutable",
+                  "name": "publicInput",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 6616,
+                  "src": "201:30:44",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_uint256_$dyn_calldata_ptr",
+                    "typeString": "uint256[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 6611,
+                      "name": "uint256",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "201:7:44",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "id": 6612,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "201:9:44",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                      "typeString": "uint256[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "117:120:44"
+            },
+            "returnParameters": {
+              "id": 6615,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "246:0:44"
+            },
+            "scope": 6617,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": null,
+        "fullyImplemented": false,
+        "linearizedBaseContracts": [
+          6617
+        ],
+        "name": "IStarkVerifier",
+        "scope": 6618
+      }
+    ],
+    "license": "Apache-2.0."
+  },
+  "id": 44
+}

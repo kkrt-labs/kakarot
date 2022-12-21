@@ -1,0 +1,1134 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "contract IQueryableFactRegistry",
+          "name": "gpsStatementContract",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "programHash_",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "gpsContract",
+      "outputs": [
+        {
+          "internalType": "contract IQueryableFactRegistry",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "hasRegisteredFact",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "identify",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "fact",
+          "type": "bytes32"
+        }
+      ],
+      "name": "isValid",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "programHash",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x608060405234801561001057600080fd5b506040516103763803806103768339818101604052604081101561003357600080fd5b508051602090910151600080546001600160a01b0319166001600160a01b0390931692909217825560015561030890819061006e90396000f3fe608060405234801561001057600080fd5b50600436106100575760003560e01c806351447a721461005c5780636a938567146100805780638a9bf090146100b1578063d6354e15146100cb578063eeb72866146100d3575b600080fd5b610064610150565b604080516001600160a01b039092168252519081900360200190f35b61009d6004803603602081101561009657600080fd5b503561015f565b604080519115158252519081900360200190f35b6100b9610205565b60408051918252519081900360200190f35b61009d61020b565b6100db61028b565b6040805160208082528351818301528351919283929083019185019080838360005b838110156101155781810151838201526020016100fd565b50505050905090810190601f1680156101425780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6000546001600160a01b031681565b600080546001546040805160208082019390935280820186905281518082038301815260608201808452815191850191909120636a93856760e01b909152606482015290516001600160a01b0390931692636a93856792608480840193919291829003018186803b1580156101d357600080fd5b505afa1580156101e7573d6000803e3d6000fd5b505050506040513d60208110156101fd57600080fd5b505192915050565b60015481565b60008060009054906101000a90046001600160a01b03166001600160a01b031663d6354e156040518163ffffffff1660e01b815260040160206040518083038186803b15801561025a57600080fd5b505afa15801561026e573d6000803e3d6000fd5b505050506040513d602081101561028457600080fd5b5051905090565b60606040518060600160405280602781526020016102ac6027913990509056fe537461726b576172655f477073466163745265676973747279416461707465725f323032305f31a26469706673582212201358925e6f57123afb27f786bf02e9728cd2dcb13d0c38d346f52c69778672ee64736f6c634300060c0033",
+    "sourceMap": "607:891:13:-:0;;;761:173;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;761:173:13;;;;;;;857:11;:34;;-1:-1:-1;;;;;;857:34:13;-1:-1:-1;;;;;857:34:13;;;;;;;;;-1:-1:-1;901:26:13;607:891;;;;;;;;",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x608060405234801561001057600080fd5b50600436106100575760003560e01c806351447a721461005c5780636a938567146100805780638a9bf090146100b1578063d6354e15146100cb578063eeb72866146100d3575b600080fd5b610064610150565b604080516001600160a01b039092168252519081900360200190f35b61009d6004803603602081101561009657600080fd5b503561015f565b604080519115158252519081900360200190f35b6100b9610205565b60408051918252519081900360200190f35b61009d61020b565b6100db61028b565b6040805160208082528351818301528351919283929083019185019080838360005b838110156101155781810151838201526020016100fd565b50505050905090810190601f1680156101425780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b6000546001600160a01b031681565b600080546001546040805160208082019390935280820186905281518082038301815260608201808452815191850191909120636a93856760e01b909152606482015290516001600160a01b0390931692636a93856792608480840193919291829003018186803b1580156101d357600080fd5b505afa1580156101e7573d6000803e3d6000fd5b505050506040513d60208110156101fd57600080fd5b505192915050565b60015481565b60008060009054906101000a90046001600160a01b03166001600160a01b031663d6354e156040518163ffffffff1660e01b815260040160206040518083038186803b15801561025a57600080fd5b505afa15801561026e573d6000803e3d6000fd5b505050506040513d602081101561028457600080fd5b5051905090565b60606040518060600160405280602781526020016102ac6027913990509056fe537461726b576172655f477073466163745265676973747279416461707465725f323032305f31a26469706673582212201358925e6f57123afb27f786bf02e9728cd2dcb13d0c38d346f52c69778672ee64736f6c634300060c0033",
+    "sourceMap": "607:891:13:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;681:41;;;:::i;:::-;;;;-1:-1:-1;;;;;681:41:13;;;;;;;;;;;;;;1142:154;;;;;;;;;;;;;;;;-1:-1:-1;1142:154:13;;:::i;:::-;;;;;;;;;;;;;;;;;;728:26;;;:::i;:::-;;;;;;;;;;;;;;;;1374:122;;;:::i;940:140::-;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;681:41;;;-1:-1:-1;;;;;681:41:13;;:::o;1142:154::-;1205:4;1228:11;;;1269;1258:29;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1248:40;;;;;;;;;-1:-1:-1;;;1228:61:13;;;;;;;;;-1:-1:-1;;;;;1228:11:13;;;;:19;;:61;;;;;1258:29;;1228:61;;;;;;:11;:61;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;1228:61:13;;1142:154;-1:-1:-1;;1142:154:13:o;728:26::-;;;;:::o;1374:122::-;1435:4;1458:11;;;;;;;;;-1:-1:-1;;;;;1458:11:13;-1:-1:-1;;;;;1458:29:13;;:31;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;1458:31:13;;-1:-1:-1;1374:122:13;:::o;940:140::-;1000:13;1025:48;;;;;;;;;;;;;;;;;;;940:140;:::o",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "gpsContract()": "51447a72",
+    "hasRegisteredFact()": "d6354e15",
+    "identify()": "eeb72866",
+    "isValid(bytes32)": "6a938567",
+    "programHash()": "8a9bf090"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.6.12+commit.27d51765\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"contract IQueryableFactRegistry\",\"name\":\"gpsStatementContract\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"programHash_\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"gpsContract\",\"outputs\":[{\"internalType\":\"contract IQueryableFactRegistry\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"hasRegisteredFact\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"identify\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"fact\",\"type\":\"bytes32\"}],\"name\":\"isValid\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"programHash\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"tests/integration/solidity_projects/src/starkEx/src/components/GpsFactRegistryAdapter.sol\":\"GpsFactRegistryAdapter\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"tests/integration/solidity_projects/src/starkEx/src/components/GpsFactRegistryAdapter.sol\":{\"keccak256\":\"0xde85c6739e1ca2e5b2f9eb55364af24d2de1cae30f190119a0783759e0cd0a9b\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://7726786a1decc0893780a0979e308b709686467453e7a131437fa8012ce9f80c\",\"dweb:/ipfs/QmTrbeGSFACqJCcXrTt6U215STL3wLpm9Ez6vD77E296UE\"]},\"tests/integration/solidity_projects/src/starkEx/src/interfaces/IFactRegistry.sol\":{\"keccak256\":\"0xab04b296b506dfb0b4a8828f3dc463072fd50449a5ad8327d1baf01438b0fb35\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://e451abe007f98081d1adfd759cc4168f81982992d8c0554650b94d37bc009e64\",\"dweb:/ipfs/QmVBNUWFhNX8PqSMcqRkHVaTbcm7KNpgSg91Sj6MepFG6u\"]},\"tests/integration/solidity_projects/src/starkEx/src/interfaces/IQueryableFactRegistry.sol\":{\"keccak256\":\"0x9689f96215bae9da993a5f1b16a7c1460b1abd478569d969d5b901fa4520b4b6\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://cfe2f9ca69bffdfaad8cdea188f0e6e385fbd2f5b1ee2194f989f25c76a30250\",\"dweb:/ipfs/QmSffz94BEf9MuqrQ41LuAcBL6FnsxqY4pxfxM8b4s3iSi\"]},\"tests/integration/solidity_projects/src/starkEx/src/interfaces/Identity.sol\":{\"keccak256\":\"0xdafb10f58caf0d41f3ec2aa238c5180e38b3254520851a45a18ba872076b8a05\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://a658fb533881d39e2dd0b55318ba4bc8fc67efdaf02451020766809d02b2a258\",\"dweb:/ipfs/QmUsAEzs9WGG4fAexdCUii1vJ1umS3CWt2YPkoRGnktyMt\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.6.12+commit.27d51765"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "contract IQueryableFactRegistry",
+              "name": "gpsStatementContract",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "programHash_",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "constructor"
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "gpsContract",
+          "outputs": [
+            {
+              "internalType": "contract IQueryableFactRegistry",
+              "name": "",
+              "type": "address"
+            }
+          ]
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "hasRegisteredFact",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ]
+        },
+        {
+          "inputs": [],
+          "stateMutability": "pure",
+          "type": "function",
+          "name": "identify",
+          "outputs": [
+            {
+              "internalType": "string",
+              "name": "",
+              "type": "string"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "fact",
+              "type": "bytes32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "isValid",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ]
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "programHash",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ]
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "tests/integration/solidity_projects/src/starkEx/src/components/GpsFactRegistryAdapter.sol": "GpsFactRegistryAdapter"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "tests/integration/solidity_projects/src/starkEx/src/components/GpsFactRegistryAdapter.sol": {
+        "keccak256": "0xde85c6739e1ca2e5b2f9eb55364af24d2de1cae30f190119a0783759e0cd0a9b",
+        "urls": [
+          "bzz-raw://7726786a1decc0893780a0979e308b709686467453e7a131437fa8012ce9f80c",
+          "dweb:/ipfs/QmTrbeGSFACqJCcXrTt6U215STL3wLpm9Ez6vD77E296UE"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/interfaces/IFactRegistry.sol": {
+        "keccak256": "0xab04b296b506dfb0b4a8828f3dc463072fd50449a5ad8327d1baf01438b0fb35",
+        "urls": [
+          "bzz-raw://e451abe007f98081d1adfd759cc4168f81982992d8c0554650b94d37bc009e64",
+          "dweb:/ipfs/QmVBNUWFhNX8PqSMcqRkHVaTbcm7KNpgSg91Sj6MepFG6u"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/interfaces/IQueryableFactRegistry.sol": {
+        "keccak256": "0x9689f96215bae9da993a5f1b16a7c1460b1abd478569d969d5b901fa4520b4b6",
+        "urls": [
+          "bzz-raw://cfe2f9ca69bffdfaad8cdea188f0e6e385fbd2f5b1ee2194f989f25c76a30250",
+          "dweb:/ipfs/QmSffz94BEf9MuqrQ41LuAcBL6FnsxqY4pxfxM8b4s3iSi"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/interfaces/Identity.sol": {
+        "keccak256": "0xdafb10f58caf0d41f3ec2aa238c5180e38b3254520851a45a18ba872076b8a05",
+        "urls": [
+          "bzz-raw://a658fb533881d39e2dd0b55318ba4bc8fc67efdaf02451020766809d02b2a258",
+          "dweb:/ipfs/QmUsAEzs9WGG4fAexdCUii1vJ1umS3CWt2YPkoRGnktyMt"
+        ],
+        "license": "Apache-2.0."
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "tests/integration/solidity_projects/src/starkEx/src/components/GpsFactRegistryAdapter.sol",
+    "id": 1687,
+    "exportedSymbols": {
+      "GpsFactRegistryAdapter": [
+        1686
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "40:1459:13",
+    "nodes": [
+      {
+        "id": 1619,
+        "nodeType": "PragmaDirective",
+        "src": "40:24:13",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          "^",
+          "0.6",
+          ".12"
+        ]
+      },
+      {
+        "id": 1620,
+        "nodeType": "ImportDirective",
+        "src": "66:36:13",
+        "nodes": [],
+        "absolutePath": "tests/integration/solidity_projects/src/starkEx/src/interfaces/Identity.sol",
+        "file": "../interfaces/Identity.sol",
+        "scope": 1687,
+        "sourceUnit": 6626,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 1621,
+        "nodeType": "ImportDirective",
+        "src": "103:50:13",
+        "nodes": [],
+        "absolutePath": "tests/integration/solidity_projects/src/starkEx/src/interfaces/IQueryableFactRegistry.sol",
+        "file": "../interfaces/IQueryableFactRegistry.sol",
+        "scope": 1687,
+        "sourceUnit": 6603,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 1686,
+        "nodeType": "ContractDefinition",
+        "src": "607:891:13",
+        "nodes": [
+          {
+            "id": 1627,
+            "nodeType": "VariableDeclaration",
+            "src": "681:41:13",
+            "nodes": [],
+            "constant": false,
+            "functionSelector": "51447a72",
+            "mutability": "mutable",
+            "name": "gpsContract",
+            "overrides": null,
+            "scope": 1686,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_contract$_IQueryableFactRegistry_$6602",
+              "typeString": "contract IQueryableFactRegistry"
+            },
+            "typeName": {
+              "contractScope": null,
+              "id": 1626,
+              "name": "IQueryableFactRegistry",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 6602,
+              "src": "681:22:13",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_IQueryableFactRegistry_$6602",
+                "typeString": "contract IQueryableFactRegistry"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "id": 1629,
+            "nodeType": "VariableDeclaration",
+            "src": "728:26:13",
+            "nodes": [],
+            "constant": false,
+            "functionSelector": "8a9bf090",
+            "mutability": "mutable",
+            "name": "programHash",
+            "overrides": null,
+            "scope": 1686,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 1628,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "728:7:13",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "id": 1645,
+            "nodeType": "FunctionDefinition",
+            "src": "761:173:13",
+            "nodes": [],
+            "body": {
+              "id": 1644,
+              "nodeType": "Block",
+              "src": "847:87:13",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 1638,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 1636,
+                      "name": "gpsContract",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1627,
+                      "src": "857:11:13",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_contract$_IQueryableFactRegistry_$6602",
+                        "typeString": "contract IQueryableFactRegistry"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 1637,
+                      "name": "gpsStatementContract",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1631,
+                      "src": "871:20:13",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_contract$_IQueryableFactRegistry_$6602",
+                        "typeString": "contract IQueryableFactRegistry"
+                      }
+                    },
+                    "src": "857:34:13",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IQueryableFactRegistry_$6602",
+                      "typeString": "contract IQueryableFactRegistry"
+                    }
+                  },
+                  "id": 1639,
+                  "nodeType": "ExpressionStatement",
+                  "src": "857:34:13"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 1642,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 1640,
+                      "name": "programHash",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1629,
+                      "src": "901:11:13",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 1641,
+                      "name": "programHash_",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1633,
+                      "src": "915:12:13",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "901:26:13",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 1643,
+                  "nodeType": "ExpressionStatement",
+                  "src": "901:26:13"
+                }
+              ]
+            },
+            "documentation": null,
+            "implemented": true,
+            "kind": "constructor",
+            "modifiers": [],
+            "name": "",
+            "overrides": null,
+            "parameters": {
+              "id": 1634,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1631,
+                  "mutability": "mutable",
+                  "name": "gpsStatementContract",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 1645,
+                  "src": "773:43:13",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_IQueryableFactRegistry_$6602",
+                    "typeString": "contract IQueryableFactRegistry"
+                  },
+                  "typeName": {
+                    "contractScope": null,
+                    "id": 1630,
+                    "name": "IQueryableFactRegistry",
+                    "nodeType": "UserDefinedTypeName",
+                    "referencedDeclaration": 6602,
+                    "src": "773:22:13",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_IQueryableFactRegistry_$6602",
+                      "typeString": "contract IQueryableFactRegistry"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1633,
+                  "mutability": "mutable",
+                  "name": "programHash_",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 1645,
+                  "src": "818:20:13",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1632,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "818:7:13",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "772:67:13"
+            },
+            "returnParameters": {
+              "id": 1635,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "847:0:13"
+            },
+            "scope": 1686,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "public"
+          },
+          {
+            "id": 1654,
+            "nodeType": "FunctionDefinition",
+            "src": "940:140:13",
+            "nodes": [],
+            "body": {
+              "id": 1653,
+              "nodeType": "Block",
+              "src": "1015:65:13",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "hexValue": "537461726b576172655f477073466163745265676973747279416461707465725f323032305f31",
+                    "id": 1651,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": true,
+                    "kind": "string",
+                    "lValueRequested": false,
+                    "nodeType": "Literal",
+                    "src": "1032:41:13",
+                    "subdenomination": null,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_stringliteral_133c8a7429c3ed328b35d32b3039bb73ae3b9cce1f243a98392b4804d3d47af3",
+                      "typeString": "literal_string \"StarkWare_GpsFactRegistryAdapter_2020_1\""
+                    },
+                    "value": "StarkWare_GpsFactRegistryAdapter_2020_1"
+                  },
+                  "functionReturnParameters": 1650,
+                  "id": 1652,
+                  "nodeType": "Return",
+                  "src": "1025:48:13"
+                }
+              ]
+            },
+            "baseFunctions": [
+              6624
+            ],
+            "documentation": null,
+            "functionSelector": "eeb72866",
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "identify",
+            "overrides": {
+              "id": 1647,
+              "nodeType": "OverrideSpecifier",
+              "overrides": [],
+              "src": "982:8:13"
+            },
+            "parameters": {
+              "id": 1646,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "957:2:13"
+            },
+            "returnParameters": {
+              "id": 1650,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1649,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 1654,
+                  "src": "1000:13:13",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 1648,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1000:6:13",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "999:15:13"
+            },
+            "scope": 1686,
+            "stateMutability": "pure",
+            "virtual": true,
+            "visibility": "external"
+          },
+          {
+            "id": 1674,
+            "nodeType": "FunctionDefinition",
+            "src": "1142:154:13",
+            "nodes": [],
+            "body": {
+              "id": 1673,
+              "nodeType": "Block",
+              "src": "1211:85:13",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "arguments": [
+                          {
+                            "argumentTypes": null,
+                            "arguments": [
+                              {
+                                "argumentTypes": null,
+                                "id": 1667,
+                                "name": "programHash",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 1629,
+                                "src": "1269:11:13",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_uint256",
+                                  "typeString": "uint256"
+                                }
+                              },
+                              {
+                                "argumentTypes": null,
+                                "id": 1668,
+                                "name": "fact",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 1656,
+                                "src": "1282:4:13",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_bytes32",
+                                  "typeString": "bytes32"
+                                }
+                              }
+                            ],
+                            "expression": {
+                              "argumentTypes": [
+                                {
+                                  "typeIdentifier": "t_uint256",
+                                  "typeString": "uint256"
+                                },
+                                {
+                                  "typeIdentifier": "t_bytes32",
+                                  "typeString": "bytes32"
+                                }
+                              ],
+                              "expression": {
+                                "argumentTypes": null,
+                                "id": 1665,
+                                "name": "abi",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": -1,
+                                "src": "1258:3:13",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_magic_abi",
+                                  "typeString": "abi"
+                                }
+                              },
+                              "id": 1666,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": true,
+                              "lValueRequested": false,
+                              "memberName": "encode",
+                              "nodeType": "MemberAccess",
+                              "referencedDeclaration": null,
+                              "src": "1258:10:13",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_function_abiencode_pure$__$returns$_t_bytes_memory_ptr_$",
+                                "typeString": "function () pure returns (bytes memory)"
+                              }
+                            },
+                            "id": 1669,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "kind": "functionCall",
+                            "lValueRequested": false,
+                            "names": [],
+                            "nodeType": "FunctionCall",
+                            "src": "1258:29:13",
+                            "tryCall": false,
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes_memory_ptr",
+                              "typeString": "bytes memory"
+                            }
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_bytes_memory_ptr",
+                              "typeString": "bytes memory"
+                            }
+                          ],
+                          "id": 1664,
+                          "name": "keccak256",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": -8,
+                          "src": "1248:9:13",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_function_keccak256_pure$_t_bytes_memory_ptr_$returns$_t_bytes32_$",
+                            "typeString": "function (bytes memory) pure returns (bytes32)"
+                          }
+                        },
+                        "id": 1670,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "functionCall",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "1248:40:13",
+                        "tryCall": false,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 1662,
+                        "name": "gpsContract",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1627,
+                        "src": "1228:11:13",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_IQueryableFactRegistry_$6602",
+                          "typeString": "contract IQueryableFactRegistry"
+                        }
+                      },
+                      "id": 1663,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "isValid",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 6582,
+                      "src": "1228:19:13",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_external_view$_t_bytes32_$returns$_t_bool_$",
+                        "typeString": "function (bytes32) view external returns (bool)"
+                      }
+                    },
+                    "id": 1671,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1228:61:13",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "functionReturnParameters": 1661,
+                  "id": 1672,
+                  "nodeType": "Return",
+                  "src": "1221:68:13"
+                }
+              ]
+            },
+            "baseFunctions": [
+              6582
+            ],
+            "documentation": null,
+            "functionSelector": "6a938567",
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isValid",
+            "overrides": {
+              "id": 1658,
+              "nodeType": "OverrideSpecifier",
+              "overrides": [],
+              "src": "1187:8:13"
+            },
+            "parameters": {
+              "id": 1657,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1656,
+                  "mutability": "mutable",
+                  "name": "fact",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 1674,
+                  "src": "1159:12:13",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 1655,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1159:7:13",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1158:14:13"
+            },
+            "returnParameters": {
+              "id": 1661,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1660,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 1674,
+                  "src": "1205:4:13",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 1659,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1205:4:13",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1204:6:13"
+            },
+            "scope": 1686,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 1685,
+            "nodeType": "FunctionDefinition",
+            "src": "1374:122:13",
+            "nodes": [],
+            "body": {
+              "id": 1684,
+              "nodeType": "Block",
+              "src": "1441:55:13",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 1680,
+                        "name": "gpsContract",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1627,
+                        "src": "1458:11:13",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_IQueryableFactRegistry_$6602",
+                          "typeString": "contract IQueryableFactRegistry"
+                        }
+                      },
+                      "id": 1681,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "hasRegisteredFact",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 6601,
+                      "src": "1458:29:13",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_external_view$__$returns$_t_bool_$",
+                        "typeString": "function () view external returns (bool)"
+                      }
+                    },
+                    "id": 1682,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1458:31:13",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "functionReturnParameters": 1679,
+                  "id": 1683,
+                  "nodeType": "Return",
+                  "src": "1451:38:13"
+                }
+              ]
+            },
+            "baseFunctions": [
+              6601
+            ],
+            "documentation": null,
+            "functionSelector": "d6354e15",
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "hasRegisteredFact",
+            "overrides": {
+              "id": 1676,
+              "nodeType": "OverrideSpecifier",
+              "overrides": [],
+              "src": "1417:8:13"
+            },
+            "parameters": {
+              "id": 1675,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1400:2:13"
+            },
+            "returnParameters": {
+              "id": 1679,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1678,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 1685,
+                  "src": "1435:4:13",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 1677,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1435:4:13",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1434:6:13"
+            },
+            "scope": 1686,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 1622,
+              "name": "IQueryableFactRegistry",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 6602,
+              "src": "642:22:13",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_IQueryableFactRegistry_$6602",
+                "typeString": "contract IQueryableFactRegistry"
+              }
+            },
+            "id": 1623,
+            "nodeType": "InheritanceSpecifier",
+            "src": "642:22:13"
+          },
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 1624,
+              "name": "Identity",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 6625,
+              "src": "666:8:13",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_Identity_$6625",
+                "typeString": "contract Identity"
+              }
+            },
+            "id": 1625,
+            "nodeType": "InheritanceSpecifier",
+            "src": "666:8:13"
+          }
+        ],
+        "contractDependencies": [
+          6583,
+          6602,
+          6625
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "linearizedBaseContracts": [
+          1686,
+          6625,
+          6602,
+          6583
+        ],
+        "name": "GpsFactRegistryAdapter",
+        "scope": 1687
+      }
+    ],
+    "license": "Apache-2.0."
+  },
+  "id": 13
+}

@@ -1,0 +1,708 @@
+{
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "LogExternalInitialize",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "DEPOSIT_CANCEL_DELAY",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "FREEZE_GRACE_PERIOD",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MAX_FORCED_ACTIONS_REQS_PER_BLOCK",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MAX_VERIFIER_COUNT",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "UNFREEZE_DELAY",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VERIFIER_REMOVAL_DELAY",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "initialize",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x608060405234801561001057600080fd5b506107f3806100206000396000f3fe608060405234801561001057600080fd5b506004361061007c5760003560e01c8063993f36391161005b578063993f363914610115578063b76631121461011d578063e30a5cff14610125578063e6de62821461012d5761007c565b806271754214610081578063439fab911461009b57806377e84e0d1461010d575b600080fd5b610089610135565b60408051918252519081900360200190f35b61010b600480360360208110156100b157600080fd5b8101906020810181356401000000008111156100cc57600080fd5b8201836020820111156100de57600080fd5b8035906020019184600183028401116401000000008311171561010057600080fd5b50909250905061013c565b005b610089610154565b61008961015b565b610089610163565b61008961016a565b61008961016f565b62093a8081565b6101468282610174565b6101506000610296565b5050565b6202a30081565b6301e1338081565b6224ea0081565b600a81565b604081565b608081146101c0576040805162461bcd60e51b8152602060048201526014602482015273554e45585045435445445f444154415f53495a4560601b604482015290519081900360640190fd5b600080600080858560808110156101d657600080fd5b506001600160a01b0381358116955060208201359450604082013516925060600135905061020660196000610783565b610212601b6000610783565b6102206019856040866103ee565b61022e601b836040846103ee565b7fcd1400d214c673d845a60be61e4392df27be94360484e7da79f75c0222550615868660405180806020018281038252848482818152602001925080828437600083820152604051601f909101601f19169092018290039550909350505050a1505050505050565b6224ea008111156102df576040805162461bcd60e51b815260206004820152600e60248201526d44454c41595f544f4f5f4c4f4e4760901b604482015290519081900360640190fd5b60408051600481526024810182526020810180516001600160e01b03166320cea94d60e01b178152915181517fc21dbb3089fcb2c4f4c6a67854ab4db2b0f233ea4b21b21f912d52d18fc5db1f936000936060933093919290918291908083835b6020831061035f5780518252601f199092019160209182019101610340565b6001836020036101000a038019825116818451168082178552505050505050905001915050600060405180830381855afa9150503d80600081146103bf576040519150601f19603f3d011682016040523d82523d6000602084013e6103c4565b606091505b509150915081156103e9578080602001905160208110156103e457600080fd5b505192505b505055565b836104016001600160a01b03851661071e565b610449576040805162461bcd60e51b8152602060048201526014602482015273105111149154d4d7d393d517d0d3d395149050d560621b604482015290519081900360640190fd5b6000846001600160a01b031663eeb728666040518163ffffffff1660e01b815260040160006040518083038186803b15801561048457600080fd5b505afa158015610498573d6000803e3d6000fd5b505050506040513d6000823e601f3d908101601f1916820160405260208110156104c157600080fd5b81019080805160405193929190846401000000008211156104e157600080fd5b9083019060208201858111156104f657600080fd5b825164010000000081118282018810171561051057600080fd5b82525081516020918201929091019080838360005b8381101561053d578181015183820152602001610525565b50505050905090810190601f16801561056a5780820380516001836020036101000a031916815260200191505b506040525050506040516020018082805190602001908083835b602083106105a35780518252601f199092019160209182019101610584565b6001836020036101000a038019825116818451168082178552505050505050905001915050604051602081830303815290604052805190602001209050828114610634576040805162461bcd60e51b815260206004820152601e60248201527f554e45585045435445445f434f4e54524143545f4944454e5449464945520000604482015290519081900360640190fd5b81548411610681576040805162461bcd60e51b8152602060048201526015602482015274434841494e5f41545f4d41585f434150414349545960581b604482015290519081900360640190fd5b60001961068e8387610724565b146106d7576040805162461bcd60e51b8152602060048201526014602482015273454e5452595f414c52454144595f45584953545360601b604482015290519081900360640190fd5b50508354600181810186556000868152602080822090930180546001600160a01b039097166001600160a01b03199097168717905594855290940190935250604081205550565b3b151590565b8154600090815b8181101561077557836001600160a01b031685828154811061074957fe5b6000918252602090912001546001600160a01b0316141561076d57915061077d9050565b60010161072b565b506000199150505b92915050565b50805460008255906000526020600020908101906107a191906107a4565b50565b5b808211156107b957600081556001016107a5565b509056fea26469706673582212202d5e81280f3dfe0ac216e4b7c4b768185bbb6285aa8b476c8c3ba5d7b59cc84a64736f6c634300060c0033",
+    "sourceMap": "408:398:116:-:0;;;;;;;;;;;;;;;;;;;",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x608060405234801561001057600080fd5b506004361061007c5760003560e01c8063993f36391161005b578063993f363914610115578063b76631121461011d578063e30a5cff14610125578063e6de62821461012d5761007c565b806271754214610081578063439fab911461009b57806377e84e0d1461010d575b600080fd5b610089610135565b60408051918252519081900360200190f35b61010b600480360360208110156100b157600080fd5b8101906020810181356401000000008111156100cc57600080fd5b8201836020820111156100de57600080fd5b8035906020019184600183028401116401000000008311171561010057600080fd5b50909250905061013c565b005b610089610154565b61008961015b565b610089610163565b61008961016a565b61008961016f565b62093a8081565b6101468282610174565b6101506000610296565b5050565b6202a30081565b6301e1338081565b6224ea0081565b600a81565b604081565b608081146101c0576040805162461bcd60e51b8152602060048201526014602482015273554e45585045435445445f444154415f53495a4560601b604482015290519081900360640190fd5b600080600080858560808110156101d657600080fd5b506001600160a01b0381358116955060208201359450604082013516925060600135905061020660196000610783565b610212601b6000610783565b6102206019856040866103ee565b61022e601b836040846103ee565b7fcd1400d214c673d845a60be61e4392df27be94360484e7da79f75c0222550615868660405180806020018281038252848482818152602001925080828437600083820152604051601f909101601f19169092018290039550909350505050a1505050505050565b6224ea008111156102df576040805162461bcd60e51b815260206004820152600e60248201526d44454c41595f544f4f5f4c4f4e4760901b604482015290519081900360640190fd5b60408051600481526024810182526020810180516001600160e01b03166320cea94d60e01b178152915181517fc21dbb3089fcb2c4f4c6a67854ab4db2b0f233ea4b21b21f912d52d18fc5db1f936000936060933093919290918291908083835b6020831061035f5780518252601f199092019160209182019101610340565b6001836020036101000a038019825116818451168082178552505050505050905001915050600060405180830381855afa9150503d80600081146103bf576040519150601f19603f3d011682016040523d82523d6000602084013e6103c4565b606091505b509150915081156103e9578080602001905160208110156103e457600080fd5b505192505b505055565b836104016001600160a01b03851661071e565b610449576040805162461bcd60e51b8152602060048201526014602482015273105111149154d4d7d393d517d0d3d395149050d560621b604482015290519081900360640190fd5b6000846001600160a01b031663eeb728666040518163ffffffff1660e01b815260040160006040518083038186803b15801561048457600080fd5b505afa158015610498573d6000803e3d6000fd5b505050506040513d6000823e601f3d908101601f1916820160405260208110156104c157600080fd5b81019080805160405193929190846401000000008211156104e157600080fd5b9083019060208201858111156104f657600080fd5b825164010000000081118282018810171561051057600080fd5b82525081516020918201929091019080838360005b8381101561053d578181015183820152602001610525565b50505050905090810190601f16801561056a5780820380516001836020036101000a031916815260200191505b506040525050506040516020018082805190602001908083835b602083106105a35780518252601f199092019160209182019101610584565b6001836020036101000a038019825116818451168082178552505050505050905001915050604051602081830303815290604052805190602001209050828114610634576040805162461bcd60e51b815260206004820152601e60248201527f554e45585045435445445f434f4e54524143545f4944454e5449464945520000604482015290519081900360640190fd5b81548411610681576040805162461bcd60e51b8152602060048201526015602482015274434841494e5f41545f4d41585f434150414349545960581b604482015290519081900360640190fd5b60001961068e8387610724565b146106d7576040805162461bcd60e51b8152602060048201526014602482015273454e5452595f414c52454144595f45584953545360601b604482015290519081900360640190fd5b50508354600181810186556000868152602080822090930180546001600160a01b039097166001600160a01b03199097168717905594855290940190935250604081205550565b3b151590565b8154600090815b8181101561077557836001600160a01b031685828154811061074957fe5b6000918252602090912001546001600160a01b0316141561076d57915061077d9050565b60010161072b565b506000199150505b92915050565b50805460008255906000526020600020908101906107a191906107a4565b50565b5b808211156107b957600081556001016107a5565b509056fea26469706673582212202d5e81280f3dfe0ac216e4b7c4b768185bbb6285aa8b476c8c3ba5d7b59cc84a64736f6c634300060c0033",
+    "sourceMap": "408:398:116:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;650:52:63;;;:::i;:::-;;;;;;;;;;;;;;;;555:249:116;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;555:249:116;;-1:-1:-1;555:249:116;-1:-1:-1;555:249:116;:::i;:::-;;463:53:63;;;:::i;877:49::-;;;:::i;1128:80::-;;;:::i;1696:62::-;;;:::i;988:56::-;;;:::i;650:52::-;696:6;650:52;:::o;555:249:116:-;717:51;763:4;;717:45;:51::i;:::-;779:18;795:1;779:15;:18::i;:::-;555:249;;:::o;463:53:63:-;510:6;463:53;:::o;877:49::-;918:8;877:49;:::o;1128:80::-;1177:31;1128:80;:::o;1696:62::-;1756:2;1696:62;:::o;988:56::-;1041:2;988:56;:::o;923:1101:115:-;1021:3;1006:18;;998:51;;;;;-1:-1:-1;;;998:51:115;;;;;;;;;;;;-1:-1:-1;;;998:51:115;;;;;;;;;;;;;;;1059:26;1095:22;1127:38;1175:34;1452:4;;1441:54;;;;;;;;;;-1:-1:-1;;;;;;1441:54:115;;;;;-1:-1:-1;1441:54:115;;;;;-1:-1:-1;1441:54:115;;;;;;-1:-1:-1;1441:54:115;;;;-1:-1:-1;1550:26:115;1557:14;:19;1550:26;:::i;:::-;1586:38;1593:26;:31;1586:38;:::i;:::-;1710:80;1719:14;1735:18;1041:2:63;1775:14:115;1710:8;:80::i;:::-;1800:174;1822:26;1862:30;1041:2:63;1938:26:115;1800:8;:174::i;:::-;1990:27;2012:4;;1990:27;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;1990:27:115;;;;;;;;-1:-1:-1;1990:27:115;;-1:-1:-1;;;;1990:27:115;923:1101;;;;;;:::o;881:664:118:-;348:7;965:14;:27;;957:54;;;;;-1:-1:-1;;;957:54:118;;;;;;;;;;;;-1:-1:-1;;;957:54:118;;;;;;;;;;;;;;;1322:47;;;;;;;;;;;;;;;;-1:-1:-1;;;;;1322:47:118;-1:-1:-1;;;1322:47:118;;;1284:95;;;;488:66;;1138:12;;1257:23;;1292:4;;1322:47;;1284:95;;;;1322:47;1284:95;;1322:47;1284:95;;;;;;;;;;-1:-1:-1;;1284:95:118;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1242:137;;;;1394:7;1390:78;;;1435:10;1424:33;;;;;;;;;;;;;;;-1:-1:-1;1424:33:118;;-1:-1:-1;1390:78:118;-1:-1:-1;;1501:28:118;1487:52::o;2279:716:115:-;2483:5;2511:18;-1:-1:-1;;;;;2511:16:115;;;:18::i;:::-;2503:51;;;;;-1:-1:-1;;;2503:51:115;;;;;;;;;;;;-1:-1:-1;;;2503:51:115;;;;;;;;;;;;;;;2564:18;2621:5;-1:-1:-1;;;;;2612:24:115;;:26;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;2612:26:115;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;2612:26:115;;;;;;;;;;-1:-1:-1;2612:26:115;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;2595:44;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;2595:44:115;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;2585:55;;;;;;2564:76;;2672:14;2658:10;:28;2650:71;;;;;-1:-1:-1;;;2650:71:115;;;;;;;;;;;;;;;;;;;;;;;;;;;;2739:11;;:23;-1:-1:-1;2731:57:115;;;;;-1:-1:-1;;;2731:57:115;;;;;;;;;;;;-1:-1:-1;;;2731:57:115;;;;;;;;;;;;;;;-1:-1:-1;;2806:22:115;2816:4;2822:5;2806:9;:22::i;:::-;:41;2798:74;;;;;-1:-1:-1;;;2798:74:115;;;;;;;;;;;;-1:-1:-1;;;2798:74:115;;;;;;;;;;;;;;;-1:-1:-1;;2882:22:115;;;;;;;;:10;:22;;;;;;;;;;;;-1:-1:-1;;;;;2882:22:115;;;-1:-1:-1;;;;;;2882:22:115;;;;;;;2949:35;;;:28;;;:35;;;-1:-1:-1;2949:35:115;;;:39;-1:-1:-1;2279:716:115:o;161:190:62:-;290:20;336:8;;;161:190::o;3001:306:115:-;3121:11;;3082:7;;;3142:127;3166:9;3162:1;:13;3142:127;;;3211:5;-1:-1:-1;;;;;3200:16:115;:4;3205:1;3200:7;;;;;;;;;;;;;;;;;;-1:-1:-1;;;;;3200:7:115;:16;3196:63;;;3243:1;-1:-1:-1;3236:8:115;;-1:-1:-1;3236:8:115;3196:63;3177:3;;3142:127;;;;-1:-1:-1;;3278:22:115;;;3001:306;;;;;:::o;-1:-1:-1:-;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;:::o;:::-;;;;;;;;;;;;;;;;;;:::o",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "DEPOSIT_CANCEL_DELAY()": "77e84e0d",
+    "FREEZE_GRACE_PERIOD()": "00717542",
+    "MAX_FORCED_ACTIONS_REQS_PER_BLOCK()": "e30a5cff",
+    "MAX_VERIFIER_COUNT()": "e6de6282",
+    "UNFREEZE_DELAY()": "993f3639",
+    "VERIFIER_REMOVAL_DELAY()": "b7663112",
+    "initialize(bytes)": "439fab91"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.6.12+commit.27d51765\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"LogExternalInitialize\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEPOSIT_CANCEL_DELAY\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"FREEZE_GRACE_PERIOD\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"MAX_FORCED_ACTIONS_REQS_PER_BLOCK\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"MAX_VERIFIER_COUNT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"UNFREEZE_DELAY\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"VERIFIER_REMOVAL_DELAY\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"tests/integration/solidity_projects/src/starkEx/src/upgrade/eic/ChangeVerifiersZeroTimelockExternalInitializer.sol\":\"ChangeVerifiersZeroTimelockExternalInitializer\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"tests/integration/solidity_projects/src/starkEx/src/components/GovernanceStorage.sol\":{\"keccak256\":\"0x2816690a3d47659dd2a1f50b9abd9270b6c63bcc365d95353eaeb5b696a131f6\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://0cc498ed76f699cf3684f0753937b1ae73fc992f1a820b1435a0de88642605dc\",\"dweb:/ipfs/QmURSXwjkgNNs1hXU2uYMKSHd796QmS1qp9amq96G4e77d\"]},\"tests/integration/solidity_projects/src/starkEx/src/components/MainStorage.sol\":{\"keccak256\":\"0x6ec1e764edc595015155f1510bc0c436e8621f6a30bb5da348cda4188f88a63b\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://c5d4aaa4c6041f5a7c4da1a14c4cc57e27e00bfa047f3ad9cc9f718fe01b55ef\",\"dweb:/ipfs/QmUCKey3zxTaxxK4pjXLARjKG8oKADcsSXZKvM9b3U1MEM\"]},\"tests/integration/solidity_projects/src/starkEx/src/interfaces/ExternalInitializer.sol\":{\"keccak256\":\"0x6947ee2609ae72c525878c28b98e280df24fbc655d90a1b46c634fb1711db1b2\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://04b4ed5aaab2a15a0907ddd0b77c5aa8b21a4e936db6a19d6174ac29a40834f0\",\"dweb:/ipfs/QmcUKu3475kpYaEVYj72uUCsKHjUAZSJ2fn156htdfCf5N\"]},\"tests/integration/solidity_projects/src/starkEx/src/interfaces/Identity.sol\":{\"keccak256\":\"0xdafb10f58caf0d41f3ec2aa238c5180e38b3254520851a45a18ba872076b8a05\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://a658fb533881d39e2dd0b55318ba4bc8fc67efdaf02451020766809d02b2a258\",\"dweb:/ipfs/QmUsAEzs9WGG4fAexdCUii1vJ1umS3CWt2YPkoRGnktyMt\"]},\"tests/integration/solidity_projects/src/starkEx/src/interfaces/MGovernance.sol\":{\"keccak256\":\"0xd7ea75c83640c8fa7a0fe91baafc17bf58dbc146874ab0866a17154b1dda9858\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://6d41999882a5eb4cae0f598137906b540057b6e8b39742d6e5141e493b14b7b7\",\"dweb:/ipfs/QmWMwr3XBr3ndvHtg2w96EbTTf1CMCzz9UdpM8GizyFQ8h\"]},\"tests/integration/solidity_projects/src/starkEx/src/libraries/Common.sol\":{\"keccak256\":\"0xd6c0b3478b1752f363680494de681bc5e78b333570a1755629639980f014ef38\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://8b9b89f3e9fd825c491a34ecd23e742de499d3da37be599ee0591e42c987cfbc\",\"dweb:/ipfs/QmNU23npa22GpMjuMucnsA3u8Uj1VzxKPo1dx1x3sMPgsP\"]},\"tests/integration/solidity_projects/src/starkEx/src/libraries/LibConstants.sol\":{\"keccak256\":\"0x8fe357f8fb57a437d4e390b57010e8cf7383b31bf074e45aa42ccc7b648e2cc8\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://1b6dcb450fd1c09e742b489e626d1cbac7588043d57e89aafe78143b04f26f6e\",\"dweb:/ipfs/QmWuvyK93hHFTaPBkwZAzTLZ5GrYXbSvJbJHKLTg9bkMtN\"]},\"tests/integration/solidity_projects/src/starkEx/src/upgrade/ProxyStorage.sol\":{\"keccak256\":\"0xa368aa0492fcaabbc85fb544d1cc29c7314431f06a69f0b0f6117bff58d145c9\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://c03493bf00d92b3397767abc02d014844dc0edc4cc28631a8146abed3d397ded\",\"dweb:/ipfs/QmeTgAMpd5EAzQCDpZmxWWfFQQfNxZdzZvGzBz6HPKeJxD\"]},\"tests/integration/solidity_projects/src/starkEx/src/upgrade/eic/ChangeVerifiersExternalInitializer.sol\":{\"keccak256\":\"0x7f520dbc6768be7fff9db2274ebf371a1dd74f287052fab8ff51d1ce1f120410\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://cd2afff2045757accf5f6a241207d9481930a7f81cffe07739a7ac969b859142\",\"dweb:/ipfs/QmVabcphnewtoNDwNcQ8yjKyF1mKgpYVJkrhBJzezQDfCr\"]},\"tests/integration/solidity_projects/src/starkEx/src/upgrade/eic/ChangeVerifiersZeroTimelockExternalInitializer.sol\":{\"keccak256\":\"0x7e8a7954b170669aa28139e3358914f4c3630c07c885a63e10fc06e603c299cd\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://75919b62970b8b17583af92b4a63e4a29724c443a6f3866a16de60601824668c\",\"dweb:/ipfs/QmUMXsHdryPj2YvJ2Jc4BtErrJ1RMybQVsQy8t2cYfh5t1\"]},\"tests/integration/solidity_projects/src/starkEx/src/upgrade/eic/ModifyUpgradeDelayExternalInitializer.sol\":{\"keccak256\":\"0x8aabce51c306dc5a10e3da00506fa32c1edd83669530e13c820b5ca89af2c959\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://5f63135ef4b8f8201214c80f6653d710e88d025bf89bbb63281ea9ca5b1bd64b\",\"dweb:/ipfs/QmNh5t2e4sFpSgzF557Gjex6gxqJRN2qsk4SxzESwP4ahD\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.6.12+commit.27d51765"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes",
+              "indexed": false
+            }
+          ],
+          "type": "event",
+          "name": "LogExternalInitialize",
+          "anonymous": false
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "DEPOSIT_CANCEL_DELAY",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ]
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "FREEZE_GRACE_PERIOD",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ]
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "MAX_FORCED_ACTIONS_REQS_PER_BLOCK",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ]
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "MAX_VERIFIER_COUNT",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ]
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "UNFREEZE_DELAY",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ]
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "VERIFIER_REMOVAL_DELAY",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes",
+              "name": "data",
+              "type": "bytes"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "initialize"
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "tests/integration/solidity_projects/src/starkEx/src/upgrade/eic/ChangeVerifiersZeroTimelockExternalInitializer.sol": "ChangeVerifiersZeroTimelockExternalInitializer"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "tests/integration/solidity_projects/src/starkEx/src/components/GovernanceStorage.sol": {
+        "keccak256": "0x2816690a3d47659dd2a1f50b9abd9270b6c63bcc365d95353eaeb5b696a131f6",
+        "urls": [
+          "bzz-raw://0cc498ed76f699cf3684f0753937b1ae73fc992f1a820b1435a0de88642605dc",
+          "dweb:/ipfs/QmURSXwjkgNNs1hXU2uYMKSHd796QmS1qp9amq96G4e77d"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/components/MainStorage.sol": {
+        "keccak256": "0x6ec1e764edc595015155f1510bc0c436e8621f6a30bb5da348cda4188f88a63b",
+        "urls": [
+          "bzz-raw://c5d4aaa4c6041f5a7c4da1a14c4cc57e27e00bfa047f3ad9cc9f718fe01b55ef",
+          "dweb:/ipfs/QmUCKey3zxTaxxK4pjXLARjKG8oKADcsSXZKvM9b3U1MEM"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/interfaces/ExternalInitializer.sol": {
+        "keccak256": "0x6947ee2609ae72c525878c28b98e280df24fbc655d90a1b46c634fb1711db1b2",
+        "urls": [
+          "bzz-raw://04b4ed5aaab2a15a0907ddd0b77c5aa8b21a4e936db6a19d6174ac29a40834f0",
+          "dweb:/ipfs/QmcUKu3475kpYaEVYj72uUCsKHjUAZSJ2fn156htdfCf5N"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/interfaces/Identity.sol": {
+        "keccak256": "0xdafb10f58caf0d41f3ec2aa238c5180e38b3254520851a45a18ba872076b8a05",
+        "urls": [
+          "bzz-raw://a658fb533881d39e2dd0b55318ba4bc8fc67efdaf02451020766809d02b2a258",
+          "dweb:/ipfs/QmUsAEzs9WGG4fAexdCUii1vJ1umS3CWt2YPkoRGnktyMt"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/interfaces/MGovernance.sol": {
+        "keccak256": "0xd7ea75c83640c8fa7a0fe91baafc17bf58dbc146874ab0866a17154b1dda9858",
+        "urls": [
+          "bzz-raw://6d41999882a5eb4cae0f598137906b540057b6e8b39742d6e5141e493b14b7b7",
+          "dweb:/ipfs/QmWMwr3XBr3ndvHtg2w96EbTTf1CMCzz9UdpM8GizyFQ8h"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/libraries/Common.sol": {
+        "keccak256": "0xd6c0b3478b1752f363680494de681bc5e78b333570a1755629639980f014ef38",
+        "urls": [
+          "bzz-raw://8b9b89f3e9fd825c491a34ecd23e742de499d3da37be599ee0591e42c987cfbc",
+          "dweb:/ipfs/QmNU23npa22GpMjuMucnsA3u8Uj1VzxKPo1dx1x3sMPgsP"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/libraries/LibConstants.sol": {
+        "keccak256": "0x8fe357f8fb57a437d4e390b57010e8cf7383b31bf074e45aa42ccc7b648e2cc8",
+        "urls": [
+          "bzz-raw://1b6dcb450fd1c09e742b489e626d1cbac7588043d57e89aafe78143b04f26f6e",
+          "dweb:/ipfs/QmWuvyK93hHFTaPBkwZAzTLZ5GrYXbSvJbJHKLTg9bkMtN"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/upgrade/ProxyStorage.sol": {
+        "keccak256": "0xa368aa0492fcaabbc85fb544d1cc29c7314431f06a69f0b0f6117bff58d145c9",
+        "urls": [
+          "bzz-raw://c03493bf00d92b3397767abc02d014844dc0edc4cc28631a8146abed3d397ded",
+          "dweb:/ipfs/QmeTgAMpd5EAzQCDpZmxWWfFQQfNxZdzZvGzBz6HPKeJxD"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/upgrade/eic/ChangeVerifiersExternalInitializer.sol": {
+        "keccak256": "0x7f520dbc6768be7fff9db2274ebf371a1dd74f287052fab8ff51d1ce1f120410",
+        "urls": [
+          "bzz-raw://cd2afff2045757accf5f6a241207d9481930a7f81cffe07739a7ac969b859142",
+          "dweb:/ipfs/QmVabcphnewtoNDwNcQ8yjKyF1mKgpYVJkrhBJzezQDfCr"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/upgrade/eic/ChangeVerifiersZeroTimelockExternalInitializer.sol": {
+        "keccak256": "0x7e8a7954b170669aa28139e3358914f4c3630c07c885a63e10fc06e603c299cd",
+        "urls": [
+          "bzz-raw://75919b62970b8b17583af92b4a63e4a29724c443a6f3866a16de60601824668c",
+          "dweb:/ipfs/QmUMXsHdryPj2YvJ2Jc4BtErrJ1RMybQVsQy8t2cYfh5t1"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/upgrade/eic/ModifyUpgradeDelayExternalInitializer.sol": {
+        "keccak256": "0x8aabce51c306dc5a10e3da00506fa32c1edd83669530e13c820b5ca89af2c959",
+        "urls": [
+          "bzz-raw://5f63135ef4b8f8201214c80f6653d710e88d025bf89bbb63281ea9ca5b1bd64b",
+          "dweb:/ipfs/QmNh5t2e4sFpSgzF557Gjex6gxqJRN2qsk4SxzESwP4ahD"
+        ],
+        "license": "Apache-2.0."
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "tests/integration/solidity_projects/src/starkEx/src/upgrade/eic/ChangeVerifiersZeroTimelockExternalInitializer.sol",
+    "id": 18669,
+    "exportedSymbols": {
+      "ChangeVerifiersZeroTimelockExternalInitializer": [
+        18668
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "40:767:116",
+    "nodes": [
+      {
+        "id": 18642,
+        "nodeType": "PragmaDirective",
+        "src": "40:24:116",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          "^",
+          "0.6",
+          ".12"
+        ]
+      },
+      {
+        "id": 18643,
+        "nodeType": "ImportDirective",
+        "src": "66:50:116",
+        "nodes": [],
+        "absolutePath": "tests/integration/solidity_projects/src/starkEx/src/upgrade/eic/ChangeVerifiersExternalInitializer.sol",
+        "file": "./ChangeVerifiersExternalInitializer.sol",
+        "scope": 18669,
+        "sourceUnit": 18641,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 18644,
+        "nodeType": "ImportDirective",
+        "src": "117:53:116",
+        "nodes": [],
+        "absolutePath": "tests/integration/solidity_projects/src/starkEx/src/upgrade/eic/ModifyUpgradeDelayExternalInitializer.sol",
+        "file": "./ModifyUpgradeDelayExternalInitializer.sol",
+        "scope": 18669,
+        "sourceUnit": 18820,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 18668,
+        "nodeType": "ContractDefinition",
+        "src": "408:398:116",
+        "nodes": [
+          {
+            "id": 18667,
+            "nodeType": "FunctionDefinition",
+            "src": "555:249:116",
+            "nodes": [],
+            "body": {
+              "id": 18666,
+              "nodeType": "Block",
+              "src": "707:97:116",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 18659,
+                        "name": "data",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 18650,
+                        "src": "763:4:116",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes_calldata_ptr",
+                          "typeString": "bytes calldata"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bytes_calldata_ptr",
+                          "typeString": "bytes calldata"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 18656,
+                        "name": "ChangeVerifiersExternalInitializer",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 18640,
+                        "src": "717:34:116",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_type$_t_contract$_ChangeVerifiersExternalInitializer_$18640_$",
+                          "typeString": "type(contract ChangeVerifiersExternalInitializer)"
+                        }
+                      },
+                      "id": 18658,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "initialize",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 18519,
+                      "src": "717:45:116",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_bytes_calldata_ptr_$returns$__$",
+                        "typeString": "function (bytes calldata)"
+                      }
+                    },
+                    "id": 18660,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "717:51:116",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 18661,
+                  "nodeType": "ExpressionStatement",
+                  "src": "717:51:116"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "30",
+                        "id": 18663,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "number",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "795:1:116",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_rational_0_by_1",
+                          "typeString": "int_const 0"
+                        },
+                        "value": "0"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_rational_0_by_1",
+                          "typeString": "int_const 0"
+                        }
+                      ],
+                      "id": 18662,
+                      "name": "setUpgradeDelay",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 18818,
+                      "src": "779:15:116",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_uint256_$returns$__$",
+                        "typeString": "function (uint256)"
+                      }
+                    },
+                    "id": 18664,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "779:18:116",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 18665,
+                  "nodeType": "ExpressionStatement",
+                  "src": "779:18:116"
+                }
+              ]
+            },
+            "baseFunctions": [
+              18519,
+              18772
+            ],
+            "documentation": null,
+            "functionSelector": "439fab91",
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "initialize",
+            "overrides": {
+              "id": 18654,
+              "nodeType": "OverrideSpecifier",
+              "overrides": [
+                {
+                  "contractScope": null,
+                  "id": 18652,
+                  "name": "ChangeVerifiersExternalInitializer",
+                  "nodeType": "UserDefinedTypeName",
+                  "referencedDeclaration": 18640,
+                  "src": "628:34:116",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_ChangeVerifiersExternalInitializer_$18640",
+                    "typeString": "contract ChangeVerifiersExternalInitializer"
+                  }
+                },
+                {
+                  "contractScope": null,
+                  "id": 18653,
+                  "name": "ModifyUpgradeDelayExternalInitializer",
+                  "nodeType": "UserDefinedTypeName",
+                  "referencedDeclaration": 18819,
+                  "src": "664:37:116",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_contract$_ModifyUpgradeDelayExternalInitializer_$18819",
+                    "typeString": "contract ModifyUpgradeDelayExternalInitializer"
+                  }
+                }
+              ],
+              "src": "619:83:116"
+            },
+            "parameters": {
+              "id": 18651,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 18650,
+                  "mutability": "mutable",
+                  "name": "data",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 18667,
+                  "src": "575:19:116",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 18649,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "575:5:116",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "574:21:116"
+            },
+            "returnParameters": {
+              "id": 18655,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "707:0:116"
+            },
+            "scope": 18668,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "public"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 18645,
+              "name": "ChangeVerifiersExternalInitializer",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 18640,
+              "src": "471:34:116",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_ChangeVerifiersExternalInitializer_$18640",
+                "typeString": "contract ChangeVerifiersExternalInitializer"
+              }
+            },
+            "id": 18646,
+            "nodeType": "InheritanceSpecifier",
+            "src": "471:34:116"
+          },
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 18647,
+              "name": "ModifyUpgradeDelayExternalInitializer",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 18819,
+              "src": "511:37:116",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_ModifyUpgradeDelayExternalInitializer_$18819",
+                "typeString": "contract ModifyUpgradeDelayExternalInitializer"
+              }
+            },
+            "id": 18648,
+            "nodeType": "InheritanceSpecifier",
+            "src": "511:37:116"
+          }
+        ],
+        "contractDependencies": [
+          1617,
+          1992,
+          6531,
+          8095,
+          18407,
+          18640,
+          18819
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "linearizedBaseContracts": [
+          18668,
+          18819,
+          18640,
+          8095,
+          1992,
+          18407,
+          1617,
+          6531
+        ],
+        "name": "ChangeVerifiersZeroTimelockExternalInitializer",
+        "scope": 18669
+      }
+    ],
+    "license": "Apache-2.0."
+  },
+  "id": 116
+}

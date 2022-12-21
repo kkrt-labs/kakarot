@@ -1,0 +1,533 @@
+{
+  "abi": [
+    {
+      "inputs": [],
+      "name": "configurationDelay",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "configurationHash",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "globalConfigurationHash",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x608060405234801561001057600080fd5b5060e58061001f6000396000f3fe6080604052348015600f57600080fd5b5060043610603c5760003560e01c8063adac3e15146041578063c1a85130146059578063f2011f6614605f575b600080fd5b60476079565b60408051918252519081900360200190f35b60476087565b604760048036036020811015607357600080fd5b50356095565b680100000000000000015481565b680100000000000000045481565b68010000000000000002602052600090815260409020548156fea26469706673582212206407c252c3ffcf2e318d39778d346101616a947ef950cf7f026eb882f61a0d9264736f6c634300060c0033",
+    "sourceMap": "337:917:72:-:0;;;;;;;;;;;;;;;;;;;",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x6080604052348015600f57600080fd5b5060043610603c5760003560e01c8063adac3e15146041578063c1a85130146059578063f2011f6614605f575b600080fd5b60476079565b60408051918252519081900360200190f35b60476087565b604760048036036020811015607357600080fd5b50356095565b680100000000000000015481565b680100000000000000045481565b68010000000000000002602052600090815260409020548156fea26469706673582212206407c252c3ffcf2e318d39778d346101616a947ef950cf7f026eb882f61a0d9264736f6c634300060c0033",
+    "sourceMap": "337:917:72:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;463:38;;;:::i;:::-;;;;;;;;;;;;;;;;870:33;;;:::i;557:52::-;;;;;;;;;;;;;;;;-1:-1:-1;557:52:72;;:::i;463:38::-;;;;:::o;870:33::-;;;;:::o;557:52::-;;;;;;;;;;;;;:::o",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "configurationDelay()": "c1a85130",
+    "configurationHash(uint256)": "f2011f66",
+    "globalConfigurationHash()": "adac3e15"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.6.12+commit.27d51765\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"configurationDelay\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"configurationHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"globalConfigurationHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"tests/integration/solidity_projects/src/starkEx/src/perpetual/components/PerpetualStorage.sol\":\"PerpetualStorage\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"tests/integration/solidity_projects/src/starkEx/src/components/GovernanceStorage.sol\":{\"keccak256\":\"0x2816690a3d47659dd2a1f50b9abd9270b6c63bcc365d95353eaeb5b696a131f6\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://0cc498ed76f699cf3684f0753937b1ae73fc992f1a820b1435a0de88642605dc\",\"dweb:/ipfs/QmURSXwjkgNNs1hXU2uYMKSHd796QmS1qp9amq96G4e77d\"]},\"tests/integration/solidity_projects/src/starkEx/src/components/MainStorage.sol\":{\"keccak256\":\"0x6ec1e764edc595015155f1510bc0c436e8621f6a30bb5da348cda4188f88a63b\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://c5d4aaa4c6041f5a7c4da1a14c4cc57e27e00bfa047f3ad9cc9f718fe01b55ef\",\"dweb:/ipfs/QmUCKey3zxTaxxK4pjXLARjKG8oKADcsSXZKvM9b3U1MEM\"]},\"tests/integration/solidity_projects/src/starkEx/src/interfaces/MGovernance.sol\":{\"keccak256\":\"0xd7ea75c83640c8fa7a0fe91baafc17bf58dbc146874ab0866a17154b1dda9858\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://6d41999882a5eb4cae0f598137906b540057b6e8b39742d6e5141e493b14b7b7\",\"dweb:/ipfs/QmWMwr3XBr3ndvHtg2w96EbTTf1CMCzz9UdpM8GizyFQ8h\"]},\"tests/integration/solidity_projects/src/starkEx/src/libraries/Common.sol\":{\"keccak256\":\"0xd6c0b3478b1752f363680494de681bc5e78b333570a1755629639980f014ef38\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://8b9b89f3e9fd825c491a34ecd23e742de499d3da37be599ee0591e42c987cfbc\",\"dweb:/ipfs/QmNU23npa22GpMjuMucnsA3u8Uj1VzxKPo1dx1x3sMPgsP\"]},\"tests/integration/solidity_projects/src/starkEx/src/perpetual/components/PerpetualStorage.sol\":{\"keccak256\":\"0x4e9995646f19709013dfbfb681e4bcb3049fd718ee303dc1346fcaa69078e89b\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://f96ff3f5c6ffd09034e762d8e081d40bf592c144e4d8a0c86010c268496c4388\",\"dweb:/ipfs/QmfXMhctteBZjzWwXYoY2tpXM78PJP4PcarzBrLkFz2E3w\"]},\"tests/integration/solidity_projects/src/starkEx/src/upgrade/ProxyStorage.sol\":{\"keccak256\":\"0xa368aa0492fcaabbc85fb544d1cc29c7314431f06a69f0b0f6117bff58d145c9\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://c03493bf00d92b3397767abc02d014844dc0edc4cc28631a8146abed3d397ded\",\"dweb:/ipfs/QmeTgAMpd5EAzQCDpZmxWWfFQQfNxZdzZvGzBz6HPKeJxD\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.6.12+commit.27d51765"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "configurationDelay",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "configurationHash",
+          "outputs": [
+            {
+              "internalType": "bytes32",
+              "name": "",
+              "type": "bytes32"
+            }
+          ]
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "globalConfigurationHash",
+          "outputs": [
+            {
+              "internalType": "bytes32",
+              "name": "",
+              "type": "bytes32"
+            }
+          ]
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "tests/integration/solidity_projects/src/starkEx/src/perpetual/components/PerpetualStorage.sol": "PerpetualStorage"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "tests/integration/solidity_projects/src/starkEx/src/components/GovernanceStorage.sol": {
+        "keccak256": "0x2816690a3d47659dd2a1f50b9abd9270b6c63bcc365d95353eaeb5b696a131f6",
+        "urls": [
+          "bzz-raw://0cc498ed76f699cf3684f0753937b1ae73fc992f1a820b1435a0de88642605dc",
+          "dweb:/ipfs/QmURSXwjkgNNs1hXU2uYMKSHd796QmS1qp9amq96G4e77d"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/components/MainStorage.sol": {
+        "keccak256": "0x6ec1e764edc595015155f1510bc0c436e8621f6a30bb5da348cda4188f88a63b",
+        "urls": [
+          "bzz-raw://c5d4aaa4c6041f5a7c4da1a14c4cc57e27e00bfa047f3ad9cc9f718fe01b55ef",
+          "dweb:/ipfs/QmUCKey3zxTaxxK4pjXLARjKG8oKADcsSXZKvM9b3U1MEM"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/interfaces/MGovernance.sol": {
+        "keccak256": "0xd7ea75c83640c8fa7a0fe91baafc17bf58dbc146874ab0866a17154b1dda9858",
+        "urls": [
+          "bzz-raw://6d41999882a5eb4cae0f598137906b540057b6e8b39742d6e5141e493b14b7b7",
+          "dweb:/ipfs/QmWMwr3XBr3ndvHtg2w96EbTTf1CMCzz9UdpM8GizyFQ8h"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/libraries/Common.sol": {
+        "keccak256": "0xd6c0b3478b1752f363680494de681bc5e78b333570a1755629639980f014ef38",
+        "urls": [
+          "bzz-raw://8b9b89f3e9fd825c491a34ecd23e742de499d3da37be599ee0591e42c987cfbc",
+          "dweb:/ipfs/QmNU23npa22GpMjuMucnsA3u8Uj1VzxKPo1dx1x3sMPgsP"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/perpetual/components/PerpetualStorage.sol": {
+        "keccak256": "0x4e9995646f19709013dfbfb681e4bcb3049fd718ee303dc1346fcaa69078e89b",
+        "urls": [
+          "bzz-raw://f96ff3f5c6ffd09034e762d8e081d40bf592c144e4d8a0c86010c268496c4388",
+          "dweb:/ipfs/QmfXMhctteBZjzWwXYoY2tpXM78PJP4PcarzBrLkFz2E3w"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/upgrade/ProxyStorage.sol": {
+        "keccak256": "0xa368aa0492fcaabbc85fb544d1cc29c7314431f06a69f0b0f6117bff58d145c9",
+        "urls": [
+          "bzz-raw://c03493bf00d92b3397767abc02d014844dc0edc4cc28631a8146abed3d397ded",
+          "dweb:/ipfs/QmeTgAMpd5EAzQCDpZmxWWfFQQfNxZdzZvGzBz6HPKeJxD"
+        ],
+        "license": "Apache-2.0."
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "tests/integration/solidity_projects/src/starkEx/src/perpetual/components/PerpetualStorage.sol",
+    "id": 9758,
+    "exportedSymbols": {
+      "PerpetualStorage": [
+        9757
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "40:1215:72",
+    "nodes": [
+      {
+        "id": 9735,
+        "nodeType": "PragmaDirective",
+        "src": "40:24:72",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          "^",
+          "0.6",
+          ".12"
+        ]
+      },
+      {
+        "id": 9736,
+        "nodeType": "ImportDirective",
+        "src": "66:42:72",
+        "nodes": [],
+        "absolutePath": "tests/integration/solidity_projects/src/starkEx/src/components/MainStorage.sol",
+        "file": "../../components/MainStorage.sol",
+        "scope": 9758,
+        "sourceUnit": 1993,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 9757,
+        "nodeType": "ContractDefinition",
+        "src": "337:917:72",
+        "nodes": [
+          {
+            "id": 9740,
+            "nodeType": "VariableDeclaration",
+            "src": "384:23:72",
+            "nodes": [],
+            "constant": false,
+            "mutability": "mutable",
+            "name": "systemAssetType",
+            "overrides": null,
+            "scope": 9757,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 9739,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "384:7:72",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "internal"
+          },
+          {
+            "id": 9742,
+            "nodeType": "VariableDeclaration",
+            "src": "463:38:72",
+            "nodes": [],
+            "constant": false,
+            "functionSelector": "adac3e15",
+            "mutability": "mutable",
+            "name": "globalConfigurationHash",
+            "overrides": null,
+            "scope": 9757,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_bytes32",
+              "typeString": "bytes32"
+            },
+            "typeName": {
+              "id": 9741,
+              "name": "bytes32",
+              "nodeType": "ElementaryTypeName",
+              "src": "463:7:72",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes32",
+                "typeString": "bytes32"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "id": 9746,
+            "nodeType": "VariableDeclaration",
+            "src": "557:52:72",
+            "nodes": [],
+            "constant": false,
+            "functionSelector": "f2011f66",
+            "mutability": "mutable",
+            "name": "configurationHash",
+            "overrides": null,
+            "scope": 9757,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_uint256_$_t_bytes32_$",
+              "typeString": "mapping(uint256 => bytes32)"
+            },
+            "typeName": {
+              "id": 9745,
+              "keyType": {
+                "id": 9743,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "565:7:72",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "557:27:72",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_uint256_$_t_bytes32_$",
+                "typeString": "mapping(uint256 => bytes32)"
+              },
+              "valueType": {
+                "id": 9744,
+                "name": "bytes32",
+                "nodeType": "ElementaryTypeName",
+                "src": "576:7:72",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bytes32",
+                  "typeString": "bytes32"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "id": 9748,
+            "nodeType": "VariableDeclaration",
+            "src": "648:23:72",
+            "nodes": [],
+            "constant": false,
+            "mutability": "mutable",
+            "name": "sharedStateHash",
+            "overrides": null,
+            "scope": 9757,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_bytes32",
+              "typeString": "bytes32"
+            },
+            "typeName": {
+              "id": 9747,
+              "name": "bytes32",
+              "nodeType": "ElementaryTypeName",
+              "src": "648:7:72",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes32",
+                "typeString": "bytes32"
+              }
+            },
+            "value": null,
+            "visibility": "internal"
+          },
+          {
+            "id": 9750,
+            "nodeType": "VariableDeclaration",
+            "src": "870:33:72",
+            "nodes": [],
+            "constant": false,
+            "functionSelector": "c1a85130",
+            "mutability": "mutable",
+            "name": "configurationDelay",
+            "overrides": null,
+            "scope": 9757,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 9749,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "870:7:72",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "id": 9756,
+            "nodeType": "VariableDeclaration",
+            "src": "1159:43:72",
+            "nodes": [],
+            "constant": false,
+            "mutability": "mutable",
+            "name": "__endGap",
+            "overrides": null,
+            "scope": 9757,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_array$_t_uint256_$18446744073709551611_storage",
+              "typeString": "uint256[18446744073709551611]"
+            },
+            "typeName": {
+              "baseType": {
+                "id": 9751,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "1159:7:72",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "id": 9755,
+              "length": {
+                "argumentTypes": null,
+                "commonType": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "id": 9754,
+                "isConstant": false,
+                "isLValue": false,
+                "isPure": true,
+                "lValueRequested": false,
+                "leftExpression": {
+                  "argumentTypes": null,
+                  "id": 9752,
+                  "name": "LAYOUT_LENGTH",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 1866,
+                  "src": "1167:13:72",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "nodeType": "BinaryOperation",
+                "operator": "-",
+                "rightExpression": {
+                  "argumentTypes": null,
+                  "hexValue": "35",
+                  "id": 9753,
+                  "isConstant": false,
+                  "isLValue": false,
+                  "isPure": true,
+                  "kind": "number",
+                  "lValueRequested": false,
+                  "nodeType": "Literal",
+                  "src": "1183:1:72",
+                  "subdenomination": null,
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_rational_5_by_1",
+                    "typeString": "int_const 5"
+                  },
+                  "value": "5"
+                },
+                "src": "1167:17:72",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                }
+              },
+              "nodeType": "ArrayTypeName",
+              "src": "1159:26:72",
+              "typeDescriptions": {
+                "typeIdentifier": "t_array$_t_uint256_$18446744073709551611_storage_ptr",
+                "typeString": "uint256[18446744073709551611]"
+              }
+            },
+            "value": null,
+            "visibility": "private"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 9737,
+              "name": "MainStorage",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 1992,
+              "src": "366:11:72",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_MainStorage_$1992",
+                "typeString": "contract MainStorage"
+              }
+            },
+            "id": 9738,
+            "nodeType": "InheritanceSpecifier",
+            "src": "366:11:72"
+          }
+        ],
+        "contractDependencies": [
+          1617,
+          1992,
+          18407
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "linearizedBaseContracts": [
+          9757,
+          1992,
+          18407,
+          1617
+        ],
+        "name": "PerpetualStorage",
+        "scope": 9758
+      }
+    ],
+    "license": "Apache-2.0."
+  },
+  "id": 72
+}

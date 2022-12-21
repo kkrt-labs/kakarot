@@ -1,0 +1,192 @@
+{
+  "abi": [
+    {
+      "inputs": [],
+      "name": "identify",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "identify()": "eeb72866"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.6.12+commit.27d51765\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"identify\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"tests/integration/solidity_projects/src/starkEx/src/interfaces/Identity.sol\":\"Identity\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"tests/integration/solidity_projects/src/starkEx/src/interfaces/Identity.sol\":{\"keccak256\":\"0xdafb10f58caf0d41f3ec2aa238c5180e38b3254520851a45a18ba872076b8a05\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://a658fb533881d39e2dd0b55318ba4bc8fc67efdaf02451020766809d02b2a258\",\"dweb:/ipfs/QmUsAEzs9WGG4fAexdCUii1vJ1umS3CWt2YPkoRGnktyMt\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.6.12+commit.27d51765"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [],
+          "stateMutability": "pure",
+          "type": "function",
+          "name": "identify",
+          "outputs": [
+            {
+              "internalType": "string",
+              "name": "",
+              "type": "string"
+            }
+          ]
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "tests/integration/solidity_projects/src/starkEx/src/interfaces/Identity.sol": "Identity"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "tests/integration/solidity_projects/src/starkEx/src/interfaces/Identity.sol": {
+        "keccak256": "0xdafb10f58caf0d41f3ec2aa238c5180e38b3254520851a45a18ba872076b8a05",
+        "urls": [
+          "bzz-raw://a658fb533881d39e2dd0b55318ba4bc8fc67efdaf02451020766809d02b2a258",
+          "dweb:/ipfs/QmUsAEzs9WGG4fAexdCUii1vJ1umS3CWt2YPkoRGnktyMt"
+        ],
+        "license": "Apache-2.0."
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "tests/integration/solidity_projects/src/starkEx/src/interfaces/Identity.sol",
+    "id": 6626,
+    "exportedSymbols": {
+      "Identity": [
+        6625
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "40:256:45",
+    "nodes": [
+      {
+        "id": 6619,
+        "nodeType": "PragmaDirective",
+        "src": "40:24:45",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          "^",
+          "0.6",
+          ".12"
+        ]
+      },
+      {
+        "id": 6625,
+        "nodeType": "ContractDefinition",
+        "src": "66:229:45",
+        "nodes": [
+          {
+            "id": 6624,
+            "nodeType": "FunctionDefinition",
+            "src": "235:58:45",
+            "nodes": [],
+            "documentation": null,
+            "functionSelector": "eeb72866",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "identify",
+            "overrides": null,
+            "parameters": {
+              "id": 6620,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "252:2:45"
+            },
+            "returnParameters": {
+              "id": 6623,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6622,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 6624,
+                  "src": "278:13:45",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 6621,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "278:6:45",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "277:15:45"
+            },
+            "scope": 6625,
+            "stateMutability": "pure",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": null,
+        "fullyImplemented": false,
+        "linearizedBaseContracts": [
+          6625
+        ],
+        "name": "Identity",
+        "scope": 6626
+      }
+    ],
+    "license": "Apache-2.0."
+  },
+  "id": 45
+}

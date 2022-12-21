@@ -1,0 +1,174 @@
+{
+  "abi": [],
+  "bytecode": {
+    "object": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea264697066735822122088ca751149bde026381db3fa650cd8587d296d9cb82ac072b4caa0cdf6bf977764736f6c634300060c0033",
+    "sourceMap": "198:195:12:-:0;;;;;;;;;;;;;;;;;;;",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x6080604052600080fdfea264697066735822122088ca751149bde026381db3fa650cd8587d296d9cb82ac072b4caa0cdf6bf977764736f6c634300060c0033",
+    "sourceMap": "198:195:12:-:0;;;;;",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {},
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.6.12+commit.27d51765\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"tests/integration/solidity_projects/src/starkEx/src/components/GovernanceStorage.sol\":\"GovernanceStorage\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"tests/integration/solidity_projects/src/starkEx/src/components/GovernanceStorage.sol\":{\"keccak256\":\"0x2816690a3d47659dd2a1f50b9abd9270b6c63bcc365d95353eaeb5b696a131f6\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://0cc498ed76f699cf3684f0753937b1ae73fc992f1a820b1435a0de88642605dc\",\"dweb:/ipfs/QmURSXwjkgNNs1hXU2uYMKSHd796QmS1qp9amq96G4e77d\"]},\"tests/integration/solidity_projects/src/starkEx/src/interfaces/MGovernance.sol\":{\"keccak256\":\"0xd7ea75c83640c8fa7a0fe91baafc17bf58dbc146874ab0866a17154b1dda9858\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://6d41999882a5eb4cae0f598137906b540057b6e8b39742d6e5141e493b14b7b7\",\"dweb:/ipfs/QmWMwr3XBr3ndvHtg2w96EbTTf1CMCzz9UdpM8GizyFQ8h\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.6.12+commit.27d51765"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "tests/integration/solidity_projects/src/starkEx/src/components/GovernanceStorage.sol": "GovernanceStorage"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "tests/integration/solidity_projects/src/starkEx/src/components/GovernanceStorage.sol": {
+        "keccak256": "0x2816690a3d47659dd2a1f50b9abd9270b6c63bcc365d95353eaeb5b696a131f6",
+        "urls": [
+          "bzz-raw://0cc498ed76f699cf3684f0753937b1ae73fc992f1a820b1435a0de88642605dc",
+          "dweb:/ipfs/QmURSXwjkgNNs1hXU2uYMKSHd796QmS1qp9amq96G4e77d"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/interfaces/MGovernance.sol": {
+        "keccak256": "0xd7ea75c83640c8fa7a0fe91baafc17bf58dbc146874ab0866a17154b1dda9858",
+        "urls": [
+          "bzz-raw://6d41999882a5eb4cae0f598137906b540057b6e8b39742d6e5141e493b14b7b7",
+          "dweb:/ipfs/QmWMwr3XBr3ndvHtg2w96EbTTf1CMCzz9UdpM8GizyFQ8h"
+        ],
+        "license": "Apache-2.0."
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "tests/integration/solidity_projects/src/starkEx/src/components/GovernanceStorage.sol",
+    "id": 1618,
+    "exportedSymbols": {
+      "GovernanceStorage": [
+        1617
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "40:354:12",
+    "nodes": [
+      {
+        "id": 1611,
+        "nodeType": "PragmaDirective",
+        "src": "40:24:12",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          "^",
+          "0.6",
+          ".12"
+        ]
+      },
+      {
+        "id": 1612,
+        "nodeType": "ImportDirective",
+        "src": "65:39:12",
+        "nodes": [],
+        "absolutePath": "tests/integration/solidity_projects/src/starkEx/src/interfaces/MGovernance.sol",
+        "file": "../interfaces/MGovernance.sol",
+        "scope": 1618,
+        "sourceUnit": 6807,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 1617,
+        "nodeType": "ContractDefinition",
+        "src": "198:195:12",
+        "nodes": [
+          {
+            "id": 1616,
+            "nodeType": "VariableDeclaration",
+            "src": "297:63:12",
+            "nodes": [],
+            "constant": false,
+            "mutability": "mutable",
+            "name": "governanceInfo",
+            "overrides": null,
+            "scope": 1617,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_string_memory_ptr_$_t_struct$_GovernanceInfoStruct_$6786_storage_$",
+              "typeString": "mapping(string => struct GovernanceInfoStruct)"
+            },
+            "typeName": {
+              "id": 1615,
+              "keyType": {
+                "id": 1613,
+                "name": "string",
+                "nodeType": "ElementaryTypeName",
+                "src": "305:6:12",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_string_storage_ptr",
+                  "typeString": "string"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "297:39:12",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_string_memory_ptr_$_t_struct$_GovernanceInfoStruct_$6786_storage_$",
+                "typeString": "mapping(string => struct GovernanceInfoStruct)"
+              },
+              "valueType": {
+                "contractScope": null,
+                "id": 1614,
+                "name": "GovernanceInfoStruct",
+                "nodeType": "UserDefinedTypeName",
+                "referencedDeclaration": 6786,
+                "src": "315:20:12",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_struct$_GovernanceInfoStruct_$6786_storage_ptr",
+                  "typeString": "struct GovernanceInfoStruct"
+                }
+              }
+            },
+            "value": null,
+            "visibility": "internal"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "linearizedBaseContracts": [
+          1617
+        ],
+        "name": "GovernanceStorage",
+        "scope": 1618
+      }
+    ],
+    "license": "Apache-2.0."
+  },
+  "id": 12
+}

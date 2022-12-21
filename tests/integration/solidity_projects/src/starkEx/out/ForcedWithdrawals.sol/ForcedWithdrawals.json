@@ -1,0 +1,2098 @@
+{
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "starkKey",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "vaultId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "quantizedAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "LogForcedWithdrawalRequest",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "DEPOSIT_CANCEL_DELAY",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "FREEZE_GRACE_PERIOD",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MAX_FORCED_ACTIONS_REQS_PER_BLOCK",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MAX_VERIFIER_COUNT",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "UNFREEZE_DELAY",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VERIFIER_REMOVAL_DELAY",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "starkKey",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "vaultId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "quantizedAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "premiumCost",
+          "type": "bool"
+        }
+      ],
+      "name": "forcedWithdrawalRequest",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "starkKey",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "vaultId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "quantizedAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "freezeRequest",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "ownerKey",
+          "type": "uint256"
+        }
+      ],
+      "name": "getEthKey",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "starkKey",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "vaultId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "quantizedAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "getForcedWithdrawalRequest",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "res",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "isFrozen",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "DEPOSIT_CANCEL_DELAY()": "77e84e0d",
+    "FREEZE_GRACE_PERIOD()": "00717542",
+    "MAX_FORCED_ACTIONS_REQS_PER_BLOCK()": "e30a5cff",
+    "MAX_VERIFIER_COUNT()": "e6de6282",
+    "UNFREEZE_DELAY()": "993f3639",
+    "VERIFIER_REMOVAL_DELAY()": "b7663112",
+    "forcedWithdrawalRequest(uint256,uint256,uint256,bool)": "af1437a3",
+    "freezeRequest(uint256,uint256,uint256)": "75d4eefd",
+    "getEthKey(uint256)": "1dbd1da7",
+    "getForcedWithdrawalRequest(uint256,uint256,uint256)": "260e96dd",
+    "isFrozen()": "33eeb147"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.6.12+commit.27d51765\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"starkKey\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"vaultId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"quantizedAmount\",\"type\":\"uint256\"}],\"name\":\"LogForcedWithdrawalRequest\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEPOSIT_CANCEL_DELAY\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"FREEZE_GRACE_PERIOD\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"MAX_FORCED_ACTIONS_REQS_PER_BLOCK\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"MAX_VERIFIER_COUNT\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"UNFREEZE_DELAY\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"VERIFIER_REMOVAL_DELAY\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"starkKey\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"vaultId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"quantizedAmount\",\"type\":\"uint256\"},{\"internalType\":\"bool\",\"name\":\"premiumCost\",\"type\":\"bool\"}],\"name\":\"forcedWithdrawalRequest\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"starkKey\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"vaultId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"quantizedAmount\",\"type\":\"uint256\"}],\"name\":\"freezeRequest\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"ownerKey\",\"type\":\"uint256\"}],\"name\":\"getEthKey\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"starkKey\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"vaultId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"quantizedAmount\",\"type\":\"uint256\"}],\"name\":\"getForcedWithdrawalRequest\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"res\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"isFrozen\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"tests/integration/solidity_projects/src/starkEx/src/perpetual/interactions/ForcedWithdrawals.sol\":\"ForcedWithdrawals\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"tests/integration/solidity_projects/src/starkEx/src/interfaces/MFreezable.sol\":{\"keccak256\":\"0x6915d6f81f939d49bb976017c1ac1f0446e022d17338bb1ea3832ebf83f77ec5\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://648ce203862a87e8ec8bfbaf785b86045809488f825c55f4b07b9a7fc84ba198\",\"dweb:/ipfs/Qmb7HNdyYRVhdKzirnNPM3CMconR6t2Tp3Thj1dfCvgg1t\"]},\"tests/integration/solidity_projects/src/starkEx/src/interfaces/MKeyGetters.sol\":{\"keccak256\":\"0x8bbb949644e12f0c377254bbd9be83211d6e5bb0067765b067257e3fb3a78057\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://c3a4320b16fbc1fd228c44a61b291b3f0c41a72fc18ea59a84fee8b957ce7ef4\",\"dweb:/ipfs/QmeAFNvoPRRgGwy8s7E9RbeaMXJZCFRqDdJQXpKXVeEfrm\"]},\"tests/integration/solidity_projects/src/starkEx/src/libraries/LibConstants.sol\":{\"keccak256\":\"0x8fe357f8fb57a437d4e390b57010e8cf7383b31bf074e45aa42ccc7b648e2cc8\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://1b6dcb450fd1c09e742b489e626d1cbac7588043d57e89aafe78143b04f26f6e\",\"dweb:/ipfs/QmWuvyK93hHFTaPBkwZAzTLZ5GrYXbSvJbJHKLTg9bkMtN\"]},\"tests/integration/solidity_projects/src/starkEx/src/perpetual/PerpetualConstants.sol\":{\"keccak256\":\"0x1343fa2c081bcd86961a9651852fc68417c330ef608f63902c5c1456b92b90be\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://a6fb736a936bed6f8270158b566f5cc6d237480bd4a33a786f6d0180c9ecdab5\",\"dweb:/ipfs/Qma4LvbNb4kJhpP4kN3zHJ9EtyxEKTdDwc1Az5EZhyMnzG\"]},\"tests/integration/solidity_projects/src/starkEx/src/perpetual/interactions/ForcedWithdrawals.sol\":{\"keccak256\":\"0xf88ab4b79abcd1fa541efd9a37513845c70bd909416762bbd5955091f698c3e1\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://be82150b789f87bbd307d6b866ec88ee52f73e0ce59e7f280243cfd1a3795963\",\"dweb:/ipfs/QmVe13PncyiaSfbkjbRGzLAsSwy1oLwff3AwDtVT2XAtLU\"]},\"tests/integration/solidity_projects/src/starkEx/src/perpetual/interfaces/MForcedWithdrawalActionState.sol\":{\"keccak256\":\"0x6e08c328c417a9b90a91addda12ba6e139d396aa5e8a9fd70f811be79920d751\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://7f2915cb46104bd8ef09f8503d1be67a3475c20a7b4675def52bb362947d9d65\",\"dweb:/ipfs/QmSSsXX8Buo5yDdtojjzqYEegK6ijCAKdxkiLKUC2CkbPy\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.6.12+commit.27d51765"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "starkKey",
+              "type": "uint256",
+              "indexed": false
+            },
+            {
+              "internalType": "uint256",
+              "name": "vaultId",
+              "type": "uint256",
+              "indexed": false
+            },
+            {
+              "internalType": "uint256",
+              "name": "quantizedAmount",
+              "type": "uint256",
+              "indexed": false
+            }
+          ],
+          "type": "event",
+          "name": "LogForcedWithdrawalRequest",
+          "anonymous": false
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "DEPOSIT_CANCEL_DELAY",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ]
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "FREEZE_GRACE_PERIOD",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ]
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "MAX_FORCED_ACTIONS_REQS_PER_BLOCK",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ]
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "MAX_VERIFIER_COUNT",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ]
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "UNFREEZE_DELAY",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ]
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "VERIFIER_REMOVAL_DELAY",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "starkKey",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "vaultId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "quantizedAmount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "premiumCost",
+              "type": "bool"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "forcedWithdrawalRequest"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "starkKey",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "vaultId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "quantizedAmount",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "freezeRequest"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "ownerKey",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getEthKey",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "starkKey",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "vaultId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "quantizedAmount",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getForcedWithdrawalRequest",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "res",
+              "type": "uint256"
+            }
+          ]
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "isFrozen",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ]
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "tests/integration/solidity_projects/src/starkEx/src/perpetual/interactions/ForcedWithdrawals.sol": "ForcedWithdrawals"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "tests/integration/solidity_projects/src/starkEx/src/interfaces/MFreezable.sol": {
+        "keccak256": "0x6915d6f81f939d49bb976017c1ac1f0446e022d17338bb1ea3832ebf83f77ec5",
+        "urls": [
+          "bzz-raw://648ce203862a87e8ec8bfbaf785b86045809488f825c55f4b07b9a7fc84ba198",
+          "dweb:/ipfs/Qmb7HNdyYRVhdKzirnNPM3CMconR6t2Tp3Thj1dfCvgg1t"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/interfaces/MKeyGetters.sol": {
+        "keccak256": "0x8bbb949644e12f0c377254bbd9be83211d6e5bb0067765b067257e3fb3a78057",
+        "urls": [
+          "bzz-raw://c3a4320b16fbc1fd228c44a61b291b3f0c41a72fc18ea59a84fee8b957ce7ef4",
+          "dweb:/ipfs/QmeAFNvoPRRgGwy8s7E9RbeaMXJZCFRqDdJQXpKXVeEfrm"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/libraries/LibConstants.sol": {
+        "keccak256": "0x8fe357f8fb57a437d4e390b57010e8cf7383b31bf074e45aa42ccc7b648e2cc8",
+        "urls": [
+          "bzz-raw://1b6dcb450fd1c09e742b489e626d1cbac7588043d57e89aafe78143b04f26f6e",
+          "dweb:/ipfs/QmWuvyK93hHFTaPBkwZAzTLZ5GrYXbSvJbJHKLTg9bkMtN"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/perpetual/PerpetualConstants.sol": {
+        "keccak256": "0x1343fa2c081bcd86961a9651852fc68417c330ef608f63902c5c1456b92b90be",
+        "urls": [
+          "bzz-raw://a6fb736a936bed6f8270158b566f5cc6d237480bd4a33a786f6d0180c9ecdab5",
+          "dweb:/ipfs/Qma4LvbNb4kJhpP4kN3zHJ9EtyxEKTdDwc1Az5EZhyMnzG"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/perpetual/interactions/ForcedWithdrawals.sol": {
+        "keccak256": "0xf88ab4b79abcd1fa541efd9a37513845c70bd909416762bbd5955091f698c3e1",
+        "urls": [
+          "bzz-raw://be82150b789f87bbd307d6b866ec88ee52f73e0ce59e7f280243cfd1a3795963",
+          "dweb:/ipfs/QmVe13PncyiaSfbkjbRGzLAsSwy1oLwff3AwDtVT2XAtLU"
+        ],
+        "license": "Apache-2.0."
+      },
+      "tests/integration/solidity_projects/src/starkEx/src/perpetual/interfaces/MForcedWithdrawalActionState.sol": {
+        "keccak256": "0x6e08c328c417a9b90a91addda12ba6e139d396aa5e8a9fd70f811be79920d751",
+        "urls": [
+          "bzz-raw://7f2915cb46104bd8ef09f8503d1be67a3475c20a7b4675def52bb362947d9d65",
+          "dweb:/ipfs/QmSSsXX8Buo5yDdtojjzqYEegK6ijCAKdxkiLKUC2CkbPy"
+        ],
+        "license": "Apache-2.0."
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "tests/integration/solidity_projects/src/starkEx/src/perpetual/interactions/ForcedWithdrawals.sol",
+    "id": 11776,
+    "exportedSymbols": {
+      "ForcedWithdrawals": [
+        11775
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "40:1870:78",
+    "nodes": [
+      {
+        "id": 11665,
+        "nodeType": "PragmaDirective",
+        "src": "40:24:78",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          "^",
+          "0.6",
+          ".12"
+        ]
+      },
+      {
+        "id": 11666,
+        "nodeType": "ImportDirective",
+        "src": "66:56:78",
+        "nodes": [],
+        "absolutePath": "tests/integration/solidity_projects/src/starkEx/src/perpetual/interfaces/MForcedWithdrawalActionState.sol",
+        "file": "../interfaces/MForcedWithdrawalActionState.sol",
+        "scope": 11776,
+        "sourceUnit": 11922,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 11667,
+        "nodeType": "ImportDirective",
+        "src": "123:35:78",
+        "nodes": [],
+        "absolutePath": "tests/integration/solidity_projects/src/starkEx/src/perpetual/PerpetualConstants.sol",
+        "file": "../PerpetualConstants.sol",
+        "scope": 11776,
+        "sourceUnit": 8367,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 11668,
+        "nodeType": "ImportDirective",
+        "src": "159:41:78",
+        "nodes": [],
+        "absolutePath": "tests/integration/solidity_projects/src/starkEx/src/interfaces/MFreezable.sol",
+        "file": "../../interfaces/MFreezable.sol",
+        "scope": 11776,
+        "sourceUnit": 6776,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 11669,
+        "nodeType": "ImportDirective",
+        "src": "201:42:78",
+        "nodes": [],
+        "absolutePath": "tests/integration/solidity_projects/src/starkEx/src/interfaces/MKeyGetters.sol",
+        "file": "../../interfaces/MKeyGetters.sol",
+        "scope": 11776,
+        "sourceUnit": 6847,
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "id": 11775,
+        "nodeType": "ContractDefinition",
+        "src": "245:1664:78",
+        "nodes": [
+          {
+            "id": 11685,
+            "nodeType": "EventDefinition",
+            "src": "380:93:78",
+            "nodes": [],
+            "anonymous": false,
+            "documentation": null,
+            "name": "LogForcedWithdrawalRequest",
+            "parameters": {
+              "id": 11684,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 11679,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "starkKey",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 11685,
+                  "src": "413:16:78",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11678,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "413:7:78",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11681,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "vaultId",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 11685,
+                  "src": "431:15:78",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11680,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "431:7:78",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11683,
+                  "indexed": false,
+                  "mutability": "mutable",
+                  "name": "quantizedAmount",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 11685,
+                  "src": "448:23:78",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11682,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "448:7:78",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "412:60:78"
+            }
+          },
+          {
+            "id": 11740,
+            "nodeType": "FunctionDefinition",
+            "src": "479:969:78",
+            "nodes": [],
+            "body": {
+              "id": 11739,
+              "nodeType": "Block",
+              "src": "670:778:78",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "id": 11704,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "id": 11702,
+                          "name": "vaultId",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 11689,
+                          "src": "725:7:78",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "<",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "id": 11703,
+                          "name": "PERPETUAL_POSITION_ID_UPPER_BOUND",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 8343,
+                          "src": "735:33:78",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "src": "725:43:78",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "4f55545f4f465f52414e47455f504f534954494f4e5f4944",
+                        "id": 11705,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "770:26:78",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_1ba8f12902c97fb51fff145da68844b151b7f3404129879c4211764a286e5edd",
+                          "typeString": "literal_string \"OUT_OF_RANGE_POSITION_ID\""
+                        },
+                        "value": "OUT_OF_RANGE_POSITION_ID"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_1ba8f12902c97fb51fff145da68844b151b7f3404129879c4211764a286e5edd",
+                          "typeString": "literal_string \"OUT_OF_RANGE_POSITION_ID\""
+                        }
+                      ],
+                      "id": 11701,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        -18,
+                        -18
+                      ],
+                      "referencedDeclaration": -18,
+                      "src": "717:7:78",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 11706,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "717:80:78",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 11707,
+                  "nodeType": "ExpressionStatement",
+                  "src": "717:80:78"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "id": 11711,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "id": 11709,
+                          "name": "quantizedAmount",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 11691,
+                          "src": "815:15:78",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "<",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "id": 11710,
+                          "name": "PERPETUAL_AMOUNT_UPPER_BOUND",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 8348,
+                          "src": "833:28:78",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "src": "815:46:78",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "494c4c4547414c5f414d4f554e54",
+                        "id": 11712,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "863:16:78",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_59d3e0c71af9dfd4b3acf4a3d6fede0a0f49155caeda8d5133dbc67a82e3aafb",
+                          "typeString": "literal_string \"ILLEGAL_AMOUNT\""
+                        },
+                        "value": "ILLEGAL_AMOUNT"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_59d3e0c71af9dfd4b3acf4a3d6fede0a0f49155caeda8d5133dbc67a82e3aafb",
+                          "typeString": "literal_string \"ILLEGAL_AMOUNT\""
+                        }
+                      ],
+                      "id": 11708,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        -18,
+                        -18
+                      ],
+                      "referencedDeclaration": -18,
+                      "src": "807:7:78",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 11713,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "807:73:78",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 11714,
+                  "nodeType": "ExpressionStatement",
+                  "src": "807:73:78"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "id": 11722,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "arguments": [
+                            {
+                              "argumentTypes": null,
+                              "id": 11717,
+                              "name": "starkKey",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 11687,
+                              "src": "1122:8:78",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            },
+                            {
+                              "argumentTypes": null,
+                              "id": 11718,
+                              "name": "vaultId",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 11689,
+                              "src": "1132:7:78",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            },
+                            {
+                              "argumentTypes": null,
+                              "id": 11719,
+                              "name": "quantizedAmount",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 11691,
+                              "src": "1141:15:78",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            }
+                          ],
+                          "expression": {
+                            "argumentTypes": [
+                              {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              },
+                              {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              },
+                              {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            ],
+                            "id": 11716,
+                            "name": "getForcedWithdrawalRequest",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 11909,
+                            "src": "1095:26:78",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_function_internal_view$_t_uint256_$_t_uint256_$_t_uint256_$returns$_t_uint256_$",
+                              "typeString": "function (uint256,uint256,uint256) view returns (uint256)"
+                            }
+                          },
+                          "id": 11720,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "functionCall",
+                          "lValueRequested": false,
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "1095:62:78",
+                          "tryCall": false,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "==",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "hexValue": "30",
+                          "id": 11721,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "number",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "1161:1:78",
+                          "subdenomination": null,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_rational_0_by_1",
+                            "typeString": "int_const 0"
+                          },
+                          "value": "0"
+                        },
+                        "src": "1095:67:78",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "524551554553545f414c52454144595f50454e44494e47",
+                        "id": 11723,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "1176:25:78",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_a2d11933c47bf66b71cdf5cd1deae80b281276b19ff924b6605a3c2f3b245c0d",
+                          "typeString": "literal_string \"REQUEST_ALREADY_PENDING\""
+                        },
+                        "value": "REQUEST_ALREADY_PENDING"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_a2d11933c47bf66b71cdf5cd1deae80b281276b19ff924b6605a3c2f3b245c0d",
+                          "typeString": "literal_string \"REQUEST_ALREADY_PENDING\""
+                        }
+                      ],
+                      "id": 11715,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        -18,
+                        -18
+                      ],
+                      "referencedDeclaration": -18,
+                      "src": "1074:7:78",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 11724,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1074:137:78",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 11725,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1074:137:78"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 11727,
+                        "name": "starkKey",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 11687,
+                        "src": "1291:8:78",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 11728,
+                        "name": "vaultId",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 11689,
+                        "src": "1301:7:78",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 11729,
+                        "name": "quantizedAmount",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 11691,
+                        "src": "1310:15:78",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 11730,
+                        "name": "premiumCost",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 11693,
+                        "src": "1327:11:78",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      ],
+                      "id": 11726,
+                      "name": "setForcedWithdrawalRequest",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 11920,
+                      "src": "1264:26:78",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_uint256_$_t_uint256_$_t_uint256_$_t_bool_$returns$__$",
+                        "typeString": "function (uint256,uint256,uint256,bool)"
+                      }
+                    },
+                    "id": 11731,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1264:75:78",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 11732,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1264:75:78"
+                },
+                {
+                  "eventCall": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 11734,
+                        "name": "starkKey",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 11687,
+                        "src": "1406:8:78",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 11735,
+                        "name": "vaultId",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 11689,
+                        "src": "1416:7:78",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 11736,
+                        "name": "quantizedAmount",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 11691,
+                        "src": "1425:15:78",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      ],
+                      "id": 11733,
+                      "name": "LogForcedWithdrawalRequest",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 11685,
+                      "src": "1379:26:78",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$_t_uint256_$_t_uint256_$returns$__$",
+                        "typeString": "function (uint256,uint256,uint256)"
+                      }
+                    },
+                    "id": 11737,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1379:62:78",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 11738,
+                  "nodeType": "EmitStatement",
+                  "src": "1374:67:78"
+                }
+              ]
+            },
+            "documentation": null,
+            "functionSelector": "af1437a3",
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "arguments": null,
+                "id": 11696,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 11695,
+                  "name": "notFrozen",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 6756,
+                  "src": "637:9:78",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_modifier$__$",
+                    "typeString": "modifier ()"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "637:9:78"
+              },
+              {
+                "arguments": [
+                  {
+                    "argumentTypes": null,
+                    "id": 11698,
+                    "name": "starkKey",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 11687,
+                    "src": "660:8:78",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  }
+                ],
+                "id": 11699,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 11697,
+                  "name": "onlyKeyOwner",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 6845,
+                  "src": "647:12:78",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_modifier$_t_uint256_$",
+                    "typeString": "modifier (uint256)"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "647:22:78"
+              }
+            ],
+            "name": "forcedWithdrawalRequest",
+            "overrides": null,
+            "parameters": {
+              "id": 11694,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 11687,
+                  "mutability": "mutable",
+                  "name": "starkKey",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 11740,
+                  "src": "521:16:78",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11686,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "521:7:78",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11689,
+                  "mutability": "mutable",
+                  "name": "vaultId",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 11740,
+                  "src": "547:15:78",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11688,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "547:7:78",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11691,
+                  "mutability": "mutable",
+                  "name": "quantizedAmount",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 11740,
+                  "src": "572:23:78",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11690,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "572:7:78",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11693,
+                  "mutability": "mutable",
+                  "name": "premiumCost",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 11740,
+                  "src": "605:16:78",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 11692,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "605:4:78",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "511:116:78"
+            },
+            "returnParameters": {
+              "id": 11700,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "670:0:78"
+            },
+            "scope": 11775,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "id": 11774,
+            "nodeType": "FunctionDefinition",
+            "src": "1454:453:78",
+            "nodes": [],
+            "body": {
+              "id": 11773,
+              "nodeType": "Block",
+              "src": "1586:321:78",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "id": 11754,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "id": 11752,
+                          "name": "vaultId",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 11744,
+                          "src": "1640:7:78",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "<",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "id": 11753,
+                          "name": "PERPETUAL_POSITION_ID_UPPER_BOUND",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 8343,
+                          "src": "1650:33:78",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "src": "1640:43:78",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "hexValue": "4f55545f4f465f52414e47455f504f534954494f4e5f4944",
+                        "id": 11755,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "1685:26:78",
+                        "subdenomination": null,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_1ba8f12902c97fb51fff145da68844b151b7f3404129879c4211764a286e5edd",
+                          "typeString": "literal_string \"OUT_OF_RANGE_POSITION_ID\""
+                        },
+                        "value": "OUT_OF_RANGE_POSITION_ID"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_1ba8f12902c97fb51fff145da68844b151b7f3404129879c4211764a286e5edd",
+                          "typeString": "literal_string \"OUT_OF_RANGE_POSITION_ID\""
+                        }
+                      ],
+                      "id": 11751,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        -18,
+                        -18
+                      ],
+                      "referencedDeclaration": -18,
+                      "src": "1632:7:78",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 11756,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1632:80:78",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 11757,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1632:80:78"
+                },
+                {
+                  "assignments": [
+                    11759
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 11759,
+                      "mutability": "mutable",
+                      "name": "requestTime",
+                      "nodeType": "VariableDeclaration",
+                      "overrides": null,
+                      "scope": 11773,
+                      "src": "1753:19:78",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "typeName": {
+                        "id": 11758,
+                        "name": "uint256",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "1753:7:78",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 11765,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 11761,
+                        "name": "starkKey",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 11742,
+                        "src": "1802:8:78",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 11762,
+                        "name": "vaultId",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 11744,
+                        "src": "1812:7:78",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 11763,
+                        "name": "quantizedAmount",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 11746,
+                        "src": "1821:15:78",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      ],
+                      "id": 11760,
+                      "name": "getForcedWithdrawalRequest",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 11909,
+                      "src": "1775:26:78",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_view$_t_uint256_$_t_uint256_$_t_uint256_$returns$_t_uint256_$",
+                        "typeString": "function (uint256,uint256,uint256) view returns (uint256)"
+                      }
+                    },
+                    "id": 11764,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1775:62:78",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "1753:84:78"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 11767,
+                        "name": "requestTime",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 11759,
+                        "src": "1870:11:78",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      ],
+                      "id": 11766,
+                      "name": "validateFreezeRequest",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 6761,
+                      "src": "1848:21:78",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$_t_uint256_$returns$__$",
+                        "typeString": "function (uint256)"
+                      }
+                    },
+                    "id": 11768,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1848:34:78",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 11769,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1848:34:78"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [],
+                    "expression": {
+                      "argumentTypes": [],
+                      "id": 11770,
+                      "name": "freeze",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 6774,
+                      "src": "1892:6:78",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_nonpayable$__$returns$__$",
+                        "typeString": "function ()"
+                      }
+                    },
+                    "id": 11771,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1892:8:78",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 11772,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1892:8:78"
+                }
+              ]
+            },
+            "documentation": null,
+            "functionSelector": "75d4eefd",
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "arguments": null,
+                "id": 11749,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 11748,
+                  "name": "notFrozen",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 6756,
+                  "src": "1576:9:78",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_modifier$__$",
+                    "typeString": "modifier ()"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "1576:9:78"
+              }
+            ],
+            "name": "freezeRequest",
+            "overrides": null,
+            "parameters": {
+              "id": 11747,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 11742,
+                  "mutability": "mutable",
+                  "name": "starkKey",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 11774,
+                  "src": "1486:16:78",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11741,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1486:7:78",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11744,
+                  "mutability": "mutable",
+                  "name": "vaultId",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 11774,
+                  "src": "1512:15:78",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11743,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1512:7:78",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 11746,
+                  "mutability": "mutable",
+                  "name": "quantizedAmount",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 11774,
+                  "src": "1537:23:78",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 11745,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1537:7:78",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1476:90:78"
+            },
+            "returnParameters": {
+              "id": 11750,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1586:0:78"
+            },
+            "scope": 11775,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": true,
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 11670,
+              "name": "PerpetualConstants",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 8366,
+              "src": "288:18:78",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_PerpetualConstants_$8366",
+                "typeString": "contract PerpetualConstants"
+              }
+            },
+            "id": 11671,
+            "nodeType": "InheritanceSpecifier",
+            "src": "288:18:78"
+          },
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 11672,
+              "name": "MForcedWithdrawalActionState",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 11921,
+              "src": "312:28:78",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_MForcedWithdrawalActionState_$11921",
+                "typeString": "contract MForcedWithdrawalActionState"
+              }
+            },
+            "id": 11673,
+            "nodeType": "InheritanceSpecifier",
+            "src": "312:28:78"
+          },
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 11674,
+              "name": "MFreezable",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 6775,
+              "src": "346:10:78",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_MFreezable_$6775",
+                "typeString": "contract MFreezable"
+              }
+            },
+            "id": 11675,
+            "nodeType": "InheritanceSpecifier",
+            "src": "346:10:78"
+          },
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 11676,
+              "name": "MKeyGetters",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 6846,
+              "src": "362:11:78",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_MKeyGetters_$6846",
+                "typeString": "contract MKeyGetters"
+              }
+            },
+            "id": 11677,
+            "nodeType": "InheritanceSpecifier",
+            "src": "362:11:78"
+          }
+        ],
+        "contractDependencies": [
+          6775,
+          6846,
+          8095,
+          8366,
+          11921
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": false,
+        "linearizedBaseContracts": [
+          11775,
+          6846,
+          6775,
+          11921,
+          8366,
+          8095
+        ],
+        "name": "ForcedWithdrawals",
+        "scope": 11776
+      }
+    ],
+    "license": "Apache-2.0."
+  },
+  "id": 78
+}

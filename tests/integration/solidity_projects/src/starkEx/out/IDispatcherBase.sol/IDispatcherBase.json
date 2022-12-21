@@ -1,0 +1,491 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "bytes4",
+          "name": "selector",
+          "type": "bytes4"
+        }
+      ],
+      "name": "getSubContract",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "getSubContract(bytes4)": "2f9014b4"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.6.12+commit.27d51765\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"selector\",\"type\":\"bytes4\"}],\"name\":\"getSubContract\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"tests/integration/solidity_projects/src/starkEx/src/interfaces/IDispatcherBase.sol\":\"IDispatcherBase\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"tests/integration/solidity_projects/src/starkEx/src/interfaces/IDispatcherBase.sol\":{\"keccak256\":\"0x5c25554765286440ea83629798efef63c9bfeff044fdf967f9766736a1b643fd\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://eb373e1aeeb81153286f1056dad5fdc0a6eb04f69b68a786da472075fa9bee5f\",\"dweb:/ipfs/QmXC2NqSRVemmYTJQd8SLWYnBSXkKEvhHFCYA5qXsuJaK9\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.6.12+commit.27d51765"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "bytes4",
+              "name": "selector",
+              "type": "bytes4"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "getSubContract",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ]
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "tests/integration/solidity_projects/src/starkEx/src/interfaces/IDispatcherBase.sol": "IDispatcherBase"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "tests/integration/solidity_projects/src/starkEx/src/interfaces/IDispatcherBase.sol": {
+        "keccak256": "0x5c25554765286440ea83629798efef63c9bfeff044fdf967f9766736a1b643fd",
+        "urls": [
+          "bzz-raw://eb373e1aeeb81153286f1056dad5fdc0a6eb04f69b68a786da472075fa9bee5f",
+          "dweb:/ipfs/QmXC2NqSRVemmYTJQd8SLWYnBSXkKEvhHFCYA5qXsuJaK9"
+        ],
+        "license": "Apache-2.0."
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "tests/integration/solidity_projects/src/starkEx/src/interfaces/IDispatcherBase.sol",
+    "id": 6574,
+    "exportedSymbols": {
+      "IDispatcherBase": [
+        6573
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "40:820:40",
+    "nodes": [
+      {
+        "id": 6543,
+        "nodeType": "PragmaDirective",
+        "src": "40:24:40",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          "^",
+          "0.6",
+          ".12"
+        ]
+      },
+      {
+        "id": 6573,
+        "nodeType": "ContractDefinition",
+        "src": "338:521:40",
+        "nodes": [
+          {
+            "id": 6550,
+            "nodeType": "FunctionDefinition",
+            "src": "378:79:40",
+            "nodes": [],
+            "documentation": null,
+            "functionSelector": "2f9014b4",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getSubContract",
+            "overrides": null,
+            "parameters": {
+              "id": 6546,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6545,
+                  "mutability": "mutable",
+                  "name": "selector",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 6550,
+                  "src": "402:15:40",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes4",
+                    "typeString": "bytes4"
+                  },
+                  "typeName": {
+                    "id": 6544,
+                    "name": "bytes4",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "402:6:40",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes4",
+                      "typeString": "bytes4"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "401:17:40"
+            },
+            "returnParameters": {
+              "id": 6549,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6548,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 6550,
+                  "src": "448:7:40",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 6547,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "448:7:40",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "447:9:40"
+            },
+            "scope": 6573,
+            "stateMutability": "view",
+            "virtual": true,
+            "visibility": "public"
+          },
+          {
+            "id": 6557,
+            "nodeType": "FunctionDefinition",
+            "src": "463:84:40",
+            "nodes": [],
+            "documentation": null,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "setSubContractAddress",
+            "overrides": null,
+            "parameters": {
+              "id": 6555,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6552,
+                  "mutability": "mutable",
+                  "name": "index",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 6557,
+                  "src": "494:13:40",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 6551,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "494:7:40",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 6554,
+                  "mutability": "mutable",
+                  "name": "subContract",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 6557,
+                  "src": "509:19:40",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 6553,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "509:7:40",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "493:36:40"
+            },
+            "returnParameters": {
+              "id": 6556,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "546:0:40"
+            },
+            "scope": 6573,
+            "stateMutability": "nonpayable",
+            "virtual": true,
+            "visibility": "internal"
+          },
+          {
+            "id": 6562,
+            "nodeType": "FunctionDefinition",
+            "src": "553:70:40",
+            "nodes": [],
+            "documentation": null,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getNumSubcontracts",
+            "overrides": null,
+            "parameters": {
+              "id": 6558,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "580:2:40"
+            },
+            "returnParameters": {
+              "id": 6561,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6560,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 6562,
+                  "src": "614:7:40",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 6559,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "614:7:40",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "613:9:40"
+            },
+            "scope": 6573,
+            "stateMutability": "pure",
+            "virtual": true,
+            "visibility": "internal"
+          },
+          {
+            "id": 6569,
+            "nodeType": "FunctionDefinition",
+            "src": "629:92:40",
+            "nodes": [],
+            "documentation": null,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "validateSubContractIndex",
+            "overrides": null,
+            "parameters": {
+              "id": 6567,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6564,
+                  "mutability": "mutable",
+                  "name": "index",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 6569,
+                  "src": "663:13:40",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 6563,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "663:7:40",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 6566,
+                  "mutability": "mutable",
+                  "name": "subContract",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 6569,
+                  "src": "678:19:40",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 6565,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "678:7:40",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "662:36:40"
+            },
+            "returnParameters": {
+              "id": 6568,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "720:0:40"
+            },
+            "scope": 6573,
+            "stateMutability": "pure",
+            "virtual": true,
+            "visibility": "internal"
+          },
+          {
+            "id": 6572,
+            "nodeType": "FunctionDefinition",
+            "src": "801:56:40",
+            "nodes": [],
+            "documentation": null,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "initializationSentinel",
+            "overrides": null,
+            "parameters": {
+              "id": 6570,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "832:2:40"
+            },
+            "returnParameters": {
+              "id": 6571,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "856:0:40"
+            },
+            "scope": 6573,
+            "stateMutability": "view",
+            "virtual": true,
+            "visibility": "internal"
+          }
+        ],
+        "abstract": true,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": false,
+        "linearizedBaseContracts": [
+          6573
+        ],
+        "name": "IDispatcherBase",
+        "scope": 6574
+      }
+    ],
+    "license": "Apache-2.0."
+  },
+  "id": 40
+}

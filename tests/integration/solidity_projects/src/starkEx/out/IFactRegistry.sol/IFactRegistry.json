@@ -1,0 +1,233 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "fact",
+          "type": "bytes32"
+        }
+      ],
+      "name": "isValid",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "sourceMap": "",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "isValid(bytes32)": "6a938567"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.6.12+commit.27d51765\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"fact\",\"type\":\"bytes32\"}],\"name\":\"isValid\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"tests/integration/solidity_projects/src/starkEx/src/interfaces/IFactRegistry.sol\":\"IFactRegistry\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"tests/integration/solidity_projects/src/starkEx/src/interfaces/IFactRegistry.sol\":{\"keccak256\":\"0xab04b296b506dfb0b4a8828f3dc463072fd50449a5ad8327d1baf01438b0fb35\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://e451abe007f98081d1adfd759cc4168f81982992d8c0554650b94d37bc009e64\",\"dweb:/ipfs/QmVBNUWFhNX8PqSMcqRkHVaTbcm7KNpgSg91Sj6MepFG6u\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.6.12+commit.27d51765"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "fact",
+              "type": "bytes32"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "isValid",
+          "outputs": [
+            {
+              "internalType": "bool",
+              "name": "",
+              "type": "bool"
+            }
+          ]
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "tests/integration/solidity_projects/src/starkEx/src/interfaces/IFactRegistry.sol": "IFactRegistry"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "tests/integration/solidity_projects/src/starkEx/src/interfaces/IFactRegistry.sol": {
+        "keccak256": "0xab04b296b506dfb0b4a8828f3dc463072fd50449a5ad8327d1baf01438b0fb35",
+        "urls": [
+          "bzz-raw://e451abe007f98081d1adfd759cc4168f81982992d8c0554650b94d37bc009e64",
+          "dweb:/ipfs/QmVBNUWFhNX8PqSMcqRkHVaTbcm7KNpgSg91Sj6MepFG6u"
+        ],
+        "license": "Apache-2.0."
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "tests/integration/solidity_projects/src/starkEx/src/interfaces/IFactRegistry.sol",
+    "id": 6584,
+    "exportedSymbols": {
+      "IFactRegistry": [
+        6583
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "40:1001:41",
+    "nodes": [
+      {
+        "id": 6575,
+        "nodeType": "PragmaDirective",
+        "src": "40:24:41",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          "^",
+          "0.6",
+          ".12"
+        ]
+      },
+      {
+        "id": 6583,
+        "nodeType": "ContractDefinition",
+        "src": "854:186:41",
+        "nodes": [
+          {
+            "id": 6582,
+            "nodeType": "FunctionDefinition",
+            "src": "978:60:41",
+            "nodes": [],
+            "documentation": null,
+            "functionSelector": "6a938567",
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isValid",
+            "overrides": null,
+            "parameters": {
+              "id": 6578,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6577,
+                  "mutability": "mutable",
+                  "name": "fact",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 6582,
+                  "src": "995:12:41",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 6576,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "995:7:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "994:14:41"
+            },
+            "returnParameters": {
+              "id": 6581,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6580,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 6582,
+                  "src": "1032:4:41",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 6579,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1032:4:41",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1031:6:41"
+            },
+            "scope": 6583,
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": null,
+        "fullyImplemented": false,
+        "linearizedBaseContracts": [
+          6583
+        ],
+        "name": "IFactRegistry",
+        "scope": 6584
+      }
+    ],
+    "license": "Apache-2.0."
+  },
+  "id": 41
+}

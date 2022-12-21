@@ -1,0 +1,324 @@
+{
+  "abi": [
+    {
+      "inputs": [],
+      "name": "UPGRADE_DELAY_SLOT",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x6080604052348015600f57600080fd5b50609f8061001e6000396000f3fe6080604052348015600f57600080fd5b506004361060285760003560e01c806320cea94d14602d575b600080fd5b60336045565b60408051918252519081900360200190f35b7fc21dbb3089fcb2c4f4c6a67854ab4db2b0f233ea4b21b21f912d52d18fc5db1f8156fea26469706673582212205b8233f15776af2c1729f9b1be7b3debe1ba70b669029170485b47fc012fa21164736f6c634300060c0033",
+    "sourceMap": "286:1719:114:-:0;;;;;;;;;;;;;;;;;;;",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x6080604052348015600f57600080fd5b506004361060285760003560e01c806320cea94d14602d575b600080fd5b60336045565b60408051918252519081900360200190f35b7fc21dbb3089fcb2c4f4c6a67854ab4db2b0f233ea4b21b21f912d52d18fc5db1f8156fea26469706673582212205b8233f15776af2c1729f9b1be7b3debe1ba70b669029170485b47fc012fa21164736f6c634300060c0033",
+    "sourceMap": "286:1719:114:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1883:119;;;:::i;:::-;;;;;;;;;;;;;;;;;1936:66;1883:119;:::o",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "UPGRADE_DELAY_SLOT()": "20cea94d"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.6.12+commit.27d51765\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"UPGRADE_DELAY_SLOT\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"notice\":\"StorageSlots holds the arbitrary storage slots used throughout the Proxy pattern. Storage address slots are a mechanism to define an arbitrary location, that will not be overlapped by the logical contracts.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"tests/integration/solidity_projects/src/starkEx/src/upgrade/StorageSlots.sol\":\"StorageSlots\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"tests/integration/solidity_projects/src/starkEx/src/upgrade/StorageSlots.sol\":{\"keccak256\":\"0x4415038da6cf9a98f9a3d480836112c2436d5b61b0acc1269df8b61c19c3f695\",\"license\":\"Apache-2.0.\",\"urls\":[\"bzz-raw://11ffc6e792bd2ee8ea27b7a5e78dc005facdc179f6c167e10b2f0b03955d73f8\",\"dweb:/ipfs/QmVKMff2UQPdErJuQY3viyf2Y7MwgVYGbsLjagJFqq4B5R\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.6.12+commit.27d51765"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "UPGRADE_DELAY_SLOT",
+          "outputs": [
+            {
+              "internalType": "bytes32",
+              "name": "",
+              "type": "bytes32"
+            }
+          ]
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "tests/integration/solidity_projects/src/starkEx/src/upgrade/StorageSlots.sol": "StorageSlots"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "tests/integration/solidity_projects/src/starkEx/src/upgrade/StorageSlots.sol": {
+        "keccak256": "0x4415038da6cf9a98f9a3d480836112c2436d5b61b0acc1269df8b61c19c3f695",
+        "urls": [
+          "bzz-raw://11ffc6e792bd2ee8ea27b7a5e78dc005facdc179f6c167e10b2f0b03955d73f8",
+          "dweb:/ipfs/QmVKMff2UQPdErJuQY3viyf2Y7MwgVYGbsLjagJFqq4B5R"
+        ],
+        "license": "Apache-2.0."
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "tests/integration/solidity_projects/src/starkEx/src/upgrade/StorageSlots.sol",
+    "id": 18424,
+    "exportedSymbols": {
+      "StorageSlots": [
+        18423
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "40:1966:114",
+    "nodes": [
+      {
+        "id": 18409,
+        "nodeType": "PragmaDirective",
+        "src": "40:24:114",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          "^",
+          "0.6",
+          ".12"
+        ]
+      },
+      {
+        "id": 18423,
+        "nodeType": "ContractDefinition",
+        "src": "286:1719:114",
+        "nodes": [
+          {
+            "id": 18413,
+            "nodeType": "VariableDeclaration",
+            "src": "629:122:114",
+            "nodes": [],
+            "constant": true,
+            "mutability": "constant",
+            "name": "IMPLEMENTATION_SLOT",
+            "overrides": null,
+            "scope": 18423,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_bytes32",
+              "typeString": "bytes32"
+            },
+            "typeName": {
+              "id": 18411,
+              "name": "bytes32",
+              "nodeType": "ElementaryTypeName",
+              "src": "629:7:114",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes32",
+                "typeString": "bytes32"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "307831373736363732343061656565613765333565616265336133356531383330366633333632313965313338366637373130613662663837383366373631623234",
+              "id": 18412,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "685:66:114",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_10612395322642182982555822204715757987375564237545050729200148886784698620708_by_1",
+                "typeString": "int_const 1061...(69 digits omitted)...0708"
+              },
+              "value": "0x177667240aeeea7e35eabe3a35e18306f336219e1386f7710a6bf8783f761b24"
+            },
+            "visibility": "internal"
+          },
+          {
+            "id": 18416,
+            "nodeType": "VariableDeclaration",
+            "src": "1096:123:114",
+            "nodes": [],
+            "constant": true,
+            "mutability": "constant",
+            "name": "CALL_PROXY_IMPL_SLOT",
+            "overrides": null,
+            "scope": 18423,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_bytes32",
+              "typeString": "bytes32"
+            },
+            "typeName": {
+              "id": 18414,
+              "name": "bytes32",
+              "nodeType": "ElementaryTypeName",
+              "src": "1096:7:114",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes32",
+                "typeString": "bytes32"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "307837313834363831363431333939656234616432666462393231313438353765653666663233396639346164363335613137373939373839343762383834336265",
+              "id": 18415,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "1153:66:114",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_51345294084067743942372475194278448460941863536043043765170476257705200206782_by_1",
+                "typeString": "int_const 5134...(69 digits omitted)...6782"
+              },
+              "value": "0x7184681641399eb4ad2fdb92114857ee6ff239f94ad635a1779978947b8843be"
+            },
+            "visibility": "internal"
+          },
+          {
+            "id": 18419,
+            "nodeType": "VariableDeclaration",
+            "src": "1541:123:114",
+            "nodes": [],
+            "constant": true,
+            "mutability": "constant",
+            "name": "FINALIZED_STATE_SLOT",
+            "overrides": null,
+            "scope": 18423,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_bytes32",
+              "typeString": "bytes32"
+            },
+            "typeName": {
+              "id": 18417,
+              "name": "bytes32",
+              "nodeType": "ElementaryTypeName",
+              "src": "1541:7:114",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes32",
+                "typeString": "bytes32"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "307837643433336336663833376538663933303039393337633436366338326566626235626136323166616533363838366430636163343333633564306161376432",
+              "id": 18418,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "1598:66:114",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_56657901937431312101321433188513883166657145841950844121714238844622934288338_by_1",
+                "typeString": "int_const 5665...(69 digits omitted)...8338"
+              },
+              "value": "0x7d433c6f837e8f93009937c466c82efbb5ba621fae36886d0cac433c5d0aa7d2"
+            },
+            "visibility": "internal"
+          },
+          {
+            "id": 18422,
+            "nodeType": "VariableDeclaration",
+            "src": "1883:119:114",
+            "nodes": [],
+            "constant": true,
+            "functionSelector": "20cea94d",
+            "mutability": "constant",
+            "name": "UPGRADE_DELAY_SLOT",
+            "overrides": null,
+            "scope": 18423,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_bytes32",
+              "typeString": "bytes32"
+            },
+            "typeName": {
+              "id": 18420,
+              "name": "bytes32",
+              "nodeType": "ElementaryTypeName",
+              "src": "1883:7:114",
+              "typeDescriptions": {
+                "typeIdentifier": "t_bytes32",
+                "typeString": "bytes32"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "307863323164626233303839666362326334663463366136373835346162346462326230663233336561346232316232316639313264353264313866633564623166",
+              "id": 18421,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "1936:66:114",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_87801223125208280365631041449805626211989728501360158661909989141007764413215_by_1",
+                "typeString": "int_const 8780...(69 digits omitted)...3215"
+              },
+              "value": "0xc21dbb3089fcb2c4f4c6a67854ab4db2b0f233ea4b21b21f912d52d18fc5db1f"
+            },
+            "visibility": "public"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": {
+          "id": 18410,
+          "nodeType": "StructuredDocumentation",
+          "src": "66:219:114",
+          "text": "StorageSlots holds the arbitrary storage slots used throughout the Proxy pattern.\nStorage address slots are a mechanism to define an arbitrary location, that will not be\noverlapped by the logical contracts."
+        },
+        "fullyImplemented": true,
+        "linearizedBaseContracts": [
+          18423
+        ],
+        "name": "StorageSlots",
+        "scope": 18424
+      }
+    ],
+    "license": "Apache-2.0."
+  },
+  "id": 114
+}
