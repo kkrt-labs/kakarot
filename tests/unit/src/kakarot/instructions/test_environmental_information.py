@@ -2,6 +2,7 @@ import random
 
 import pytest
 import pytest_asyncio
+from Crypto.Hash import keccak
 from starkware.starknet.testing.starknet import Starknet
 
 @pytest_asyncio.fixture(scope="module")
@@ -116,3 +117,49 @@ class TestEnvironmentalInformation:
         await environmental_information.test__exec_gasprice(
             zeroes=zeroes, nonzeroes=nonzeroes, calldata=calldata
         ).call()
+
+    async def test_extcodehash__should_handle_invalid_address(
+        self,
+        environmental_information,
+        account_registry,
+    ):
+        await environmental_information.test__exec_extcodehash__should_handle_invalid_address(
+            account_registry_address=account_registry.contract_address
+        ).call()
+
+    async def test_excodehash__should_handle_address_with_code(
+        self,
+        contract_account,
+        kakarot,
+        account_registry,
+        environmental_information,
+    ):
+        random.seed(0)
+        bytecode = [random.randint(0, 255) for _ in range(32)]
+        keccak_hash = keccak.new(digest_bits=256)
+        b = b''
+        for bb in bytecode:
+            b += bb.to_bytes(1, byteorder='big')
+        keccak_hash.update(b)
+        expected_hash = int.from_bytes(keccak_hash.digest(), byteorder='big')
+        expected_hash_low = expected_hash & ((1 << 129) - 1)
+        expected_hash_high = expected_hash >> 128
+        contract_account = await contract_account.write_bytecode(bytecode).execute(
+            caller_address=1
+        )
+
+        starknet_contract_address = contract_account.call_info.contract_address
+
+        evm_contract_address = 1
+
+        await account_registry.set_account_entry(
+            starknet_contract_address, evm_contract_address
+        ).execute(caller_address=kakarot.contract_address)
+
+        await environmental_information.test__exec_extcodehash__should_handle_address_with_code(
+            account_registry_address=account_registry.contract_address,
+            evm_contract_address=evm_contract_address,
+            expected_hash_low=expected_hash_low,
+            expected_hash_high=expected_hash_high,
+        ).call()
+
