@@ -1,9 +1,9 @@
 {
   "_format": "ethers-rs-sol-cache-3",
   "paths": {
-    "artifacts": "src/uniswap-v2/out",
-    "build_infos": "src/uniswap-v2/out/build-info",
-    "sources": "src/uniswap-v2",
+    "artifacts": "out",
+    "build_infos": "out/build-info",
+    "sources": "src",
     "tests": "test",
     "scripts": "script",
     "libraries": [
@@ -11,8 +11,5884 @@
     ]
   },
   "files": {
+    "src/single-solidity-files/Counter/Counter.sol": {
+      "lastModificationDate": 1671644467128,
+      "contentHash": "f6b8de4c085cac02979b361c07acd52d",
+      "sourceName": "src/single-solidity-files/Counter/Counter.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.8.10",
+      "artifacts": {
+        "Counter": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "Counter.sol/Counter.json"
+        }
+      }
+    },
+    "src/single-solidity-files/ERC20/ERC20.sol": {
+      "lastModificationDate": 1671644467138,
+      "contentHash": "d92f9b00622905d74fc1eb02156959e6",
+      "sourceName": "src/single-solidity-files/ERC20/ERC20.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": ">=0.8.0",
+      "artifacts": {
+        "ERC20": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "ERC20/ERC20.sol/ERC20.json"
+        }
+      }
+    },
+    "src/single-solidity-files/ERC721/ERC721.sol": {
+      "lastModificationDate": 1671644467149,
+      "contentHash": "95e279bbc48f597f75ff4adb688a8ea2",
+      "sourceName": "src/single-solidity-files/ERC721/ERC721.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": ">=0.8.0",
+      "artifacts": {
+        "ERC721": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "ERC721.sol/ERC721.json"
+        },
+        "ERC721TokenReceiver": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "ERC721.sol/ERC721TokenReceiver.json"
+        }
+      }
+    },
+    "src/single-solidity-files/PlainOpcodes/PlainOpcodes.sol": {
+      "lastModificationDate": 1671644467164,
+      "contentHash": "6e6115a6afc38761e3d4af7d961040dc",
+      "sourceName": "src/single-solidity-files/PlainOpcodes/PlainOpcodes.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": ">=0.8.0",
+      "artifacts": {
+        "ICounter": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "PlainOpcodes.sol/ICounter.json"
+        },
+        "PlainOpcodes": {
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "PlainOpcodes.sol/PlainOpcodes.json"
+        }
+      }
+    },
+    "src/starkEx/src/committee/Committee.sol": {
+      "lastModificationDate": 1671644467836,
+      "contentHash": "e7c8c205e21212938c0b36eb7efbc9a6",
+      "sourceName": "src/starkEx/src/committee/Committee.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/FactRegistry.sol",
+        "src/starkEx/src/interfaces/IAvailabilityVerifier.sol",
+        "src/starkEx/src/interfaces/IFactRegistry.sol",
+        "src/starkEx/src/interfaces/IQueryableFactRegistry.sol",
+        "src/starkEx/src/interfaces/Identity.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "Committee": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "Committee.sol/Committee.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/ActionHash.sol": {
+      "lastModificationDate": 1671644467839,
+      "contentHash": "d976e16aee88d93e0365bba7d035d7c3",
+      "sourceName": "src/starkEx/src/components/ActionHash.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ActionHash": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ActionHash.sol/ActionHash.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/ApprovalChain.sol": {
+      "lastModificationDate": 1671644467840,
+      "contentHash": "1fe733c3496c55210d210a1268b083b7",
+      "sourceName": "src/starkEx/src/components/ApprovalChain.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/IFactRegistry.sol",
+        "src/starkEx/src/interfaces/IQueryableFactRegistry.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/MApprovalChain.sol",
+        "src/starkEx/src/interfaces/MFreezable.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ApprovalChain": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ApprovalChain.sol/ApprovalChain.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/AvailabilityVerifiers.sol": {
+      "lastModificationDate": 1671644467842,
+      "contentHash": "e84257a771d5ba2fdf3a09a79f3f31b2",
+      "sourceName": "src/starkEx/src/components/AvailabilityVerifiers.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MApprovalChain.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "AvailabilityVerifiers": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "AvailabilityVerifiers.sol/AvailabilityVerifiers.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/ECDSA.sol": {
+      "lastModificationDate": 1671644467843,
+      "contentHash": "66d0f67fbff94c3e31f35f28f2737107",
+      "sourceName": "src/starkEx/src/components/ECDSA.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/third_party/EllipticCurve.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ECDSA": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ECDSA.sol/ECDSA.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/ERC1155Receiver.sol": {
+      "lastModificationDate": 1671644467845,
+      "contentHash": "91d5cf4c9d98ac6a6d87b7ad7611167a",
+      "sourceName": "src/starkEx/src/components/ERC1155Receiver.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/tokens/ERC1155/IERC1155Receiver.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ERC1155Receiver": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ERC1155Receiver.sol/ERC1155Receiver.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/ERC721Receiver.sol": {
+      "lastModificationDate": 1671644467846,
+      "contentHash": "b47d23807a266b2698b0bf28d7e59dac",
+      "sourceName": "src/starkEx/src/components/ERC721Receiver.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/tokens/ERC721/IERC721Receiver.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ERC721Receiver": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ERC721Receiver.sol/ERC721Receiver.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/EcTableContract.sol": {
+      "lastModificationDate": 1671644467848,
+      "contentHash": "9c82c55e03c48fb53c66000ae44a6698",
+      "sourceName": "src/starkEx/src/components/EcTableContract.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "EcTableContract": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "EcTableContract.sol/EcTableContract.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/FactRegistry.sol": {
+      "lastModificationDate": 1671644467849,
+      "contentHash": "0e37fe156bbe7942d04dc0f0ee7c8c41",
+      "sourceName": "src/starkEx/src/components/FactRegistry.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/interfaces/IFactRegistry.sol",
+        "src/starkEx/src/interfaces/IQueryableFactRegistry.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "FactRegistry": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "FactRegistry.sol/FactRegistry.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/Freezable.sol": {
+      "lastModificationDate": 1671644467851,
+      "contentHash": "e109e66fe755ce4566181d211c94b5c2",
+      "sourceName": "src/starkEx/src/components/Freezable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MFreezable.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "Freezable": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "Freezable.sol/Freezable.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/GenericGovernance.sol": {
+      "lastModificationDate": 1671644467852,
+      "contentHash": "48ca801a688174e28f4c647f7b1e6d60",
+      "sourceName": "src/starkEx/src/components/GenericGovernance.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/Governance.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "GenericGovernance": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "GenericGovernance.sol/GenericGovernance.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/Governance.sol": {
+      "lastModificationDate": 1671644467854,
+      "contentHash": "4c221c7679a37f1b35da49b3a55ed037",
+      "sourceName": "src/starkEx/src/components/Governance.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/interfaces/MGovernance.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "Governance": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "Governance.sol/Governance.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/GovernanceStorage.sol": {
+      "lastModificationDate": 1671644467855,
+      "contentHash": "63fce3e551360546602864ccc98638e2",
+      "sourceName": "src/starkEx/src/components/GovernanceStorage.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/interfaces/MGovernance.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "GovernanceStorage": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "GovernanceStorage.sol/GovernanceStorage.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/GpsFactRegistryAdapter.sol": {
+      "lastModificationDate": 1671644467857,
+      "contentHash": "7c2836689e8337c879028ae7b52bbe6e",
+      "sourceName": "src/starkEx/src/components/GpsFactRegistryAdapter.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/interfaces/IFactRegistry.sol",
+        "src/starkEx/src/interfaces/IQueryableFactRegistry.sol",
+        "src/starkEx/src/interfaces/Identity.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "GpsFactRegistryAdapter": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "GpsFactRegistryAdapter.sol/GpsFactRegistryAdapter.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/KeyGetters.sol": {
+      "lastModificationDate": 1671644467859,
+      "contentHash": "893d8fd108c539c92eb8d07643db4151",
+      "sourceName": "src/starkEx/src/components/KeyGetters.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MKeyGetters.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "KeyGetters": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "KeyGetters.sol/KeyGetters.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/MainGovernance.sol": {
+      "lastModificationDate": 1671644467860,
+      "contentHash": "e691bbdff5c8bc6539acc00f91376cec",
+      "sourceName": "src/starkEx/src/components/MainGovernance.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/Governance.sol",
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MainGovernance": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MainGovernance.sol/MainGovernance.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/MainStorage.sol": {
+      "lastModificationDate": 1671644467862,
+      "contentHash": "d8c14755260b3ee66236d34d319d5c60",
+      "sourceName": "src/starkEx/src/components/MainStorage.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MainStorage": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MainStorage.sol/MainStorage.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/MessageRegistry.sol": {
+      "lastModificationDate": 1671644467863,
+      "contentHash": "648e3b46d9ad08ce9617e51081343a8c",
+      "sourceName": "src/starkEx/src/components/MessageRegistry.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/FactRegistry.sol",
+        "src/starkEx/src/interfaces/IFactRegistry.sol",
+        "src/starkEx/src/interfaces/IQueryableFactRegistry.sol",
+        "src/starkEx/src/interfaces/Identity.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MessageRegistry": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MessageRegistry.sol/MessageRegistry.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/OnchainDataFactTreeEncoder.sol": {
+      "lastModificationDate": 1671644467865,
+      "contentHash": "4bb9807e1c80827c423aa310676bfd40",
+      "sourceName": "src/starkEx/src/components/OnchainDataFactTreeEncoder.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "OnchainDataFactTreeEncoder": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "OnchainDataFactTreeEncoder.sol/OnchainDataFactTreeEncoder.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/Operator.sol": {
+      "lastModificationDate": 1671644467867,
+      "contentHash": "1fad7f12de22176bf51cdc506fc8feae",
+      "sourceName": "src/starkEx/src/components/Operator.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MOperator.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "Operator": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "Operator.sol/Operator.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/PedersenMerkleVerifier.sol": {
+      "lastModificationDate": 1671644467869,
+      "contentHash": "4610f370e9f3ad810bf7d9271cafaf3f",
+      "sourceName": "src/starkEx/src/components/PedersenMerkleVerifier.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "PedersenMerkleVerifier": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "PedersenMerkleVerifier.sol/PedersenMerkleVerifier.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/StarkExOperator.sol": {
+      "lastModificationDate": 1671644467871,
+      "contentHash": "a8b16c1dd08ccc0b1f5083914771bb61",
+      "sourceName": "src/starkEx/src/components/StarkExOperator.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/components/Operator.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MOperator.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "StarkExOperator": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "StarkExOperator.sol/StarkExOperator.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/TokenRegister.sol": {
+      "lastModificationDate": 1671644467872,
+      "contentHash": "2a2464a1b7ac3944e42ab0951cffb4c7",
+      "sourceName": "src/starkEx/src/components/TokenRegister.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MTokenAssetData.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/tokens/ERC20/IERC20.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "TokenRegister": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "TokenRegister.sol/TokenRegister.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/TokenTransfers.sol": {
+      "lastModificationDate": 1671644467874,
+      "contentHash": "a3b4889043d5d41306860827baab43fc",
+      "sourceName": "src/starkEx/src/components/TokenTransfers.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/interfaces/MTokenAssetData.sol",
+        "src/starkEx/src/interfaces/MTokenQuantization.sol",
+        "src/starkEx/src/interfaces/MTokenTransfers.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/tokens/ERC1155/IERC1155.sol",
+        "src/starkEx/src/tokens/ERC20/IERC20.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "TokenTransfers": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "TokenTransfers.sol/TokenTransfers.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/Users.sol": {
+      "lastModificationDate": 1671644467876,
+      "contentHash": "b0215fed4fe5f2632e0efdb114ce1e53",
+      "sourceName": "src/starkEx/src/components/Users.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/ECDSA.sol",
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/third_party/EllipticCurve.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "Users": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "Users.sol/Users.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/UsersV2.sol": {
+      "lastModificationDate": 1671644467878,
+      "contentHash": "200249e18d97bb42e7f1bb138cfbebde",
+      "sourceName": "src/starkEx/src/components/UsersV2.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MKeyGetters.sol",
+        "src/starkEx/src/interfaces/MUsersV2.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "UsersV2": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "UsersV2.sol/UsersV2.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/Verifiers.sol": {
+      "lastModificationDate": 1671644467879,
+      "contentHash": "df1d0ace7c62ff0c459b45151c679c8b",
+      "sourceName": "src/starkEx/src/components/Verifiers.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MApprovalChain.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "Verifiers": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "Verifiers.sol/Verifiers.json"
+        }
+      }
+    },
+    "src/starkEx/src/components/VerifyFactChain.sol": {
+      "lastModificationDate": 1671644467881,
+      "contentHash": "a56d90bcbf5ce280f51c1fb25c9aaeb4",
+      "sourceName": "src/starkEx/src/components/VerifyFactChain.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/IFactRegistry.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "VerifyFactChain": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "VerifyFactChain.sol/VerifyFactChain.json"
+        }
+      }
+    },
+    "src/starkEx/src/cpu/MemoryPageFactRegistry.sol": {
+      "lastModificationDate": 1671644467884,
+      "contentHash": "901e4fbf70e5756ec23b6d967c7d9a90",
+      "sourceName": "src/starkEx/src/cpu/MemoryPageFactRegistry.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/FactRegistry.sol",
+        "src/starkEx/src/interfaces/IFactRegistry.sol",
+        "src/starkEx/src/interfaces/IQueryableFactRegistry.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MemoryPageFactRegistry": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MemoryPageFactRegistry.sol/MemoryPageFactRegistry.json"
+        },
+        "MemoryPageFactRegistryConstants": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MemoryPageFactRegistry.sol/MemoryPageFactRegistryConstants.json"
+        }
+      }
+    },
+    "src/starkEx/src/interactions/AcceptModifications.sol": {
+      "lastModificationDate": 1671644467887,
+      "contentHash": "e98ad625b9ada6197a22865d31dbca5e",
+      "sourceName": "src/starkEx/src/interactions/AcceptModifications.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MAcceptModifications.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MTokenQuantization.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "AcceptModifications": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "AcceptModifications.sol/AcceptModifications.json"
+        }
+      }
+    },
+    "src/starkEx/src/interactions/CompositeActionsV2.sol": {
+      "lastModificationDate": 1671644467889,
+      "contentHash": "4b7ca470a3d3c236b6c71dfef4650c46",
+      "sourceName": "src/starkEx/src/interactions/CompositeActionsV2.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/interfaces/MDeposits.sol",
+        "src/starkEx/src/interfaces/MUsersV2.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "CompositeActionsV2": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "CompositeActionsV2.sol/CompositeActionsV2.json"
+        }
+      }
+    },
+    "src/starkEx/src/interactions/Deposits.sol": {
+      "lastModificationDate": 1671644467890,
+      "contentHash": "bc42199510773fab2e014fcf92804461",
+      "sourceName": "src/starkEx/src/interactions/Deposits.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MAcceptModifications.sol",
+        "src/starkEx/src/interfaces/MDeposits.sol",
+        "src/starkEx/src/interfaces/MFreezable.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MKeyGetters.sol",
+        "src/starkEx/src/interfaces/MTokenAssetData.sol",
+        "src/starkEx/src/interfaces/MTokenQuantization.sol",
+        "src/starkEx/src/interfaces/MTokenTransfers.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "Deposits": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "Deposits.sol/Deposits.json"
+        }
+      }
+    },
+    "src/starkEx/src/interactions/StateRoot.sol": {
+      "lastModificationDate": 1671644467892,
+      "contentHash": "ed784984b4c0ec4afcf39a191781173e",
+      "sourceName": "src/starkEx/src/interactions/StateRoot.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MStateRoot.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "StateRoot": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "StateRoot.sol/StateRoot.json"
+        }
+      }
+    },
+    "src/starkEx/src/interactions/TokenAssetData.sol": {
+      "lastModificationDate": 1671644467894,
+      "contentHash": "484cb95cc490ab626895f73f5f457b20",
+      "sourceName": "src/starkEx/src/interactions/TokenAssetData.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MTokenAssetData.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "TokenAssetData": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "TokenAssetData.sol/TokenAssetData.json"
+        }
+      }
+    },
+    "src/starkEx/src/interactions/TokenQuantization.sol": {
+      "lastModificationDate": 1671644467895,
+      "contentHash": "b1a0c45ded05375193d9c7c993e57780",
+      "sourceName": "src/starkEx/src/interactions/TokenQuantization.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MTokenQuantization.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "TokenQuantization": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "TokenQuantization.sol/TokenQuantization.json"
+        }
+      }
+    },
+    "src/starkEx/src/interactions/Withdrawals.sol": {
+      "lastModificationDate": 1671644467897,
+      "contentHash": "56bdf638d83b00ecf1d7e81aedb9f13e",
+      "sourceName": "src/starkEx/src/interactions/Withdrawals.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MAcceptModifications.sol",
+        "src/starkEx/src/interfaces/MFreezable.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MKeyGetters.sol",
+        "src/starkEx/src/interfaces/MTokenAssetData.sol",
+        "src/starkEx/src/interfaces/MTokenQuantization.sol",
+        "src/starkEx/src/interfaces/MTokenTransfers.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "Withdrawals": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "Withdrawals.sol/Withdrawals.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/BlockDirectCall.sol": {
+      "lastModificationDate": 1671644467901,
+      "contentHash": "0a033726c87e7367eee824f9cdd45bd9",
+      "sourceName": "src/starkEx/src/interfaces/BlockDirectCall.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "BlockDirectCall": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "BlockDirectCall.sol/BlockDirectCall.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/ContractInitializer.sol": {
+      "lastModificationDate": 1671644467903,
+      "contentHash": "ee199bd37f75eba012fdd7ee32fd589e",
+      "sourceName": "src/starkEx/src/interfaces/ContractInitializer.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ContractInitializer": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ContractInitializer.sol/ContractInitializer.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/ExternalInitializer.sol": {
+      "lastModificationDate": 1671644467906,
+      "contentHash": "bf9e41e0b3c528748b1357d86a9eb21b",
+      "sourceName": "src/starkEx/src/interfaces/ExternalInitializer.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ExternalInitializer": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ExternalInitializer.sol/ExternalInitializer.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/IAvailabilityVerifier.sol": {
+      "lastModificationDate": 1671644467908,
+      "contentHash": "c8328280b67a61db3d8c887b98811fbc",
+      "sourceName": "src/starkEx/src/interfaces/IAvailabilityVerifier.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "IAvailabilityVerifier": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "IAvailabilityVerifier.sol/IAvailabilityVerifier.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/IDispatcherBase.sol": {
+      "lastModificationDate": 1671644467910,
+      "contentHash": "91b38315fe5edad0ea714a1f90168cc3",
+      "sourceName": "src/starkEx/src/interfaces/IDispatcherBase.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "IDispatcherBase": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "IDispatcherBase.sol/IDispatcherBase.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/IFactRegistry.sol": {
+      "lastModificationDate": 1671644467911,
+      "contentHash": "9a791af914f91976f409c4eb24f86e49",
+      "sourceName": "src/starkEx/src/interfaces/IFactRegistry.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "IFactRegistry": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "IFactRegistry.sol/IFactRegistry.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/IIdentity.sol": {
+      "lastModificationDate": 1671644467913,
+      "contentHash": "83250378c3fd2ce69ac2b7674b43c563",
+      "sourceName": "src/starkEx/src/interfaces/IIdentity.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "IIdentity": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "IIdentity.sol/IIdentity.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/IQueryableFactRegistry.sol": {
+      "lastModificationDate": 1671644467914,
+      "contentHash": "67296d0f0455fb03c1aedf998312a81b",
+      "sourceName": "src/starkEx/src/interfaces/IQueryableFactRegistry.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/interfaces/IFactRegistry.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "IQueryableFactRegistry": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "IQueryableFactRegistry.sol/IQueryableFactRegistry.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/IStarkVerifier.sol": {
+      "lastModificationDate": 1671644467916,
+      "contentHash": "eb56c79869509aa5f6ae312f85752650",
+      "sourceName": "src/starkEx/src/interfaces/IStarkVerifier.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "IStarkVerifier": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "IStarkVerifier.sol/IStarkVerifier.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/Identity.sol": {
+      "lastModificationDate": 1671644467917,
+      "contentHash": "02ec631a3cdd894d1018d6712c49415b",
+      "sourceName": "src/starkEx/src/interfaces/Identity.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "Identity": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "Identity.sol/Identity.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/MAcceptModifications.sol": {
+      "lastModificationDate": 1671644467919,
+      "contentHash": "850e859f3ac4e90c7dc960d0fb7817fa",
+      "sourceName": "src/starkEx/src/interfaces/MAcceptModifications.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MAcceptModifications": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MAcceptModifications.sol/MAcceptModifications.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/MApprovalChain.sol": {
+      "lastModificationDate": 1671644467920,
+      "contentHash": "bc9b59371a947f7189879a26eff44771",
+      "sourceName": "src/starkEx/src/interfaces/MApprovalChain.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/libraries/Common.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MApprovalChain": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MApprovalChain.sol/MApprovalChain.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/MDeposits.sol": {
+      "lastModificationDate": 1671644467922,
+      "contentHash": "99f73baa7e76ff2557e5f8cf1f3a3b7d",
+      "sourceName": "src/starkEx/src/interfaces/MDeposits.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MDeposits": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MDeposits.sol/MDeposits.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/MFreezable.sol": {
+      "lastModificationDate": 1671644467924,
+      "contentHash": "c40ca6ffaf8886ca0c6b53cc269a9fac",
+      "sourceName": "src/starkEx/src/interfaces/MFreezable.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MFreezable": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MFreezable.sol/MFreezable.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/MGovernance.sol": {
+      "lastModificationDate": 1671644467926,
+      "contentHash": "362758480f7d2e5b07e33613a65da241",
+      "sourceName": "src/starkEx/src/interfaces/MGovernance.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MGovernance": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MGovernance.sol/MGovernance.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/MKeyGetters.sol": {
+      "lastModificationDate": 1671644467928,
+      "contentHash": "a0756c07d2555e991eaa415d03da48c0",
+      "sourceName": "src/starkEx/src/interfaces/MKeyGetters.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MKeyGetters": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MKeyGetters.sol/MKeyGetters.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/MOperator.sol": {
+      "lastModificationDate": 1671644467930,
+      "contentHash": "197a7642e925b88accadb16511fe1512",
+      "sourceName": "src/starkEx/src/interfaces/MOperator.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/interfaces/MGovernance.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MOperator": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MOperator.sol/MOperator.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/MStateRoot.sol": {
+      "lastModificationDate": 1671644467932,
+      "contentHash": "b91708882495b32784040dbc8d53405b",
+      "sourceName": "src/starkEx/src/interfaces/MStateRoot.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MStateRoot": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MStateRoot.sol/MStateRoot.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/MTokenAssetData.sol": {
+      "lastModificationDate": 1671644467934,
+      "contentHash": "761c3a85ae54b65d3e598f3a92664904",
+      "sourceName": "src/starkEx/src/interfaces/MTokenAssetData.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MTokenAssetData": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MTokenAssetData.sol/MTokenAssetData.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/MTokenQuantization.sol": {
+      "lastModificationDate": 1671644467936,
+      "contentHash": "a5587786170641af682325d6dfb8c7f2",
+      "sourceName": "src/starkEx/src/interfaces/MTokenQuantization.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MTokenQuantization": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MTokenQuantization.sol/MTokenQuantization.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/MTokenTransfers.sol": {
+      "lastModificationDate": 1671644467937,
+      "contentHash": "5d5fb7644f394967c542a4b1d94d153f",
+      "sourceName": "src/starkEx/src/interfaces/MTokenTransfers.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MTokenTransfers": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MTokenTransfers.sol/MTokenTransfers.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/MUsersV2.sol": {
+      "lastModificationDate": 1671644467939,
+      "contentHash": "d8da6918f02d2ea7e8eb3998d52445fc",
+      "sourceName": "src/starkEx/src/interfaces/MUsersV2.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MUsersV2": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MUsersV2.sol/MUsersV2.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/MainDispatcher.sol": {
+      "lastModificationDate": 1671644467941,
+      "contentHash": "6facfa297bf87574091b85d8eee095cf",
+      "sourceName": "src/starkEx/src/interfaces/MainDispatcher.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/BlockDirectCall.sol",
+        "src/starkEx/src/interfaces/IDispatcherBase.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MainDispatcherBase.sol",
+        "src/starkEx/src/interfaces/SubContractor.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MainDispatcher": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MainDispatcher.sol/MainDispatcher.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/MainDispatcherBase.sol": {
+      "lastModificationDate": 1671644467943,
+      "contentHash": "34dec522292a4e4cc77af5330d13d52b",
+      "sourceName": "src/starkEx/src/interfaces/MainDispatcherBase.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/interfaces/BlockDirectCall.sol",
+        "src/starkEx/src/interfaces/IDispatcherBase.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/SubContractor.sol",
+        "src/starkEx/src/libraries/Common.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MainDispatcherBase": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MainDispatcherBase.sol/MainDispatcherBase.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/ProxySupport.sol": {
+      "lastModificationDate": 1671644467944,
+      "contentHash": "12e6c482da038ff858ec922dbbe75a0a",
+      "sourceName": "src/starkEx/src/interfaces/ProxySupport.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/Governance.sol",
+        "src/starkEx/src/interfaces/BlockDirectCall.sol",
+        "src/starkEx/src/interfaces/ContractInitializer.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ProxySupport": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ProxySupport.sol/ProxySupport.json"
+        }
+      }
+    },
+    "src/starkEx/src/interfaces/SubContractor.sol": {
+      "lastModificationDate": 1671644467946,
+      "contentHash": "b00a65226c632a5d05815994ad802c7a",
+      "sourceName": "src/starkEx/src/interfaces/SubContractor.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/interfaces/Identity.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "SubContractor": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "SubContractor.sol/SubContractor.json"
+        }
+      }
+    },
+    "src/starkEx/src/libraries/Common.sol": {
+      "lastModificationDate": 1671644467949,
+      "contentHash": "4d6231918660df6ec02c488907173280",
+      "sourceName": "src/starkEx/src/libraries/Common.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "Addresses": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "Common.sol/Addresses.json"
+        },
+        "StarkExTypes": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "Common.sol/StarkExTypes.json"
+        }
+      }
+    },
+    "src/starkEx/src/libraries/LibConstants.sol": {
+      "lastModificationDate": 1671644467950,
+      "contentHash": "ed82771e8f689d6ff2d640e4b4a15c9e",
+      "sourceName": "src/starkEx/src/libraries/LibConstants.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "LibConstants": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "LibConstants.sol/LibConstants.json"
+        }
+      }
+    },
+    "src/starkEx/src/libraries/NamedStorage.sol": {
+      "lastModificationDate": 1671644467952,
+      "contentHash": "3323ba9c8e1101d097c14866cad7f09e",
+      "sourceName": "src/starkEx/src/libraries/NamedStorage.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "NamedStorage": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "NamedStorage.sol/NamedStorage.json"
+        }
+      }
+    },
+    "src/starkEx/src/perpetual/PerpetualConstants.sol": {
+      "lastModificationDate": 1671644467955,
+      "contentHash": "d63656a04b7ecc3a71324fb9dd9f1323",
+      "sourceName": "src/starkEx/src/perpetual/PerpetualConstants.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/libraries/LibConstants.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "PerpetualConstants": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "PerpetualConstants.sol/PerpetualConstants.json"
+        }
+      }
+    },
+    "src/starkEx/src/perpetual/ProgramOutputOffsets.sol": {
+      "lastModificationDate": 1671644467957,
+      "contentHash": "d480342298bb472aa549753a135c9339",
+      "sourceName": "src/starkEx/src/perpetual/ProgramOutputOffsets.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ProgramOutputOffsets": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ProgramOutputOffsets.sol/ProgramOutputOffsets.json"
+        }
+      }
+    },
+    "src/starkEx/src/perpetual/StarkPerpetual.sol": {
+      "lastModificationDate": 1671644467961,
+      "contentHash": "f75f24d3f81254b1fcfaaeb4b751aac3",
+      "sourceName": "src/starkEx/src/perpetual/StarkPerpetual.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/BlockDirectCall.sol",
+        "src/starkEx/src/interfaces/IDispatcherBase.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MainDispatcher.sol",
+        "src/starkEx/src/interfaces/MainDispatcherBase.sol",
+        "src/starkEx/src/interfaces/SubContractor.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/perpetual/components/PerpetualStorage.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "StarkPerpetual": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "StarkPerpetual.sol/StarkPerpetual.json"
+        }
+      }
+    },
+    "src/starkEx/src/perpetual/StarkPerpetualV2.sol": {
+      "lastModificationDate": 1671644467963,
+      "contentHash": "6ed0b6ac6a20387cefe093464778f916",
+      "sourceName": "src/starkEx/src/perpetual/StarkPerpetualV2.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/BlockDirectCall.sol",
+        "src/starkEx/src/interfaces/IDispatcherBase.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MainDispatcher.sol",
+        "src/starkEx/src/interfaces/MainDispatcherBase.sol",
+        "src/starkEx/src/interfaces/SubContractor.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/perpetual/components/PerpetualStorage.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "StarkPerpetualV2": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "StarkPerpetualV2.sol/StarkPerpetualV2.json"
+        }
+      }
+    },
+    "src/starkEx/src/perpetual/components/Configuration.sol": {
+      "lastModificationDate": 1671644467967,
+      "contentHash": "ff07d06a58025a8e55594a1a8368e615",
+      "sourceName": "src/starkEx/src/perpetual/components/Configuration.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/perpetual/PerpetualConstants.sol",
+        "src/starkEx/src/perpetual/components/PerpetualStorage.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "Configuration": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "Configuration.sol/Configuration.json"
+        }
+      }
+    },
+    "src/starkEx/src/perpetual/components/PerpetualEscapeVerifier.sol": {
+      "lastModificationDate": 1671644467969,
+      "contentHash": "767766f2b2aa06a9b74d40eb3eec6855",
+      "sourceName": "src/starkEx/src/perpetual/components/PerpetualEscapeVerifier.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/FactRegistry.sol",
+        "src/starkEx/src/components/PedersenMerkleVerifier.sol",
+        "src/starkEx/src/interfaces/IFactRegistry.sol",
+        "src/starkEx/src/interfaces/IQueryableFactRegistry.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/perpetual/ProgramOutputOffsets.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "PerpetualEscapeVerifier": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "PerpetualEscapeVerifier.sol/PerpetualEscapeVerifier.json"
+        }
+      }
+    },
+    "src/starkEx/src/perpetual/components/PerpetualEscapes.sol": {
+      "lastModificationDate": 1671644467988,
+      "contentHash": "c3e470bb1cf342bb62a097d143ee4ece",
+      "sourceName": "src/starkEx/src/perpetual/components/PerpetualEscapes.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/IFactRegistry.sol",
+        "src/starkEx/src/interfaces/MAcceptModifications.sol",
+        "src/starkEx/src/interfaces/MFreezable.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/perpetual/components/PerpetualStorage.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "PerpetualEscapes": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "PerpetualEscapes.sol/PerpetualEscapes.json"
+        }
+      }
+    },
+    "src/starkEx/src/perpetual/components/PerpetualStorage.sol": {
+      "lastModificationDate": 1671644467990,
+      "contentHash": "071222bcf72ae41263a154891b6fffaa",
+      "sourceName": "src/starkEx/src/perpetual/components/PerpetualStorage.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "PerpetualStorage": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "PerpetualStorage.sol/PerpetualStorage.json"
+        }
+      }
+    },
+    "src/starkEx/src/perpetual/components/PerpetualTokenRegister.sol": {
+      "lastModificationDate": 1671644467991,
+      "contentHash": "66d51fa202a157b669d5960319f4355e",
+      "sourceName": "src/starkEx/src/perpetual/components/PerpetualTokenRegister.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/components/TokenRegister.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MTokenAssetData.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/perpetual/components/PerpetualStorage.sol",
+        "src/starkEx/src/tokens/ERC20/IERC20.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "PerpetualTokenRegister": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "PerpetualTokenRegister.sol/PerpetualTokenRegister.json"
+        }
+      }
+    },
+    "src/starkEx/src/perpetual/components/UpdatePerpetualState.sol": {
+      "lastModificationDate": 1671644467993,
+      "contentHash": "451a779d0834a8f7e82fa575101ff974",
+      "sourceName": "src/starkEx/src/perpetual/components/UpdatePerpetualState.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/components/OnchainDataFactTreeEncoder.sol",
+        "src/starkEx/src/components/VerifyFactChain.sol",
+        "src/starkEx/src/interfaces/IFactRegistry.sol",
+        "src/starkEx/src/interfaces/MAcceptModifications.sol",
+        "src/starkEx/src/interfaces/MFreezable.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MOperator.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/perpetual/PerpetualConstants.sol",
+        "src/starkEx/src/perpetual/ProgramOutputOffsets.sol",
+        "src/starkEx/src/perpetual/components/PerpetualStorage.sol",
+        "src/starkEx/src/perpetual/interfaces/MForcedTradeActionState.sol",
+        "src/starkEx/src/perpetual/interfaces/MForcedWithdrawalActionState.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "UpdatePerpetualState": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "UpdatePerpetualState.sol/UpdatePerpetualState.json"
+        }
+      }
+    },
+    "src/starkEx/src/perpetual/interactions/ForcedTradeActionState.sol": {
+      "lastModificationDate": 1671644467996,
+      "contentHash": "62a63a215b78ad1c1ad418a90b51255d",
+      "sourceName": "src/starkEx/src/perpetual/interactions/ForcedTradeActionState.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/ActionHash.sol",
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/perpetual/components/PerpetualStorage.sol",
+        "src/starkEx/src/perpetual/interfaces/MForcedTradeActionState.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ForcedTradeActionState": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ForcedTradeActionState.sol/ForcedTradeActionState.json"
+        }
+      }
+    },
+    "src/starkEx/src/perpetual/interactions/ForcedTrades.sol": {
+      "lastModificationDate": 1671644467998,
+      "contentHash": "98adfae95c44a1960c5968e32454e613",
+      "sourceName": "src/starkEx/src/perpetual/interactions/ForcedTrades.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MFreezable.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MKeyGetters.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/perpetual/PerpetualConstants.sol",
+        "src/starkEx/src/perpetual/components/PerpetualStorage.sol",
+        "src/starkEx/src/perpetual/interfaces/MForcedTradeActionState.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ForcedTrades": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ForcedTrades.sol/ForcedTrades.json"
+        }
+      }
+    },
+    "src/starkEx/src/perpetual/interactions/ForcedWithdrawalActionState.sol": {
+      "lastModificationDate": 1671644468000,
+      "contentHash": "21bf5f8668141c04dff5ea754e597d37",
+      "sourceName": "src/starkEx/src/perpetual/interactions/ForcedWithdrawalActionState.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/ActionHash.sol",
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/perpetual/components/PerpetualStorage.sol",
+        "src/starkEx/src/perpetual/interfaces/MForcedWithdrawalActionState.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ForcedWithdrawalActionState": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ForcedWithdrawalActionState.sol/ForcedWithdrawalActionState.json"
+        }
+      }
+    },
+    "src/starkEx/src/perpetual/interactions/ForcedWithdrawals.sol": {
+      "lastModificationDate": 1671644468002,
+      "contentHash": "cbf61cb92061c3352bf5ae8681c16f00",
+      "sourceName": "src/starkEx/src/perpetual/interactions/ForcedWithdrawals.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/interfaces/MFreezable.sol",
+        "src/starkEx/src/interfaces/MKeyGetters.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/perpetual/PerpetualConstants.sol",
+        "src/starkEx/src/perpetual/interfaces/MForcedWithdrawalActionState.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ForcedWithdrawals": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ForcedWithdrawals.sol/ForcedWithdrawals.json"
+        }
+      }
+    },
+    "src/starkEx/src/perpetual/interfaces/MForcedTradeActionState.sol": {
+      "lastModificationDate": 1671644468008,
+      "contentHash": "3ac6f225368c6b3615a3e9710d446976",
+      "sourceName": "src/starkEx/src/perpetual/interfaces/MForcedTradeActionState.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MForcedTradeActionState": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MForcedTradeActionState.sol/MForcedTradeActionState.json"
+        }
+      }
+    },
+    "src/starkEx/src/perpetual/interfaces/MForcedWithdrawalActionState.sol": {
+      "lastModificationDate": 1671644468011,
+      "contentHash": "ebcd7183fffbf5719e2d0543c3f2d1ca",
+      "sourceName": "src/starkEx/src/perpetual/interfaces/MForcedWithdrawalActionState.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MForcedWithdrawalActionState": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MForcedWithdrawalActionState.sol/MForcedWithdrawalActionState.json"
+        }
+      }
+    },
+    "src/starkEx/src/perpetual/toplevel_subcontracts/PerpetualForcedActions.sol": {
+      "lastModificationDate": 1671644468016,
+      "contentHash": "49a1f999644bd11aa08db77d6caf0c52",
+      "sourceName": "src/starkEx/src/perpetual/toplevel_subcontracts/PerpetualForcedActions.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/ActionHash.sol",
+        "src/starkEx/src/components/ECDSA.sol",
+        "src/starkEx/src/components/Freezable.sol",
+        "src/starkEx/src/components/Governance.sol",
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/KeyGetters.sol",
+        "src/starkEx/src/components/MainGovernance.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/components/Users.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/MFreezable.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MKeyGetters.sol",
+        "src/starkEx/src/interfaces/SubContractor.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/perpetual/PerpetualConstants.sol",
+        "src/starkEx/src/perpetual/components/PerpetualStorage.sol",
+        "src/starkEx/src/perpetual/interactions/ForcedTradeActionState.sol",
+        "src/starkEx/src/perpetual/interactions/ForcedTrades.sol",
+        "src/starkEx/src/perpetual/interactions/ForcedWithdrawalActionState.sol",
+        "src/starkEx/src/perpetual/interactions/ForcedWithdrawals.sol",
+        "src/starkEx/src/perpetual/interfaces/MForcedTradeActionState.sol",
+        "src/starkEx/src/perpetual/interfaces/MForcedWithdrawalActionState.sol",
+        "src/starkEx/src/third_party/EllipticCurve.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "PerpetualForcedActions": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "PerpetualForcedActions.sol/PerpetualForcedActions.json"
+        }
+      }
+    },
+    "src/starkEx/src/perpetual/toplevel_subcontracts/PerpetualState.sol": {
+      "lastModificationDate": 1671644468018,
+      "contentHash": "5bb1e7b8b28122b845c1b1f24f072525",
+      "sourceName": "src/starkEx/src/perpetual/toplevel_subcontracts/PerpetualState.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/ActionHash.sol",
+        "src/starkEx/src/components/Freezable.sol",
+        "src/starkEx/src/components/Governance.sol",
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainGovernance.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/components/OnchainDataFactTreeEncoder.sol",
+        "src/starkEx/src/components/Operator.sol",
+        "src/starkEx/src/components/StarkExOperator.sol",
+        "src/starkEx/src/components/VerifyFactChain.sol",
+        "src/starkEx/src/interactions/AcceptModifications.sol",
+        "src/starkEx/src/interactions/StateRoot.sol",
+        "src/starkEx/src/interactions/TokenQuantization.sol",
+        "src/starkEx/src/interfaces/IFactRegistry.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/MAcceptModifications.sol",
+        "src/starkEx/src/interfaces/MFreezable.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MOperator.sol",
+        "src/starkEx/src/interfaces/MStateRoot.sol",
+        "src/starkEx/src/interfaces/MTokenQuantization.sol",
+        "src/starkEx/src/interfaces/SubContractor.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/perpetual/PerpetualConstants.sol",
+        "src/starkEx/src/perpetual/ProgramOutputOffsets.sol",
+        "src/starkEx/src/perpetual/components/Configuration.sol",
+        "src/starkEx/src/perpetual/components/PerpetualEscapes.sol",
+        "src/starkEx/src/perpetual/components/PerpetualStorage.sol",
+        "src/starkEx/src/perpetual/components/UpdatePerpetualState.sol",
+        "src/starkEx/src/perpetual/interactions/ForcedTradeActionState.sol",
+        "src/starkEx/src/perpetual/interactions/ForcedWithdrawalActionState.sol",
+        "src/starkEx/src/perpetual/interfaces/MForcedTradeActionState.sol",
+        "src/starkEx/src/perpetual/interfaces/MForcedWithdrawalActionState.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "PerpetualState": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "PerpetualState.sol/PerpetualState.json"
+        }
+      }
+    },
+    "src/starkEx/src/perpetual/toplevel_subcontracts/PerpetualTokensAndRamping.sol": {
+      "lastModificationDate": 1671644468019,
+      "contentHash": "0682a8adaf8c2b93a311a7d2cd430739",
+      "sourceName": "src/starkEx/src/perpetual/toplevel_subcontracts/PerpetualTokensAndRamping.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/ERC721Receiver.sol",
+        "src/starkEx/src/components/Freezable.sol",
+        "src/starkEx/src/components/Governance.sol",
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/KeyGetters.sol",
+        "src/starkEx/src/components/MainGovernance.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/components/TokenRegister.sol",
+        "src/starkEx/src/components/TokenTransfers.sol",
+        "src/starkEx/src/interactions/AcceptModifications.sol",
+        "src/starkEx/src/interactions/Deposits.sol",
+        "src/starkEx/src/interactions/TokenAssetData.sol",
+        "src/starkEx/src/interactions/TokenQuantization.sol",
+        "src/starkEx/src/interactions/Withdrawals.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/MAcceptModifications.sol",
+        "src/starkEx/src/interfaces/MDeposits.sol",
+        "src/starkEx/src/interfaces/MFreezable.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MKeyGetters.sol",
+        "src/starkEx/src/interfaces/MTokenAssetData.sol",
+        "src/starkEx/src/interfaces/MTokenQuantization.sol",
+        "src/starkEx/src/interfaces/MTokenTransfers.sol",
+        "src/starkEx/src/interfaces/SubContractor.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/perpetual/components/PerpetualStorage.sol",
+        "src/starkEx/src/perpetual/components/PerpetualTokenRegister.sol",
+        "src/starkEx/src/tokens/ERC1155/IERC1155.sol",
+        "src/starkEx/src/tokens/ERC20/IERC20.sol",
+        "src/starkEx/src/tokens/ERC721/IERC721Receiver.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "PerpetualTokensAndRamping": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "PerpetualTokensAndRamping.sol/PerpetualTokensAndRamping.json"
+        }
+      }
+    },
+    "src/starkEx/src/perpetual/toplevel_subcontracts/PerpetualTokensAndRampingV2.sol": {
+      "lastModificationDate": 1671644468021,
+      "contentHash": "4463c55380571561b4bc4f2431b204e4",
+      "sourceName": "src/starkEx/src/perpetual/toplevel_subcontracts/PerpetualTokensAndRampingV2.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/ERC721Receiver.sol",
+        "src/starkEx/src/components/Freezable.sol",
+        "src/starkEx/src/components/Governance.sol",
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/KeyGetters.sol",
+        "src/starkEx/src/components/MainGovernance.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/components/TokenRegister.sol",
+        "src/starkEx/src/components/TokenTransfers.sol",
+        "src/starkEx/src/components/UsersV2.sol",
+        "src/starkEx/src/interactions/AcceptModifications.sol",
+        "src/starkEx/src/interactions/CompositeActionsV2.sol",
+        "src/starkEx/src/interactions/Deposits.sol",
+        "src/starkEx/src/interactions/TokenAssetData.sol",
+        "src/starkEx/src/interactions/TokenQuantization.sol",
+        "src/starkEx/src/interactions/Withdrawals.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/MAcceptModifications.sol",
+        "src/starkEx/src/interfaces/MDeposits.sol",
+        "src/starkEx/src/interfaces/MFreezable.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MKeyGetters.sol",
+        "src/starkEx/src/interfaces/MTokenAssetData.sol",
+        "src/starkEx/src/interfaces/MTokenQuantization.sol",
+        "src/starkEx/src/interfaces/MTokenTransfers.sol",
+        "src/starkEx/src/interfaces/MUsersV2.sol",
+        "src/starkEx/src/interfaces/SubContractor.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/perpetual/components/PerpetualStorage.sol",
+        "src/starkEx/src/perpetual/components/PerpetualTokenRegister.sol",
+        "src/starkEx/src/tokens/ERC1155/IERC1155.sol",
+        "src/starkEx/src/tokens/ERC20/IERC20.sol",
+        "src/starkEx/src/tokens/ERC721/IERC721Receiver.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "PerpetualTokensAndRampingV2": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "PerpetualTokensAndRampingV2.sol/PerpetualTokensAndRampingV2.json"
+        }
+      }
+    },
+    "src/starkEx/src/starkex/PublicInputOffsets.sol": {
+      "lastModificationDate": 1671644468025,
+      "contentHash": "c8aee54a556768b79565ca4c5db1436e",
+      "sourceName": "src/starkEx/src/starkex/PublicInputOffsets.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "PublicInputOffsets": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "PublicInputOffsets.sol/PublicInputOffsets.json"
+        }
+      }
+    },
+    "src/starkEx/src/starkex/StarkExConstants.sol": {
+      "lastModificationDate": 1671644468027,
+      "contentHash": "3a5bd779b85eb26eb7e2ff9facd45769",
+      "sourceName": "src/starkEx/src/starkex/StarkExConstants.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/libraries/LibConstants.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "StarkExConstants": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "StarkExConstants.sol/StarkExConstants.json"
+        }
+      }
+    },
+    "src/starkEx/src/starkex/StarkExchange.sol": {
+      "lastModificationDate": 1671644468029,
+      "contentHash": "58d4707a2bc315223a663eaa35b4ae99",
+      "sourceName": "src/starkEx/src/starkex/StarkExchange.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/BlockDirectCall.sol",
+        "src/starkEx/src/interfaces/IDispatcherBase.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MainDispatcher.sol",
+        "src/starkEx/src/interfaces/MainDispatcherBase.sol",
+        "src/starkEx/src/interfaces/SubContractor.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "StarkExchange": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "StarkExchange.sol/StarkExchange.json"
+        }
+      }
+    },
+    "src/starkEx/src/starkex/components/EscapeVerifier.sol": {
+      "lastModificationDate": 1671644468033,
+      "contentHash": "f2e0267503b224cf8dc62e4d4d6c6eb2",
+      "sourceName": "src/starkEx/src/starkex/components/EscapeVerifier.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/interfaces/IFactRegistry.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "EscapeVerifier": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "EscapeVerifier.sol/EscapeVerifier.json"
+        }
+      }
+    },
+    "src/starkEx/src/starkex/components/Escapes.sol": {
+      "lastModificationDate": 1671644468048,
+      "contentHash": "4f15bed406f17c7c4ddd2a76b06763ac",
+      "sourceName": "src/starkEx/src/starkex/components/Escapes.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/IFactRegistry.sol",
+        "src/starkEx/src/interfaces/MAcceptModifications.sol",
+        "src/starkEx/src/interfaces/MFreezable.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MStateRoot.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "Escapes": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "Escapes.sol/Escapes.json"
+        }
+      }
+    },
+    "src/starkEx/src/starkex/components/OrderRegistry.sol": {
+      "lastModificationDate": 1671644468050,
+      "contentHash": "f552b8797b3da4cbc493b0579862c32a",
+      "sourceName": "src/starkEx/src/starkex/components/OrderRegistry.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/FactRegistry.sol",
+        "src/starkEx/src/components/MessageRegistry.sol",
+        "src/starkEx/src/interfaces/IFactRegistry.sol",
+        "src/starkEx/src/interfaces/IQueryableFactRegistry.sol",
+        "src/starkEx/src/interfaces/Identity.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "OrderRegistry": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "OrderRegistry.sol/OrderRegistry.json"
+        }
+      }
+    },
+    "src/starkEx/src/starkex/components/StarkExStorage.sol": {
+      "lastModificationDate": 1671644468052,
+      "contentHash": "ae40c9527a41237312c6eccbf0c70f50",
+      "sourceName": "src/starkEx/src/starkex/components/StarkExStorage.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "StarkExStorage": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "StarkExStorage.sol/StarkExStorage.json"
+        }
+      }
+    },
+    "src/starkEx/src/starkex/components/VaultDepositWithdrawal.sol": {
+      "lastModificationDate": 1671644468135,
+      "contentHash": "9cbd7337b700c95e49ad9d0d6e534763",
+      "sourceName": "src/starkEx/src/starkex/components/VaultDepositWithdrawal.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MTokenAssetData.sol",
+        "src/starkEx/src/interfaces/MTokenQuantization.sol",
+        "src/starkEx/src/interfaces/MTokenTransfers.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/starkex/components/StarkExStorage.sol",
+        "src/starkEx/src/starkex/interfaces/MVaultLocks.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "VaultDepositWithdrawal": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "VaultDepositWithdrawal.sol/VaultDepositWithdrawal.json"
+        }
+      }
+    },
+    "src/starkEx/src/starkex/components/VaultLocks.sol": {
+      "lastModificationDate": 1671644468162,
+      "contentHash": "44506442c8f083d8d57ef7ce5bbfd456",
+      "sourceName": "src/starkEx/src/starkex/components/VaultLocks.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/starkex/StarkExConstants.sol",
+        "src/starkEx/src/starkex/components/StarkExStorage.sol",
+        "src/starkEx/src/starkex/interfaces/MVaultLocks.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "VaultLocks": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "VaultLocks.sol/VaultLocks.json"
+        }
+      }
+    },
+    "src/starkEx/src/starkex/interactions/FullWithdrawals.sol": {
+      "lastModificationDate": 1671644468217,
+      "contentHash": "6fee07a02ac9fe693cd18a68947ba46f",
+      "sourceName": "src/starkEx/src/starkex/interactions/FullWithdrawals.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interactions/StateRoot.sol",
+        "src/starkEx/src/interfaces/MFreezable.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MKeyGetters.sol",
+        "src/starkEx/src/interfaces/MStateRoot.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/starkex/interfaces/MStarkExForcedActionState.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "FullWithdrawals": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "FullWithdrawals.sol/FullWithdrawals.json"
+        }
+      }
+    },
+    "src/starkEx/src/starkex/interactions/StarkExForcedActionState.sol": {
+      "lastModificationDate": 1671644468219,
+      "contentHash": "63daf738ba0af18f6bc3e9258c1fc360",
+      "sourceName": "src/starkEx/src/starkex/interactions/StarkExForcedActionState.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/ActionHash.sol",
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/starkex/components/StarkExStorage.sol",
+        "src/starkEx/src/starkex/interfaces/MStarkExForcedActionState.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "StarkExForcedActionState": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "StarkExForcedActionState.sol/StarkExForcedActionState.json"
+        }
+      }
+    },
+    "src/starkEx/src/starkex/interactions/UpdateState.sol": {
+      "lastModificationDate": 1671644468221,
+      "contentHash": "513774a85c8186c35f8c8d676e4b5fc6",
+      "sourceName": "src/starkEx/src/starkex/interactions/UpdateState.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/FactRegistry.sol",
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/components/MessageRegistry.sol",
+        "src/starkEx/src/components/OnchainDataFactTreeEncoder.sol",
+        "src/starkEx/src/components/VerifyFactChain.sol",
+        "src/starkEx/src/interfaces/IFactRegistry.sol",
+        "src/starkEx/src/interfaces/IQueryableFactRegistry.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/MAcceptModifications.sol",
+        "src/starkEx/src/interfaces/MFreezable.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MOperator.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/starkex/PublicInputOffsets.sol",
+        "src/starkEx/src/starkex/StarkExConstants.sol",
+        "src/starkEx/src/starkex/components/StarkExStorage.sol",
+        "src/starkEx/src/starkex/interfaces/MStarkExForcedActionState.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "UpdateState": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "UpdateState.sol/UpdateState.json"
+        }
+      }
+    },
+    "src/starkEx/src/starkex/interfaces/MStarkExForcedActionState.sol": {
+      "lastModificationDate": 1671644468223,
+      "contentHash": "488c2ee1e830543e272f4c8403ca8faa",
+      "sourceName": "src/starkEx/src/starkex/interfaces/MStarkExForcedActionState.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MStarkExForcedActionState": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MStarkExForcedActionState.sol/MStarkExForcedActionState.json"
+        }
+      }
+    },
+    "src/starkEx/src/starkex/interfaces/MVaultLocks.sol": {
+      "lastModificationDate": 1671644468225,
+      "contentHash": "f4dd6f850e48cf73204ad1964a71de56",
+      "sourceName": "src/starkEx/src/starkex/interfaces/MVaultLocks.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "MVaultLocks": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "MVaultLocks.sol/MVaultLocks.json"
+        }
+      }
+    },
+    "src/starkEx/src/starkex/toplevel_subcontracts/ForcedActions.sol": {
+      "lastModificationDate": 1671644468227,
+      "contentHash": "36feb5956e0ee963310f28c0450164a2",
+      "sourceName": "src/starkEx/src/starkex/toplevel_subcontracts/ForcedActions.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/ActionHash.sol",
+        "src/starkEx/src/components/ECDSA.sol",
+        "src/starkEx/src/components/Freezable.sol",
+        "src/starkEx/src/components/Governance.sol",
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/KeyGetters.sol",
+        "src/starkEx/src/components/MainGovernance.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/components/Users.sol",
+        "src/starkEx/src/interactions/StateRoot.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/MFreezable.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MKeyGetters.sol",
+        "src/starkEx/src/interfaces/MStateRoot.sol",
+        "src/starkEx/src/interfaces/SubContractor.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/starkex/components/StarkExStorage.sol",
+        "src/starkEx/src/starkex/interactions/FullWithdrawals.sol",
+        "src/starkEx/src/starkex/interactions/StarkExForcedActionState.sol",
+        "src/starkEx/src/starkex/interfaces/MStarkExForcedActionState.sol",
+        "src/starkEx/src/third_party/EllipticCurve.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ForcedActions": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ForcedActions.sol/ForcedActions.json"
+        }
+      }
+    },
+    "src/starkEx/src/starkex/toplevel_subcontracts/OnchainVaults.sol": {
+      "lastModificationDate": 1671644468228,
+      "contentHash": "eea76e248e8faa1aec3b96eef3cd3b19",
+      "sourceName": "src/starkEx/src/starkex/toplevel_subcontracts/OnchainVaults.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/Governance.sol",
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainGovernance.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/components/TokenTransfers.sol",
+        "src/starkEx/src/interactions/TokenAssetData.sol",
+        "src/starkEx/src/interactions/TokenQuantization.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MTokenAssetData.sol",
+        "src/starkEx/src/interfaces/MTokenQuantization.sol",
+        "src/starkEx/src/interfaces/MTokenTransfers.sol",
+        "src/starkEx/src/interfaces/SubContractor.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/starkex/StarkExConstants.sol",
+        "src/starkEx/src/starkex/components/StarkExStorage.sol",
+        "src/starkEx/src/starkex/components/VaultDepositWithdrawal.sol",
+        "src/starkEx/src/starkex/components/VaultLocks.sol",
+        "src/starkEx/src/starkex/interfaces/MVaultLocks.sol",
+        "src/starkEx/src/tokens/ERC1155/IERC1155.sol",
+        "src/starkEx/src/tokens/ERC20/IERC20.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "OnchainVaults": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "OnchainVaults.sol/OnchainVaults.json"
+        }
+      }
+    },
+    "src/starkEx/src/starkex/toplevel_subcontracts/ProxyUtils.sol": {
+      "lastModificationDate": 1671644468230,
+      "contentHash": "e48f917b687ff5709858f78988f9ad46",
+      "sourceName": "src/starkEx/src/starkex/toplevel_subcontracts/ProxyUtils.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/Governance.sol",
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/SubContractor.sol",
+        "src/starkEx/src/upgrade/ProxyGovernance.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol",
+        "src/starkEx/src/upgrade/StorageSlots.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ProxyUtils": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ProxyUtils.sol/ProxyUtils.json"
+        }
+      }
+    },
+    "src/starkEx/src/starkex/toplevel_subcontracts/StarkExState.sol": {
+      "lastModificationDate": 1671644468231,
+      "contentHash": "95e2816f353b91d5d338e63c84da1539",
+      "sourceName": "src/starkEx/src/starkex/toplevel_subcontracts/StarkExState.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/ActionHash.sol",
+        "src/starkEx/src/components/FactRegistry.sol",
+        "src/starkEx/src/components/Freezable.sol",
+        "src/starkEx/src/components/Governance.sol",
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainGovernance.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/components/MessageRegistry.sol",
+        "src/starkEx/src/components/OnchainDataFactTreeEncoder.sol",
+        "src/starkEx/src/components/Operator.sol",
+        "src/starkEx/src/components/StarkExOperator.sol",
+        "src/starkEx/src/components/VerifyFactChain.sol",
+        "src/starkEx/src/interactions/AcceptModifications.sol",
+        "src/starkEx/src/interactions/StateRoot.sol",
+        "src/starkEx/src/interactions/TokenQuantization.sol",
+        "src/starkEx/src/interfaces/IFactRegistry.sol",
+        "src/starkEx/src/interfaces/IQueryableFactRegistry.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/MAcceptModifications.sol",
+        "src/starkEx/src/interfaces/MFreezable.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MOperator.sol",
+        "src/starkEx/src/interfaces/MStateRoot.sol",
+        "src/starkEx/src/interfaces/MTokenQuantization.sol",
+        "src/starkEx/src/interfaces/SubContractor.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/starkex/PublicInputOffsets.sol",
+        "src/starkEx/src/starkex/StarkExConstants.sol",
+        "src/starkEx/src/starkex/components/Escapes.sol",
+        "src/starkEx/src/starkex/components/StarkExStorage.sol",
+        "src/starkEx/src/starkex/interactions/StarkExForcedActionState.sol",
+        "src/starkEx/src/starkex/interactions/UpdateState.sol",
+        "src/starkEx/src/starkex/interfaces/MStarkExForcedActionState.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "StarkExState": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "StarkExState.sol/StarkExState.json"
+        }
+      }
+    },
+    "src/starkEx/src/starkex/toplevel_subcontracts/TokensAndRamping.sol": {
+      "lastModificationDate": 1671644468233,
+      "contentHash": "281b7f77b2d893672f36b69e17073d2d",
+      "sourceName": "src/starkEx/src/starkex/toplevel_subcontracts/TokensAndRamping.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/ActionHash.sol",
+        "src/starkEx/src/components/ERC1155Receiver.sol",
+        "src/starkEx/src/components/ERC721Receiver.sol",
+        "src/starkEx/src/components/Freezable.sol",
+        "src/starkEx/src/components/Governance.sol",
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/KeyGetters.sol",
+        "src/starkEx/src/components/MainGovernance.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/components/TokenRegister.sol",
+        "src/starkEx/src/components/TokenTransfers.sol",
+        "src/starkEx/src/interactions/AcceptModifications.sol",
+        "src/starkEx/src/interactions/Deposits.sol",
+        "src/starkEx/src/interactions/TokenAssetData.sol",
+        "src/starkEx/src/interactions/TokenQuantization.sol",
+        "src/starkEx/src/interactions/Withdrawals.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/MAcceptModifications.sol",
+        "src/starkEx/src/interfaces/MDeposits.sol",
+        "src/starkEx/src/interfaces/MFreezable.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/MKeyGetters.sol",
+        "src/starkEx/src/interfaces/MTokenAssetData.sol",
+        "src/starkEx/src/interfaces/MTokenQuantization.sol",
+        "src/starkEx/src/interfaces/MTokenTransfers.sol",
+        "src/starkEx/src/interfaces/SubContractor.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/starkex/components/StarkExStorage.sol",
+        "src/starkEx/src/starkex/interactions/StarkExForcedActionState.sol",
+        "src/starkEx/src/starkex/interfaces/MStarkExForcedActionState.sol",
+        "src/starkEx/src/tokens/ERC1155/IERC1155.sol",
+        "src/starkEx/src/tokens/ERC1155/IERC1155Receiver.sol",
+        "src/starkEx/src/tokens/ERC20/IERC20.sol",
+        "src/starkEx/src/tokens/ERC721/IERC721Receiver.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "TokensAndRamping": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "TokensAndRamping.sol/TokensAndRamping.json"
+        }
+      }
+    },
+    "src/starkEx/src/third_party/EllipticCurve.sol": {
+      "lastModificationDate": 1671644468235,
+      "contentHash": "18f6e2510ce8e7d607e711d8e9fb8a87",
+      "sourceName": "src/starkEx/src/third_party/EllipticCurve.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": ">=0.5.3, <0.7.0",
+      "artifacts": {
+        "EllipticCurve": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "EllipticCurve.sol/EllipticCurve.json"
+        }
+      }
+    },
+    "src/starkEx/src/tokens/ERC1155/IERC1155.sol": {
+      "lastModificationDate": 1671644468239,
+      "contentHash": "70ef5c7d8b8d08eb7518904d6fb2e501",
+      "sourceName": "src/starkEx/src/tokens/ERC1155/IERC1155.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "IERC1155": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "IERC1155.sol/IERC1155.json"
+        }
+      }
+    },
+    "src/starkEx/src/tokens/ERC1155/IERC1155Receiver.sol": {
+      "lastModificationDate": 1671644468240,
+      "contentHash": "7ff8ab1f6eb54073406b0f0db8aa96f2",
+      "sourceName": "src/starkEx/src/tokens/ERC1155/IERC1155Receiver.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "IERC1155Receiver": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "IERC1155Receiver.sol/IERC1155Receiver.json"
+        }
+      }
+    },
+    "src/starkEx/src/tokens/ERC20/IERC20.sol": {
+      "lastModificationDate": 1671644468242,
+      "contentHash": "f57414cb775f058ca5d30f98134cdf15",
+      "sourceName": "src/starkEx/src/tokens/ERC20/IERC20.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "IERC20": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "IERC20.sol/IERC20.json"
+        }
+      }
+    },
+    "src/starkEx/src/tokens/ERC721/IERC721.sol": {
+      "lastModificationDate": 1671644468244,
+      "contentHash": "a12b84c5296f7e78878c4f0738c2a44f",
+      "sourceName": "src/starkEx/src/tokens/ERC721/IERC721.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "IERC721": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "IERC721.sol/IERC721.json"
+        }
+      }
+    },
+    "src/starkEx/src/tokens/ERC721/IERC721Receiver.sol": {
+      "lastModificationDate": 1671644468246,
+      "contentHash": "9f8e508b9829481ac2398c3d6fd0717c",
+      "sourceName": "src/starkEx/src/tokens/ERC721/IERC721Receiver.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "IERC721Receiver": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "IERC721Receiver.sol/IERC721Receiver.json"
+        }
+      }
+    },
+    "src/starkEx/src/toplevel_subcontracts/AllVerifiers.sol": {
+      "lastModificationDate": 1671644468248,
+      "contentHash": "d9df15b088e3cfd405e4ebea69518ece",
+      "sourceName": "src/starkEx/src/toplevel_subcontracts/AllVerifiers.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/ApprovalChain.sol",
+        "src/starkEx/src/components/AvailabilityVerifiers.sol",
+        "src/starkEx/src/components/Freezable.sol",
+        "src/starkEx/src/components/Governance.sol",
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainGovernance.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/components/Verifiers.sol",
+        "src/starkEx/src/interfaces/IFactRegistry.sol",
+        "src/starkEx/src/interfaces/IQueryableFactRegistry.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/MApprovalChain.sol",
+        "src/starkEx/src/interfaces/MFreezable.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/interfaces/SubContractor.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "AllVerifiers": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "AllVerifiers.sol/AllVerifiers.json"
+        }
+      }
+    },
+    "src/starkEx/src/upgrade/Proxy.sol": {
+      "lastModificationDate": 1671644468250,
+      "contentHash": "d709c78c2d8ec4d15ce984f7fe5ff223",
+      "sourceName": "src/starkEx/src/upgrade/Proxy.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/Governance.sol",
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/upgrade/ProxyGovernance.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol",
+        "src/starkEx/src/upgrade/StorageSlots.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "Proxy": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "Proxy.sol/Proxy.json"
+        }
+      }
+    },
+    "src/starkEx/src/upgrade/ProxyGovernance.sol": {
+      "lastModificationDate": 1671644468252,
+      "contentHash": "514ae3b106ae32a04dccb2ef440d0806",
+      "sourceName": "src/starkEx/src/upgrade/ProxyGovernance.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/Governance.sol",
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ProxyGovernance": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ProxyGovernance.sol/ProxyGovernance.json"
+        }
+      }
+    },
+    "src/starkEx/src/upgrade/ProxyStorage.sol": {
+      "lastModificationDate": 1671644468253,
+      "contentHash": "1606d9565badd0bacdb6ad241d698880",
+      "sourceName": "src/starkEx/src/upgrade/ProxyStorage.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ProxyStorage": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ProxyStorage.sol/ProxyStorage.json"
+        }
+      }
+    },
+    "src/starkEx/src/upgrade/StorageSlots.sol": {
+      "lastModificationDate": 1671644468254,
+      "contentHash": "0e3b2a280167cbc9c931053fc9c6b7cf",
+      "sourceName": "src/starkEx/src/upgrade/StorageSlots.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "StorageSlots": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "StorageSlots.sol/StorageSlots.json"
+        }
+      }
+    },
+    "src/starkEx/src/upgrade/eic/ChangeVerifiersExternalInitializer.sol": {
+      "lastModificationDate": 1671644468256,
+      "contentHash": "233f9b38ff9afcb3b075ab285d31c985",
+      "sourceName": "src/starkEx/src/upgrade/eic/ChangeVerifiersExternalInitializer.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/ExternalInitializer.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ChangeVerifiersExternalInitializer": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ChangeVerifiersExternalInitializer.sol/ChangeVerifiersExternalInitializer.json"
+        }
+      }
+    },
+    "src/starkEx/src/upgrade/eic/ChangeVerifiersZeroTimelockExternalInitializer.sol": {
+      "lastModificationDate": 1671644468258,
+      "contentHash": "e5e8da4ae992c411c12634d4dc8edb66",
+      "sourceName": "src/starkEx/src/upgrade/eic/ChangeVerifiersZeroTimelockExternalInitializer.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/ExternalInitializer.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol",
+        "src/starkEx/src/upgrade/eic/ChangeVerifiersExternalInitializer.sol",
+        "src/starkEx/src/upgrade/eic/ModifyUpgradeDelayExternalInitializer.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ChangeVerifiersZeroTimelockExternalInitializer": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ChangeVerifiersZeroTimelockExternalInitializer.sol/ChangeVerifiersZeroTimelockExternalInitializer.json"
+        }
+      }
+    },
+    "src/starkEx/src/upgrade/eic/ModifyConfigurationDelayExternalInitializer.sol": {
+      "lastModificationDate": 1671644468259,
+      "contentHash": "35161e888c628c69854b8d499e985376",
+      "sourceName": "src/starkEx/src/upgrade/eic/ModifyConfigurationDelayExternalInitializer.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/ExternalInitializer.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/perpetual/components/PerpetualStorage.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ModifyConfigurationDelayExternalInitializer": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ModifyConfigurationDelayExternalInitializer.sol/ModifyConfigurationDelayExternalInitializer.json"
+        }
+      }
+    },
+    "src/starkEx/src/upgrade/eic/ModifyUpgradeDelayExternalInitializer.sol": {
+      "lastModificationDate": 1671644468261,
+      "contentHash": "a938a16b7f97e4ed64e8a2d9b4ff14bf",
+      "sourceName": "src/starkEx/src/upgrade/eic/ModifyUpgradeDelayExternalInitializer.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/interfaces/ExternalInitializer.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ModifyUpgradeDelayExternalInitializer": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ModifyUpgradeDelayExternalInitializer.sol/ModifyUpgradeDelayExternalInitializer.json"
+        }
+      }
+    },
+    "src/starkEx/src/upgrade/eic/ReplaceEscapeVerifierExternalInitializer.sol": {
+      "lastModificationDate": 1671644468262,
+      "contentHash": "430e8ae66b4131c298b05ae3fea1a82b",
+      "sourceName": "src/starkEx/src/upgrade/eic/ReplaceEscapeVerifierExternalInitializer.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/ExternalInitializer.sol",
+        "src/starkEx/src/interfaces/IFactRegistry.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "ReplaceEscapeVerifierExternalInitializer": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "ReplaceEscapeVerifierExternalInitializer.sol/ReplaceEscapeVerifierExternalInitializer.json"
+        }
+      }
+    },
+    "src/starkEx/src/upgrade/eic/UpdatePerpetualConfigExternalInitializer.sol": {
+      "lastModificationDate": 1671644468263,
+      "contentHash": "2523474c0197416cb267f9ca1d9a7452",
+      "sourceName": "src/starkEx/src/upgrade/eic/UpdatePerpetualConfigExternalInitializer.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/ExternalInitializer.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/perpetual/PerpetualConstants.sol",
+        "src/starkEx/src/perpetual/components/PerpetualStorage.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "UpdatePerpetualConfigExternalInitializer": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "UpdatePerpetualConfigExternalInitializer.sol/UpdatePerpetualConfigExternalInitializer.json"
+        }
+      }
+    },
+    "src/starkEx/src/upgrade/eic/V3toV45ChangesExternalInitializer.sol": {
+      "lastModificationDate": 1671644468264,
+      "contentHash": "7c4c29e5ec802e4dd003bee15bf5e5d6",
+      "sourceName": "src/starkEx/src/upgrade/eic/V3toV45ChangesExternalInitializer.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "metadata": {
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "london",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "src/starkEx/src/components/GovernanceStorage.sol",
+        "src/starkEx/src/components/MainStorage.sol",
+        "src/starkEx/src/interfaces/ExternalInitializer.sol",
+        "src/starkEx/src/interfaces/Identity.sol",
+        "src/starkEx/src/interfaces/MGovernance.sol",
+        "src/starkEx/src/libraries/Common.sol",
+        "src/starkEx/src/libraries/LibConstants.sol",
+        "src/starkEx/src/upgrade/ProxyStorage.sol"
+      ],
+      "versionRequirement": "^0.6.12",
+      "artifacts": {
+        "V3toV45ChangesExternalInitializer": {
+          "0.6.12+commit.27d51765.Darwin.appleclang": "V3toV45ChangesExternalInitializer.sol/V3toV45ChangesExternalInitializer.json"
+        }
+      }
+    },
     "src/uniswap-v2/UniswapV2ERC20.sol": {
-      "lastModificationDate": 1671633327660,
+      "lastModificationDate": 1671644468266,
       "contentHash": "4c24d958cf49846da9fd36a99d81f9fc",
       "sourceName": "src/uniswap-v2/UniswapV2ERC20.sol",
       "solcConfig": {
@@ -55,7 +5931,7 @@
       }
     },
     "src/uniswap-v2/UniswapV2Factory.sol": {
-      "lastModificationDate": 1671633327661,
+      "lastModificationDate": 1671644468268,
       "contentHash": "bbd1d6d8cec14355db9a75d10b0d6802",
       "sourceName": "src/uniswap-v2/UniswapV2Factory.sol",
       "solcConfig": {
@@ -106,7 +5982,7 @@
       }
     },
     "src/uniswap-v2/UniswapV2Pair.sol": {
-      "lastModificationDate": 1671633327662,
+      "lastModificationDate": 1671644468269,
       "contentHash": "04b129f0ab195c778c2717f368acc162",
       "sourceName": "src/uniswap-v2/UniswapV2Pair.sol",
       "solcConfig": {
@@ -156,7 +6032,7 @@
       }
     },
     "src/uniswap-v2/interfaces/IERC20.sol": {
-      "lastModificationDate": 1671633327664,
+      "lastModificationDate": 1671644468271,
       "contentHash": "3d2b948a9266ee66b6e739de97c7e6e9",
       "sourceName": "src/uniswap-v2/interfaces/IERC20.sol",
       "solcConfig": {
@@ -191,12 +6067,12 @@
       "versionRequirement": ">=0.5.0",
       "artifacts": {
         "IERC20": {
-          "0.5.16+commit.9c3226ce.Darwin.appleclang": "IERC20.sol/IERC20.json"
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "IERC20.sol/IERC20.0.8.17.json"
         }
       }
     },
     "src/uniswap-v2/interfaces/IUniswapV2Callee.sol": {
-      "lastModificationDate": 1671633327665,
+      "lastModificationDate": 1671644468272,
       "contentHash": "30a4aed15b3fa3ce5588118b7cecfa7f",
       "sourceName": "src/uniswap-v2/interfaces/IUniswapV2Callee.sol",
       "solcConfig": {
@@ -231,12 +6107,12 @@
       "versionRequirement": ">=0.5.0",
       "artifacts": {
         "IUniswapV2Callee": {
-          "0.5.16+commit.9c3226ce.Darwin.appleclang": "IUniswapV2Callee.sol/IUniswapV2Callee.json"
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "IUniswapV2Callee.sol/IUniswapV2Callee.0.8.17.json"
         }
       }
     },
     "src/uniswap-v2/interfaces/IUniswapV2ERC20.sol": {
-      "lastModificationDate": 1671633327666,
+      "lastModificationDate": 1671644468274,
       "contentHash": "752c725168e1a5b73a8209897f18c5b9",
       "sourceName": "src/uniswap-v2/interfaces/IUniswapV2ERC20.sol",
       "solcConfig": {
@@ -271,12 +6147,12 @@
       "versionRequirement": ">=0.5.0",
       "artifacts": {
         "IUniswapV2ERC20": {
-          "0.5.16+commit.9c3226ce.Darwin.appleclang": "IUniswapV2ERC20.sol/IUniswapV2ERC20.json"
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "IUniswapV2ERC20.sol/IUniswapV2ERC20.0.8.17.json"
         }
       }
     },
     "src/uniswap-v2/interfaces/IUniswapV2Factory.sol": {
-      "lastModificationDate": 1671633327667,
+      "lastModificationDate": 1671644468275,
       "contentHash": "ec39b5372f4f4d52101b4da561e2aee6",
       "sourceName": "src/uniswap-v2/interfaces/IUniswapV2Factory.sol",
       "solcConfig": {
@@ -311,12 +6187,12 @@
       "versionRequirement": ">=0.5.0",
       "artifacts": {
         "IUniswapV2Factory": {
-          "0.5.16+commit.9c3226ce.Darwin.appleclang": "IUniswapV2Factory.sol/IUniswapV2Factory.json"
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "IUniswapV2Factory.sol/IUniswapV2Factory.0.8.17.json"
         }
       }
     },
     "src/uniswap-v2/interfaces/IUniswapV2Pair.sol": {
-      "lastModificationDate": 1671633327668,
+      "lastModificationDate": 1671644468276,
       "contentHash": "3fa31c3860f2b9585c3a98c64850829e",
       "sourceName": "src/uniswap-v2/interfaces/IUniswapV2Pair.sol",
       "solcConfig": {
@@ -351,12 +6227,12 @@
       "versionRequirement": ">=0.5.0",
       "artifacts": {
         "IUniswapV2Pair": {
-          "0.5.16+commit.9c3226ce.Darwin.appleclang": "IUniswapV2Pair.sol/IUniswapV2Pair.json"
+          "0.8.17+commit.8df45f5f.Darwin.appleclang": "IUniswapV2Pair.sol/IUniswapV2Pair.0.8.17.json"
         }
       }
     },
     "src/uniswap-v2/libraries/Math.sol": {
-      "lastModificationDate": 1671633327669,
+      "lastModificationDate": 1671644468278,
       "contentHash": "bee6c1959728d5d42c14151076cebd83",
       "sourceName": "src/uniswap-v2/libraries/Math.sol",
       "solcConfig": {
@@ -396,7 +6272,7 @@
       }
     },
     "src/uniswap-v2/libraries/SafeMath.sol": {
-      "lastModificationDate": 1671633327670,
+      "lastModificationDate": 1671644468279,
       "contentHash": "a65356c329efeffba75210664f5df3cd",
       "sourceName": "src/uniswap-v2/libraries/SafeMath.sol",
       "solcConfig": {
@@ -436,7 +6312,7 @@
       }
     },
     "src/uniswap-v2/libraries/UQ112x112.sol": {
-      "lastModificationDate": 1671633327671,
+      "lastModificationDate": 1671644468281,
       "contentHash": "2a703244e9f645c6fb297a983ce7c9c4",
       "sourceName": "src/uniswap-v2/libraries/UQ112x112.sol",
       "solcConfig": {
@@ -476,7 +6352,7 @@
       }
     },
     "src/uniswap-v2/test/ERC20.sol": {
-      "lastModificationDate": 1671633327673,
+      "lastModificationDate": 1671644468325,
       "contentHash": "5ad37a09a9d83a1255b7b71bc650a86a",
       "sourceName": "src/uniswap-v2/test/ERC20.sol",
       "solcConfig": {
@@ -515,7 +6391,7 @@
       "versionRequirement": "=0.5.16",
       "artifacts": {
         "ERC20": {
-          "0.5.16+commit.9c3226ce.Darwin.appleclang": "ERC20.sol/ERC20.json"
+          "0.5.16+commit.9c3226ce.Darwin.appleclang": "test/ERC20.sol/ERC20.json"
         }
       }
     }
