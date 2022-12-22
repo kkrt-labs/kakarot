@@ -62,7 +62,7 @@ namespace model {
     // @param starknet_contract_address - starknet address of the contract interacted with
     // @param evm_contract_address - evm address of the contract interacted with
     // @param calling_context - parent context of the current execution context, can be empty when context
-    //                          is root context                      
+    //                          is root context | see execution_context.is_root(ctx)                   
     // @param sub_context - child context of the current execution context, can be empty
     // @param destroy_contracts_len - destroy_contract length
     // @param destroy_contracts - array of contracts to destroy at the end of the transaction
