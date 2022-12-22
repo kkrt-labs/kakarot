@@ -4,10 +4,12 @@
 
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.memcpy import memcpy
 
 // Internal dependencies
-from utils.utils import Helpers
 from kakarot.model import model
+from utils.utils import Helpers
+from kakarot.memory import Memory
 from kakarot.execution_context import ExecutionContext
 
 // @title DataCopy precompile
@@ -36,9 +38,16 @@ namespace PrecompileDataCopy {
             input=ctx.call_context.calldata, input_len=ctx.call_context.calldata_len
         );
 
+        // compensating for `ret_offset` param in call opcodes
+        // currently stored at 0th place in `return_data`,
+        // see system_operations::CallHelpers.prepare_args
+        memcpy(ctx.return_data + ctx.return_data_len - 1, output, output_len);
+
         // Update return data
         let ctx = ExecutionContext.update_return_data(
-            self=ctx, new_return_data_len=output_len, new_return_data=output
+            self=ctx,
+            new_return_data_len=output_len + ctx.return_data_len,
+            new_return_data=ctx.return_data,
         );
 
         // Increment gas
@@ -54,7 +63,6 @@ namespace PrecompileDataCopy {
     // @return The output data
     // @custom:entrypoint
     func data_copy(input: felt*, input_len: felt) -> (output: felt*, output_len: felt) {
-        // TODO implement
         return (output=input, output_len=input_len);
     }
 }

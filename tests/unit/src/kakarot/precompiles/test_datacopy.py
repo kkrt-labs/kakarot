@@ -23,13 +23,14 @@ async def datacopy(
 class TestDataCopy:
     @pytest.mark.parametrize(
         "calldata_len",
-        [32, 64],
-        ids=["calldata_len32", "calldata_len64"],
-    )    
+        [32],
+        ids=["calldata_len32"],
+    )
     async def test_datacopy(self, datacopy, calldata_len):
         random.seed(0)
         calldata = [random.randint(0, 255) for _ in range(calldata_len)]
-
-        res = await datacopy.test__datacopy(calldata=calldata).call()
+        res = await datacopy.test__datacopy_impl(calldata=calldata).call()
 
         assert res.result.return_data == calldata
+
+        await datacopy.test__datacopy_via_staticcall().call()
