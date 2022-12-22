@@ -8,10 +8,11 @@ from starkware.cairo.common.dict import DictAccess
 
 namespace model {
 
-    // @dev Stack with a 1024 items size. Each item is a 256 bits word. The stack is used by most 
-    // @dev opcodes to consume their parameters from.
-    // @dev Each element is represented by two 128bits (16bytes) chunks.
-    // @param word_dict_start - pointer to a DictAccess array used to simulate a read/write memory
+    // @notice info: https://www.evm.codes/about#stack
+    // @notice Stack with a 1024 items maximum size. Each item is a 256 bits word. The stack is used by most 
+    // @notice opcodes to consume their parameters from.
+    // @dev Each word is represented by two 128bits (16bytes) chunks.
+    // @param word_dict_start - pointer to a DictAccess array used to store the stack's value at a given index
     // @param word_dict - pointer to the end of the DictAccess array
     // @param len_16_bytes - length of the DictAccess array
     struct Stack {
@@ -20,9 +21,10 @@ namespace model {
         len_16bytes: felt,
     }
 
-    // @dev Transient memory maintened by the EVM during an execution which doesn't persist
-    // @dev between transactions.
-    // @param word_dict_start - pointer to a DictAccess array used to simulate a read/write memory
+    // @notice info: https://www.evm.codes/about#memory
+    // @notice Transient memory maintained by the EVM during an execution which doesn't persist
+    // @notice between transactions.
+    // @param word_dict_start - pointer to a DictAccess used to store the memory's value at a given index
     // @param word_dict - pointer to the end of the DictAccess array
     // @param len_16_bytes - length of the DictAccess array
     struct Memory {
@@ -31,7 +33,8 @@ namespace model {
         bytes_len: felt,
     }
 
-    // @dev Struct storing data related to a call
+    // @notice info: https://www.evm.codes/about#calldata
+    // @notice Struct storing data related to a call
     // @param bytecode - smart contract bytecode
     // @param bytecode_len - length of bytecode
     // @param calldata - byte space where the data parameter of a transaction or call is held
@@ -58,8 +61,8 @@ namespace model {
     // @param gas_price - the amount to pay per unit of gas
     // @param starknet_contract_address - starknet address of the contract interacted with
     // @param evm_contract_address - evm address of the contract interacted with
-    // @param calling_context - parent context of the current execution context
-    // @param sub_context - child context of the current execution context
+    // @param calling_context - parent context of the current execution context (optional)
+    // @param sub_context - child context of the current execution context (optional)
     // @param destroy_contracts_len - destroy_contract length
     // @param destroy_contracts - array of contracts to destroy at the end of the transaction
     struct ExecutionContext {
