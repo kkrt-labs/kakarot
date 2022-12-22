@@ -24,13 +24,19 @@ from tests.unit.helpers.helpers import TestHelpers
 @external
 func test__datacopy_impl{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(calldata_len: felt, calldata: felt*) -> (return_data_len: felt, return_data: felt*) {
+}(calldata_len: felt, calldata: felt*) {
     // Given # 1
     alloc_locals;
     // When
-    let result = PrecompileDataCopy.data_copy(calldata, calldata_len);
+    let result = PrecompileDataCopy.run(calldata_len, calldata);
 
-    return (return_data_len=result.output_len, return_data=result.output);
+    TestHelpers.assert_array_equal(
+        array_0_len=calldata_len,
+        array_0=calldata,
+        array_1_len=result.output_len,
+        array_1=result.output,
+    );
+    return ();
 }
 
 @external
@@ -51,7 +57,6 @@ func test__datacopy_via_staticcall{
     let args_offset = Uint256(31, 0);
     let args_size = Uint256(1, 0);
 
-    // stored at zeroeth position of return_data
     tempvar ret_offset = Uint256(63, 0);
     tempvar ret_size = Uint256(1, 0);
 
@@ -70,18 +75,19 @@ func test__datacopy_via_staticcall{
     let ctx = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
     let ctx = MemoryOperations.exec_mstore(ctx);
 
-    // Then
+    // When
     let result = SystemOperations.exec_staticcall(ctx);
+    let result = CallHelper.finalize_calling_context(result);
 
-    // commenting out these steps in the evm.codes example for this draft
-    // let result = CallHelper.finalize_calling_context(result);
-    // let result = MemoryOperations.exec_pop(result);
-    // let stack = Stack.push(result.stack, args_offset);
-    // let result = ExecutionContext.update_stack(result, stack);
-    // let result = MemoryOperations.exec_mload(result);
+    // Put the result alone on the stack
+    let result = MemoryOperations.exec_pop(result);
+    let stack = Stack.push(result.stack, Uint256(32, 0));
+    let result = ExecutionContext.update_stack(result, stack);
+    let result = MemoryOperations.exec_mload(result);
+    let (stack, stack_result) = Stack.peek(result.stack, 0);
 
-    assert [result.return_data - 1] = ret_offset.low;
-    assert [result.return_data] = preset_memory.low;
+    // Then
+    assert stack_result.low = preset_memory.low;
 
     return ();
 }

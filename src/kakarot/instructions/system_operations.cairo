@@ -222,7 +222,7 @@ namespace SystemOperations {
         let (ctx, call_args) = CallHelper.prepare_args(ctx=ctx, with_value=1);
 
         // Check if the called address is a precompiled contract
-        let is_precompile = is_le(call_args.address, Constants.LAST_PRECOMPILE_ADDRESS);
+        let is_precompile = Precompile.is_precompile(address=call_args.address);
         if (is_precompile == TRUE) {
             let sub_ctx = Precompile.run(
                 address=call_args.address,
@@ -267,8 +267,8 @@ namespace SystemOperations {
         // Parse call arguments
         let (ctx, call_args) = CallHelper.prepare_args(ctx=ctx, with_value=0);
 
-        // Check if the called address is a precompiled contract
-        let is_precompile = is_le(call_args.address, Constants.LAST_PRECOMPILE_ADDRESS);
+        // Check if the called address is a precompiled contrac
+        let is_precompile = Precompile.is_precompile(address=call_args.address);
         if (is_precompile == TRUE) {
             let sub_ctx = Precompile.run(
                 address=call_args.address,

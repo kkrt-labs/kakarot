@@ -29,8 +29,6 @@ class TestDataCopy:
     async def test_datacopy(self, datacopy, calldata_len):
         random.seed(0)
         calldata = [random.randint(0, 255) for _ in range(calldata_len)]
-        res = await datacopy.test__datacopy_impl(calldata=calldata).call()
 
-        assert res.result.return_data == calldata
-
+        await datacopy.test__datacopy_impl(calldata=calldata).call()
         await datacopy.test__datacopy_via_staticcall().call()

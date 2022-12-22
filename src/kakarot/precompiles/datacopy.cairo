@@ -4,7 +4,6 @@
 
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.memcpy import memcpy
 
 // Internal dependencies
 from kakarot.model import model
@@ -23,46 +22,16 @@ namespace PrecompileDataCopy {
     const GAS_COST_DATACOPY = 15;
 
     // @notice Run the precompile.
-    // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @param input_len The length of input array.
+    // @param input The input array.
+    // @return The output length, output array, and gas usage of precompile.
     func run{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-
-        let (minimum_word_size) = Helpers.minimum_word_count(ctx.call_context.calldata_len);
-        let (output, output_len) = data_copy(
-            input=ctx.call_context.calldata, input_len=ctx.call_context.calldata_len
-        );
-
-        // compensating for `ret_offset` param in call opcodes
-        // currently stored at 0th place in `return_data`,
-        // see system_operations::CallHelpers.prepare_args
-        memcpy(ctx.return_data + ctx.return_data_len - 1, output, output_len);
-
-        // Update return data
-        let ctx = ExecutionContext.update_return_data(
-            self=ctx,
-            new_return_data_len=output_len + ctx.return_data_len,
-            new_return_data=ctx.return_data,
-        );
-
-        // Increment gas
-        let ctx = ExecutionContext.increment_gas_used(
-            self=ctx, inc_value=3 * minimum_word_size + GAS_COST_DATACOPY
-        );
-
-        return ctx;
-    }
-
-    // @notice Copies data from memory to memory
-    // @param input The input data
-    // @return The output data
-    // @custom:entrypoint
-    func data_copy(input: felt*, input_len: felt) -> (output: felt*, output_len: felt) {
-        return (output=input, output_len=input_len);
+    }(input_len: felt, input: felt*) -> (output_len: felt, output: felt*, gas_used: felt) {
+        let (minimum_word_size) = Helpers.minimum_word_count(input_len);
+        return (input_len, input, 3 * minimum_word_size + GAS_COST_DATACOPY);
     }
 }
