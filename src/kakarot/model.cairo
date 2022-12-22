@@ -35,7 +35,7 @@ namespace model {
 
     // @notice info: https://www.evm.codes/about#calldata
     // @notice Struct storing data related to a call
-    // @param bytecode - smart contract bytecode
+    // @param bytecode - the executed bytecode
     // @param bytecode_len - length of bytecode
     // @param calldata - byte space where the data parameter of a transaction or call is held
     // @param calldata_len - length of calldata
@@ -61,8 +61,9 @@ namespace model {
     // @param gas_price - the amount to pay per unit of gas
     // @param starknet_contract_address - starknet address of the contract interacted with
     // @param evm_contract_address - evm address of the contract interacted with
-    // @param calling_context - parent context of the current execution context (optional)
-    // @param sub_context - child context of the current execution context (optional)
+    // @param calling_context - parent context of the current execution context, can be empty when context
+    //                          is root context                      
+    // @param sub_context - child context of the current execution context, can be empty
     // @param destroy_contracts_len - destroy_contract length
     // @param destroy_contracts - array of contracts to destroy at the end of the transaction
     struct ExecutionContext {
