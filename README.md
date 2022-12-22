@@ -148,7 +148,8 @@ Here is the execution trace of the program on Kakarot:
 
 ## Getting started
 
-To contribute, please check out [the contribution guide](./docs/CONTRIBUTING.md).
+To contribute, please check out
+[the contribution guide](./docs/CONTRIBUTING.md).
 
 ```bash
 # install poetry if you don't have it already

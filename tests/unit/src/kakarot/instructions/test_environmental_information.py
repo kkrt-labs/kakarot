@@ -4,6 +4,7 @@ import pytest
 import pytest_asyncio
 from starkware.starknet.testing.starknet import Starknet
 
+
 @pytest_asyncio.fixture(scope="module")
 async def environmental_information(starknet: Starknet):
     return await starknet.deploy(
