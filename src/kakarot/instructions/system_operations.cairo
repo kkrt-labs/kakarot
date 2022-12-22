@@ -22,7 +22,7 @@ from kakarot.constants import (
     native_token_address,
     Constants,
 )
-from kakarot.precompiles.precompile import Precompile
+from kakarot.precompiles.precompiles import Precompiles
 from kakarot.execution_context import ExecutionContext
 from kakarot.interfaces.interfaces import IEvmContract, IRegistry, IEth
 from kakarot.memory import Memory
@@ -222,9 +222,9 @@ namespace SystemOperations {
         let (ctx, call_args) = CallHelper.prepare_args(ctx=ctx, with_value=1);
 
         // Check if the called address is a precompiled contract
-        let is_precompile = Precompile.is_precompile(address=call_args.address);
+        let is_precompile = Precompiles.is_precompile(address=call_args.address);
         if (is_precompile == TRUE) {
-            let sub_ctx = Precompile.run(
+            let sub_ctx = Precompiles.run(
                 address=call_args.address,
                 calldata_len=call_args.args_size,
                 calldata=call_args.calldata,
@@ -268,9 +268,9 @@ namespace SystemOperations {
         let (ctx, call_args) = CallHelper.prepare_args(ctx=ctx, with_value=0);
 
         // Check if the called address is a precompiled contrac
-        let is_precompile = Precompile.is_precompile(address=call_args.address);
+        let is_precompile = Precompiles.is_precompile(address=call_args.address);
         if (is_precompile == TRUE) {
-            let sub_ctx = Precompile.run(
+            let sub_ctx = Precompiles.run(
                 address=call_args.address,
                 calldata_len=call_args.args_size,
                 calldata=call_args.calldata,

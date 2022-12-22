@@ -20,7 +20,7 @@ from kakarot.stack import Stack
 // @notice This file contains functions related to the running of precompiles.
 // @author @jobez
 // @custom:namespace Precompile
-namespace Precompile {
+namespace Precompiles {
     // @notice Executes a precompile at a given precompile address
     // @dev Associates gas used and precompile return values to a execution subcontext
     // @param address The precompile address to be executed
