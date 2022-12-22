@@ -1,5 +1,5 @@
 [profile.default]
-src = 'src'
+src = 'solidity_contracts'
 out = 'out'
 libs = ['lib']
 

@@ -12,6 +12,10 @@ node.json
 artifacts
 /build
 
+#foundry
+/cache
+/out
+
 # nile
 127.0.0.1.*
 
