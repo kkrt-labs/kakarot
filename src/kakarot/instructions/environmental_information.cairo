@@ -702,13 +702,13 @@ namespace EnvironmentalInformation {
 
         let (local dest: felt*) = alloc();
         // convert to little endian
-        Helpers.bytes_to_byte8_little_endian(
+        Helpers.bytes_to_bytes8_little_endian(
             bytes_len=bytecode_len,
             bytes=bytecode,
             index=0,
             size=bytecode_len,
-            byte8=0,
-            byte8_shift=0,
+            bytes8=0,
+            bytes8_shift=0,
             dest=dest,
             dest_index=0,
         );

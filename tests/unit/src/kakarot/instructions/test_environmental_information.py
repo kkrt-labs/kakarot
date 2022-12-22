@@ -137,12 +137,9 @@ class TestEnvironmentalInformation:
         random.seed(0)
         bytecode = [random.randint(0, 255) for _ in range(32)]
         keccak_hash = keccak.new(digest_bits=256)
-        b = b''
-        for bb in bytecode:
-            b += bb.to_bytes(1, byteorder='big')
-        keccak_hash.update(b)
+        keccak_hash.update(bytearray(bytecode))
         expected_hash = int.from_bytes(keccak_hash.digest(), byteorder='big')
-        expected_hash_low = expected_hash & ((1 << 129) - 1)
+        expected_hash_low = expected_hash % (2 ** 128)
         expected_hash_high = expected_hash >> 128
         contract_account = await contract_account.write_bytecode(bytecode).execute(
             caller_address=1
