@@ -5,6 +5,7 @@ import pytest_asyncio
 from Crypto.Hash import keccak
 from starkware.starknet.testing.starknet import Starknet
 
+
 @pytest_asyncio.fixture(scope="module")
 async def environmental_information(starknet: Starknet):
     return await starknet.deploy(
@@ -138,8 +139,8 @@ class TestEnvironmentalInformation:
         bytecode = [random.randint(0, 255) for _ in range(32)]
         keccak_hash = keccak.new(digest_bits=256)
         keccak_hash.update(bytearray(bytecode))
-        expected_hash = int.from_bytes(keccak_hash.digest(), byteorder='big')
-        expected_hash_low = expected_hash % (2 ** 128)
+        expected_hash = int.from_bytes(keccak_hash.digest(), byteorder="big")
+        expected_hash_low = expected_hash % (2**128)
         expected_hash_high = expected_hash >> 128
         contract_account = await contract_account.write_bytecode(bytecode).execute(
             caller_address=1
@@ -159,4 +160,3 @@ class TestEnvironmentalInformation:
             expected_hash_low=expected_hash_low,
             expected_hash_high=expected_hash_high,
         ).call()
-

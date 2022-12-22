@@ -477,9 +477,7 @@ namespace ExecutionContext {
     // @param destroy_contracts_len Array length of destroy_contracts to add.
     // @param destroy_contracts The pointer to the new array of contracts to destroy.
     func push_to_destroy_contracts(
-        self: model.ExecutionContext*,
-        destroy_contracts_len: felt,
-        destroy_contracts: felt*,
+        self: model.ExecutionContext*, destroy_contracts_len: felt, destroy_contracts: felt*
     ) -> model.ExecutionContext* {
         Helpers.fill_array(
             fill_len=destroy_contracts_len,
@@ -503,15 +501,14 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len + destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
-        ); 
+            );
     }
 
     // @notice Add one contract to the array of contracts to destroy.
     // @param self The pointer to the execution context.
     // @param destroy_contract contract to destroy.
     func push_to_destroy_contract(
-        self: model.ExecutionContext*,
-        destroy_contract: felt,
+        self: model.ExecutionContext*, destroy_contract: felt
     ) -> model.ExecutionContext* {
         assert [self.destroy_contracts + self.destroy_contracts_len] = destroy_contract;
         return new model.ExecutionContext(
@@ -531,7 +528,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len + 1,
             destroy_contracts=self.destroy_contracts,
-        ); 
+            );
     }
 
     // @notice Dump the current execution context.

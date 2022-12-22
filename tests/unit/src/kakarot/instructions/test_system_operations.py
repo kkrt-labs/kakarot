@@ -71,6 +71,7 @@ class TestSystemOperations:
             contract_account_class.class_hash,
             account_registry.contract_address,
         ).call()
+
     async def test_selfdestruct(
         self, system_operations, contract_account_class, account_registry, eth
     ):
