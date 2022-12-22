@@ -76,6 +76,6 @@ get-blockhashes:
 	poetry run python scripts/get_latest_blockhashes.py
 	
 build-foundry:
-	forge build --contracts foundry_compiler/src/starkEx/src -o foundry_compiler/src/starkEx/src/out
-	forge build --contracts foundry_compiler/src/uniswap-v2 -o foundry_compiler/src/uniswap-v2/out
+	forge build --contracts solidity_contracts/starkEx/src -o solidity_contracts/starkEx/src/out
+	forge build --contracts foundry_compiler/uniswap-v2 -o solidity_contracts/uniswap-v2/out
 
