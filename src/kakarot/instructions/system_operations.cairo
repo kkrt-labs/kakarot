@@ -265,7 +265,6 @@ namespace SystemOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         // Parse call arguments
-        alloc_locals;
         let (ctx, call_args) = CallHelper.prepare_args(ctx=ctx, with_value=0);
 
         // Check if the called address is a precompiled contract

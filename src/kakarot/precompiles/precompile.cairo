@@ -41,9 +41,6 @@ namespace Precompile {
 
         let sub_context = ExecutionContext.init_empty();
 
-        // do the computation of the precompile
-        // fill call_args.return_data array with result
-
         local ctx: model.ExecutionContext* = new model.ExecutionContext(
             call_context=call_context,
             program_counter=0,
