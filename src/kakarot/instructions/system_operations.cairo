@@ -331,17 +331,18 @@ namespace SystemOperations {
         let (balance: Uint256) = IEth.balanceOf(
             contract_address=native_token_address_, account=ctx.starknet_contract_address
         );
-        let (success) = IEth.transfer(contract_address=native_token_address_, recipient=address_felt, amount=balance);
+        let (success) = IEth.transfer(
+            contract_address=native_token_address_, recipient=address_felt, amount=balance
+        );
         with_attr error_message("Kakarot: Transfer failed") {
             assert success = TRUE;
         }
 
         // Save contract to be destroyed at the end of the transaction
         let ctx = ExecutionContext.push_to_destroy_contract(
-            self=ctx,
-            destroy_contract=ctx.starknet_contract_address,
+            self=ctx, destroy_contract=ctx.starknet_contract_address
         );
-        
+
         return ctx;
     }
 }
@@ -432,7 +433,7 @@ namespace CallHelper {
             destroy_contracts_len=ctx.sub_context.destroy_contracts_len,
             destroy_contracts=ctx.sub_context.destroy_contracts,
         );
-        
+
         let stack = Stack.push(ctx.stack, success);
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // ret_offset, see prepare_args
@@ -521,7 +522,7 @@ namespace CreateHelper {
             bytecode=ctx.return_data,
         );
         local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(ctx.calling_context, ctx);
-        
+
         // Append contracts to selfdestruct to the calling_context
         let ctx = ExecutionContext.push_to_destroy_contracts(
             self=ctx,
@@ -538,8 +539,6 @@ namespace CreateHelper {
 }
 
 namespace SelfDestructHelper {
-
-
     func _finalize_loop{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -553,15 +552,11 @@ namespace SelfDestructHelper {
         }
 
         let starknet_contract_address = [destroy_contracts];
-        let (bytecode_len) = IEvmContract.bytecode_len(
-            contract_address=starknet_contract_address
-        );
+        let (bytecode_len) = IEvmContract.bytecode_len(contract_address=starknet_contract_address);
         let (erase_data) = alloc();
         Helpers.fill(bytecode_len, erase_data, 0);
         IEvmContract.write_bytecode(
-            contract_address=starknet_contract_address,
-            bytecode_len=0,
-            bytecode=erase_data
+            contract_address=starknet_contract_address, bytecode_len=0, bytecode=erase_data
         );
 
         // Remove contract from registry
@@ -569,7 +564,7 @@ namespace SelfDestructHelper {
         IRegistry.set_account_entry(
             contract_address=registry_address_,
             starknet_contract_address=starknet_contract_address,
-            evm_contract_address=0
+            evm_contract_address=0,
         );
 
         return _finalize_loop(destroy_contracts_len - 1, destroy_contracts + 1);
@@ -587,7 +582,9 @@ namespace SelfDestructHelper {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let empty_destroy_contracts = _finalize_loop(ctx.destroy_contracts_len, ctx.destroy_contracts);
+        let empty_destroy_contracts = _finalize_loop(
+            ctx.destroy_contracts_len, ctx.destroy_contracts
+        );
 
         return new model.ExecutionContext(
             call_context=ctx.call_context,
@@ -606,6 +603,6 @@ namespace SelfDestructHelper {
             sub_context=ctx.sub_context,
             destroy_contracts_len=0,
             destroy_contracts=empty_destroy_contracts,
-        );
+            );
     }
 }
