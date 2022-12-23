@@ -41,9 +41,9 @@ It is a work in progress, and it is not ready for production.
 ```mermaid
 %%{init: {'theme': 'forest', 'themeVariables': { 'darkMode': 'false'}}}%%
 
-pie title Kakarot EMV opcodes support (141 / 142)
-    "Supported" : 137
-    "Not supported" : 1
+pie title Kakarot EMV opcodes support (142 / 142)
+    "Supported" : 138
+    "Not supported" : 0
     "Partially supported" : 4
 ```
 
