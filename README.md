@@ -157,6 +157,21 @@ To contribute, please check out
 make setup
 ```
 
+## Install foundry
+To be able to verify and compare the abi and bytecode of the test contracts, first make sure you have foundry installed:
+
+``
+https://book.getfoundry.sh/getting-started/installation
+``
+
+and then run:
+
+``
+make build-foundry
+``
+
+
+
 ## Build
 
 ```bash
