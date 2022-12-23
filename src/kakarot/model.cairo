@@ -7,9 +7,8 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.dict import DictAccess
 
 namespace model {
-
     // @notice info: https://www.evm.codes/about#stack
-    // @notice Stack with a 1024 items maximum size. Each item is a 256 bits word. The stack is used by most 
+    // @notice Stack with a 1024 items maximum size. Each item is a 256 bits word. The stack is used by most
     // @notice opcodes to consume their parameters from.
     // @dev Each word is represented by two 128bits (16bytes) chunks.
     // @param word_dict_start - pointer to a DictAccess array used to store the stack's value at a given index
@@ -62,7 +61,7 @@ namespace model {
     // @param starknet_contract_address - starknet address of the contract interacted with
     // @param evm_contract_address - evm address of the contract interacted with
     // @param calling_context - parent context of the current execution context, can be empty when context
-    //                          is root context | see ExecutionContext.is_root(ctx)                   
+    //                          is root context | see ExecutionContext.is_root(ctx)
     // @param sub_context - child context of the current execution context, can be empty
     // @param destroy_contracts_len - destroy_contract length
     // @param destroy_contracts - array of contracts to destroy at the end of the transaction
