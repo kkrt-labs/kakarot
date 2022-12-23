@@ -15,7 +15,14 @@ from starkware.starknet.common.syscalls import get_contract_address
 
 // Internal dependencies
 from kakarot.accounts.contract.library import ContractAccount
-from kakarot.constants import registry_address, evm_contract_class_hash, salt, native_token_address
+from kakarot.constants import (
+    registry_address,
+    evm_contract_class_hash,
+    salt,
+    native_token_address,
+    Constants,
+)
+from kakarot.precompiles.precompiles import Precompiles
 from kakarot.execution_context import ExecutionContext
 from kakarot.interfaces.interfaces import IEvmContract, IRegistry, IEth
 from kakarot.memory import Memory
@@ -214,6 +221,21 @@ namespace SystemOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         let (ctx, call_args) = CallHelper.prepare_args(ctx=ctx, with_value=1);
 
+        // Check if the called address is a precompiled contract
+        let is_precompile = Precompiles.is_precompile(address=call_args.address);
+        if (is_precompile == TRUE) {
+            let sub_ctx = Precompiles.run(
+                address=call_args.address,
+                calldata_len=call_args.args_size,
+                calldata=call_args.calldata,
+                value=call_args.value,
+                calling_context=ctx,
+                return_data_len=call_args.ret_size,
+                return_data=call_args.return_data,
+            );
+            return sub_ctx;
+        }
+
         let sub_ctx = ExecutionContext.init_at_address(
             address=call_args.address,
             gas_limit=call_args.gas,
@@ -242,8 +264,25 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        // Parse call arguments
         let (ctx, call_args) = CallHelper.prepare_args(ctx=ctx, with_value=0);
 
+        // Check if the called address is a precompiled contrac
+        let is_precompile = Precompiles.is_precompile(address=call_args.address);
+        if (is_precompile == TRUE) {
+            let sub_ctx = Precompiles.run(
+                address=call_args.address,
+                calldata_len=call_args.args_size,
+                calldata=call_args.calldata,
+                value=call_args.value,
+                calling_context=ctx,
+                return_data_len=call_args.ret_size,
+                return_data=call_args.return_data,
+            );
+            return sub_ctx;
+        }
+
+        // TODO: use gas_limit when init_at_address is updated
         let sub_ctx = ExecutionContext.init_at_address(
             address=call_args.address,
             gas_limit=call_args.gas,
