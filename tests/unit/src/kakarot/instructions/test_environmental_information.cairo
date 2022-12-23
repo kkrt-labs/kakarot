@@ -286,3 +286,72 @@ func test__returndatacopy{
 
     return ();
 }
+
+@external
+func test__exec_extcodehash__should_handle_invalid_address{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(account_registry_address: felt) {
+    // Given
+    alloc_locals;
+
+    registry_address.write(account_registry_address);
+
+    let bytecode_len = 0;
+    let (bytecode) = alloc();
+    let address = Uint256(0xDEAD, 0);
+    let stack = Stack.init();
+    let stack = Stack.push(stack, address);
+
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(
+        bytecode_len, bytecode, stack
+    );
+
+    // When
+    let result = EnvironmentalInformation.exec_extcodehash(ctx);
+
+    // Then
+    let (stack, extcodehash) = Stack.peek(result.stack, 0);
+    assert extcodehash.low = 0;
+    assert extcodehash.high = 0;
+    // 'cold' address access
+    assert result.gas_used = 2600;
+
+    return ();
+}
+
+@external
+func test__exec_extcodehash__should_handle_address_with_code{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(
+    account_registry_address: felt,
+    evm_contract_address: felt,
+    expected_hash_low: felt,
+    expected_hash_high: felt,
+) {
+    // Given
+    alloc_locals;
+
+    registry_address.write(account_registry_address);
+
+    let bytecode_len = 0;
+    let (bytecode) = alloc();
+    let address = Uint256(evm_contract_address, 0);
+    let stack = Stack.init();
+    let stack = Stack.push(stack, address);
+
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(
+        bytecode_len, bytecode, stack
+    );
+
+    // When
+    let result = EnvironmentalInformation.exec_extcodehash(ctx);
+
+    // Then
+    let (stack, extcodehash) = Stack.peek(result.stack, 0);
+    assert extcodehash.low = expected_hash_low;
+    assert extcodehash.high = expected_hash_high;
+    // 'cold' address access
+    assert result.gas_used = 2600;
+
+    return ();
+}

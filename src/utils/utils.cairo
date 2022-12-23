@@ -514,4 +514,57 @@ namespace Helpers {
             return a;
         }
     }
+
+    // @notice convert bytes to little endian
+    func bytes_to_bytes8_little_endian{range_check_ptr}(
+        bytes_len: felt,
+        bytes: felt*,
+        index: felt,
+        size: felt,
+        bytes8: felt,
+        bytes8_shift: felt,
+        dest: felt*,
+        dest_index: felt,
+    ) {
+        alloc_locals;
+        if (index == size) {
+            return ();
+        }
+
+        local current_byte;
+        let out_of_bound = is_le(a=bytes_len, b=index);
+        if (out_of_bound != FALSE) {
+            current_byte = 0;
+        } else {
+            assert current_byte = [bytes + index];
+        }
+
+        let (pow256_address) = get_label_location(pow256_table);
+        let bit_shift = pow256_address[bytes8_shift];
+
+        let _bytes8 = bytes8 + bit_shift * current_byte;
+
+        let bytes8_full = is_le(a=7, b=bytes8_shift);
+        let end_of_loop = is_le(size, index + 1);
+        let write_to_dest = is_le(1, bytes8_full + end_of_loop);
+        if (write_to_dest != FALSE) {
+            assert dest[dest_index] = _bytes8;
+            return bytes_to_bytes8_little_endian(
+                bytes_len, bytes, index + 1, size, 0, 0, dest, dest_index + 1
+            );
+        }
+        return bytes_to_bytes8_little_endian(
+            bytes_len, bytes, index + 1, size, _bytes8, bytes8_shift + 1, dest, dest_index
+        );
+
+        pow256_table:
+        dw 1;
+        dw 256;
+        dw 65536;
+        dw 16777216;
+        dw 4294967296;
+        dw 1099511627776;
+        dw 281474976710656;
+        dw 72057594037927936;
+    }
 }
