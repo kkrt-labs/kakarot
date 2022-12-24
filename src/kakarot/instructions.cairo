@@ -208,7 +208,7 @@ namespace EVMInstructions {
         ret;
         call EnvironmentalInformation.exec_returndatacopy;  // 0x3e
         ret;
-        call not_implemented_opcode;  // 0x3f
+        call EnvironmentalInformation.exec_extcodehash;  // 0x3f
         ret;
         call BlockInformation.exec_blockhash;  // 0x40
         ret;
@@ -592,7 +592,7 @@ namespace EVMInstructions {
         ret;
         call SystemOperations.exec_invalid;  // 0xfe
         ret;
-        call not_implemented_opcode;  // 0xff
+        call SystemOperations.exec_selfdestruct;  // 0xff
         ret;
     }
 
