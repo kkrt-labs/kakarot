@@ -10,6 +10,33 @@ MOCK_COUNTER_ADDRESS = Web3.toChecksumAddress("0x" + hex(42)[2:].rjust(40, "0"))
 @pytest.mark.IntegrationTestContract
 class TestPlainOpcodes:
     class TestCall:
+        async def test_staticcall_should_return_counter_count_and_not_increase_it(
+            self,
+            deploy_solidity_contract: Callable,
+            addresses,
+        ):
+            counter = await deploy_solidity_contract(
+                "Counter", "Counter", caller_address=addresses[1]["int"]
+            )
+            counter_address = Web3.toChecksumAddress(
+                "0x"
+                + hex(
+                    counter.contract_account.deploy_call_info.result.evm_contract_address
+                )[2:].rjust(40, "0")
+            )
+            integration_contract = await deploy_solidity_contract(
+                "PlainOpcodes",
+                "PlainOpcodes",
+                counter_address,
+                caller_address=addresses[1]["int"],
+            )
+
+            count = await integration_contract.opcodeStaticCall()
+            assert count == 0
+            await integration_contract.opcodeStaticCall2(caller_address=addresses[1]["int"])
+            count = await integration_contract.opcodeStaticCall()
+            assert count == 0
+        
         async def test_should_return_counter_count_and_increase_it(
             self,
             deploy_solidity_contract: Callable,

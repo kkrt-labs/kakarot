@@ -42,6 +42,12 @@ contract PlainOpcodes {
         return counter.count();
     }
 
+    function opcodeStaticCall2() public {
+        bytes memory data = abi.encodeWithSelector(bytes4(keccak256("inc()")));
+        address(counter).staticcall(data);
+
+    }
+
     function opcodeCall() public {
         counter.inc();
     }
