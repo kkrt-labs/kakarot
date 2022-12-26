@@ -107,6 +107,7 @@ namespace Kakarot {
             calling_context=root_context,
             return_data_len=0,
             return_data=return_data,
+            read_only=FALSE,
         );
 
         // Compute intrinsic gas cost and update gas used
@@ -227,7 +228,7 @@ namespace Kakarot {
             sub_context=sub_context,
             destroy_contracts_len=0,
             destroy_contracts=empty_destroy_contracts,
-            );
+            read_only=FALSE);
 
         // Compute intrinsic gas cost and update gas used
         let cost = ExecutionContext.compute_intrinsic_gas_cost(ctx);

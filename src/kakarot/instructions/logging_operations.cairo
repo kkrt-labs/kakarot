@@ -39,8 +39,15 @@ namespace LoggingOperations {
 
         // Pop offset + size.
         let (stack, popped) = Stack.pop_n(stack, topics_len + 2);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+
         let offset = popped[0];
         let size = popped[1];
+
+        // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
+        if (ctx.read_only == 1) {
+            return ctx;
+        }
 
         // Transform data + safety checks
         let actual_size = Helpers.uint256_to_felt(size);
@@ -55,7 +62,6 @@ namespace LoggingOperations {
         emit_event(keys_len=topics_len * 2, keys=popped + 4, data_len=actual_size, data=data);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_memory(ctx, memory);
 
         // Increment gas used.

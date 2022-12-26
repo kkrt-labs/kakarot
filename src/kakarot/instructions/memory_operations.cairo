@@ -366,6 +366,11 @@ namespace MemoryOperations {
         let key = popped[0];
         let value = popped[1];
 
+        if (ctx.read_only == 1) {
+            let ctx = ExecutionContext.update_stack(ctx, stack);
+            return ctx;
+        }
+
         // 3. Call Write storage on contract with starknet address
         with_attr error_message("Contract call failed") {
             IEvmContract.write_storage(

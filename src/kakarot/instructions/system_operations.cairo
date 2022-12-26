@@ -62,6 +62,11 @@ namespace SystemOperations {
         let (stack, popped) = Stack.pop_n(self=ctx.stack, n=3);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
+        // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
+        if (ctx.read_only == 1) {
+            return ctx;
+        }
+
         let value = popped[0];
         let offset = popped[1];
         let size = popped[2];
@@ -104,6 +109,11 @@ namespace SystemOperations {
         // 3 - salt: salt for address generation
         let (stack, popped) = Stack.pop_n(self=ctx.stack, n=4);
         let ctx = ExecutionContext.update_stack(ctx, stack);
+
+        // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
+        if (ctx.read_only == 1) {
+            return ctx;
+        }
 
         let value = popped[0];
         let offset = popped[1];
@@ -262,6 +272,7 @@ namespace SystemOperations {
             calling_context=ctx,
             return_data_len=call_args.ret_size,
             return_data=call_args.return_data,
+            read_only=ctx.read_only,
         );
 
         return sub_ctx;
@@ -284,7 +295,7 @@ namespace SystemOperations {
         // Parse call arguments
         let (ctx, call_args) = CallHelper.prepare_args(ctx=ctx, with_value=0);
 
-        // Check if the called address is a precompiled contrac
+        // Check if the called address is a precompiled contract
         let is_precompile = Precompiles.is_precompile(address=call_args.address);
         if (is_precompile == TRUE) {
             let sub_ctx = Precompiles.run(
@@ -309,6 +320,7 @@ namespace SystemOperations {
             calling_context=ctx,
             return_data_len=call_args.ret_size,
             return_data=call_args.return_data,
+            read_only=TRUE,
         );
 
         return sub_ctx;
@@ -381,6 +393,12 @@ namespace SystemOperations {
         let (stack, address_uint256) = Stack.pop(stack);
         let address_felt = Helpers.uint256_to_felt(address_uint256);
         let ctx = ExecutionContext.update_stack(ctx, stack);
+
+        // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
+        if (ctx.read_only == 1) {
+            return ctx;
+        }
+
         // Get the number of native tokens owned by the given starknet
         // account and transfer them to receiver
         let (native_token_address_) = native_token_address.read();
@@ -569,6 +587,7 @@ namespace CreateHelper {
             sub_context=empty_context,
             destroy_contracts_len=0,
             destroy_contracts=empty_destroy_contracts,
+            read_only=FALSE,
             );
 
         return sub_ctx;
@@ -675,6 +694,7 @@ namespace SelfDestructHelper {
             sub_context=ctx.sub_context,
             destroy_contracts_len=0,
             destroy_contracts=empty_destroy_contracts,
+            read_only=FALSE,
             );
     }
 }

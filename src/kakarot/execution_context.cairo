@@ -12,6 +12,7 @@ from starkware.cairo.common.registers import get_label_location
 
 // Internal dependencies
 from utils.utils import Helpers
+from kakarot.accounts.contract.library import ContractAccount
 from kakarot.model import model
 from kakarot.memory import Memory
 from kakarot.stack import Stack
@@ -58,6 +59,9 @@ namespace ExecutionContext {
         dw 0;  // evm_contract_address
         dw 0;  // calling_context
         dw 0;  // sub_context
+        dw 0;  // destroy_contracts_len
+        dw 0;  // destroy_contracts
+        dw 0;  // read only
     }
 
     // @notice Initialize the execution context.
@@ -99,6 +103,7 @@ namespace ExecutionContext {
             sub_context=sub_context,
             destroy_contracts_len=0,
             destroy_contracts=empty_destroy_contracts,
+            read_only=FALSE
             );
         return ctx;
     }
@@ -141,6 +146,7 @@ namespace ExecutionContext {
         calling_context: model.ExecutionContext*,
         return_data_len: felt,
         return_data: felt*,
+        read_only: felt,
     ) -> model.ExecutionContext* {
         alloc_locals;
 
@@ -182,6 +188,7 @@ namespace ExecutionContext {
             sub_context=sub_context,
             destroy_contracts_len=0,
             destroy_contracts=empty_destroy_contracts,
+            read_only=read_only
             );
     }
 
@@ -251,6 +258,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only
             );
     }
 
@@ -298,6 +306,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only
             );
     }
 
@@ -325,6 +334,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
             );
     }
 
@@ -357,6 +367,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
             );
     }
 
@@ -385,6 +396,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
             );
     }
 
@@ -413,6 +425,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
             );
     }
 
@@ -440,6 +453,7 @@ namespace ExecutionContext {
             sub_context=sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
             );
     }
 
@@ -469,6 +483,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
             );
     }
 
@@ -501,6 +516,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len + destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
             );
     }
 
@@ -528,6 +544,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len + 1,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
             );
     }
 
@@ -575,6 +592,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
             );
     }
 

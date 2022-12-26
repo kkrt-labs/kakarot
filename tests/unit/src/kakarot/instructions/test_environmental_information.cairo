@@ -62,6 +62,7 @@ func init_context{
         sub_context=sub_context,
         destroy_contracts_len=0,
         destroy_contracts=empty_destroy_contracts,
+        read_only=FALSE,
         );
     return ctx;
 }
