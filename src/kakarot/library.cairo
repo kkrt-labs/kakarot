@@ -228,7 +228,8 @@ namespace Kakarot {
             sub_context=sub_context,
             destroy_contracts_len=0,
             destroy_contracts=empty_destroy_contracts,
-            read_only=FALSE);
+            read_only=FALSE,
+            );
 
         // Compute intrinsic gas cost and update gas used
         let cost = ExecutionContext.compute_intrinsic_gas_cost(ctx);

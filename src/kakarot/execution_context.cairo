@@ -12,7 +12,6 @@ from starkware.cairo.common.registers import get_label_location
 
 // Internal dependencies
 from utils.utils import Helpers
-from kakarot.accounts.contract.library import ContractAccount
 from kakarot.model import model
 from kakarot.memory import Memory
 from kakarot.stack import Stack
@@ -103,7 +102,7 @@ namespace ExecutionContext {
             sub_context=sub_context,
             destroy_contracts_len=0,
             destroy_contracts=empty_destroy_contracts,
-            read_only=FALSE
+            read_only=FALSE,
             );
         return ctx;
     }
@@ -188,7 +187,7 @@ namespace ExecutionContext {
             sub_context=sub_context,
             destroy_contracts_len=0,
             destroy_contracts=empty_destroy_contracts,
-            read_only=read_only
+            read_only=read_only,
             );
     }
 
@@ -258,7 +257,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
-            read_only=self.read_only
+            read_only=self.read_only,
             );
     }
 
@@ -306,7 +305,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
-            read_only=self.read_only
+            read_only=self.read_only,
             );
     }
 

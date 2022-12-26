@@ -391,13 +391,14 @@ namespace SystemOperations {
         // Stack input:
         // 0 - address: account to send the current balance to
         let (stack, address_uint256) = Stack.pop(stack);
-        let address_felt = Helpers.uint256_to_felt(address_uint256);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
         // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
         if (ctx.read_only == 1) {
             return ctx;
         }
+
+        let address_felt = Helpers.uint256_to_felt(address_uint256);
 
         // Get the number of native tokens owned by the given starknet
         // account and transfer them to receiver

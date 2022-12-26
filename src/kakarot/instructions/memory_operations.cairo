@@ -363,13 +363,16 @@ namespace MemoryOperations {
         // 0 - key: key of memory.
         // 1 - value: value for given key.
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let key = popped[0];
-        let value = popped[1];
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
 
+        // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
         if (ctx.read_only == 1) {
-            let ctx = ExecutionContext.update_stack(ctx, stack);
             return ctx;
         }
+
+        let key = popped[0];
+        let value = popped[1];
 
         // 3. Call Write storage on contract with starknet address
         with_attr error_message("Contract call failed") {
@@ -378,8 +381,6 @@ namespace MemoryOperations {
             );
         }
 
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SSTORE);
         return ctx;
