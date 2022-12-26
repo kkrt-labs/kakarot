@@ -45,14 +45,11 @@ namespace LoggingOperations {
         // Transform data + safety checks
         let actual_size = Helpers.uint256_to_felt(size);
         let actual_offset = Helpers.uint256_to_felt(offset);
-        let (memory, cost) = Memory.ensure_length(
-            self=ctx.memory, length=actual_size + actual_offset
-        );
 
         // Log topics by emitting a starknet event
         let (data: felt*) = alloc();
-        let memory = Memory.load_n(
-            self=memory, element_len=actual_size, element=data, offset=actual_offset
+        let (memory, gas_cost) = Memory.expand_and_load_n(
+            self=ctx.memory, element_len=actual_size, element=data, offset=actual_offset
         );
 
         emit_event(keys_len=topics_len * 2, keys=popped + 4, data_len=actual_size, data=data);
@@ -61,9 +58,8 @@ namespace LoggingOperations {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_memory(ctx, memory);
 
-        // TODO: compute dynamic gas cost.
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_LOG_STATIC);
+        let ctx = ExecutionContext.increment_gas_used(ctx, gas_cost + GAS_LOG_STATIC);
         return ctx;
     }
 

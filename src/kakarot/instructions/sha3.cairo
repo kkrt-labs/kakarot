@@ -15,6 +15,8 @@ from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
+from utils.utils import Helpers
+
 
 // @title Sha3 opcodes.
 // @notice This file contains the keccak opcode.
@@ -49,15 +51,12 @@ namespace Sha3 {
         let offset = popped[0];
         let length = popped[1];
 
-        let (memory, cost) = Memory.ensure_length(self=ctx.memory, length=offset.low + length.low);
-
-        // Update context memory.
-        let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
 
         let (bigendian_data: felt*) = alloc();
-        let memory = Memory.load_n(
-            self=memory, element_len=length.low, element=bigendian_data, offset=offset.low
+        let (memory, gas_cost) = Memory.expand_and_load_n(
+            self=ctx.memory, element_len=length.low, element=bigendian_data, offset=offset.low
         );
+
         let (local dest: felt*) = alloc();
         bytes_to_byte8_little_endian(
             bytes_len=length.low,
@@ -85,8 +84,8 @@ namespace Sha3 {
         let ctx = ExecutionContext.update_memory(ctx, memory);
 
         // Increment gas used.
-        let minimum_word_size = (length.low + 31) / 32;
-        let dynamic_gas = 6 * minimum_word_size + cost;
+        let (minimum_word_size) = Helpers.minimum_word_count(length.low);
+        let dynamic_gas = 6 * minimum_word_size + gas_cost;
 
         let ctx = ExecutionContext.increment_gas_used(
             self=ctx, inc_value=GAS_COST_SHA3 + dynamic_gas

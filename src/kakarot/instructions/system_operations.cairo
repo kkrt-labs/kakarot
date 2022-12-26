@@ -35,6 +35,11 @@ from utils.utils import Helpers
 // @author @abdelhamidbakhta
 // @custom:namespace SystemOperations
 namespace SystemOperations {
+    // Gas cost generated from using a CALL opcode (CALL, STATICCALL, etc.) with positive value parameter
+    const GAS_COST_POSITIVE_VALUE = 9000;
+    // Gas cost generated from accessing a "cold" address in the network: https://www.evm.codes/about#accesssets
+    const GAS_COST_COLD_ADDRESS_ACCESS = 2600;
+    const GAS_COST_CREATE = 32000;
     // @notice CREATE operation.
     // @custom:since Frontier
     // @custom:group System Operations
@@ -147,7 +152,8 @@ namespace SystemOperations {
         let (stack, offset) = Stack.pop(stack);
         let (stack, size) = Stack.pop(stack);
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        let memory = Memory.load_n(
+
+        let (memory, gas_cost) = Memory.expand_and_load_n(
             self=ctx.memory, element_len=size.low, element=ctx.return_data, offset=offset.low
         );
         let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
@@ -156,9 +162,11 @@ namespace SystemOperations {
         let ctx = ExecutionContext.update_return_data(
             ctx, new_return_data_len=size.low, new_return_data=ctx.return_data
         );
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, gas_cost);
+
         let ctx = ExecutionContext.stop(ctx);
 
-        // TODO: GAS IMPLEMENTATION
         return ctx;
     }
 
@@ -192,7 +200,7 @@ namespace SystemOperations {
         let offset = popped[1];
 
         // Load revert reason from offset
-        let (memory, revert_reason_uint256) = Memory.load(memory, offset.low);
+        let (memory, revert_reason_uint256, gas_cost) = Memory.expand_and_load(memory, offset.low);
         local revert_reason = revert_reason_uint256.low;
 
         // revert with loaded revert reason short string
@@ -202,6 +210,7 @@ namespace SystemOperations {
         // TODO: this is never reached, raising with cairo prevent from implementing a true REVERT
         // TODO: that still returns some data. This is especially problematic for sub contexts.
         let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=gas_cost);
         return ctx;
     }
 
@@ -428,9 +437,13 @@ namespace CallHelper {
 
         // Load calldata from Memory
         let (calldata: felt*) = alloc();
-        let memory = Memory.load_n(
+        let (memory, gas_cost) = Memory.expand_and_load_n(
             self=ctx.memory, element_len=args_size, element=calldata, offset=args_offset
         );
+
+        // TODO: account for value_to_empty_account_cost in dynamic gas
+        let dynamic_gas = gas_cost + SystemOperations.GAS_COST_COLD_ADDRESS_ACCESS + SystemOperations.GAS_COST_POSITIVE_VALUE;
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=dynamic_gas);
 
         let remaining_gas = ctx.gas_limit - ctx.gas_used;
         let (max_allowed_gas, _) = Helpers.div_rem(remaining_gas, 64);
@@ -505,10 +518,15 @@ namespace CreateHelper {
 
         // Load bytecode code from memory
         let (bytecode: felt*) = alloc();
-        let memory = Memory.load_n(
+        let (memory, gas_cost) = Memory.expand_and_load_n(
             self=ctx.memory, element_len=size, element=bytecode, offset=offset
         );
         let ctx = ExecutionContext.update_memory(ctx, memory);
+
+        // code_deposit_cost = 200 * deployed_code_size
+        // TODO: update dynamic_gas to be dynamic_gas := memory_expansion_cost + deployment_code_execution_cost + code_deposit_cost
+        let dynamic_gas = gas_cost;
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=dynamic_gas + SystemOperations.GAS_COST_CREATE);
 
         // Prepare execution context
         let (empty_array: felt*) = alloc();
