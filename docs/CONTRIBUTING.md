@@ -9,15 +9,36 @@ with the project.
 
 ### Prerequisites
 
-To get started on Kakarot, you'll need python3.9, as well as Starknet-related libraries, e.g. `cairo-lang`.
-- Follow [Starknet's install tutorial](https://www.cairo-lang.org/docs/quickstart.html).
+To get started on Kakarot, you'll need python3.9, as well as Starknet-related
+libraries, e.g. `cairo-lang`.
+
+- Follow
+  [Starknet's install tutorial](https://www.cairo-lang.org/docs/quickstart.html).
 - Install [poetry](https://python-poetry.org/docs/).
 
+#### Install foundry
+
+To assess the soundness of our EVM, we compile common Solidity contracts and run
+tests on them through Kakarot.
+
+To be able to verify and compare the ABI and bytecode of the Solidity test
+contracts, first make sure you have
+[foundry installed on your machine](https://book.getfoundry.sh/getting-started/installation).
+
+Then, run:
+
+`make build-foundry`
+
 Common caveats:
-- python3.10 is not compatible with the cairo-lang library. Make sure poetry and your pyenv are using the 3.9 version of Python. Your machine may have conflicting versions of python.
-- Mac M1 chips are subject to some quirks/bugs with regards to some cryptographic libraries used by `cairo-lang`.
-   - you may need to run `brew install gmp`.
-   - if some c-compiler errors persist, refer to [this Cairo issue for solutions](https://github.com/OpenZeppelin/nile/issues/22). 
+
+- python3.10 is not compatible with the cairo-lang library. Make sure poetry and
+  your pyenv are using the 3.9 version of Python. Your machine may have
+  conflicting versions of python.
+- Mac M1 chips are subject to some quirks/bugs with regards to some
+  cryptographic libraries used by `cairo-lang`.
+  - you may need to run `brew install gmp`.
+  - if some c-compiler errors persist, refer to
+    [this Cairo issue for solutions](https://github.com/OpenZeppelin/nile/issues/22).
 
 To set up a development environment, please follow these steps:
 
@@ -63,7 +84,8 @@ Please try to create bug reports that are:
    [Pull Requests](https://github.com/sayajin-labs/kakarot/pulls) that relate to
    your submission. You don't want to duplicate effort.
 2. Fork the project
-3. **Enable workflows** so CI can add an auto-commit during format checks ![enable-workflow](/docs/img/github_workflows.png)
+3. **Enable workflows** so CI can add an auto-commit during format checks
+   ![enable-workflow](/docs/img/github_workflows.png)
 4. Create your feature branch (`git checkout -b feat/amazing_feature`)
 5. Add, then commit your changes (`git commit -m 'feat: add amazing_feature'`)
 6. Push to the branch (`git push origin feat/amazing_feature`)
