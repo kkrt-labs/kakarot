@@ -586,7 +586,7 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     assert [sub_ctx + 13] = 0;  // sub_context
     assert [sub_ctx + 14] = 0;  // destroy_contracts_len
     assert [sub_ctx + 15] = cast(destroy_contracts, felt);  // destroy_contracts
-    assert [sub_ctx + 16] = 0; // read only
+    assert [sub_ctx + 16] = 0;  // read only
 
     // Simulate contract creation
     let (evm_contract_address, starknet_contract_address) = ContractAccount.deploy(0);

@@ -73,8 +73,9 @@ def deploy_solidity_contract(starknet, contract_account_class, kakarot):
 
 @pytest.fixture
 def addresses():
-    _addresses = list(range(4))
-    return [{"int": _a, "hex": "0x" + "0" * 39 + str(_a)} for _a in _addresses]
+    # skip addresses reserved for precompiles
+    _addresses = list(range(10, 14))
+    return [{"int": _a, "hex": "0x" + f"{_a:39x}"} for _a in _addresses]
 
 
 @pytest.fixture
