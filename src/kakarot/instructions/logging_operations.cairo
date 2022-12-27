@@ -34,17 +34,17 @@ namespace LoggingOperations {
     ) -> model.ExecutionContext* {
         alloc_locals;
 
+        // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
+        with_attr error_message("Kakarot: StateModificationError") {
+            assert ctx.read_only = 0;
+        }
+
         // Get stack from context.
         let stack: model.Stack* = ctx.stack;
 
         // Pop offset + size.
         let (stack, popped) = Stack.pop_n(stack, topics_len + 2);
         let ctx = ExecutionContext.update_stack(ctx, stack);
-
-        // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
-        if (ctx.read_only == 1) {
-            return ctx;
-        }
 
         let offset = popped[0];
         let size = popped[1];

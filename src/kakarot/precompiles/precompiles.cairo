@@ -67,7 +67,7 @@ namespace Precompiles {
             sub_context=cast(0, model.ExecutionContext*),
             destroy_contracts_len=0,
             destroy_contracts=cast(0, felt*),
-            read_only=calling_context.read_only,
+            read_only=FALSE,
             );
 
         return sub_ctx;

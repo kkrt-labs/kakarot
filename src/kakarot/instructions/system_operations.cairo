@@ -55,17 +55,17 @@ namespace SystemOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
+        with_attr error_message("Kakarot: StateModificationError") {
+            assert ctx.read_only = 0;
+        }
+
         // Stack input:
         // 0 - value: value in wei to send to the new account
         // 1 - offset: byte offset in the memory in bytes (initialization code)
         // 2 - size: byte size to copy (size of initialization code)
         let (stack, popped) = Stack.pop_n(self=ctx.stack, n=3);
         let ctx = ExecutionContext.update_stack(ctx, stack);
-
-        // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
-        if (ctx.read_only == 1) {
-            return ctx;
-        }
 
         let value = popped[0];
         let offset = popped[1];
@@ -102,6 +102,11 @@ namespace SystemOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
+        with_attr error_message("Kakarot: StateModificationError") {
+            assert ctx.read_only = 0;
+        }
+
         // Stack input:
         // 0 - value: value in wei to send to the new account
         // 1 - offset: byte offset in the memory in bytes (initialization code)
@@ -109,11 +114,6 @@ namespace SystemOperations {
         // 3 - salt: salt for address generation
         let (stack, popped) = Stack.pop_n(self=ctx.stack, n=4);
         let ctx = ExecutionContext.update_stack(ctx, stack);
-
-        // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
-        if (ctx.read_only == 1) {
-            return ctx;
-        }
 
         let value = popped[0];
         let offset = popped[1];
@@ -385,6 +385,11 @@ namespace SystemOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
+        with_attr error_message("Kakarot: StateModificationError") {
+            assert ctx.read_only = 0;
+        }
+
         // Get stack and memory from context
         let stack = ctx.stack;
 
@@ -392,11 +397,6 @@ namespace SystemOperations {
         // 0 - address: account to send the current balance to
         let (stack, address_uint256) = Stack.pop(stack);
         let ctx = ExecutionContext.update_stack(ctx, stack);
-
-        // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
-        if (ctx.read_only == 1) {
-            return ctx;
-        }
 
         let address_felt = Helpers.uint256_to_felt(address_uint256);
 

@@ -10,7 +10,7 @@ MOCK_COUNTER_ADDRESS = Web3.toChecksumAddress("0x" + hex(42)[2:].rjust(40, "0"))
 @pytest.mark.IntegrationTestContract
 class TestPlainOpcodes:
     class TestCall:
-        async def test_staticcall_should_return_counter_count_and_not_increase_it(
+        async def test_staticcall_should_not_increase_counter(
             self,
             deploy_solidity_contract: Callable,
             addresses,
@@ -31,14 +31,12 @@ class TestPlainOpcodes:
                 caller_address=addresses[1]["int"],
             )
 
-            count0 = await integration_contract.opcodeStaticCall()
-            assert count0 == 0
-            await integration_contract.opcodeStaticCall2(
-                caller_address=addresses[1]["int"]
-            )
-            count = await integration_contract.opcodeStaticCall()
-            assert count == 0
-
+            with pytest.raises(Exception) as e:
+                await integration_contract.opcodeStaticCall2(
+                    caller_address=addresses[1]["int"]
+                )
+                message = re.search(r"Error message: (.*)",  e.value.message)[1]  # type: ignore
+                assert message == "Kakarot: StateModificationError"
         async def test_should_return_counter_count_and_increase_it(
             self,
             deploy_solidity_contract: Callable,
