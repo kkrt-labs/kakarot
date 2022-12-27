@@ -16,6 +16,12 @@ from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
 
+// @notice An event emitted whenever a user tries to call an unsupported precompile.
+// @custom: helper event to gather meaningful data on whether users try to use a specific unsupported precompile.
+@event
+func precompile_not_supported(precompile_address: felt) {
+}
+
 // @title Precompile related functions.
 // @notice This file contains functions related to the running of precompiles.
 // @author @jobez
@@ -90,7 +96,7 @@ namespace Precompiles {
         output_len: felt, output: felt*, gas_used: felt
     ) {
         // Compute the corresponding offset in the jump table:
-        // count 1 for "next line" and 4 steps per precompile address: call, opcode, ret
+        // count 1 for "next line" and 4 steps per precompile address: call, precompile, ret
         tempvar offset = 1 + 3 * address;
 
         // Prepare arguments
@@ -100,6 +106,7 @@ namespace Precompiles {
         [ap] = bitwise_ptr, ap++;
         [ap] = input_len, ap++;
         [ap] = input, ap++;
+        [ap] = address, ap++;
 
         // call precompile address
         jmp rel offset;
@@ -134,7 +141,8 @@ namespace Precompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx_ptr: model.ExecutionContext*) {
+    }(_input_len: felt, _input: felt*, address: felt) {
+        precompile_not_supported.emit(precompile_address=address);
         with_attr error_message("Kakarot: NotImplementedPrecompile") {
             assert 0 = 1;
         }
