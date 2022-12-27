@@ -7,7 +7,7 @@ build:
 	poetry run starknet-compile ./src/kakarot/accounts/contract/contract_account.cairo --output build/contract_account.json --cairo_path ./src --abi build/contract_account_abi.json
 	poetry run starknet-compile ./src/kakarot/accounts/eoa/externally_owned_account.cairo --output build/externally_owned_account.json --cairo_path ./src --abi build/externally_owned_account_abi.json
 	poetry run starknet-compile ./src/kakarot/accounts/registry/account/account_registry.cairo --output build/account_registry.json --cairo_path ./src --abi build/account_registry_abi.json
-	poetry run starknet-compile ./src/kakarot/accounts/registry/blockhash/blockhash_registry.cairo --output build/blockhash_registry.json --cairo_path ./src --abi build/blockhash_registry.json
+	poetry run starknet-compile ./src/kakarot/accounts/registry/blockhash/blockhash_registry.cairo --output build/blockhash_registry.json --cairo_path ./src --abi build/blockhash_registry_abi.json
 
 build-mac:
 	$(MAKE) clean
@@ -15,7 +15,7 @@ build-mac:
 	starknet-compile ./src/kakarot/accounts/contract/contract_account.cairo --output build/contract_account.json --cairo_path ./src --abi build/contract_account_abi.json
 	starknet-compile ./src/kakarot/accounts/eoa/externally_owned_account.cairo --output build/externally_owned_account.json --cairo_path ./src --abi build/externally_owned_account_abi.json
 	starknet-compile ./src/kakarot/accounts/registry/account/account_registry.cairo --output build/account_registry.json --cairo_path ./src --abi build/account_registry_abi.json
-	starknet-compile ./src/kakarot/accounts/registry/blockhash/blockhash_registry.cairo --output build/blockhash_registry.json --cairo_path ./src --abi build/blockhash_registry.json
+	starknet-compile ./src/kakarot/accounts/registry/blockhash/blockhash_registry.cairo --output build/blockhash_registry.json --cairo_path ./src --abi build/blockhash_registry_abi.json
 
 setup:
 	poetry install --no-root
@@ -42,7 +42,10 @@ run-test-mark-log: build-sol
 	poetry run pytest -m $(mark) --log-cli-level=INFO -vvv
 
 run-test-mark: build-sol
-	poetry run pytest -m $(mark)
+	poetry run pytest -m $(mark)	
+
+deploy: 
+	poetry run python ./scripts/deploy_kakarot.py
 
 format:
 	poetry run cairo-format -i ${cairo_files}
