@@ -31,8 +31,9 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 // @param bytecode The bytecode to be executed
 // @param calldata_len The calldata length
 // @param calldata The calldata which can be referenced by the bytecode
+// @return stack_accessess_len The size of the accesses array of the stack delta
+// @return stack_accessesses The dict accesses in the stack delta
 // @return stack_len The length of the stack
-// @return stack The EVM stack content
 // @return memory_accesses_len The size of the accesses arrayof the memory delta
 // @return memory_accesses The dict accesses in the memory delta
 // @return memory_bytes_len The memory length
@@ -76,12 +77,16 @@ func execute{
 // @param gas_limit Max gas the transaction can use
 // @param calldata_len The calldata length
 // @param calldata The calldata which contains the entry point and method parameters
+// @return stack_accessess_len The size of the accesses array of the stack delta
+// @return stack_accessesses The dict accesses in the stack delta
 // @return stack_len The length of the stack
-// @return stack The EVM stack content
-// @return memory_accesses_len The size of the accesses arrayof the memory delta
+// @return memory_accesses_len The size of the accesses array of the memory delta
 // @return memory_accesses The dict accesses in the memory delta
 // @return memory_bytes_len The memory length
-// @return gas_used The total amount of gas used to execute the given bytecode
+// @return evm_contract_address The EVM-format address of the called contract's address, i.e. the input variable "address"
+// @return starknet_contract_address The Starknet-format address of the called contract's address
+// @return return_data_len The length of the return data
+// @return return_data The return data of the EVM
 @external
 func execute_at_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
