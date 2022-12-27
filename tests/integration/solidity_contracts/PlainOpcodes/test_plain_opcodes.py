@@ -35,8 +35,9 @@ class TestPlainOpcodes:
                 await integration_contract.opcodeStaticCall2(
                     caller_address=addresses[1]["int"]
                 )
-                message = re.search(r"Error message: (.*)",  e.value.message)[1]  # type: ignore
+                message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
                 assert message == "Kakarot: StateModificationError"
+
         async def test_should_return_counter_count_and_increase_it(
             self,
             deploy_solidity_contract: Callable,
