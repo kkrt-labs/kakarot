@@ -146,18 +146,19 @@ func test__exec_extcodecopy__should_handle_address_with_code{
 
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
-
     // we are hardcoding an assumption of 'cold' address access, for now.
     let address_access_cost = 2600;
     let (minimum_word_size) = Helpers.minimum_word_count(size);
-    let (_, memory_expansion_cost) = Memory.ensure_length(self=ctx.memory, length=dest_offset+size);
+    let (_, memory_expansion_cost) = Memory.ensure_length(
+        self=ctx.memory, length=dest_offset + size
+    );
 
     // When
     let result = EnvironmentalInformation.exec_extcodecopy(ctx);
 
     // Then
     assert result.stack.len_16bytes = 0;
-    assert result.gas_used = 3*minimum_word_size + memory_expansion_cost + address_access_cost;
+    assert result.gas_used = 3 * minimum_word_size + memory_expansion_cost + address_access_cost;
 
     let (output_array) = alloc();
     Memory.load_n(result.memory, size, output_array, dest_offset);
