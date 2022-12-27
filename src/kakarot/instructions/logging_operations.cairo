@@ -48,7 +48,7 @@ namespace LoggingOperations {
 
         // Log topics by emitting a starknet event
         let (data: felt*) = alloc();
-        let (memory, gas_cost) = Memory.expand_and_load_n(
+        let (memory, gas_cost) = Memory.load_n(
             self=ctx.memory, element_len=actual_size, element=data, offset=actual_offset
         );
 

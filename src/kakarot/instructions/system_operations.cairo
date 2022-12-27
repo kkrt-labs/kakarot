@@ -7,7 +7,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import split_felt
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import deploy as deploy_syscall
@@ -153,17 +153,18 @@ namespace SystemOperations {
         let (stack, size) = Stack.pop(stack);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        let (memory, gas_cost) = Memory.expand_and_load_n(
+        let (memory, gas_cost) = Memory.load_n(
             self=ctx.memory, element_len=size.low, element=ctx.return_data, offset=offset.low
         );
         let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
+
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, gas_cost);
 
         // Note: only new data_len needs to be updated indeed.
         let ctx = ExecutionContext.update_return_data(
             ctx, new_return_data_len=size.low, new_return_data=ctx.return_data
         );
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, gas_cost);
 
         let ctx = ExecutionContext.stop(ctx);
 
@@ -200,7 +201,7 @@ namespace SystemOperations {
         let offset = popped[1];
 
         // Load revert reason from offset
-        let (memory, revert_reason_uint256, gas_cost) = Memory.expand_and_load(memory, offset.low);
+        let (memory, revert_reason_uint256, gas_cost) = Memory.load(memory, offset.low);
         local revert_reason = revert_reason_uint256.low;
 
         // revert with loaded revert reason short string
@@ -437,12 +438,15 @@ namespace CallHelper {
 
         // Load calldata from Memory
         let (calldata: felt*) = alloc();
-        let (memory, gas_cost) = Memory.expand_and_load_n(
+        let (memory, gas_cost) = Memory.load_n(
             self=ctx.memory, element_len=args_size, element=calldata, offset=args_offset
         );
 
         // TODO: account for value_to_empty_account_cost in dynamic gas
-        let dynamic_gas = gas_cost + SystemOperations.GAS_COST_COLD_ADDRESS_ACCESS + SystemOperations.GAS_COST_POSITIVE_VALUE;
+        let value_nn = is_nn(value);
+        let value_not_zero = is_not_zero(value);
+        let value_is_positive = value_nn * value_not_zero;
+        let dynamic_gas = gas_cost + SystemOperations.GAS_COST_COLD_ADDRESS_ACCESS + SystemOperations.GAS_COST_POSITIVE_VALUE * value_is_positive;
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=dynamic_gas);
 
         let remaining_gas = ctx.gas_limit - ctx.gas_used;
@@ -518,7 +522,7 @@ namespace CreateHelper {
 
         // Load bytecode code from memory
         let (bytecode: felt*) = alloc();
-        let (memory, gas_cost) = Memory.expand_and_load_n(
+        let (memory, gas_cost) = Memory.load_n(
             self=ctx.memory, element_len=size, element=bytecode, offset=offset
         );
         let ctx = ExecutionContext.update_memory(ctx, memory);
@@ -526,7 +530,9 @@ namespace CreateHelper {
         // code_deposit_cost = 200 * deployed_code_size
         // TODO: update dynamic_gas to be dynamic_gas := memory_expansion_cost + deployment_code_execution_cost + code_deposit_cost
         let dynamic_gas = gas_cost;
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=dynamic_gas + SystemOperations.GAS_COST_CREATE);
+        let ctx = ExecutionContext.increment_gas_used(
+            self=ctx, inc_value=dynamic_gas + SystemOperations.GAS_COST_CREATE
+        );
 
         // Prepare execution context
         let (empty_array: felt*) = alloc();

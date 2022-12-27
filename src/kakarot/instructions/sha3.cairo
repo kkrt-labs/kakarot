@@ -17,7 +17,6 @@ from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 from utils.utils import Helpers
 
-
 // @title Sha3 opcodes.
 // @notice This file contains the keccak opcode.
 // @author @LucasLvy
@@ -51,9 +50,8 @@ namespace Sha3 {
         let offset = popped[0];
         let length = popped[1];
 
-
         let (bigendian_data: felt*) = alloc();
-        let (memory, gas_cost) = Memory.expand_and_load_n(
+        let (memory, gas_cost) = Memory.load_n(
             self=ctx.memory, element_len=length.low, element=bigendian_data, offset=offset.low
         );
 
