@@ -105,6 +105,9 @@ func test__exec_extcodesize__should_handle_address_with_no_code{
         bytecode_len, bytecode, stack
     );
 
+    // we are hardcoding an assumption of 'cold' address access, for now.
+    let expected_gas = 2600;
+
     // When
     let ctx = EnvironmentalInformation.exec_extcodesize(ctx);
 
@@ -112,6 +115,8 @@ func test__exec_extcodesize__should_handle_address_with_no_code{
     let (stack, extcodesize) = Stack.peek(ctx.stack, 0);
     assert extcodesize.low = 0;
     assert extcodesize.high = 0;
+
+    assert ctx.gas_used = expected_gas;
 
     return ();
 }
@@ -141,11 +146,15 @@ func test__exec_extcodecopy__should_handle_address_with_code{
 
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
+    // we are hardcoding an assumption of 'cold' address access, for now.
+    let expected_gas = 2600;
+
     // When
     let result = EnvironmentalInformation.exec_extcodecopy(ctx);
 
     // Then
     assert result.stack.len_16bytes = 0;
+    assert result.gas_used = expected_gas;
 
     let (output_array) = alloc();
     Memory.load_n(result.memory, size, output_array, dest_offset);
