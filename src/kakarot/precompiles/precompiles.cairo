@@ -93,7 +93,7 @@ namespace Precompiles {
         output_len: felt, output: felt*, gas_used: felt
     ) {
         // Compute the corresponding offset in the jump table:
-        // count 1 for "next line" and 3 steps per precompile address: call, precompile, ret
+        // count 1 for "next line" and 4 steps per precompile address: call, precompile, ret
         tempvar offset = 1 + 3 * address;
 
         // Prepare arguments
@@ -101,6 +101,7 @@ namespace Precompiles {
         [ap] = pedersen_ptr, ap++;
         [ap] = range_check_ptr, ap++;
         [ap] = bitwise_ptr, ap++;
+        [ap] = address, ap++;
         [ap] = input_len, ap++;
         [ap] = input, ap++;
 
@@ -137,8 +138,10 @@ namespace Precompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx_ptr: model.ExecutionContext*) {
-        with_attr error_message("Kakarot: NotImplementedPrecompile") {
+    }(address: felt, _input_len: felt, _input: felt*) {
+        precompile_not_supported.emit(precompile_address=address);
+
+        with_attr error_message("Kakarot: NotImplementedPrecompile {address}") {
             assert 0 = 1;
         }
         return ();
