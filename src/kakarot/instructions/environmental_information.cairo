@@ -482,6 +482,7 @@ namespace EnvironmentalInformation {
 
         // TODO:distinction between warm and cold addresses determines dynamic cost
         //  for now we assume a cold address, which sets dynamic cost to 2600
+        // see: https://www.evm.codes/about#accesssets
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_EXTCODESIZE);
 
         return ctx;
@@ -577,7 +578,9 @@ namespace EnvironmentalInformation {
         let (minimum_word_size) = Helpers.minimum_word_count(size.low);
 
         // TODO:distinction between warm and cold addresses determines `address_access_cost`
-        //  for now we assume a cold address, which sets `address_access_cost` to 2600
+        // for now we assume a cold address, which sets `address_access_cost` to 2600
+        // see: https://www.evm.codes/about#accesssets    
+
         let ctx = ExecutionContext.increment_gas_used(
             self=ctx, inc_value=3 * minimum_word_size + memory_expansion_cost + GAS_COST_EXTCODECOPY
         );
@@ -734,6 +737,7 @@ namespace EnvironmentalInformation {
         // Update context stack
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used (COLD ACCESS)
+        // see: https://www.evm.codes/about#accesssets
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_EXTCODEHASH);
         return ctx;
     }
