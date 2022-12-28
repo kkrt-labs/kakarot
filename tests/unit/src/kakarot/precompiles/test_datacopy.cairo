@@ -28,7 +28,9 @@ func test__datacopy_impl{
     // Given # 1
     alloc_locals;
     // When
-    let result = PrecompileDataCopy.run(PrecompileDataCopy.PRECOMPILE_ADDRESS, calldata_len, calldata);
+    let result = PrecompileDataCopy.run(
+        PrecompileDataCopy.PRECOMPILE_ADDRESS, calldata_len, calldata
+    );
 
     TestHelpers.assert_array_equal(
         array_0_len=calldata_len,

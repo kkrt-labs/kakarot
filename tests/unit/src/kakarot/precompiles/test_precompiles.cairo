@@ -14,7 +14,7 @@ from utils.utils import Helpers
 from kakarot.constants import Constants
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.instructions.system_operations import SystemOperations 
+from kakarot.instructions.system_operations import SystemOperations
 from tests.unit.helpers.helpers import TestHelpers
 
 @external
