@@ -139,8 +139,6 @@ namespace Precompiles {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(address: felt, _input_len: felt, _input: felt*) {
-        precompile_not_supported.emit(precompile_address=address);
-
         with_attr error_message("Kakarot: NotImplementedPrecompile {address}") {
             assert 0 = 1;
         }
