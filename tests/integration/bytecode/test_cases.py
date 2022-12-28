@@ -902,17 +902,16 @@ test_cases = [
     {
         "params": {
             "value": 0,
-            "code": "600a4800",
+            "code": "4800",
             "calldata": "",
-            "stack": "10,10",
+            "stack": "0",
             "memory": "",
             "return_value": "",
         },
-        "id": "Load Word from Memory",
+        "id": "Get baseFee",
         "marks": [
             pytest.mark.BASEFEE,
             pytest.mark.BlockInformation,
-            pytest.mark.skip("Returned stack is 10,0 instead of 10,10"),
         ],
     },
     {
