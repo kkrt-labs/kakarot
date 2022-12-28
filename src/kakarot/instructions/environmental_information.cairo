@@ -462,23 +462,31 @@ namespace EnvironmentalInformation {
         let (starknet_contract_address) = IRegistry.get_starknet_contract_address(
             contract_address=registry_address_, evm_contract_address=address_felt
         );
+
+        local bytecode_len;
         if (starknet_contract_address != 0) {
-            let (bytecode_len, bytecode) = IEvmContract.bytecode(
+            let (_bytecode_len, _) = IEvmContract.bytecode(
                 contract_address=starknet_contract_address
             );
-            // bytecode_len cannot be greater than 24k in the EVM
-            let stack = Stack.push(stack, Uint256(low=bytecode_len, high=0));
 
-            // Update context stack.
-            let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+            bytecode_len = _bytecode_len;
 
             tempvar syscall_ptr = syscall_ptr;
+            tempvar range_check_ptr = range_check_ptr;
         } else {
-            let stack = Stack.push(stack, Uint256(low=0, high=0));
-            let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+            bytecode_len = 0;
 
             tempvar syscall_ptr = syscall_ptr;
+            tempvar range_check_ptr = range_check_ptr;
         }
+
+        tempvar syscall_ptr = syscall_ptr;
+
+        // bytecode_len cannot be greater than 24k in the EVM
+        let stack = Stack.push(stack, Uint256(low=bytecode_len, high=0));
+
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
 
         // TODO:distinction between warm and cold addresses determines dynamic cost
         //  for now we assume a cold address, which sets dynamic cost to 2600
