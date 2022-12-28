@@ -67,6 +67,13 @@ namespace SystemOperations {
         let size = popped[2];
         let (_salt) = salt.read();
 
+        // create2 dynamic gas:
+        // dynamic_gas = 6 * minimum_word_size + memory_expansion_cost + deployment_code_execution_cost + code_deposit_cost
+        // -> ``memory_expansion_cost + deployment_code_execution_cost + code_deposit_cost`` is handled inside ``initialize_sub_context``
+        let (minimum_word_size) = Helpers.minimum_word_count(size.low);
+        let word_size_gas = 6 * minimum_word_size;
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=word_size_gas);
+
         let sub_ctx = CreateHelper.initialize_sub_context(
             ctx, value.low, offset.low, size.low, _salt
         );
@@ -527,11 +534,8 @@ namespace CreateHelper {
         );
         let ctx = ExecutionContext.update_memory(ctx, memory);
 
-        // code_deposit_cost = 200 * deployed_code_size
-        // TODO: update dynamic_gas to be dynamic_gas := memory_expansion_cost + deployment_code_execution_cost + code_deposit_cost
-        let dynamic_gas = gas_cost;
         let ctx = ExecutionContext.increment_gas_used(
-            self=ctx, inc_value=dynamic_gas + SystemOperations.GAS_COST_CREATE
+            self=ctx, inc_value=gas_cost + SystemOperations.GAS_COST_CREATE
         );
 
         // Prepare execution context
@@ -570,7 +574,7 @@ namespace CreateHelper {
         return sub_ctx;
     }
 
-    // @notice At the end of a sub-context initiated with CREATE(2), the calling context's stack is updated.
+    // @notice At the end of a sub-context initiated with CREATE or CREATE2, the calling context's stack is updated.
     // @return The pointer to the updated calling context.
     func finalize_calling_context{
         syscall_ptr: felt*,
@@ -584,7 +588,12 @@ namespace CreateHelper {
             bytecode_len=ctx.return_data_len,
             bytecode=ctx.return_data,
         );
-        local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(ctx.calling_context, ctx);
+        local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(self=ctx.calling_context, sub_context=ctx);
+
+        // code_deposit_code := 200 * deployed_code_size * BYTES_PER_FELT (as Kakarot packs bytes inside a felt)
+        // dynamic_gas :=  deployment_code_execution_cost + code_deposit_cost
+        let dynamic_gas = ctx.gas_used + 200 * ctx.return_data_len * ContractAccount.BYTES_PER_FELT;
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=dynamic_gas);
 
         // Append contracts to selfdestruct to the calling_context
         let ctx = ExecutionContext.push_to_destroy_contracts(
