@@ -579,7 +579,7 @@ namespace EnvironmentalInformation {
 
         // TODO:distinction between warm and cold addresses determines `address_access_cost`
         // for now we assume a cold address, which sets `address_access_cost` to 2600
-        // see: https://www.evm.codes/about#accesssets    
+        // see: https://www.evm.codes/about#accesssets
 
         let ctx = ExecutionContext.increment_gas_used(
             self=ctx, inc_value=3 * minimum_word_size + memory_expansion_cost + GAS_COST_EXTCODECOPY
