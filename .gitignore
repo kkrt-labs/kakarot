@@ -32,3 +32,4 @@ coverage/*
 
 # Scripts artifacts
 blockhashes.json
+deployed_addresses.json

@@ -1,5 +1,6 @@
 from starknet_py.net.account.account_client import AccountClient
 from starknet_py.contract import Contract
+import json
 
 MAX_FEE = int(1e16)
 
@@ -9,7 +10,6 @@ async def declare_and_deploy_contract(client: AccountClient,compiled_contracts: 
     deployed_contract_addresses = []
 
     for index in range(len(compiled_contracts)):
-        print("index: ", index)
         declare_result = await Contract.declare(
             account=client, compiled_contract=compiled_contracts[index], max_fee=MAX_FEE
         )
@@ -32,3 +32,13 @@ async def declare_contract(client: AccountClient,compiled_contract: str) -> (int
 
     return declare_result.class_hash
 
+
+async def create_log_file():
+    
+    #initial data
+    json_str = '{"addresses": {"kakarot": "0x0", "account_registry": "0x0", "blockhash_registry": "0x0", "kakarot_class_hash": "0x0"}}'
+    data = json.loads(json_str)
+
+    # Create log file
+    with open('deployed_addresses.json', 'w') as f:
+        json.dump(data, f)

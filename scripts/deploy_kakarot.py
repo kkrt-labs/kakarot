@@ -8,7 +8,7 @@ from starknet_py.contract import Contract
 from starknet_py.net.models import StarknetChainId
 from starkware.crypto.signature.signature import private_to_stark_key
 from starknet_py.net.gateway_client import GatewayClient
-from utils import declare_and_deploy_contract, declare_contract
+from utils import declare_and_deploy_contract, declare_contract, create_log_file
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -53,6 +53,9 @@ async def main():
     logging.info("----------------------------------")
     logging.info("-------Patience is a Virtue-------")
 
+    # Create Log file which holds newly deployed addresses
+    await create_log_file()
+
     #################################
     #                               #
     #   DECLARE & DEPLOY CONTRACTS  #
@@ -72,6 +75,14 @@ async def main():
         ]
     ])
     kakarot_contract = Contract(address=contract_addresses[0], abi=kakarot_abi, client=client)
+
+    # Log deployed addresses
+    with open('deployed_addresses.json', 'r') as file:
+        data = json.load(file)
+    data['addresses']['kakarot'] = hex(kakarot_contract.address)
+    data['addresses']['kakarot_class_hash'] = hex(evm_account_class_hash)
+    with open('deployed_addresses.json', 'w') as file:
+        json.dump(data, file)
     logging.info("✅ Kakarot Address: %s", hex(kakarot_contract.address))
 
     # Deploy Account and Blockhash Registry
@@ -81,6 +92,14 @@ async def main():
     ])
     account_registry_address = contract_addresses[0]
     blockhash_registry_address = contract_addresses[1]
+
+    # Log deployed addresses
+    with open('deployed_addresses.json', 'r') as file:
+        data = json.load(file)
+    data['addresses']['account_registry'] = hex(account_registry_address)
+    data['addresses']['blockhash_registry'] = hex(blockhash_registry_address)
+    with open('deployed_addresses.json', 'w') as file:
+        json.dump(data, file)
     logging.info("✅ Account Registry Address: %s", hex(account_registry_address))
     logging.info("✅ Blockhash Registry Address: %s", hex(blockhash_registry_address))
 
