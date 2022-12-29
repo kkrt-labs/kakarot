@@ -309,7 +309,7 @@ namespace BlockInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         // Get the base fee.
-        let basefee = Helpers.to_uint256(val=0);
+        let basefee = Uint256(0, 0);
 
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=basefee);
 
