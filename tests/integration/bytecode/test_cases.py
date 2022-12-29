@@ -28,7 +28,7 @@ test_cases = [
             "code": "60016001f3",
             "calldata": "",
             "stack": "",
-            "memory": "",
+            "memory": "0000",
             "return_value": "00",
         },
         "id": "return2",

@@ -46,11 +46,11 @@ func is_initialized_() -> (res: felt) {
 func evm_contract_deployed(evm_contract_address: felt, starknet_contract_address: felt) {
 }
 
-// Define the number of bytes per felt. Above 16, the following code won't work as it uses unsigned_div_rem
-// which is bounded by RC_BOUND = 2 ** 128 ~ uint128 ~ bytes16
-const byte_size = 16;
-
 namespace ContractAccount {
+    // Define the number of bytes per felt. Above 16, the following code won't work as it uses unsigned_div_rem
+    // which is bounded by RC_BOUND = 2 ** 128 ~ uint128 ~ bytes16
+    const BYTES_PER_FELT = 16;
+
     // @notice This function is used to initialize the smart contract account.
     // @param kakarot_address: The address of the Kakarot smart contract.
     // @param bytecode_len: The length of the smart contract bytecode.
@@ -64,7 +64,7 @@ namespace ContractAccount {
         // Initialize access control.
         Ownable.initializer(kakarot_address);
         // Store the bytecode.
-        internal.write_bytecode(0, bytecode_len, bytecode, 0, byte_size);
+        internal.write_bytecode(0, bytecode_len, bytecode, 0, BYTES_PER_FELT);
         return ();
     }
 
@@ -133,7 +133,7 @@ namespace ContractAccount {
             bytecode_len=bytecode_len,
             bytecode=bytecode,
             current_felt=0,
-            remaining_shift=byte_size,
+            remaining_shift=BYTES_PER_FELT,
         );
         return ();
     }
@@ -234,7 +234,7 @@ namespace ContractAccount {
 namespace internal {
     // Use a precomputed 2 ** n array to save on resources usage.
     // Array starts with a 0 to be shifted and have pow[i] = bit shift for byte i with
-    // i as a counter, ie i \in (0, byte_size]
+    // i as a counter, ie i \in (0, BYTES_PER_FELT]
     pow_:
     dw 0;
     dw 1;
@@ -273,7 +273,7 @@ namespace internal {
             // end of packed felt case, store current "pending" felt
             // continue loop with a new current_felt and increament index in bytecode_ storage
             bytecode_.write(index, current_felt);
-            return write_bytecode(index + 1, bytecode_len, bytecode, 0, byte_size);
+            return write_bytecode(index + 1, bytecode_len, bytecode, 0, ContractAccount.BYTES_PER_FELT);
         }
 
         // retrieve the precomputed pow array
@@ -281,7 +281,7 @@ namespace internal {
         let pow = cast(pow_address, felt*);
 
         // shift the current byte and add it to the current felt
-        // bytes are stored big endian, ie that 3 bytes ends up being stored as a felt whose reprensetation is 0xabcdef000...000
+        // bytes are stored big endian, ie that 3 bytes ends up being stored as a felt whose representation is 0xabcdef000...000
         // for a given remaining_shift:
         // current_felt = 0x 12 34 00 00...00 00
         // bytecode = 0x 56
@@ -314,7 +314,7 @@ namespace internal {
         if (remaining_shift == 0) {
             // end of current packed felt, loading next stored felt and increase storage index
             let (current_felt) = bytecode_.read(index);
-            return load_bytecode(index + 1, bytecode_len, bytecode, current_felt, byte_size);
+            return load_bytecode(index + 1, bytecode_len, bytecode, current_felt, ContractAccount.BYTES_PER_FELT);
         }
 
         // retrieve the precomputed pow array

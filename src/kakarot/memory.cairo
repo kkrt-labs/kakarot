@@ -243,7 +243,7 @@ namespace Memory {
     // @param n - The number of bytes to load from memory.
     // @return The new pointer to the memory.
     // @return The loaded element.
-    func load{range_check_ptr}(self: model.Memory*, offset: felt) -> (model.Memory*, Uint256) {
+    func _load{range_check_ptr}(self: model.Memory*, offset: felt) -> (model.Memory*, Uint256) {
         let word_dict = self.word_dict;
 
         // Check alignment of offset to 16B chunks.
@@ -301,7 +301,7 @@ namespace Memory {
     // @param element pointer to the output array.
     // @param offset The memory offset to load from.
     // @return The new pointer to the memory.
-    func load_n{range_check_ptr}(
+    func _load_n{range_check_ptr}(
         self: model.Memory*, element_len: felt, element: felt*, offset: felt
     ) -> model.Memory* {
         alloc_locals;
@@ -417,5 +417,35 @@ namespace Memory {
             return (new_memory, cost);
         }
         return (new_memory=self, cost=0);
+    }
+
+    // @notice Expand memory if necessary then load 32 bytes from it at given offset.
+    // @param self - The pointer to the memory.
+    // @param offset - The number of bytes to add.
+    // @return The new pointer to the memory.
+    // @return The loaded Uint256 from memory.
+    // @return The gas cost of this expansion.
+    func load{range_check_ptr}(self: model.Memory*, offset: felt) -> (
+        new_memory: model.Memory*, loaded_element: Uint256, gas_cost: felt
+    ) {
+        alloc_locals;
+        let (new_memory, gas_cost) = ensure_length(self=self, length=32 + offset);
+        let (new_memory, loaded_element) = _load(self=new_memory, offset=offset);
+        return (new_memory, loaded_element, gas_cost);
+    }
+
+    // @notice Expand memory if necessary then load n bytes from it at given offset.
+    // @param self - The pointer to the memory.
+    // @param offset - The number of bytes to add.
+    // @return The new pointer to the memory.
+    // @return The loaded Uint256 from memory.
+    // @return The gas cost of this expansion.
+    func load_n{range_check_ptr}(
+        self: model.Memory*, element_len: felt, element: felt*, offset: felt
+    ) -> (new_memory: model.Memory*, gas_cost: felt) {
+        alloc_locals;
+        let (new_memory, gas_cost) = ensure_length(self=self, length=element_len + offset);
+        let new_memory = _load_n(new_memory, element_len, element, offset=offset);
+        return (new_memory, gas_cost);
     }
 }
