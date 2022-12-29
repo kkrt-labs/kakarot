@@ -32,7 +32,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 // @param calldata_len The calldata length
 // @param calldata The calldata which can be referenced by the bytecode
 // @return stack_accesses_len The size of the accesses array of the stack delta
-// @return stack_accessesses The dict accesses in the stack delta
+// @return stack_accesses The dict accesses in the stack delta
 // @return stack_len The length of the stack
 // @return memory_accesses_len The size of the accesses arrayof the memory delta
 // @return memory_accesses The dict accesses in the memory delta
@@ -78,7 +78,7 @@ func execute{
 // @param calldata_len The calldata length
 // @param calldata The calldata which contains the entry point and method parameters
 // @return stack_accesses_len The size of the accesses array of the stack delta
-// @return stack_accessesses The dict accesses in the stack delta
+// @return stack_accesses The dict accesses in the stack delta
 // @return stack_len The length of the stack
 // @return memory_accesses_len The size of the accesses array of the memory delta
 // @return memory_accesses The dict accesses in the memory delta
