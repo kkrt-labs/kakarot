@@ -31,7 +31,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 // @param bytecode The bytecode to be executed
 // @param calldata_len The calldata length
 // @param calldata The calldata which can be referenced by the bytecode
-// @return stack_accessess_len The size of the accesses array of the stack delta
+// @return stack_accesses_len The size of the accesses array of the stack delta
 // @return stack_accessesses The dict accesses in the stack delta
 // @return stack_len The length of the stack
 // @return memory_accesses_len The size of the accesses arrayof the memory delta
@@ -77,7 +77,7 @@ func execute{
 // @param gas_limit Max gas the transaction can use
 // @param calldata_len The calldata length
 // @param calldata The calldata which contains the entry point and method parameters
-// @return stack_accessess_len The size of the accesses array of the stack delta
+// @return stack_accesses_len The size of the accesses array of the stack delta
 // @return stack_accessesses The dict accesses in the stack delta
 // @return stack_len The length of the stack
 // @return memory_accesses_len The size of the accesses array of the memory delta
