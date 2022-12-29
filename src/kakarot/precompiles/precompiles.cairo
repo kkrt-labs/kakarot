@@ -93,7 +93,7 @@ namespace Precompiles {
         output_len: felt, output: felt*, gas_used: felt
     ) {
         // Compute the corresponding offset in the jump table:
-        // count 1 for "next line" and 4 steps per precompile address: call, precompile, ret
+        // count 1 for "next line" and 3 steps per precompile address: call, precompile, ret
         tempvar offset = 1 + 3 * address;
 
         // Prepare arguments
