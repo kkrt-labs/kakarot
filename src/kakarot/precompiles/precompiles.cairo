@@ -12,6 +12,7 @@ from starkware.cairo.common.math_cmp import is_le, is_not_zero
 from kakarot.constants import Constants
 from kakarot.execution_context import ExecutionContext
 from kakarot.precompiles.datacopy import PrecompileDataCopy
+from kakarot.precompiles.ecadd import PrecompileEcAdd
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
@@ -115,7 +116,7 @@ namespace Precompiles {
         ret;
         call not_implemented_precompile;  // 0x5
         ret;
-        call not_implemented_precompile;  // 0x6
+        call PrecompileEcAdd.run;  // 0x6
         ret;
         call not_implemented_precompile;  // 0x7
         ret;
