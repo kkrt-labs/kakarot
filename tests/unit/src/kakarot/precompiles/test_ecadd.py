@@ -5,8 +5,6 @@ import pytest_asyncio
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.integration.helpers.helpers import int_to_uint256
-
 
 @pytest_asyncio.fixture(scope="module")
 async def ecadd(

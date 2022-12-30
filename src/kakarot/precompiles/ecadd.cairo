@@ -5,7 +5,7 @@
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
+from starkware.cairo.common.cairo_secp.bigint import BigInt3
 from starkware.cairo.common.cairo_secp.ec import EcPoint, ec_add
 from starkware.cairo.common.uint256 import Uint256
 
