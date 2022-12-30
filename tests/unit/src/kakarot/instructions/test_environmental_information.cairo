@@ -105,6 +105,9 @@ func test__exec_extcodesize__should_handle_address_with_no_code{
         bytecode_len, bytecode, stack
     );
 
+    // we are hardcoding an assumption of 'cold' address access, for now.
+    let expected_gas = 2600;
+
     // When
     let ctx = EnvironmentalInformation.exec_extcodesize(ctx);
 
@@ -112,6 +115,8 @@ func test__exec_extcodesize__should_handle_address_with_no_code{
     let (stack, extcodesize) = Stack.peek(ctx.stack, 0);
     assert extcodesize.low = 0;
     assert extcodesize.high = 0;
+
+    assert ctx.gas_used = expected_gas;
 
     return ();
 }
@@ -141,14 +146,22 @@ func test__exec_extcodecopy__should_handle_address_with_code{
 
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
+    // we are hardcoding an assumption of 'cold' address access, for now.
+    let address_access_cost = 2600;
+    let (minimum_word_size) = Helpers.minimum_word_count(size);
+    let (_, memory_expansion_cost) = Memory.ensure_length(
+        self=ctx.memory, length=dest_offset + size
+    );
+
     // When
     let result = EnvironmentalInformation.exec_extcodecopy(ctx);
 
     // Then
     assert result.stack.len_16bytes = 0;
+    assert result.gas_used = 3 * minimum_word_size + memory_expansion_cost + address_access_cost;
 
     let (output_array) = alloc();
-    Memory.load_n(result.memory, size, output_array, dest_offset);
+    Memory._load_n(result.memory, size, output_array, dest_offset);
 
     return (memory_len=size, memory=output_array);
 }
@@ -180,7 +193,7 @@ func test__exec_extcodecopy__should_handle_address_with_no_code{
     // When
     let result = EnvironmentalInformation.exec_extcodecopy(ctx);
     let (output_array) = alloc();
-    Memory.load_n(result.memory, 3, output_array, 32);
+    Memory._load_n(result.memory, 3, output_array, 32);
 
     // Then
     // ensure stack is consumed/updated
@@ -256,7 +269,7 @@ func test__returndatacopy{
     let result: model.ExecutionContext* = EnvironmentalInformation.exec_returndatacopy(ctx);
 
     // Then
-    let (memory, data) = Memory.load(result.memory, 0);
+    let (memory, data) = Memory._load(result.memory, 0);
     assert_uint256_eq(
         data, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)
     );
@@ -275,13 +288,13 @@ func test__returndatacopy{
 
     // Then
     // check first 32 bytes
-    let (memory, data) = Memory.load(result.memory, 0);
+    let (memory, data) = Memory._load(result.memory, 0);
     assert_uint256_eq(
         data, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)
     );
     // check 1 byte more at offset 32
     let (output_array) = alloc();
-    Memory.load_n(memory, 1, output_array, 32);
+    Memory._load_n(memory, 1, output_array, 32);
     assert [output_array] = 0xFF;
 
     return ();

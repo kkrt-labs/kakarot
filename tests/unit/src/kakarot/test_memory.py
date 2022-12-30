@@ -41,3 +41,4 @@ class TestMemory:
         await memory.test__expand__should_return_expanded_memory_and_cost().call()
         await memory.test__ensure_length__should_return_the_same_memory_and_no_cost().call()
         await memory.test__ensure_length__should_return_expanded_memory_and_cost().call()
+        await memory.test__expand_and_load__should_return_expanded_memory_and_element_and_cost().call()

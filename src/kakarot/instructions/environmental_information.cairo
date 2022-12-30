@@ -36,6 +36,7 @@ namespace EnvironmentalInformation {
     const GAS_COST_CODESIZE = 2;
     const GAS_COST_CODECOPY = 3;
     const GAS_COST_GASPRICE = 2;
+    const GAS_COST_EXTCODESIZE = 2600;
     const GAS_COST_EXTCODECOPY = 2600;
     const GAS_COST_RETURNDATASIZE = 2;
     const GAS_COST_RETURNDATACOPY = 3;
@@ -436,7 +437,7 @@ namespace EnvironmentalInformation {
     // @dev Get size of an account’s code
     // @custom:since Frontier
     // @custom:group Environmental Information
-    // @custom:gas 100
+    // @custom:gas 100 || 2600
     // @custom:stack_consumed_elements 1
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
@@ -461,20 +462,36 @@ namespace EnvironmentalInformation {
         let (starknet_contract_address) = IRegistry.get_starknet_contract_address(
             contract_address=registry_address_, evm_contract_address=address_felt
         );
-        if (starknet_contract_address == 0) {
-            let stack = Stack.push(stack, Uint256(low=0, high=0));
-            let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
-            return ctx;
+
+        local bytecode_len;
+        if (starknet_contract_address != 0) {
+            let (_bytecode_len, _) = IEvmContract.bytecode(
+                contract_address=starknet_contract_address
+            );
+
+            bytecode_len = _bytecode_len;
+
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+        } else {
+            bytecode_len = 0;
+
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar range_check_ptr = range_check_ptr;
         }
 
-        let (bytecode_len, bytecode) = IEvmContract.bytecode(
-            contract_address=starknet_contract_address
-        );
+        tempvar syscall_ptr = syscall_ptr;
+
         // bytecode_len cannot be greater than 24k in the EVM
         let stack = Stack.push(stack, Uint256(low=bytecode_len, high=0));
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+
+        // TODO:distinction between warm and cold addresses determines dynamic cost
+        //  for now we assume a cold address, which sets dynamic cost to 2600
+        // see: https://www.evm.codes/about#accesssets
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_EXTCODESIZE);
 
         return ctx;
     }
@@ -569,7 +586,9 @@ namespace EnvironmentalInformation {
         let (minimum_word_size) = Helpers.minimum_word_count(size.low);
 
         // TODO:distinction between warm and cold addresses determines `address_access_cost`
-        //  for now we assume a cold address, which sets `address_access_cost` to 2600
+        // for now we assume a cold address, which sets `address_access_cost` to 2600
+        // see: https://www.evm.codes/about#accesssets
+
         let ctx = ExecutionContext.increment_gas_used(
             self=ctx, inc_value=3 * minimum_word_size + memory_expansion_cost + GAS_COST_EXTCODECOPY
         );
@@ -726,6 +745,7 @@ namespace EnvironmentalInformation {
         // Update context stack
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used (COLD ACCESS)
+        // see: https://www.evm.codes/about#accesssets
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_EXTCODEHASH);
         return ctx;
     }

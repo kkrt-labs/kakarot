@@ -157,25 +157,18 @@ To contribute, please check out
 make setup
 ```
 
-## Install foundry
-To be able to verify and compare the abi and bytecode of the test contracts, first make sure you have foundry installed:
-
-``
-https://book.getfoundry.sh/getting-started/installation
-``
-
-and then run:
-
-``
-make build-foundry
-``
-
-
-
 ## Build
+
+To build the Cairo files:
 
 ```bash
 make build
+```
+
+To build the test Solidity smart contracts:
+
+```bash
+make build-foundry
 ```
 
 ## Test
@@ -285,6 +278,12 @@ for being involved!
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/ptisserand"><img src="https://avatars.githubusercontent.com/u/544314?v=4?s=100" width="100px;" alt="ptisserand"/><br /><sub><b>ptisserand</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=ptisserand" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/hurrikaanig"><img src="https://avatars.githubusercontent.com/u/37303126?v=4?s=100" width="100px;" alt="TurcFort07"/><br /><sub><b>TurcFort07</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=hurrikaanig" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://www.linkedin.com/in/mnemba-chambuya"><img src="https://avatars.githubusercontent.com/u/22321030?v=4?s=100" width="100px;" alt="Mnemba Chambuya"/><br /><sub><b>Mnemba Chambuya</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=mnekx" title="Code">💻</a></td>
+    </tr>
+        <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/matthieuauger"><img src="https://avatars.githubusercontent.com/u/1172099?v=4" width="100px;" alt="Matthieu Auger"/><br /><sub><b>Matthieu Auger</b></sub></a><br /><a href="#mentoring-matthieuauger" title="Mentoring">🧑‍🏫</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=matthieuauger" title="Code">💻</a> <a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=matthieuauger" title="Tests">⚠️</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/seshanthS"><img src="https://avatars.githubusercontent.com/u/35675963?v=4" width="100px;" alt="seshanthS"/><br /><sub><b>seshanthS</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=seshanthS" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ftupas"><img src="https://avatars.githubusercontent.com/u/35031356?v=4" width="100px;" alt="ftupas"/><br /><sub><b>Fred Tupas</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=ftupas" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/jobez"><img src="https://avatars.githubusercontent.com/u/615197?v=4" width="100px;" alt="johann bestowrous"/><br /><sub><b>Johann Bestowrous</b></sub></a><br /><a href="https://github.com/abdelhamidbakhta/kakarot/commits?author=jobez" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>

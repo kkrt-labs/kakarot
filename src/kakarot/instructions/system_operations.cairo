@@ -7,7 +7,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import split_felt
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import deploy as deploy_syscall
@@ -35,6 +35,11 @@ from utils.utils import Helpers
 // @author @abdelhamidbakhta
 // @custom:namespace SystemOperations
 namespace SystemOperations {
+    // Gas cost generated from using a CALL opcode (CALL, STATICCALL, etc.) with positive value parameter
+    const GAS_COST_POSITIVE_VALUE = 9000;
+    // Gas cost generated from accessing a "cold" address in the network: https://www.evm.codes/about#accesssets
+    const GAS_COST_COLD_ADDRESS_ACCESS = 2600;
+    const GAS_COST_CREATE = 32000;
     // @notice CREATE operation.
     // @custom:since Frontier
     // @custom:group System Operations
@@ -61,6 +66,13 @@ namespace SystemOperations {
         let offset = popped[1];
         let size = popped[2];
         let (_salt) = salt.read();
+
+        // create2 dynamic gas:
+        // dynamic_gas = 6 * minimum_word_size + memory_expansion_cost + deployment_code_execution_cost + code_deposit_cost
+        // -> ``memory_expansion_cost + deployment_code_execution_cost + code_deposit_cost`` is handled inside ``initialize_sub_context``
+        let (minimum_word_size) = Helpers.minimum_word_count(size.low);
+        let word_size_gas = 6 * minimum_word_size;
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=word_size_gas);
 
         let sub_ctx = CreateHelper.initialize_sub_context(
             ctx, value.low, offset.low, size.low, _salt
@@ -147,18 +159,22 @@ namespace SystemOperations {
         let (stack, offset) = Stack.pop(stack);
         let (stack, size) = Stack.pop(stack);
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        let memory = Memory.load_n(
+
+        let (memory, gas_cost) = Memory.load_n(
             self=ctx.memory, element_len=size.low, element=ctx.return_data, offset=offset.low
         );
         let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
+
+        // Increment gas used.
+        let ctx = ExecutionContext.increment_gas_used(ctx, gas_cost);
 
         // Note: only new data_len needs to be updated indeed.
         let ctx = ExecutionContext.update_return_data(
             ctx, new_return_data_len=size.low, new_return_data=ctx.return_data
         );
+
         let ctx = ExecutionContext.stop(ctx);
 
-        // TODO: GAS IMPLEMENTATION
         return ctx;
     }
 
@@ -192,7 +208,7 @@ namespace SystemOperations {
         let offset = popped[1];
 
         // Load revert reason from offset
-        let (memory, revert_reason_uint256) = Memory.load(memory, offset.low);
+        let (memory, revert_reason_uint256, gas_cost) = Memory.load(memory, offset.low);
         local revert_reason = revert_reason_uint256.low;
 
         // revert with loaded revert reason short string
@@ -202,6 +218,7 @@ namespace SystemOperations {
         // TODO: this is never reached, raising with cairo prevent from implementing a true REVERT
         // TODO: that still returns some data. This is especially problematic for sub contexts.
         let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=gas_cost);
         return ctx;
     }
 
@@ -428,9 +445,16 @@ namespace CallHelper {
 
         // Load calldata from Memory
         let (calldata: felt*) = alloc();
-        let memory = Memory.load_n(
+        let (memory, gas_cost) = Memory.load_n(
             self=ctx.memory, element_len=args_size, element=calldata, offset=args_offset
         );
+
+        // TODO: account for value_to_empty_account_cost in dynamic gas
+        let value_nn = is_nn(value);
+        let value_not_zero = is_not_zero(value);
+        let value_is_positive = value_nn * value_not_zero;
+        let dynamic_gas = gas_cost + SystemOperations.GAS_COST_COLD_ADDRESS_ACCESS + SystemOperations.GAS_COST_POSITIVE_VALUE * value_is_positive;
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=dynamic_gas);
 
         let remaining_gas = ctx.gas_limit - ctx.gas_used;
         let (max_allowed_gas, _) = Helpers.div_rem(remaining_gas, 64);
@@ -505,10 +529,14 @@ namespace CreateHelper {
 
         // Load bytecode code from memory
         let (bytecode: felt*) = alloc();
-        let memory = Memory.load_n(
+        let (memory, gas_cost) = Memory.load_n(
             self=ctx.memory, element_len=size, element=bytecode, offset=offset
         );
         let ctx = ExecutionContext.update_memory(ctx, memory);
+
+        let ctx = ExecutionContext.increment_gas_used(
+            self=ctx, inc_value=gas_cost + SystemOperations.GAS_COST_CREATE
+        );
 
         // Prepare execution context
         let (empty_array: felt*) = alloc();
@@ -546,7 +574,7 @@ namespace CreateHelper {
         return sub_ctx;
     }
 
-    // @notice At the end of a sub-context initiated with CREATE(2), the calling context's stack is updated.
+    // @notice At the end of a sub-context initiated with CREATE or CREATE2, the calling context's stack is updated.
     // @return The pointer to the updated calling context.
     func finalize_calling_context{
         syscall_ptr: felt*,
@@ -560,7 +588,12 @@ namespace CreateHelper {
             bytecode_len=ctx.return_data_len,
             bytecode=ctx.return_data,
         );
-        local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(ctx.calling_context, ctx);
+        local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(self=ctx.calling_context, sub_context=ctx);
+
+        // code_deposit_code := 200 * deployed_code_size * BYTES_PER_FELT (as Kakarot packs bytes inside a felt)
+        // dynamic_gas :=  deployment_code_execution_cost + code_deposit_cost
+        let dynamic_gas = ctx.gas_used + 200 * ctx.return_data_len * ContractAccount.BYTES_PER_FELT;
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=dynamic_gas);
 
         // Append contracts to selfdestruct to the calling_context
         let ctx = ExecutionContext.push_to_destroy_contracts(

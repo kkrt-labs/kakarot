@@ -199,7 +199,6 @@ namespace TestHelpers {
         // assert execution_context_0.stack = execution_context_1.stack;
         // assert execution_context_0.memory = execution_context_1.memory;
 
-        assert execution_context_0.gas_used = execution_context_1.gas_used;
         assert execution_context_0.gas_limit = execution_context_1.gas_limit;
         assert execution_context_0.gas_price = execution_context_1.gas_price;
         assert execution_context_0.starknet_contract_address = execution_context_1.starknet_contract_address;
