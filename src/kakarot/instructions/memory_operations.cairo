@@ -354,7 +354,7 @@ namespace MemoryOperations {
 
         // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
         with_attr error_message("Kakarot: StateModificationError") {
-            assert ctx.read_only = 0;
+            assert ctx.read_only = FALSE;
         }
 
         let stack = ctx.stack;

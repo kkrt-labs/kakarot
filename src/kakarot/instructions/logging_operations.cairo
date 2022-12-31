@@ -6,6 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import emit_event
+from starkware.cairo.common.bool import FALSE
 
 // Internal dependencies
 from kakarot.model import model
@@ -36,7 +37,7 @@ namespace LoggingOperations {
 
         // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
         with_attr error_message("Kakarot: StateModificationError") {
-            assert ctx.read_only = 0;
+            assert ctx.read_only = FALSE;
         }
 
         // Get stack from context.

@@ -57,7 +57,7 @@ namespace SystemOperations {
 
         // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
         with_attr error_message("Kakarot: StateModificationError") {
-            assert ctx.read_only = 0;
+            assert ctx.read_only = FALSE;
         }
 
         // Stack input:
@@ -104,7 +104,7 @@ namespace SystemOperations {
 
         // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
         with_attr error_message("Kakarot: StateModificationError") {
-            assert ctx.read_only = 0;
+            assert ctx.read_only = FALSE;
         }
 
         // Stack input:
@@ -262,6 +262,10 @@ namespace SystemOperations {
             );
             return sub_ctx;
         }
+        // This instruction is disallowed when called from a `staticcall` context when there is an attempt to transfer funds, which occurs when there is a nonzero value argument.
+        with_attr error_message("Kakarot: StateModificationError") {
+            assert ctx.read_only * call_args.value = FALSE;
+        }
 
         let sub_ctx = ExecutionContext.init_at_address(
             address=call_args.address,
@@ -387,7 +391,7 @@ namespace SystemOperations {
 
         // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
         with_attr error_message("Kakarot: StateModificationError") {
-            assert ctx.read_only = 0;
+            assert ctx.read_only = FALSE;
         }
 
         // Get stack and memory from context

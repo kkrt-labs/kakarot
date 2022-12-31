@@ -126,10 +126,15 @@ namespace ExecutionContext {
     }
 
     // @notice Initialize the execution context.
-    // @dev Initialize the execution context of a specific contract
-    // @param address The evm address from which the code will be executed
-    // @param calldata_len The calldata length
+    // @dev Initialize the execution context of a specific contract.
+    // @param address The evm address from which the code will be executed.
+    // @param calldata_len The calldata length.
     // @param calldata The calldata.
+    // @param value The value in wei to be sent to address.
+    // @param calling_context A reference to the context of the calling contract. This context stores the return data produced by the called contract in its memory.
+    // @param return_data_len The return_data length.
+    // @param return_data The region where returned data of the contract or precompile is written.
+    // @param read_only The flag that determines whether state modifications can be executed from the sub-execution context.
     // @return The initialized execution context.
     func init_at_address{
         syscall_ptr: felt*,
