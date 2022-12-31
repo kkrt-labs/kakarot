@@ -222,6 +222,44 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "matthieuauger",
+      "name": "Matthieu Auger",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1172099?v=4",
+      "profile": "https://github.com/matthieuauger",
+      "contributions": [
+        "mentoring",
+        "test",
+        "code"
+      ]
+    },
+    {
+      "login": "ftupas",
+      "name": "ftupas",
+      "avatar_url": "https://avatars.githubusercontent.com/u/35031356?v=4",
+      "profile": "https://github.com/ftupas",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "jobez",
+      "name": "johann bestowrous",
+      "avatar_url": "https://avatars.githubusercontent.com/u/615197?v=4",
+      "profile": "https://github.com/jobez",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "seshanthS",
+      "name": "Seshanth.S",
+      "avatar_url": "https://avatars.githubusercontent.com/u/35675963?v=4",
+      "profile": "https://seshanth.xyz/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

@@ -280,6 +280,12 @@ for being involved!
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/hurrikaanig"><img src="https://avatars.githubusercontent.com/u/37303126?v=4?s=100" width="100px;" alt="TurcFort07"/><br /><sub><b>TurcFort07</b></sub></a><br /><a href="https://github.com/sayajin-labs/kakarot/commits?author=hurrikaanig" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://www.linkedin.com/in/mnemba-chambuya"><img src="https://avatars.githubusercontent.com/u/22321030?v=4?s=100" width="100px;" alt="Mnemba Chambuya"/><br /><sub><b>Mnemba Chambuya</b></sub></a><br /><a href="https://github.com/sayajin-labs/kakarot/commits?author=mnekx" title="Code">💻</a></td>
     </tr>
+    <tr>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/matthieuauger"><img src="https://avatars.githubusercontent.com/u/1172099?v=4?s=100" width="100px;" alt="Matthieu Auger"/><br /><sub><b>Matthieu Auger</b></sub></a><br /><a href="#mentoring-matthieuauger" title="Mentoring">🧑‍🏫</a> <a href="https://github.com/sayajin-labs/kakarot/commits?author=matthieuauger" title="Tests">⚠️</a> <a href="https://github.com/sayajin-labs/kakarot/commits?author=matthieuauger" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/ftupas"><img src="https://avatars.githubusercontent.com/u/35031356?v=4?s=100" width="100px;" alt="ftupas"/><br /><sub><b>ftupas</b></sub></a><br /><a href="https://github.com/sayajin-labs/kakarot/commits?author=ftupas" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/jobez"><img src="https://avatars.githubusercontent.com/u/615197?v=4?s=100" width="100px;" alt="johann bestowrous"/><br /><sub><b>johann bestowrous</b></sub></a><br /><a href="https://github.com/sayajin-labs/kakarot/commits?author=jobez" title="Code">💻</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://seshanth.xyz/"><img src="https://avatars.githubusercontent.com/u/35675963?v=4?s=100" width="100px;" alt="Seshanth.S"/><br /><sub><b>Seshanth.S</b></sub></a><br /><a href="https://github.com/sayajin-labs/kakarot/commits?author=seshanthS" title="Code">💻</a></td>
+    </tr>
   </tbody>
 </table>
 
