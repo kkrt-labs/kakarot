@@ -273,7 +273,9 @@ namespace internal {
             // end of packed felt case, store current "pending" felt
             // continue loop with a new current_felt and increament index in bytecode_ storage
             bytecode_.write(index, current_felt);
-            return write_bytecode(index + 1, bytecode_len, bytecode, 0, ContractAccount.BYTES_PER_FELT);
+            return write_bytecode(
+                index + 1, bytecode_len, bytecode, 0, ContractAccount.BYTES_PER_FELT
+            );
         }
 
         // retrieve the precomputed pow array
@@ -314,7 +316,9 @@ namespace internal {
         if (remaining_shift == 0) {
             // end of current packed felt, loading next stored felt and increase storage index
             let (current_felt) = bytecode_.read(index);
-            return load_bytecode(index + 1, bytecode_len, bytecode, current_felt, ContractAccount.BYTES_PER_FELT);
+            return load_bytecode(
+                index + 1, bytecode_len, bytecode, current_felt, ContractAccount.BYTES_PER_FELT
+            );
         }
 
         // retrieve the precomputed pow array
