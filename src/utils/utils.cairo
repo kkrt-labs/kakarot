@@ -16,6 +16,7 @@ from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.pow import pow
 from starkware.cairo.common.uint256 import Uint256, uint256_check
 from starkware.cairo.common.registers import get_label_location
+from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
 from starkware.cairo.common.bool import FALSE
 
 // @title Helper Functions
@@ -26,6 +27,24 @@ namespace Helpers {
     func to_uint256{range_check_ptr}(val: felt) -> Uint256 {
         let (high, low) = split_felt(val);
         let res = Uint256(low, high);
+        return res;
+    }
+
+    // @notice This helper converts a felt straight to BigInt3
+    // @param val: felt value to be converted
+    // @return res: BigInt3 representation of the given input
+    func to_bigint{range_check_ptr}(val: felt) -> BigInt3 {
+        let val_uint256: Uint256 = to_uint256(val);
+        let (res: BigInt3) = uint256_to_bigint(val_uint256);
+        return res;
+    }
+
+    // @notice This helper converts a BigInt3 straight to felt
+    // @param val: BigInt3 value to be converted
+    // @return res: felt representation of the given input
+    func bigint_to_felt{range_check_ptr}(val: BigInt3) -> felt {
+        let (val_uint256: Uint256) = bigint_to_uint256(val);
+        let res = uint256_to_felt(val_uint256);
         return res;
     }
 
@@ -67,6 +86,28 @@ namespace Helpers {
         let res = Uint256(low=low, high=high);
 
         return res;
+    }
+
+    // @notice This helper is used to convert a sequence of 32 bytes straight to BigInt3.
+    // @param val: pointer to the first byte of the 32.
+    // @return res: BigInt3 representation of the given input in bytes32.
+    func bytes32_to_bigint{range_check_ptr}(val: felt*) -> BigInt3 {
+        alloc_locals;
+
+        let val_uint256: Uint256 = bytes32_to_uint256(val);
+        let (res: BigInt3) = uint256_to_bigint(val_uint256);
+        return res;
+    }
+
+    // @notice This function is used to convert a BigInt3 to straight to a bytes array represented by an array of felts (1 felt represents 1 byte).
+    // @param value: BigInt3 value to convert.
+    // @return: array length and felt array representation of the value.
+    func bigint_to_bytes_array{range_check_ptr}(val: BigInt3) -> (
+        bytes_array_len: felt, bytes_array: felt*
+    ) {
+        let (val_uint256: Uint256) = bigint_to_uint256(val);
+        let (bytes_array_len, bytes_array) = uint256_to_bytes_array(val_uint256);
+        return (bytes_array_len, bytes_array);
     }
 
     // @notice: This helper returns count of nonzero elements in an array

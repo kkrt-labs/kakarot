@@ -50,5 +50,5 @@ namespace Constants {
 
     // PRECOMPILES
     // There is no gap between precompiles addresses so we can use the last address as a reference point to determine whether an address is a precompile or not
-    const LAST_PRECOMPILE_ADDRESS = 0x04;
+    const LAST_PRECOMPILE_ADDRESS = 0x09;
 }
