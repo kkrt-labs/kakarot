@@ -134,7 +134,7 @@ namespace ExecutionContext {
     // @param calling_context A reference to the context of the calling contract. This context stores the return data produced by the called contract in its memory.
     // @param return_data_len The return_data length.
     // @param return_data The region where returned data of the contract or precompile is written.
-    // @param read_only The flag that determines whether state modifications can be executed from the sub-execution context.
+    // @param read_only The boolean that determines whether state modifications can be executed from the sub-execution context.
     // @return The initialized execution context.
     func init_at_address{
         syscall_ptr: felt*,

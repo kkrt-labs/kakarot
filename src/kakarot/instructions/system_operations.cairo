@@ -246,38 +246,13 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let (ctx, call_args) = CallHelper.prepare_args(ctx=ctx, with_value=1);
-
-        // Check if the called address is a precompiled contract
-        let is_precompile = Precompiles.is_precompile(address=call_args.address);
-        if (is_precompile == TRUE) {
-            let sub_ctx = Precompiles.run(
-                address=call_args.address,
-                calldata_len=call_args.args_size,
-                calldata=call_args.calldata,
-                value=call_args.value,
-                calling_context=ctx,
-                return_data_len=call_args.ret_size,
-                return_data=call_args.return_data,
-            );
-            return sub_ctx;
-        }
+        let sub_ctx = CallHelper.init_sub_context(
+            calling_ctx=ctx, with_value=TRUE, read_only=ctx.read_only
+        );
         // This instruction is disallowed when called from a `staticcall` context when there is an attempt to transfer funds, which occurs when there is a nonzero value argument.
         with_attr error_message("Kakarot: StateModificationError") {
-            assert ctx.read_only * call_args.value = FALSE;
+            assert ctx.read_only * sub_ctx.call_context.value = FALSE;
         }
-
-        let sub_ctx = ExecutionContext.init_at_address(
-            address=call_args.address,
-            gas_limit=call_args.gas,
-            calldata_len=call_args.args_size,
-            calldata=call_args.calldata,
-            value=call_args.value,
-            calling_context=ctx,
-            return_data_len=call_args.ret_size,
-            return_data=call_args.return_data,
-            read_only=ctx.read_only,
-        );
 
         return sub_ctx;
     }
@@ -296,37 +271,9 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        // Parse call arguments
-        let (ctx, call_args) = CallHelper.prepare_args(ctx=ctx, with_value=0);
-
-        // Check if the called address is a precompiled contract
-        let is_precompile = Precompiles.is_precompile(address=call_args.address);
-        if (is_precompile == TRUE) {
-            let sub_ctx = Precompiles.run(
-                address=call_args.address,
-                calldata_len=call_args.args_size,
-                calldata=call_args.calldata,
-                value=call_args.value,
-                calling_context=ctx,
-                return_data_len=call_args.ret_size,
-                return_data=call_args.return_data,
-            );
-            return sub_ctx;
-        }
-
-        // TODO: use gas_limit when init_at_address is updated
-        let sub_ctx = ExecutionContext.init_at_address(
-            address=call_args.address,
-            gas_limit=call_args.gas,
-            calldata_len=call_args.args_size,
-            calldata=call_args.calldata,
-            value=call_args.value,
-            calling_context=ctx,
-            return_data_len=call_args.ret_size,
-            return_data=call_args.return_data,
-            read_only=TRUE,
+        let sub_ctx = CallHelper.init_sub_context(
+            calling_ctx=ctx, with_value=FALSE, read_only=TRUE
         );
-
         return sub_ctx;
     }
 
@@ -344,7 +291,9 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let sub_ctx = exec_call(ctx);
+        let sub_ctx = CallHelper.init_sub_context(
+            calling_ctx=ctx, with_value=TRUE, read_only=ctx.read_only
+        );
         let sub_ctx = ExecutionContext.update_addresses(
             sub_ctx, ctx.starknet_contract_address, ctx.evm_contract_address
         );
@@ -366,7 +315,9 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let sub_ctx = exec_staticcall(ctx);
+        let sub_ctx = CallHelper.init_sub_context(
+            calling_ctx=ctx, with_value=FALSE, read_only=ctx.read_only
+        );
         let sub_ctx = ExecutionContext.update_addresses(
             sub_ctx, ctx.starknet_contract_address, ctx.evm_contract_address
         );
@@ -455,7 +406,9 @@ namespace CallHelper {
 
         let gas = 2 ** 128 * popped[0].high + popped[0].low;
         let address = 2 ** 128 * popped[1].high + popped[1].low;
-        let value = (2 ** 128 * popped[2].high + popped[2].low) * with_value;
+        let stack_value = (2 ** 128 * popped[2].high + popped[2].low) * with_value;
+        // if the call op expects value to be on the stack, we return it, else the value is the calling call context value
+        let value = with_value * stack_value + (1 - with_value) * ctx.call_context.value;
         let args_offset = 2 ** 128 * popped[2 + with_value].high + popped[2 + with_value].low;
         let args_size = 2 ** 128 * popped[3 + with_value].high + popped[3 + with_value].low;
         let ret_offset = 2 ** 128 * popped[4 + with_value].high + popped[4 + with_value].low;
@@ -498,6 +451,52 @@ namespace CallHelper {
         return (ctx, call_args);
     }
 
+    // @notice The shared logic of the CALL ops, allowing CALL, CALLCODE, STATICCALL, and DELEGATECALL to share structure and parameterize whether the call requires a value (CALL, CALLCODE) and whether the returned sub context's is read only (STATICCODE)
+    // @param calling_ctx The pointer to the calling execution context.
+    // @param with_value The boolean that determines whether the sub-context's calling context has a value read from the calling context's stack or the calling context's calling context.
+    // @param read_only The boolean that determines whether state modifications can be executed from the sub-execution context.
+    // @return The pointer to the sub context.
+    func init_sub_context{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(
+        calling_ctx: model.ExecutionContext*, with_value: felt, read_only: felt
+    ) -> model.ExecutionContext* {
+        let (calling_ctx, call_args) = CallHelper.prepare_args(
+            ctx=calling_ctx, with_value=with_value
+        );
+
+        // Check if the called address is a precompiled contract
+        let is_precompile = Precompiles.is_precompile(address=call_args.address);
+        if (is_precompile == TRUE) {
+            let sub_ctx = Precompiles.run(
+                address=call_args.address,
+                calldata_len=call_args.args_size,
+                calldata=call_args.calldata,
+                value=call_args.value,
+                calling_context=calling_ctx,
+                return_data_len=call_args.ret_size,
+                return_data=call_args.return_data,
+            );
+            return sub_ctx;
+        }
+
+        let sub_ctx = ExecutionContext.init_at_address(
+            address=call_args.address,
+            gas_limit=call_args.gas,
+            calldata_len=call_args.args_size,
+            calldata=call_args.calldata,
+            value=call_args.value,
+            calling_context=calling_ctx,
+            return_data_len=call_args.ret_size,
+            return_data=call_args.return_data,
+            read_only=read_only,
+        );
+
+        return sub_ctx;
+    }
     // @notice At the end of a sub-context call, the calling context's stack and memory are updated.
     // @return The pointer to the updated calling context.
     func finalize_calling_context{
