@@ -11,10 +11,11 @@ from starkware.cairo.common.math_cmp import is_le, is_not_zero
 // Internal dependencies
 from kakarot.constants import Constants
 from kakarot.execution_context import ExecutionContext
-from kakarot.precompiles.datacopy import PrecompileDataCopy
-from kakarot.precompiles.ecadd import PrecompileEcAdd
 from kakarot.memory import Memory
 from kakarot.model import model
+from kakarot.precompiles.datacopy import PrecompileDataCopy
+from kakarot.precompiles.ecadd import PrecompileEcAdd
+from kakarot.precompiles.ec_recover import PrecompileEcRecover
 from kakarot.stack import Stack
 
 // @title Precompile related functions.
@@ -92,7 +93,7 @@ namespace Precompiles {
         output_len: felt, output: felt*, gas_used: felt
     ) {
         // Compute the corresponding offset in the jump table:
-        // count 1 for "next line" and 4 steps per precompile address: call, opcode, ret
+        // count 1 for "next line" and 3 steps per precompile address: call, precompile, ret
         tempvar offset = 1 + 3 * address;
 
         // Prepare arguments
@@ -107,7 +108,7 @@ namespace Precompiles {
         jmp rel offset;
         call not_implemented_precompile;  // 0x0
         ret;
-        call not_implemented_precompile;  // 0x1
+        call PrecompileEcRecover.run;  // 0x1
         ret;
         call not_implemented_precompile;  // 0x2
         ret;

@@ -1595,4 +1595,22 @@ test_cases = [
         "id": "Get address of currently executing account - 0x30 ADDRESS",
         "marks": [pytest.mark.ADDRESS, pytest.mark.EnvironmentalInformation],
     },
+    {
+        "params": {
+            "value": 0,
+            "code": "7f456e9aea5e197a1f1af7a3e85a3212fa4049a3ba34c2289b4c860fc0b0c64ef3600052601c6020527f9242685bf161793cc25603c231bc2f568eb630ea16aa137d2664ac80388256086040527f4f8ae3bd7535248d0bd448298cc2e2071e56992d0774dc340c368ae950852ada6060526020608060806000600163fffffffffa50608051",
+            "calldata": "",
+            "stack": str(int("7156526fbd7a3c72969b54f64e42c10fbb768c8a", 16)),
+            "memory": (
+                "456e9aea5e197a1f1af7a3e85a3212fa4049a3ba34c2289b4c860fc0b0c64ef3"
+                "000000000000000000000000000000000000000000000000000000000000001c"
+                "9242685bf161793cc25603c231bc2f568eb630ea16aa137d2664ac8038825608"
+                "4f8ae3bd7535248d0bd448298cc2e2071e56992d0774dc340c368ae950852ada"
+                "0000000000000000000000007156526fbd7a3c72969b54f64e42c10fbb768c8a"
+            ),
+            "return_value": "",
+        },
+        "id": "Precompiles - EC_RECOVER - playground test case",
+        "marks": [pytest.mark.EC_RECOVER, pytest.mark.Precompiles],
+    },
 ]
