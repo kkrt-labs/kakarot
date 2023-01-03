@@ -43,17 +43,11 @@ It is a work in progress, and it is not ready for production.
 %%{init: {'theme': 'forest', 'themeVariables': { 'darkMode': 'false'}}}%%
 
 pie title Kakarot EMV opcodes support (142 / 142)
-    "Supported" : 138
+    "Supported" : 142
     "Not supported" : 0
-    "Partially supported" : 4
 ```
 
 Here is the list of supported opcodes: [opcodes](docs/supported_opcodes.md)
-
-For the moment the list is maintained manually, but it will likely be generated
-automatically in the future. If you want to contribute, you can help us by
-adding the missing opcodes. And if you implement a new opcode, please update the
-list.
 
 ## Documentation
 
