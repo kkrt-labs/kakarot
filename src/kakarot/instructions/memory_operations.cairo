@@ -352,6 +352,11 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
+        with_attr error_message("Kakarot: StateModificationError") {
+            assert ctx.read_only = FALSE;
+        }
+
         let stack = ctx.stack;
 
         // ------- 1. Get starknet address
@@ -363,6 +368,9 @@ namespace MemoryOperations {
         // 0 - key: key of memory.
         // 1 - value: value for given key.
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
+        // Update context stack.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+
         let key = popped[0];
         let value = popped[1];
 
@@ -373,8 +381,6 @@ namespace MemoryOperations {
             );
         }
 
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SSTORE);
         return ctx;
