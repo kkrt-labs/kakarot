@@ -4,7 +4,7 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_secp.bigint import BigInt3
 from starkware.cairo.common.cairo_secp.ec import EcPoint, ec_add
 from starkware.cairo.common.uint256 import Uint256
@@ -26,9 +26,12 @@ namespace PrecompileEcAdd {
     // @param input_len The length of input array.
     // @param input The input array.
     // @return The output length, output array, and gas usage of precompile.
-    func run{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        input_len: felt, input: felt*
-    ) -> (output_len: felt, output: felt*, gas_used: felt) {
+    func run{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(input_len: felt, input: felt*) -> (output_len: felt, output: felt*, gas_used: felt) {
         alloc_locals;
 
         let input_word0 = Helpers.load_word(ECPOINT_BYTES_LEN, input);
