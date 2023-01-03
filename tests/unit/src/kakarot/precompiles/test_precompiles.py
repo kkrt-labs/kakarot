@@ -1,4 +1,5 @@
 import random
+import re
 
 import pytest
 import pytest_asyncio
@@ -17,13 +18,14 @@ async def precompiles(starknet: Starknet):
 
 @pytest.mark.asyncio
 class TestPrecompiles:
-    async def test_precompiles(self, precompiles):
+    async def test_precompiles_should_throw_on_not_implemented(self, precompiles):
         # we choose an out of range precompile address to get the NotImplementedPrecompile error, and test if it is including the address in the error
         # note: in our implementation, `Precompiles.is_precompile` checks if an address is within a given range before dispatching, so usually an out of range address would never be passed to `Precompiles.run`
         address = 10
         with pytest.raises(Exception) as e:
-            await precompiles.precompiles_should_throw_on_not_implemented(
+            await precompiles.test__precompiles_should_throw_on_not_implemented(
                 address=address
             ).call()
-            message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
-            assert message == "Kakarot: StackUnderflow " + address
+
+        message = re.search(r"Error message: (.*)", e.value.message)[1]
+        assert message == "Kakarot: NotImplementedPrecompile " + str(address)

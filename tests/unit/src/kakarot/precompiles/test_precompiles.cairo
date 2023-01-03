@@ -15,26 +15,23 @@ from kakarot.constants import Constants
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.instructions.system_operations import SystemOperations
+from kakarot.precompiles.precompiles import Precompiles
 from tests.unit.helpers.helpers import TestHelpers
 
 @external
 func test__precompiles_should_throw_on_not_implemented{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(_address: felt) {
-    // Given
-    alloc_locals;
-
-    let (bytecode) = alloc();
-    local bytecode_len = 0;
-
-    let stack: model.Stack* = Stack.init();
-    let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
-    let (address_high, address_low) = split_felt(_address);
-    let address = Uint256(address_low, address_high);
-    let ctx = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
-
+}(address: felt) {
     // When
-    let result = SystemOperations.exec_staticcall(ctx);
+    let result = Precompiles.run(
+        address=address,
+        calldata_len=0,
+        calldata=cast(0, felt*),
+        value=0,
+        calling_context=cast(0, model.ExecutionContext*),
+        return_data_len=0,
+        return_data=cast(0, felt*),
+    );
 
     return ();
 }
