@@ -200,6 +200,44 @@ Test architecture is the following:
   contracts that are compiled, deployed on kakarot local node and interacted
   with kakarot execute_at_address()
 
+## Deploy Kakarot
+
+The Kakarot EVM can be deployed on StarkNet using ...
+
+First we need to declare some environment variables that are required for the deployment.
+
+Start by copying the `.env_example` file located in the root directory (`.files` are usually hidden by default in most explorers. You should be able to see the file in your IDE).
+Rename the copied file to `.env`.
+The file holds the following content:
+```
+PRIVATE_KEY=your_private_key
+ACCOUNT_ADDRESS=your_account_address
+NETWORK=<mainnet|testnet|testnet2>
+```
+
+Now replace the placeholder values with you account and network details.
+`PRIVATE_KEY` is the private key of the account contract that will pay for the deployment. **This should be a decimal number**
+`ACCOUNT_ADDRESS` is the address of the account contract that will pay for the deployment (not the public key). **This should be a hexadecimal number**
+`NETWORK` specify the network on which the Kakarot EVM should be deployed.
+
+Here is a concrete example:
+```
+PRIVATE_KEY=72893439023848923y4138741073892473874203487234872208352937239047293428374088
+ACCOUNT_ADDRESS=0x06e5d623aBe979c3DEFf52bE6DF5116352C12Ee21428D5b2CF91cA440c4edBD0
+NETWORK=testnet
+```
+
+Now run:
+```
+make build
+```
+then:
+```
+make deploy
+```
+
+Deployed contract addresses will be stored in `./deployed_addresses.json`.
+
 ## License
 
 **kakarot** is released under the [MIT](LICENSE).
