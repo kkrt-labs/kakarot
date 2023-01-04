@@ -10,7 +10,7 @@ venv
 node.json
 *.deployments.txt
 artifacts
-/build
+build
 
 #foundry
 /cache
