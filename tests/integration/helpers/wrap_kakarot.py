@@ -104,23 +104,28 @@ def get_contract(contract_app: str, contract_name: str) -> Contract:
     if len(target_solidity_file_path) != 1:
         raise ValueError(f"Cannot locate a unique {contract_name} in {contract_app}")
 
-    compilation_output = json.load(
-        open(
-            solidity_contracts_dir
-            / "build"
-            / f"{contract_name}.sol"
-            / f"{contract_name}.json"
+    compilation_outputs = [
+        json.load(open(file))
+        for file in (
+            (solidity_contracts_dir / "build").glob(f"**/{contract_name}.json")
         )
-    )
-    compilation_target = compilation_output["metadata"]["settings"][
-        "compilationTarget"
-    ].get(str(target_solidity_file_path[0]))
-    if compilation_target != contract_name:
+    ]
+
+    compilation_output = [
+        compilation_output
+        for compilation_output in compilation_outputs
+        if compilation_output["metadata"]["settings"]["compilationTarget"].get(
+            str(target_solidity_file_path[0])
+        )
+    ]
+    if len(compilation_output) != 1:
         raise ValueError(
-            f"Found compilation file targeted {compilation_output} instead of {contract_name}"
+            f"Cannot locate a unique compilation output for target {target_solidity_file_path[0]}"
         )
+
     contract = Web3().eth.contract(
-        abi=compilation_output["abi"], bytecode=compilation_output["bytecode"]["object"]
+        abi=compilation_output[0]["abi"],
+        bytecode=compilation_output[0]["bytecode"]["object"],
     )
     setattr(contract, "_contract_name", contract_name)
     return cast(Contract, contract)
