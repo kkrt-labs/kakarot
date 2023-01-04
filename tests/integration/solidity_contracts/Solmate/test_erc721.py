@@ -2,8 +2,6 @@ from typing import Callable
 
 import pytest
 
-from tests.integration.helpers.helpers import hex_string_to_bytes_array
-
 
 @pytest.mark.asyncio
 @pytest.mark.SolmateERC721
@@ -14,7 +12,7 @@ class TestERC721:
             deploy_solidity_contract: Callable,
         ):
             erc_721 = await deploy_solidity_contract(
-                "ERC721", "ERC721", "Kakarot NFT", "KKNFT", caller_address=1
+                "Solmate", "ERC721", "Kakarot NFT", "KKNFT", caller_address=1
             )
             name = await erc_721.name()
             assert name == "Kakarot NFT"
