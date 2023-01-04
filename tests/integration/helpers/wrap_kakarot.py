@@ -90,7 +90,7 @@ def wrap_for_kakarot(
 # An app is a group of solidity files living in tests/integration/solidity_contracts.
 #
 # Example: get_contract("Solmate", "ERC721") will load the ERC721.sol file in the tests/integration/solidity_contracts/Solmate folder
-# Example: get_contract("StarkEx", "StarkExchange") will load the StarkExchange.sol file in the tests/integration/solidity_contracts/StarkEx folder
+# Example: get_contract("StarkEx", "StarkExchange") will load the StarkExchange.sol file in the tests/integration/solidity_contracts/StarkEx/starkex folder
 #
 def get_contract(contract_app: str, contract_name: str) -> Contract:
     """
@@ -98,9 +98,12 @@ def get_contract(contract_app: str, contract_name: str) -> Contract:
     defined in tests/integration/solidity_files.
     """
     solidity_contracts_dir = Path("tests") / "integration" / "solidity_contracts"
-    target_solidity_file_path = (
-        solidity_contracts_dir / contract_app / f"{contract_name}.sol"
+    target_solidity_file_path = list(
+        (solidity_contracts_dir / contract_app).glob(f"**/{contract_name}.sol")
     )
+    if len(target_solidity_file_path) != 1:
+        raise ValueError(f"Cannot locate a unique {contract_name} in {contract_app}")
+
     compilation_output = json.load(
         open(
             solidity_contracts_dir
@@ -111,7 +114,7 @@ def get_contract(contract_app: str, contract_name: str) -> Contract:
     )
     compilation_target = compilation_output["metadata"]["settings"][
         "compilationTarget"
-    ].get(str(target_solidity_file_path))
+    ].get(str(target_solidity_file_path[0]))
     if compilation_target != contract_name:
         raise ValueError(
             f"Found compilation file targeted {compilation_output} instead of {contract_name}"
