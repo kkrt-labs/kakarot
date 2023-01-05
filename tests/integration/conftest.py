@@ -144,7 +144,7 @@ async def erc_20(deploy_solidity_contract, owner):
 async def erc_721(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
         "Solmate",
-        "ERC721",
+        "MockERC721",
         "Kakarot NFT",
         "KKNFT",
         caller_address=owner.starknet_address,
