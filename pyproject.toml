@@ -100,11 +100,12 @@ markers = [
     "RETURN:         Opcode Value 0xf3 - Halt execution returning output data",
     "REVERT:         Opcode value 0xfd - Halt execution reverting state changes",
     "INVALID:        Opcode Value 0xfe - Designated invalid instruction",
-    "SolmateERC20",
-    "SolmateERC721",
-    "IntegrationTestContract",
     "Precompiles",
     "EC_RECOVER:     Precompile Value 0x01 - Elliptic curve digital signature algorithm (ECDSA) public key recovery function",
+    "Counter",
+    "PlainOpcodes",
+    "SolmateERC20",
+    "SolmateERC721",
 ]
 
 [tool.isort]

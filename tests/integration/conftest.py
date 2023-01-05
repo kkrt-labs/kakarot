@@ -1,7 +1,11 @@
 import logging
+from collections import namedtuple
+from typing import List
 
 import pytest
+import pytest_asyncio
 from starkware.starknet.testing.contract import StarknetContract
+from web3 import Web3
 
 from tests.integration.helpers.helpers import hex_string_to_bytes_array
 from tests.integration.helpers.wrap_kakarot import get_contract, wrap_for_kakarot
@@ -10,15 +14,13 @@ from tests.utils.reporting import traceit
 logger = logging.getLogger()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="package")
 def deploy_solidity_contract(starknet, contract_account_class, kakarot):
     """
     Fixture to deploy a solidity contract in kakarot. The returned contract is a modified
     web3.contract instance with an added `contract_account` attribute that return the actual
     underlying kakarot contract account.
     """
-
-    deployed_contracts = {}
 
     async def _factory(contract_app, contract_name, *args, **kwargs):
         """
@@ -31,8 +33,6 @@ def deploy_solidity_contract(starknet, contract_account_class, kakarot):
         The args and kwargs are passed as is to the web3.contract.constructor. Only the `caller_address` kwarg is
         is required and filtered out before calling the constructor.
         """
-        if contract_name in deployed_contracts:
-            return deployed_contracts[contract_name]
         contract = get_contract(contract_app, contract_name)
         if "caller_address" not in kwargs:
             raise ValueError(
@@ -60,26 +60,86 @@ def deploy_solidity_contract(starknet, contract_account_class, kakarot):
         kakarot_contract = wrap_for_kakarot(
             contract, kakarot, tx.result.evm_contract_address
         )
+        evm_contract_address = Web3.toChecksumAddress(
+            "0x"
+            + hex(contract_account.deploy_call_info.result.evm_contract_address)[
+                2:
+            ].rjust(40, "0")
+        )
         setattr(kakarot_contract, "contract_account", contract_account)
-        deployed_contracts[contract_name] = kakarot_contract
+        setattr(kakarot_contract, "evm_contract_address", evm_contract_address)
 
         return kakarot_contract
 
-    yield _factory
-
-    logger.info(f"Deployed solidity contracts: {list(deployed_contracts)}")
-    deployed_contracts = {}
+    return _factory
 
 
-@pytest.fixture
-def addresses():
-    # skip addresses reserved for precompiles
-    _addresses = list(range(10, 14))
-    return [{"int": _a, "hex": "0x" + f"{_a:39x}"} for _a in _addresses]
+Wallet = namedtuple("Wallet", ["address", "starknet_address"])
 
 
-@pytest.fixture
-def kakarot_snapshot(kakarot):
-    state = kakarot.state.copy()
-    yield kakarot
-    kakarot.state = state
+@pytest.fixture(scope="package")
+def addresses() -> List[Wallet]:
+    """
+    Returns a list of addresses to be used in tests.
+    Addresses are returned as named tuples with
+    - address: the hex string of the EVM address (20 bytes)
+    - starknet_address: the corresponding address for starknet (same value but as int)
+    """
+    last_precompile_address = 0x9
+    return [
+        Wallet(
+            address=Web3.toChecksumAddress("0x" + f"{_a:x}".rjust(40, "0")),
+            starknet_address=_a,
+        )
+        for _a in list(range(last_precompile_address, last_precompile_address + 4))
+    ]
+
+
+@pytest_asyncio.fixture(scope="package")
+async def owner(addresses):
+    return addresses[0]
+
+
+@pytest_asyncio.fixture(scope="package")
+async def others(addresses):
+    return addresses[1:]
+
+
+@pytest_asyncio.fixture(scope="module")
+async def counter(deploy_solidity_contract, owner):
+    return await deploy_solidity_contract(
+        "Counter", "Counter", caller_address=owner.starknet_address
+    )
+
+
+@pytest_asyncio.fixture(scope="module")
+async def plain_opcodes(deploy_solidity_contract, owner, counter):
+    return await deploy_solidity_contract(
+        "PlainOpcodes",
+        "PlainOpcodes",
+        counter.evm_contract_address,
+        caller_address=owner.starknet_address,
+    )
+
+
+@pytest_asyncio.fixture(scope="module")
+async def erc_20(deploy_solidity_contract, owner):
+    return await deploy_solidity_contract(
+        "Solmate",
+        "ERC20",
+        "Kakarot Token",
+        "KKT",
+        18,
+        caller_address=owner.starknet_address,
+    )
+
+
+@pytest_asyncio.fixture(scope="module")
+async def erc_721(deploy_solidity_contract, owner):
+    return await deploy_solidity_contract(
+        "Solmate",
+        "ERC721",
+        "Kakarot NFT",
+        "KKNFT",
+        caller_address=owner.starknet_address,
+    )
