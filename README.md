@@ -212,6 +212,16 @@ Kakarot is provided **"as is"** without any **warranty**. Use at your own risk.
 _For more information and to report security issues, please refer to our
 [security documentation](docs/SECURITY.md)._
 
+## Callgraphs
+
+[The callgrap folder](callgraphs) contains all the contract's call graph. Those
+are generated using [thoth](https://github.com/FuzzingLabs/thoth) and can
+provide some more insight on the inside of this zkEVM.  
+The legend can be found
+[here](https://github.com/FuzzingLabs/thoth/blob/master/images/callgraph_legend.png).  
+You can use [this tool](https://dreampuf.github.io/GraphvizOnline/) to visualize
+the .gv files online.
+
 ## Questions / FAQ
 
 Questions are welcome! If you have any questions regarding Kakarot, feel free to
