@@ -30,7 +30,6 @@ jobs:
           path: thoth
 
       - name: Load build artifacts
-        needs: compilation-tests
         uses: actions/download-artifact@v3
         with:
           name: build
