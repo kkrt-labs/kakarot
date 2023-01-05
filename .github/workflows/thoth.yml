@@ -7,7 +7,7 @@ on:
 
 jobs:
   thoth:
-    needs: compilation-tests
+    needs: Store build artifacts
     runs-on: ubuntu-latest
     env:
       CI_COMMIT_MESSAGE: CI Generating contract's call graphs
