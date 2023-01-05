@@ -1,0 +1,97 @@
+// Call flow graph
+digraph account_registry {
+	graph [fontname="Helvetica,Arial,sans-serif" fontsize=20 layout=dot newrank=true rankdir=LR]
+	node [fontname="Helvetica,Arial,sans-serif" pencolor="#00000044" shape="rect, plaintext" style=filled]
+	edge [arrowsize=0.5 fontname="Helvetica,Arial,sans-serif" labeldistance=3 labelfontcolor="#00000080" penwidth=2]
+	0 [label="starkware.cairo.common.alloc.alloc" color="" fillcolor=lightcoral shape=oval style=filled]
+	3 [label="starkware.cairo.common.hash.hash2" color="" fillcolor=lightcoral shape=oval style=filled]
+	9 [label="starkware.cairo.common.math.assert_not_zero" color="" fillcolor=lightcoral shape=oval style=filled]
+	14 [label="starkware.cairo.common.math.assert_250_bit\l['known_ap_change']" color="" fillcolor=yellow shape=oval style=filled]
+	27 [label="starkware.starknet.common.storage.normalize_address\l['known_ap_change']" color="" fillcolor=yellow shape=oval style=filled]
+	67 [label="starkware.starknet.common.syscalls.get_caller_address" color="" fillcolor=lightcoral shape=oval style=filled]
+	74 [label="starkware.starknet.common.syscalls.storage_read" color="" fillcolor=lightcoral shape=oval style=filled]
+	82 [label="starkware.starknet.common.syscalls.storage_write" color="" fillcolor=lightcoral shape=oval style=filled]
+	90 [label="starkware.starknet.common.syscalls.emit_event" color="" fillcolor=lightcoral shape=oval style=filled]
+	100 [label="openzeppelin.access.ownable.library.OwnershipTransferred.emit" color="" fillcolor=lightcoral shape=oval style=filled]
+	125 [label="openzeppelin.access.ownable.library.Ownable_owner.addr" color="" fillcolor=lightcoral shape=oval style=filled]
+	130 [label="openzeppelin.access.ownable.library.Ownable_owner.read" color="" fillcolor=lightcoral shape=oval style=filled]
+	143 [label="openzeppelin.access.ownable.library.Ownable_owner.write" color="" fillcolor=lightcoral shape=oval style=filled]
+	155 [label="openzeppelin.access.ownable.library.Ownable.initializer" color="" fillcolor=lightcoral shape=oval style=filled]
+	162 [label="openzeppelin.access.ownable.library.Ownable.assert_only_owner" color="" fillcolor=lightcoral shape=oval style=filled]
+	177 [label="openzeppelin.access.ownable.library.Ownable.owner" color="" fillcolor=lightcoral shape=oval style=filled]
+	183 [label="openzeppelin.access.ownable.library.Ownable.transfer_ownership" color="" fillcolor=lightcoral shape=oval style=filled]
+	195 [label="openzeppelin.access.ownable.library.Ownable._transfer_ownership" color="" fillcolor=lightcoral shape=oval style=filled]
+	216 [label="kakarot.accounts.registry.account.library.starknet_contract_address_.addr" color="" fillcolor=lightcoral shape=oval style=filled]
+	230 [label="kakarot.accounts.registry.account.library.starknet_contract_address_.read" color="" fillcolor=lightcoral shape=oval style=filled]
+	244 [label="kakarot.accounts.registry.account.library.starknet_contract_address_.write" color="" fillcolor=lightcoral shape=oval style=filled]
+	257 [label="kakarot.accounts.registry.account.library.evm_contract_address_.addr" color="" fillcolor=lightcoral shape=oval style=filled]
+	271 [label="kakarot.accounts.registry.account.library.evm_contract_address_.read" color="" fillcolor=lightcoral shape=oval style=filled]
+	285 [label="kakarot.accounts.registry.account.library.evm_contract_address_.write" color="" fillcolor=lightcoral shape=oval style=filled]
+	298 [label="kakarot.accounts.registry.account.library.AccountRegistry.constructor" color="" fillcolor=lightcoral shape=oval style=filled]
+	306 [label="kakarot.accounts.registry.account.library.AccountRegistry.transfer_ownership" color="" fillcolor=lightcoral shape=oval style=filled]
+	313 [label="kakarot.accounts.registry.account.library.AccountRegistry.set_account_entry" color="" fillcolor=lightcoral shape=oval style=filled]
+	326 [label="kakarot.accounts.registry.account.library.AccountRegistry.get_starknet_contract_address" color="" fillcolor=lightcoral shape=oval style=filled]
+	338 [label="kakarot.accounts.registry.account.library.AccountRegistry.get_evm_contract_address" color="" fillcolor=lightcoral shape=oval style=filled]
+	350 [label="__main__.constructor\l['constructor']" color="" fillcolor=violet shape=oval style=filled]
+	358 [label="__wrappers__.constructor\l['constructor']" color="" fillcolor=violet shape=doubleoctagon style=filled]
+	378 [label="__main__.set_account_entry\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
+	389 [label="__wrappers__.set_account_entry\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
+	410 [label="__main__.transfer_ownership\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
+	419 [label="__wrappers__.transfer_ownership\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
+	438 [label="__main__.get_starknet_contract_address\l['view']" color="" fillcolor=orange shape=oval style=filled]
+	446 [label="__wrappers__.get_starknet_contract_address_encode_return" color="" fillcolor=white shape=oval style=solid]
+	455 [label="__wrappers__.get_starknet_contract_address\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
+	475 [label="__main__.get_evm_contract_address\l['view']" color="" fillcolor=orange shape=oval style=filled]
+	483 [label="__wrappers__.get_evm_contract_address_encode_return" color="" fillcolor=white shape=oval style=solid]
+	492 [label="__wrappers__.get_evm_contract_address\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
+	27 -> 14 [label=4]
+	100 -> 0 [label=2]
+	100 -> 90
+	130 -> 125
+	130 -> 74
+	143 -> 125
+	143 -> 82
+	155 -> 195
+	162 -> 177
+	162 -> 67
+	162 -> 9
+	177 -> 130
+	183 -> 9
+	183 -> 162
+	183 -> 195
+	195 -> 177
+	195 -> 143
+	195 -> 100
+	216 -> 3
+	216 -> 27
+	230 -> 216
+	230 -> 74
+	244 -> 216
+	244 -> 82
+	257 -> 3
+	257 -> 27
+	271 -> 257
+	271 -> 74
+	285 -> 257
+	285 -> 82
+	298 -> 155
+	306 -> 183
+	313 -> 244
+	313 -> 285
+	326 -> 230
+	338 -> 271
+	350 -> 298
+	358 -> 350
+	378 -> 162
+	378 -> 313
+	389 -> 378
+	410 -> 162
+	410 -> 306
+	419 -> 410
+	438 -> 326
+	455 -> 438
+	455 -> 446
+	475 -> 338
+	492 -> 475
+	492 -> 483
+}
