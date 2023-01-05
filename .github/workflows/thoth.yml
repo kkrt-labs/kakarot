@@ -29,11 +29,25 @@ jobs:
           repository: FuzzingLabs/thoth
           path: thoth
 
-      - name: Load build artifacts
-        uses: actions/download-artifact@v3
+      - name: Load cached Poetry installation
+        uses: actions/cache@v3
         with:
-          name: build
-          path: ./build/
+          path: ~/.local # the path depends on the OS
+          key: poetry-0 # increment to reset cache
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key:
+            venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version
+            }}-${{ hashFiles('**/poetry.lock') }}
 
       - name: Install thoth
         run: |
@@ -41,8 +55,9 @@ jobs:
           sudo pip install .
 
       # Build artifacts
-      - name: Generate contract's call graphs
+      - name: Compile all the cairo files && Generate contract's call graphs
         run: |
+          make build
           for file in $(ls build | grep -v "abi"); do thoth local build/$file -call; done
           rm -rf docs/callgraphs
           mv output-callgraph docs/callgraphs

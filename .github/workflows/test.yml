@@ -57,12 +57,6 @@ jobs:
           make format-check
           make build
 
-      - name: Store build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: build
-          path: ./build/
-
   python-tests:
     runs-on: ubuntu-latest
     steps:
