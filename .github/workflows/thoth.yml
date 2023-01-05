@@ -6,8 +6,8 @@ on:
       - main
 
 jobs:
-  needs: compilation-tests
   thoth:
+    needs: compilation-tests
     runs-on: ubuntu-latest
     env:
       CI_COMMIT_MESSAGE: CI Generating contract's call graphs
