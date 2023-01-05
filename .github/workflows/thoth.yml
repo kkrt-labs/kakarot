@@ -7,8 +7,8 @@ on:
 
 jobs:
   thoth:
-    needs: Store build artifacts
-    runs-on: ubuntu-latest
+    runs-on: compilation-tests
+    needs: build
     env:
       CI_COMMIT_MESSAGE: CI Generating contract's call graphs
       CI_COMMIT_AUTHOR: ${{ github.event.repository.name }} CI
