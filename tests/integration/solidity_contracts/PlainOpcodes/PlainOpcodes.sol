@@ -30,7 +30,9 @@ contract PlainOpcodes {
     /*//////////////////////////////////////////////////////////////
                             FUNCTIONS FOR OPCODES
     //////////////////////////////////////////////////////////////*/
-    function opcodeBlockHash(uint256 blockNumber) public view returns (bytes32 _blockhash) {
+    function opcodeBlockHash(
+        uint256 blockNumber
+    ) public view returns (bytes32 _blockhash) {
         return (blockhash(blockNumber));
     }
 
@@ -42,10 +44,9 @@ contract PlainOpcodes {
         return counter.count();
     }
 
-    function opcodeStaticCall2() public {
+    function opcodeStaticCall2() public view returns (bool, bytes memory) {
         bytes memory data = abi.encodeWithSelector(bytes4(keccak256("inc()")));
-        address(counter).staticcall(data);
-
+        return address(counter).staticcall(data);
     }
 
     function opcodeCall() public {
