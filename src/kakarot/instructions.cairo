@@ -15,27 +15,28 @@ from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
-from kakarot.model import model
-from kakarot.memory import Memory
 from kakarot.execution_context import ExecutionContext
-from kakarot.stack import Stack
-from kakarot.instructions.push_operations import PushOperations
-from kakarot.instructions.stop_and_arithmetic_operations import StopAndArithmeticOperations
+from kakarot.instructions.block_information import BlockInformation
 from kakarot.instructions.comparison_operations import ComparisonOperations
 from kakarot.instructions.duplication_operations import DuplicationOperations
+from kakarot.instructions.environmental_information import EnvironmentalInformation
 from kakarot.instructions.exchange_operations import ExchangeOperations
 from kakarot.instructions.logging_operations import LoggingOperations
 from kakarot.instructions.memory_operations import MemoryOperations
-from kakarot.instructions.environmental_information import EnvironmentalInformation
-from kakarot.instructions.block_information import BlockInformation
+from kakarot.instructions.push_operations import PushOperations
+from kakarot.instructions.sha3 import Sha3
+from kakarot.instructions.stop_and_arithmetic_operations import StopAndArithmeticOperations
 from kakarot.instructions.system_operations import (
     SystemOperations,
     CallHelper,
     CreateHelper,
     SelfDestructHelper,
 )
-from kakarot.instructions.sha3 import Sha3
 from kakarot.interfaces.interfaces import IEvmContract
+from kakarot.memory import Memory
+from kakarot.model import model
+from kakarot.precompiles.precompiles import Precompiles
+from kakarot.stack import Stack
 
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.
@@ -622,6 +623,11 @@ namespace EVMInstructions {
                 }
                 return ctx;
             } else {
+                let is_precompile = Precompiles.is_precompile(address=ctx.evm_contract_address);
+                if (is_precompile != FALSE) {
+                    let ctx = CallHelper.finalize_calling_context(ctx);
+                    return run(ctx=ctx);
+                }
                 let (bytecode_len) = IEvmContract.bytecode_len(
                     contract_address=ctx.starknet_contract_address
                 );

@@ -511,6 +511,7 @@ namespace CallHelper {
         // TODO: would break the whole computation, so if it does not, it's TRUE
         let success = Uint256(low=1, high=0);
         let ctx = ExecutionContext.update_sub_context(ctx.calling_context, ctx);
+        let ctx = ExecutionContext.increment_gas_used(ctx, ctx.sub_context.gas_used);
 
         // Append contracts selfdestruct to the calling_context
         let ctx = ExecutionContext.push_to_destroy_contracts(
@@ -606,17 +607,20 @@ namespace CreateHelper {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
+
         IEvmContract.write_bytecode(
             contract_address=ctx.starknet_contract_address,
             bytecode_len=ctx.return_data_len,
             bytecode=ctx.return_data,
         );
-        local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(self=ctx.calling_context, sub_context=ctx);
 
         // code_deposit_code := 200 * deployed_code_size * BYTES_PER_FELT (as Kakarot packs bytes inside a felt)
         // dynamic_gas :=  deployment_code_execution_cost + code_deposit_cost
         let dynamic_gas = ctx.gas_used + 200 * ctx.return_data_len * ContractAccount.BYTES_PER_FELT;
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=dynamic_gas);
+
+        local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(self=ctx.calling_context, sub_context=ctx);
+        let ctx = ExecutionContext.increment_gas_used(ctx, ctx.sub_context.gas_used);
 
         // Append contracts to selfdestruct to the calling_context
         let ctx = ExecutionContext.push_to_destroy_contracts(
