@@ -1,11 +1,13 @@
 name: THOTH
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   thoth:
     runs-on: ubuntu-latest
-    needs: compilation-tests
     env:
       CI_COMMIT_MESSAGE: CI Generating contract's call graphs
       CI_COMMIT_AUTHOR: ${{ github.event.repository.name }} CI
@@ -28,6 +30,7 @@ jobs:
           path: thoth
 
       - name: Load build artifacts
+        needs: compilation-tests
         uses: actions/download-artifact@v3
         with:
           name: build
