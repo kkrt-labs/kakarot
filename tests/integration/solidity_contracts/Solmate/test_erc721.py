@@ -1,5 +1,6 @@
 import pytest
 
+
 @pytest.mark.asyncio
 @pytest.mark.SolmateERC721
 class TestERC721:
@@ -11,7 +12,9 @@ class TestERC721:
             assert symbol == "KKNFT"
 
     async def test_should_mint(self, addresses, erc_721):
-        await erc_721.mint(addresses[1].address, 1337, caller_address=addresses[1].starknet_address)
+        await erc_721.mint(
+            addresses[1].address, 1337, caller_address=addresses[1].starknet_address
+        )
         balance = await erc_721.balanceOf(addresses[1].address)
         owner = await erc_721.ownerOf(1337)
 
@@ -20,7 +23,9 @@ class TestERC721:
 
     async def test_should_burn(self, addresses, erc_721):
 
-        await erc_721.mint(addresses[1].address, 1337, caller_address=addresses[1].starknet_address)
+        await erc_721.mint(
+            addresses[1].address, 1337, caller_address=addresses[1].starknet_address
+        )
         await erc_721.burn(1337, caller_address=addresses[1].starknet_address)
         balance = await erc_721.balanceOf(addresses[1].address)
 
@@ -74,6 +79,3 @@ class TestERC721:
         assert owner == addresses[3].address
         assert receiver_balance == 1
         assert sender_balance == 0
-        
-        
-
