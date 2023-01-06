@@ -50,9 +50,7 @@ With the above information in mind the Kakarot EVM can be deployed and configure
 
 This generates a class hash which will be used by the core Kakarot contract to deploy *Contract Accounts*.
 
-2. Deploy Kakarot (core)
-
-The Kakarot core contract requires the following constructor arguments:
+2. Deploy Kakarot (core), with the following constructor arguments:
 - StarkNet address of the owner/admin account that controls the Kakarot core contract.
 - Address of the ETH token contract (Which is also used as ether within the Kakarot EVM)
 - *Contract Account* class hash.
@@ -61,4 +59,4 @@ The Kakarot core contract requires the following constructor arguments:
 
 4. Deploy Blockhash Registry
 
-5. Store the addresses of the account and blockhash registry contracts in kakarot core using `set_account_registry` and `set_blockhash_registry` respectively. This is required for Kakarot to access the functionality of the registries.
+5. Store the addresses of the account and blockhash registry contracts in Kakarot core using `set_account_registry` and `set_blockhash_registry` respectively. This is required for Kakarot to access the functionality of the registries.
