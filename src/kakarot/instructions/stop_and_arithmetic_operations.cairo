@@ -82,7 +82,7 @@ namespace StopAndArithmeticOperations {
         let b = popped[1];
 
         // Compute the addition
-        let (result) = SafeUint256.add(a, b);
+        let (result) = Uint256.add(a, b);
 
         // Stack output:
         // a + b: integer result of the addition modulo 2^256
