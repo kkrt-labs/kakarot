@@ -13,7 +13,7 @@ from utils.utils import Helpers
 
 // @title EcAdd Precompile related functions.
 // @notice This file contains the logic required to run the ec_add precompile
-// using Starkware's cairo_secp library
+// using alt_bn128 library
 // @author @pedrobergamini
 // @custom:namespace PrecompileEcAdd
 namespace PrecompileEcAdd {
