@@ -87,6 +87,10 @@ def wrap_for_kakarot(
                     topic=bytes(),
                     topics=[
                         bytes.fromhex(
+                            # event "keys" in cairo are event "topics" in solidity
+                            # they're returned as list where consecutive values are indeed
+                            # low, high, low, high, etc. of the Uint256 cairo representation
+                            # of the bytes32 topics. This recomputes the original topic
                             f"{(event.keys[i] + 2**128 * event.keys[i + 1]):064x}"
                         )
                         for i in range(0, len(event.keys), 2)
