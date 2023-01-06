@@ -2,6 +2,8 @@
 
 %lang starknet
 
+// Library copied from https://github.com/tekkac/cairo-alt_bn128
+
 // Starkware dependencies
 from starkware.cairo.common.cairo_secp.bigint import UnreducedBigInt3, BigInt3
 
