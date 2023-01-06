@@ -9,6 +9,7 @@ from starkware.cairo.common.uint256 import (
     uint256_add,
     uint256_signed_div_rem,
     uint256_le,
+    uint256_mul,
     uint256_eq,
     uint256_sub,
 )
@@ -118,7 +119,7 @@ namespace StopAndArithmeticOperations {
         let b = popped[1];
 
         // Compute the multiplication
-        let (result) = SafeUint256.mul(a, b);
+        let (result, _) = uint256_mul(a, b);
 
         // Stack output:
         // a * b: integer result of the multiplication modulo 2^256
