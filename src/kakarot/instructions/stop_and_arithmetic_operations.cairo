@@ -6,10 +6,12 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import (
     Uint256,
+    uint256_add,
     uint256_signed_div_rem,
     uint256_le,
     uint256_eq,
     uint256_sub,
+
 )
 from starkware.cairo.common.bool import FALSE, TRUE
 
@@ -82,7 +84,7 @@ namespace StopAndArithmeticOperations {
         let b = popped[1];
 
         // Compute the addition
-        let (result) = Uint256.add(a, b);
+        let (result, _) = uint256_add(a, b);
 
         // Stack output:
         // a + b: integer result of the addition modulo 2^256
