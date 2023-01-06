@@ -11,7 +11,6 @@ from starkware.cairo.common.uint256 import (
     uint256_le,
     uint256_eq,
     uint256_sub,
-
 )
 from starkware.cairo.common.bool import FALSE, TRUE
 
