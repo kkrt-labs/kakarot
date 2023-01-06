@@ -21,7 +21,7 @@
 <div align="center">
 
 **Kakarot** is an Ethereum Virtual Machine written in Cairo. It means it can be
-deployed on StarkNet, a layer 2 scaling solution for Ethereum, and run an EVM
+deployed on StarkNet, a layer 2 scaling solution for Ethereum, and run any EVM
 bytecode program. Hence, Kakarot can be used to run Ethereum smart contracts on
 StarkNet. Kakarot is the super sayajin zkEVM! Why? Because:
 `It's over 9000!!!!!`.
@@ -43,17 +43,11 @@ It is a work in progress, and it is not ready for production.
 %%{init: {'theme': 'forest', 'themeVariables': { 'darkMode': 'false'}}}%%
 
 pie title Kakarot EMV opcodes support (142 / 142)
-    "Supported" : 138
+    "Supported" : 142
     "Not supported" : 0
-    "Partially supported" : 4
 ```
 
 Here is the list of supported opcodes: [opcodes](docs/supported_opcodes.md)
-
-For the moment the list is maintained manually, but it will likely be generated
-automatically in the future. If you want to contribute, you can help us by
-adding the missing opcodes. And if you implement a new opcode, please update the
-list.
 
 ## Documentation
 
@@ -169,13 +163,13 @@ make build
 To build the test Solidity smart contracts:
 
 ```bash
-make build-foundry
+# install foundry if you don't have it already
+# curl -L https://foundry.paradigm.xyz | bash
+# foundryup
+make build-sol
 ```
 
 ## Test
-
-Running the tests requires to have docker available in the machine. Check
-[their doc](https://docs.docker.com/get-docker/) for how to install it.
 
 ```bash
 # Run all tests

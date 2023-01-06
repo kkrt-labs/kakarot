@@ -6,6 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import emit_event
+from starkware.cairo.common.bool import FALSE
 
 // Internal dependencies
 from kakarot.model import model
@@ -34,11 +35,18 @@ namespace LoggingOperations {
     ) -> model.ExecutionContext* {
         alloc_locals;
 
+        // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
+        with_attr error_message("Kakarot: StateModificationError") {
+            assert ctx.read_only = FALSE;
+        }
+
         // Get stack from context.
         let stack: model.Stack* = ctx.stack;
 
         // Pop offset + size.
         let (stack, popped) = Stack.pop_n(stack, topics_len + 2);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+
         let offset = popped[0];
         let size = popped[1];
 
@@ -55,7 +63,6 @@ namespace LoggingOperations {
         emit_event(keys_len=topics_len * 2, keys=popped + 4, data_len=actual_size, data=data);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_memory(ctx, memory);
 
         // Increment gas used.

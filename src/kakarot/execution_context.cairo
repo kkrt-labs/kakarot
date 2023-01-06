@@ -58,6 +58,9 @@ namespace ExecutionContext {
         dw 0;  // evm_contract_address
         dw 0;  // calling_context
         dw 0;  // sub_context
+        dw 0;  // destroy_contracts_len
+        dw 0;  // destroy_contracts
+        dw 0;  // read only
     }
 
     // @notice Initialize the execution context.
@@ -99,6 +102,7 @@ namespace ExecutionContext {
             sub_context=sub_context,
             destroy_contracts_len=0,
             destroy_contracts=empty_destroy_contracts,
+            read_only=FALSE,
             );
         return ctx;
     }
@@ -122,10 +126,15 @@ namespace ExecutionContext {
     }
 
     // @notice Initialize the execution context.
-    // @dev Initialize the execution context of a specific contract
-    // @param address The evm address from which the code will be executed
-    // @param calldata_len The calldata length
+    // @dev Initialize the execution context of a specific contract.
+    // @param address The evm address from which the code will be executed.
+    // @param calldata_len The calldata length.
     // @param calldata The calldata.
+    // @param value The value in wei to be sent to address.
+    // @param calling_context A reference to the context of the calling contract. This context stores the return data produced by the called contract in its memory.
+    // @param return_data_len The return_data length.
+    // @param return_data The region where returned data of the contract or precompile is written.
+    // @param read_only The boolean that determines whether state modifications can be executed from the sub-execution context.
     // @return The initialized execution context.
     func init_at_address{
         syscall_ptr: felt*,
@@ -141,6 +150,7 @@ namespace ExecutionContext {
         calling_context: model.ExecutionContext*,
         return_data_len: felt,
         return_data: felt*,
+        read_only: felt,
     ) -> model.ExecutionContext* {
         alloc_locals;
 
@@ -182,6 +192,7 @@ namespace ExecutionContext {
             sub_context=sub_context,
             destroy_contracts_len=0,
             destroy_contracts=empty_destroy_contracts,
+            read_only=read_only,
             );
     }
 
@@ -251,6 +262,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
             );
     }
 
@@ -298,6 +310,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
             );
     }
 
@@ -325,6 +338,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
             );
     }
 
@@ -357,6 +371,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
             );
     }
 
@@ -385,6 +400,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
             );
     }
 
@@ -413,6 +429,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
             );
     }
 
@@ -440,6 +457,7 @@ namespace ExecutionContext {
             sub_context=sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
             );
     }
 
@@ -469,6 +487,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
             );
     }
 
@@ -501,6 +520,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len + destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
             );
     }
 
@@ -528,6 +548,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len + 1,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
             );
     }
 
@@ -575,6 +596,7 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
             );
     }
 

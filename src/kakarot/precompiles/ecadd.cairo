@@ -3,6 +3,10 @@
 %lang starknet
 
 // Starkware dependencies
+<<<<<<< HEAD
+=======
+from starkware.cairo.common.alloc import alloc
+>>>>>>> main
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_secp.bigint import BigInt3
 from starkware.cairo.common.uint256 import Uint256

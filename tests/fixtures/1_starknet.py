@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import AsyncGenerator
 
 import pandas as pd
+import pytest
 import pytest_asyncio
 from cairo_coverage import cairo_coverage
 from starkware.starknet.business_logic.execution.execute_entry_point import (
@@ -80,3 +81,16 @@ async def starknet(worker_id, request, blockhashes) -> AsyncGenerator[Starknet, 
                 times.sort_values(["duration"], ascending=False).to_csv(
                     output_dir / "times.csv", index=False
                 )
+
+
+@pytest.fixture(autouse=True)
+def starknet_snapshot(starknet):
+    """
+    Auto used fixture to snapshot the starknet state before each test and reset it at teardown
+    """
+    initial_state = starknet.state.copy()
+
+    yield
+
+    initial_cache_state = initial_state.state._copy()
+    starknet.state.state = initial_cache_state

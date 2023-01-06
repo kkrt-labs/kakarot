@@ -65,6 +65,7 @@ namespace model {
     // @param sub_context - child context of the current execution context, can be empty
     // @param destroy_contracts_len - destroy_contract length
     // @param destroy_contracts - array of contracts to destroy at the end of the transaction
+    // @param read_only - if set to true, context cannot do any state modifying instructions or send ETH in the sub context.
     struct ExecutionContext {
         call_context: CallContext*,
         program_counter: felt,
@@ -82,5 +83,6 @@ namespace model {
         sub_context: ExecutionContext*,
         destroy_contracts_len: felt,
         destroy_contracts: felt*,
+        read_only: felt,
     }
 }

@@ -69,16 +69,11 @@ format-mac:
 	black tests/.
 	isort tests/.
 
-build-sol:
-	scripts/compile_integration_contracts.sh
-
 check-resources:
 	poetry run python scripts/check_resources.py
 
 get-blockhashes:
 	poetry run python scripts/get_latest_blockhashes.py
 	
-build-foundry:
-	forge build --contracts solidity_contracts/StarkEx -o solidity_contracts/StarkEx/out
-	forge build --contracts foundry_compiler/UniswapV2 -o solidity_contracts/UniswapV2/out
-
+build-sol:
+	forge build --contracts tests/integration/solidity_contracts -o tests/integration/solidity_contracts/build
