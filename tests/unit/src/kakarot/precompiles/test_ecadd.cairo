@@ -124,13 +124,14 @@ func test__ecadd_via_staticcall{
 
     // Put the resulting x and y on the stack
     let ctx: model.ExecutionContext* = MemoryOperations.exec_pop(ctx);
-    let stack = Stack.push(ctx.stack, Uint256(0x80, 0));
     let stack = Stack.push(ctx.stack, Uint256(0xA0, 0));
     let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
     let ctx: model.ExecutionContext* = MemoryOperations.exec_mload(ctx);
+    let (stack: model.Stack*, local result_y: Uint256) = Stack.peek(ctx.stack, 0);
+    let stack = Stack.push(stack, Uint256(0x80, 0));
+    let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
     let ctx: model.ExecutionContext* = MemoryOperations.exec_mload(ctx);
-    let (stack: model.Stack*, result_x: Uint256) = Stack.peek(ctx.stack, 0);
-    let (stack: model.Stack*, result_y: Uint256) = Stack.peek(stack, 1);
+    let (stack: model.Stack*, local result_x: Uint256) = Stack.peek(ctx.stack, 0);
 
     // Then
     let (x: BigInt3) = uint256_to_bigint(x_uint256);
