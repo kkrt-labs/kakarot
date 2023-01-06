@@ -1,0 +1,23 @@
+import random
+
+import pytest
+import pytest_asyncio
+from starkware.starknet.testing.contract import StarknetContract
+from starkware.starknet.testing.starknet import Starknet
+
+
+@pytest_asyncio.fixture(scope="module")
+async def ecmul(starknet: Starknet):
+    return await starknet.deploy(
+        source="./tests/unit/src/kakarot/precompiles/test_ecmul.cairo",
+        cairo_path=["src"],
+        disable_hint_validation=True,
+    )
+
+
+@pytest.mark.asyncio
+class TestEcMul:
+    async def test_ecmul(self, ecmul):
+
+        await ecmul.test__ecmul_impl().call()
+        await ecmul.test__ecmul_via_staticcall().call()
