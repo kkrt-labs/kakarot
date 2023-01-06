@@ -79,3 +79,50 @@ class TestERC721:
         assert owner == addresses[3].address
         assert receiver_balance == 1
         assert sender_balance == 0
+
+    async def test_should_transfer_from_self(self, addresses, erc_721):
+        await erc_721.mint(
+            addresses[1].address, 1337, caller_address=addresses[1].starknet_address
+        )
+        await erc_721.transferFrom(
+            addresses[1].address,
+            addresses[2].address,
+            1337,
+            caller_address=addresses[1].starknet_address,
+        )
+
+        approved = await erc_721.getApproved(1337)
+        owner = await erc_721.ownerOf(1337)
+        receiver_balance = await erc_721.balanceOf(addresses[2].address)
+        sender_balance = await erc_721.balanceOf(addresses[1].address)
+
+        assert approved == "0x" + 40 * "0"
+        assert owner == addresses[2].address
+        assert receiver_balance == 1
+        assert sender_balance == 0
+
+    async def test_transfer_from_approve_all(self, addresses, erc_721):
+        await erc_721.mint(
+            addresses[2].address, 1337, caller_address=addresses[2].address
+        )
+
+        await erc_721.setApprovalForAll(
+            addresses[3].address, True, caller_address=addresses[2].starknet_address
+        )
+
+        await erc_721.transferFrom(
+            addresses[2].address,
+            addresses[3].address,
+            1337,
+            caller_address=addresses[2].starknet_address,
+        )
+
+        approved = await erc_721.getApproved(1337)
+        owner = await erc_721.ownerOf(1337)
+        receiver_balance = await erc_721.balanceOf(addresses[3].address)
+        sender_balance = await erc_721.balanceOf(addresses[2].address)
+
+        assert approved == "0x" + 40 * "0"
+        assert owner == addresses[3].address
+        assert receiver_balance == 1
+        assert sender_balance == 0
