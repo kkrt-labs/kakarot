@@ -202,6 +202,11 @@ Test architecture is the following:
 
 ## Deploy
 
+The following describes how to deploy the entire Kakarot **EVM** on StarkNet.
+
+It is **not** a description on how to deploy a contract on the official Kakarot zkEVM.
+
+
 The Kakarot EVM can be deployed on StarkNet using a python script utilizing the [starknet.py](https://starknetpy.readthedocs.io/en/latest/) library.
 
 First we need to declare some environment variables that are required for the deployment.
@@ -244,7 +249,7 @@ make deploy
 
 Deployed contract addresses will be stored in `./deployed_addresses.json`.
 
-A step by step description of the individual components and how they are deployed/configured can be found [here](docs/general/kakarot_components.md) .
+A step by step description of the individual components and how they are deployed/configured can be found [here](docs/general/kakarot_components.md).
 
 ## License
 
