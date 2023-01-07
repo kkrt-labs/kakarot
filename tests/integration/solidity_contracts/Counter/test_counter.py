@@ -28,6 +28,16 @@ class TestCounter:
             await counter.dec(caller_address=addresses[1].starknet_address)
             assert await counter.count() == 0
 
+        async def test_should_decrease_count_unchecked(self, counter, addresses):
+            await counter.inc(caller_address=addresses[1].starknet_address)
+            await counter.decUnchecked(caller_address=addresses[1].starknet_address)
+            assert await counter.count() == 0
+
+        async def test_should_decrease_count_in_place(self, counter, addresses):
+            await counter.inc(caller_address=addresses[1].starknet_address)
+            await counter.decInPlace(caller_address=addresses[1].starknet_address)
+            assert await counter.count() == 0
+
     class TestReset:
         async def test_should_set_count_to_0(self, counter, addresses):
             await counter.inc(caller_address=addresses[1].starknet_address)
