@@ -401,46 +401,46 @@ class TestERC721:
     #         assert recipient_token_id == 1337
     #         assert recipient_data == data
 
-    #     async def test_should_fail_to_safe_transfer_from_to_NonERC721Recipient(
-    #         self, addresses, erc_721, erc_721_nonrecipient
-    #     ):
-    #         recipient_address = erc_721_nonrecipient.evm_contract_address
+        async def test_should_fail_to_safe_transfer_from_to_NonERC721Recipient(
+            self, addresses, erc_721, erc_721_nonrecipient
+        ):
+            recipient_address = erc_721_nonrecipient.evm_contract_address
 
-    #         await erc_721.mint(
-    #             addresses[1].address, 1337, caller_address=addresses[1].starknet_address
-    #         )
+            await erc_721.mint(
+                addresses[1].address, 1337, caller_address=addresses[1].starknet_address
+            )
 
-    #         with pytest.raises(Exception) as e:
-    #             await erc_721.safeTransferFrom(
-    #                 addresses[1].address,
-    #                 recipient_address,
-    #                 1337,
-    #                 caller_address=addresses[1].starknet_address,
-    #             )
+            with pytest.raises(Exception) as e:
+                await erc_721.safeTransferFrom(
+                    addresses[1].address,
+                    recipient_address,
+                    1337,
+                    caller_address=addresses[1].starknet_address,
+                )
 
-    #         message = re.search(r"Error message: (.*)", e.value.message)[1]
-    #         assert message == "Kakarot: Reverted with reason: 0"
+            message = re.search(r"Error message: (.*)", e.value.message)[1]
+            assert message == "Kakarot: Reverted with reason: 0"
 
-    #     async def test_should_fail_to_safe_transfer_from_to_NonERC721Recipient_with_data(
-    #         self, addresses, erc_721, erc_721_nonrecipient
-    #     ):
-    #         recipient_address = erc_721_nonrecipient.evm_contract_address
+        async def test_should_fail_to_safe_transfer_from_to_NonERC721Recipient_with_data(
+            self, addresses, erc_721, erc_721_nonrecipient
+        ):
+            recipient_address = erc_721_nonrecipient.evm_contract_address
 
-    #         await erc_721.mint(
-    #             addresses[1].address, 1337, caller_address=addresses[1].starknet_address
-    #         )
+            await erc_721.mint(
+                addresses[1].address, 1337, caller_address=addresses[1].starknet_address
+            )
 
-    #         with pytest.raises(Exception) as e:
-    #             await erc_721.safeTransferFrom2(
-    #                 addresses[1].address,
-    #                 recipient_address,
-    #                 1337,
-    #                 b"testing 123",
-    #                 caller_address=addresses[2].starknet_address,
-    #             )
+            with pytest.raises(Exception) as e:
+                await erc_721.safeTransferFrom2(
+                    addresses[1].address,
+                    recipient_address,
+                    1337,
+                    b"testing 123",
+                    caller_address=addresses[2].starknet_address,
+                )
 
-    #         message = re.search(r"Error message: (.*)", e.value.message)[1]
-    #         assert message == "Kakarot: Reverted with reason: 147028384"
+            message = re.search(r"Error message: (.*)", e.value.message)[1]
+            assert message == "Kakarot: Reverted with reason: 147028384"
 
     #     async def test_should_fail_to_safe_transfer_from_to_RevertingERC721Recipient(
     #         self, addresses, erc_721, erc_721_reverting_recipient
