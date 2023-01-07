@@ -23,7 +23,6 @@ _profile_data = {}
 
 T = TypeVar("T", bound=Callable[..., Any])
 
-
 def timeit(fun: T) -> T:
     @wraps(fun)
     async def timed_fun(*args, **kwargs):
@@ -92,7 +91,11 @@ class traceit:
             }
         )
         logger.info(
+<<<<<<< variant A
             f"{cls.prefix}{contract_name}.{attr_name}({json.dumps(args_serializable)}, {json.dumps(kwargs_serializable)}) used {resources}"
+>>>>>>> variant B
+            f"{cls.prefix}{contract_name}.{attr_name}({json.dumps(args)}, {json.dumps(kwargs)}) used {resources}"
+======= end
         )
 
     @classmethod
