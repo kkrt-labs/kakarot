@@ -291,115 +291,115 @@ class TestERC721:
     #         message = re.search(r"Error message: (.*)", e.value.message)[1]
     #         assert message == "Kakarot: Reverted with reason: 147028384"
 
-    # class TestSafeTransferFrom:
-    #     async def test_should_safe_transfer_from_to_EOA(self, addresses, erc_721):
-    #         await erc_721.mint(
-    #             addresses[1].address, 1337, caller_address=addresses[1].starknet_address
-    #         )
+    class TestSafeTransferFrom:
+        async def test_should_safe_transfer_from_to_EOA(self, addresses, erc_721):
+            await erc_721.mint(
+                addresses[1].address, 1337, caller_address=addresses[1].starknet_address
+            )
 
-    #         await erc_721.setApprovalForAll(
-    #             addresses[3].address, True, caller_address=addresses[1].starknet_address
-    #         )
+            await erc_721.setApprovalForAll(
+                addresses[3].address, True, caller_address=addresses[1].starknet_address
+            )
 
-    #         await erc_721.safeTransferFrom(
-    #             addresses[1].address,
-    #             addresses[2].address,
-    #             1337,
-    #             caller_address=addresses[3].starknet_address,
-    #         )
+            await erc_721.safeTransferFrom(
+                addresses[1].address,
+                addresses[2].address,
+                1337,
+                caller_address=addresses[3].starknet_address,
+            )
 
-    #         approved = await erc_721.getApproved(1337)
-    #         owner = await erc_721.ownerOf(1337)
-    #         receiver_balance = await erc_721.balanceOf(addresses[2].address)
-    #         sender_balance = await erc_721.balanceOf(addresses[1].address)
+            approved = await erc_721.getApproved(1337)
+            owner = await erc_721.ownerOf(1337)
+            receiver_balance = await erc_721.balanceOf(addresses[2].address)
+            sender_balance = await erc_721.balanceOf(addresses[1].address)
 
-    #         assert approved == zero_address
-    #         assert owner == addresses[2].address
-    #         assert receiver_balance == 1
-    #         assert sender_balance == 0
+            assert approved == zero_address
+            assert owner == addresses[2].address
+            assert receiver_balance == 1
+            assert sender_balance == 0
 
-    #     async def test_should_safe_transfer_from_to_ERC721Recipient(
-    #         self, addresses, erc_721, erc_721_recipient
-    #     ):
-    #         recipient_address = erc_721_recipient.evm_contract_address
+        async def test_should_safe_transfer_from_to_ERC721Recipient(
+            self, addresses, erc_721, erc_721_recipient
+        ):
+            recipient_address = erc_721_recipient.evm_contract_address
 
-    #         await erc_721.mint(
-    #             addresses[1].address, 1337, caller_address=addresses[1].starknet_address
-    #         )
+            await erc_721.mint(
+                addresses[1].address, 1337, caller_address=addresses[1].starknet_address
+            )
 
-    #         await erc_721.setApprovalForAll(
-    #             addresses[2].address, True, caller_address=addresses[1].starknet_address
-    #         )
+            await erc_721.setApprovalForAll(
+                addresses[2].address, True, caller_address=addresses[1].starknet_address
+            )
 
-    #         await erc_721.safeTransferFrom(
-    #             addresses[1].address,
-    #             recipient_address,
-    #             1337,
-    #             caller_address=addresses[2].starknet_address,
-    #         )
+            await erc_721.safeTransferFrom(
+                addresses[1].address,
+                recipient_address,
+                1337,
+                caller_address=addresses[2].starknet_address,
+            )
 
-    #         approved = await erc_721.getApproved(1337)
-    #         owner = await erc_721.ownerOf(1337)
-    #         receiver_balance = await erc_721.balanceOf(recipient_address)
-    #         sender_balance = await erc_721.balanceOf(addresses[1].address)
+            approved = await erc_721.getApproved(1337)
+            owner = await erc_721.ownerOf(1337)
+            receiver_balance = await erc_721.balanceOf(recipient_address)
+            sender_balance = await erc_721.balanceOf(addresses[1].address)
 
-    #         assert approved == zero_address
-    #         assert owner == recipient_address
-    #         assert receiver_balance == 1
-    #         assert sender_balance == 0
+            assert approved == zero_address
+            assert owner == recipient_address
+            assert receiver_balance == 1
+            assert sender_balance == 0
 
-    #         recipient_operator = await erc_721_recipient.operator()
-    #         recipient_from = await erc_721_recipient.from_()
-    #         recipient_token_id = await erc_721_recipient.id()
-    #         recipient_data = await erc_721_recipient.data()
+            recipient_operator = await erc_721_recipient.operator()
+            recipient_from = await erc_721_recipient.from_()
+            recipient_token_id = await erc_721_recipient.id()
+            recipient_data = await erc_721_recipient.data()
 
-    #         assert recipient_operator == addresses[2].address
-    #         assert recipient_from == addresses[1].address
-    #         assert recipient_token_id == 1337
-    #         assert recipient_data == b""
+            assert recipient_operator == addresses[2].address
+            assert recipient_from == addresses[1].address
+            assert recipient_token_id == 1337
+            assert recipient_data == b""
 
-    #     async def test_should_safe_transfer_from_to_ERC721Recipient_with_data(
-    #         self, addresses, erc_721, erc_721_recipient
-    #     ):
-    #         recipient_address = erc_721_recipient.evm_contract_address
+        async def test_should_safe_transfer_from_to_ERC721Recipient_with_data(
+            self, addresses, erc_721, erc_721_recipient
+        ):
+            recipient_address = erc_721_recipient.evm_contract_address
 
-    #         await erc_721.mint(
-    #             addresses[1].address, 1337, caller_address=addresses[1].starknet_address
-    #         )
+            await erc_721.mint(
+                addresses[1].address, 1337, caller_address=addresses[1].starknet_address
+            )
 
-    #         await erc_721.setApprovalForAll(
-    #             addresses[2].address, True, caller_address=addresses[1].starknet_address
-    #         )
+            await erc_721.setApprovalForAll(
+                addresses[2].address, True, caller_address=addresses[1].starknet_address
+            )
 
-    #         data = b"testing 123"
+            data = b"testing 123"
 
-    #         await erc_721.safeTransferFrom2(
-    #             addresses[1].address,
-    #             recipient_address,
-    #             1337,
-    #             data,
-    #             caller_address=addresses[2].starknet_address,
-    #         )
+            await erc_721.safeTransferFrom2(
+                addresses[1].address,
+                recipient_address,
+                1337,
+                data,
+                caller_address=addresses[2].starknet_address,
+            )
 
-    #         approved = await erc_721.getApproved(1337)
-    #         owner = await erc_721.ownerOf(1337)
-    #         receiver_balance = await erc_721.balanceOf(recipient_address)
-    #         sender_balance = await erc_721.balanceOf(addresses[1].address)
+            approved = await erc_721.getApproved(1337)
+            owner = await erc_721.ownerOf(1337)
+            receiver_balance = await erc_721.balanceOf(recipient_address)
+            sender_balance = await erc_721.balanceOf(addresses[1].address)
 
-    #         assert approved == zero_address
-    #         assert owner == recipient_address
-    #         assert receiver_balance == 1
-    #         assert sender_balance == 0
+            assert approved == zero_address
+            assert owner == recipient_address
+            assert receiver_balance == 1
+            assert sender_balance == 0
 
-    #         recipient_operator = await erc_721_recipient.operator()
-    #         recipient_from = await erc_721_recipient.from_()
-    #         recipient_token_id = await erc_721_recipient.id()
-    #         recipient_data = await erc_721_recipient.data()
+            recipient_operator = await erc_721_recipient.operator()
+            recipient_from = await erc_721_recipient.from_()
+            recipient_token_id = await erc_721_recipient.id()
+            recipient_data = await erc_721_recipient.data()
 
-    #         assert recipient_operator == addresses[2].address
-    #         assert recipient_from == addresses[1].address
-    #         assert recipient_token_id == 1337
-    #         assert recipient_data == data
+            assert recipient_operator == addresses[2].address
+            assert recipient_from == addresses[1].address
+            assert recipient_token_id == 1337
+            assert recipient_data == data
 
         async def test_should_fail_to_safe_transfer_from_to_NonERC721Recipient(
             self, addresses, erc_721, erc_721_nonrecipient
