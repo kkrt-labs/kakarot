@@ -12,9 +12,12 @@ from starkware.cairo.common.math_cmp import is_le
 
 namespace KETHAA {
     // Constants
-    const KAKAROT = 1409719322379134103315153819531084269022823759702923787575976457644523059131;  // kakarot contract address (temporary)
-    const EXECUTE_AT_ADDRESS_SELECTOR = 175332271055223547208505378209204736960926292802627036960758298143252682610;  // keccak250(ascii('execute_at_address'))
-    const AA_VERSION = 0x11F2231B9D464344B81D536A50553D6281A9FA0FA37EF9AC2B9E076729AEFAA;  // pedersen("KAKAROT_AA_V0.0.1")
+    // kakarot contract address (temporary)
+    const KAKAROT = 1409719322379134103315153819531084269022823759702923787575976457644523059131;
+    // keccak250(ascii('execute_at_address'))
+    const EXECUTE_AT_ADDRESS_SELECTOR = 175332271055223547208505378209204736960926292802627036960758298143252682610;
+    // pedersen("KAKAROT_AA_V0.0.1")
+    const AA_VERSION = 0x11F2231B9D464344B81D536A50553D6281A9FA0FA37EF9AC2B9E076729AEFAA;
     const TX_FIELDS = 12;  // number of elements in an evm tx see EIP 1559
 
     // Indexes to retrieve specific data from the EVM transaction
@@ -32,7 +35,7 @@ namespace KETHAA {
     const R_IDX = 10;
     const S_IDX = 11;
 
-    //@dev 2 * len_byte + 2 * string_len (32) + v
+    // @dev 2 * len_byte + 2 * string_len (32) + v
     const SIGNATURE_LEN = 67;
 
     struct Call {
@@ -94,7 +97,7 @@ namespace KETHAA {
             selector=[call_array].selector,
             calldata_len=[call_array].data_len,
             calldata=calldata + [call_array].data_offset,
-        );
+            );
 
         is_valid_kakarot_transaction(_call);
         is_valid_eth_tx(eth_address, _call.calldata_len, _call.calldata);
@@ -123,22 +126,23 @@ namespace KETHAA {
         pedersen_ptr: HashBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
-    }(
-        eth_address: felt, 
-        calldata_len: felt, 
-        calldata: felt*
-    ) -> (is_valid: felt) {
+    }(eth_address: felt, calldata_len: felt, calldata: felt*) -> (is_valid: felt) {
         alloc_locals;
         let tx_type = [calldata];
-        let rlp_data = calldata + 1;  // remove the tx type
+        // remove the tx type
+        let rlp_data = calldata + 1;
         let (local fields: RLP.Field*) = alloc();
-        RLP.decode_rlp(calldata_len - 1, rlp_data, fields);  // decode the rlp array
+        // decode the rlp array
+        RLP.decode_rlp(calldata_len - 1, rlp_data, fields);
         // eip 1559 tx only for the moment
-        if (tx_type == 2) { 
-            let data_len: felt = [fields].data_len - SIGNATURE_LEN; // remove the sig to hash the tx
+        if (tx_type == 2) {
+            // remove the sig to hash the tx
+            let data_len: felt = [fields].data_len - SIGNATURE_LEN;
             let (list_ptr: felt*) = alloc();
-            assert [list_ptr] = tx_type; // add the tx type, see here: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1559.md#specification
-            let (rlp_len: felt) = RLP.encode_rlp_list(data_len, [fields].data, list_ptr + 1); // encode the rlp list without the sig
+            // add the tx type, see here: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1559.md#specification
+            assert [list_ptr] = tx_type;
+            // encode the rlp list without the sig
+            let (rlp_len: felt) = RLP.encode_rlp_list(data_len, [fields].data, list_ptr + 1);
             let (keccak_ptr: felt*) = alloc();
             let keccak_ptr_start = keccak_ptr;
             let (words: felt*) = alloc();
@@ -154,9 +158,11 @@ namespace KETHAA {
             let v = RLP.bytes_to_felt(sub_fields[V_IDX].data_len, sub_fields[V_IDX].data, 0);
             let r = RLP.bytes_to_uint256(data_len=32, data=sub_fields[R_IDX].data);
             let s = RLP.bytes_to_uint256(data_len=32, data=sub_fields[S_IDX].data);
-            finalize_keccak(keccak_ptr_start=keccak_ptr_start,keccak_ptr_end=keccak_ptr);
+            finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
             let (keccak_ptr: felt*) = alloc();
-            verify_eth_signature_uint256{keccak_ptr=keccak_ptr}(msg_hash=tx_hash.res, r=r.res, s=s.res, v=v.n, eth_address=eth_address);
+            verify_eth_signature_uint256{keccak_ptr=keccak_ptr}(
+                msg_hash=tx_hash.res, r=r.res, s=s.res, v=v.n, eth_address=eth_address
+            );
             return (is_valid=1);
         } else {
             assert 1 = 0;
@@ -174,13 +180,7 @@ namespace KETHAA {
         pedersen_ptr: HashBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
-    }(
-      msg_hash: Uint256,
-      r: Uint256,
-      s: Uint256,
-      v: felt,
-      eth_address: felt
-    ) -> (is_valid: felt) {
+    }(msg_hash: Uint256, r: Uint256, s: Uint256, v: felt, eth_address: felt) -> (is_valid: felt) {
         let (keccak_ptr: felt*) = alloc();
 
         with keccak_ptr {
