@@ -2,11 +2,11 @@ import json
 import logging
 import os
 import shutil
+import sys
 from pathlib import Path
 from typing import AsyncGenerator
 
 import pandas as pd
-import sys
 import pytest
 import pytest_asyncio
 from cairo_coverage import cairo_coverage
@@ -26,6 +26,7 @@ logging.getLogger("asyncio").setLevel(logging.ERROR)
 logger = logging.getLogger()
 
 sys.setrecursionlimit(10000)
+
 
 @pytest_asyncio.fixture(scope="session")
 async def starknet(worker_id, request, blockhashes) -> AsyncGenerator[Starknet, None]:
