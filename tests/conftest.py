@@ -29,4 +29,5 @@ pytest_plugins = [
     "tests.fixtures.3_account_registry",
     "tests.fixtures.4_blockhash_registry",
     "tests.fixtures.5_blockhashes",
+    "tests.fixtures.6_kethaa",
 ]
