@@ -8,11 +8,14 @@ from starkware.starknet.core.os.contract_address.contract_address import (
 from starkware.starknet.definitions.general_config import StarknetChainId
 from starkware.starknet.services.api.gateway.transaction import InvokeFunction, DeployAccount
 from starkware.starknet.business_logic.transaction.objects import InternalTransaction, InternalDeclare, TransactionExecutionInfo
-from starkware.starknet.public.abi import get_selector_from_name
-import eth_keys
 from tests.utils.bits import to_uint
-from starkware.starknet.core.os.transaction_hash.transaction_hash import calculate_transaction_hash_common
+import eth_keys
+from starkware.starknet.public.abi import get_selector_from_name
+from starkware.starknet.core.os.transaction_hash.transaction_hash import (
+    calculate_transaction_hash_common,
+)
 
+classHash = 0x1
 TRANSACTION_VERSION = 1
 
 def get_transaction_hash(prefix, account, calldata, nonce, max_fee, version, chain_id):
@@ -43,8 +46,6 @@ def from_call_to_call_array(calls):
         call_array.append(entry)
         calldata.extend(call[2])
     return (call_array, calldata)
-
-classHash = 0x1
 
 class BaseSigner():
     async def send_transaction(self, account, to, selector_name, calldata, nonce=None, max_fee=0):

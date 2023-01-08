@@ -7,9 +7,8 @@ import pytest
 from starkware.starknet.testing.starknet import Starknet
 from starkware.starkware_utils.error_handling import StarkException
 from eth_keys import keys
-from tests.utils.setup_kethaa import setup_test_env
 from tests.utils.signer import MockEthSigner, BaseSigner
-from tests.utils.bits import to_uint 
+from tests.utils.bits import to_uint, combine_ints 
 from eth_account._utils.legacy_transactions import serializable_unsigned_transaction_from_dict
 
 txdict = dict(
@@ -24,9 +23,9 @@ txdict = dict(
 )
 
 @pytest.mark.asyncio
-async def test_address_compute():
+async def test_address_compute(setup_kethaa):
     starknet = await Starknet.empty()
-    (deployer, account, private_key, evm_address) = await setup_test_env(starknet)
+    (deployer, account, private_key, evm_address) = setup_kethaa
 
     call_info = await deployer.compute_starknet_address(evm_address=evm_address).call()
 
@@ -37,9 +36,9 @@ async def test_address_compute():
     assert call_info.result.eth_address == evm_address
 
 @pytest.mark.asyncio
-async def test_eth_aa_signature():
+async def test_eth_aa_signature(setup_kethaa):
     starknet = await Starknet.empty()
-    (deployer, account, private_key, evm_address) = await setup_test_env(starknet)
+    (deployer, account, private_key, evm_address) = setup_kethaa
     evm_eoa = web3.Account.from_key(keys.PrivateKey(private_key_bytes=private_key))
     raw_tx = evm_eoa.sign_transaction(txdict)
     txhash = serializable_unsigned_transaction_from_dict(txdict).hash()
@@ -50,10 +49,10 @@ async def test_eth_aa_signature():
         await account.is_valid_signature([*to_uint(web3.Web3.toInt(os.urandom(32)))], [raw_tx.v, *to_uint(raw_tx.r), *to_uint(raw_tx.s)]).call()
 
 @pytest.mark.asyncio
-async def test_execute():
+async def test_execute(setup_kethaa):
     starknet = await Starknet.empty()
 
-    (deployer, account, private_key, evm_address) = await setup_test_env(starknet)
+    (deployer, account, private_key, evm_address) = setup_kethaa
     eth_account = MockEthSigner(private_key=private_key)
 
     evm_eoa = web3.Account.from_key(private_key)
