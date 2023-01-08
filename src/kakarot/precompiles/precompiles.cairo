@@ -16,6 +16,7 @@ from kakarot.model import model
 from kakarot.precompiles.datacopy import PrecompileDataCopy
 from kakarot.precompiles.ecadd import PrecompileEcAdd
 from kakarot.precompiles.ec_recover import PrecompileEcRecover
+from kakarot.precompiles.ripemd160 import PrecompileRIPEMD160
 from kakarot.stack import Stack
 
 // @title Precompile related functions.
@@ -112,7 +113,7 @@ namespace Precompiles {
         ret;
         call not_implemented_precompile;  // 0x2
         ret;
-        call not_implemented_precompile;  // 0x3
+        call PrecompileRIPEMD160.run;  // 0x3
         ret;
         call PrecompileDataCopy.run;  // 0x4
         ret;
