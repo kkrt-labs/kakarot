@@ -111,6 +111,7 @@ markers = [
     "PlainOpcodes",
     "SolmateERC20",
     "SolmateERC721",
+    "UniswapV2ERC20",
 ]
 
 [tool.isort]
