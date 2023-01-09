@@ -7,7 +7,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from starkware.cairo.common.math import split_felt, assert_nn
-from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp
+from starkware.cairo.common.bool import FALSE, TRUE
 
 // Local dependencies
 from utils.utils import Helpers
@@ -19,7 +19,7 @@ from kakarot.precompiles.precompiles import Precompiles
 from tests.unit.helpers.helpers import TestHelpers
 
 @external
-func test__precompiles_should_throw_on_not_implemented{
+func test__precompiles_should_throw_on_out_of_bounds{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(address: felt) {
     // When
