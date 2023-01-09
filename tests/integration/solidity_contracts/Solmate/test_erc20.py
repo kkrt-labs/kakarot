@@ -16,37 +16,99 @@ class TestERC20:
             decimals = await erc_20.decimals()
             assert decimals == 18
 
-    async def test_should_mint_approve_and_transfer(
-        self, erc_20, owner, others, request
-    ):
-        with traceit.context(request.node.own_markers[0].name):
-
-            # Mint few token to others[0]
+    class TestMint:
+        async def test_should_mint(self, erc_20, owner, others):
+            amount = int(1e18)
             await erc_20.mint(
-                others[0].address, 356, caller_address=owner.starknet_address
+                others[0].address, amount, caller_address=owner.starknet_address
             )
-            assert await erc_20.totalSupply() == 356
-            assert await erc_20.balanceOf(others[0].address) == 356
+            assert await erc_20.totalSupply() == amount
+            assert await erc_20.balanceOf(others[0].address) == amount
 
-            # others[0] approves others[1] to spend some
+    class TestBurn:
+        async def test_should_burn(self, erc_20, owner, others):
+            amount = int(1e18)
+            burn_amount = int(0.9e18)
+            await erc_20.mint(
+                others[0].address, amount, caller_address=owner.starknet_address
+            )
+            await erc_20.burn(
+                others[0].address, burn_amount, caller_address=owner.starknet_address
+            )
+            assert await erc_20.totalSupply() == amount - burn_amount
+            assert await erc_20.balanceOf(others[0].address) == amount - burn_amount
+
+    class TestApprove:
+        async def test_should_approve(self, erc_20, owner, others):
+            amount = int(1e18)
+            assert await erc_20.approve(
+                others[0].address, amount, caller_address=owner.starknet_address
+            )
+            assert await erc_20.allowance(owner.address, others[0].address) == amount
+
+    class TestTransfer:
+        async def test_should_transfer(self, erc_20, owner, others):
+            amount = int(1e18)
+            await erc_20.mint(
+                owner.address, amount, caller_address=owner.starknet_address
+            )
+            assert await erc_20.transfer(
+                others[0].address, amount, caller_address=owner.starknet_address
+            )
+            assert await erc_20.totalSupply() == amount
+            assert await erc_20.balanceOf(owner.address) == 0
+            assert await erc_20.balanceOf(others[0].address) == amount
+
+    class TestTransferFrom:
+        async def test_should_transfer_from(self, erc_20, owner, others):
+            from_address = others[0]
+
+            amount = int(1e18)
+            await erc_20.mint(
+                from_address.address, amount, caller_address=owner.starknet_address
+            )
+
             await erc_20.approve(
-                others[1].address, 10, caller_address=others[0].starknet_address
+                owner.address, amount, caller_address=from_address.starknet_address
             )
-            assert await erc_20.allowance(others[0].address, others[1].address) == 10
-
-            # others[1] sends others[0] token to themselves
-            await erc_20.transferFrom(
-                others[0].address,
+            assert await erc_20.transferFrom(
+                from_address.address,
                 others[1].address,
-                10,
-                caller_address=others[1].starknet_address,
+                amount,
+                caller_address=owner.starknet_address,
             )
-            assert await erc_20.balanceOf(others[0].address) == 356 - 10
-            assert await erc_20.balanceOf(others[1].address) == 10
+            assert await erc_20.totalSupply() == amount
 
-            # others[1] sends token to others[2]
-            await erc_20.transfer(
-                others[2].address, 1, caller_address=others[1].starknet_address
+            assert await erc_20.allowance(from_address.address, owner.address) == 0
+
+            assert await erc_20.balanceOf(from_address.address) == 0
+            assert await erc_20.balanceOf(others[1].address) == amount
+
+        async def test_should_transfer_from_with_infinite_approve(
+            self, erc_20, owner, others
+        ):
+            from_address = others[0]
+            uint256_max = 2**256 - 1
+            amount = int(1e18)
+            await erc_20.mint(
+                from_address.address, amount, caller_address=owner.starknet_address
             )
-            assert await erc_20.balanceOf(others[1].address) == 10 - 1
-            assert await erc_20.balanceOf(others[2].address) == 1
+
+            await erc_20.approve(
+                owner.address, uint256_max, caller_address=from_address.starknet_address
+            )
+            assert await erc_20.transferFrom(
+                from_address.address,
+                others[1].address,
+                amount,
+                caller_address=owner.starknet_address,
+            )
+            assert await erc_20.totalSupply() == amount
+
+            assert (
+                await erc_20.allowance(from_address.address, owner.address)
+                == uint256_max
+            )
+
+            assert await erc_20.balanceOf(from_address.address) == 0
+            assert await erc_20.balanceOf(others[1].address) == amount
