@@ -176,7 +176,7 @@ class TestERC20:
                 == "Kakarot: Reverted with reason: 289618752580932902191182504932654710784"
             )
 
-        async def test_should_fail_transfer_from_when_insufficient_balance(
+        async def test_transfer_from_should_fail_when_insufficient_balance(
             self, erc_20, owner, others
         ):
             from_address = others[0]
@@ -236,7 +236,7 @@ class TestERC20:
             )
             assert await erc_20.nonces(owner.address) == 1
 
-        async def test_should_permit_fails_with_bad_nonce(self, erc_20, owner, others):
+        async def test_permit_should_fail_with_bad_nonce(self, erc_20, owner, others):
             bad_nonce = 1
             deadline = MAX_INT
             digest = get_approval_digest(
@@ -266,7 +266,7 @@ class TestERC20:
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
             assert message == "Kakarot: Reverted with reason: 147028384"
 
-        async def test_should_permit_fails_with_bad_deadline(
+        async def test_permit_should_fail_with_bad_deadline(
             self, erc_20, blockhashes, owner, others
         ):
             nonce = await erc_20.nonces(owner.address)
@@ -298,7 +298,7 @@ class TestERC20:
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
             assert message == "Kakarot: Reverted with reason: 147028384"
 
-        async def test_should_permit(self, erc_20, owner, others):
+        async def test_permit_should_fail_on_replay(self, erc_20, owner, others):
             nonce = await erc_20.nonces(owner.address)
             deadline = MAX_INT
             digest = get_approval_digest(
