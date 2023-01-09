@@ -89,8 +89,11 @@ def addresses() -> List[Wallet]:
     - address: the hex string of the EVM address (20 bytes)
     - starknet_address: the corresponding address for starknet (same value but as int)
     """
-    random.seed(0)
-    private_keys = [generate_random_private_key() for _ in range(4)]
+    last_precompile_address = 0x9
+    private_keys = [
+        generate_random_private_key()
+        for _ in list(range(last_precompile_address, last_precompile_address + 4))
+    ]
     return [
         Wallet(
             address=private_key.public_key.to_checksum_address(),
