@@ -3,8 +3,8 @@ from typing import Callable
 
 import pytest
 import pytest_asyncio
-from eth_utils import keccak
 
+from tests.integration.helpers.constants import MAX_INT
 from tests.integration.helpers.helpers import (
     PERMIT_TYPEHASH,
     ec_sign,
@@ -12,7 +12,6 @@ from tests.integration.helpers.helpers import (
     get_domain_separator,
 )
 
-MAX_INT = 2**256 - 1
 TOTAL_SUPPLY = 10000 * 10**18
 TEST_AMOUNT = 10 * 10**18
 
@@ -37,6 +36,7 @@ async def other(others):
 
 @pytest.mark.asyncio
 @pytest.mark.UniswapV2ERC20
+@pytest.mark.usefixtures("starknet_snapshot")
 class TestUniswapV2ERC20:
     class TestDeploy:
         async def test_should_set_constants(self, token, owner):

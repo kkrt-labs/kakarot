@@ -5,6 +5,7 @@ import pytest
 
 @pytest.mark.asyncio
 @pytest.mark.Counter
+@pytest.mark.usefixtures("starknet_snapshot")
 class TestCounter:
     class TestCount:
         async def test_should_return_0_after_deployment(self, counter):
