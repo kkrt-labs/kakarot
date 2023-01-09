@@ -7,7 +7,10 @@ import pytest_asyncio
 from starkware.starknet.testing.contract import StarknetContract
 from web3 import Web3
 
-from tests.integration.helpers.helpers import hex_string_to_bytes_array
+from tests.integration.helpers.helpers import (
+    generate_random_private_key,
+    hex_string_to_bytes_array,
+)
 from tests.integration.helpers.wrap_kakarot import get_contract, wrap_for_kakarot
 from tests.utils.reporting import traceit
 
@@ -74,7 +77,7 @@ def deploy_solidity_contract(starknet, contract_account_class, kakarot):
     return _factory
 
 
-Wallet = namedtuple("Wallet", ["address", "starknet_address"])
+Wallet = namedtuple("Wallet", ["address", "private_key", "starknet_address"])
 
 
 @pytest.fixture(scope="package")
@@ -86,12 +89,17 @@ def addresses() -> List[Wallet]:
     - starknet_address: the corresponding address for starknet (same value but as int)
     """
     last_precompile_address = 0x9
+    private_keys = [
+        generate_random_private_key()
+        for _ in list(range(last_precompile_address, last_precompile_address + 4))
+    ]
     return [
         Wallet(
-            address=Web3.toChecksumAddress("0x" + f"{_a:x}".rjust(40, "0")),
-            starknet_address=_a,
+            address=private_key.public_key.to_checksum_address(),
+            private_key=private_key,
+            starknet_address=int(private_key.public_key.to_address(), 16),
         )
-        for _a in list(range(last_precompile_address, last_precompile_address + 4))
+        for private_key in private_keys
     ]
 
 
