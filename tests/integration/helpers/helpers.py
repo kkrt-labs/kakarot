@@ -145,6 +145,6 @@ def ec_sign(
     signature = owner_private_key.sign_msg_hash(digest)
     return (
         signature.v + 27,
-        bytes.fromhex(f"{signature.r:x}"),
-        bytes.fromhex(f"{signature.s:x}"),
+        int.to_bytes(signature.r, 32, "big"),
+        int.to_bytes(signature.s, 32, "big"),
     )
