@@ -175,7 +175,7 @@ class TestERC20:
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
             assert (
                 message
-                == "Kakarot: Reverted with reason: 329294715664813378014103343563148361728"
+                == "Kakarot: Reverted with reason: 80865109391505316271292503077509136384"
             )
 
         async def test_transfer_from_should_fail_when_insufficient_balance(
@@ -206,9 +206,9 @@ class TestERC20:
             assert message == "Kakarot: Reverted with reason: 12884901888"
 
     class TestPermit:
-        async def test_should_permit(self, erc_20, owner, others):
+        async def test_should_permit(self, blockhashes, erc_20, owner, others):
             nonce = await erc_20.nonces(owner.address)
-            deadline = MAX_INT
+            deadline = blockhashes["current_block"]["timestamp"]
             digest = get_approval_digest(
                 "Kakarot Token",
                 erc_20.evm_contract_address,
@@ -238,9 +238,11 @@ class TestERC20:
             )
             assert await erc_20.nonces(owner.address) == 1
 
-        async def test_permit_should_fail_with_bad_nonce(self, erc_20, owner, others):
+        async def test_permit_should_fail_with_bad_nonce(
+            self, blockhashes, erc_20, owner, others
+        ):
             bad_nonce = 1
-            deadline = MAX_INT
+            deadline = blockhashes["current_block"]["timestamp"]
             digest = get_approval_digest(
                 "Kakarot Token",
                 erc_20.evm_contract_address,
@@ -272,7 +274,7 @@ class TestERC20:
             self, erc_20, blockhashes, owner, others
         ):
             nonce = await erc_20.nonces(owner.address)
-            deadline = MAX_INT
+            deadline = blockhashes["current_block"]["timestamp"]
             digest = get_approval_digest(
                 "Kakarot Token",
                 erc_20.evm_contract_address,
@@ -298,7 +300,7 @@ class TestERC20:
                 )
 
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
-            assert message == "Kakarot: Reverted with reason: 0"
+            assert message == "Kakarot: Reverted with reason: 147028384"
 
         async def test_permit_should_fail_on_replay(self, erc_20, owner, others):
             nonce = await erc_20.nonces(owner.address)
