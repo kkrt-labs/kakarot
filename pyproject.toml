@@ -6,10 +6,11 @@ authors = []
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.9,<3.10"
 cairo-lang = "^0.10.1"
 openzeppelin-cairo-contracts = "0.5.0"
 amarna = "^0.1.5"
+starknet-py = "^0.10.0a0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"
