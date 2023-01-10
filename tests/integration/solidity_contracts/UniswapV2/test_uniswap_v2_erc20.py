@@ -89,6 +89,7 @@ class TestUniswapV2ERC20:
                     caller_address=owner.starknet_address,
                 )
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
+            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
             assert message == "Kakarot: Reverted with reason: 147028384"
 
         async def test_should_fail_when_amount_is_greater_than_balance_and_balance_zero(
@@ -99,6 +100,7 @@ class TestUniswapV2ERC20:
                     owner.address, 1, caller_address=other.starknet_address
                 )
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
+            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
             assert message == "Kakarot: Reverted with reason: 147028384"
 
     class TestTransferFrom:
