@@ -89,6 +89,7 @@ def addresses() -> List[Wallet]:
     - address: the hex string of the EVM address (20 bytes)
     - starknet_address: the corresponding address for starknet (same value but as int)
     """
+    random.seed(0)
     private_keys = [generate_random_private_key() for _ in range(4)]
     return [
         Wallet(
