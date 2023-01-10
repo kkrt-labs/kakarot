@@ -1,0 +1,80 @@
+// Call flow graph
+digraph blockhash_registry {
+	graph [fontname="Helvetica,Arial,sans-serif" fontsize=20 layout=dot newrank=true rankdir=LR]
+	node [fontname="Helvetica,Arial,sans-serif" pencolor="#00000044" shape="rect, plaintext" style=filled]
+	edge [arrowsize=0.5 fontname="Helvetica,Arial,sans-serif" labeldistance=3 labelfontcolor="#00000080" penwidth=2]
+	0 [label="starkware.cairo.common.alloc.alloc" color="" fillcolor=lightcoral shape=oval style=filled]
+	3 [label="starkware.cairo.common.hash.hash2" color="" fillcolor=lightcoral shape=oval style=filled]
+	9 [label="starkware.cairo.common.math.assert_not_zero" color="" fillcolor=lightcoral shape=oval style=filled]
+	14 [label="starkware.cairo.common.math.assert_250_bit\l['known_ap_change']" color="" fillcolor=yellow shape=oval style=filled]
+	27 [label="starkware.starknet.common.storage.normalize_address\l['known_ap_change']" color="" fillcolor=yellow shape=oval style=filled]
+	67 [label="starkware.starknet.common.syscalls.get_caller_address" color="" fillcolor=lightcoral shape=oval style=filled]
+	74 [label="starkware.starknet.common.syscalls.storage_read" color="" fillcolor=lightcoral shape=oval style=filled]
+	82 [label="starkware.starknet.common.syscalls.storage_write" color="" fillcolor=lightcoral shape=oval style=filled]
+	90 [label="starkware.starknet.common.syscalls.emit_event" color="" fillcolor=lightcoral shape=oval style=filled]
+	100 [label="openzeppelin.access.ownable.library.OwnershipTransferred.emit" color="" fillcolor=lightcoral shape=oval style=filled]
+	125 [label="openzeppelin.access.ownable.library.Ownable_owner.addr" color="" fillcolor=lightcoral shape=oval style=filled]
+	130 [label="openzeppelin.access.ownable.library.Ownable_owner.read" color="" fillcolor=lightcoral shape=oval style=filled]
+	143 [label="openzeppelin.access.ownable.library.Ownable_owner.write" color="" fillcolor=lightcoral shape=oval style=filled]
+	155 [label="openzeppelin.access.ownable.library.Ownable.initializer" color="" fillcolor=lightcoral shape=oval style=filled]
+	162 [label="openzeppelin.access.ownable.library.Ownable.assert_only_owner" color="" fillcolor=lightcoral shape=oval style=filled]
+	177 [label="openzeppelin.access.ownable.library.Ownable.owner" color="" fillcolor=lightcoral shape=oval style=filled]
+	183 [label="openzeppelin.access.ownable.library.Ownable.transfer_ownership" color="" fillcolor=lightcoral shape=oval style=filled]
+	195 [label="openzeppelin.access.ownable.library.Ownable._transfer_ownership" color="" fillcolor=lightcoral shape=oval style=filled]
+	216 [label="kakarot.accounts.registry.blockhash.library.blockhash_.addr" color="" fillcolor=lightcoral shape=oval style=filled]
+	233 [label="kakarot.accounts.registry.blockhash.library.blockhash_.read" color="" fillcolor=lightcoral shape=oval style=filled]
+	248 [label="kakarot.accounts.registry.blockhash.library.blockhash_.write" color="" fillcolor=lightcoral shape=oval style=filled]
+	262 [label="kakarot.accounts.registry.blockhash.library.BlockhashRegistry.constructor" color="" fillcolor=lightcoral shape=oval style=filled]
+	269 [label="kakarot.accounts.registry.blockhash.library.BlockhashRegistry.transfer_ownership" color="" fillcolor=lightcoral shape=oval style=filled]
+	276 [label="kakarot.accounts.registry.blockhash.library.BlockhashRegistry.set_blockhashes" color="" fillcolor=lightcoral shape=oval style=filled]
+	310 [label="kakarot.accounts.registry.blockhash.library.BlockhashRegistry.get_blockhash" color="" fillcolor=lightcoral shape=oval style=filled]
+	318 [label="__main__.constructor\l['constructor']" color="" fillcolor=violet shape=oval style=filled]
+	325 [label="__wrappers__.constructor\l['constructor']" color="" fillcolor=violet shape=doubleoctagon style=filled]
+	343 [label="__main__.transfer_ownership\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
+	352 [label="__wrappers__.transfer_ownership\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
+	370 [label="__main__.set_blockhashes\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
+	382 [label="__wrappers__.set_blockhashes\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
+	421 [label="__main__.get_blockhash\l['view']" color="" fillcolor=orange shape=oval style=filled]
+	429 [label="__wrappers__.get_blockhash_encode_return" color="" fillcolor=white shape=oval style=solid]
+	438 [label="__wrappers__.get_blockhash\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
+	27 -> 14 [label=4]
+	100 -> 0 [label=2]
+	100 -> 90
+	130 -> 125
+	130 -> 74
+	143 -> 125
+	143 -> 82
+	155 -> 195
+	162 -> 177
+	162 -> 67
+	162 -> 9
+	177 -> 130
+	183 -> 9
+	183 -> 162
+	183 -> 195
+	195 -> 177
+	195 -> 143
+	195 -> 100
+	216 -> 3 [label=2]
+	216 -> 27
+	233 -> 216
+	233 -> 74
+	248 -> 216
+	248 -> 82
+	262 -> 155
+	269 -> 183
+	276 -> 248
+	276 -> 276
+	310 -> 233
+	318 -> 262
+	325 -> 318
+	343 -> 162
+	343 -> 269
+	352 -> 343
+	370 -> 162
+	370 -> 276
+	382 -> 370
+	421 -> 310
+	438 -> 421
+	438 -> 429
+}
