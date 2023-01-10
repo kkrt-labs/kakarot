@@ -56,11 +56,13 @@ class TestUniswapV2ERC20:
             await token.approve(
                 other.address, TEST_AMOUNT, caller_address=owner.starknet_address
             )
-            assert token.events.Approval[0] == {
-                "owner": owner.address,
-                "spender": other.address,
-                "value": TEST_AMOUNT,
-            }
+            assert token.events.Approval == [
+                {
+                    "owner": owner.address,
+                    "spender": other.address,
+                    "value": TEST_AMOUNT,
+                }
+            ]
             allowance = await token.allowance(owner.address, other.address)
             assert allowance == TEST_AMOUNT
 
@@ -71,11 +73,13 @@ class TestUniswapV2ERC20:
             await token.transfer(
                 other.address, TEST_AMOUNT, caller_address=owner.starknet_address
             )
-            assert token.events.Transfer[0] == {
-                "from": owner.address,
-                "to": other.address,
-                "value": TEST_AMOUNT,
-            }
+            assert token.events.Transfer == [
+                {
+                    "from": owner.address,
+                    "to": other.address,
+                    "value": TEST_AMOUNT,
+                }
+            ]
             assert await token.balanceOf(owner.address) == TOTAL_SUPPLY - TEST_AMOUNT
             assert await token.balanceOf(other.address) == TEST_AMOUNT
 
