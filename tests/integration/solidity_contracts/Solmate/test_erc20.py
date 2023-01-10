@@ -302,7 +302,9 @@ class TestERC20:
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
             assert message == "Kakarot: Reverted with reason: 147028384"
 
-        async def test_permit_should_fail_on_replay(self, blockhashes, erc_20, owner, others):
+        async def test_permit_should_fail_on_replay(
+            self, blockhashes, erc_20, owner, others
+        ):
             nonce = await erc_20.nonces(owner.address)
             deadline = blockhashes["current_block"]["timestamp"]
             digest = get_approval_digest(
