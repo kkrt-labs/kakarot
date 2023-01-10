@@ -2,6 +2,7 @@
 
 %lang starknet
 
+from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.math import assert_le
@@ -14,7 +15,7 @@ from starkware.cairo.common.uint256 import word_reverse_endian
 // The namespace handling all RLP computation
 namespace RLP {
     // The type returned when data is RLP decoded
-    struct Field {
+    struct Item {
         data_len: felt,
         data: felt*,
         is_list: felt,  // when is TRUE the data must be RLP decoded
@@ -77,7 +78,7 @@ namespace RLP {
             return (words_len=words_len);
         }
         let is_le_7 = is_le(data_len, 7);
-        if (is_le_7 == 1) {
+        if (is_le_7 != FALSE) {
             let (n: felt) = bytes_to_felt(data_len=data_len, data=data, n=0);
             assert [words] = n;
             return bytes_to_words(
@@ -129,35 +130,35 @@ namespace RLP {
     // @notice decodes RLP data see this: https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp
     // @param data_len The lenght of the bytes
     // @param data The pointer to the first byte in array
-    // @param fields A pointer to an empty array of fields, will be filled with found fields
+    // @param items A pointer to an empty array of items, will be filled with found items
     func decode_rlp{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
-    }(data_len: felt, data: felt*, fields: Field*) -> () {
+    }(data_len: felt, data: felt*,items: Item*) -> () {
         alloc_locals;
-        if (data_len == 0) {
+        if (data_len == 0) {        
             return ();
         }
         let buffer_ptr = data;
         with buffer_ptr {
             let (byte: felt) = read_byte();
             let is_le_127: felt = is_le(byte, 127);
-            if (is_le_127 == 1) {
-                assert [fields] = Field(
+            if (is_le_127 != FALSE) {
+                assert [items] = Item(
                     data_len=1,
                     data=buffer_ptr - 1,
                     is_list=0
                     );
                 return decode_rlp(
-                    data_len=data_len - 1, data=buffer_ptr, fields=fields + Field.SIZE
+                    data_len=data_len - 1, data=buffer_ptr, items=items + Item.SIZE
                 );
             }
             let is_le_183 = is_le(byte, 183);  // a max 55 bytes long string
-            if (is_le_183 == 1) {
+            if (is_le_183 != FALSE) {
                 let string_len = byte - 128;
-                assert [fields] = Field(
+                assert [items] = Item(
                     data_len=string_len,
                     data=buffer_ptr,
                     is_list=0
@@ -165,15 +166,15 @@ namespace RLP {
                 return decode_rlp(
                     data_len=data_len - 1 - string_len,
                     data=buffer_ptr + string_len,
-                    fields=fields + Field.SIZE,
+                    items=items + Item.SIZE,
                 );
             }
             let is_le_191 = is_le(byte, 191);  // string longer than 55 bytes
-            if (is_le_191 == 1) {
+            if (is_le_191 != FALSE) {
                 local len_len = byte - 183;
                 let (dlen) = bytes_to_felt(data_len=len_len, data=buffer_ptr, n=0);
                 let buffer_ptr = buffer_ptr + len_len;
-                assert [fields] = Field(
+                assert [items] = Item(
                     data_len=dlen,
                     data=buffer_ptr,
                     is_list=0
@@ -181,13 +182,13 @@ namespace RLP {
                 return decode_rlp(
                     data_len=data_len - 1 - len_len - dlen,
                     data=buffer_ptr + dlen,
-                    fields=fields + Field.SIZE,
+                    items=items + Item.SIZE,
                 );
             }
             let is_le_247 = is_le(byte, 247);  // list 0-55 bytes long
-            if (is_le_247 == 1) {
+            if (is_le_247 != FALSE) {
                 local list_len = byte - 192;
-                assert [fields] = Field(
+                assert [items] = Item(
                     data_len=list_len,
                     data=buffer_ptr,
                     is_list=1
@@ -195,15 +196,15 @@ namespace RLP {
                 return decode_rlp(
                     data_len=data_len - 1 - list_len,
                     data=buffer_ptr + list_len,
-                    fields=fields + Field.SIZE,
+                    items=items + Item.SIZE,
                 );
             }
             let is_le_255 = is_le(byte, 255);  // list > 55 bytes
-            if (is_le_255 == 1) {
+            if (is_le_255 != FALSE) {
                 local list_len_len = byte - 247;
                 let (dlen) = bytes_to_felt(data_len=list_len_len, data=buffer_ptr, n=0);
                 let buffer_ptr = buffer_ptr + list_len_len;
-                assert [fields] = Field(
+                assert [items] = Item(
                     data_len=dlen,
                     data=buffer_ptr,
                     is_list=1
@@ -211,7 +212,7 @@ namespace RLP {
                 return decode_rlp(
                     data_len=data_len - 1 - list_len_len - dlen,
                     data=buffer_ptr + dlen,
-                    fields=fields + Field.SIZE,
+                    items=items + Item.SIZE,
                 );
             }
             return ();
@@ -247,35 +248,35 @@ namespace RLP {
     }(len: felt) -> (byte_len: felt) {
         // get ready for ugly code
         let fit = is_le(len, 255);
-        if (fit == 1) {
+        if (fit != FALSE) {
             return (byte_len=1);
         }
         let fit = is_le(len, 65535);
-        if (fit == 1) {
+        if (fit != FALSE) {
             return (byte_len=2);
         }
         let fit = is_le(len, 16777215);
-        if (fit == 1) {
+        if (fit != FALSE) {
             return (byte_len=3);
         }
         let fit = is_le(len, 4294967295);
-        if (fit == 1) {
+        if (fit != FALSE) {
             return (byte_len=4);
         }
         let fit = is_le(len, 1099511627775);
-        if (fit == 1) {
+        if (fit != FALSE) {
             return (byte_len=5);
         }
         let fit = is_le(len, 281474976710655);
-        if (fit == 1) {
+        if (fit != FALSE) {
             return (byte_len=6);
         }
         let fit = is_le(len, 72057594037927935);
-        if (fit == 1) {
+        if (fit != FALSE) {
             return (byte_len=7);
         }
         let fit = is_le(len, 18446744073709551615);
-        if (fit == 1) {
+        if (fit != FALSE) {
             return (byte_len=8);
         }
         return (byte_len=0);
@@ -296,7 +297,7 @@ namespace RLP {
         let (q, r) = unsigned_div_rem(v, 16);
         let is_le_16 = is_le(q, 16);
         assert [rs] = r;
-        if (is_le_16 == 1) {
+        if (is_le_16 != FALSE) {
             let rs = rs + 1;
             assert [rs] = q;
             return (rs_len=rs_len + 2);
@@ -341,7 +342,7 @@ namespace RLP {
     }(data_len: felt, data: felt*, rlp: felt*) -> (rlp_len: felt) {
         alloc_locals;
         let is_le_55 = is_le(data_len, 55);
-        if (is_le_55 == 1) {
+        if (is_le_55 != FALSE) {
             assert rlp[0] = 0xc0 + data_len;
             fill_array(rlp + 1, data_len, data);
             return (rlp_len=data_len + 1);

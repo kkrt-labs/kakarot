@@ -11,27 +11,34 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_secp.signature import verify_eth_signature_uint256
 from starkware.cairo.common.uint256 import Uint256
 // Account library
-from kakarot.accounts.eoa.library import KETHAA
+from kakarot.accounts.eoa.aa.library import ExternallyOwnedAccount
 
 @storage_var
 func eth_address() -> (adress: felt) {
 }
 
+@storage_var
+func kakarot_address() -> (address: felt) {
+}
+
 // Constructor
-// @param ethAddress The Ethereum address which will control the account
+// @param _eth_address The Ethereum address which will control the account
+// @param _kakarot_address The Starknet address of the Kakarot contract
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    _eth_address: felt
+    _eth_address: felt,
+    _kakarot_address: felt
 ) {
     assert_eth_address_range(_eth_address);
     eth_address.write(_eth_address);
+    kakarot_address.write(_kakarot_address);
     return ();
 }
 
 // Account specific methods
 
-// @notice validates a transaction
-// @dev the transaction is considered as valid if is signed with the correct address and is a valid kakarot transaction
+// @notice validate a transaction
+// @dev the transaction is considered as valid if it is signed with the correct address and is a valid kakarot transaction
 // @param call_array_len The length of the call_array
 // @param call_array An array containing all the calls of the transaction see: https://docs.openzeppelin.com/contracts-cairo/0.6.0/accounts#call_and_accountcallarray_format
 // @param calldata_len The length of the Calldata array
@@ -39,10 +46,10 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 @external
 func __validate__{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
-}(call_array_len: felt, call_array: KETHAA.CallArray*, calldata_len: felt, calldata: felt*) {
+}(call_array_len: felt, call_array: ExternallyOwnedAccount.CallArray*, calldata_len: felt, calldata: felt*) {
     alloc_locals;
     let (address) = eth_address.read();
-    KETHAA.are_valid_calls(
+    ExternallyOwnedAccount.validate(
         eth_address=address,
         call_array_len=call_array_len,
         call_array=call_array,
@@ -63,7 +70,7 @@ func __validate_declare__{
 }
 
 // @notice executes the Kakarot transaction
-// @dev this is executed only is the __validate__ function succeeded
+// @dev this is executed only if the __validate__ function succeeded
 // @param call_array_len The length of the call_array
 // @param call_array An array containing all the calls of the transaction see: https://docs.openzeppelin.com/contracts-cairo/0.6.0/accounts#call_and_accountcallarray_format
 // @param calldata_len The length of the Calldata array
@@ -77,11 +84,11 @@ func __execute__{
     ecdsa_ptr: SignatureBuiltin*,
     bitwise_ptr: BitwiseBuiltin*,
     range_check_ptr,
-}(call_array_len: felt, call_array: KETHAA.CallArray*, calldata_len: felt, calldata: felt*) -> (
+}(call_array_len: felt, call_array: ExternallyOwnedAccount.CallArray*, calldata_len: felt, calldata: felt*) -> (
     response_len: felt, response: felt*
 ) {
     let (response: felt*) = alloc();
-    // TODO: redirect calls
+    // TODO: parse, call kakarot, and format response
     return (response_len=0, response=response);
 }
 
@@ -101,7 +108,7 @@ func get_eth_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 func supports_interface{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     interface_id: felt
 ) -> (success: felt) {
-    if (interface_id == KETHAA.AA_VERSION) {
+    if (interface_id == ExternallyOwnedAccount.AA_VERSION) {
         return (success=1);
     }
     return (success=0);
@@ -119,10 +126,5 @@ func is_valid_signature{
 }(hash_len: felt, hash: felt*, signature_len: felt, signature: felt*) -> (is_valid: felt) {
     alloc_locals;
     let (_eth_address) = eth_address.read();
-    let v: felt = signature[0];
-    let r: Uint256 = Uint256(low=signature[1], high=signature[2]);
-    let s: Uint256 = Uint256(low=signature[3], high=signature[4]);
-    let msg_hash: Uint256 = Uint256(low=hash[0], high=hash[1]);
-    let (is_valid) = KETHAA.is_valid_eth_signature(msg_hash, r, s, v, _eth_address);
-    return (is_valid=is_valid);
+    return ExternallyOwnedAccount.is_valid_signature(_eth_address, hash_len, hash, signature_len, signature);
 }

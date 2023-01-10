@@ -43,15 +43,17 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 // @param evm_address The Ethereum address which will be controlling the account
 @external
 func create_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    evm_address: felt
+    evm_address: felt,
+    kakarot_address: felt
 ) -> () {
     let (constructor_calldata: felt*) = alloc();
     assert constructor_calldata[0] = evm_address;
+    assert constructor_calldata[1] = kakarot_address;
     let (class_hash) = account_abstraction_class_hash.read();
     let (account_address) = deploy(
         class_hash,
         contract_address_salt=AA_VERSION,
-        constructor_calldata_size=1,
+        constructor_calldata_size=2,
         constructor_calldata=constructor_calldata,
         deploy_from_zero=0,
     );
@@ -67,12 +69,14 @@ func create_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 // @return contract_address The Starknet Account Contract address (not necessarily deployed)
 @view
 func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    evm_address: felt
+    evm_address: felt,
+    kakarot_address: felt
 ) -> (contract_address: felt) {
     alloc_locals;
     let (deployer_address) = get_contract_address();
     let (constructor_calldata: felt*) = alloc();
     assert constructor_calldata[0] = evm_address;
+    assert constructor_calldata[1] = kakarot_address;
     let (class_hash) = account_abstraction_class_hash.read();
     let (hash_state_ptr) = hash_init();
     let (hash_state_ptr) = hash_update_single{hash_ptr=pedersen_ptr}(
@@ -88,7 +92,7 @@ func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
         hash_state_ptr=hash_state_ptr, item=class_hash
     );
     let (hash_state_ptr) = hash_update_with_hashchain{hash_ptr=pedersen_ptr}(
-        hash_state_ptr=hash_state_ptr, data_ptr=constructor_calldata, data_length=1
+        hash_state_ptr=hash_state_ptr, data_ptr=constructor_calldata, data_length=2
     );
     let (contract_address_before_modulo) = hash_finalize{hash_ptr=pedersen_ptr}(
         hash_state_ptr=hash_state_ptr
