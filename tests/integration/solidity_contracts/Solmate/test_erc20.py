@@ -31,7 +31,9 @@ class TestERC20:
     class TestMint:
         async def test_should_mint(self, erc_20, owner, others):
             await erc_20.mint(
-                others[0].address, TEST_AMOUNT_HIGH, caller_address=owner.starknet_address
+                others[0].address,
+                TEST_AMOUNT_HIGH,
+                caller_address=owner.starknet_address,
             )
             assert await erc_20.totalSupply() == TEST_AMOUNT_HIGH
             assert await erc_20.balanceOf(others[0].address) == TEST_AMOUNT_HIGH
@@ -128,9 +130,7 @@ class TestERC20:
             )
             assert await erc_20.totalSupply() == TEST_AMOUNT_HIGH
 
-            assert (
-                await erc_20.allowance(from_wallet.address, owner.address) == MAX_INT
-            )
+            assert await erc_20.allowance(from_wallet.address, owner.address) == MAX_INT
 
             assert await erc_20.balanceOf(from_wallet.address) == 0
             assert await erc_20.balanceOf(others[1].address) == TEST_AMOUNT_HIGH
@@ -160,7 +160,9 @@ class TestERC20:
                 owner.address, TEST_AMOUNT_HIGH, caller_address=owner.starknet_address
             )
             await erc_20.approve(
-                owner.address, TEST_AMOUNT_LOW, caller_address=from_wallet.starknet_address
+                owner.address,
+                TEST_AMOUNT_LOW,
+                caller_address=from_wallet.starknet_address,
             )
             with pytest.raises(Exception) as e:
                 await erc_20.transferFrom(
