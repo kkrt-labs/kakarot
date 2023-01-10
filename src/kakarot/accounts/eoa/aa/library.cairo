@@ -1,5 +1,6 @@
 %lang starknet
 
+from utils.utils import Helpers
 from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_secp.signature import verify_eth_signature_uint256
 from starkware.starknet.common.syscalls import get_tx_info
@@ -128,7 +129,7 @@ namespace ExternallyOwnedAccount {
             let keccak_ptr_start = keccak_ptr;
             let (words: felt*) = alloc();
             // transforms bytes to groups of 64 bits (used for hashing)
-            let (words_len: felt) = RLP.bytes_to_words(
+            let (words_len: felt) = Helpers.bytes_to_words(
                 data_len=rlp_len + 1, data=list_ptr, words_len=0, words=words
             );
             // keccak_bigend because verify_eth_signature_uint256 requires bigend
@@ -136,13 +137,13 @@ namespace ExternallyOwnedAccount {
             let (local sub_items: RLP.Item*) = alloc();
             // decode the rlp elements in the tx (was in the list element)
             RLP.decode_rlp([items].data_len, [items].data, sub_items);
-            let v = RLP.bytes_to_felt(sub_items[V_IDX].data_len, sub_items[V_IDX].data, 0);
-            let r = RLP.bytes_to_uint256(data_len=32, data=sub_items[R_IDX].data);
-            let s = RLP.bytes_to_uint256(data_len=32, data=sub_items[S_IDX].data);
+            let v = Helpers.bytes_to_felt(sub_items[V_IDX].data_len, sub_items[V_IDX].data, 0);
+            let r = Helpers.bytes32_to_uint256(sub_items[R_IDX].data);
+            let s = Helpers.bytes32_to_uint256(sub_items[S_IDX].data);
             finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
             let (keccak_ptr: felt*) = alloc();
             verify_eth_signature_uint256{keccak_ptr=keccak_ptr}(
-                msg_hash=tx_hash.res, r=r.res, s=s.res, v=v.n, eth_address=eth_address
+                msg_hash=tx_hash.res, r=r, s=s, v=v.n, eth_address=eth_address
             );
             return (is_valid=1);
         } else {
