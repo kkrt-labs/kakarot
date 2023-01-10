@@ -175,7 +175,7 @@ class TestERC20:
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
             assert (
                 message
-                == "Kakarot: Reverted with reason: 80865109391505316271292503077509136384"
+                == "Kakarot: Reverted with reason: 109161241298996469498303502024926298112"
             )
 
         async def test_transfer_from_should_fail_when_insufficient_balance(
