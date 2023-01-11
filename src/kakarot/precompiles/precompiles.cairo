@@ -101,6 +101,7 @@ namespace Precompiles {
         [ap] = pedersen_ptr, ap++;
         [ap] = range_check_ptr, ap++;
         [ap] = bitwise_ptr, ap++;
+        [ap] = address, ap++;
         [ap] = input_len, ap++;
         [ap] = input, ap++;
 
@@ -137,8 +138,8 @@ namespace Precompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx_ptr: model.ExecutionContext*) {
-        with_attr error_message("Kakarot: NotImplementedPrecompile") {
+    }(address: felt, _input_len: felt, _input: felt*) {
+        with_attr error_message("Kakarot: NotImplementedPrecompile {address}") {
             assert 0 = 1;
         }
         return ();

@@ -1,0 +1,34 @@
+// Call flow graph
+digraph externally_owned_account {
+	graph [fontname="Helvetica,Arial,sans-serif" fontsize=20 layout=dot newrank=true rankdir=LR]
+	node [fontname="Helvetica,Arial,sans-serif" pencolor="#00000044" shape="rect, plaintext" style=filled]
+	edge [arrowsize=0.5 fontname="Helvetica,Arial,sans-serif" labeldistance=3 labelfontcolor="#00000080" penwidth=2]
+	0 [label="starkware.cairo.common.alloc.alloc" color="" fillcolor=lightcoral shape=oval style=filled]
+	3 [label="starkware.starknet.common.syscalls.storage_read" color="" fillcolor=lightcoral shape=oval style=filled]
+	11 [label="starkware.starknet.common.syscalls.storage_write" color="" fillcolor=lightcoral shape=oval style=filled]
+	19 [label="starkware.starknet.common.syscalls.emit_event" color="" fillcolor=lightcoral shape=oval style=filled]
+	29 [label="openzeppelin.access.ownable.library.OwnershipTransferred.emit" color="" fillcolor=lightcoral shape=oval style=filled]
+	54 [label="openzeppelin.access.ownable.library.Ownable_owner.addr" color="" fillcolor=lightcoral shape=oval style=filled]
+	59 [label="openzeppelin.access.ownable.library.Ownable_owner.read" color="" fillcolor=lightcoral shape=oval style=filled]
+	72 [label="openzeppelin.access.ownable.library.Ownable_owner.write" color="" fillcolor=lightcoral shape=oval style=filled]
+	84 [label="openzeppelin.access.ownable.library.Ownable.initializer" color="" fillcolor=lightcoral shape=oval style=filled]
+	91 [label="openzeppelin.access.ownable.library.Ownable.owner" color="" fillcolor=lightcoral shape=oval style=filled]
+	97 [label="openzeppelin.access.ownable.library.Ownable._transfer_ownership" color="" fillcolor=lightcoral shape=oval style=filled]
+	118 [label="kakarot.accounts.eoa.library.ExternallyOwnedAccount.constructor" color="" fillcolor=lightcoral shape=oval style=filled]
+	126 [label="__main__.constructor\l['constructor']" color="" fillcolor=violet shape=oval style=filled]
+	134 [label="__wrappers__.constructor\l['constructor']" color="" fillcolor=violet shape=doubleoctagon style=filled]
+	29 -> 0 [label=2]
+	29 -> 19
+	59 -> 54
+	59 -> 3
+	72 -> 54
+	72 -> 11
+	84 -> 97
+	91 -> 59
+	97 -> 91
+	97 -> 72
+	97 -> 29
+	118 -> 84
+	126 -> 118
+	134 -> 126
+}

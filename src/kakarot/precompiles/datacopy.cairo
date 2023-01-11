@@ -30,7 +30,9 @@ namespace PrecompileDataCopy {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(input_len: felt, input: felt*) -> (output_len: felt, output: felt*, gas_used: felt) {
+    }(_address: felt, input_len: felt, input: felt*) -> (
+        output_len: felt, output: felt*, gas_used: felt
+    ) {
         let (minimum_word_size) = Helpers.minimum_word_count(input_len);
         return (input_len, input, 3 * minimum_word_size + GAS_COST_DATACOPY);
     }

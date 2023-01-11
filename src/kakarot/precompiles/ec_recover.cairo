@@ -32,7 +32,9 @@ namespace PrecompileEcRecover {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(input_len: felt, input: felt*) -> (output_len: felt, output: felt*, gas_used: felt) {
+    }(_address: felt, input_len: felt, input: felt*) -> (
+        output_len: felt, output: felt*, gas_used: felt
+    ) {
         alloc_locals;
 
         with_attr error_message(

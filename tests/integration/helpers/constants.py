@@ -1,0 +1,24 @@
+CHAIN_ID = 1263227476  # KKRT (0x4b4b5254) in ASCII
+
+# Coinbase address is the address of the sequencer
+MOCK_COINBASE_ADDRESS = (
+    0x388CA486B82E20CC81965D056B4CDCAACDFFE0CF08E20ED8BA10EA97A487004
+)
+# Hardcode block gas limit to 20M
+BLOCK_GAS_LIMIT = 20_000_000
+
+# STACK
+STACK_MAX_DEPTH = 1024
+
+# GAS METERING
+TRANSACTION_INTRINSIC_GAS_COST = 21_000
+
+# TRANSACTION
+# TODO: handle tx gas limit properly and remove this constant
+# Temporarily set tx gas limit to 1M gas
+TRANSACTION_GAS_LIMIT = 1_000_000
+
+# PRECOMPILES
+LAST_PRECOMPILE_ADDRESS = 0x09
+
+MAX_INT = 2**256 - 1

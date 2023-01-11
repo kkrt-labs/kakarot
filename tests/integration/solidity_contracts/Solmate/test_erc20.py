@@ -5,6 +5,7 @@ from tests.utils.reporting import traceit
 
 @pytest.mark.asyncio
 @pytest.mark.SolmateERC20
+@pytest.mark.usefixtures("starknet_snapshot")
 class TestERC20:
     class TestDeploy:
         async def test_should_set_name_symbol_and_decimals(self, erc_20):

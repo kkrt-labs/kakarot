@@ -1,0 +1,74 @@
+name: THOTH
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  thoth:
+    runs-on: ubuntu-latest
+    env:
+      CI_COMMIT_MESSAGE: CI Generating contract's call graphs
+      CI_COMMIT_AUTHOR: ${{ github.event.repository.name }} CI
+    steps:
+      # Python setup
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Install graphviz
+        run: sudo apt install graphviz
+
+      - uses: actions/checkout@v3
+
+      - name: Get thoth
+        uses: actions/checkout@v3
+        with:
+          repository: FuzzingLabs/thoth
+          path: thoth
+
+      - name: Load cached Poetry installation
+        uses: actions/cache@v3
+        with:
+          path: ~/.local # the path depends on the OS
+          key: poetry-0 # increment to reset cache
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key:
+            venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version
+            }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install thoth
+        run: |
+          cd $GITHUB_WORKSPACE/thoth 
+          sudo pip install .
+
+      # Build artifacts
+      - name: Compile all the cairo files && Generate contract's call graphs
+        run: make build
+
+      - name: Generate contract's call graphs
+        run: |
+          for file in $(ls build | grep -v "abi"); do thoth local build/$file -call; done
+          rm -rf docs/callgraphs
+          mv output-callgraph docs/callgraphs
+
+      - name: Commit changes
+        # Run on push events and commit only when there are changes, otherwise it continues
+        if: github.event_name == 'push'
+        run: |
+          git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
+          git config --global user.email "sayajin-labs@users.noreply.github.com"
+          git add -f docs/callgraphs/*
+          git diff-index --quiet HEAD || (git commit -m "${{ env.CI_COMMIT_MESSAGE }}" && git push)
