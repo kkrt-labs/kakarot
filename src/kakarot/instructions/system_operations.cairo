@@ -212,19 +212,31 @@ namespace SystemOperations {
         // 0 - size: byte size to copy
         // 1 - offset: byte offset in the memory in bytes
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        // TODO: implement loading of the revert reason based on size value,
-        // currently limited by short string size
+
         let size = popped[0];
         let offset = popped[1];
 
         // Load revert reason from offset
-        let (memory, revert_reason_uint256, gas_cost) = Memory.load(memory, offset.low);
-        local revert_reason = revert_reason_uint256.low;
+        let (revert_reason_bytes: felt*) = alloc();
+        let (memory, gas_cost) = Memory.load_n(memory, 32, revert_reason_bytes, offset.low);
 
         // revert with loaded revert reason short string
+        let truncate_reason = is_le(32, size.low);
+        tempvar reason_actual_size;
+        if (truncate_reason != FALSE) {
+            reason_actual_size = 31;
+        } else {
+            reason_actual_size = size.low;
+        }
+        let revert_reason_uint256 = Helpers.bytes_i_to_uint256(
+            revert_reason_bytes, reason_actual_size
+        );
+        local revert_reason = Helpers.uint256_to_felt(revert_reason_uint256);
+
         with_attr error_message("Kakarot: Reverted with reason: {revert_reason}") {
             assert TRUE = FALSE;
         }
+
         // TODO: this is never reached, raising with cairo prevent from implementing a true REVERT
         // TODO: that still returns some data. This is especially problematic for sub contexts.
         let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);

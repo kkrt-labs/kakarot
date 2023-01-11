@@ -1,7 +1,12 @@
+import string
+
 import pytest
 import pytest_asyncio
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
+
+from tests.utils.errors import kakarot_error
+from tests.utils.uint256 import int_to_uint256
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -28,9 +33,15 @@ async def set_account_registry(
 
 @pytest.mark.asyncio
 class TestSystemOperations:
-    @pytest.mark.xfail(strict=True)
-    async def test_revert(self, system_operations):
-        await system_operations.test__exec_revert(1000).call()
+    @pytest.mark.parametrize("size", range(1, 33))
+    async def test_revert(self, system_operations, size):
+        # reason = 0x abcdefghijklmnopqrstuvwxyzABCDE \x00
+        reason = int(string.ascii_letters[:31].encode().hex() + "00", 16)
+        reason_low, reason_high = int_to_uint256(reason)
+        with kakarot_error(string.ascii_letters[: min(size, 31)]):
+            await system_operations.test__exec_revert(
+                reason_low, reason_high, size
+            ).call()
 
     async def test_return(self, system_operations):
         await system_operations.test__exec_return_should_return_context_with_updated_return_data(

@@ -65,6 +65,11 @@ namespace Helpers {
     func bytes_i_to_uint256{range_check_ptr}(val: felt*, i: felt) -> Uint256 {
         alloc_locals;
 
+        if (i == 0) {
+            let res = Uint256(0, 0);
+            return res;
+        }
+
         let is_sequence_32_bytes_or_less = is_le(i, 32);
         with_attr error_message("number must be shorter than 32 bytes") {
             assert is_sequence_32_bytes_or_less = 1;

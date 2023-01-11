@@ -50,12 +50,6 @@ def extract_stack_from_execute(result):
     return stack
 
 
-def int_to_uint256(value):
-    low = value & ((1 << 128) - 1)
-    high = value >> 128
-    return low, high
-
-
 # The following helpers are translated from https://github.com/Uniswap/v2-core/blob/master/test/shared/utilities.ts
 def expand_to_18_decimals(n: int) -> int:
     return n * 10**18

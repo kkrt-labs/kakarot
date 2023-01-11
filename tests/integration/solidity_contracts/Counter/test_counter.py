@@ -1,6 +1,6 @@
-import re
-
 import pytest
+
+from tests.utils.errors import kakarot_error
 
 
 @pytest.mark.asyncio
@@ -18,10 +18,8 @@ class TestCounter:
 
     class TestDec:
         async def test_should_raise_when_count_is_0(self, counter, addresses):
-            with pytest.raises(Exception) as e:
+            with kakarot_error("Kakarot: Reverted with reason: 32"):
                 await counter.dec(caller_address=addresses[1].starknet_address)
-            message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
-            assert message == "Kakarot: Reverted with reason: 32"
 
         async def test_should_decrease_count(self, counter, addresses):
             await counter.inc(caller_address=addresses[1].starknet_address)

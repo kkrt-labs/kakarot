@@ -1,4 +1,3 @@
-import re
 from typing import Callable
 
 import pytest
@@ -11,6 +10,7 @@ from tests.integration.helpers.helpers import (
     get_approval_digest,
     get_domain_separator,
 )
+from tests.utils.errors import kakarot_error
 
 TOTAL_SUPPLY = 10000 * 10**18
 TEST_AMOUNT = 10 * 10**18
@@ -90,28 +90,22 @@ class TestUniswapV2ERC20:
         async def test_should_fail_when_amount_is_greater_than_balance_and_balance_not_zero(
             self, token, owner, other
         ):
-            with pytest.raises(Exception) as e:
+            with kakarot_error("Kakarot: Reverted with reason: 147028384"):
                 await token.transfer(
                     other.address,
                     TOTAL_SUPPLY + 1,
                     caller_address=owner.starknet_address,
                 )
-            message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 147028384"
 
         async def test_should_fail_when_amount_is_greater_than_balance_and_balance_zero(
             self, token, owner, other
         ):
-            with pytest.raises(Exception) as e:
+            with kakarot_error("Kakarot: Reverted with reason: 147028384"):
                 await token.transfer(
                     owner.address,
                     1,
                     caller_address=other.starknet_address,
                 )
-            message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 147028384"
 
     class TestTransferFrom:
         async def test_should_transfer_token_when_signer_is_approved(
