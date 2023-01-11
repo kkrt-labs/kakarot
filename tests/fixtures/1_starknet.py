@@ -65,7 +65,7 @@ async def starknet(worker_id, request, blockhashes) -> AsyncGenerator[Starknet, 
         dump_reports(output_dir / worker_id)
         dump_coverage(output_dir / worker_id, files)
         if len(os.listdir(output_dir)) == int(os.environ["PYTEST_XDIST_WORKER_COUNT"]):
-            # This is the last teardown of the testsuite, merge the files
+            # This is the last teardown of the test suite, merge the files
             resources = pd.concat(
                 [pd.read_csv(f) for f in output_dir.glob("**/resources.csv")],
             )
@@ -83,10 +83,10 @@ async def starknet(worker_id, request, blockhashes) -> AsyncGenerator[Starknet, 
                 )
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def starknet_snapshot(starknet):
     """
-    Auto used fixture to snapshot the starknet state before each test and reset it at teardown
+    Use this fixture to snapshot the starknet state before each test and reset it at teardown
     """
     initial_state = starknet.state.copy()
 

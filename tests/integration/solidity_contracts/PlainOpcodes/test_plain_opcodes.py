@@ -11,6 +11,7 @@ from tests.integration.helpers.helpers import (
 
 @pytest.mark.asyncio
 @pytest.mark.PlainOpcodes
+@pytest.mark.usefixtures("starknet_snapshot")
 class TestPlainOpcodes:
     class TestStaticCall:
         async def test_should_return_counter_count(self, counter, plain_opcodes):
