@@ -314,97 +314,97 @@ digraph kakarot {
 	8519 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_stop" color="" fillcolor=lightcoral shape=oval style=filled]
 	8528 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_add" color="" fillcolor=lightcoral shape=oval style=filled]
 	8562 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_mul" color="" fillcolor=lightcoral shape=oval style=filled]
-	8597 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_sub" color="" fillcolor=lightcoral shape=oval style=filled]
-	8631 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_div" color="" fillcolor=lightcoral shape=oval style=filled]
-	8666 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_sdiv" color="" fillcolor=lightcoral shape=oval style=filled]
-	8701 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_mod" color="" fillcolor=lightcoral shape=oval style=filled]
-	8736 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_smod" color="" fillcolor=lightcoral shape=oval style=filled]
-	8771 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_addmod" color="" fillcolor=lightcoral shape=oval style=filled]
-	8810 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_mulmod" color="" fillcolor=lightcoral shape=oval style=filled]
-	8851 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_exp" color="" fillcolor=lightcoral shape=oval style=filled]
-	8886 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_signextend" color="" fillcolor=lightcoral shape=oval style=filled]
-	8913 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.internal_exp" color="" fillcolor=lightcoral shape=oval style=filled]
-	8973 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.apply_context_changes" color="" fillcolor=lightcoral shape=oval style=filled]
-	8981 [label="kakarot.accounts.contract.library.evm_contract_deployed.emit" color="" fillcolor=lightcoral shape=oval style=filled]
-	9006 [label="kakarot.accounts.contract.library.ContractAccount.deploy" color="" fillcolor=lightcoral shape=oval style=filled]
-	9081 [label="kakarot.precompiles.datacopy.PrecompileDataCopy.run" color="" fillcolor=lightcoral shape=oval style=filled]
-	9097 [label="starkware.cairo.common.cairo_secp.field.unreduced_mul" color="" fillcolor=lightcoral shape=oval style=filled]
-	9117 [label="starkware.cairo.common.cairo_secp.field.unreduced_sqr" color="" fillcolor=lightcoral shape=oval style=filled]
-	9133 [label="starkware.cairo.common.cairo_secp.field.verify_zero" color="" fillcolor=lightcoral shape=oval style=filled]
-	9156 [label="starkware.cairo.common.cairo_secp.field.is_zero" color="" fillcolor=lightcoral shape=oval style=filled]
-	9192 [label="starkware.cairo.common.cairo_secp.field.reduce" color="" fillcolor=lightcoral shape=oval style=filled]
-	9205 [label="starkware.cairo.common.cairo_secp.field.validate_reduced_field_element" color="" fillcolor=lightcoral shape=oval style=filled]
-	9245 [label="starkware.cairo.common.cairo_secp.ec.ec_negate" color="" fillcolor=lightcoral shape=oval style=filled]
-	9261 [label="starkware.cairo.common.cairo_secp.ec.compute_doubling_slope" color="" fillcolor=lightcoral shape=oval style=filled]
-	9305 [label="starkware.cairo.common.cairo_secp.ec.compute_slope" color="" fillcolor=lightcoral shape=oval style=filled]
-	9329 [label="starkware.cairo.common.cairo_secp.ec.ec_double" color="" fillcolor=lightcoral shape=oval style=filled]
-	9402 [label="starkware.cairo.common.cairo_secp.ec.fast_ec_add" color="" fillcolor=lightcoral shape=oval style=filled]
-	9489 [label="starkware.cairo.common.cairo_secp.ec.ec_add" color="" fillcolor=lightcoral shape=oval style=filled]
-	9545 [label="starkware.cairo.common.cairo_secp.ec.ec_mul_inner" color="" fillcolor=lightcoral shape=oval style=filled]
-	9646 [label="starkware.cairo.common.cairo_secp.ec.ec_mul" color="" fillcolor=lightcoral shape=oval style=filled]
-	9726 [label="kakarot.precompiles.ecadd.PrecompileEcAdd.run" color="" fillcolor=lightcoral shape=oval style=filled]
-	9832 [label="starkware.cairo.common.cairo_secp.signature.get_generator_point\l['known_ap_change']" color="" fillcolor=yellow shape=oval style=filled]
-	9845 [label="starkware.cairo.common.cairo_secp.signature.div_mod_n" color="" fillcolor=lightcoral shape=oval style=filled]
-	9910 [label="starkware.cairo.common.cairo_secp.signature.public_key_point_to_eth_address" color="" fillcolor=lightcoral shape=oval style=filled]
-	9953 [label="starkware.cairo.common.cairo_secp.signature.get_point_from_x" color="" fillcolor=lightcoral shape=oval style=filled]
-	10019 [label="starkware.cairo.common.cairo_secp.signature.recover_public_key" color="" fillcolor=lightcoral shape=oval style=filled]
-	10105 [label="kakarot.precompiles.ec_recover.PrecompileEcRecover.run" color="" fillcolor=lightcoral shape=oval style=filled]
-	10195 [label="kakarot.precompiles.precompiles.Precompiles.run" color="" fillcolor=lightcoral shape=oval style=filled]
-	10256 [label="kakarot.precompiles.precompiles.Precompiles.is_precompile" color="" fillcolor=lightcoral shape=oval style=filled]
-	10268 [label="kakarot.precompiles.precompiles.Precompiles._exec_precompile" color="" fillcolor=lightcoral shape=oval style=filled]
-	10310 [label="kakarot.precompiles.precompiles.Precompiles.not_implemented_precompile" color="" fillcolor=lightcoral shape=oval style=filled]
-	10319 [label="kakarot.instructions.system_operations.SystemOperations.exec_create" color="" fillcolor=lightcoral shape=oval style=filled]
-	10371 [label="kakarot.instructions.system_operations.SystemOperations.exec_create2" color="" fillcolor=lightcoral shape=oval style=filled]
-	10398 [label="kakarot.instructions.system_operations.SystemOperations.exec_invalid" color="" fillcolor=lightcoral shape=oval style=filled]
-	10408 [label="kakarot.instructions.system_operations.SystemOperations.exec_return" color="" fillcolor=lightcoral shape=oval style=filled]
-	10458 [label="kakarot.instructions.system_operations.SystemOperations.exec_revert" color="" fillcolor=lightcoral shape=oval style=filled]
-	10489 [label="kakarot.instructions.system_operations.SystemOperations.exec_call" color="" fillcolor=lightcoral shape=oval style=filled]
-	10511 [label="kakarot.instructions.system_operations.SystemOperations.exec_staticcall" color="" fillcolor=lightcoral shape=oval style=filled]
-	10523 [label="kakarot.instructions.system_operations.SystemOperations.exec_callcode" color="" fillcolor=lightcoral shape=oval style=filled]
-	10543 [label="kakarot.instructions.system_operations.SystemOperations.exec_delegatecall" color="" fillcolor=lightcoral shape=oval style=filled]
-	10563 [label="kakarot.instructions.system_operations.SystemOperations.exec_selfdestruct" color="" fillcolor=lightcoral shape=oval style=filled]
-	10612 [label="kakarot.instructions.system_operations.CallHelper.prepare_args" color="" fillcolor=lightcoral shape=oval style=filled]
-	10787 [label="kakarot.instructions.system_operations.CallHelper.init_sub_context" color="" fillcolor=lightcoral shape=oval style=filled]
-	10833 [label="kakarot.instructions.system_operations.CallHelper.finalize_calling_context" color="" fillcolor=lightcoral shape=oval style=filled]
-	10886 [label="kakarot.instructions.system_operations.CreateHelper.initialize_sub_context" color="" fillcolor=lightcoral shape=oval style=filled]
-	10976 [label="kakarot.instructions.system_operations.CreateHelper.finalize_calling_context" color="" fillcolor=lightcoral shape=oval style=filled]
-	11037 [label="kakarot.instructions.system_operations.SelfDestructHelper._finalize_loop" color="" fillcolor=lightcoral shape=oval style=filled]
-	11095 [label="kakarot.instructions.system_operations.SelfDestructHelper.finalize" color="" fillcolor=lightcoral shape=oval style=filled]
-	11134 [label="kakarot.instructions.EVMInstructions.decode_and_execute" color="" fillcolor=lightcoral shape=oval style=filled]
-	11938 [label="kakarot.instructions.EVMInstructions.run" color="" fillcolor=lightcoral shape=oval style=filled]
-	12030 [label="kakarot.instructions.EVMInstructions.unknown_opcode" color="" fillcolor=lightcoral shape=oval style=filled]
-	12039 [label="kakarot.library.Kakarot.constructor" color="" fillcolor=lightcoral shape=oval style=filled]
-	12052 [label="kakarot.library.Kakarot.execute" color="" fillcolor=lightcoral shape=oval style=filled]
-	12085 [label="kakarot.library.Kakarot.execute_at_address" color="" fillcolor=lightcoral shape=oval style=filled]
-	12140 [label="kakarot.library.Kakarot.set_account_registry" color="" fillcolor=lightcoral shape=oval style=filled]
-	12149 [label="kakarot.library.Kakarot.get_account_registry" color="" fillcolor=lightcoral shape=oval style=filled]
-	12155 [label="kakarot.library.Kakarot.set_blockhash_registry" color="" fillcolor=lightcoral shape=oval style=filled]
-	12164 [label="kakarot.library.Kakarot.get_blockhash_registry" color="" fillcolor=lightcoral shape=oval style=filled]
-	12170 [label="kakarot.library.Kakarot.set_native_token" color="" fillcolor=lightcoral shape=oval style=filled]
-	12179 [label="kakarot.library.Kakarot.deploy" color="" fillcolor=lightcoral shape=oval style=filled]
-	12292 [label="__main__.constructor\l['constructor']" color="" fillcolor=violet shape=oval style=filled]
-	12301 [label="__wrappers__.constructor\l['constructor']" color="" fillcolor=violet shape=doubleoctagon style=filled]
-	12322 [label="__main__.execute\l['view']" color="" fillcolor=orange shape=oval style=filled]
-	12365 [label="__wrappers__.execute_encode_return" color="" fillcolor=white shape=oval style=solid]
-	12402 [label="__wrappers__.execute\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
-	12447 [label="__main__.execute_at_address\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
-	12487 [label="__wrappers__.execute_at_address_encode_return" color="" fillcolor=white shape=oval style=solid]
-	12536 [label="__wrappers__.execute_at_address\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
-	12573 [label="__main__.set_account_registry\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
-	12580 [label="__wrappers__.set_account_registry\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
-	12599 [label="__main__.get_account_registry\l['view']" color="" fillcolor=orange shape=oval style=filled]
-	12605 [label="__wrappers__.get_account_registry_encode_return" color="" fillcolor=white shape=oval style=solid]
-	12614 [label="__wrappers__.get_account_registry\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
-	12630 [label="__main__.set_blockhash_registry\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
-	12637 [label="__wrappers__.set_blockhash_registry\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
-	12656 [label="__main__.get_blockhash_registry\l['view']" color="" fillcolor=orange shape=oval style=filled]
-	12662 [label="__wrappers__.get_blockhash_registry_encode_return" color="" fillcolor=white shape=oval style=solid]
-	12671 [label="__wrappers__.get_blockhash_registry\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
-	12687 [label="__main__.set_native_token\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
-	12694 [label="__wrappers__.set_native_token\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
-	12713 [label="__main__.deploy\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
-	12722 [label="__wrappers__.deploy_encode_return" color="" fillcolor=white shape=oval style=solid]
-	12732 [label="__wrappers__.deploy\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
+	8596 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_sub" color="" fillcolor=lightcoral shape=oval style=filled]
+	8630 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_div" color="" fillcolor=lightcoral shape=oval style=filled]
+	8665 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_sdiv" color="" fillcolor=lightcoral shape=oval style=filled]
+	8700 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_mod" color="" fillcolor=lightcoral shape=oval style=filled]
+	8735 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_smod" color="" fillcolor=lightcoral shape=oval style=filled]
+	8770 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_addmod" color="" fillcolor=lightcoral shape=oval style=filled]
+	8809 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_mulmod" color="" fillcolor=lightcoral shape=oval style=filled]
+	8850 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_exp" color="" fillcolor=lightcoral shape=oval style=filled]
+	8885 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.exec_signextend" color="" fillcolor=lightcoral shape=oval style=filled]
+	8912 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.internal_exp" color="" fillcolor=lightcoral shape=oval style=filled]
+	8972 [label="kakarot.instructions.stop_and_arithmetic_operations.StopAndArithmeticOperations.apply_context_changes" color="" fillcolor=lightcoral shape=oval style=filled]
+	8980 [label="kakarot.accounts.contract.library.evm_contract_deployed.emit" color="" fillcolor=lightcoral shape=oval style=filled]
+	9005 [label="kakarot.accounts.contract.library.ContractAccount.deploy" color="" fillcolor=lightcoral shape=oval style=filled]
+	9080 [label="kakarot.precompiles.datacopy.PrecompileDataCopy.run" color="" fillcolor=lightcoral shape=oval style=filled]
+	9096 [label="starkware.cairo.common.cairo_secp.field.unreduced_mul" color="" fillcolor=lightcoral shape=oval style=filled]
+	9116 [label="starkware.cairo.common.cairo_secp.field.unreduced_sqr" color="" fillcolor=lightcoral shape=oval style=filled]
+	9132 [label="starkware.cairo.common.cairo_secp.field.verify_zero" color="" fillcolor=lightcoral shape=oval style=filled]
+	9155 [label="starkware.cairo.common.cairo_secp.field.is_zero" color="" fillcolor=lightcoral shape=oval style=filled]
+	9191 [label="starkware.cairo.common.cairo_secp.field.reduce" color="" fillcolor=lightcoral shape=oval style=filled]
+	9204 [label="starkware.cairo.common.cairo_secp.field.validate_reduced_field_element" color="" fillcolor=lightcoral shape=oval style=filled]
+	9244 [label="starkware.cairo.common.cairo_secp.ec.ec_negate" color="" fillcolor=lightcoral shape=oval style=filled]
+	9260 [label="starkware.cairo.common.cairo_secp.ec.compute_doubling_slope" color="" fillcolor=lightcoral shape=oval style=filled]
+	9304 [label="starkware.cairo.common.cairo_secp.ec.compute_slope" color="" fillcolor=lightcoral shape=oval style=filled]
+	9328 [label="starkware.cairo.common.cairo_secp.ec.ec_double" color="" fillcolor=lightcoral shape=oval style=filled]
+	9401 [label="starkware.cairo.common.cairo_secp.ec.fast_ec_add" color="" fillcolor=lightcoral shape=oval style=filled]
+	9488 [label="starkware.cairo.common.cairo_secp.ec.ec_add" color="" fillcolor=lightcoral shape=oval style=filled]
+	9544 [label="starkware.cairo.common.cairo_secp.ec.ec_mul_inner" color="" fillcolor=lightcoral shape=oval style=filled]
+	9645 [label="starkware.cairo.common.cairo_secp.ec.ec_mul" color="" fillcolor=lightcoral shape=oval style=filled]
+	9725 [label="kakarot.precompiles.ecadd.PrecompileEcAdd.run" color="" fillcolor=lightcoral shape=oval style=filled]
+	9830 [label="starkware.cairo.common.cairo_secp.signature.get_generator_point\l['known_ap_change']" color="" fillcolor=yellow shape=oval style=filled]
+	9843 [label="starkware.cairo.common.cairo_secp.signature.div_mod_n" color="" fillcolor=lightcoral shape=oval style=filled]
+	9908 [label="starkware.cairo.common.cairo_secp.signature.public_key_point_to_eth_address" color="" fillcolor=lightcoral shape=oval style=filled]
+	9951 [label="starkware.cairo.common.cairo_secp.signature.get_point_from_x" color="" fillcolor=lightcoral shape=oval style=filled]
+	10017 [label="starkware.cairo.common.cairo_secp.signature.recover_public_key" color="" fillcolor=lightcoral shape=oval style=filled]
+	10103 [label="kakarot.precompiles.ec_recover.PrecompileEcRecover.run" color="" fillcolor=lightcoral shape=oval style=filled]
+	10193 [label="kakarot.precompiles.precompiles.Precompiles.run" color="" fillcolor=lightcoral shape=oval style=filled]
+	10254 [label="kakarot.precompiles.precompiles.Precompiles.is_precompile" color="" fillcolor=lightcoral shape=oval style=filled]
+	10266 [label="kakarot.precompiles.precompiles.Precompiles._exec_precompile" color="" fillcolor=lightcoral shape=oval style=filled]
+	10309 [label="kakarot.precompiles.precompiles.Precompiles.not_implemented_precompile" color="" fillcolor=lightcoral shape=oval style=filled]
+	10318 [label="kakarot.instructions.system_operations.SystemOperations.exec_create" color="" fillcolor=lightcoral shape=oval style=filled]
+	10370 [label="kakarot.instructions.system_operations.SystemOperations.exec_create2" color="" fillcolor=lightcoral shape=oval style=filled]
+	10397 [label="kakarot.instructions.system_operations.SystemOperations.exec_invalid" color="" fillcolor=lightcoral shape=oval style=filled]
+	10407 [label="kakarot.instructions.system_operations.SystemOperations.exec_return" color="" fillcolor=lightcoral shape=oval style=filled]
+	10457 [label="kakarot.instructions.system_operations.SystemOperations.exec_revert" color="" fillcolor=lightcoral shape=oval style=filled]
+	10488 [label="kakarot.instructions.system_operations.SystemOperations.exec_call" color="" fillcolor=lightcoral shape=oval style=filled]
+	10510 [label="kakarot.instructions.system_operations.SystemOperations.exec_staticcall" color="" fillcolor=lightcoral shape=oval style=filled]
+	10522 [label="kakarot.instructions.system_operations.SystemOperations.exec_callcode" color="" fillcolor=lightcoral shape=oval style=filled]
+	10542 [label="kakarot.instructions.system_operations.SystemOperations.exec_delegatecall" color="" fillcolor=lightcoral shape=oval style=filled]
+	10562 [label="kakarot.instructions.system_operations.SystemOperations.exec_selfdestruct" color="" fillcolor=lightcoral shape=oval style=filled]
+	10611 [label="kakarot.instructions.system_operations.CallHelper.prepare_args" color="" fillcolor=lightcoral shape=oval style=filled]
+	10786 [label="kakarot.instructions.system_operations.CallHelper.init_sub_context" color="" fillcolor=lightcoral shape=oval style=filled]
+	10832 [label="kakarot.instructions.system_operations.CallHelper.finalize_calling_context" color="" fillcolor=lightcoral shape=oval style=filled]
+	10885 [label="kakarot.instructions.system_operations.CreateHelper.initialize_sub_context" color="" fillcolor=lightcoral shape=oval style=filled]
+	10975 [label="kakarot.instructions.system_operations.CreateHelper.finalize_calling_context" color="" fillcolor=lightcoral shape=oval style=filled]
+	11036 [label="kakarot.instructions.system_operations.SelfDestructHelper._finalize_loop" color="" fillcolor=lightcoral shape=oval style=filled]
+	11094 [label="kakarot.instructions.system_operations.SelfDestructHelper.finalize" color="" fillcolor=lightcoral shape=oval style=filled]
+	11133 [label="kakarot.instructions.EVMInstructions.decode_and_execute" color="" fillcolor=lightcoral shape=oval style=filled]
+	11937 [label="kakarot.instructions.EVMInstructions.run" color="" fillcolor=lightcoral shape=oval style=filled]
+	12029 [label="kakarot.instructions.EVMInstructions.unknown_opcode" color="" fillcolor=lightcoral shape=oval style=filled]
+	12038 [label="kakarot.library.Kakarot.constructor" color="" fillcolor=lightcoral shape=oval style=filled]
+	12051 [label="kakarot.library.Kakarot.execute" color="" fillcolor=lightcoral shape=oval style=filled]
+	12084 [label="kakarot.library.Kakarot.execute_at_address" color="" fillcolor=lightcoral shape=oval style=filled]
+	12139 [label="kakarot.library.Kakarot.set_account_registry" color="" fillcolor=lightcoral shape=oval style=filled]
+	12148 [label="kakarot.library.Kakarot.get_account_registry" color="" fillcolor=lightcoral shape=oval style=filled]
+	12154 [label="kakarot.library.Kakarot.set_blockhash_registry" color="" fillcolor=lightcoral shape=oval style=filled]
+	12163 [label="kakarot.library.Kakarot.get_blockhash_registry" color="" fillcolor=lightcoral shape=oval style=filled]
+	12169 [label="kakarot.library.Kakarot.set_native_token" color="" fillcolor=lightcoral shape=oval style=filled]
+	12178 [label="kakarot.library.Kakarot.deploy" color="" fillcolor=lightcoral shape=oval style=filled]
+	12291 [label="__main__.constructor\l['constructor']" color="" fillcolor=violet shape=oval style=filled]
+	12300 [label="__wrappers__.constructor\l['constructor']" color="" fillcolor=violet shape=doubleoctagon style=filled]
+	12321 [label="__main__.execute\l['view']" color="" fillcolor=orange shape=oval style=filled]
+	12364 [label="__wrappers__.execute_encode_return" color="" fillcolor=white shape=oval style=solid]
+	12401 [label="__wrappers__.execute\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
+	12446 [label="__main__.execute_at_address\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
+	12486 [label="__wrappers__.execute_at_address_encode_return" color="" fillcolor=white shape=oval style=solid]
+	12535 [label="__wrappers__.execute_at_address\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
+	12572 [label="__main__.set_account_registry\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
+	12579 [label="__wrappers__.set_account_registry\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
+	12598 [label="__main__.get_account_registry\l['view']" color="" fillcolor=orange shape=oval style=filled]
+	12604 [label="__wrappers__.get_account_registry_encode_return" color="" fillcolor=white shape=oval style=solid]
+	12613 [label="__wrappers__.get_account_registry\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
+	12629 [label="__main__.set_blockhash_registry\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
+	12636 [label="__wrappers__.set_blockhash_registry\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
+	12655 [label="__main__.get_blockhash_registry\l['view']" color="" fillcolor=orange shape=oval style=filled]
+	12661 [label="__wrappers__.get_blockhash_registry_encode_return" color="" fillcolor=white shape=oval style=solid]
+	12670 [label="__wrappers__.get_blockhash_registry\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
+	12686 [label="__main__.set_native_token\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
+	12693 [label="__wrappers__.set_native_token\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
+	12712 [label="__main__.deploy\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
+	12721 [label="__wrappers__.deploy_encode_return" color="" fillcolor=white shape=oval style=solid]
+	12731 [label="__wrappers__.deploy\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
 	19 -> 18
 	33 -> 29
 	38 -> 29
@@ -1073,437 +1073,437 @@ digraph kakarot {
 	8490 -> 550
 	8519 -> 3537
 	8528 -> 2862
-	8528 -> 8383
+	8528 -> 369
 	8528 -> 2829
-	8528 -> 8973
+	8528 -> 8972
 	8562 -> 2862
-	8562 -> 8431
+	8562 -> 407
 	8562 -> 2829
-	8562 -> 8973
-	8597 -> 2862
-	8597 -> 735
-	8597 -> 2829
-	8597 -> 8973
-	8631 -> 2862
-	8631 -> 8490
-	8631 -> 2829
-	8631 -> 8973
-	8666 -> 2862
-	8666 -> 645
-	8666 -> 2829
-	8666 -> 8973
-	8701 -> 2862
-	8701 -> 8490
-	8701 -> 2829
-	8701 -> 8973
-	8736 -> 2862
-	8736 -> 645
-	8736 -> 2829
-	8736 -> 8973
-	8771 -> 2862
-	8771 -> 8383
-	8771 -> 8490
-	8771 -> 2829
-	8771 -> 8973
-	8810 -> 2862
-	8810 -> 8431
-	8810 -> 8490
-	8810 -> 2829
-	8810 -> 8973
-	8851 -> 2862
-	8851 -> 8913
-	8851 -> 2829
-	8851 -> 8973
-	8886 -> 2862
-	8886 -> 2829
-	8886 -> 8973
-	8913 -> 751
-	8913 -> 538
-	8913 -> 8404
-	8913 -> 8913
-	8913 -> 8431
-	8973 -> 3579
-	8973 -> 3673
-	8981 -> 0 [label=2]
-	8981 -> 215
-	9006 -> 0
-	9006 -> 185
-	9006 -> 2743
-	9006 -> 159
-	9006 -> 47
-	9006 -> 8981
-	9006 -> 2683
-	9006 -> 3129
-	9081 -> 1519
-	9156 -> 9133 [label=2]
-	9156 -> 1235
-	9156 -> 9097
-	9192 -> 1235
-	9192 -> 9133
-	9205 -> 38 [label=5]
-	9245 -> 1235
-	9245 -> 9133
-	9261 -> 1235
-	9261 -> 9117
-	9261 -> 9097
-	9261 -> 9133
-	9305 -> 1235
-	9305 -> 9097
-	9305 -> 9133
-	9329 -> 9261
-	9329 -> 9117
-	9329 -> 1235 [label=2]
-	9329 -> 9133 [label=2]
-	9329 -> 9097
-	9402 -> 9305
-	9402 -> 9117
-	9402 -> 1235 [label=2]
-	9402 -> 9133 [label=2]
-	9402 -> 9097
-	9489 -> 9156 [label=2]
-	9489 -> 9402
-	9489 -> 9329
-	9545 -> 9329
-	9545 -> 9545 [label=2]
-	9545 -> 9402
-	9646 -> 9545 [label=3]
-	9646 -> 9489 [label=2]
-	9726 -> 1629 [label=4]
-	9726 -> 1296 [label=4]
-	9726 -> 9489
-	9726 -> 0
-	9726 -> 1303 [label=2]
-	9726 -> 1695 [label=2]
-	9845 -> 1235 [label=2]
-	9845 -> 1221 [label=2]
-	9910 -> 0
-	9910 -> 1247 [label=2]
-	9910 -> 5876
-	9910 -> 132
-	9953 -> 29 [label=2]
-	9953 -> 9117 [label=2]
-	9953 -> 9192
-	9953 -> 9097
-	9953 -> 1235
-	9953 -> 9205
-	9953 -> 9133
-	10019 -> 9953
-	10019 -> 9832
-	10019 -> 9845 [label=2]
-	10019 -> 9646 [label=2]
-	10019 -> 9245
-	10019 -> 9489
-	10105 -> 1488 [label=3]
-	10105 -> 1312
-	10105 -> 1619
-	10105 -> 10019
-	10105 -> 0 [label=2]
-	10105 -> 9910
-	10105 -> 6227
-	10105 -> 1695
-	10195 -> 10268
-	10195 -> 3
-	10195 -> 19
-	10256 -> 250
-	10256 -> 291
-	10268 -> 10310 [label=7]
-	10268 -> 10105
-	10268 -> 9081
-	10268 -> 9726
-	10319 -> 2862
-	10319 -> 3579
-	10319 -> 2773
-	10319 -> 1519
-	10319 -> 3673
-	10319 -> 10886
-	10319 -> 2786
-	10371 -> 2862
-	10371 -> 3579
-	10371 -> 10886
-	10408 -> 2938 [label=2]
-	10408 -> 3579
-	10408 -> 2631
-	10408 -> 3601
-	10408 -> 3673
-	10408 -> 3623
-	10408 -> 3537
-	10458 -> 2862
-	10458 -> 2615
-	10458 -> 3601
-	10458 -> 3673
-	10489 -> 10787
-	10511 -> 10787
-	10523 -> 10787
-	10523 -> 3718
-	10543 -> 10787
-	10543 -> 3718
-	10563 -> 2938
-	10563 -> 3579
-	10563 -> 1619
-	10563 -> 2653
-	10563 -> 3174
-	10563 -> 3198
-	10563 -> 3770
-	10612 -> 2862
-	10612 -> 3579
-	10612 -> 0 [label=2]
-	10612 -> 2631
-	10612 -> 258
-	10612 -> 250
-	10612 -> 3673
-	10612 -> 1647
-	10612 -> 1836
-	10612 -> 3601
-	10787 -> 10612
-	10787 -> 10256
-	10787 -> 10195
-	10787 -> 3441
-	10833 -> 3696
-	10833 -> 3673
-	10833 -> 3740
-	10833 -> 2829
-	10833 -> 3579
-	10833 -> 2081
-	10833 -> 3601
-	10886 -> 9006
-	10886 -> 0 [label=4]
-	10886 -> 2631
-	10886 -> 3601
-	10886 -> 3673
-	10886 -> 19 [label=2]
-	10886 -> 2798
-	10886 -> 1943
-	10886 -> 3346
-	10976 -> 3270
-	10976 -> 3673 [label=2]
-	10976 -> 3696
-	10976 -> 3740
-	10976 -> 47
-	10976 -> 2829
-	10976 -> 3579
-	11037 -> 3223
-	11037 -> 0
-	11037 -> 1555
-	11037 -> 3270
-	11037 -> 2683
-	11037 -> 3129
-	11037 -> 11037
-	11095 -> 11037
-	11095 -> 19
-	11134 -> 291
-	11134 -> 3650
-	11134 -> 8519
-	11134 -> 8528
-	11134 -> 8562
-	11134 -> 8597
-	11134 -> 8631
-	11134 -> 8666
-	11134 -> 8701
-	11134 -> 8736
-	11134 -> 8771
-	11134 -> 8810
-	11134 -> 8851
-	11134 -> 8886
-	11134 -> 12030 [label=113]
-	11134 -> 4161
-	11134 -> 4197
-	11134 -> 4233
-	11134 -> 4269
-	11134 -> 4305
-	11134 -> 4342
-	11134 -> 4379
-	11134 -> 4416
-	11134 -> 4453
-	11134 -> 4720
-	11134 -> 4494
-	11134 -> 4563
-	11134 -> 4599
-	11134 -> 4635
-	11134 -> 8207
-	11134 -> 6349
-	11134 -> 6375
-	11134 -> 6425
-	11134 -> 6465
-	11134 -> 6495
-	11134 -> 6520
-	11134 -> 6561
-	11134 -> 6586
-	11134 -> 6632
-	11134 -> 6657
-	11134 -> 6703
-	11134 -> 6732
-	11134 -> 6792
-	11134 -> 6891
-	11134 -> 6916
-	11134 -> 6964
-	11134 -> 3859
-	11134 -> 3945
-	11134 -> 3970
-	11134 -> 4000
-	11134 -> 4030
-	11134 -> 4055
-	11134 -> 4079
-	11134 -> 4104
-	11134 -> 4139
-	11134 -> 7626
-	11134 -> 7412
-	11134 -> 7449
-	11134 -> 7646
-	11134 -> 7729
-	11134 -> 7694
-	11134 -> 7537
-	11134 -> 7562
-	11134 -> 7482
-	11134 -> 7510
-	11134 -> 7767
-	11134 -> 7613
-	11134 -> 7823
-	11134 -> 7835
-	11134 -> 7847
-	11134 -> 7859
-	11134 -> 7871
-	11134 -> 7883
-	11134 -> 7895
-	11134 -> 7907
-	11134 -> 7919
-	11134 -> 7931
-	11134 -> 7943
-	11134 -> 7955
-	11134 -> 7967
-	11134 -> 7979
-	11134 -> 7991
-	11134 -> 8003
-	11134 -> 8015
-	11134 -> 8027
-	11134 -> 8039
-	11134 -> 8051
-	11134 -> 8063
-	11134 -> 8075
-	11134 -> 8087
-	11134 -> 8099
-	11134 -> 8111
-	11134 -> 8123
-	11134 -> 8135
-	11134 -> 8147
-	11134 -> 8159
-	11134 -> 8171
-	11134 -> 8183
-	11134 -> 8195
-	11134 -> 4772
-	11134 -> 4784
-	11134 -> 4796
-	11134 -> 4808
-	11134 -> 4820
-	11134 -> 4832
-	11134 -> 4844
-	11134 -> 4856
-	11134 -> 4868
-	11134 -> 4880
-	11134 -> 4892
-	11134 -> 4904
-	11134 -> 4916
-	11134 -> 4928
-	11134 -> 4940
-	11134 -> 4952
-	11134 -> 7096
-	11134 -> 7108
-	11134 -> 7120
-	11134 -> 7132
-	11134 -> 7144
-	11134 -> 7156
-	11134 -> 7168
-	11134 -> 7180
-	11134 -> 7192
-	11134 -> 7204
-	11134 -> 7216
-	11134 -> 7228
-	11134 -> 7240
-	11134 -> 7252
-	11134 -> 7264
-	11134 -> 7276
-	11134 -> 7347
-	11134 -> 7360
-	11134 -> 7373
-	11134 -> 7386
-	11134 -> 7399
-	11134 -> 10319
-	11134 -> 10489
-	11134 -> 10523
-	11134 -> 10408
-	11134 -> 10543
-	11134 -> 10371
-	11134 -> 10511
-	11134 -> 10458
-	11134 -> 10398
-	11134 -> 10563
-	11938 -> 11134
-	11938 -> 3526
-	11938 -> 3528
-	11938 -> 10256
-	11938 -> 10833 [label=2]
-	11938 -> 11938 [label=4]
-	11938 -> 3223
-	11938 -> 10976
-	11938 -> 11095
-	12039 -> 1004
-	12039 -> 2666
-	12039 -> 2756
-	12052 -> 3368
-	12052 -> 3505
-	12052 -> 3673
-	12052 -> 11938
-	12052 -> 3416
-	12085 -> 3346
-	12085 -> 0
-	12085 -> 3441
-	12085 -> 3505
-	12085 -> 3673
-	12085 -> 11938
-	12085 -> 3416
-	12140 -> 1011
-	12140 -> 2696
-	12149 -> 2683
-	12155 -> 1011
-	12155 -> 2726
-	12164 -> 2713
-	12170 -> 1011
-	12170 -> 2666
-	12179 -> 2773
-	12179 -> 9006
-	12179 -> 2786
-	12179 -> 0 [label=3]
-	12179 -> 19 [label=2]
-	12179 -> 2798
-	12179 -> 1943
-	12179 -> 3346 [label=2]
-	12179 -> 3505
-	12179 -> 3673
-	12179 -> 11938
-	12179 -> 3270
-	12292 -> 12039
-	12301 -> 12292
-	12322 -> 19
-	12322 -> 12052
-	12365 -> 3 [label=2]
-	12402 -> 12322
-	12402 -> 12365
-	12447 -> 12085
-	12487 -> 3 [label=3]
-	12536 -> 12447
-	12536 -> 12487
-	12573 -> 12140
-	12580 -> 12573
-	12599 -> 12149
-	12614 -> 12599
-	12614 -> 12605
-	12630 -> 12155
-	12637 -> 12630
-	12656 -> 12164
-	12671 -> 12656
-	12671 -> 12662
-	12687 -> 12170
-	12694 -> 12687
-	12713 -> 12179
-	12732 -> 12713
-	12732 -> 12722
+	8562 -> 8972
+	8596 -> 2862
+	8596 -> 735
+	8596 -> 2829
+	8596 -> 8972
+	8630 -> 2862
+	8630 -> 8490
+	8630 -> 2829
+	8630 -> 8972
+	8665 -> 2862
+	8665 -> 645
+	8665 -> 2829
+	8665 -> 8972
+	8700 -> 2862
+	8700 -> 8490
+	8700 -> 2829
+	8700 -> 8972
+	8735 -> 2862
+	8735 -> 645
+	8735 -> 2829
+	8735 -> 8972
+	8770 -> 2862
+	8770 -> 8383
+	8770 -> 8490
+	8770 -> 2829
+	8770 -> 8972
+	8809 -> 2862
+	8809 -> 8431
+	8809 -> 8490
+	8809 -> 2829
+	8809 -> 8972
+	8850 -> 2862
+	8850 -> 8912
+	8850 -> 2829
+	8850 -> 8972
+	8885 -> 2862
+	8885 -> 2829
+	8885 -> 8972
+	8912 -> 751
+	8912 -> 538
+	8912 -> 8404
+	8912 -> 8912
+	8912 -> 8431
+	8972 -> 3579
+	8972 -> 3673
+	8980 -> 0 [label=2]
+	8980 -> 215
+	9005 -> 0
+	9005 -> 185
+	9005 -> 2743
+	9005 -> 159
+	9005 -> 47
+	9005 -> 8980
+	9005 -> 2683
+	9005 -> 3129
+	9080 -> 1519
+	9155 -> 9132 [label=2]
+	9155 -> 1235
+	9155 -> 9096
+	9191 -> 1235
+	9191 -> 9132
+	9204 -> 38 [label=5]
+	9244 -> 1235
+	9244 -> 9132
+	9260 -> 1235
+	9260 -> 9116
+	9260 -> 9096
+	9260 -> 9132
+	9304 -> 1235
+	9304 -> 9096
+	9304 -> 9132
+	9328 -> 9260
+	9328 -> 9116
+	9328 -> 1235 [label=2]
+	9328 -> 9132 [label=2]
+	9328 -> 9096
+	9401 -> 9304
+	9401 -> 9116
+	9401 -> 1235 [label=2]
+	9401 -> 9132 [label=2]
+	9401 -> 9096
+	9488 -> 9155 [label=2]
+	9488 -> 9401
+	9488 -> 9328
+	9544 -> 9328
+	9544 -> 9544 [label=2]
+	9544 -> 9401
+	9645 -> 9544 [label=3]
+	9645 -> 9488 [label=2]
+	9725 -> 1629 [label=4]
+	9725 -> 1296 [label=4]
+	9725 -> 9488
+	9725 -> 0
+	9725 -> 1303 [label=2]
+	9725 -> 1695 [label=2]
+	9843 -> 1235 [label=2]
+	9843 -> 1221 [label=2]
+	9908 -> 0
+	9908 -> 1247 [label=2]
+	9908 -> 5876
+	9908 -> 132
+	9951 -> 29 [label=2]
+	9951 -> 9116 [label=2]
+	9951 -> 9191
+	9951 -> 9096
+	9951 -> 1235
+	9951 -> 9204
+	9951 -> 9132
+	10017 -> 9951
+	10017 -> 9830
+	10017 -> 9843 [label=2]
+	10017 -> 9645 [label=2]
+	10017 -> 9244
+	10017 -> 9488
+	10103 -> 1488 [label=3]
+	10103 -> 1312
+	10103 -> 1619
+	10103 -> 10017
+	10103 -> 0 [label=2]
+	10103 -> 9908
+	10103 -> 6227
+	10103 -> 1695
+	10193 -> 10266
+	10193 -> 3
+	10193 -> 19
+	10254 -> 250
+	10254 -> 291
+	10266 -> 10309 [label=7]
+	10266 -> 10103
+	10266 -> 9080
+	10266 -> 9725
+	10318 -> 2862
+	10318 -> 3579
+	10318 -> 2773
+	10318 -> 1519
+	10318 -> 3673
+	10318 -> 10885
+	10318 -> 2786
+	10370 -> 2862
+	10370 -> 3579
+	10370 -> 10885
+	10407 -> 2938 [label=2]
+	10407 -> 3579
+	10407 -> 2631
+	10407 -> 3601
+	10407 -> 3673
+	10407 -> 3623
+	10407 -> 3537
+	10457 -> 2862
+	10457 -> 2615
+	10457 -> 3601
+	10457 -> 3673
+	10488 -> 10786
+	10510 -> 10786
+	10522 -> 10786
+	10522 -> 3718
+	10542 -> 10786
+	10542 -> 3718
+	10562 -> 2938
+	10562 -> 3579
+	10562 -> 1619
+	10562 -> 2653
+	10562 -> 3174
+	10562 -> 3198
+	10562 -> 3770
+	10611 -> 2862
+	10611 -> 3579
+	10611 -> 0 [label=2]
+	10611 -> 2631
+	10611 -> 258
+	10611 -> 250
+	10611 -> 3673
+	10611 -> 1647
+	10611 -> 1836
+	10611 -> 3601
+	10786 -> 10611
+	10786 -> 10254
+	10786 -> 10193
+	10786 -> 3441
+	10832 -> 3696
+	10832 -> 3673
+	10832 -> 3740
+	10832 -> 2829
+	10832 -> 3579
+	10832 -> 2081
+	10832 -> 3601
+	10885 -> 9005
+	10885 -> 0 [label=4]
+	10885 -> 2631
+	10885 -> 3601
+	10885 -> 3673
+	10885 -> 19 [label=2]
+	10885 -> 2798
+	10885 -> 1943
+	10885 -> 3346
+	10975 -> 3270
+	10975 -> 3673 [label=2]
+	10975 -> 3696
+	10975 -> 3740
+	10975 -> 47
+	10975 -> 2829
+	10975 -> 3579
+	11036 -> 3223
+	11036 -> 0
+	11036 -> 1555
+	11036 -> 3270
+	11036 -> 2683
+	11036 -> 3129
+	11036 -> 11036
+	11094 -> 11036
+	11094 -> 19
+	11133 -> 291
+	11133 -> 3650
+	11133 -> 8519
+	11133 -> 8528
+	11133 -> 8562
+	11133 -> 8596
+	11133 -> 8630
+	11133 -> 8665
+	11133 -> 8700
+	11133 -> 8735
+	11133 -> 8770
+	11133 -> 8809
+	11133 -> 8850
+	11133 -> 8885
+	11133 -> 12029 [label=113]
+	11133 -> 4161
+	11133 -> 4197
+	11133 -> 4233
+	11133 -> 4269
+	11133 -> 4305
+	11133 -> 4342
+	11133 -> 4379
+	11133 -> 4416
+	11133 -> 4453
+	11133 -> 4720
+	11133 -> 4494
+	11133 -> 4563
+	11133 -> 4599
+	11133 -> 4635
+	11133 -> 8207
+	11133 -> 6349
+	11133 -> 6375
+	11133 -> 6425
+	11133 -> 6465
+	11133 -> 6495
+	11133 -> 6520
+	11133 -> 6561
+	11133 -> 6586
+	11133 -> 6632
+	11133 -> 6657
+	11133 -> 6703
+	11133 -> 6732
+	11133 -> 6792
+	11133 -> 6891
+	11133 -> 6916
+	11133 -> 6964
+	11133 -> 3859
+	11133 -> 3945
+	11133 -> 3970
+	11133 -> 4000
+	11133 -> 4030
+	11133 -> 4055
+	11133 -> 4079
+	11133 -> 4104
+	11133 -> 4139
+	11133 -> 7626
+	11133 -> 7412
+	11133 -> 7449
+	11133 -> 7646
+	11133 -> 7729
+	11133 -> 7694
+	11133 -> 7537
+	11133 -> 7562
+	11133 -> 7482
+	11133 -> 7510
+	11133 -> 7767
+	11133 -> 7613
+	11133 -> 7823
+	11133 -> 7835
+	11133 -> 7847
+	11133 -> 7859
+	11133 -> 7871
+	11133 -> 7883
+	11133 -> 7895
+	11133 -> 7907
+	11133 -> 7919
+	11133 -> 7931
+	11133 -> 7943
+	11133 -> 7955
+	11133 -> 7967
+	11133 -> 7979
+	11133 -> 7991
+	11133 -> 8003
+	11133 -> 8015
+	11133 -> 8027
+	11133 -> 8039
+	11133 -> 8051
+	11133 -> 8063
+	11133 -> 8075
+	11133 -> 8087
+	11133 -> 8099
+	11133 -> 8111
+	11133 -> 8123
+	11133 -> 8135
+	11133 -> 8147
+	11133 -> 8159
+	11133 -> 8171
+	11133 -> 8183
+	11133 -> 8195
+	11133 -> 4772
+	11133 -> 4784
+	11133 -> 4796
+	11133 -> 4808
+	11133 -> 4820
+	11133 -> 4832
+	11133 -> 4844
+	11133 -> 4856
+	11133 -> 4868
+	11133 -> 4880
+	11133 -> 4892
+	11133 -> 4904
+	11133 -> 4916
+	11133 -> 4928
+	11133 -> 4940
+	11133 -> 4952
+	11133 -> 7096
+	11133 -> 7108
+	11133 -> 7120
+	11133 -> 7132
+	11133 -> 7144
+	11133 -> 7156
+	11133 -> 7168
+	11133 -> 7180
+	11133 -> 7192
+	11133 -> 7204
+	11133 -> 7216
+	11133 -> 7228
+	11133 -> 7240
+	11133 -> 7252
+	11133 -> 7264
+	11133 -> 7276
+	11133 -> 7347
+	11133 -> 7360
+	11133 -> 7373
+	11133 -> 7386
+	11133 -> 7399
+	11133 -> 10318
+	11133 -> 10488
+	11133 -> 10522
+	11133 -> 10407
+	11133 -> 10542
+	11133 -> 10370
+	11133 -> 10510
+	11133 -> 10457
+	11133 -> 10397
+	11133 -> 10562
+	11937 -> 11133
+	11937 -> 3526
+	11937 -> 3528
+	11937 -> 10254
+	11937 -> 10832 [label=2]
+	11937 -> 11937 [label=4]
+	11937 -> 3223
+	11937 -> 10975
+	11937 -> 11094
+	12038 -> 1004
+	12038 -> 2666
+	12038 -> 2756
+	12051 -> 3368
+	12051 -> 3505
+	12051 -> 3673
+	12051 -> 11937
+	12051 -> 3416
+	12084 -> 3346
+	12084 -> 0
+	12084 -> 3441
+	12084 -> 3505
+	12084 -> 3673
+	12084 -> 11937
+	12084 -> 3416
+	12139 -> 1011
+	12139 -> 2696
+	12148 -> 2683
+	12154 -> 1011
+	12154 -> 2726
+	12163 -> 2713
+	12169 -> 1011
+	12169 -> 2666
+	12178 -> 2773
+	12178 -> 9005
+	12178 -> 2786
+	12178 -> 0 [label=3]
+	12178 -> 19 [label=2]
+	12178 -> 2798
+	12178 -> 1943
+	12178 -> 3346 [label=2]
+	12178 -> 3505
+	12178 -> 3673
+	12178 -> 11937
+	12178 -> 3270
+	12291 -> 12038
+	12300 -> 12291
+	12321 -> 19
+	12321 -> 12051
+	12364 -> 3 [label=2]
+	12401 -> 12321
+	12401 -> 12364
+	12446 -> 12084
+	12486 -> 3 [label=3]
+	12535 -> 12446
+	12535 -> 12486
+	12572 -> 12139
+	12579 -> 12572
+	12598 -> 12148
+	12613 -> 12598
+	12613 -> 12604
+	12629 -> 12154
+	12636 -> 12629
+	12655 -> 12163
+	12670 -> 12655
+	12670 -> 12661
+	12686 -> 12169
+	12693 -> 12686
+	12712 -> 12178
+	12731 -> 12712
+	12731 -> 12721
 }
