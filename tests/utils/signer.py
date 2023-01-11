@@ -61,7 +61,7 @@ def from_call_to_call_array(calls):
 
 class MockEthSigner:
     def __init__(self, private_key):
-        self.signer = eth_keys.keys.PrivateKey(private_key)
+        self.signer = private_key
         self.eth_address = int(self.signer.public_key.to_checksum_address(), 0)
         self.class_hash = classHash
 

@@ -1,4 +1,5 @@
 import logging
+import web3
 import random
 from collections import namedtuple
 from typing import List
@@ -78,11 +79,11 @@ def deploy_solidity_contract(starknet, contract_account_class, kakarot):
     return _factory
 
 
-Wallet = namedtuple("Wallet", ["address", "private_key", "starknet_address"])
+Wallet = namedtuple("Wallet", ["address", "private_key", "starknet_contract"])
 
 
-@pytest.fixture(scope="package")
-def addresses() -> List[Wallet]:
+@pytest_asyncio.fixture(scope="package")
+async def addresses(deployer, starknet, externally_owned_account_class) -> List[Wallet]:
     """
     Returns a list of addresses to be used in tests.
     Addresses are returned as named tuples with
@@ -91,15 +92,24 @@ def addresses() -> List[Wallet]:
     """
     random.seed(0)
     private_keys = [generate_random_private_key() for _ in range(4)]
-    return [
-        Wallet(
-            address=private_key.public_key.to_checksum_address(),
-            private_key=private_key,
-            starknet_address=int(private_key.public_key.to_address(), 16),
-        )
-        for private_key in private_keys
-    ]
+    wallets = []
+    for private_key in private_keys:
+        tempAccount: Account = web3.eth.Account().from_key(private_key)
+        evm_address = web3.Web3().toInt(hexstr=tempAccount.address)
+        eth_aa_deploy_tx = await deployer.create_account(evm_address=evm_address).execute()
 
+        wallets.append(Wallet(
+            address=tempAccount.address,
+            private_key=private_key,
+            starknet_contract=StarknetContract(
+                starknet.state,
+                externally_owned_account_class.abi,
+                eth_aa_deploy_tx.call_info.internal_calls[0].contract_address,
+                eth_aa_deploy_tx,
+            )
+        ))
+
+    return wallets
 
 @pytest_asyncio.fixture(scope="package")
 async def owner(addresses):
