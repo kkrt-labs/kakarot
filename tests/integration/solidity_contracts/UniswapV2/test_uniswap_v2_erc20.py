@@ -25,7 +25,7 @@ async def token(
         "UniswapV2",
         "ERC20",
         TOTAL_SUPPLY,
-        caller_address=owner.starknet_address,
+        caller_address=owner.starknet_contract.contract_address,
     )
 
 
@@ -54,7 +54,9 @@ class TestUniswapV2ERC20:
     class TestApprove:
         async def test_should_set_allowance(self, token, owner, other):
             await token.approve(
-                other.address, TEST_AMOUNT, caller_address=owner.starknet_address
+                other.address,
+                TEST_AMOUNT,
+                caller_address=owner.starknet_contract.contract_address,
             )
             assert token.events.Approval == [
                 {
@@ -71,7 +73,9 @@ class TestUniswapV2ERC20:
             self, token, owner, other
         ):
             await token.transfer(
-                other.address, TEST_AMOUNT, caller_address=owner.starknet_address
+                other.address,
+                TEST_AMOUNT,
+                caller_address=owner.starknet_contract.contract_address,
             )
             assert token.events.Transfer == [
                 {
@@ -90,7 +94,7 @@ class TestUniswapV2ERC20:
                 await token.transfer(
                     other.address,
                     TOTAL_SUPPLY + 1,
-                    caller_address=owner.starknet_address,
+                    caller_address=owner.starknet_contract.contract_address,
                 )
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
             # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
@@ -101,7 +105,9 @@ class TestUniswapV2ERC20:
         ):
             with pytest.raises(Exception) as e:
                 await token.transfer(
-                    owner.address, 1, caller_address=other.starknet_address
+                    owner.address,
+                    1,
+                    caller_address=other.starknet_contract.contract_address,
                 )
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
             # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
@@ -112,13 +118,15 @@ class TestUniswapV2ERC20:
             self, token, owner, other
         ):
             await token.approve(
-                other.address, TEST_AMOUNT, caller_address=owner.starknet_address
+                other.address,
+                TEST_AMOUNT,
+                caller_address=owner.starknet_contract.contract_address,
             )
             await token.transferFrom(
                 owner.address,
                 other.address,
                 TEST_AMOUNT,
-                caller_address=other.starknet_address,
+                caller_address=other.starknet_contract.contract_address,
             )
             assert token.events.Transfer == [
                 {"from": owner.address, "to": other.address, "value": TEST_AMOUNT}
@@ -132,13 +140,15 @@ class TestUniswapV2ERC20:
             self, token, owner, other
         ):
             await token.approve(
-                other.address, MAX_INT, caller_address=owner.starknet_address
+                other.address,
+                MAX_INT,
+                caller_address=owner.starknet_contract.contract_address,
             )
             await token.transferFrom(
                 owner.address,
                 other.address,
                 TEST_AMOUNT,
-                caller_address=other.starknet_address,
+                caller_address=other.starknet_contract.contract_address,
             )
             assert token.events.Transfer == [
                 {"from": owner.address, "to": other.address, "value": TEST_AMOUNT}
@@ -172,7 +182,7 @@ class TestUniswapV2ERC20:
                 v,
                 r,
                 s,
-                caller_address=owner.starknet_address,
+                caller_address=owner.starknet_contract.contract_address,
             )
             assert token.events.Approval == [
                 {"owner": owner.address, "spender": other.address, "value": TEST_AMOUNT}

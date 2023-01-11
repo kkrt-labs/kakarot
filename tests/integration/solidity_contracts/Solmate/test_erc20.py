@@ -23,14 +23,18 @@ class TestERC20:
 
             # Mint few token to others[0]
             await erc_20.mint(
-                others[0].address, 356, caller_address=owner.starknet_address
+                others[0].address,
+                356,
+                caller_address=owner.starknet_contract.contract_address,
             )
             assert await erc_20.totalSupply() == 356
             assert await erc_20.balanceOf(others[0].address) == 356
 
             # others[0] approves others[1] to spend some
             await erc_20.approve(
-                others[1].address, 10, caller_address=others[0].starknet_address
+                others[1].address,
+                10,
+                caller_address=others[0].starknet_contract.contract_address,
             )
             assert await erc_20.allowance(others[0].address, others[1].address) == 10
 
@@ -39,14 +43,16 @@ class TestERC20:
                 others[0].address,
                 others[1].address,
                 10,
-                caller_address=others[1].starknet_address,
+                caller_address=others[1].starknet_contract.contract_address,
             )
             assert await erc_20.balanceOf(others[0].address) == 356 - 10
             assert await erc_20.balanceOf(others[1].address) == 10
 
             # others[1] sends token to others[2]
             await erc_20.transfer(
-                others[2].address, 1, caller_address=others[1].starknet_address
+                others[2].address,
+                1,
+                caller_address=others[1].starknet_contract.contract_address,
             )
             assert await erc_20.balanceOf(others[1].address) == 10 - 1
             assert await erc_20.balanceOf(others[2].address) == 1

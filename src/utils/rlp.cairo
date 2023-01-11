@@ -132,14 +132,11 @@ namespace RLP {
             Helpers.fill_array(data_len, data, rlp + 1);
             return (rlp_len=data_len + 1);
         } else {
-            let (byte_len) = Helpers.bytes_len(data_len);
-            assert rlp[0] = 0xf7 + byte_len;
-            let (local rs: felt*) = alloc();
-            let (rs_len) = Helpers.to_base_16(0, rs, data_len);
             let (local bytes: felt*) = alloc();
-            Helpers.to_bytes(bytes, rs_len, rs);
-            Helpers.fill_array(byte_len, bytes, rlp + 1);
-            Helpers.fill_array(data_len, data, rlp + 1 + byte_len);
+            let (bytes_len) = Helpers.felt_to_bytes(data_len, 0, bytes);
+            assert rlp[0] = 0xf7 + bytes_len;
+            Helpers.fill_array(bytes_len, bytes, rlp + 1);
+            Helpers.fill_array(data_len, data, rlp + 1 + bytes_len);
             return (rlp_len=data_len + 1);
         }
     }

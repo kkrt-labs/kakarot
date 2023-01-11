@@ -641,79 +641,22 @@ namespace Helpers {
         dw 72057594037927936;
     }
 
-    // @notice Returns the lenght in bytes of a felt
-    // @param len The felt to get the length in bytes
-    // @return byte_len The length in bytes
-    func bytes_len{range_check_ptr}(len: felt) -> (byte_len: felt) {
-        // get ready for ugly code
-        let fit = is_le(len, 255);
-        if (fit != FALSE) {
-            return (byte_len=1);
-        }
-        let fit = is_le(len, 65535);
-        if (fit != FALSE) {
-            return (byte_len=2);
-        }
-        let fit = is_le(len, 16777215);
-        if (fit != FALSE) {
-            return (byte_len=3);
-        }
-        let fit = is_le(len, 4294967295);
-        if (fit != FALSE) {
-            return (byte_len=4);
-        }
-        let fit = is_le(len, 1099511627775);
-        if (fit != FALSE) {
-            return (byte_len=5);
-        }
-        let fit = is_le(len, 281474976710655);
-        if (fit != FALSE) {
-            return (byte_len=6);
-        }
-        let fit = is_le(len, 72057594037927935);
-        if (fit != FALSE) {
-            return (byte_len=7);
-        }
-        let fit = is_le(len, 18446744073709551615);
-        if (fit != FALSE) {
-            return (byte_len=8);
-        }
-        return (byte_len=0);
-    }
-
-    // @dev returns an array representing the value by the remainders of the 16 division
-    // @dev example: 1000 => [8, 14, 3]
-    // @param remainders_len Used for recursion, set to 0
-    // @param remainderss Pointer to the array that will receive the remainders
-    // @param v The initial value
-    // @return remainders_len The final length of the remainders array
-    func to_base_16{range_check_ptr}(rs_len: felt, rs: felt*, v: felt) -> (rs_len: felt) {
-        let (q, r) = unsigned_div_rem(v, 16);
-        let is_le_16 = is_le(q, 16);
-        assert [rs] = r;
-        if (is_le_16 != FALSE) {
-            let rs = rs + 1;
-            assert [rs] = q;
-            return (rs_len=rs_len + 2);
-        }
-        return to_base_16(rs_len + 1, rs + 1, q);
-    }
-
-    // @notice transforms an array of 16'th remainders to bytes
-    // @param bytes The pointer which will be filled with the bytes
-    // @param rs_len The length of the remainders array
-    // @param rs The array of remainders
-    func to_bytes{range_check_ptr}(bytes: felt*, rs_len: felt, rs: felt*) -> () {
-        if (rs_len == 0) {
-            return ();
-        }
-        let (q, r) = unsigned_div_rem(rs_len, 2);
-        if (r == 0) {
-            assert [bytes] = rs[rs_len - 1] * 16 + rs[rs_len - 2];
-            return to_bytes(bytes, rs_len - 2, rs);
+    // @notice transform a felt to big endian bytes
+    // @param value The initial felt
+    // @param bytes_len The number of bytes (used for recursion, set to 0)
+    // @param bytes The pointer to the bytes
+    // @return bytes_len The final length of the bytes array
+    func felt_to_bytes{range_check_ptr}(value: felt, bytes_len: felt, bytes: felt*) -> (
+        bytes_len: felt
+    ) {
+        let (q, r) = unsigned_div_rem(value, 256);
+        let is_le_256 = is_le(r, 256);
+        if (is_le_256 != FALSE) {
+            assert [bytes] = value;
+            return (bytes_len=bytes_len + 1);
         } else {
-            assert [bytes] = rs[rs_len - 1];
-            return to_bytes(bytes, rs_len - 1, rs);
+            assert [bytes] = r;
+            return felt_to_bytes(value=q, bytes_len=bytes_len + 1, bytes=bytes + 1);
         }
     }
 

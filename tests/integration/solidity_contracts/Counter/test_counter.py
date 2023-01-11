@@ -13,33 +13,53 @@ class TestCounter:
 
     class TestInc:
         async def test_should_increase_count(self, counter, addresses):
-            await counter.inc(caller_address=addresses[1].starknet_address)
+            await counter.inc(
+                caller_address=addresses[1].starknet_contract.contract_address
+            )
             assert await counter.count() == 1
 
     class TestDec:
         async def test_should_raise_when_count_is_0(self, counter, addresses):
             with pytest.raises(Exception) as e:
-                await counter.dec(caller_address=addresses[1].starknet_address)
+                await counter.dec(
+                    caller_address=addresses[1].starknet_contract.contract_address
+                )
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
             assert message == "Kakarot: Reverted with reason: 32"
 
         async def test_should_decrease_count(self, counter, addresses):
-            await counter.inc(caller_address=addresses[1].starknet_address)
-            await counter.dec(caller_address=addresses[1].starknet_address)
+            await counter.inc(
+                caller_address=addresses[1].starknet_contract.contract_address
+            )
+            await counter.dec(
+                caller_address=addresses[1].starknet_contract.contract_address
+            )
             assert await counter.count() == 0
 
         async def test_should_decrease_count_unchecked(self, counter, addresses):
-            await counter.inc(caller_address=addresses[1].starknet_address)
-            await counter.decUnchecked(caller_address=addresses[1].starknet_address)
+            await counter.inc(
+                caller_address=addresses[1].starknet_contract.contract_address
+            )
+            await counter.decUnchecked(
+                caller_address=addresses[1].starknet_contract.contract_address
+            )
             assert await counter.count() == 0
 
         async def test_should_decrease_count_in_place(self, counter, addresses):
-            await counter.inc(caller_address=addresses[1].starknet_address)
-            await counter.decInPlace(caller_address=addresses[1].starknet_address)
+            await counter.inc(
+                caller_address=addresses[1].starknet_contract.contract_address
+            )
+            await counter.decInPlace(
+                caller_address=addresses[1].starknet_contract.contract_address
+            )
             assert await counter.count() == 0
 
     class TestReset:
         async def test_should_set_count_to_0(self, counter, addresses):
-            await counter.inc(caller_address=addresses[1].starknet_address)
-            await counter.reset(caller_address=addresses[1].starknet_address)
+            await counter.inc(
+                caller_address=addresses[1].starknet_contract.contract_address
+            )
+            await counter.reset(
+                caller_address=addresses[1].starknet_contract.contract_address
+            )
             assert await counter.count() == 0

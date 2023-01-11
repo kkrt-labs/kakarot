@@ -129,7 +129,7 @@ async def others(addresses):
 @pytest_asyncio.fixture(scope="module")
 async def counter(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
-        "Counter", "Counter", caller_address=owner.starknet_address
+        "Counter", "Counter", caller_address=owner.starknet_contract.contract_address
     )
 
 
@@ -139,7 +139,7 @@ async def plain_opcodes(deploy_solidity_contract, owner, counter):
         "PlainOpcodes",
         "PlainOpcodes",
         counter.evm_contract_address,
-        caller_address=owner.starknet_address,
+        caller_address=owner.starknet_contract.contract_address,
     )
 
 
@@ -151,7 +151,7 @@ async def erc_20(deploy_solidity_contract, owner):
         "Kakarot Token",
         "KKT",
         18,
-        caller_address=owner.starknet_address,
+        caller_address=owner.starknet_contract.contract_address,
     )
 
 
@@ -162,5 +162,5 @@ async def erc_721(deploy_solidity_contract, owner):
         "ERC721",
         "Kakarot NFT",
         "KKNFT",
-        caller_address=owner.starknet_address,
+        caller_address=owner.starknet_contract.contract_address,
     )
