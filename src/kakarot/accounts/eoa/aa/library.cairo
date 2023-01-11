@@ -129,8 +129,15 @@ namespace ExternallyOwnedAccount {
             let keccak_ptr_start = keccak_ptr;
             let (words: felt*) = alloc();
             // transforms bytes to groups of 64 bits (used for hashing)
-            let (words_len: felt) = Helpers.bytes_to_words(
-                data_len=rlp_len + 1, data=list_ptr, words_len=0, words=words
+            Helpers.bytes_to_bytes8_little_endian(
+                bytes_len=rlp_len + 1,
+                bytes=list_ptr,
+                index=0,
+                size=rlp_len + 1,
+                bytes8=0,
+                bytes8_shift=0,
+                dest=words,
+                dest_index=0,
             );
             // keccak_bigend because verify_eth_signature_uint256 requires bigend
             let tx_hash = keccak_bigend{keccak_ptr=keccak_ptr}(inputs=words, n_bytes=rlp_len + 1);

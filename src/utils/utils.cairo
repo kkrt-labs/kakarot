@@ -177,38 +177,6 @@ namespace Helpers {
         return fill_array(fill_len - 1, input_arr + 1, output_arr + 1);
     }
 
-    // @notice transforms a sequence of bytes to groups of 64 bits (little endian)
-    // @param data_len The lenght of the bytes
-    // @param data The pointer to the first byte in array
-    // @param words_len Used for recursion, set to 0
-    // @param words A pointer to an empty array, will be filled with the words
-    // @return words_len The number of words created
-    func bytes_to_words{range_check_ptr}(
-        data_len: felt, data: felt*, words_len: felt, words: felt*
-    ) -> (words_len: felt) {
-        alloc_locals;
-        if (data_len == 0) {
-            return (words_len=words_len);
-        }
-        let is_le_7 = is_le(data_len, 7);
-        if (is_le_7 != FALSE) {
-            let (padding: felt*) = alloc();
-            fill(8 - data_len, padding, 0);
-            fill_array(8 - data_len, padding, data + data_len);
-            tempvar n = bytes_to_64_bits_little_felt(data);
-            assert [words] = n;
-            return bytes_to_words(
-                data_len=0, data=data + data_len, words_len=words_len + 1, words=words + 1
-            );
-        } else {
-            tempvar n = bytes_to_64_bits_little_felt(data);
-            assert [words] = n;
-            return bytes_to_words(
-                data_len=data_len - 8, data=data + 8, words_len=words_len + 1, words=words + 1
-            );
-        }
-    }
-
     func slice_data{range_check_ptr}(
         data_len: felt, data: felt*, data_offset: felt, slice_len: felt
     ) -> felt* {
