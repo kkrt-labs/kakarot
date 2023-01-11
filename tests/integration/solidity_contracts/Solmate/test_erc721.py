@@ -216,12 +216,12 @@ class TestERC721:
             )
 
             approved = await erc_721.getApproved(1337)
-            owner = await erc_721.ownerOf(1337)
+            nft_owner = await erc_721.ownerOf(1337)
             receiver_balance = await erc_721.balanceOf(others[2].address)
             sender_balance = await erc_721.balanceOf(others[1].address)
 
             assert approved == ZERO_ADDRESS
-            assert owner == others[2].address
+            assert nft_owner == others[2].address
             assert receiver_balance == 1
             assert sender_balance == 0
 
@@ -237,12 +237,12 @@ class TestERC721:
             )
 
             approved = await erc_721.getApproved(1337)
-            owner = await erc_721.ownerOf(1337)
+            nft_owner = await erc_721.ownerOf(1337)
             receiver_balance = await erc_721.balanceOf(other.address)
             sender_balance = await erc_721.balanceOf(owner.address)
 
             assert approved == ZERO_ADDRESS
-            assert owner == other.address
+            assert nft_owner == other.address
             assert receiver_balance == 1
             assert sender_balance == 0
 
@@ -263,12 +263,12 @@ class TestERC721:
             )
 
             approved = await erc_721.getApproved(1337)
-            owner = await erc_721.ownerOf(1337)
+            nft_owner = await erc_721.ownerOf(1337)
             receiver_balance = await erc_721.balanceOf(others[1].address)
             sender_balance = await erc_721.balanceOf(others[0].address)
 
             assert approved == ZERO_ADDRESS
-            assert owner == others[1].address
+            assert nft_owner == others[1].address
             assert receiver_balance == 1
             assert sender_balance == 0
 
@@ -347,12 +347,12 @@ class TestERC721:
             )
 
             approved = await erc_721.getApproved(1337)
-            owner = await erc_721.ownerOf(1337)
+            nft_owner = await erc_721.ownerOf(1337)
             receiver_balance = await erc_721.balanceOf(others[1].address)
             sender_balance = await erc_721.balanceOf(others[0].address)
 
             assert approved == ZERO_ADDRESS
-            assert owner == others[1].address
+            assert nft_owner == others[1].address
             assert receiver_balance == 1
             assert sender_balance == 0
 
@@ -377,12 +377,12 @@ class TestERC721:
             )
 
             approved = await erc_721.getApproved(1337)
-            owner = await erc_721.ownerOf(1337)
+            nft_owner = await erc_721.ownerOf(1337)
             receiver_balance = await erc_721.balanceOf(recipient_address)
             sender_balance = await erc_721.balanceOf(others[0].address)
 
             assert approved == ZERO_ADDRESS
-            assert owner == recipient_address
+            assert nft_owner == recipient_address
             assert receiver_balance == 1
             assert sender_balance == 0
 
@@ -420,12 +420,12 @@ class TestERC721:
             )
 
             approved = await erc_721.getApproved(1337)
-            owner = await erc_721.ownerOf(1337)
+            nft_owner = await erc_721.ownerOf(1337)
             receiver_balance = await erc_721.balanceOf(recipient_address)
             sender_balance = await erc_721.balanceOf(others[0].address)
 
             assert approved == ZERO_ADDRESS
-            assert owner == recipient_address
+            assert nft_owner == recipient_address
             assert receiver_balance == 1
             assert sender_balance == 0
 
@@ -578,10 +578,10 @@ class TestERC721:
             )
 
             balance = await erc_721.balanceOf(other.address)
-            owner = await erc_721.ownerOf(1337)
+            nft_owner = await erc_721.ownerOf(1337)
 
             assert balance == 1
-            assert owner == other.address
+            assert nft_owner == other.address
 
         async def test_should_safe_mint_to_ERC721Recipient(
             self, erc_721, erc_721_recipient, owner
@@ -596,7 +596,7 @@ class TestERC721:
             nft_owner = await erc_721.ownerOf(1337)
 
             assert balance == 1
-            assert ft_owner == recipient_address
+            assert nft_owner == recipient_address
 
             recipient_operator = await erc_721_recipient.operator()
             recipient_from = await erc_721_recipient.from_()
