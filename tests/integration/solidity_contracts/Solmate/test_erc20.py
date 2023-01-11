@@ -3,6 +3,7 @@ import re
 import pytest
 from eth_utils import keccak
 
+from tests.integration.helpers.constants import MAX_INT
 from tests.integration.helpers.helpers import (
     PERMIT_TYPEHASH,
     ec_sign,
@@ -10,9 +11,14 @@ from tests.integration.helpers.helpers import (
     get_domain_separator,
 )
 
-MAX_INT = 2**256 - 1
-TEST_AMOUNT_HIGH = 10**18
-TEST_AMOUNT_LOW = 9 * (10**17)
+
+TEST_SUPPLY = 10**18
+TEST_AMOUNT = int(0.9 * 10**18)
+
+
+@pytest.fixture(scope="module")
+async def other(others):
+    return others[0]
 
 
 @pytest.mark.asyncio
@@ -29,93 +35,95 @@ class TestERC20:
             assert decimals == 18
 
     class TestMint:
-        async def test_should_mint(self, erc_20, owner, others):
+        async def test_should_mint(self, erc_20, owner, other):
             await erc_20.mint(
-                others[0].address,
-                TEST_AMOUNT_HIGH,
+                other.address,
+                TEST_SUPPLY,
                 caller_address=owner.starknet_address,
             )
-            assert await erc_20.totalSupply() == TEST_AMOUNT_HIGH
-            assert await erc_20.balanceOf(others[0].address) == TEST_AMOUNT_HIGH
+            assert await erc_20.totalSupply() == TEST_SUPPLY
+            assert await erc_20.balanceOf(other.address) == TEST_SUPPLY
 
     class TestBurn:
-        async def test_should_burn(self, erc_20, owner, others):
-            burn_amount = TEST_AMOUNT_LOW
+        async def test_should_burn(self, erc_20, owner, other):
+            burn_amount = TEST_AMOUNT
             await erc_20.mint(
-                others[0].address,
-                TEST_AMOUNT_HIGH,
+                other.address,
+                TEST_SUPPLY,
                 caller_address=owner.starknet_address,
             )
             await erc_20.burn(
-                others[0].address, burn_amount, caller_address=owner.starknet_address
+                other.address, burn_amount, caller_address=owner.starknet_address
             )
-            assert await erc_20.totalSupply() == TEST_AMOUNT_HIGH - burn_amount
+            assert await erc_20.totalSupply() == TEST_SUPPLY - burn_amount
             assert (
-                await erc_20.balanceOf(others[0].address)
-                == TEST_AMOUNT_HIGH - burn_amount
+                await erc_20.balanceOf(other.address)
+                == TEST_SUPPLY - burn_amount
             )
 
     class TestApprove:
-        async def test_should_approve(self, erc_20, owner, others):
+        async def test_should_approve(self, erc_20, owner, other):
             assert await erc_20.approve(
-                others[0].address,
-                TEST_AMOUNT_HIGH,
+                other.address,
+                TEST_SUPPLY,
                 caller_address=owner.starknet_address,
             )
             assert (
-                await erc_20.allowance(owner.address, others[0].address)
-                == TEST_AMOUNT_HIGH
+                await erc_20.allowance(owner.address, other.address)
+                == TEST_SUPPLY
             )
 
     class TestTransfer:
-        async def test_should_transfer(self, erc_20, owner, others):
+        async def test_should_transfer(self, erc_20, owner, other):
             await erc_20.mint(
-                owner.address, TEST_AMOUNT_HIGH, caller_address=owner.starknet_address
+                owner.address, TEST_SUPPLY, caller_address=owner.starknet_address
             )
             assert await erc_20.transfer(
-                others[0].address,
-                TEST_AMOUNT_HIGH,
+                other.address,
+                TEST_SUPPLY,
                 caller_address=owner.starknet_address,
             )
-            assert await erc_20.totalSupply() == TEST_AMOUNT_HIGH
+            assert await erc_20.totalSupply() == TEST_SUPPLY
             assert await erc_20.balanceOf(owner.address) == 0
-            assert await erc_20.balanceOf(others[0].address) == TEST_AMOUNT_HIGH
+            assert await erc_20.balanceOf(other.address) == TEST_SUPPLY
 
         async def test_should_transfer_from(self, erc_20, owner, others):
             from_wallet = others[0]
+            to_wallet = others[1]
 
             await erc_20.mint(
                 from_wallet.address,
-                TEST_AMOUNT_HIGH,
+                TEST_SUPPLY,
                 caller_address=owner.starknet_address,
             )
 
             await erc_20.approve(
                 owner.address,
-                TEST_AMOUNT_HIGH,
+                TEST_SUPPLY,
                 caller_address=from_wallet.starknet_address,
             )
             assert await erc_20.transferFrom(
                 from_wallet.address,
-                others[1].address,
-                TEST_AMOUNT_HIGH,
+                to_wallet.address,
+                TEST_SUPPLY,
                 caller_address=owner.starknet_address,
             )
-            assert await erc_20.totalSupply() == TEST_AMOUNT_HIGH
+            assert await erc_20.totalSupply() == TEST_SUPPLY
 
             assert await erc_20.allowance(from_wallet.address, owner.address) == 0
 
             assert await erc_20.balanceOf(from_wallet.address) == 0
-            assert await erc_20.balanceOf(others[1].address) == TEST_AMOUNT_HIGH
+            assert await erc_20.balanceOf(to_wallet.address) == TEST_SUPPLY
 
         async def test_should_transfer_from_with_infinite_approve(
             self, erc_20, owner, others
         ):
             from_wallet = others[0]
+            to_wallet = others[1]
 
             await erc_20.mint(
                 from_wallet.address,
-                TEST_AMOUNT_HIGH,
+                TEST_SUPPLY,
                 caller_address=owner.starknet_address,
             )
 
@@ -124,89 +132,88 @@ class TestERC20:
             )
             assert await erc_20.transferFrom(
                 from_wallet.address,
-                others[1].address,
-                TEST_AMOUNT_HIGH,
+                to_wallet.address,
+                TEST_SUPPLY,
                 caller_address=owner.starknet_address,
             )
-            assert await erc_20.totalSupply() == TEST_AMOUNT_HIGH
+            assert await erc_20.totalSupply() == TEST_SUPPLY
 
             assert await erc_20.allowance(from_wallet.address, owner.address) == MAX_INT
 
             assert await erc_20.balanceOf(from_wallet.address) == 0
-            assert await erc_20.balanceOf(others[1].address) == TEST_AMOUNT_HIGH
+            assert await erc_20.balanceOf(others[1].address) == TEST_SUPPLY
 
         async def test_transfer_should_fail_when_insufficient_balance(
-            self, erc_20, owner, others
+            self, erc_20, owner, other
         ):
             await erc_20.mint(
-                owner.address, TEST_AMOUNT_LOW, caller_address=owner.starknet_address
+                owner.address, TEST_AMOUNT, caller_address=owner.starknet_address
             )
             with pytest.raises(Exception) as e:
                 await erc_20.transfer(
-                    others[0].address,
-                    TEST_AMOUNT_HIGH,
+                    other.address,
+                    TEST_SUPPLY,
                     caller_address=owner.starknet_address,
                 )
 
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
+            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416            
             assert message == "Kakarot: Reverted with reason: 12884901888"
 
         async def test_transfer_from_should_fail_when_insufficient_allowance(
-            self, erc_20, owner, others
+                self, erc_20, owner, other, others
         ):
-
-            from_wallet = others[0]
             await erc_20.mint(
-                owner.address, TEST_AMOUNT_HIGH, caller_address=owner.starknet_address
+                other.address, TEST_SUPPLY, caller_address=owner.starknet_address
             )
             await erc_20.approve(
                 owner.address,
-                TEST_AMOUNT_LOW,
-                caller_address=from_wallet.starknet_address,
+                TEST_AMOUNT,
+                caller_address=other.starknet_address,
             )
             with pytest.raises(Exception) as e:
                 await erc_20.transferFrom(
-                    from_wallet.address,
+                    other.address,
                     others[1].address,
-                    TEST_AMOUNT_HIGH,
+                    TEST_SUPPLY,
                     caller_address=owner.starknet_address,
                 )
 
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
+            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416            
             assert (
                 message
                 == "Kakarot: Reverted with reason: 109161241298996469498303502024926298112"
             )
 
         async def test_transfer_from_should_fail_when_insufficient_balance(
-            self, erc_20, owner, others
+                self, erc_20, owner, other, others
         ):
-            from_wallet = others[0]
-
             await erc_20.mint(
-                from_wallet.address,
-                TEST_AMOUNT_LOW,
+                other.address,
+                TEST_AMOUNT,
                 caller_address=owner.starknet_address,
             )
 
             await erc_20.approve(
                 owner.address,
-                TEST_AMOUNT_HIGH,
-                caller_address=from_wallet.starknet_address,
+                TEST_SUPPLY,
+                caller_address=other.starknet_address,
             )
             with pytest.raises(Exception) as e:
                 await erc_20.transferFrom(
-                    from_wallet.address,
+                    other.address,
                     others[1].address,
-                    TEST_AMOUNT_HIGH,
+                    TEST_SUPPLY,
                     caller_address=owner.starknet_address,
                 )
 
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
+            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416            
             assert message == "Kakarot: Reverted with reason: 12884901888"
 
     class TestPermit:
-        async def test_should_permit(self, blockhashes, erc_20, owner, others):
+        async def test_should_permit(self, blockhashes, erc_20, owner, other):
             nonce = await erc_20.nonces(owner.address)
             deadline = blockhashes["current_block"]["timestamp"]
             digest = get_approval_digest(
@@ -214,8 +221,8 @@ class TestERC20:
                 erc_20.evm_contract_address,
                 {
                     "owner": owner.address,
-                    "spender": others[0].address,
-                    "value": TEST_AMOUNT_HIGH,
+                    "spender": other.address,
+                    "value": TEST_SUPPLY,
                 },
                 nonce,
                 deadline,
@@ -223,8 +230,8 @@ class TestERC20:
             v, r, s = ec_sign(digest, owner.private_key)
             await erc_20.permit(
                 owner.address,
-                others[0].address,
-                TEST_AMOUNT_HIGH,
+                other.address,
+                TEST_SUPPLY,
                 deadline,
                 v,
                 r,
@@ -233,13 +240,13 @@ class TestERC20:
             )
 
             assert (
-                await erc_20.allowance(owner.address, others[0].address)
-                == TEST_AMOUNT_HIGH
+                await erc_20.allowance(owner.address, other.address)
+                == TEST_SUPPLY
             )
             assert await erc_20.nonces(owner.address) == 1
 
         async def test_permit_should_fail_with_bad_nonce(
-            self, blockhashes, erc_20, owner, others
+            self, blockhashes, erc_20, owner, other
         ):
             bad_nonce = 1
             deadline = blockhashes["current_block"]["timestamp"]
@@ -248,7 +255,7 @@ class TestERC20:
                 erc_20.evm_contract_address,
                 {
                     "owner": owner.address,
-                    "spender": others[0].address,
+                    "spender": other.address,
                     "value": MAX_INT,
                 },
                 bad_nonce,
@@ -258,8 +265,8 @@ class TestERC20:
             with pytest.raises(Exception) as e:
                 await erc_20.permit(
                     owner.address,
-                    others[0].address,
-                    TEST_AMOUNT_HIGH,
+                    other.address,
+                    TEST_SUPPLY,
                     deadline,
                     v,
                     r,
@@ -268,10 +275,11 @@ class TestERC20:
                 )
 
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
+            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416            
             assert message == "Kakarot: Reverted with reason: 0"
 
         async def test_permit_should_fail_with_bad_deadline(
-            self, erc_20, blockhashes, owner, others
+            self, erc_20, blockhashes, owner, other
         ):
             nonce = await erc_20.nonces(owner.address)
             deadline = blockhashes["current_block"]["timestamp"]
@@ -280,7 +288,7 @@ class TestERC20:
                 erc_20.evm_contract_address,
                 {
                     "owner": owner.address,
-                    "spender": others[0].address,
+                    "spender": other.address,
                     "value": MAX_INT,
                 },
                 nonce,
@@ -290,8 +298,8 @@ class TestERC20:
             with pytest.raises(Exception) as e:
                 await erc_20.permit(
                     owner.address,
-                    others[0].address,
-                    TEST_AMOUNT_HIGH,
+                    other.address,
+                    TEST_SUPPLY,
                     deadline - 1,
                     v,
                     r,
@@ -300,10 +308,11 @@ class TestERC20:
                 )
 
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
+            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416            
             assert message == "Kakarot: Reverted with reason: 147028384"
 
         async def test_permit_should_fail_on_replay(
-            self, blockhashes, erc_20, owner, others
+            self, blockhashes, erc_20, owner, other
         ):
             nonce = await erc_20.nonces(owner.address)
             deadline = blockhashes["current_block"]["timestamp"]
@@ -312,8 +321,8 @@ class TestERC20:
                 erc_20.evm_contract_address,
                 {
                     "owner": owner.address,
-                    "spender": others[0].address,
-                    "value": TEST_AMOUNT_HIGH,
+                    "spender": other.address,
+                    "value": TEST_SUPPLY,
                 },
                 nonce,
                 deadline,
@@ -321,8 +330,8 @@ class TestERC20:
             v, r, s = ec_sign(digest, owner.private_key)
             await erc_20.permit(
                 owner.address,
-                others[0].address,
-                TEST_AMOUNT_HIGH,
+                other.address,
+                TEST_SUPPLY,
                 deadline,
                 v,
                 r,
@@ -333,8 +342,8 @@ class TestERC20:
             with pytest.raises(Exception) as e:
                 await erc_20.permit(
                     owner.address,
-                    others[0].address,
-                    TEST_AMOUNT_HIGH,
+                    other.address,
+                    TEST_SUPPLY,
                     deadline,
                     v,
                     r,
@@ -343,4 +352,5 @@ class TestERC20:
                 )
 
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
+            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416            
             assert message == "Kakarot: Reverted with reason: 0"
