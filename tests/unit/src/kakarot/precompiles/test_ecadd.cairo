@@ -45,7 +45,9 @@ func test__ecadd_impl{
     let expected_y = Helpers.bigint_to_felt(expected_point.y);
 
     // When
-    let (output_len, output: felt*, gas_cost) = PrecompileEcAdd.run(calldata_len, calldata);
+    let (output_len, output: felt*, gas_cost) = PrecompileEcAdd.run(
+        PrecompileEcAdd.PRECOMPILE_ADDRESS, calldata_len, calldata
+    );
     let output_x = Helpers.load_word(ECPOINT_BYTES_LEN, output);
     let output_y = Helpers.load_word(ECPOINT_BYTES_LEN, output + ECPOINT_BYTES_LEN);
 

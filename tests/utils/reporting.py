@@ -76,18 +76,23 @@ class traceit:
             **resources.pop("builtin_instance_counter"),
             **resources,
         }
+
+        args_serializable = [_a.hex() if type(_a) == bytes else _a for _a in args]
+        kwargs_serializable = {
+            k: v.hex() if type(v) == bytes else v for k, v in kwargs.items()
+        }
         _resources_report.append(
             {
                 **({"context": cls._context} if cls._context != "" else {}),
                 "contract_name": contract_name,
                 "function_name": attr_name,
-                "args": args,
-                "kwargs": kwargs,
+                "args": args_serializable,
+                "kwargs": kwargs_serializable,
                 **resources,
             }
         )
         logger.info(
-            f"{cls.prefix}{contract_name}.{attr_name}({json.dumps(args)}, {json.dumps(kwargs)}) used {resources}"
+            f"{cls.prefix}{contract_name}.{attr_name}({json.dumps(args_serializable)}, {json.dumps(kwargs_serializable)}) used {resources}"
         )
 
     @classmethod

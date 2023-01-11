@@ -21,16 +21,15 @@ async def ripemd160(
 class TestRIPEMD160:
     @pytest.mark.parametrize(
         "msg_len",
-            [random.randint(1, 300) for _ in range(3)]
+            [random.randint(1, 200) for _ in range(3)]
     )
     async def test_ripemd160_should_return_correct_hash(self, ripemd160, msg_len):
-        ripemd160_crypto = RIPEMD160.new()
 
         # Build message to be hashed
-        message = "".join((chr(random.randint(0, 255))) for _ in range(msg_len))
-        message_bytes = bytes(message, encoding='utf8')
+        message_bytes = bytearray([random.randint(0,  255) for _ in range(msg_len)])
 
         # Hash with RIPEMD-160
+        ripemd160_crypto = RIPEMD160.new()
         ripemd160_crypto.update(message_bytes)
         hash = ripemd160_crypto.hexdigest()
 

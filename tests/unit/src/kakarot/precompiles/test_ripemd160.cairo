@@ -26,7 +26,7 @@ func test__ripemd160{
     bitwise_ptr: BitwiseBuiltin*
 }(msg_len: felt, msg: felt*) -> (hash_len: felt, hash: felt*) {
     alloc_locals;
-    let (hash_len, hash, _) = PrecompileRIPEMD160.run(msg_len, msg);
+    let (hash_len, hash, _) = PrecompileRIPEMD160.run(PrecompileRIPEMD160.PRECOMPILE_ADDRESS, msg_len, msg);
 
     return (hash_len, hash);
 }

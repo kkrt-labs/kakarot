@@ -1,0 +1,152 @@
+// Call flow graph
+digraph contract_account {
+	graph [fontname="Helvetica,Arial,sans-serif" fontsize=20 layout=dot newrank=true rankdir=LR]
+	node [fontname="Helvetica,Arial,sans-serif" pencolor="#00000044" shape="rect, plaintext" style=filled]
+	edge [arrowsize=0.5 fontname="Helvetica,Arial,sans-serif" labeldistance=3 labelfontcolor="#00000080" penwidth=2]
+	0 [label="starkware.cairo.common.alloc.alloc" color="" fillcolor=lightcoral shape=oval style=filled]
+	3 [label="starkware.cairo.common.hash.hash2" color="" fillcolor=lightcoral shape=oval style=filled]
+	9 [label="starkware.cairo.common.memcpy.memcpy" color="" fillcolor=lightcoral shape=oval style=filled]
+	24 [label="starkware.cairo.lang.compiler.lib.registers.get_fp_and_pc" color="" fillcolor=lightcoral shape=oval style=filled]
+	25 [label="starkware.cairo.common.math.assert_not_zero" color="" fillcolor=lightcoral shape=oval style=filled]
+	30 [label="starkware.cairo.common.math.assert_nn" color="" fillcolor=lightcoral shape=oval style=filled]
+	34 [label="starkware.cairo.common.math.assert_le" color="" fillcolor=lightcoral shape=oval style=filled]
+	39 [label="starkware.cairo.common.math.assert_250_bit\l['known_ap_change']" color="" fillcolor=yellow shape=oval style=filled]
+	52 [label="starkware.cairo.common.math.unsigned_div_rem" color="" fillcolor=lightcoral shape=oval style=filled]
+	67 [label="starkware.starknet.common.storage.normalize_address\l['known_ap_change']" color="" fillcolor=yellow shape=oval style=filled]
+	107 [label="starkware.starknet.common.syscalls.get_caller_address" color="" fillcolor=lightcoral shape=oval style=filled]
+	114 [label="starkware.starknet.common.syscalls.storage_read" color="" fillcolor=lightcoral shape=oval style=filled]
+	122 [label="starkware.starknet.common.syscalls.storage_write" color="" fillcolor=lightcoral shape=oval style=filled]
+	130 [label="starkware.starknet.common.syscalls.emit_event" color="" fillcolor=lightcoral shape=oval style=filled]
+	140 [label="starkware.cairo.common.registers.get_label_location" color="" fillcolor=lightcoral shape=oval style=filled]
+	146 [label="openzeppelin.access.ownable.library.OwnershipTransferred.emit" color="" fillcolor=lightcoral shape=oval style=filled]
+	171 [label="openzeppelin.access.ownable.library.Ownable_owner.addr" color="" fillcolor=lightcoral shape=oval style=filled]
+	176 [label="openzeppelin.access.ownable.library.Ownable_owner.read" color="" fillcolor=lightcoral shape=oval style=filled]
+	189 [label="openzeppelin.access.ownable.library.Ownable_owner.write" color="" fillcolor=lightcoral shape=oval style=filled]
+	201 [label="openzeppelin.access.ownable.library.Ownable.initializer" color="" fillcolor=lightcoral shape=oval style=filled]
+	208 [label="openzeppelin.access.ownable.library.Ownable.assert_only_owner" color="" fillcolor=lightcoral shape=oval style=filled]
+	223 [label="openzeppelin.access.ownable.library.Ownable.owner" color="" fillcolor=lightcoral shape=oval style=filled]
+	229 [label="openzeppelin.access.ownable.library.Ownable._transfer_ownership" color="" fillcolor=lightcoral shape=oval style=filled]
+	250 [label="kakarot.accounts.contract.library.bytecode_.addr" color="" fillcolor=lightcoral shape=oval style=filled]
+	264 [label="kakarot.accounts.contract.library.bytecode_.read" color="" fillcolor=lightcoral shape=oval style=filled]
+	278 [label="kakarot.accounts.contract.library.bytecode_.write" color="" fillcolor=lightcoral shape=oval style=filled]
+	291 [label="kakarot.accounts.contract.library.bytecode_len_.addr" color="" fillcolor=lightcoral shape=oval style=filled]
+	296 [label="kakarot.accounts.contract.library.bytecode_len_.read" color="" fillcolor=lightcoral shape=oval style=filled]
+	309 [label="kakarot.accounts.contract.library.bytecode_len_.write" color="" fillcolor=lightcoral shape=oval style=filled]
+	321 [label="kakarot.accounts.contract.library.storage_.addr" color="" fillcolor=lightcoral shape=oval style=filled]
+	338 [label="kakarot.accounts.contract.library.storage_.read" color="" fillcolor=lightcoral shape=oval style=filled]
+	359 [label="kakarot.accounts.contract.library.storage_.write" color="" fillcolor=lightcoral shape=oval style=filled]
+	378 [label="kakarot.accounts.contract.library.is_initialized_.addr" color="" fillcolor=lightcoral shape=oval style=filled]
+	383 [label="kakarot.accounts.contract.library.is_initialized_.read" color="" fillcolor=lightcoral shape=oval style=filled]
+	396 [label="kakarot.accounts.contract.library.is_initialized_.write" color="" fillcolor=lightcoral shape=oval style=filled]
+	408 [label="kakarot.accounts.contract.library.ContractAccount.constructor" color="" fillcolor=lightcoral shape=oval style=filled]
+	426 [label="kakarot.accounts.contract.library.ContractAccount.write_bytecode" color="" fillcolor=lightcoral shape=oval style=filled]
+	446 [label="kakarot.accounts.contract.library.ContractAccount.bytecode_len" color="" fillcolor=lightcoral shape=oval style=filled]
+	459 [label="kakarot.accounts.contract.library.ContractAccount.bytecode" color="" fillcolor=lightcoral shape=oval style=filled]
+	487 [label="kakarot.accounts.contract.library.ContractAccount.storage" color="" fillcolor=lightcoral shape=oval style=filled]
+	501 [label="kakarot.accounts.contract.library.ContractAccount.write_storage" color="" fillcolor=lightcoral shape=oval style=filled]
+	514 [label="kakarot.accounts.contract.library.ContractAccount.is_initialized" color="" fillcolor=lightcoral shape=oval style=filled]
+	525 [label="kakarot.accounts.contract.library.ContractAccount.initialize" color="" fillcolor=lightcoral shape=oval style=filled]
+	553 [label="kakarot.accounts.contract.library.internal.write_bytecode" color="" fillcolor=lightcoral shape=oval style=filled]
+	607 [label="kakarot.accounts.contract.library.internal.load_bytecode" color="" fillcolor=lightcoral shape=oval style=filled]
+	664 [label="__main__.constructor\l['constructor']" color="" fillcolor=violet shape=oval style=filled]
+	674 [label="__wrappers__.constructor\l['constructor']" color="" fillcolor=violet shape=doubleoctagon style=filled]
+	704 [label="__main__.write_bytecode\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
+	713 [label="__wrappers__.write_bytecode\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
+	742 [label="__main__.bytecode\l['view']" color="" fillcolor=orange shape=oval style=filled]
+	749 [label="__wrappers__.bytecode_encode_return" color="" fillcolor=white shape=oval style=solid]
+	768 [label="__wrappers__.bytecode\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
+	790 [label="__main__.bytecode_len\l['view']" color="" fillcolor=orange shape=oval style=filled]
+	797 [label="__wrappers__.bytecode_len_encode_return" color="" fillcolor=white shape=oval style=solid]
+	806 [label="__wrappers__.bytecode_len\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
+	823 [label="__main__.write_storage\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
+	834 [label="__wrappers__.write_storage\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
+	857 [label="__main__.storage\l['view']" color="" fillcolor=orange shape=oval style=filled]
+	866 [label="__wrappers__.storage_encode_return" color="" fillcolor=white shape=oval style=solid]
+	876 [label="__wrappers__.storage\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
+	897 [label="__main__.initialize\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
+	904 [label="__wrappers__.initialize\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
+	921 [label="__main__.is_initialized\l['view']" color="" fillcolor=orange shape=oval style=filled]
+	928 [label="__wrappers__.is_initialized_encode_return" color="" fillcolor=white shape=oval style=solid]
+	937 [label="__wrappers__.is_initialized\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
+	34 -> 30
+	52 -> 34
+	67 -> 39 [label=4]
+	140 -> 24
+	146 -> 0 [label=2]
+	146 -> 130
+	176 -> 171
+	176 -> 114
+	189 -> 171
+	189 -> 122
+	201 -> 229
+	208 -> 223
+	208 -> 107
+	208 -> 25
+	223 -> 176
+	229 -> 223
+	229 -> 189
+	229 -> 146
+	250 -> 3
+	250 -> 67
+	264 -> 250
+	264 -> 114
+	278 -> 250
+	278 -> 122
+	296 -> 291
+	296 -> 114
+	309 -> 291
+	309 -> 122
+	321 -> 3 [label=2]
+	321 -> 67
+	338 -> 321
+	338 -> 114 [label=2]
+	359 -> 321
+	359 -> 122 [label=2]
+	383 -> 378
+	383 -> 114
+	396 -> 378
+	396 -> 122
+	408 -> 201
+	408 -> 553
+	426 -> 208
+	426 -> 309
+	426 -> 553
+	446 -> 296
+	459 -> 296
+	459 -> 0
+	459 -> 607
+	487 -> 338
+	501 -> 208
+	501 -> 359
+	514 -> 383
+	525 -> 208
+	525 -> 396
+	553 -> 278 [label=2]
+	553 -> 553 [label=2]
+	553 -> 140
+	607 -> 264
+	607 -> 607 [label=2]
+	607 -> 140
+	607 -> 52
+	664 -> 408
+	674 -> 664
+	704 -> 426
+	713 -> 704
+	742 -> 459
+	749 -> 9
+	768 -> 742
+	768 -> 749
+	790 -> 446
+	806 -> 790
+	806 -> 797
+	823 -> 501
+	834 -> 823
+	857 -> 487
+	876 -> 857
+	876 -> 866
+	897 -> 525
+	904 -> 897
+	921 -> 514
+	937 -> 921
+	937 -> 928
+}

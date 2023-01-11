@@ -19,7 +19,7 @@ func test_should_fail_when_input_len_is_not_128{
     alloc_locals;
     let (input) = alloc();
     let input_len = 0;
-    PrecompileEcRecover.run(input_len, input);
+    PrecompileEcRecover.run(PrecompileEcRecover.PRECOMPILE_ADDRESS, input_len, input);
     return ();
 }
 
@@ -31,7 +31,7 @@ func test_should_fail_when_recovery_identifier_is_neither_27_nor_28{
     let (input) = alloc();
     let input_len = 128;
     TestHelpers.array_fill(input, input_len, 1);
-    PrecompileEcRecover.run(input_len, input);
+    PrecompileEcRecover.run(PrecompileEcRecover.PRECOMPILE_ADDRESS, input_len, input);
     return ();
 }
 
@@ -50,7 +50,9 @@ func test_should_return_eth_address_in_bytes32{
     // fill r, s
     TestHelpers.array_fill(input + 64, 64, 1);
 
-    let (output_len, output, gas) = PrecompileEcRecover.run(input_len, input);
+    let (output_len, output, gas) = PrecompileEcRecover.run(
+        PrecompileEcRecover.PRECOMPILE_ADDRESS, input_len, input
+    );
     assert output_len = 32;
     let eth_address = Helpers.bytes32_to_uint256(output);
     assert_not_zero(eth_address.high);
@@ -201,7 +203,9 @@ func test_should_return_eth_address_for_playground_example{
     assert input[127] = 218;
     let input_len = 128;
 
-    let (output_len, output, gas) = PrecompileEcRecover.run(input_len, input);
+    let (output_len, output, gas) = PrecompileEcRecover.run(
+        PrecompileEcRecover.PRECOMPILE_ADDRESS, input_len, input
+    );
 
     assert output_len = 32;
 
