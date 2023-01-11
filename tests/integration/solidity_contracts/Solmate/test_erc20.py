@@ -11,7 +11,6 @@ from tests.integration.helpers.helpers import (
     get_domain_separator,
 )
 
-
 TEST_SUPPLY = 10**18
 TEST_AMOUNT = int(0.9 * 10**18)
 
@@ -56,10 +55,7 @@ class TestERC20:
                 other.address, burn_amount, caller_address=owner.starknet_address
             )
             assert await erc_20.totalSupply() == TEST_SUPPLY - burn_amount
-            assert (
-                await erc_20.balanceOf(other.address)
-                == TEST_SUPPLY - burn_amount
-            )
+            assert await erc_20.balanceOf(other.address) == TEST_SUPPLY - burn_amount
 
     class TestApprove:
         async def test_should_approve(self, erc_20, owner, other):
@@ -68,10 +64,7 @@ class TestERC20:
                 TEST_SUPPLY,
                 caller_address=owner.starknet_address,
             )
-            assert (
-                await erc_20.allowance(owner.address, other.address)
-                == TEST_SUPPLY
-            )
+            assert await erc_20.allowance(owner.address, other.address) == TEST_SUPPLY
 
     class TestTransfer:
         async def test_should_transfer(self, erc_20, owner, other):
@@ -157,11 +150,11 @@ class TestERC20:
                 )
 
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416            
+            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
             assert message == "Kakarot: Reverted with reason: 12884901888"
 
         async def test_transfer_from_should_fail_when_insufficient_allowance(
-                self, erc_20, owner, other, others
+            self, erc_20, owner, other, others
         ):
             await erc_20.mint(
                 other.address, TEST_SUPPLY, caller_address=owner.starknet_address
@@ -180,14 +173,14 @@ class TestERC20:
                 )
 
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416            
+            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
             assert (
                 message
                 == "Kakarot: Reverted with reason: 109161241298996469498303502024926298112"
             )
 
         async def test_transfer_from_should_fail_when_insufficient_balance(
-                self, erc_20, owner, other, others
+            self, erc_20, owner, other, others
         ):
             await erc_20.mint(
                 other.address,
@@ -209,7 +202,7 @@ class TestERC20:
                 )
 
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416            
+            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
             assert message == "Kakarot: Reverted with reason: 12884901888"
 
     class TestPermit:
@@ -239,10 +232,7 @@ class TestERC20:
                 caller_address=owner.starknet_address,
             )
 
-            assert (
-                await erc_20.allowance(owner.address, other.address)
-                == TEST_SUPPLY
-            )
+            assert await erc_20.allowance(owner.address, other.address) == TEST_SUPPLY
             assert await erc_20.nonces(owner.address) == 1
 
         async def test_permit_should_fail_with_bad_nonce(
@@ -275,7 +265,7 @@ class TestERC20:
                 )
 
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416            
+            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
             assert message == "Kakarot: Reverted with reason: 0"
 
         async def test_permit_should_fail_with_bad_deadline(
@@ -308,7 +298,7 @@ class TestERC20:
                 )
 
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416            
+            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
             assert message == "Kakarot: Reverted with reason: 147028384"
 
         async def test_permit_should_fail_on_replay(
@@ -352,5 +342,5 @@ class TestERC20:
                 )
 
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416            
+            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
             assert message == "Kakarot: Reverted with reason: 0"
