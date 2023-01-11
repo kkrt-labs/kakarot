@@ -1,11 +1,11 @@
 import logging
-import web3
 import random
 from collections import namedtuple
 from typing import List
 
 import pytest
 import pytest_asyncio
+import web3
 from starkware.starknet.testing.contract import StarknetContract
 from web3 import Web3
 
@@ -96,20 +96,25 @@ async def addresses(deployer, starknet, externally_owned_account_class) -> List[
     for private_key in private_keys:
         tempAccount: Account = web3.eth.Account().from_key(private_key)
         evm_address = web3.Web3().toInt(hexstr=tempAccount.address)
-        eth_aa_deploy_tx = await deployer.create_account(evm_address=evm_address).execute()
+        eth_aa_deploy_tx = await deployer.create_account(
+            evm_address=evm_address
+        ).execute()
 
-        wallets.append(Wallet(
-            address=tempAccount.address,
-            private_key=private_key,
-            starknet_contract=StarknetContract(
-                starknet.state,
-                externally_owned_account_class.abi,
-                eth_aa_deploy_tx.call_info.internal_calls[0].contract_address,
-                eth_aa_deploy_tx,
+        wallets.append(
+            Wallet(
+                address=tempAccount.address,
+                private_key=private_key,
+                starknet_contract=StarknetContract(
+                    starknet.state,
+                    externally_owned_account_class.abi,
+                    eth_aa_deploy_tx.call_info.internal_calls[0].contract_address,
+                    eth_aa_deploy_tx,
+                ),
             )
-        ))
+        )
 
     return wallets
+
 
 @pytest_asyncio.fixture(scope="package")
 async def owner(addresses):

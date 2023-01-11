@@ -1,6 +1,7 @@
 import os
-from typing import Tuple
 from random import randrange
+from typing import Tuple
+
 import pytest_asyncio
 import web3
 from eth_account.account import Account, SignedMessage
@@ -35,10 +36,7 @@ async def deployer(
 
 @pytest_asyncio.fixture(scope="package")
 async def externally_owned_account(
-    starknet: Starknet,
-    externally_owned_account_class,
-    deployer,
-    addresses
+    starknet: Starknet, externally_owned_account_class, deployer, addresses
 ) -> Tuple[StarknetContract, StarknetContract, bytes, int, web3.Account]:
     evm_eoas = []
     for wallet in addresses:

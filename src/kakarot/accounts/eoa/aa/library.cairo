@@ -143,7 +143,7 @@ namespace ExternallyOwnedAccount {
             verify_eth_signature_uint256{keccak_ptr=keccak_ptr}(
                 msg_hash=tx_hash.res, r=r, s=s, v=v.n, eth_address=eth_address
             );
-            finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr); 
+            finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
             return (is_valid=1);
         } else {
             assert 1 = 0;

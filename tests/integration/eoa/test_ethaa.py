@@ -18,7 +18,7 @@ from tests.utils.signer import MockEthSigner
 class TestExternallyOwnedAccount:
     class TestComputeStarknetAddress:
         async def test_should_return_same_address_as_contract(
-                self, externally_owned_account, addresses
+            self, externally_owned_account, addresses
         ):
             (
                 deployer,
@@ -29,23 +29,29 @@ class TestExternallyOwnedAccount:
                 call_info = await deployer.compute_starknet_address(
                     evm_address=web3.Web3.toInt(hexstr=evm_eoas[i].address)
                 ).call()
-                assert call_info.result.contract_address == addresses[i].starknet_contract.contract_address
-
+                assert (
+                    call_info.result.contract_address
+                    == addresses[i].starknet_contract.contract_address
+                )
 
         async def test_should_return_the_eth_address_used_at_deploy(
-                self, externally_owned_account, addresses
+            self, externally_owned_account, addresses
         ):
             (
                 deployer,
                 evm_eoas,
             ) = externally_owned_account
             for i in range(0, len(addresses)):
-                call_info = await addresses[i].starknet_contract.get_eth_address().call()
-                assert call_info.result.eth_address == web3.Web3.toInt(hexstr=evm_eoas[i].address)
+                call_info = (
+                    await addresses[i].starknet_contract.get_eth_address().call()
+                )
+                assert call_info.result.eth_address == web3.Web3.toInt(
+                    hexstr=evm_eoas[i].address
+                )
 
     class TestEthSignature:
         async def test_should_validate_signature(
-                self, externally_owned_account, default_tx, addresses
+            self, externally_owned_account, default_tx, addresses
         ):
             (
                 deployer,
@@ -54,14 +60,22 @@ class TestExternallyOwnedAccount:
             for i in range(0, len(evm_eoas)):
                 raw_tx = evm_eoas[i].sign_transaction(default_tx)
                 tx_hash = serializable_unsigned_transaction_from_dict(default_tx).hash()
-                call_info = await addresses[i].starknet_contract.is_valid_signature(
-                    [*int_to_uint256(web3.Web3.toInt(tx_hash))],
-                    [raw_tx.v, *int_to_uint256(raw_tx.r), *int_to_uint256(raw_tx.s)],
-                ).call()
+                call_info = (
+                    await addresses[i]
+                    .starknet_contract.is_valid_signature(
+                        [*int_to_uint256(web3.Web3.toInt(tx_hash))],
+                        [
+                            raw_tx.v,
+                            *int_to_uint256(raw_tx.r),
+                            *int_to_uint256(raw_tx.s),
+                        ],
+                    )
+                    .call()
+                )
                 assert call_info.result.is_valid == True
 
         async def test_should_fail_when_verifying_fake_signature(
-                self, externally_owned_account, default_tx, addresses
+            self, externally_owned_account, default_tx, addresses
         ):
             (
                 deployer,
@@ -73,12 +87,16 @@ class TestExternallyOwnedAccount:
                 with pytest.raises(StarkException):
                     await addresses[i].starknet_contract.is_valid_signature(
                         [*int_to_uint256(web3.Web3.toInt(os.urandom(32)))],
-                        [raw_tx.v, *int_to_uint256(raw_tx.r), *int_to_uint256(raw_tx.s)],
+                        [
+                            raw_tx.v,
+                            *int_to_uint256(raw_tx.r),
+                            *int_to_uint256(raw_tx.s),
+                        ],
                     ).call()
 
     class TestExecute:
         async def test_should_execute_tx(
-                self, externally_owned_account, kakarot, default_tx, addresses
+            self, externally_owned_account, kakarot, default_tx, addresses
         ):
             (
                 deployer,
@@ -97,7 +115,7 @@ class TestExternallyOwnedAccount:
                 )
 
         async def test_should_fail_on_incorrect_signature(
-                self, externally_owned_account, kakarot, default_tx, addresses
+            self, externally_owned_account, kakarot, default_tx, addresses
         ):
             (
                 deployer,
