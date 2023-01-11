@@ -20,13 +20,12 @@ from tests.unit.helpers.helpers import TestHelpers
 
 @external
 func test__ripemd160{
-    syscall_ptr: felt*,
-    pedersen_ptr: HashBuiltin*,
-    range_check_ptr,
-    bitwise_ptr: BitwiseBuiltin*
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(msg_len: felt, msg: felt*) -> (hash_len: felt, hash: felt*) {
     alloc_locals;
-    let (hash_len, hash, _) = PrecompileRIPEMD160.run(PrecompileRIPEMD160.PRECOMPILE_ADDRESS, msg_len, msg);
+    let (hash_len, hash, _) = PrecompileRIPEMD160.run(
+        PrecompileRIPEMD160.PRECOMPILE_ADDRESS, msg_len, msg
+    );
 
     return (hash_len, hash);
 }

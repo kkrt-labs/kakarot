@@ -39,7 +39,9 @@ namespace PrecompileRIPEMD160 {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(_address: felt, input_len: felt, input: felt*) -> (output_len: felt, output: felt*, gas_used: felt) {
+    }(_address: felt, input_len: felt, input: felt*) -> (
+        output_len: felt, output: felt*, gas_used: felt
+    ) {
         alloc_locals;
         let (local buf: felt*) = alloc();
         let (local arr_x: felt*) = alloc();
@@ -54,7 +56,9 @@ namespace PrecompileRIPEMD160 {
         // 2. compress data
         let (x) = default_dict_new(0);
         let start = x;
-        let (res, rsize, new_msg) = compress_data{dict_ptr=x, bitwise_ptr=bitwise_ptr}(buf, 5, input_len, input);
+        let (res, rsize, new_msg) = compress_data{dict_ptr=x, bitwise_ptr=bitwise_ptr}(
+            buf, 5, input_len, input
+        );
         let (_, _) = dict_squash{range_check_ptr=range_check_ptr}(start, x);
 
         // 3. finish hash
@@ -75,11 +79,9 @@ namespace PrecompileRIPEMD160 {
 const MAX_32_BIT = 2 ** 32;
 const MAX_BYTE = 2 ** 8;
 
-func buf2hash{
-    range_check_ptr,
-    dict_ptr: DictAccess*,
-    bitwise_ptr: BitwiseBuiltin*
-}(buf: felt*, index: felt) {
+func buf2hash{range_check_ptr, dict_ptr: DictAccess*, bitwise_ptr: BitwiseBuiltin*}(
+    buf: felt*, index: felt
+) {
     alloc_locals;
     if (index == 20) {
         return ();
@@ -100,53 +102,49 @@ func buf2hash{
     dict_write{dict_ptr=dict_ptr}(index + 2, val_2);
     dict_write{dict_ptr=dict_ptr}(index + 3, val_3);
 
-    buf2hash{dict_ptr=dict_ptr, bitwise_ptr=bitwise_ptr}(buf, index+4);
+    buf2hash{dict_ptr=dict_ptr, bitwise_ptr=bitwise_ptr}(buf, index + 4);
     return ();
 }
 
-func parse_msg{
-    dict_ptr: DictAccess*,
-    range_check_ptr,
-    bitwise_ptr: BitwiseBuiltin*
-}(input: felt*, index: felt){
-    if (index == 16){
+func parse_msg{dict_ptr: DictAccess*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
+    input: felt*, index: felt
+) {
+    if (index == 16) {
         return ();
     }
 
     let (val) = BYTES_TO_WORD(input);
     dict_write{dict_ptr=dict_ptr}(index, val);
-    parse_msg{dict_ptr=dict_ptr, bitwise_ptr=bitwise_ptr}(input=input+4, index=index+1);
+    parse_msg{dict_ptr=dict_ptr, bitwise_ptr=bitwise_ptr}(input=input + 4, index=index + 1);
     return ();
 }
 
-func compress_data{
-    dict_ptr: DictAccess*,
-    range_check_ptr,
-    bitwise_ptr: BitwiseBuiltin*
-} (buf: felt*, bufsize: felt, input_len: felt, input: felt*) -> (res: felt*, rsize: felt, new_msg: felt*){
+func compress_data{dict_ptr: DictAccess*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
+    buf: felt*, bufsize: felt, input_len: felt, input: felt*
+) -> (res: felt*, rsize: felt, new_msg: felt*) {
     alloc_locals;
     let len_lt_63 = is_le(input_len, 63);
-    if (len_lt_63 == 1){
+    if (len_lt_63 == 1) {
         return (buf, bufsize, input);
     }
 
     parse_msg{dict_ptr=dict_ptr}(input, 0);
     let (local arr_x: felt*) = alloc();
     dict_to_array{dict_ptr=dict_ptr}(arr_x, 16);
-    local dict_ptr : DictAccess* = dict_ptr;
+    local dict_ptr: DictAccess* = dict_ptr;
     let (res, rsize) = compress(buf, bufsize, arr_x, 16);
-    let new_msg = input+64;
-    let (res, rsize, new_msg) = compress_data{dict_ptr=dict_ptr, bitwise_ptr=bitwise_ptr}(res, rsize, input_len-64, new_msg);
+    let new_msg = input + 64;
+    let (res, rsize, new_msg) = compress_data{dict_ptr=dict_ptr, bitwise_ptr=bitwise_ptr}(
+        res, rsize, input_len - 64, new_msg
+    );
     return (res=res, rsize=rsize, new_msg=new_msg);
 }
 
-func absorb_data{
-    range_check_ptr,
-    bitwise_ptr : BitwiseBuiltin*,
-    dict_ptr : DictAccess*
-}(data: felt*, len: felt, index: felt){
+func absorb_data{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, dict_ptr: DictAccess*}(
+    data: felt*, len: felt, index: felt
+) {
     alloc_locals;
-    if (index - len == 0){
+    if (index - len == 0) {
         return ();
     }
 
@@ -159,12 +157,12 @@ func absorb_data{
     let (val) = uint32_xor(old_val, tmp);
     dict_write{dict_ptr=dict_ptr}(index_4, val);
 
-    absorb_data{dict_ptr=dict_ptr}(data+1, len, index+1);
+    absorb_data{dict_ptr=dict_ptr}(data + 1, len, index + 1);
     return ();
 }
 
-func dict_to_array{dict_ptr : DictAccess*}(arr: felt*, len){
-    if (len == 0){
+func dict_to_array{dict_ptr: DictAccess*}(arr: felt*, len) {
+    if (len == 0) {
         return ();
     }
 
@@ -178,7 +176,7 @@ func dict_to_array{dict_ptr : DictAccess*}(arr: felt*, len){
 }
 
 // init buf to magic constants.
-func init(buf: felt*, size: felt){
+func init(buf: felt*, size: felt) {
     assert size = 5;
     assert [buf + 0] = 0x67452301;
     assert [buf + 1] = 0xefcdab89;
@@ -190,10 +188,9 @@ func init(buf: felt*, size: felt){
 
 // the compression function.
 // transforms buf using message bytes X[0] through X[15].
-func compress{
-    bitwise_ptr : BitwiseBuiltin*,
-    range_check_ptr
-}(buf: felt*, bufsize: felt, x: felt*, xlen: felt) -> (res: felt*, rsize: felt){
+func compress{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
+    buf: felt*, bufsize: felt, x: felt*, xlen: felt
+) -> (res: felt*, rsize: felt) {
     alloc_locals;
 
     assert bufsize = 5;
@@ -212,184 +209,184 @@ func compress{
     local eee = ee;
 
     // round 1
-    let (local aa, local cc) = FF(aa, bb, cc, dd, ee, [x +  0],11);
-    let (local ee, local bb) = FF(ee, aa, bb, cc, dd, [x +  1],14);
-    let (local dd, local aa) = FF(dd, ee, aa, bb, cc, [x +  2],15);
-    let (local cc, local ee) = FF(cc, dd, ee, aa, bb, [x +  3],12);
-    let (local bb, local dd) = FF(bb, cc, dd, ee, aa, [x +  4], 5);
-    let (local aa, local cc) = FF(aa, bb, cc, dd, ee, [x +  5], 8);
-    let (local ee, local bb) = FF(ee, aa, bb, cc, dd, [x +  6], 7);
-    let (local dd, local aa) = FF(dd, ee, aa, bb, cc, [x +  7], 9);
-    let (local cc, local ee) = FF(cc, dd, ee, aa, bb, [x +  8],11);
-    let (local bb, local dd) = FF(bb, cc, dd, ee, aa, [x +  9],13);
-    let (local aa, local cc) = FF(aa, bb, cc, dd, ee, [x + 10],14);
-    let (local ee, local bb) = FF(ee, aa, bb, cc, dd, [x + 11],15);
+    let (local aa, local cc) = FF(aa, bb, cc, dd, ee, [x + 0], 11);
+    let (local ee, local bb) = FF(ee, aa, bb, cc, dd, [x + 1], 14);
+    let (local dd, local aa) = FF(dd, ee, aa, bb, cc, [x + 2], 15);
+    let (local cc, local ee) = FF(cc, dd, ee, aa, bb, [x + 3], 12);
+    let (local bb, local dd) = FF(bb, cc, dd, ee, aa, [x + 4], 5);
+    let (local aa, local cc) = FF(aa, bb, cc, dd, ee, [x + 5], 8);
+    let (local ee, local bb) = FF(ee, aa, bb, cc, dd, [x + 6], 7);
+    let (local dd, local aa) = FF(dd, ee, aa, bb, cc, [x + 7], 9);
+    let (local cc, local ee) = FF(cc, dd, ee, aa, bb, [x + 8], 11);
+    let (local bb, local dd) = FF(bb, cc, dd, ee, aa, [x + 9], 13);
+    let (local aa, local cc) = FF(aa, bb, cc, dd, ee, [x + 10], 14);
+    let (local ee, local bb) = FF(ee, aa, bb, cc, dd, [x + 11], 15);
     let (local dd, local aa) = FF(dd, ee, aa, bb, cc, [x + 12], 6);
     let (local cc, local ee) = FF(cc, dd, ee, aa, bb, [x + 13], 7);
     let (local bb, local dd) = FF(bb, cc, dd, ee, aa, [x + 14], 9);
     let (local aa, local cc) = FF(aa, bb, cc, dd, ee, [x + 15], 8);
 
     // round 2
-    let (local ee, local bb) = GG(ee, aa, bb, cc, dd, [x +  7], 7);
-    let (local dd, local aa) = GG(dd, ee, aa, bb, cc, [x +  4], 6);
+    let (local ee, local bb) = GG(ee, aa, bb, cc, dd, [x + 7], 7);
+    let (local dd, local aa) = GG(dd, ee, aa, bb, cc, [x + 4], 6);
     let (local cc, local ee) = GG(cc, dd, ee, aa, bb, [x + 13], 8);
-    let (local bb, local dd) = GG(bb, cc, dd, ee, aa, [x +  1],13);
-    let (local aa, local cc) = GG(aa, bb, cc, dd, ee, [x + 10],11);
-    let (local ee, local bb) = GG(ee, aa, bb, cc, dd, [x +  6], 9);
+    let (local bb, local dd) = GG(bb, cc, dd, ee, aa, [x + 1], 13);
+    let (local aa, local cc) = GG(aa, bb, cc, dd, ee, [x + 10], 11);
+    let (local ee, local bb) = GG(ee, aa, bb, cc, dd, [x + 6], 9);
     let (local dd, local aa) = GG(dd, ee, aa, bb, cc, [x + 15], 7);
-    let (local cc, local ee) = GG(cc, dd, ee, aa, bb, [x +  3],15);
+    let (local cc, local ee) = GG(cc, dd, ee, aa, bb, [x + 3], 15);
     let (local bb, local dd) = GG(bb, cc, dd, ee, aa, [x + 12], 7);
-    let (local aa, local cc) = GG(aa, bb, cc, dd, ee, [x +  0],12);
-    let (local ee, local bb) = GG(ee, aa, bb, cc, dd, [x +  9],15);
-    let (local dd, local aa) = GG(dd, ee, aa, bb, cc, [x +  5], 9);
-    let (local cc, local ee) = GG(cc, dd, ee, aa, bb, [x +  2],11);
+    let (local aa, local cc) = GG(aa, bb, cc, dd, ee, [x + 0], 12);
+    let (local ee, local bb) = GG(ee, aa, bb, cc, dd, [x + 9], 15);
+    let (local dd, local aa) = GG(dd, ee, aa, bb, cc, [x + 5], 9);
+    let (local cc, local ee) = GG(cc, dd, ee, aa, bb, [x + 2], 11);
     let (local bb, local dd) = GG(bb, cc, dd, ee, aa, [x + 14], 7);
-    let (local aa, local cc) = GG(aa, bb, cc, dd, ee, [x + 11],13);
-    let (local ee, local bb) = GG(ee, aa, bb, cc, dd, [x +  8],12);
+    let (local aa, local cc) = GG(aa, bb, cc, dd, ee, [x + 11], 13);
+    let (local ee, local bb) = GG(ee, aa, bb, cc, dd, [x + 8], 12);
 
     // round 3
-    let (local dd, local aa) = HH(dd, ee, aa, bb, cc, [x +  3],11);
-    let (local cc, local ee) = HH(cc, dd, ee, aa, bb, [x + 10],13);
+    let (local dd, local aa) = HH(dd, ee, aa, bb, cc, [x + 3], 11);
+    let (local cc, local ee) = HH(cc, dd, ee, aa, bb, [x + 10], 13);
     let (local bb, local dd) = HH(bb, cc, dd, ee, aa, [x + 14], 6);
-    let (local aa, local cc) = HH(aa, bb, cc, dd, ee, [x +  4], 7);
-    let (local ee, local bb) = HH(ee, aa, bb, cc, dd, [x +  9],14);
+    let (local aa, local cc) = HH(aa, bb, cc, dd, ee, [x + 4], 7);
+    let (local ee, local bb) = HH(ee, aa, bb, cc, dd, [x + 9], 14);
     let (local dd, local aa) = HH(dd, ee, aa, bb, cc, [x + 15], 9);
-    let (local cc, local ee) = HH(cc, dd, ee, aa, bb, [x +  8],13);
-    let (local bb, local dd) = HH(bb, cc, dd, ee, aa, [x +  1],15);
-    let (local aa, local cc) = HH(aa, bb, cc, dd, ee, [x +  2],14);
-    let (local ee, local bb) = HH(ee, aa, bb, cc, dd, [x +  7], 8);
-    let (local dd, local aa) = HH(dd, ee, aa, bb, cc, [x +  0],13);
-    let (local cc, local ee) = HH(cc, dd, ee, aa, bb, [x +  6], 6);
+    let (local cc, local ee) = HH(cc, dd, ee, aa, bb, [x + 8], 13);
+    let (local bb, local dd) = HH(bb, cc, dd, ee, aa, [x + 1], 15);
+    let (local aa, local cc) = HH(aa, bb, cc, dd, ee, [x + 2], 14);
+    let (local ee, local bb) = HH(ee, aa, bb, cc, dd, [x + 7], 8);
+    let (local dd, local aa) = HH(dd, ee, aa, bb, cc, [x + 0], 13);
+    let (local cc, local ee) = HH(cc, dd, ee, aa, bb, [x + 6], 6);
     let (local bb, local dd) = HH(bb, cc, dd, ee, aa, [x + 13], 5);
-    let (local aa, local cc) = HH(aa, bb, cc, dd, ee, [x + 11],12);
-    let (local ee, local bb) = HH(ee, aa, bb, cc, dd, [x +  5], 7);
+    let (local aa, local cc) = HH(aa, bb, cc, dd, ee, [x + 11], 12);
+    let (local ee, local bb) = HH(ee, aa, bb, cc, dd, [x + 5], 7);
     let (local dd, local aa) = HH(dd, ee, aa, bb, cc, [x + 12], 5);
 
     // round 4
-    let (local cc, local ee) = II(cc, dd, ee, aa, bb, [x +  1],11);
-    let (local bb, local dd) = II(bb, cc, dd, ee, aa, [x +  9],12);
-    let (local aa, local cc) = II(aa, bb, cc, dd, ee, [x + 11],14);
-    let (local ee, local bb) = II(ee, aa, bb, cc, dd, [x + 10],15);
-    let (local dd, local aa) = II(dd, ee, aa, bb, cc, [x +  0],14);
-    let (local cc, local ee) = II(cc, dd, ee, aa, bb, [x +  8],15);
+    let (local cc, local ee) = II(cc, dd, ee, aa, bb, [x + 1], 11);
+    let (local bb, local dd) = II(bb, cc, dd, ee, aa, [x + 9], 12);
+    let (local aa, local cc) = II(aa, bb, cc, dd, ee, [x + 11], 14);
+    let (local ee, local bb) = II(ee, aa, bb, cc, dd, [x + 10], 15);
+    let (local dd, local aa) = II(dd, ee, aa, bb, cc, [x + 0], 14);
+    let (local cc, local ee) = II(cc, dd, ee, aa, bb, [x + 8], 15);
     let (local bb, local dd) = II(bb, cc, dd, ee, aa, [x + 12], 9);
-    let (local aa, local cc) = II(aa, bb, cc, dd, ee, [x +  4], 8);
+    let (local aa, local cc) = II(aa, bb, cc, dd, ee, [x + 4], 8);
     let (local ee, local bb) = II(ee, aa, bb, cc, dd, [x + 13], 9);
-    let (local dd, local aa) = II(dd, ee, aa, bb, cc, [x +  3],14);
-    let (local cc, local ee) = II(cc, dd, ee, aa, bb, [x +  7], 5);
+    let (local dd, local aa) = II(dd, ee, aa, bb, cc, [x + 3], 14);
+    let (local cc, local ee) = II(cc, dd, ee, aa, bb, [x + 7], 5);
     let (local bb, local dd) = II(bb, cc, dd, ee, aa, [x + 15], 6);
     let (local aa, local cc) = II(aa, bb, cc, dd, ee, [x + 14], 8);
-    let (local ee, local bb) = II(ee, aa, bb, cc, dd, [x +  5], 6);
-    let (local dd, local aa) = II(dd, ee, aa, bb, cc, [x +  6], 5);
-    let (local cc, local ee) = II(cc, dd, ee, aa, bb, [x +  2],12);
+    let (local ee, local bb) = II(ee, aa, bb, cc, dd, [x + 5], 6);
+    let (local dd, local aa) = II(dd, ee, aa, bb, cc, [x + 6], 5);
+    let (local cc, local ee) = II(cc, dd, ee, aa, bb, [x + 2], 12);
 
     // round 5
-    let (local bb, local dd) = JJ(bb, cc, dd, ee, aa, [x +  4], 9);
-    let (local aa, local cc) = JJ(aa, bb, cc, dd, ee, [x +  0],15);
-    let (local ee, local bb) = JJ(ee, aa, bb, cc, dd, [x +  5], 5);
-    let (local dd, local aa) = JJ(dd, ee, aa, bb, cc, [x +  9],11);
-    let (local cc, local ee) = JJ(cc, dd, ee, aa, bb, [x +  7], 6);
+    let (local bb, local dd) = JJ(bb, cc, dd, ee, aa, [x + 4], 9);
+    let (local aa, local cc) = JJ(aa, bb, cc, dd, ee, [x + 0], 15);
+    let (local ee, local bb) = JJ(ee, aa, bb, cc, dd, [x + 5], 5);
+    let (local dd, local aa) = JJ(dd, ee, aa, bb, cc, [x + 9], 11);
+    let (local cc, local ee) = JJ(cc, dd, ee, aa, bb, [x + 7], 6);
     let (local bb, local dd) = JJ(bb, cc, dd, ee, aa, [x + 12], 8);
-    let (local aa, local cc) = JJ(aa, bb, cc, dd, ee, [x +  2],13);
-    let (local ee, local bb) = JJ(ee, aa, bb, cc, dd, [x + 10],12);
+    let (local aa, local cc) = JJ(aa, bb, cc, dd, ee, [x + 2], 13);
+    let (local ee, local bb) = JJ(ee, aa, bb, cc, dd, [x + 10], 12);
     let (local dd, local aa) = JJ(dd, ee, aa, bb, cc, [x + 14], 5);
-    let (local cc, local ee) = JJ(cc, dd, ee, aa, bb, [x +  1],12);
-    let (local bb, local dd) = JJ(bb, cc, dd, ee, aa, [x +  3],13);
-    let (local aa, local cc) = JJ(aa, bb, cc, dd, ee, [x +  8],14);
-    let (local ee, local bb) = JJ(ee, aa, bb, cc, dd, [x + 11],11);
-    let (local dd, local aa) = JJ(dd, ee, aa, bb, cc, [x +  6], 8);
+    let (local cc, local ee) = JJ(cc, dd, ee, aa, bb, [x + 1], 12);
+    let (local bb, local dd) = JJ(bb, cc, dd, ee, aa, [x + 3], 13);
+    let (local aa, local cc) = JJ(aa, bb, cc, dd, ee, [x + 8], 14);
+    let (local ee, local bb) = JJ(ee, aa, bb, cc, dd, [x + 11], 11);
+    let (local dd, local aa) = JJ(dd, ee, aa, bb, cc, [x + 6], 8);
     let (local cc, local ee) = JJ(cc, dd, ee, aa, bb, [x + 15], 5);
     let (local bb, local dd) = JJ(bb, cc, dd, ee, aa, [x + 13], 6);
 
     // parallel round 1
-    let (local aaa, local ccc) = JJJ(aaa, bbb, ccc, ddd, eee, [x +  5], 8);
+    let (local aaa, local ccc) = JJJ(aaa, bbb, ccc, ddd, eee, [x + 5], 8);
     let (local eee, local bbb) = JJJ(eee, aaa, bbb, ccc, ddd, [x + 14], 9);
-    let (local ddd, local aaa) = JJJ(ddd, eee, aaa, bbb, ccc, [x +  7], 9);
-    let (local ccc, local eee) = JJJ(ccc, ddd, eee, aaa, bbb, [x +  0],11);
-    let (local bbb, local ddd) = JJJ(bbb, ccc, ddd, eee, aaa, [x +  9],13);
-    let (local aaa, local ccc) = JJJ(aaa, bbb, ccc, ddd, eee, [x +  2],15);
-    let (local eee, local bbb) = JJJ(eee, aaa, bbb, ccc, ddd, [x + 11],15);
-    let (local ddd, local aaa) = JJJ(ddd, eee, aaa, bbb, ccc, [x +  4], 5);
+    let (local ddd, local aaa) = JJJ(ddd, eee, aaa, bbb, ccc, [x + 7], 9);
+    let (local ccc, local eee) = JJJ(ccc, ddd, eee, aaa, bbb, [x + 0], 11);
+    let (local bbb, local ddd) = JJJ(bbb, ccc, ddd, eee, aaa, [x + 9], 13);
+    let (local aaa, local ccc) = JJJ(aaa, bbb, ccc, ddd, eee, [x + 2], 15);
+    let (local eee, local bbb) = JJJ(eee, aaa, bbb, ccc, ddd, [x + 11], 15);
+    let (local ddd, local aaa) = JJJ(ddd, eee, aaa, bbb, ccc, [x + 4], 5);
     let (local ccc, local eee) = JJJ(ccc, ddd, eee, aaa, bbb, [x + 13], 7);
-    let (local bbb, local ddd) = JJJ(bbb, ccc, ddd, eee, aaa, [x +  6], 7);
+    let (local bbb, local ddd) = JJJ(bbb, ccc, ddd, eee, aaa, [x + 6], 7);
     let (local aaa, local ccc) = JJJ(aaa, bbb, ccc, ddd, eee, [x + 15], 8);
-    let (local eee, local bbb) = JJJ(eee, aaa, bbb, ccc, ddd, [x +  8],11);
-    let (local ddd, local aaa) = JJJ(ddd, eee, aaa, bbb, ccc, [x +  1],14);
-    let (local ccc, local eee) = JJJ(ccc, ddd, eee, aaa, bbb, [x + 10],14);
-    let (local bbb, local ddd) = JJJ(bbb, ccc, ddd, eee, aaa, [x +  3],12);
+    let (local eee, local bbb) = JJJ(eee, aaa, bbb, ccc, ddd, [x + 8], 11);
+    let (local ddd, local aaa) = JJJ(ddd, eee, aaa, bbb, ccc, [x + 1], 14);
+    let (local ccc, local eee) = JJJ(ccc, ddd, eee, aaa, bbb, [x + 10], 14);
+    let (local bbb, local ddd) = JJJ(bbb, ccc, ddd, eee, aaa, [x + 3], 12);
     let (local aaa, local ccc) = JJJ(aaa, bbb, ccc, ddd, eee, [x + 12], 6);
 
     // parallel round 2
-    let (local eee, local bbb) = III(eee, aaa, bbb, ccc, ddd, [x +  6], 9);
-    let (local ddd, local aaa) = III(ddd, eee, aaa, bbb, ccc, [x + 11],13);
-    let (local ccc, local eee) = III(ccc, ddd, eee, aaa, bbb, [x +  3],15);
-    let (local bbb, local ddd) = III(bbb, ccc, ddd, eee, aaa, [x +  7], 7);
-    let (local aaa, local ccc) = III(aaa, bbb, ccc, ddd, eee, [x +  0],12);
+    let (local eee, local bbb) = III(eee, aaa, bbb, ccc, ddd, [x + 6], 9);
+    let (local ddd, local aaa) = III(ddd, eee, aaa, bbb, ccc, [x + 11], 13);
+    let (local ccc, local eee) = III(ccc, ddd, eee, aaa, bbb, [x + 3], 15);
+    let (local bbb, local ddd) = III(bbb, ccc, ddd, eee, aaa, [x + 7], 7);
+    let (local aaa, local ccc) = III(aaa, bbb, ccc, ddd, eee, [x + 0], 12);
     let (local eee, local bbb) = III(eee, aaa, bbb, ccc, ddd, [x + 13], 8);
-    let (local ddd, local aaa) = III(ddd, eee, aaa, bbb, ccc, [x +  5], 9);
-    let (local ccc, local eee) = III(ccc, ddd, eee, aaa, bbb, [x + 10],11);
+    let (local ddd, local aaa) = III(ddd, eee, aaa, bbb, ccc, [x + 5], 9);
+    let (local ccc, local eee) = III(ccc, ddd, eee, aaa, bbb, [x + 10], 11);
     let (local bbb, local ddd) = III(bbb, ccc, ddd, eee, aaa, [x + 14], 7);
     let (local aaa, local ccc) = III(aaa, bbb, ccc, ddd, eee, [x + 15], 7);
-    let (local eee, local bbb) = III(eee, aaa, bbb, ccc, ddd, [x +  8],12);
+    let (local eee, local bbb) = III(eee, aaa, bbb, ccc, ddd, [x + 8], 12);
     let (local ddd, local aaa) = III(ddd, eee, aaa, bbb, ccc, [x + 12], 7);
-    let (local ccc, local eee) = III(ccc, ddd, eee, aaa, bbb, [x +  4], 6);
-    let (local bbb, local ddd) = III(bbb, ccc, ddd, eee, aaa, [x +  9],15);
-    let (local aaa, local ccc) = III(aaa, bbb, ccc, ddd, eee, [x +  1],13);
-    let (local eee, local bbb) = III(eee, aaa, bbb, ccc, ddd, [x +  2],11);
+    let (local ccc, local eee) = III(ccc, ddd, eee, aaa, bbb, [x + 4], 6);
+    let (local bbb, local ddd) = III(bbb, ccc, ddd, eee, aaa, [x + 9], 15);
+    let (local aaa, local ccc) = III(aaa, bbb, ccc, ddd, eee, [x + 1], 13);
+    let (local eee, local bbb) = III(eee, aaa, bbb, ccc, ddd, [x + 2], 11);
 
     // parallel round 3
     let (local ddd, local aaa) = HHH(ddd, eee, aaa, bbb, ccc, [x + 15], 9);
-    let (local ccc, local eee) = HHH(ccc, ddd, eee, aaa, bbb, [x +  5], 7);
-    let (local bbb, local ddd) = HHH(bbb, ccc, ddd, eee, aaa, [x +  1],15);
-    let (local aaa, local ccc) = HHH(aaa, bbb, ccc, ddd, eee, [x +  3],11);
-    let (local eee, local bbb) = HHH(eee, aaa, bbb, ccc, ddd, [x +  7], 8);
+    let (local ccc, local eee) = HHH(ccc, ddd, eee, aaa, bbb, [x + 5], 7);
+    let (local bbb, local ddd) = HHH(bbb, ccc, ddd, eee, aaa, [x + 1], 15);
+    let (local aaa, local ccc) = HHH(aaa, bbb, ccc, ddd, eee, [x + 3], 11);
+    let (local eee, local bbb) = HHH(eee, aaa, bbb, ccc, ddd, [x + 7], 8);
     let (local ddd, local aaa) = HHH(ddd, eee, aaa, bbb, ccc, [x + 14], 6);
-    let (local ccc, local eee) = HHH(ccc, ddd, eee, aaa, bbb, [x +  6], 6);
-    let (local bbb, local ddd) = HHH(bbb, ccc, ddd, eee, aaa, [x +  9],14);
-    let (local aaa, local ccc) = HHH(aaa, bbb, ccc, ddd, eee, [x + 11],12);
-    let (local eee, local bbb) = HHH(eee, aaa, bbb, ccc, ddd, [x +  8],13);
+    let (local ccc, local eee) = HHH(ccc, ddd, eee, aaa, bbb, [x + 6], 6);
+    let (local bbb, local ddd) = HHH(bbb, ccc, ddd, eee, aaa, [x + 9], 14);
+    let (local aaa, local ccc) = HHH(aaa, bbb, ccc, ddd, eee, [x + 11], 12);
+    let (local eee, local bbb) = HHH(eee, aaa, bbb, ccc, ddd, [x + 8], 13);
     let (local ddd, local aaa) = HHH(ddd, eee, aaa, bbb, ccc, [x + 12], 5);
-    let (local ccc, local eee) = HHH(ccc, ddd, eee, aaa, bbb, [x +  2],14);
-    let (local bbb, local ddd) = HHH(bbb, ccc, ddd, eee, aaa, [x + 10],13);
-    let (local aaa, local ccc) = HHH(aaa, bbb, ccc, ddd, eee, [x +  0],13);
-    let (local eee, local bbb) = HHH(eee, aaa, bbb, ccc, ddd, [x +  4], 7);
+    let (local ccc, local eee) = HHH(ccc, ddd, eee, aaa, bbb, [x + 2], 14);
+    let (local bbb, local ddd) = HHH(bbb, ccc, ddd, eee, aaa, [x + 10], 13);
+    let (local aaa, local ccc) = HHH(aaa, bbb, ccc, ddd, eee, [x + 0], 13);
+    let (local eee, local bbb) = HHH(eee, aaa, bbb, ccc, ddd, [x + 4], 7);
     let (local ddd, local aaa) = HHH(ddd, eee, aaa, bbb, ccc, [x + 13], 5);
 
     // parallel round 4
-    let (local ccc, local eee) = GGG(ccc, ddd, eee, aaa, bbb, [x +  8],15);
-    let (local bbb, local ddd) = GGG(bbb, ccc, ddd, eee, aaa, [x +  6], 5);
-    let (local aaa, local ccc) = GGG(aaa, bbb, ccc, ddd, eee, [x +  4], 8);
-    let (local eee, local bbb) = GGG(eee, aaa, bbb, ccc, ddd, [x +  1],11);
-    let (local ddd, local aaa) = GGG(ddd, eee, aaa, bbb, ccc, [x +  3],14);
-    let (local ccc, local eee) = GGG(ccc, ddd, eee, aaa, bbb, [x + 11],14);
+    let (local ccc, local eee) = GGG(ccc, ddd, eee, aaa, bbb, [x + 8], 15);
+    let (local bbb, local ddd) = GGG(bbb, ccc, ddd, eee, aaa, [x + 6], 5);
+    let (local aaa, local ccc) = GGG(aaa, bbb, ccc, ddd, eee, [x + 4], 8);
+    let (local eee, local bbb) = GGG(eee, aaa, bbb, ccc, ddd, [x + 1], 11);
+    let (local ddd, local aaa) = GGG(ddd, eee, aaa, bbb, ccc, [x + 3], 14);
+    let (local ccc, local eee) = GGG(ccc, ddd, eee, aaa, bbb, [x + 11], 14);
     let (local bbb, local ddd) = GGG(bbb, ccc, ddd, eee, aaa, [x + 15], 6);
-    let (local aaa, local ccc) = GGG(aaa, bbb, ccc, ddd, eee, [x +  0],14);
-    let (local eee, local bbb) = GGG(eee, aaa, bbb, ccc, ddd, [x +  5], 6);
+    let (local aaa, local ccc) = GGG(aaa, bbb, ccc, ddd, eee, [x + 0], 14);
+    let (local eee, local bbb) = GGG(eee, aaa, bbb, ccc, ddd, [x + 5], 6);
     let (local ddd, local aaa) = GGG(ddd, eee, aaa, bbb, ccc, [x + 12], 9);
-    let (local ccc, local eee) = GGG(ccc, ddd, eee, aaa, bbb, [x +  2],12);
+    let (local ccc, local eee) = GGG(ccc, ddd, eee, aaa, bbb, [x + 2], 12);
     let (local bbb, local ddd) = GGG(bbb, ccc, ddd, eee, aaa, [x + 13], 9);
-    let (local aaa, local ccc) = GGG(aaa, bbb, ccc, ddd, eee, [x +  9],12);
-    let (local eee, local bbb) = GGG(eee, aaa, bbb, ccc, ddd, [x +  7], 5);
-    let (local ddd, local aaa) = GGG(ddd, eee, aaa, bbb, ccc, [x + 10],15);
+    let (local aaa, local ccc) = GGG(aaa, bbb, ccc, ddd, eee, [x + 9], 12);
+    let (local eee, local bbb) = GGG(eee, aaa, bbb, ccc, ddd, [x + 7], 5);
+    let (local ddd, local aaa) = GGG(ddd, eee, aaa, bbb, ccc, [x + 10], 15);
     let (local ccc, local eee) = GGG(ccc, ddd, eee, aaa, bbb, [x + 14], 8);
 
     // parallel round 5
     let (local bbb, local ddd) = FFF(bbb, ccc, ddd, eee, aaa, [x + 12], 8);
     let (local aaa, local ccc) = FFF(aaa, bbb, ccc, ddd, eee, [x + 15], 5);
-    let (local eee, local bbb) = FFF(eee, aaa, bbb, ccc, ddd, [x + 10],12);
-    let (local ddd, local aaa) = FFF(ddd, eee, aaa, bbb, ccc, [x +  4], 9);
-    let (local ccc, local eee) = FFF(ccc, ddd, eee, aaa, bbb, [x +  1],12);
-    let (local bbb, local ddd) = FFF(bbb, ccc, ddd, eee, aaa, [x +  5], 5);
-    let (local aaa, local ccc) = FFF(aaa, bbb, ccc, ddd, eee, [x +  8],14);
-    let (local eee, local bbb) = FFF(eee, aaa, bbb, ccc, ddd, [x +  7], 6);
-    let (local ddd, local aaa) = FFF(ddd, eee, aaa, bbb, ccc, [x +  6], 8);
-    let (local ccc, local eee) = FFF(ccc, ddd, eee, aaa, bbb, [x +  2],13);
+    let (local eee, local bbb) = FFF(eee, aaa, bbb, ccc, ddd, [x + 10], 12);
+    let (local ddd, local aaa) = FFF(ddd, eee, aaa, bbb, ccc, [x + 4], 9);
+    let (local ccc, local eee) = FFF(ccc, ddd, eee, aaa, bbb, [x + 1], 12);
+    let (local bbb, local ddd) = FFF(bbb, ccc, ddd, eee, aaa, [x + 5], 5);
+    let (local aaa, local ccc) = FFF(aaa, bbb, ccc, ddd, eee, [x + 8], 14);
+    let (local eee, local bbb) = FFF(eee, aaa, bbb, ccc, ddd, [x + 7], 6);
+    let (local ddd, local aaa) = FFF(ddd, eee, aaa, bbb, ccc, [x + 6], 8);
+    let (local ccc, local eee) = FFF(ccc, ddd, eee, aaa, bbb, [x + 2], 13);
     let (local bbb, local ddd) = FFF(bbb, ccc, ddd, eee, aaa, [x + 13], 6);
     let (local aaa, local ccc) = FFF(aaa, bbb, ccc, ddd, eee, [x + 14], 5);
-    let (local eee, local bbb) = FFF(eee, aaa, bbb, ccc, ddd, [x +  0],15);
-    let (local ddd, local aaa) = FFF(ddd, eee, aaa, bbb, ccc, [x +  3],13);
-    let (local ccc, local eee) = FFF(ccc, ddd, eee, aaa, bbb, [x +  9],11);
-    let (local bbb, local ddd) = FFF(bbb, ccc, ddd, eee, aaa, [x + 11],11);
+    let (local eee, local bbb) = FFF(eee, aaa, bbb, ccc, ddd, [x + 0], 15);
+    let (local ddd, local aaa) = FFF(ddd, eee, aaa, bbb, ccc, [x + 3], 13);
+    let (local ccc, local eee) = FFF(ccc, ddd, eee, aaa, bbb, [x + 9], 11);
+    let (local bbb, local ddd) = FFF(bbb, ccc, ddd, eee, aaa, [x + 11], 11);
 
     // combine results
     let (local res: felt*) = alloc();
@@ -418,14 +415,13 @@ func compress{
     return (res=res, rsize=5);
 }
 
-// puts bytes from data into X and pad out; appends length 
+// puts bytes from data into X and pad out; appends length
 // and finally, compresses the last block(s)
 // note: length in bits == 8 * (dsize + 2^32 mswlen).
 // note: there are (dsize mod 64) bytes left in data.
-func finish{
-    range_check_ptr,
-    bitwise_ptr : BitwiseBuiltin*
-}(buf: felt*, bufsize: felt, data: felt*, dsize: felt, mswlen: felt) -> (res: felt*, rsize: felt){
+func finish{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
+    buf: felt*, bufsize: felt, data: felt*, dsize: felt, mswlen: felt
+) -> (res: felt*, rsize: felt) {
     alloc_locals;
     let (x) = default_dict_new(0);
     let start = x;
@@ -452,7 +448,7 @@ func finish{
     let (val_15) = uint32_or(factor, len_8);
 
     let next_block = is_nn_le(55, len);
-    if (next_block == 1){
+    if (next_block == 1) {
         let (local arr_x: felt*) = alloc();
         dict_to_array{dict_ptr=x}(arr_x, 16);
         let (buf, bufsize) = compress(buf, bufsize, arr_x, 16);
@@ -479,48 +475,48 @@ func finish{
     }
 }
 
-func uint8_div{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y) -> (z: felt){
+func uint8_div{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y) -> (z: felt) {
     let (z, _) = unsigned_div_rem(x, y);
     let (_, z) = unsigned_div_rem(z, MAX_BYTE);
     return (z=z);
 }
 
-func uint32_add{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y) -> (z: felt){
+func uint32_add{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y) -> (z: felt) {
     let (_, z) = unsigned_div_rem(x + y, MAX_32_BIT);
     return (z=z);
 }
 
-func uint32_mul{range_check_ptr}(x, y) -> (z: felt){
+func uint32_mul{range_check_ptr}(x, y) -> (z: felt) {
     let (_, z) = unsigned_div_rem(x * y, MAX_32_BIT);
     return (z=z);
 }
 
-func uint32_and{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y) -> (z: felt){
+func uint32_and{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y) -> (z: felt) {
     let (z) = bitwise_and(x, y);
     let (_, z) = unsigned_div_rem(z, MAX_32_BIT);
     return (z=z);
 }
 
-func uint32_or{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y) -> (z: felt){
+func uint32_or{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y) -> (z: felt) {
     let (z) = bitwise_or(x, y);
     let (_, z) = unsigned_div_rem(z, MAX_32_BIT);
     return (z=z);
 }
 
-func uint32_not{range_check_ptr}(x : felt) -> (not_x : felt){
+func uint32_not{range_check_ptr}(x: felt) -> (not_x: felt) {
     let not_x = MAX_32_BIT - 1 - x;
     let (_, not_x) = unsigned_div_rem(not_x, MAX_32_BIT);
     return (not_x=not_x);
 }
 
-func uint32_xor{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y) -> (z: felt){
+func uint32_xor{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y) -> (z: felt) {
     let (z) = bitwise_xor(x, y);
     let (_, z) = unsigned_div_rem(z, MAX_32_BIT);
     return (z=z);
 }
 
 // collect four bytes into one word.
-func BYTES_TO_WORD{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x: felt*) -> (res: felt){
+func BYTES_TO_WORD{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x: felt*) -> (res: felt) {
     alloc_locals;
     let (factor_3) = pow2(24);
     let (factor_2) = pow2(16);
@@ -534,15 +530,15 @@ func BYTES_TO_WORD{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x: felt*) -> (
     return (res=res);
 }
 
-//  ROL(x, n) cyclically rotates x over n bits to the left
+// ROL(x, n) cyclically rotates x over n bits to the left
 // x must be mod of an unsigned 32 bits type and 0 <= n < 32.
-func ROL{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, n) -> (res: felt){
+func ROL{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, n) -> (res: felt) {
     alloc_locals;
-    assert_nn_le(x, 2**32-1);
+    assert_nn_le(x, 2 ** 32 - 1);
     assert_nn_le(n, 31);
 
     let (factor_n) = pow2(n);
-    let (factor_diff) = pow2(32-n);
+    let (factor_diff) = pow2(32 - n);
     let (x_left_shift) = uint32_mul(x, factor_n);
     let (x_right_shift, _) = unsigned_div_rem(x, factor_diff);
     let (res) = uint32_or(x_left_shift, x_right_shift);
@@ -550,13 +546,13 @@ func ROL{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, n) -> (res: felt){
 }
 
 // the five basic functions F(), G(), H(), I(), J().
-func F{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(x, y, z) -> (res: felt){
+func F{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y, z) -> (res: felt) {
     let (x_xor_y) = uint32_xor(x, y);
     let (res) = uint32_xor(x_xor_y, z);
     return (res=res);
 }
 
-func G{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(x, y, z) -> (res: felt){
+func G{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y, z) -> (res: felt) {
     let (x_and_y) = uint32_and(x, y);
     let (not_x) = uint32_not(x);
     let (not_x_and_z) = uint32_and(not_x, z);
@@ -564,14 +560,14 @@ func G{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(x, y, z) -> (res: felt){
     return (res=res);
 }
 
-func H{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(x, y, z) -> (res: felt){
+func H{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y, z) -> (res: felt) {
     let (not_y) = uint32_not(y);
     let (x_or_not_y) = uint32_or(x, not_y);
     let (res) = uint32_xor(x_or_not_y, z);
     return (res=res);
 }
 
-func I{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(x, y, z) -> (res: felt){
+func I{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y, z) -> (res: felt) {
     let (x_and_z) = uint32_and(x, z);
     let (not_z) = uint32_not(z);
     let (y_and_not_z) = uint32_and(y, not_z);
@@ -579,7 +575,7 @@ func I{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(x, y, z) -> (res: felt){
     return (res=res);
 }
 
-func J{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(x, y, z) -> (res: felt){
+func J{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y, z) -> (res: felt) {
     let (not_z) = uint32_not(z);
     let (y_or_not_z) = uint32_or(y, not_z);
     let (res) = uint32_xor(x, y_or_not_z);
@@ -587,13 +583,15 @@ func J{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(x, y, z) -> (res: felt){
 }
 
 // the ten basic operations FF() through JJJ().
-func ROLASE{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(a, s, e) -> (res: felt){
+func ROLASE{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(a, s, e) -> (res: felt) {
     let (rol_a_s) = ROL(a, s);
     let (res) = uint32_add(rol_a_s, e);
     return (res=res);
 }
 
-func FF{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(a, b, c, d, e, x, s) -> (res1: felt, res2: felt){
+func FF{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(a, b, c, d, e, x, s) -> (
+    res1: felt, res2: felt
+) {
     alloc_locals;
 
     let (f_bcd) = F(b, c, d);
@@ -604,7 +602,9 @@ func FF{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(a, b, c, d, e, x, s) -> 
     return (res1=res1, res2=res2);
 }
 
-func GG{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(a, b, c, d, e, x, s) -> (res1: felt, res2: felt){
+func GG{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(a, b, c, d, e, x, s) -> (
+    res1: felt, res2: felt
+) {
     alloc_locals;
     let (g_bcd) = G(b, c, d);
     let (a) = uint32_add(a, g_bcd);
@@ -615,7 +615,9 @@ func GG{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(a, b, c, d, e, x, s) -> 
     return (res1=res1, res2=res2);
 }
 
-func HH{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(a, b, c, d, e, x, s) -> (res1: felt, res2: felt){
+func HH{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(a, b, c, d, e, x, s) -> (
+    res1: felt, res2: felt
+) {
     alloc_locals;
     let (h_bcd) = H(b, c, d);
     let (a) = uint32_add(a, h_bcd);
@@ -626,7 +628,9 @@ func HH{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(a, b, c, d, e, x, s) -> 
     return (res1=res1, res2=res2);
 }
 
-func II{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(a, b, c, d, e, x, s) -> (res1: felt, res2: felt){
+func II{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(a, b, c, d, e, x, s) -> (
+    res1: felt, res2: felt
+) {
     alloc_locals;
     let (i_bcd) = I(b, c, d);
     let (a) = uint32_add(a, i_bcd);
@@ -637,7 +641,9 @@ func II{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(a, b, c, d, e, x, s) -> 
     return (res1=res1, res2=res2);
 }
 
-func JJ{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(a, b, c, d, e, x, s) -> (res1: felt, res2: felt){
+func JJ{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(a, b, c, d, e, x, s) -> (
+    res1: felt, res2: felt
+) {
     alloc_locals;
     let (j_bcd) = J(b, c, d);
     let (a) = uint32_add(a, j_bcd);
@@ -648,12 +654,16 @@ func JJ{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(a, b, c, d, e, x, s) -> 
     return (res1=res1, res2=res2);
 }
 
-func FFF{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(a, b, c, d, e, x, s) -> (res1: felt, res2: felt){
+func FFF{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(a, b, c, d, e, x, s) -> (
+    res1: felt, res2: felt
+) {
     let (res1: felt, res2: felt) = FF(a, b, c, d, e, x, s);
     return (res1=res1, res2=res2);
 }
 
-func GGG{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(a, b, c, d, e, x, s) -> (res1: felt, res2: felt){
+func GGG{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(a, b, c, d, e, x, s) -> (
+    res1: felt, res2: felt
+) {
     alloc_locals;
     let (g_bcd) = G(b, c, d);
     let (a) = uint32_add(a, g_bcd);
@@ -664,7 +674,9 @@ func GGG{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(a, b, c, d, e, x, s) ->
     return (res1=res1, res2=res2);
 }
 
-func HHH{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(a, b, c, d, e, x, s) -> (res1: felt, res2: felt){
+func HHH{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(a, b, c, d, e, x, s) -> (
+    res1: felt, res2: felt
+) {
     alloc_locals;
     let (h_bcd) = H(b, c, d);
     let (a) = uint32_add(a, h_bcd);
@@ -675,7 +687,9 @@ func HHH{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(a, b, c, d, e, x, s) ->
     return (res1=res1, res2=res2);
 }
 
-func III{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(a, b, c, d, e, x, s) -> (res1: felt, res2: felt){
+func III{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(a, b, c, d, e, x, s) -> (
+    res1: felt, res2: felt
+) {
     alloc_locals;
     let (i_bcd) = I(b, c, d);
     let (a) = uint32_add(a, i_bcd);
@@ -686,7 +700,9 @@ func III{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(a, b, c, d, e, x, s) ->
     return (res1=res1, res2=res2);
 }
 
-func JJJ{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(a, b, c, d, e, x, s) -> (res1: felt, res2: felt){
+func JJJ{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(a, b, c, d, e, x, s) -> (
+    res1: felt, res2: felt
+) {
     alloc_locals;
     let (j_bcd) = J(b, c, d);
     let (a) = uint32_add(a, j_bcd);
@@ -698,7 +714,7 @@ func JJJ{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(a, b, c, d, e, x, s) ->
 }
 
 // This is taken from https://github.com/greenlucid/chess-cairo.
-func pow2(i : felt) -> (res : felt){
+func pow2(i: felt) -> (res: felt) {
     let (data_address) = get_label_location(data);
     return (res=[data_address + i]);
 
@@ -955,4 +971,3 @@ func pow2(i : felt) -> (res : felt){
     dw 904625697166532776746648320380374280103671755200316906558262375061821325312;
     dw 1809251394333065553493296640760748560207343510400633813116524750123642650624;
 }
-

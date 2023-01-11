@@ -1618,7 +1618,7 @@ test_cases = [
             "value": 0,
             "code": "60ff600052602060206001601f600363fffffffffa50602051",
             "calldata": "",
-            "stack": str(0x2c0c45d3ecab80fe060e5f1d7057cd2f8de5e557),
+            "stack": str(0x2C0C45D3ECAB80FE060E5F1D7057CD2F8DE5E557),
             "memory": (
                 "00000000000000000000000000000000000000000000000000000000000000ff"
                 "0000000000000000000000002c0c45d3ecab80fe060e5f1d7057cd2f8de5e557"
