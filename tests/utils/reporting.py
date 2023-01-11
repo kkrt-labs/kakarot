@@ -23,6 +23,7 @@ _profile_data = {}
 
 T = TypeVar("T", bound=Callable[..., Any])
 
+
 def timeit(fun: T) -> T:
     @wraps(fun)
     async def timed_fun(*args, **kwargs):

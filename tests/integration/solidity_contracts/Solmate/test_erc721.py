@@ -70,9 +70,7 @@ class TestERC721:
             assert symbol == "KKNFT"
 
     class TestOwnerOf:
-        async def test_owner_of_should_fail_when_token_is_unminted(
-            self, erc_721
-        ):
+        async def test_owner_of_should_fail_when_token_is_unminted(self, erc_721):
             with pytest.raises(Exception) as e:
                 await erc_721.ownerOf(1337)
             message = re.search(r"Error message: (.*)", e.value.message)[1]
@@ -396,7 +394,7 @@ class TestERC721:
             assert recipient_operator == others[1].address
             assert recipient_from == others[0].address
             assert recipient_token_id == 1337
-            assert recipient_data == b''
+            assert recipient_data == b""
 
         async def test_should_safe_transfer_from_to_ERC721Recipient_with_data(
             self, erc_721, erc_721_recipient, others
@@ -476,7 +474,7 @@ class TestERC721:
                     other.address,
                     recipient_address,
                     1337,
-                    b'testing 123',
+                    b"testing 123",
                     caller_address=other.starknet_address,
                 )
 
@@ -585,8 +583,9 @@ class TestERC721:
             assert balance == 1
             assert owner == other.address
 
-
-        async def test_should_safe_mint_to_ERC721Recipient(self, erc_721, erc_721_recipient, owner):
+        async def test_should_safe_mint_to_ERC721Recipient(
+            self, erc_721, erc_721_recipient, owner
+        ):
             recipient_address = erc_721_recipient.evm_contract_address
 
             await erc_721.safeMint(
@@ -606,13 +605,13 @@ class TestERC721:
 
             assert recipient_operator == owner.address
             assert recipient_from == ZERO_ADDRESS
-            assert recipient_data == b''
+            assert recipient_data == b""
 
         async def test_should_safe_mint_to_ERC721Recipient_with_data(
             self, erc_721, erc_721_recipient, owner
         ):
             recipient_address = erc_721_recipient.evm_contract_address
-            data = b'testing 123'
+            data = b"testing 123"
 
             await erc_721.safeMint2(
                 recipient_address,
