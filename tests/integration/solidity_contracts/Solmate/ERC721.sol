@@ -147,7 +147,7 @@ contract ERC721 {
         );
     }
 
-    function safeTransferFrom(
+    function safeTransferFrom2(
         address from,
         address to,
         uint256 id,
