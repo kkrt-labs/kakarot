@@ -1,5 +1,6 @@
 import os
 from typing import Tuple
+
 import pytest_asyncio
 import web3
 from eth_account.account import Account, SignedMessage
@@ -7,46 +8,42 @@ from eth_keys import keys
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
-@pytest_asyncio.fixture(scope="session")
-async def externally_owned_account_class(
-    starknet: Starknet
-):
-    account_class = await starknet.declare(
-        source=os.path.join(
-            os.path.dirname(__file__), "../../src/kakarot/accounts/eoa/aa/externally_owned_account.cairo"
-        ),
-        cairo_path=[os.path.join(os.path.dirname(__file__), "../../src")],
-    )
-    return account_class
 
 @pytest_asyncio.fixture(scope="session")
+async def externally_owned_account_class(starknet: Starknet):
+    return await starknet.declare(
+        source="src/kakarot/accounts/eoa/aa/externally_owned_account.cairo",
+        cairo_path=["src"],
+    )
+
+
+@pytest_asyncio.fixture(scope="package")
 async def deployer(
-    starknet: Starknet,
-    externally_owned_account_class,
+    starknet: Starknet, externally_owned_account_class, kakarot
 ) -> StarknetContract:
     deployer = await starknet.deploy(
-        source=os.path.join(
-            os.path.dirname(__file__),
-            "../../src/kakarot/accounts/eoa/deployer/deployer.cairo",
-        ),
-        cairo_path=[os.path.join(os.path.dirname(__file__), "../../src")],
-        constructor_calldata=[externally_owned_account_class.class_hash],
+        source="src/kakarot/accounts/eoa/deployer/deployer.cairo",
+        cairo_path=["src"],
+        constructor_calldata=[
+            externally_owned_account_class.class_hash,
+            kakarot.contract_address,
+        ],
     )
 
     return deployer
+
 
 @pytest_asyncio.fixture(scope="package")
 async def externally_owned_account(
     starknet: Starknet,
     externally_owned_account_class,
     deployer,
-    kakarot
 ) -> Tuple[StarknetContract, StarknetContract, bytes, int, web3.Account]:
     private_key = os.urandom(32)
     tempAccount: Account = web3.eth.Account().from_key(private_key)
     evm_address = web3.Web3().toInt(hexstr=tempAccount.address)
     evm_eoa = web3.Account.from_key(keys.PrivateKey(private_key_bytes=private_key))
-    eth_aa_deploy_tx = await deployer.create_account(evm_address=evm_address, kakarot_address=kakarot.contract_address).execute()
+    eth_aa_deploy_tx = await deployer.create_account(evm_address=evm_address).execute()
 
     account = StarknetContract(
         starknet.state,
@@ -56,3 +53,17 @@ async def externally_owned_account(
     )
 
     return deployer, account, private_key, evm_address, evm_eoa
+
+
+@pytest_asyncio.fixture(scope="package")
+async def default_tx() -> dict:
+    return {
+        "nonce": 1,
+        "chainId": 1263227476,
+        "maxFeePerGas": 1000,
+        "maxPriorityFeePerGas": 667667,
+        "gas": 999999999,
+        "to": bytes.fromhex("95222290dd7278aa3ddd389cc1e1d165cc4bafe5"),
+        "value": 10000000000000000,
+        "data": b"",
+    }

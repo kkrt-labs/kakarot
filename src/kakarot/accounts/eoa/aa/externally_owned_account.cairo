@@ -26,8 +26,7 @@ func kakarot_address() -> (address: felt) {
 // @param _kakarot_address The Starknet address of the Kakarot contract
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    _eth_address: felt,
-    _kakarot_address: felt
+    _eth_address: felt, _kakarot_address: felt
 ) {
     assert_eth_address_range(_eth_address);
     eth_address.write(_eth_address);
@@ -46,7 +45,12 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 @external
 func __validate__{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
-}(call_array_len: felt, call_array: ExternallyOwnedAccount.CallArray*, calldata_len: felt, calldata: felt*) {
+}(
+    call_array_len: felt,
+    call_array: ExternallyOwnedAccount.CallArray*,
+    calldata_len: felt,
+    calldata: felt*,
+) {
     alloc_locals;
     let (address) = eth_address.read();
     ExternallyOwnedAccount.validate(
@@ -84,9 +88,12 @@ func __execute__{
     ecdsa_ptr: SignatureBuiltin*,
     bitwise_ptr: BitwiseBuiltin*,
     range_check_ptr,
-}(call_array_len: felt, call_array: ExternallyOwnedAccount.CallArray*, calldata_len: felt, calldata: felt*) -> (
-    response_len: felt, response: felt*
-) {
+}(
+    call_array_len: felt,
+    call_array: ExternallyOwnedAccount.CallArray*,
+    calldata_len: felt,
+    calldata: felt*,
+) -> (response_len: felt, response: felt*) {
     let (response: felt*) = alloc();
     // TODO: parse, call kakarot, and format response
     return (response_len=0, response=response);
@@ -108,7 +115,7 @@ func get_eth_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 func supports_interface{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     interface_id: felt
 ) -> (success: felt) {
-    if (interface_id == ExternallyOwnedAccount.AA_VERSION) {
+    if (interface_id == ExternallyOwnedAccount.INTERFACE_ID) {
         return (success=1);
     }
     return (success=0);
@@ -126,5 +133,7 @@ func is_valid_signature{
 }(hash_len: felt, hash: felt*, signature_len: felt, signature: felt*) -> (is_valid: felt) {
     alloc_locals;
     let (_eth_address) = eth_address.read();
-    return ExternallyOwnedAccount.is_valid_signature(_eth_address, hash_len, hash, signature_len, signature);
+    return ExternallyOwnedAccount.is_valid_signature(
+        _eth_address, hash_len, hash, signature_len, signature
+    );
 }

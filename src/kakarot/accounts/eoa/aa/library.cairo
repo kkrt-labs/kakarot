@@ -15,8 +15,8 @@ namespace ExternallyOwnedAccount {
     // Constants
     // keccak250(ascii('execute_at_address'))
     const EXECUTE_AT_ADDRESS_SELECTOR = 175332271055223547208505378209204736960926292802627036960758298143252682610;
-    // pedersen("KAKAROT_AA_V0.0.1")
-    const AA_VERSION = 0x11F2231B9D464344B81D536A50553D6281A9FA0FA37EF9AC2B9E076729AEFAA;
+    // @dev see utils/InterfaceId.sol
+    const INTERFACE_ID = 0x0ac6c9ee;
     const TX_ITEMS = 12;  // number of elements in an evm tx see EIP 1559
 
     // Indexes to retrieve specific data from the EVM transaction
@@ -174,17 +174,18 @@ namespace ExternallyOwnedAccount {
     }
 
     func is_valid_signature{
-         syscall_ptr: felt*,
-         pedersen_ptr: HashBuiltin*,
-         bitwise_ptr: BitwiseBuiltin*,
-         range_check_ptr
-    }(_eth_address: felt, hash_len: felt, hash: felt*, signature_len: felt, signature: felt*) -> (is_valid:felt) {
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        bitwise_ptr: BitwiseBuiltin*,
+        range_check_ptr,
+    }(_eth_address: felt, hash_len: felt, hash: felt*, signature_len: felt, signature: felt*) -> (
+        is_valid: felt
+    ) {
         alloc_locals;
         let v = signature[0];
         let r: Uint256 = Uint256(low=signature[1], high=signature[2]);
         let s: Uint256 = Uint256(low=signature[3], high=signature[4]);
         let msg_hash: Uint256 = Uint256(low=hash[0], high=hash[1]);
-        let (is_valid) = ExternallyOwnedAccount.is_valid_eth_signature(msg_hash, r, s, v, _eth_address);
-        return (is_valid=is_valid);
+        return ExternallyOwnedAccount.is_valid_eth_signature(msg_hash, r, s, v, _eth_address);
     }
 }

@@ -22,7 +22,7 @@ from starkware.starknet.services.api.gateway.transaction import (
     InvokeFunction,
 )
 
-from tests.utils.bits import to_uint
+from tests.integration.helpers.helpers import int_to_uint256
 
 classHash = 0x1
 TRANSACTION_VERSION = 1
@@ -59,7 +59,12 @@ def from_call_to_call_array(calls):
     return (call_array, calldata)
 
 
-class BaseSigner:
+class MockEthSigner:
+    def __init__(self, private_key):
+        self.signer = eth_keys.keys.PrivateKey(private_key)
+        self.eth_address = int(self.signer.public_key.to_checksum_address(), 0)
+        self.class_hash = classHash
+
     async def send_transaction(
         self, account, to, selector_name, calldata, nonce=None, max_fee=0
     ):
@@ -104,71 +109,12 @@ class BaseSigner:
         execution_info = await state.execute_tx(tx=tx)
         return execution_info
 
-    async def deploy_account(
-        self,
-        state,
-        calldata,
-        salt=0,
-        nonce=0,
-        max_fee=0,
-    ) -> TransactionExecutionInfo:
-        account_address = calculate_contract_address_from_hash(
-            salt=salt,
-            class_hash=self.class_hash,
-            constructor_calldata=calldata,
-            deployer_address=0,
-        )
-
-        transaction_hash = get_transaction_hash(
-            prefix=TransactionHashPrefix.DEPLOY_ACCOUNT,
-            account=account_address,
-            calldata=[self.class_hash, salt, *calldata],
-            nonce=nonce,
-            version=TRANSACTION_VERSION,
-            max_fee=max_fee,
-            chain_id=StarknetChainId.TESTNET.value,
-        )
-
-        signature = self.sign(transaction_hash)
-
-        external_tx = DeployAccount(
-            class_hash=self.class_hash,
-            contract_address_salt=salt,
-            constructor_calldata=calldata,
-            signature=signature,
-            max_fee=max_fee,
-            version=TRANSACTION_VERSION,
-            nonce=nonce,
-        )
-
-        tx = InternalTransaction.from_external(
-            external_tx=external_tx, general_config=state.general_config
-        )
-
-        execution_info = await state.execute_tx(tx=tx)
-        return execution_info
-
-
-class MockEthSigner(BaseSigner):
-    """
-    Utility for sending signed transactions to an Account on Starknet, like MockSigner, but using a secp256k1 signature.
-    Parameters
-    ----------
-    private_key : int
-
-    """
-
-    def __init__(self, private_key):
-        self.signer = eth_keys.keys.PrivateKey(private_key)
-        self.eth_address = int(self.signer.public_key.to_checksum_address(), 0)
-        self.class_hash = classHash
-
     def sign(self, transaction_hash):
         signature = self.signer.sign_msg_hash(
             (transaction_hash).to_bytes(32, byteorder="big")
         )
-        sig_r = to_uint(signature.r)
-        sig_s = to_uint(signature.s)
+        sig_r = int_to_uint256(signature.r)
+        sig_s = int_to_uint256(signature.s)
         return [signature.v, *sig_r, *sig_s]
 
 

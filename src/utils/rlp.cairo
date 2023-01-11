@@ -31,15 +31,15 @@ namespace RLP {
         pedersen_ptr: HashBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
-    }(data_len: felt, data: felt*,items: Item*) -> () {
+    }(data_len: felt, data: felt*, items: Item*) -> () {
         alloc_locals;
-        if (data_len == 0) {        
+        if (data_len == 0) {
             return ();
         }
         let buffer_ptr = data;
         with buffer_ptr {
             tempvar byte = [buffer_ptr];
-            let buffer_ptr = buffer_ptr+1;
+            let buffer_ptr = buffer_ptr + 1;
             let is_le_127: felt = is_le(byte, 127);
             if (is_le_127 != FALSE) {
                 assert [items] = Item(
@@ -47,9 +47,7 @@ namespace RLP {
                     data=buffer_ptr - 1,
                     is_list=0
                     );
-                return decode_rlp(
-                    data_len=data_len - 1, data=buffer_ptr, items=items + Item.SIZE
-                );
+                return decode_rlp(data_len=data_len - 1, data=buffer_ptr, items=items + Item.SIZE);
             }
             let is_le_183 = is_le(byte, 183);  // a max 55 bytes long string
             if (is_le_183 != FALSE) {
@@ -131,7 +129,7 @@ namespace RLP {
         let is_le_55 = is_le(data_len, 55);
         if (is_le_55 != FALSE) {
             assert rlp[0] = 0xc0 + data_len;
-            Helpers.fill_array(data_len, data, rlp+1);
+            Helpers.fill_array(data_len, data, rlp + 1);
             return (rlp_len=data_len + 1);
         } else {
             let (byte_len) = Helpers.bytes_len(data_len);
@@ -140,8 +138,8 @@ namespace RLP {
             let (rs_len) = Helpers.to_base_16(0, rs, data_len);
             let (local bytes: felt*) = alloc();
             Helpers.to_bytes(bytes, rs_len, rs);
-            Helpers.fill_array(byte_len, bytes, rlp+1);
-            Helpers.fill_array(data_len, data, rlp+1+byte_len);
+            Helpers.fill_array(byte_len, bytes, rlp + 1);
+            Helpers.fill_array(data_len, data, rlp + 1 + byte_len);
             return (rlp_len=data_len + 1);
         }
     }

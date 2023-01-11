@@ -183,9 +183,9 @@ namespace Helpers {
     // @param words_len Used for recursion, set to 0
     // @param words A pointer to an empty array, will be filled with the words
     // @return words_len The number of words created
-    func bytes_to_words{
-        range_check_ptr,
-    }(data_len: felt, data: felt*, words_len: felt, words: felt*) -> (words_len: felt) {
+    func bytes_to_words{range_check_ptr}(
+        data_len: felt, data: felt*, words_len: felt, words: felt*
+    ) -> (words_len: felt) {
         alloc_locals;
         if (data_len == 0) {
             return (words_len=words_len);
@@ -193,9 +193,9 @@ namespace Helpers {
         let is_le_7 = is_le(data_len, 7);
         if (is_le_7 != FALSE) {
             let (padding: felt*) = alloc();
-            fill(8-data_len, padding, 0);
-            fill_array(8-data_len, padding, data+data_len);
-            tempvar n = bytes_to_64_bits_little_felt(data); 
+            fill(8 - data_len, padding, 0);
+            fill_array(8 - data_len, padding, data + data_len);
+            tempvar n = bytes_to_64_bits_little_felt(data);
             assert [words] = n;
             return bytes_to_words(
                 data_len=0, data=data + data_len, words_len=words_len + 1, words=words + 1
@@ -641,12 +641,10 @@ namespace Helpers {
         dw 72057594037927936;
     }
 
-     // @notice Returns the lenght in bytes of a felt
+    // @notice Returns the lenght in bytes of a felt
     // @param len The felt to get the length in bytes
     // @return byte_len The length in bytes
-    func bytes_len{
-        range_check_ptr,
-    }(len: felt) -> (byte_len: felt) {
+    func bytes_len{range_check_ptr}(len: felt) -> (byte_len: felt) {
         // get ready for ugly code
         let fit = is_le(len, 255);
         if (fit != FALSE) {
@@ -685,13 +683,11 @@ namespace Helpers {
 
     // @dev returns an array representing the value by the remainders of the 16 division
     // @dev example: 1000 => [8, 14, 3]
-    // @param rs_len Used for recursion, set to 0
-    // @param rs Pointer to the array that will receive the remainders
+    // @param remainders_len Used for recursion, set to 0
+    // @param remainderss Pointer to the array that will receive the remainders
     // @param v The initial value
-    // @return rs_len The final length of the remainders array
-    func to_base_16{
-        range_check_ptr,
-    }(rs_len: felt, rs: felt*, v: felt) -> (rs_len: felt) {
+    // @return remainders_len The final length of the remainders array
+    func to_base_16{range_check_ptr}(rs_len: felt, rs: felt*, v: felt) -> (rs_len: felt) {
         let (q, r) = unsigned_div_rem(v, 16);
         let is_le_16 = is_le(q, 16);
         assert [rs] = r;
@@ -707,9 +703,7 @@ namespace Helpers {
     // @param bytes The pointer which will be filled with the bytes
     // @param rs_len The length of the remainders array
     // @param rs The array of remainders
-    func to_bytes{
-        range_check_ptr,
-    }(bytes: felt*, rs_len: felt, rs: felt*) -> () {
+    func to_bytes{range_check_ptr}(bytes: felt*, rs_len: felt, rs: felt*) -> () {
         if (rs_len == 0) {
             return ();
         }
@@ -721,16 +715,14 @@ namespace Helpers {
             assert [bytes] = rs[rs_len - 1];
             return to_bytes(bytes, rs_len - 1, rs);
         }
-    } 
+    }
 
     // @notice transform muliple bytes into a single felt
     // @param data_len The lenght of the bytes
     // @param data The pointer to the bytes array
     // @param n used for recursion, set to 0
     // @return n the resultant felt
-    func bytes_to_felt{
-        range_check_ptr,
-    }(data_len: felt, data: felt*, n: felt) -> (n: felt) {
+    func bytes_to_felt{range_check_ptr}(data_len: felt, data: felt*, n: felt) -> (n: felt) {
         if (data_len == 0) {
             return (n=n);
         }

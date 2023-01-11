@@ -26,15 +26,19 @@ const AA_VERSION = 0x11F2231B9D464344B81D536A50553D6281A9FA0FA37EF9AC2B9E076729A
 func account_abstraction_class_hash() -> (felt,) {
 }
 
+@storage_var
+func kakarot_address() -> (felt,) {
+}
+
 // Constructor
 // @dev Creates the deployer
 // @param _account_abstraction_class_hash The class_hash of the Abstraction Account Contract
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    _account_abstraction_class_hash: felt
+    _account_abstraction_class_hash: felt, _kakarot_address: felt
 ) {
     account_abstraction_class_hash.write(_account_abstraction_class_hash);
-
+    kakarot_address.write(_kakarot_address);
     return ();
 }
 
@@ -43,12 +47,12 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 // @param evm_address The Ethereum address which will be controlling the account
 @external
 func create_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    evm_address: felt,
-    kakarot_address: felt
+    evm_address: felt
 ) -> () {
     let (constructor_calldata: felt*) = alloc();
+    let (_kakarot_address: felt) = kakarot_address.read();
     assert constructor_calldata[0] = evm_address;
-    assert constructor_calldata[1] = kakarot_address;
+    assert constructor_calldata[1] = _kakarot_address;
     let (class_hash) = account_abstraction_class_hash.read();
     let (account_address) = deploy(
         class_hash,
@@ -69,14 +73,14 @@ func create_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 // @return contract_address The Starknet Account Contract address (not necessarily deployed)
 @view
 func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    evm_address: felt,
-    kakarot_address: felt
+    evm_address: felt
 ) -> (contract_address: felt) {
     alloc_locals;
     let (deployer_address) = get_contract_address();
+    let (_kakarot_address: felt) = kakarot_address.read();
     let (constructor_calldata: felt*) = alloc();
     assert constructor_calldata[0] = evm_address;
-    assert constructor_calldata[1] = kakarot_address;
+    assert constructor_calldata[1] = _kakarot_address;
     let (class_hash) = account_abstraction_class_hash.read();
     let (hash_state_ptr) = hash_init();
     let (hash_state_ptr) = hash_update_single{hash_ptr=pedersen_ptr}(
