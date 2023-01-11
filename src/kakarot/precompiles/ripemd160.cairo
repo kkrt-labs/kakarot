@@ -44,6 +44,10 @@ namespace PrecompileRIPEMD160 {
         let (local buf: felt*) = alloc();
         let (local arr_x: felt*) = alloc();
 
+        // before starting fill arr_x with  0s to align on 32 bytes (hash length is 20bytes so 12 bytes to fill)
+        Helpers.fill(12, arr_x, 0);
+        let arr_x: felt* = arr_x + 12;
+
         // 1. init magic constants
         init(buf, 5);
 
@@ -64,7 +68,7 @@ namespace PrecompileRIPEMD160 {
         let (_, _) = dict_squash{range_check_ptr=range_check_ptr}(h0, hash);
 
         // 5. return bytes hash code.
-        return (20, arr_x, GAS_COST_RIPEMD160);
+        return (32, arr_x - 12, GAS_COST_RIPEMD160);
     }
 }
 

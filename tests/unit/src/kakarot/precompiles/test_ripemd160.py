@@ -17,15 +17,18 @@ async def ripemd160(
 
 
 @pytest.mark.asyncio
-class TestEcAdd:
+class TestRIPEMD160:
     @pytest.mark.parametrize(
-        "calldata_len",
-        [128],
-        ids=["calldata_len128"],
+        "msg, expected_result", [
+            ("a", "0000000000000000000000000bdc9d2d256b3ee9daae347be6f4dc835a467ffe"),
+            (
+                "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopqabcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq",
+                "00000000000000000000000069a155bddf855b0973a0791d5b7a3326fb83e163"
+            ),
+        ]
     )
-    async def test_ripemd160(self, ripemd160, calldata_len):
-        random.seed(0)
-        calldata = [random.randint(0, 255) for _ in range((calldata_len))]
-
-        await ripemd160.test__ripemd160_1(calldata=calldata).call()
-        await ripemd160.test__ripemd160_2(calldata=calldata).call()
+    async def test_ripemd160_should_return_correct_hash(self, ripemd160, msg, expected_result):
+        ascii_msg = [ord(char) for char in msg]
+        expected_result_byte_array = list(bytes.fromhex(expected_result))
+        hash =  (await ripemd160.test__ripemd160(ascii_msg).call()).result[0]
+        assert hash == expected_result_byte_array
