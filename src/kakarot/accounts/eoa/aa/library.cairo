@@ -16,7 +16,7 @@ namespace ExternallyOwnedAccount {
     // keccak250(ascii('execute_at_address'))
     const EXECUTE_AT_ADDRESS_SELECTOR = 175332271055223547208505378209204736960926292802627036960758298143252682610;
     // @dev see utils/InterfaceId.sol
-    const INTERFACE_ID = 0x0ac6c9ee;
+    const INTERFACE_ID = 0x68bca1a;
     const TX_ITEMS = 12;  // number of elements in an evm tx see EIP 1559
 
     // Indexes to retrieve specific data from the EVM transaction
@@ -147,11 +147,8 @@ namespace ExternallyOwnedAccount {
             let v = Helpers.bytes_to_felt(sub_items[V_IDX].data_len, sub_items[V_IDX].data, 0);
             let r = Helpers.bytes32_to_uint256(sub_items[R_IDX].data);
             let s = Helpers.bytes32_to_uint256(sub_items[S_IDX].data);
-            verify_eth_signature_uint256{keccak_ptr=keccak_ptr}(
-                msg_hash=tx_hash.res, r=r, s=s, v=v.n, eth_address=eth_address
-            );
             finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
-            return (is_valid=1);
+            return is_valid_eth_signature(tx_hash.res, r, s, v.n, eth_address);
         } else {
             assert 1 = 0;
             return (is_valid=0);

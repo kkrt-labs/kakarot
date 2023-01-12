@@ -79,7 +79,9 @@ def deploy_solidity_contract(starknet, contract_account_class, kakarot):
     return _factory
 
 
-Wallet = namedtuple("Wallet", ["address", "private_key", "starknet_contract"])
+Wallet = namedtuple(
+    "Wallet", ["address", "private_key", "starknet_contract", "starknet_address"]
+)
 
 
 @pytest_asyncio.fixture(scope="package")
@@ -94,15 +96,14 @@ async def addresses(deployer, starknet, externally_owned_account_class) -> List[
     private_keys = [generate_random_private_key() for _ in range(4)]
     wallets = []
     for private_key in private_keys:
-        tempAccount: Account = web3.eth.Account().from_key(private_key)
-        evm_address = web3.Web3().toInt(hexstr=tempAccount.address)
+        evm_address = private_key.public_key.to_checksum_address()
         eth_aa_deploy_tx = await deployer.create_account(
-            evm_address=evm_address
+            evm_address=int(evm_address, 16)
         ).execute()
 
         wallets.append(
             Wallet(
-                address=tempAccount.address,
+                address=evm_address,
                 private_key=private_key,
                 starknet_contract=StarknetContract(
                     starknet.state,
@@ -110,6 +111,7 @@ async def addresses(deployer, starknet, externally_owned_account_class) -> List[
                     eth_aa_deploy_tx.call_info.internal_calls[0].contract_address,
                     eth_aa_deploy_tx,
                 ),
+                starknet_address=int(private_key.public_key.to_address(), 16),
             )
         )
 
@@ -129,7 +131,7 @@ async def others(addresses):
 @pytest_asyncio.fixture(scope="module")
 async def counter(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
-        "Counter", "Counter", caller_address=owner.starknet_contract.contract_address
+        "Counter", "Counter", caller_address=owner.starknet_address
     )
 
 
@@ -139,7 +141,7 @@ async def plain_opcodes(deploy_solidity_contract, owner, counter):
         "PlainOpcodes",
         "PlainOpcodes",
         counter.evm_contract_address,
-        caller_address=owner.starknet_contract.contract_address,
+        caller_address=owner.starknet_address,
     )
 
 
@@ -151,7 +153,7 @@ async def erc_20(deploy_solidity_contract, owner):
         "Kakarot Token",
         "KKT",
         18,
-        caller_address=owner.starknet_contract.contract_address,
+        caller_address=owner.starknet_address,
     )
 
 
@@ -162,5 +164,5 @@ async def erc_721(deploy_solidity_contract, owner):
         "ERC721",
         "Kakarot NFT",
         "KKNFT",
-        caller_address=owner.starknet_contract.contract_address,
+        caller_address=owner.starknet_address,
     )

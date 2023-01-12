@@ -35,17 +35,6 @@ async def deployer(
 
 
 @pytest_asyncio.fixture(scope="package")
-async def externally_owned_account(
-    starknet: Starknet, externally_owned_account_class, deployer, addresses
-) -> Tuple[StarknetContract, StarknetContract, bytes, int, web3.Account]:
-    evm_eoas = []
-    for wallet in addresses:
-        evm_eoas.append(web3.Account.from_key(wallet.private_key))
-
-    return deployer, evm_eoas
-
-
-@pytest_asyncio.fixture(scope="package")
 async def default_tx() -> dict:
     return {
         "nonce": 1,
