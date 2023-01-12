@@ -78,7 +78,7 @@ class TestERC20:
             await erc_20.mint(
                 owner.address, TEST_AMOUNT, caller_address=owner.starknet_address
             )
-            with kakarot_error("0"):
+            with kakarot_error("12884901888"):
                 await erc_20.transfer(
                     other.address,
                     TEST_SUPPLY,
@@ -153,7 +153,7 @@ class TestERC20:
                 TEST_AMOUNT,
                 caller_address=other.starknet_address,
             )
-            with kakarot_error("0"):
+            with kakarot_error("109161241298996469498303502024926298112"):
                 await erc_20.transferFrom(
                     other.address,
                     others[1].address,
@@ -175,7 +175,7 @@ class TestERC20:
                 TEST_SUPPLY,
                 caller_address=other.starknet_address,
             )
-            with kakarot_error("0"):
+            with kakarot_error("12884901888"):
                 await erc_20.transferFrom(
                     other.address,
                     others[1].address,
@@ -259,7 +259,7 @@ class TestERC20:
                 deadline,
             )
             v, r, s = ec_sign(digest, owner.private_key)
-            with kakarot_error("574329"):
+            with kakarot_error("147028384"):
                 await erc_20.permit(
                     owner.address,
                     other.address,

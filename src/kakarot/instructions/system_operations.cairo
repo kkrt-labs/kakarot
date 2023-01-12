@@ -220,16 +220,9 @@ namespace SystemOperations {
         let (revert_reason_bytes: felt*) = alloc();
         let (memory, gas_cost) = Memory.load_n(memory, size.low, revert_reason_bytes, offset.low);
 
-        // revert with loaded revert reason short string
-        let truncate_reason = is_le(32, size.low);
-        tempvar reason_short_string_size;
-        if (truncate_reason != FALSE) {
-            reason_short_string_size = 31;
-        } else {
-            reason_short_string_size = size.low;
-        }
+        // revert with loaded revert reason short string: 31 bytes of the last word
         let revert_reason_uint256 = Helpers.bytes_i_to_uint256(
-            revert_reason_bytes, reason_short_string_size
+            revert_reason_bytes + size.low - 32, 31
         );
         local revert_reason = Helpers.uint256_to_felt(revert_reason_uint256);
 

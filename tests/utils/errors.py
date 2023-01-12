@@ -13,7 +13,7 @@ def kakarot_error(message):
         if re.match("Kakarot: Reverted with reason: ", error):
             error = re.search(r"Kakarot: Reverted with reason: (.*)", error)[1]  # type: ignore
             try:
-                assert message == bytes.fromhex(f"{int(error):x}").decode()
+                assert message == bytes.fromhex(f"{int(error):x}".rstrip("0")).decode()
             except:
                 assert message == error
         else:

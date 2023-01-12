@@ -1,5 +1,3 @@
-import re
-
 import pytest
 import pytest_asyncio
 
@@ -69,13 +67,13 @@ class TestERC721:
             assert await erc_721.symbol() == "KKNFT"
 
     class TestOwnerOf:
-        async def test_owner_of_should_fail_when_token_is_does_not_exist(self, erc_721):
-            with kakarot_error("574329"):
+        async def test_owner_of_should_fail_when_token_does_not_exist(self, erc_721):
+            with kakarot_error("NOT_MINTED"):
                 await erc_721.ownerOf(1337)
 
     class TestBalanceOf:
-        async def test_balance_of_should_fail_on_zero_address(self, addresses, erc_721):
-            with kakarot_error("574329"):
+        async def test_balance_of_should_fail_on_zero_address(self, erc_721):
+            with kakarot_error("ZERO_ADDRESS"):
                 await erc_721.balanceOf(ZERO_ADDRESS)
 
     class TestMint:
@@ -87,7 +85,7 @@ class TestERC721:
             assert await erc_721.ownerOf(1337) == other.address
 
         async def test_should_fail_mint_to_zero_address(self, erc_721, other):
-            with kakarot_error("574329"):
+            with kakarot_error("INVALID_RECIPIENT"):
                 await erc_721.mint(
                     ZERO_ADDRESS, 1337, caller_address=other.starknet_address
                 )
@@ -99,7 +97,7 @@ class TestERC721:
                 caller_address=other.starknet_address,
             )
 
-            with kakarot_error("574329"):
+            with kakarot_error("ALREADY_MINTED"):
                 await erc_721.mint(
                     other.address,
                     1337,
@@ -115,11 +113,11 @@ class TestERC721:
 
             assert await erc_721.balanceOf(other.address) == 0
 
-            with kakarot_error("574329"):
+            with kakarot_error("NOT_MINTED"):
                 await erc_721.ownerOf(1337)
 
         async def test_should_fail_to_burn_unminted(self, erc_721, other):
-            with kakarot_error("574329"):
+            with kakarot_error("NOT_MINTED"):
                 await erc_721.burn(1337, caller_address=other.starknet_address)
 
         async def test_should_fail_to_double_burn(self, erc_721, other):
@@ -129,7 +127,7 @@ class TestERC721:
 
             await erc_721.burn(1337, caller_address=other.starknet_address)
 
-            with kakarot_error("574329"):
+            with kakarot_error("NOT_MINTED"):
                 await erc_721.burn(1337, caller_address=other.starknet_address)
 
     class TestApprove:
@@ -153,7 +151,7 @@ class TestERC721:
             )
 
         async def test_should_fail_to_approve_unminted(self, erc_721, others):
-            with kakarot_error("574329"):
+            with kakarot_error("NOT_MINTED"):
                 await erc_721.approve(
                     others[1].address,
                     1337,
@@ -164,7 +162,7 @@ class TestERC721:
             await erc_721.mint(
                 others[0].address, 1337, caller_address=others[0].starknet_address
             )
-            with kakarot_error("574329"):
+            with kakarot_error("NOT_AUTHORIZED"):
                 await erc_721.approve(
                     others[1].address,
                     1337,
@@ -244,7 +242,7 @@ class TestERC721:
             assert sender_balance == 0
 
         async def test_should_fail_to_transfer_from_unowned(self, erc_721, others):
-            with kakarot_error("574329"):
+            with kakarot_error("NOT_AUTHORIZED"):
                 await erc_721.transferFrom(
                     others[0].address,
                     others[1].address,
@@ -256,7 +254,7 @@ class TestERC721:
             await erc_721.mint(
                 others[1].address, 1337, caller_address=others[1].starknet_address
             )
-            with kakarot_error("574329"):
+            with kakarot_error("NOT_AUTHORIZED"):
                 await erc_721.transferFrom(
                     others[0].address,
                     others[2].address,
@@ -268,7 +266,7 @@ class TestERC721:
             await erc_721.mint(
                 other.address, 1337, caller_address=other.starknet_address
             )
-            with kakarot_error("574329"):
+            with kakarot_error("INVALID_RECIPIENT"):
                 await erc_721.transferFrom(
                     other.address,
                     ZERO_ADDRESS,
@@ -280,7 +278,7 @@ class TestERC721:
             await erc_721.mint(
                 others[0].address, 1337, caller_address=others[0].starknet_address
             )
-            with kakarot_error("574329"):
+            with kakarot_error("NOT_AUTHORIZED"):
                 await erc_721.transferFrom(
                     others[0].address,
                     others[2].address,
@@ -407,7 +405,7 @@ class TestERC721:
                 other.address, 1337, caller_address=other.starknet_address
             )
 
-            with kakarot_error("574329"):
+            with kakarot_error("UNSAFE_RECIPIENT"):
                 await erc_721.safeTransferFrom(
                     other.address,
                     recipient_address,
@@ -424,7 +422,7 @@ class TestERC721:
                 other.address, 1337, caller_address=other.starknet_address
             )
 
-            with kakarot_error("574329"):
+            with kakarot_error("UNSAFE_RECIPIENT"):
                 await erc_721.safeTransferFrom2(
                     other.address,
                     recipient_address,
@@ -442,7 +440,7 @@ class TestERC721:
                 other.address, 1337, caller_address=other.starknet_address
             )
 
-            with kakarot_error("574329"):
+            with kakarot_error("UNSAFE_RECIPIENT"):
                 await erc_721.safeTransferFrom(
                     other.address,
                     recipient_address,
@@ -459,7 +457,7 @@ class TestERC721:
                 other.address, 1337, caller_address=other.starknet_address
             )
 
-            with kakarot_error("574329"):
+            with kakarot_error("UNSAFE_RECIPIENT"):
                 await erc_721.safeTransferFrom2(
                     other.address,
                     recipient_address,
@@ -478,7 +476,7 @@ class TestERC721:
             await erc_721.mint(
                 other.address, 1337, caller_address=other.starknet_address
             )
-            with kakarot_error("13303486"):
+            with kakarot_error("UNSAFE_RECIPIENT"):
                 await erc_721.safeTransferFrom(
                     other.address,
                     recipient_address,
@@ -497,7 +495,7 @@ class TestERC721:
                 other.address, 1337, caller_address=other.starknet_address
             )
 
-            with kakarot_error("13303486"):
+            with kakarot_error("UNSAFE_RECIPIENT"):
                 await erc_721.safeTransferFrom2(
                     other.address,
                     recipient_address,
@@ -577,7 +575,7 @@ class TestERC721:
         ):
             recipient_address = erc_721_non_recipient.evm_contract_address
 
-            with kakarot_error("574329"):
+            with kakarot_error("UNSAFE_RECIPIENT"):
                 await erc_721.safeMint(
                     recipient_address,
                     1337,
@@ -589,7 +587,7 @@ class TestERC721:
         ):
             recipient_address = erc_721_non_recipient.evm_contract_address
 
-            with kakarot_error("574329"):
+            with kakarot_error("UNSAFE_RECIPIENT"):
                 await erc_721.safeMint2(
                     recipient_address,
                     1337,
@@ -602,7 +600,7 @@ class TestERC721:
         ):
             recipient_address = erc_721_reverting_recipient.evm_contract_address
 
-            with kakarot_error("574329"):
+            with kakarot_error("UNSAFE_RECIPIENT"):
                 await erc_721.safeMint(
                     recipient_address,
                     1337,
@@ -614,7 +612,7 @@ class TestERC721:
         ):
             recipient_address = erc_721_reverting_recipient.evm_contract_address
 
-            with kakarot_error("574329"):
+            with kakarot_error("UNSAFE_RECIPIENT"):
                 await erc_721.safeMint2(
                     recipient_address,
                     1337,
@@ -629,7 +627,7 @@ class TestERC721:
                 erc_721_recipient_with_wrong_return_data.evm_contract_address
             )
 
-            with kakarot_error("13303486"):
+            with kakarot_error("UNSAFE_RECIPIENT"):
                 await erc_721.safeMint(
                     recipient_address,
                     1337,
@@ -643,7 +641,7 @@ class TestERC721:
                 erc_721_recipient_with_wrong_return_data.evm_contract_address
             )
 
-            with kakarot_error("13303486"):
+            with kakarot_error("UNSAFE_RECIPIENT"):
                 await erc_721.safeMint2(
                     recipient_address,
                     1337,
