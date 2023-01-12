@@ -222,14 +222,14 @@ namespace SystemOperations {
 
         // revert with loaded revert reason short string
         let truncate_reason = is_le(32, size.low);
-        tempvar reason_actual_size;
+        tempvar reason_short_string_size;
         if (truncate_reason != FALSE) {
-            reason_actual_size = 31;
+            reason_short_string_size = 31;
         } else {
-            reason_actual_size = size.low;
+            reason_short_string_size = size.low;
         }
         let revert_reason_uint256 = Helpers.bytes_i_to_uint256(
-            revert_reason_bytes, reason_actual_size
+            revert_reason_bytes, reason_short_string_size
         );
         local revert_reason = Helpers.uint256_to_felt(revert_reason_uint256);
 
