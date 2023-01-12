@@ -218,7 +218,7 @@ namespace SystemOperations {
 
         // Load revert reason from offset
         let (revert_reason_bytes: felt*) = alloc();
-        let (memory, gas_cost) = Memory.load_n(memory, 32, revert_reason_bytes, offset.low);
+        let (memory, gas_cost) = Memory.load_n(memory, size.low, revert_reason_bytes, offset.low);
 
         // revert with loaded revert reason short string
         let truncate_reason = is_le(32, size.low);
