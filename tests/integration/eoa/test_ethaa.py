@@ -48,7 +48,7 @@ class TestExternallyOwnedAccount:
             raw_tx = tmp_account.sign_transaction(default_tx)
             tx_hash = serializable_unsigned_transaction_from_dict(default_tx).hash()
             call_info = await address.starknet_contract.is_valid_signature(
-                [*int_to_uint256(web.Web3.toInt(tx_hash, 16))],
+                [*int_to_uint256(int(tx_hash, 16))],
                 [
                     raw_tx.v,
                     *int_to_uint256(raw_tx.r),
