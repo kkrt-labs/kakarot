@@ -64,7 +64,7 @@ func test__exec_revert{
     // Given
     alloc_locals;
     let reason_uint256 = Uint256(low=reason_low, high=reason_high);
-    local offset: Uint256 = Uint256(0, 32);
+    local offset: Uint256 = Uint256(32, 0);
 
     let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
@@ -73,7 +73,7 @@ func test__exec_revert{
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
     let ctx: model.ExecutionContext* = MemoryOperations.exec_mstore(ctx);
 
-    let stack: model.Stack* = Stack.push(ctx.stack, offset);  // offset
+    let stack: model.Stack* = Stack.push(ctx.stack, Uint256(0, 0));  // offset is 0 to have the reason at 0x20
     let stack: model.Stack* = Stack.push(stack, Uint256(size, 0));  // size
     let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
 

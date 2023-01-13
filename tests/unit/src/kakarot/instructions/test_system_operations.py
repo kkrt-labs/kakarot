@@ -33,12 +33,13 @@ async def set_account_registry(
 
 @pytest.mark.asyncio
 class TestSystemOperations:
-    @pytest.mark.parametrize("size", range(1, 33))
+    @pytest.mark.parametrize("size", range(34, 65))
     async def test_revert(self, system_operations, size):
-        # reason = 0x abcdefghijklmnopqrstuvwxyzABCDE \x00
-        reason = int(string.ascii_letters[:31].encode().hex() + "00", 16)
+        # reason = 0x abcdefghijklmnopqrstuvwxyzABCDEF
+        reason = int(string.ascii_letters[:32].encode().hex(), 16)
         reason_low, reason_high = int_to_uint256(reason)
-        with kakarot_error(string.ascii_letters[: min(size, 31)]):
+        # The current implementation takes the 31 first bytes of the last 32 bytes
+        with kakarot_error(string.ascii_letters[: (size - 32 - 1)][-31:]):
             await system_operations.test__exec_revert(
                 reason_low, reason_high, size
             ).call()
