@@ -18,7 +18,7 @@ class TestCounter:
 
     class TestDec:
         async def test_should_raise_when_count_is_0(self, counter, addresses):
-            with kakarot_error("count should be strictly greater than 0"[:31]):
+            with kakarot_error("count should be strictly greater than 0"):
                 await counter.dec(caller_address=addresses[1].starknet_address)
 
         async def test_should_decrease_count(self, counter, addresses):

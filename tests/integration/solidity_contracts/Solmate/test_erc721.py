@@ -151,7 +151,7 @@ class TestERC721:
             )
 
         async def test_should_fail_to_approve_unminted(self, erc_721, others):
-            with kakarot_error("NOT_MINTED"):
+            with kakarot_error("NOT_AUTHORIZED"):
                 await erc_721.approve(
                     others[1].address,
                     1337,
