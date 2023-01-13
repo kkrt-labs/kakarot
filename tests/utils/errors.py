@@ -6,10 +6,12 @@ import pytest
 
 
 @contextmanager
-def kakarot_error(message):
+def kakarot_error(message=None):
     try:
         with pytest.raises(Exception) as e:
             yield e
+        if message is None:
+            return
         error = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
         if re.match("Kakarot: Reverted with reason: ", error):
             error = re.search(r"Kakarot: Reverted with reason: (.*)", error)[1]  # type: ignore

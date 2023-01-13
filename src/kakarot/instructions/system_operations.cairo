@@ -221,9 +221,16 @@ namespace SystemOperations {
         let (memory, gas_cost) = Memory.load_n(memory, size.low, revert_reason_bytes, offset.low);
 
         // revert with loaded revert reason short string: 31 bytes of the last word
-        let revert_reason_uint256 = Helpers.bytes_i_to_uint256(
-            revert_reason_bytes + size.low - 32, 31
-        );
+        let reason_is_single_word = is_le(size.low, 32);
+        if (reason_is_single_word != FALSE) {
+            tempvar initial_byte: felt* = revert_reason_bytes;
+            tempvar actual_size = size.low;
+        } else {
+            tempvar byte_shift = size.low - 32;
+            tempvar initial_byte: felt* = revert_reason_bytes + byte_shift;
+            tempvar actual_size = 31;
+        }
+        let revert_reason_uint256 = Helpers.bytes_i_to_uint256(initial_byte, actual_size);
         local revert_reason = Helpers.uint256_to_felt(revert_reason_uint256);
 
         with_attr error_message("Kakarot: Reverted with reason: {revert_reason}") {
