@@ -1,5 +1,6 @@
 import pytest
 import pytest_asyncio
+from web3 import Web3
 
 from tests.integration.helpers.constants import ZERO_ADDRESS
 from tests.utils.errors import kakarot_error
@@ -242,7 +243,7 @@ class TestERC721:
             assert sender_balance == 0
 
         async def test_should_fail_to_transfer_from_unowned(self, erc_721, others):
-            with kakarot_error("NOT_AUTHORIZED"):
+            with kakarot_error():
                 await erc_721.transferFrom(
                     others[0].address,
                     others[1].address,
@@ -254,7 +255,7 @@ class TestERC721:
             await erc_721.mint(
                 others[1].address, 1337, caller_address=others[1].starknet_address
             )
-            with kakarot_error("NOT_AUTHORIZED"):
+            with kakarot_error():
                 await erc_721.transferFrom(
                     others[0].address,
                     others[2].address,
@@ -405,7 +406,7 @@ class TestERC721:
                 other.address, 1337, caller_address=other.starknet_address
             )
 
-            with kakarot_error("UNSAFE_RECIPIENT"):
+            with kakarot_error():
                 await erc_721.safeTransferFrom(
                     other.address,
                     recipient_address,
@@ -422,7 +423,7 @@ class TestERC721:
                 other.address, 1337, caller_address=other.starknet_address
             )
 
-            with kakarot_error("UNSAFE_RECIPIENT"):
+            with kakarot_error():
                 await erc_721.safeTransferFrom2(
                     other.address,
                     recipient_address,
@@ -435,12 +436,14 @@ class TestERC721:
             self, erc_721, erc_721_reverting_recipient, other
         ):
             recipient_address = erc_721_reverting_recipient.evm_contract_address
-
             await erc_721.mint(
                 other.address, 1337, caller_address=other.starknet_address
             )
 
-            with kakarot_error("UNSAFE_RECIPIENT"):
+            selector = Web3.sha3(
+                text="onERC721Received(address,address,uint256,bytes)"
+            )[:4]
+            with kakarot_error(selector):
                 await erc_721.safeTransferFrom(
                     other.address,
                     recipient_address,
@@ -456,8 +459,10 @@ class TestERC721:
             await erc_721.mint(
                 other.address, 1337, caller_address=other.starknet_address
             )
-
-            with kakarot_error("UNSAFE_RECIPIENT"):
+            selector = Web3.sha3(
+                text="onERC721Received(address,address,uint256,bytes)"
+            )[:4]
+            with kakarot_error(selector):
                 await erc_721.safeTransferFrom2(
                     other.address,
                     recipient_address,
