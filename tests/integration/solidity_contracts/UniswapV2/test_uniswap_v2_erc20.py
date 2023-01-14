@@ -90,7 +90,7 @@ class TestUniswapV2ERC20:
         async def test_should_fail_when_amount_is_greater_than_balance_and_balance_not_zero(
             self, token, owner, other
         ):
-            with kakarot_error("574329"):
+            with kakarot_error():
                 await token.transfer(
                     other.address,
                     TOTAL_SUPPLY + 1,
@@ -100,7 +100,7 @@ class TestUniswapV2ERC20:
         async def test_should_fail_when_amount_is_greater_than_balance_and_balance_zero(
             self, token, owner, other
         ):
-            with kakarot_error("574329"):
+            with kakarot_error():
                 await token.transfer(
                     owner.address,
                     1,

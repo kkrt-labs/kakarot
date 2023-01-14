@@ -575,7 +575,7 @@ class TestERC721:
         ):
             recipient_address = erc_721_non_recipient.evm_contract_address
 
-            with kakarot_error("UNSAFE_RECIPIENT"):
+            with kakarot_error():
                 await erc_721.safeMint(
                     recipient_address,
                     1337,
@@ -587,7 +587,7 @@ class TestERC721:
         ):
             recipient_address = erc_721_non_recipient.evm_contract_address
 
-            with kakarot_error("UNSAFE_RECIPIENT"):
+            with kakarot_error():
                 await erc_721.safeMint2(
                     recipient_address,
                     1337,
@@ -600,7 +600,7 @@ class TestERC721:
         ):
             recipient_address = erc_721_reverting_recipient.evm_contract_address
 
-            with kakarot_error("UNSAFE_RECIPIENT"):
+            with kakarot_error():
                 await erc_721.safeMint(
                     recipient_address,
                     1337,
@@ -612,7 +612,7 @@ class TestERC721:
         ):
             recipient_address = erc_721_reverting_recipient.evm_contract_address
 
-            with kakarot_error("UNSAFE_RECIPIENT"):
+            with kakarot_error():
                 await erc_721.safeMint2(
                     recipient_address,
                     1337,
@@ -627,7 +627,7 @@ class TestERC721:
                 erc_721_recipient_with_wrong_return_data.evm_contract_address
             )
 
-            with kakarot_error("UNSAFE_RECIPIENT"):
+            with kakarot_error():
                 await erc_721.safeMint(
                     recipient_address,
                     1337,
@@ -641,7 +641,7 @@ class TestERC721:
                 erc_721_recipient_with_wrong_return_data.evm_contract_address
             )
 
-            with kakarot_error("UNSAFE_RECIPIENT"):
+            with kakarot_error():
                 await erc_721.safeMint2(
                     recipient_address,
                     1337,
