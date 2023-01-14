@@ -608,4 +608,38 @@ namespace Helpers {
         dw 281474976710656;
         dw 72057594037927936;
     }
+
+    // @notice transform a felt to big endian bytes
+    // @param value The initial felt
+    // @param bytes_len The number of bytes (used for recursion, set to 0)
+    // @param bytes The pointer to the bytes
+    // @return bytes_len The final length of the bytes array
+    func felt_to_bytes{range_check_ptr}(value: felt, bytes_len: felt, bytes: felt*) -> (
+        bytes_len: felt
+    ) {
+        let (q, r) = unsigned_div_rem(value, 256);
+        let is_le_256 = is_le(r, 256);
+        if (is_le_256 != FALSE) {
+            assert [bytes] = value;
+            return (bytes_len=bytes_len + 1);
+        } else {
+            assert [bytes] = r;
+            return felt_to_bytes(value=q, bytes_len=bytes_len + 1, bytes=bytes + 1);
+        }
+    }
+
+    // @notice transform muliple bytes into a single felt
+    // @param data_len The lenght of the bytes
+    // @param data The pointer to the bytes array
+    // @param n used for recursion, set to 0
+    // @return n the resultant felt
+    func bytes_to_felt{range_check_ptr}(data_len: felt, data: felt*, n: felt) -> (n: felt) {
+        if (data_len == 0) {
+            return (n=n);
+        }
+        let e: felt = data_len - 1;
+        let byte: felt = data[data_len - 1];
+        let (res) = pow(256, e);
+        return bytes_to_felt(data_len=data_len - 1, data=data, n=n + byte * res);
+    }
 }

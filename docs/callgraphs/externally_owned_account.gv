@@ -4,31 +4,273 @@ digraph externally_owned_account {
 	node [fontname="Helvetica,Arial,sans-serif" pencolor="#00000044" shape="rect, plaintext" style=filled]
 	edge [arrowsize=0.5 fontname="Helvetica,Arial,sans-serif" labeldistance=3 labelfontcolor="#00000080" penwidth=2]
 	0 [label="starkware.cairo.common.alloc.alloc" color="" fillcolor=lightcoral shape=oval style=filled]
-	3 [label="starkware.starknet.common.syscalls.storage_read" color="" fillcolor=lightcoral shape=oval style=filled]
-	11 [label="starkware.starknet.common.syscalls.storage_write" color="" fillcolor=lightcoral shape=oval style=filled]
-	19 [label="starkware.starknet.common.syscalls.emit_event" color="" fillcolor=lightcoral shape=oval style=filled]
-	29 [label="openzeppelin.access.ownable.library.OwnershipTransferred.emit" color="" fillcolor=lightcoral shape=oval style=filled]
-	54 [label="openzeppelin.access.ownable.library.Ownable_owner.addr" color="" fillcolor=lightcoral shape=oval style=filled]
-	59 [label="openzeppelin.access.ownable.library.Ownable_owner.read" color="" fillcolor=lightcoral shape=oval style=filled]
-	72 [label="openzeppelin.access.ownable.library.Ownable_owner.write" color="" fillcolor=lightcoral shape=oval style=filled]
-	84 [label="openzeppelin.access.ownable.library.Ownable.initializer" color="" fillcolor=lightcoral shape=oval style=filled]
-	91 [label="openzeppelin.access.ownable.library.Ownable.owner" color="" fillcolor=lightcoral shape=oval style=filled]
-	97 [label="openzeppelin.access.ownable.library.Ownable._transfer_ownership" color="" fillcolor=lightcoral shape=oval style=filled]
-	118 [label="kakarot.accounts.eoa.library.ExternallyOwnedAccount.constructor" color="" fillcolor=lightcoral shape=oval style=filled]
-	126 [label="__main__.constructor\l['constructor']" color="" fillcolor=violet shape=oval style=filled]
-	134 [label="__wrappers__.constructor\l['constructor']" color="" fillcolor=violet shape=doubleoctagon style=filled]
-	29 -> 0 [label=2]
-	29 -> 19
-	59 -> 54
-	59 -> 3
-	72 -> 54
-	72 -> 11
-	84 -> 97
-	91 -> 59
-	97 -> 91
-	97 -> 72
-	97 -> 29
-	118 -> 84
-	126 -> 118
-	134 -> 126
+	3 [label="starkware.cairo.common.memcpy.memcpy" color="" fillcolor=lightcoral shape=oval style=filled]
+	18 [label="starkware.cairo.lang.compiler.lib.registers.get_fp_and_pc" color="" fillcolor=lightcoral shape=oval style=filled]
+	19 [label="starkware.cairo.lang.compiler.lib.registers.get_ap\l['known_ap_change']" color="" fillcolor=yellow shape=oval style=filled]
+	24 [label="starkware.cairo.common.math.assert_not_zero" color="" fillcolor=lightcoral shape=oval style=filled]
+	29 [label="starkware.cairo.common.math.assert_nn" color="" fillcolor=lightcoral shape=oval style=filled]
+	33 [label="starkware.cairo.common.math.assert_le" color="" fillcolor=lightcoral shape=oval style=filled]
+	38 [label="starkware.cairo.common.math.assert_nn_le" color="" fillcolor=lightcoral shape=oval style=filled]
+	47 [label="starkware.cairo.common.math.assert_le_felt\l['known_ap_change']" color="" fillcolor=yellow shape=oval style=filled]
+	92 [label="starkware.cairo.common.math.assert_lt_felt\l['known_ap_change']" color="" fillcolor=yellow shape=oval style=filled]
+	103 [label="starkware.cairo.common.math.unsigned_div_rem" color="" fillcolor=lightcoral shape=oval style=filled]
+	118 [label="starkware.starknet.common.syscalls.get_caller_address" color="" fillcolor=lightcoral shape=oval style=filled]
+	125 [label="starkware.starknet.common.syscalls.storage_read" color="" fillcolor=lightcoral shape=oval style=filled]
+	133 [label="starkware.starknet.common.syscalls.storage_write" color="" fillcolor=lightcoral shape=oval style=filled]
+	141 [label="starkware.starknet.common.eth_utils.assert_eth_address_range" color="" fillcolor=lightcoral shape=oval style=filled]
+	152 [label="starkware.cairo.common.math_cmp.is_nn\l['known_ap_change']" color="" fillcolor=yellow shape=oval style=filled]
+	185 [label="starkware.cairo.common.math_cmp.is_le\l['known_ap_change']" color="" fillcolor=yellow shape=oval style=filled]
+	190 [label="starkware.cairo.common.math_cmp.is_le_felt\l['known_ap_change']" color="" fillcolor=yellow shape=oval style=filled]
+	210 [label="starkware.cairo.common.bitwise.bitwise_xor" color="" fillcolor=lightcoral shape=oval style=filled]
+	216 [label="starkware.cairo.common.registers.get_label_location" color="" fillcolor=lightcoral shape=oval style=filled]
+	222 [label="starkware.cairo.common.cairo_keccak.packed_keccak.keccak_round" color="" fillcolor=lightcoral shape=oval style=filled]
+	1024 [label="starkware.cairo.common.cairo_keccak.packed_keccak.packed_keccak_func" color="" fillcolor=lightcoral shape=oval style=filled]
+	1123 [label="starkware.cairo.common.memset.memset" color="" fillcolor=lightcoral shape=oval style=filled]
+	1134 [label="starkware.cairo.common.pow.pow" color="" fillcolor=lightcoral shape=oval style=filled]
+	1177 [label="starkware.cairo.common.uint256.word_reverse_endian" color="" fillcolor=lightcoral shape=oval style=filled]
+	1218 [label="starkware.cairo.common.uint256.uint256_reverse_endian" color="" fillcolor=lightcoral shape=oval style=filled]
+	1230 [label="starkware.cairo.common.cairo_keccak.keccak.keccak_uint256s_bigend" color="" fillcolor=lightcoral shape=oval style=filled]
+	1253 [label="starkware.cairo.common.cairo_keccak.keccak.keccak_add_uint256" color="" fillcolor=lightcoral shape=oval style=filled]
+	1283 [label="starkware.cairo.common.cairo_keccak.keccak.keccak_add_uint256s" color="" fillcolor=lightcoral shape=oval style=filled]
+	1305 [label="starkware.cairo.common.cairo_keccak.keccak.keccak" color="" fillcolor=lightcoral shape=oval style=filled]
+	1326 [label="starkware.cairo.common.cairo_keccak.keccak.keccak_bigend" color="" fillcolor=lightcoral shape=oval style=filled]
+	1344 [label="starkware.cairo.common.cairo_keccak.keccak.keccak_as_words" color="" fillcolor=lightcoral shape=oval style=filled]
+	1365 [label="starkware.cairo.common.cairo_keccak.keccak._prepare_block" color="" fillcolor=lightcoral shape=oval style=filled]
+	1411 [label="starkware.cairo.common.cairo_keccak.keccak._copy_inputs" color="" fillcolor=lightcoral shape=oval style=filled]
+	1448 [label="starkware.cairo.common.cairo_keccak.keccak._padding" color="" fillcolor=lightcoral shape=oval style=filled]
+	1486 [label="starkware.cairo.common.cairo_keccak.keccak._long_padding" color="" fillcolor=lightcoral shape=oval style=filled]
+	1528 [label="starkware.cairo.common.cairo_keccak.keccak._block_permutation" color="" fillcolor=lightcoral shape=oval style=filled]
+	1531 [label="starkware.cairo.common.cairo_keccak.keccak._keccak" color="" fillcolor=lightcoral shape=oval style=filled]
+	1581 [label="starkware.cairo.common.cairo_keccak.keccak.finalize_keccak" color="" fillcolor=lightcoral shape=oval style=filled]
+	1606 [label="starkware.cairo.common.cairo_keccak.keccak._finalize_keccak_inner" color="" fillcolor=lightcoral shape=oval style=filled]
+	1703 [label="starkware.cairo.common.cairo_secp.bigint.bigint_mul" color="" fillcolor=lightcoral shape=oval style=filled]
+	1717 [label="starkware.cairo.common.cairo_secp.bigint.nondet_bigint3" color="" fillcolor=lightcoral shape=oval style=filled]
+	1729 [label="starkware.cairo.common.cairo_secp.bigint.bigint_to_uint256" color="" fillcolor=lightcoral shape=oval style=filled]
+	1751 [label="starkware.cairo.common.cairo_secp.bigint.uint256_to_bigint" color="" fillcolor=lightcoral shape=oval style=filled]
+	1770 [label="starkware.cairo.common.cairo_secp.field.unreduced_mul" color="" fillcolor=lightcoral shape=oval style=filled]
+	1790 [label="starkware.cairo.common.cairo_secp.field.unreduced_sqr" color="" fillcolor=lightcoral shape=oval style=filled]
+	1806 [label="starkware.cairo.common.cairo_secp.field.verify_zero" color="" fillcolor=lightcoral shape=oval style=filled]
+	1829 [label="starkware.cairo.common.cairo_secp.field.is_zero" color="" fillcolor=lightcoral shape=oval style=filled]
+	1865 [label="starkware.cairo.common.cairo_secp.field.reduce" color="" fillcolor=lightcoral shape=oval style=filled]
+	1878 [label="starkware.cairo.common.cairo_secp.field.validate_reduced_field_element" color="" fillcolor=lightcoral shape=oval style=filled]
+	1918 [label="starkware.cairo.common.cairo_secp.ec.ec_negate" color="" fillcolor=lightcoral shape=oval style=filled]
+	1934 [label="starkware.cairo.common.cairo_secp.ec.compute_doubling_slope" color="" fillcolor=lightcoral shape=oval style=filled]
+	1978 [label="starkware.cairo.common.cairo_secp.ec.compute_slope" color="" fillcolor=lightcoral shape=oval style=filled]
+	2002 [label="starkware.cairo.common.cairo_secp.ec.ec_double" color="" fillcolor=lightcoral shape=oval style=filled]
+	2075 [label="starkware.cairo.common.cairo_secp.ec.fast_ec_add" color="" fillcolor=lightcoral shape=oval style=filled]
+	2162 [label="starkware.cairo.common.cairo_secp.ec.ec_add" color="" fillcolor=lightcoral shape=oval style=filled]
+	2218 [label="starkware.cairo.common.cairo_secp.ec.ec_mul_inner" color="" fillcolor=lightcoral shape=oval style=filled]
+	2319 [label="starkware.cairo.common.cairo_secp.ec.ec_mul" color="" fillcolor=lightcoral shape=oval style=filled]
+	2399 [label="starkware.cairo.common.cairo_secp.signature.get_generator_point\l['known_ap_change']" color="" fillcolor=yellow shape=oval style=filled]
+	2412 [label="starkware.cairo.common.cairo_secp.signature.div_mod_n" color="" fillcolor=lightcoral shape=oval style=filled]
+	2477 [label="starkware.cairo.common.cairo_secp.signature.validate_signature_entry" color="" fillcolor=lightcoral shape=oval style=filled]
+	2526 [label="starkware.cairo.common.cairo_secp.signature.public_key_point_to_eth_address" color="" fillcolor=lightcoral shape=oval style=filled]
+	2569 [label="starkware.cairo.common.cairo_secp.signature.get_point_from_x" color="" fillcolor=lightcoral shape=oval style=filled]
+	2635 [label="starkware.cairo.common.cairo_secp.signature.recover_public_key" color="" fillcolor=lightcoral shape=oval style=filled]
+	2721 [label="starkware.cairo.common.cairo_secp.signature.verify_eth_signature" color="" fillcolor=lightcoral shape=oval style=filled]
+	2762 [label="starkware.cairo.common.cairo_secp.signature.verify_eth_signature_uint256" color="" fillcolor=lightcoral shape=oval style=filled]
+	2794 [label="utils.utils.Helpers.bytes32_to_uint256" color="" fillcolor=lightcoral shape=oval style=filled]
+	2917 [label="utils.utils.Helpers.fill_array" color="" fillcolor=lightcoral shape=oval style=filled]
+	2931 [label="utils.utils.Helpers.bytes_to_bytes8_little_endian" color="" fillcolor=lightcoral shape=oval style=filled]
+	3025 [label="utils.utils.Helpers.felt_to_bytes" color="" fillcolor=lightcoral shape=oval style=filled]
+	3054 [label="utils.utils.Helpers.bytes_to_felt" color="" fillcolor=lightcoral shape=oval style=filled]
+	3079 [label="utils.rlp.RLP.decode_rlp" color="" fillcolor=lightcoral shape=oval style=filled]
+	3286 [label="utils.rlp.RLP.encode_rlp_list" color="" fillcolor=lightcoral shape=oval style=filled]
+	3348 [label="kakarot.accounts.eoa.aa.library.ExternallyOwnedAccount.validate" color="" fillcolor=lightcoral shape=oval style=filled]
+	3385 [label="kakarot.accounts.eoa.aa.library.ExternallyOwnedAccount.is_valid_eth_tx" color="" fillcolor=lightcoral shape=oval style=filled]
+	3525 [label="kakarot.accounts.eoa.aa.library.ExternallyOwnedAccount.is_valid_eth_signature" color="" fillcolor=lightcoral shape=oval style=filled]
+	3556 [label="kakarot.accounts.eoa.aa.library.ExternallyOwnedAccount.is_valid_signature" color="" fillcolor=lightcoral shape=oval style=filled]
+	3573 [label="__main__.eth_address.addr" color="" fillcolor=white shape=oval style=solid]
+	3578 [label="__main__.eth_address.read" color="" fillcolor=white shape=oval style=solid]
+	3591 [label="__main__.eth_address.write" color="" fillcolor=white shape=oval style=solid]
+	3603 [label="__main__.kakarot_address.addr" color="" fillcolor=white shape=oval style=solid]
+	3608 [label="__main__.kakarot_address.write" color="" fillcolor=white shape=oval style=solid]
+	3620 [label="__main__.constructor\l['constructor']" color="" fillcolor=violet shape=oval style=filled]
+	3634 [label="__wrappers__.constructor\l['constructor']" color="" fillcolor=violet shape=doubleoctagon style=filled]
+	3655 [label="__main__.__validate__\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
+	3674 [label="__wrappers__.__validate__\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
+	3716 [label="__main__.__validate_declare__\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
+	3725 [label="__wrappers__.__validate_declare__\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
+	3746 [label="__main__.__execute__\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
+	3757 [label="__wrappers__.__execute___encode_return" color="" fillcolor=white shape=oval style=solid]
+	3776 [label="__wrappers__.__execute__\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
+	3825 [label="__main__.get_eth_address\l['view']" color="" fillcolor=orange shape=oval style=filled]
+	3831 [label="__wrappers__.get_eth_address_encode_return" color="" fillcolor=white shape=oval style=solid]
+	3840 [label="__wrappers__.get_eth_address\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
+	3857 [label="__main__.supports_interface\l['view']" color="" fillcolor=orange shape=oval style=filled]
+	3873 [label="__wrappers__.supports_interface_encode_return" color="" fillcolor=white shape=oval style=solid]
+	3882 [label="__wrappers__.supports_interface\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
+	3902 [label="__main__.is_valid_signature\l['view']" color="" fillcolor=orange shape=oval style=filled]
+	3921 [label="__wrappers__.is_valid_signature_encode_return" color="" fillcolor=white shape=oval style=solid]
+	3930 [label="__wrappers__.is_valid_signature\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
+	19 -> 18
+	33 -> 29
+	38 -> 29
+	38 -> 33
+	92 -> 47
+	103 -> 33
+	141 -> 92
+	141 -> 24
+	152 -> 47
+	185 -> 152
+	190 -> 47
+	190 -> 92
+	216 -> 18
+	222 -> 0
+	1024 -> 222 [label=24]
+	1134 -> 19
+	1134 -> 18
+	1134 -> 33
+	1218 -> 1177 [label=2]
+	1230 -> 0
+	1230 -> 1283
+	1230 -> 1326
+	1253 -> 1218
+	1283 -> 1253
+	1283 -> 1283
+	1305 -> 1344
+	1326 -> 1305
+	1326 -> 1218
+	1344 -> 0
+	1344 -> 1123
+	1344 -> 1531
+	1365 -> 1411
+	1365 -> 1448
+	1365 -> 3
+	1411 -> 38
+	1411 -> 210
+	1411 -> 1411
+	1448 -> 1134
+	1448 -> 210
+	1448 -> 1486
+	1486 -> 210 [label=2]
+	1486 -> 3
+	1531 -> 1365 [label=2]
+	1531 -> 1528 [label=2]
+	1531 -> 1531
+	1531 -> 38
+	1581 -> 103
+	1581 -> 1606
+	1606 -> 0
+	1606 -> 1024
+	1606 -> 1606
+	1729 -> 38
+	1751 -> 103 [label=2]
+	1829 -> 1806 [label=2]
+	1829 -> 1717
+	1829 -> 1770
+	1865 -> 1717
+	1865 -> 1806
+	1878 -> 38 [label=5]
+	1918 -> 1717
+	1918 -> 1806
+	1934 -> 1717
+	1934 -> 1790
+	1934 -> 1770
+	1934 -> 1806
+	1978 -> 1717
+	1978 -> 1770
+	1978 -> 1806
+	2002 -> 1934
+	2002 -> 1790
+	2002 -> 1717 [label=2]
+	2002 -> 1806 [label=2]
+	2002 -> 1770
+	2075 -> 1978
+	2075 -> 1790
+	2075 -> 1717 [label=2]
+	2075 -> 1806 [label=2]
+	2075 -> 1770
+	2162 -> 1829 [label=2]
+	2162 -> 2075
+	2162 -> 2002
+	2218 -> 2002
+	2218 -> 2218 [label=2]
+	2218 -> 2075
+	2319 -> 2218 [label=3]
+	2319 -> 2162 [label=2]
+	2412 -> 1717 [label=2]
+	2412 -> 1703 [label=2]
+	2477 -> 38 [label=5]
+	2477 -> 24
+	2526 -> 0
+	2526 -> 1729 [label=2]
+	2526 -> 1230
+	2526 -> 103
+	2569 -> 29 [label=2]
+	2569 -> 1790 [label=2]
+	2569 -> 1865
+	2569 -> 1770
+	2569 -> 1717
+	2569 -> 1878
+	2569 -> 1806
+	2635 -> 2569
+	2635 -> 2399
+	2635 -> 2412 [label=2]
+	2635 -> 2319 [label=2]
+	2635 -> 1918
+	2635 -> 2162
+	2721 -> 2477 [label=2]
+	2721 -> 2635
+	2721 -> 2526
+	2762 -> 1751 [label=3]
+	2762 -> 2721
+	2917 -> 2917
+	2931 -> 185 [label=4]
+	2931 -> 216
+	2931 -> 2931 [label=2]
+	3025 -> 103
+	3025 -> 185
+	3025 -> 3025
+	3054 -> 1134
+	3054 -> 3054
+	3079 -> 185 [label=5]
+	3079 -> 3079 [label=5]
+	3079 -> 3054 [label=2]
+	3286 -> 185
+	3286 -> 0
+	3286 -> 3025
+	3286 -> 2917 [label=3]
+	3348 -> 3385
+	3348 -> 3348
+	3385 -> 0 [label=5]
+	3385 -> 3079 [label=2]
+	3385 -> 3286
+	3385 -> 2931
+	3385 -> 1326
+	3385 -> 3054
+	3385 -> 2794 [label=2]
+	3385 -> 1581
+	3385 -> 3525
+	3525 -> 0
+	3525 -> 2762
+	3525 -> 1581
+	3556 -> 3525
+	3578 -> 3573
+	3578 -> 125
+	3591 -> 3573
+	3591 -> 133
+	3608 -> 3603
+	3608 -> 133
+	3620 -> 141
+	3620 -> 3591
+	3620 -> 3608
+	3634 -> 3620
+	3655 -> 3578
+	3655 -> 3348
+	3674 -> 3655
+	3725 -> 3716
+	3746 -> 0
+	3757 -> 3
+	3776 -> 3746
+	3776 -> 3757
+	3825 -> 3578
+	3840 -> 3825
+	3840 -> 3831
+	3882 -> 3857
+	3882 -> 3873
+	3902 -> 3578
+	3902 -> 3556
+	3930 -> 3902
+	3930 -> 3921
 }

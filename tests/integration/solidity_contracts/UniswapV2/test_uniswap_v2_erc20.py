@@ -54,7 +54,9 @@ class TestUniswapV2ERC20:
     class TestApprove:
         async def test_should_set_allowance(self, token, owner, other):
             await token.approve(
-                other.address, TEST_AMOUNT, caller_address=owner.starknet_address
+                other.address,
+                TEST_AMOUNT,
+                caller_address=owner.starknet_address,
             )
             assert token.events.Approval == [
                 {
@@ -71,7 +73,9 @@ class TestUniswapV2ERC20:
             self, token, owner, other
         ):
             await token.transfer(
-                other.address, TEST_AMOUNT, caller_address=owner.starknet_address
+                other.address,
+                TEST_AMOUNT,
+                caller_address=owner.starknet_address,
             )
             assert token.events.Transfer == [
                 {
@@ -101,7 +105,9 @@ class TestUniswapV2ERC20:
         ):
             with pytest.raises(Exception) as e:
                 await token.transfer(
-                    owner.address, 1, caller_address=other.starknet_address
+                    owner.address,
+                    1,
+                    caller_address=other.starknet_address,
                 )
             message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
             # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
@@ -112,7 +118,9 @@ class TestUniswapV2ERC20:
             self, token, owner, other
         ):
             await token.approve(
-                other.address, TEST_AMOUNT, caller_address=owner.starknet_address
+                other.address,
+                TEST_AMOUNT,
+                caller_address=owner.starknet_address,
             )
             await token.transferFrom(
                 owner.address,
@@ -132,7 +140,9 @@ class TestUniswapV2ERC20:
             self, token, owner, other
         ):
             await token.approve(
-                other.address, MAX_INT, caller_address=owner.starknet_address
+                other.address,
+                MAX_INT,
+                caller_address=owner.starknet_address,
             )
             await token.transferFrom(
                 owner.address,
