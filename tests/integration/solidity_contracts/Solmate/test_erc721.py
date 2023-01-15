@@ -1,6 +1,6 @@
 import pytest
 import pytest_asyncio
-from web3 import Web3
+from eth_utils import keccak
 
 from tests.integration.helpers.constants import ZERO_ADDRESS
 from tests.utils.errors import kakarot_error
@@ -440,9 +440,9 @@ class TestERC721:
                 other.address, 1337, caller_address=other.starknet_address
             )
 
-            selector = Web3.sha3(
-                text="onERC721Received(address,address,uint256,bytes)"
-            )[:4]
+            selector = keccak(text="onERC721Received(address,address,uint256,bytes)")[
+                :4
+            ]
             with kakarot_error(selector):
                 await erc_721.safeTransferFrom(
                     other.address,
@@ -459,9 +459,9 @@ class TestERC721:
             await erc_721.mint(
                 other.address, 1337, caller_address=other.starknet_address
             )
-            selector = Web3.sha3(
-                text="onERC721Received(address,address,uint256,bytes)"
-            )[:4]
+            selector = keccak(text="onERC721Received(address,address,uint256,bytes)")[
+                :4
+            ]
             with kakarot_error(selector):
                 await erc_721.safeTransferFrom2(
                     other.address,
