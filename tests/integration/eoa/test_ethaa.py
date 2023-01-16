@@ -1,17 +1,14 @@
 import os
-import sys
 
 import pytest
 import web3
 from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
-from eth_keys import keys
-from starkware.starknet.testing.starknet import Starknet
 from starkware.starkware_utils.error_handling import StarkException
 
-from tests.integration.helpers.helpers import int_to_uint256
 from tests.utils.signer import MockEthSigner
+from tests.utils.uint256 import int_to_uint256
 
 
 @pytest.mark.asyncio
@@ -32,7 +29,7 @@ class TestExternallyOwnedAccount:
 
         @pytest.mark.parametrize("address_idx", range(4))
         async def test_should_return_the_eth_address_used_at_deploy(
-            self, deployer, addresses, address_idx
+            self, addresses, address_idx
         ):
             address = addresses[address_idx]
             call_info = await address.starknet_contract.get_eth_address().call()
@@ -41,7 +38,7 @@ class TestExternallyOwnedAccount:
     class TestEthSignature:
         @pytest.mark.parametrize("address_idx", range(4))
         async def test_should_validate_signature(
-            self, deployer, default_tx, addresses, address_idx
+            self, default_tx, addresses, address_idx
         ):
             address = addresses[address_idx]
             tmp_account = web3.Account.from_key(address.private_key)
@@ -59,12 +56,11 @@ class TestExternallyOwnedAccount:
 
         @pytest.mark.parametrize("address_idx", range(4))
         async def test_should_fail_when_verifying_fake_signature(
-            self, deployer, default_tx, addresses, address_idx
+            self, default_tx, addresses, address_idx
         ):
             address = addresses[address_idx]
             tmp_account = web3.Account.from_key(address.private_key)
             raw_tx = tmp_account.sign_transaction(default_tx)
-            tx_hash = serializable_unsigned_transaction_from_dict(default_tx).hash()
             with pytest.raises(StarkException):
                 await address.starknet_contract.is_valid_signature(
                     [*int_to_uint256(web3.Web3.toInt(os.urandom(32)))],
@@ -78,7 +74,7 @@ class TestExternallyOwnedAccount:
     class TestExecute:
         @pytest.mark.parametrize("address_idx", range(4))
         async def test_should_execute_tx(
-            self, deployer, kakarot, default_tx, addresses, address_idx
+            self, kakarot, default_tx, addresses, address_idx
         ):
             address = addresses[address_idx]
             eth_account = MockEthSigner(private_key=address.private_key)
@@ -94,7 +90,7 @@ class TestExternallyOwnedAccount:
 
         @pytest.mark.parametrize("address_idx", range(4))
         async def test_should_fail_on_incorrect_signature(
-            self, deployer, kakarot, default_tx, addresses, address_idx
+            self, kakarot, default_tx, addresses, address_idx
         ):
             address = addresses[address_idx]
             eth_account = MockEthSigner(private_key=address.private_key)

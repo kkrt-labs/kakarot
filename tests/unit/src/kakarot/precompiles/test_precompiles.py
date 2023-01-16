@@ -6,6 +6,8 @@ import pytest_asyncio
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
+from tests.utils.errors import kakarot_error
+
 
 @pytest_asyncio.fixture(scope="module")
 async def precompiles(starknet: Starknet):
@@ -24,10 +26,7 @@ class TestPrecompiles:
             # note: in our implementation, `Precompiles.is_precompile` checks if an address is within a given range before dispatching, so usually an out of range address would never be passed to `Precompiles.run`
             last_precompile_address = 0x9
             address = last_precompile_address + 1
-            with pytest.raises(Exception) as e:
+            with kakarot_error("Kakarot: NotImplementedPrecompile " + str(address)):
                 await precompiles.test__precompiles_should_throw_on_out_of_bounds(
                     address=address
                 ).call()
-
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            assert message == "Kakarot: NotImplementedPrecompile " + str(address)

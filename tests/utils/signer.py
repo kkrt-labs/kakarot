@@ -1,15 +1,8 @@
 # source: https://github.com/OpenZeppelin/cairo-contracts/tree/main/tests/signers.py
 
-from typing import Tuple
-
-import eth_keys
 from starkware.starknet.business_logic.transaction.objects import (
-    InternalDeclare,
     InternalTransaction,
     TransactionExecutionInfo,
-)
-from starkware.starknet.core.os.contract_address.contract_address import (
-    calculate_contract_address_from_hash,
 )
 from starkware.starknet.core.os.transaction_hash.transaction_hash import (
     TransactionHashPrefix,
@@ -17,14 +10,11 @@ from starkware.starknet.core.os.transaction_hash.transaction_hash import (
 )
 from starkware.starknet.definitions.general_config import StarknetChainId
 from starkware.starknet.public.abi import get_selector_from_name
-from starkware.starknet.services.api.gateway.transaction import (
-    DeployAccount,
-    InvokeFunction,
-)
+from starkware.starknet.services.api.gateway.transaction import InvokeFunction
 
-from tests.integration.helpers.helpers import int_to_uint256
+from tests.utils.uint256 import int_to_uint256
 
-classHash = 0x1
+class_hash = 0x1
 TRANSACTION_VERSION = 1
 
 
@@ -63,7 +53,7 @@ class MockEthSigner:
     def __init__(self, private_key):
         self.signer = private_key
         self.eth_address = int(self.signer.public_key.to_checksum_address(), 0)
-        self.class_hash = classHash
+        self.class_hash = class_hash
 
     async def send_transaction(
         self, account, to, selector_name, calldata, nonce=None, max_fee=0

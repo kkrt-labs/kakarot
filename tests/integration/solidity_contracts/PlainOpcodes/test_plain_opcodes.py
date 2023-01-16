@@ -1,5 +1,3 @@
-import re
-
 import pytest
 from web3 import Web3
 
@@ -7,6 +5,7 @@ from tests.integration.helpers.helpers import (
     extract_memory_from_execute,
     hex_string_to_bytes_array,
 )
+from tests.utils.errors import kakarot_error
 
 
 @pytest.mark.asyncio
@@ -21,10 +20,8 @@ class TestPlainOpcodes:
             self,
             plain_opcodes,
         ):
-            with pytest.raises(Exception) as e:
+            with kakarot_error("Kakarot: StateModificationError"):
                 await plain_opcodes.opcodeStaticCall2()
-            message = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
-            assert message == "Kakarot: StateModificationError"
 
     class TestCall:
         async def test_should_increase_counter(
