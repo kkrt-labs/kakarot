@@ -5,7 +5,6 @@ from typing import List
 
 import pytest
 import pytest_asyncio
-import web3
 from starkware.starknet.testing.contract import StarknetContract
 from web3 import Web3
 
