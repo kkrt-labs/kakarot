@@ -22,16 +22,16 @@ Its functionality is accessed via two functions:
 ## Contract Accounts
 
 A *Contract Account* is a StarkNet contract. However, it also acts as an Ethereum style contract account within the Kakarot EVM.
-In isolation it is not more then a StarkNet contract that stores some bytecode as well as some key-value pairs which where assigned to it on creation.
+In isolation it is not more than a StarkNet contract that stores some bytecode as well as some key-value pairs which were assigned to it on creation.
 It is only addressable via its StarkNet address and not an EVM address (which it is associated with inside the Kakarot EVM).
 
 ## Account Registry
 
 The account registry contract maps StarkNet addresses of deployed *Contract Accounts* to their EVM addresses (which are their identifiers within the Kakarot EVM).
 
-The mapping is created on deployment of the *Contract Account* by the core Kakarot contract (after it's EVM address is computed).
+The mapping is created on deployment of the *Contract Account* by the core Kakarot contract (after its EVM address is computed).
 
-When the Kakarot core contract needs to execute a *Contract Accounts* bytecode or needs to write/read its storage it will use the account registry contract to convert it's EVM address to the StarkNet address. Using the StarkNet address it is now capable of addressing the *Contract Accounts* methods.
+When the Kakarot core contract needs to execute a *Contract Accounts* bytecode or needs to write/read its storage it will use the account registry contract to convert its EVM address to the StarkNet address. Using the StarkNet address it is now capable of addressing the *Contract Accounts* methods.
 
 ## Blockhash Registry
 
