@@ -640,6 +640,6 @@ namespace Helpers {
         let e: felt = data_len - 1;
         let byte: felt = data[0];
         let (res) = pow(256, e);
-        return bytes_to_felt(data_len=data_len - 1, data=data+1, n=n + byte * res);
+        return bytes_to_felt(data_len=data_len - 1, data=data + 1, n=n + byte * res);
     }
 }

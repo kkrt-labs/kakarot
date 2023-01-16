@@ -72,7 +72,7 @@ namespace RLP {
                     data_len=dlen,
                     data=buffer_ptr,
                     is_list=0
-                );
+                    );
                 return decode_rlp(
                     data_len=data_len - 1 - len_len - dlen,
                     data=buffer_ptr + dlen,
@@ -102,9 +102,9 @@ namespace RLP {
                     is_list=1
                     );
                 return decode_rlp(
-                   data_len=data_len - 1 - list_len_len - dlen,
-                   data=buffer_ptr + dlen,
-                   items=items + Item.SIZE,
+                    data_len=data_len - 1 - list_len_len - dlen,
+                    data=buffer_ptr + dlen,
+                    items=items + Item.SIZE,
                 );
             }
         }
