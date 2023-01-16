@@ -74,35 +74,35 @@ digraph externally_owned_account {
 	2931 [label="utils.utils.Helpers.bytes_to_bytes8_little_endian" color="" fillcolor=lightcoral shape=oval style=filled]
 	3025 [label="utils.utils.Helpers.felt_to_bytes" color="" fillcolor=lightcoral shape=oval style=filled]
 	3054 [label="utils.utils.Helpers.bytes_to_felt" color="" fillcolor=lightcoral shape=oval style=filled]
-	3079 [label="utils.rlp.RLP.decode_rlp" color="" fillcolor=lightcoral shape=oval style=filled]
-	3286 [label="utils.rlp.RLP.encode_rlp_list" color="" fillcolor=lightcoral shape=oval style=filled]
-	3348 [label="kakarot.accounts.eoa.aa.library.ExternallyOwnedAccount.validate" color="" fillcolor=lightcoral shape=oval style=filled]
-	3385 [label="kakarot.accounts.eoa.aa.library.ExternallyOwnedAccount.is_valid_eth_tx" color="" fillcolor=lightcoral shape=oval style=filled]
-	3525 [label="kakarot.accounts.eoa.aa.library.ExternallyOwnedAccount.is_valid_eth_signature" color="" fillcolor=lightcoral shape=oval style=filled]
-	3556 [label="kakarot.accounts.eoa.aa.library.ExternallyOwnedAccount.is_valid_signature" color="" fillcolor=lightcoral shape=oval style=filled]
-	3573 [label="__main__.eth_address.addr" color="" fillcolor=white shape=oval style=solid]
-	3578 [label="__main__.eth_address.read" color="" fillcolor=white shape=oval style=solid]
-	3591 [label="__main__.eth_address.write" color="" fillcolor=white shape=oval style=solid]
-	3603 [label="__main__.kakarot_address.addr" color="" fillcolor=white shape=oval style=solid]
-	3608 [label="__main__.kakarot_address.write" color="" fillcolor=white shape=oval style=solid]
-	3620 [label="__main__.constructor\l['constructor']" color="" fillcolor=violet shape=oval style=filled]
-	3634 [label="__wrappers__.constructor\l['constructor']" color="" fillcolor=violet shape=doubleoctagon style=filled]
-	3655 [label="__main__.__validate__\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
-	3674 [label="__wrappers__.__validate__\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
-	3716 [label="__main__.__validate_declare__\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
-	3725 [label="__wrappers__.__validate_declare__\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
-	3746 [label="__main__.__execute__\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
-	3757 [label="__wrappers__.__execute___encode_return" color="" fillcolor=white shape=oval style=solid]
-	3776 [label="__wrappers__.__execute__\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
-	3825 [label="__main__.get_eth_address\l['view']" color="" fillcolor=orange shape=oval style=filled]
-	3831 [label="__wrappers__.get_eth_address_encode_return" color="" fillcolor=white shape=oval style=solid]
-	3840 [label="__wrappers__.get_eth_address\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
-	3857 [label="__main__.supports_interface\l['view']" color="" fillcolor=orange shape=oval style=filled]
-	3873 [label="__wrappers__.supports_interface_encode_return" color="" fillcolor=white shape=oval style=solid]
-	3882 [label="__wrappers__.supports_interface\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
-	3902 [label="__main__.is_valid_signature\l['view']" color="" fillcolor=orange shape=oval style=filled]
-	3921 [label="__wrappers__.is_valid_signature_encode_return" color="" fillcolor=white shape=oval style=solid]
-	3930 [label="__wrappers__.is_valid_signature\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
+	3077 [label="utils.rlp.RLP.decode_rlp" color="" fillcolor=lightcoral shape=oval style=filled]
+	3267 [label="utils.rlp.RLP.encode_rlp_list" color="" fillcolor=lightcoral shape=oval style=filled]
+	3330 [label="kakarot.accounts.eoa.aa.library.ExternallyOwnedAccount.validate" color="" fillcolor=lightcoral shape=oval style=filled]
+	3367 [label="kakarot.accounts.eoa.aa.library.ExternallyOwnedAccount.is_valid_eth_tx" color="" fillcolor=lightcoral shape=oval style=filled]
+	3507 [label="kakarot.accounts.eoa.aa.library.ExternallyOwnedAccount.is_valid_eth_signature" color="" fillcolor=lightcoral shape=oval style=filled]
+	3538 [label="kakarot.accounts.eoa.aa.library.ExternallyOwnedAccount.is_valid_signature" color="" fillcolor=lightcoral shape=oval style=filled]
+	3555 [label="__main__.eth_address.addr" color="" fillcolor=white shape=oval style=solid]
+	3560 [label="__main__.eth_address.read" color="" fillcolor=white shape=oval style=solid]
+	3573 [label="__main__.eth_address.write" color="" fillcolor=white shape=oval style=solid]
+	3585 [label="__main__.kakarot_address.addr" color="" fillcolor=white shape=oval style=solid]
+	3590 [label="__main__.kakarot_address.write" color="" fillcolor=white shape=oval style=solid]
+	3602 [label="__main__.constructor\l['constructor']" color="" fillcolor=violet shape=oval style=filled]
+	3616 [label="__wrappers__.constructor\l['constructor']" color="" fillcolor=violet shape=doubleoctagon style=filled]
+	3637 [label="__main__.__validate__\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
+	3656 [label="__wrappers__.__validate__\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
+	3698 [label="__main__.__validate_declare__\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
+	3707 [label="__wrappers__.__validate_declare__\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
+	3728 [label="__main__.__execute__\l['external']" color="" fillcolor=lightgreen shape=oval style=filled]
+	3739 [label="__wrappers__.__execute___encode_return" color="" fillcolor=white shape=oval style=solid]
+	3758 [label="__wrappers__.__execute__\l['external']" color="" fillcolor=lightgreen shape=doubleoctagon style=filled]
+	3807 [label="__main__.get_eth_address\l['view']" color="" fillcolor=orange shape=oval style=filled]
+	3813 [label="__wrappers__.get_eth_address_encode_return" color="" fillcolor=white shape=oval style=solid]
+	3822 [label="__wrappers__.get_eth_address\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
+	3839 [label="__main__.supports_interface\l['view']" color="" fillcolor=orange shape=oval style=filled]
+	3855 [label="__wrappers__.supports_interface_encode_return" color="" fillcolor=white shape=oval style=solid]
+	3864 [label="__wrappers__.supports_interface\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
+	3884 [label="__main__.is_valid_signature\l['view']" color="" fillcolor=orange shape=oval style=filled]
+	3903 [label="__wrappers__.is_valid_signature_encode_return" color="" fillcolor=white shape=oval style=solid]
+	3912 [label="__wrappers__.is_valid_signature\l['view']" color="" fillcolor=orange shape=doubleoctagon style=filled]
 	19 -> 18
 	33 -> 29
 	38 -> 29
@@ -224,53 +224,53 @@ digraph externally_owned_account {
 	3025 -> 3025
 	3054 -> 1134
 	3054 -> 3054
-	3079 -> 185 [label=5]
-	3079 -> 3079 [label=5]
-	3079 -> 3054 [label=2]
-	3286 -> 185
-	3286 -> 0
-	3286 -> 3025
-	3286 -> 2917 [label=3]
-	3348 -> 3385
-	3348 -> 3348
-	3385 -> 0 [label=5]
-	3385 -> 3079 [label=2]
-	3385 -> 3286
-	3385 -> 2931
-	3385 -> 1326
-	3385 -> 3054
-	3385 -> 2794 [label=2]
-	3385 -> 1581
-	3385 -> 3525
-	3525 -> 0
-	3525 -> 2762
-	3525 -> 1581
-	3556 -> 3525
-	3578 -> 3573
-	3578 -> 125
-	3591 -> 3573
-	3591 -> 133
-	3608 -> 3603
-	3608 -> 133
-	3620 -> 141
-	3620 -> 3591
-	3620 -> 3608
-	3634 -> 3620
-	3655 -> 3578
-	3655 -> 3348
-	3674 -> 3655
-	3725 -> 3716
-	3746 -> 0
-	3757 -> 3
-	3776 -> 3746
-	3776 -> 3757
-	3825 -> 3578
-	3840 -> 3825
-	3840 -> 3831
-	3882 -> 3857
-	3882 -> 3873
-	3902 -> 3578
-	3902 -> 3556
-	3930 -> 3902
-	3930 -> 3921
+	3077 -> 185 [label=4]
+	3077 -> 3077 [label=5]
+	3077 -> 3054 [label=2]
+	3267 -> 185
+	3267 -> 0
+	3267 -> 3025
+	3267 -> 2917 [label=3]
+	3330 -> 3367
+	3330 -> 3330
+	3367 -> 0 [label=5]
+	3367 -> 3077 [label=2]
+	3367 -> 3267
+	3367 -> 2931
+	3367 -> 1326
+	3367 -> 3054
+	3367 -> 2794 [label=2]
+	3367 -> 1581
+	3367 -> 3507
+	3507 -> 0
+	3507 -> 2762
+	3507 -> 1581
+	3538 -> 3507
+	3560 -> 3555
+	3560 -> 125
+	3573 -> 3555
+	3573 -> 133
+	3590 -> 3585
+	3590 -> 133
+	3602 -> 141
+	3602 -> 3573
+	3602 -> 3590
+	3616 -> 3602
+	3637 -> 3560
+	3637 -> 3330
+	3656 -> 3637
+	3707 -> 3698
+	3728 -> 0
+	3739 -> 3
+	3758 -> 3728
+	3758 -> 3739
+	3807 -> 3560
+	3822 -> 3807
+	3822 -> 3813
+	3864 -> 3839
+	3864 -> 3855
+	3884 -> 3560
+	3884 -> 3538
+	3912 -> 3884
+	3912 -> 3903
 }
