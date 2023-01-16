@@ -223,7 +223,7 @@ ACCOUNT_ADDRESS=your_account_address
 NETWORK=<mainnet|testnet|testnet2>
 ```
 
-Now replace the placeholder values with you account and network details.
+Now replace the placeholder values with your account and network details.
 
 `PRIVATE_KEY` is the private key of the account contract that will pay for the deployment. **This should be a decimal number**
 
