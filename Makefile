@@ -1,7 +1,7 @@
 .PHONY: build test coverage
 cairo_files = $(shell find . -name "*.cairo")
 
-build:
+build: check
 	$(MAKE) clean
 	poetry run starknet-compile ./src/kakarot/kakarot.cairo --output build/kakarot.json --cairo_path ./src --abi build/kakarot_abi.json
 	poetry run starknet-compile ./src/kakarot/accounts/contract/contract_account.cairo --output build/contract_account.json --cairo_path ./src --abi build/contract_account_abi.json
@@ -11,7 +11,7 @@ build:
 	poetry run starknet-compile ./src/kakarot/accounts/eoa/deployer/deployer.cairo --output build/kethaa_deployer.json --cairo_path ./src --abi build/kethaa_deployer_abi.json
 
 
-build-mac:
+build-mac: check
 	$(MAKE) clean
 	starknet-compile ./src/kakarot/kakarot.cairo --output build/kakarot.json --cairo_path ./src --abi build/kakarot_abi.json
 	starknet-compile ./src/kakarot/accounts/contract/contract_account.cairo --output build/contract_account.json --cairo_path ./src --abi build/contract_account_abi.json
@@ -19,6 +19,9 @@ build-mac:
 	starknet-compile ./src/kakarot/accounts/registry/blockhash/blockhash_registry.cairo --output build/blockhash_registry.json --cairo_path ./src --abi build/blockhash_registry_abi.json
 	starknet-compile ./src/kakarot/accounts/eoa/aa/account.cairo --account_contract --output build/kethaa.json --cairo_path ./src --abi build/kethaa_abi.json
 	starknet-compile ./src/kakarot/accounts/eoa/deployer/deployer.cairo --output build/kethaa_deployer.json --cairo_path ./src --abi build/kethaa_deployer_abi.json
+
+check:
+	poetry lock --check
 
 setup:
 	poetry install --no-root
