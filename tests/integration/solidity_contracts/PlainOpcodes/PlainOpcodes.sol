@@ -86,4 +86,17 @@ contract PlainOpcodes {
     function opcodeLog4() public {
         emit Log4(address(0xa), address(0xb), 10);
     }
+
+    function create2(
+        bytes memory bytecode,
+        uint256 salt
+    ) public returns (address _address) {
+        assembly {
+            _address := create2(0, add(bytecode, 32), mload(bytecode), salt)
+        }
+    }
+
+    function requireNotZero(address _address) external pure {
+        require(_address != address(0), "ZERO_ADDRESS");
+    }
 }

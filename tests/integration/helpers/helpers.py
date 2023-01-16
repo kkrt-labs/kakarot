@@ -73,22 +73,16 @@ def get_domain_separator(name: str, token_address: str) -> bytes:
 
 
 def get_create2_address(
-    factory_address: str, token_a: str, token_b: str, bytecode: bytes
+    sender_address: str, salt: bytes, initialization_code: bytes
 ) -> str:
-    token_0, token_1 = sorted([token_a, token_b])
-    create2_inputs = [
-        b"\xff",
-        decode_hex(factory_address),
+    """
+    See [CREATE2](https://www.evm.codes/#f5)
+    """
+    return to_checksum_address(
         keccak(
-            encode_abi(
-                ["address", "address"],
-                [token_0, token_1],
-            )
-        ),
-        keccak(bytecode),
-    ]
-    sanitized_inputs = b"".join(create2_inputs[2:])
-    return to_checksum_address(keccak(sanitized_inputs)[-40:])
+            b"\xff" + decode_hex(sender_address) + salt + keccak(initialization_code)
+        ).hex()[-40:]
+    )
 
 
 def get_approval_digest(
