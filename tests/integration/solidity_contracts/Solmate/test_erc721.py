@@ -1,9 +1,9 @@
-import re
-
 import pytest
 import pytest_asyncio
+from eth_utils import keccak
 
-from tests.integration.helpers.constants import MAX_INT, ZERO_ADDRESS
+from tests.integration.helpers.constants import ZERO_ADDRESS
+from tests.utils.errors import kakarot_error
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -45,7 +45,7 @@ async def erc_721_recipient_with_wrong_return_data(deploy_solidity_contract, own
 
 
 @pytest_asyncio.fixture(scope="module")
-async def erc_721_nonrecipient(deploy_solidity_contract, owner):
+async def erc_721_non_recipient(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
         "Solmate",
         "NonERC721Recipient",
@@ -64,27 +64,18 @@ async def other(others):
 class TestERC721:
     class TestMetadata:
         async def test_should_set_name_and_symbol(self, erc_721):
-            name = await erc_721.name()
-            assert name == "Kakarot NFT"
-            symbol = await erc_721.symbol()
-            assert symbol == "KKNFT"
+            assert await erc_721.name() == "Kakarot NFT"
+            assert await erc_721.symbol() == "KKNFT"
 
     class TestOwnerOf:
-        async def test_owner_of_should_fail_when_token_is_unminted(self, erc_721):
-            with pytest.raises(Exception) as e:
+        async def test_owner_of_should_fail_when_token_does_not_exist(self, erc_721):
+            with kakarot_error("NOT_MINTED"):
                 await erc_721.ownerOf(1337)
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 147028384"
 
     class TestBalanceOf:
-        async def test_balance_of_should_fail_on_zero_address(self, addresses, erc_721):
-            with pytest.raises(Exception) as e:
+        async def test_balance_of_should_fail_on_zero_address(self, erc_721):
+            with kakarot_error("ZERO_ADDRESS"):
                 await erc_721.balanceOf(ZERO_ADDRESS)
-
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 147028384"
 
     class TestMint:
         async def test_should_mint(self, erc_721, other):
@@ -95,13 +86,10 @@ class TestERC721:
             assert await erc_721.ownerOf(1337) == other.address
 
         async def test_should_fail_mint_to_zero_address(self, erc_721, other):
-            with pytest.raises(Exception) as e:
+            with kakarot_error("INVALID_RECIPIENT"):
                 await erc_721.mint(
                     ZERO_ADDRESS, 1337, caller_address=other.starknet_address
                 )
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 147028384"
 
         async def test_should_fail_to_double_mint(self, erc_721, other):
             await erc_721.mint(
@@ -110,15 +98,12 @@ class TestERC721:
                 caller_address=other.starknet_address,
             )
 
-            with pytest.raises(Exception) as e:
+            with kakarot_error("ALREADY_MINTED"):
                 await erc_721.mint(
                     other.address,
                     1337,
                     caller_address=other.starknet_address,
                 )
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 147028384"
 
     class TestBurn:
         async def test_should_burn(self, erc_721, other):
@@ -129,18 +114,12 @@ class TestERC721:
 
             assert await erc_721.balanceOf(other.address) == 0
 
-            with pytest.raises(Exception) as e:
+            with kakarot_error("NOT_MINTED"):
                 await erc_721.ownerOf(1337)
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 147028384"
 
         async def test_should_fail_to_burn_unminted(self, erc_721, other):
-            with pytest.raises(Exception) as e:
+            with kakarot_error("NOT_MINTED"):
                 await erc_721.burn(1337, caller_address=other.starknet_address)
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 147028384"
 
         async def test_should_fail_to_double_burn(self, erc_721, other):
             await erc_721.mint(
@@ -149,11 +128,8 @@ class TestERC721:
 
             await erc_721.burn(1337, caller_address=other.starknet_address)
 
-            with pytest.raises(Exception) as e:
+            with kakarot_error("NOT_MINTED"):
                 await erc_721.burn(1337, caller_address=other.starknet_address)
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 147028384"
 
     class TestApprove:
         async def test_should_approve(self, erc_721, others):
@@ -176,29 +152,23 @@ class TestERC721:
             )
 
         async def test_should_fail_to_approve_unminted(self, erc_721, others):
-            with pytest.raises(Exception) as e:
+            with kakarot_error("NOT_AUTHORIZED"):
                 await erc_721.approve(
                     others[1].address,
                     1337,
                     caller_address=others[0].starknet_address,
                 )
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 147028384"
 
         async def test_should_fail_to_approve_unauthorized(self, erc_721, others):
             await erc_721.mint(
                 others[0].address, 1337, caller_address=others[0].starknet_address
             )
-            with pytest.raises(Exception) as e:
+            with kakarot_error("NOT_AUTHORIZED"):
                 await erc_721.approve(
                     others[1].address,
                     1337,
                     caller_address=others[2].starknet_address,
                 )
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 147028384"
 
     class TestTransferFrom:
         async def test_should_transfer_from(self, erc_721, others):
@@ -273,61 +243,49 @@ class TestERC721:
             assert sender_balance == 0
 
         async def test_should_fail_to_transfer_from_unowned(self, erc_721, others):
-            with pytest.raises(Exception) as e:
+            with kakarot_error():
                 await erc_721.transferFrom(
                     others[0].address,
                     others[1].address,
                     1337,
                     caller_address=others[0].starknet_address,
                 )
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 147028384"
 
         async def test_should_fail_to_transfer_from_wrong_from(self, erc_721, others):
             await erc_721.mint(
                 others[1].address, 1337, caller_address=others[1].starknet_address
             )
-            with pytest.raises(Exception) as e:
+            with kakarot_error():
                 await erc_721.transferFrom(
                     others[0].address,
                     others[2].address,
                     1337,
                     caller_address=others[0].starknet_address,
                 )
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 147028384"
 
         async def test_should_fail_to_transfer_from_to_zero(self, erc_721, other):
             await erc_721.mint(
                 other.address, 1337, caller_address=other.starknet_address
             )
-            with pytest.raises(Exception) as e:
+            with kakarot_error("INVALID_RECIPIENT"):
                 await erc_721.transferFrom(
                     other.address,
                     ZERO_ADDRESS,
                     1337,
                     caller_address=other.starknet_address,
                 )
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 147028384"
 
         async def test_should_fail_to_transfer_from_not_owner(self, erc_721, others):
             await erc_721.mint(
                 others[0].address, 1337, caller_address=others[0].starknet_address
             )
-            with pytest.raises(Exception) as e:
+            with kakarot_error("NOT_AUTHORIZED"):
                 await erc_721.transferFrom(
                     others[0].address,
                     others[2].address,
                     1337,
                     caller_address=others[1].starknet_address,
                 )
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 147028384"
 
     class TestSafeTransferFrom:
         async def test_should_safe_transfer_from_to_EOA(self, erc_721, others):
@@ -440,15 +398,15 @@ class TestERC721:
             assert recipient_data == data
 
         async def test_should_fail_to_safe_transfer_from_to_NonERC721Recipient(
-            self, erc_721, erc_721_nonrecipient, other
+            self, erc_721, erc_721_non_recipient, other
         ):
-            recipient_address = erc_721_nonrecipient.evm_contract_address
+            recipient_address = erc_721_non_recipient.evm_contract_address
 
             await erc_721.mint(
                 other.address, 1337, caller_address=other.starknet_address
             )
 
-            with pytest.raises(Exception) as e:
+            with kakarot_error():
                 await erc_721.safeTransferFrom(
                     other.address,
                     recipient_address,
@@ -456,20 +414,16 @@ class TestERC721:
                     caller_address=other.starknet_address,
                 )
 
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 0"
-
         async def test_should_fail_to_safe_transfer_from_to_NonERC721Recipient_with_data(
-            self, erc_721, erc_721_nonrecipient, other
+            self, erc_721, erc_721_non_recipient, other
         ):
-            recipient_address = erc_721_nonrecipient.evm_contract_address
+            recipient_address = erc_721_non_recipient.evm_contract_address
 
             await erc_721.mint(
                 other.address, 1337, caller_address=other.starknet_address
             )
 
-            with pytest.raises(Exception) as e:
+            with kakarot_error():
                 await erc_721.safeTransferFrom2(
                     other.address,
                     recipient_address,
@@ -478,30 +432,24 @@ class TestERC721:
                     caller_address=other.starknet_address,
                 )
 
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 0"
-
         async def test_should_fail_to_safe_transfer_from_to_RevertingERC721Recipient(
             self, erc_721, erc_721_reverting_recipient, other
         ):
             recipient_address = erc_721_reverting_recipient.evm_contract_address
-
             await erc_721.mint(
                 other.address, 1337, caller_address=other.starknet_address
             )
 
-            with pytest.raises(Exception) as e:
+            selector = keccak(text="onERC721Received(address,address,uint256,bytes)")[
+                :4
+            ]
+            with kakarot_error(selector):
                 await erc_721.safeTransferFrom(
                     other.address,
                     recipient_address,
                     1337,
                     caller_address=other.starknet_address,
                 )
-
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 0"
 
         async def test_should_fail_to_safe_transfer_from_to_RevertingERC721Recipient_with_data(
             self, erc_721, erc_721_reverting_recipient, other
@@ -511,8 +459,10 @@ class TestERC721:
             await erc_721.mint(
                 other.address, 1337, caller_address=other.starknet_address
             )
-
-            with pytest.raises(Exception) as e:
+            selector = keccak(text="onERC721Received(address,address,uint256,bytes)")[
+                :4
+            ]
+            with kakarot_error(selector):
                 await erc_721.safeTransferFrom2(
                     other.address,
                     recipient_address,
@@ -520,10 +470,6 @@ class TestERC721:
                     b"testing 123",
                     caller_address=other.starknet_address,
                 )
-
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 0"
 
         async def test_should_fail_to_safe_transfer_from_to_ERC721RecipientWithWrongReturnData(
             self, erc_721, erc_721_recipient_with_wrong_return_data, other
@@ -535,17 +481,13 @@ class TestERC721:
             await erc_721.mint(
                 other.address, 1337, caller_address=other.starknet_address
             )
-            with pytest.raises(Exception) as e:
+            with kakarot_error("UNSAFE_RECIPIENT"):
                 await erc_721.safeTransferFrom(
                     other.address,
                     recipient_address,
                     1337,
                     caller_address=other.starknet_address,
                 )
-
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 3405692655"
 
         async def test_should_fail_to_safe_transfer_from_to_ERC721RecipientWithWrongReturnData_with_data(
             self, erc_721, erc_721_recipient_with_wrong_return_data, other
@@ -558,7 +500,7 @@ class TestERC721:
                 other.address, 1337, caller_address=other.starknet_address
             )
 
-            with pytest.raises(Exception) as e:
+            with kakarot_error("UNSAFE_RECIPIENT"):
                 await erc_721.safeTransferFrom2(
                     other.address,
                     recipient_address,
@@ -566,10 +508,6 @@ class TestERC721:
                     b"testing 123",
                     caller_address=other.starknet_address,
                 )
-
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 3405692655"
 
     class TestSafeMint:
         async def test_should_safe_mint_to_EOA(self, erc_721, other):
@@ -605,6 +543,7 @@ class TestERC721:
 
             assert recipient_operator == owner.address
             assert recipient_from == ZERO_ADDRESS
+            assert recipient_token_id == 1337
             assert recipient_data == b""
 
         async def test_should_safe_mint_to_ERC721Recipient_with_data(
@@ -637,70 +576,54 @@ class TestERC721:
             assert recipient_data == data
 
         async def test_should_fail_to_safe_mint_to_NonERC721Recipient(
-            self, erc_721, erc_721_nonrecipient, other
+            self, erc_721, erc_721_non_recipient, other
         ):
-            recipient_address = erc_721_nonrecipient.evm_contract_address
+            recipient_address = erc_721_non_recipient.evm_contract_address
 
-            with pytest.raises(Exception) as e:
+            with kakarot_error():
                 await erc_721.safeMint(
                     recipient_address,
                     1337,
                     caller_address=other.starknet_address,
                 )
 
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 0"
-
         async def test_should_fail_to_safe_mint_to_NonERC721Recipient_with_data(
-            self, erc_721, erc_721_nonrecipient, other
+            self, erc_721, erc_721_non_recipient, other
         ):
-            recipient_address = erc_721_nonrecipient.evm_contract_address
+            recipient_address = erc_721_non_recipient.evm_contract_address
 
-            with pytest.raises(Exception) as e:
+            with kakarot_error():
                 await erc_721.safeMint2(
                     recipient_address,
                     1337,
                     b"testing 123",
                     caller_address=other.starknet_address,
                 )
-
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 0"
 
         async def test_should_fail_to_safe_mint_to_RevertingERC721Recipient(
             self, erc_721, erc_721_reverting_recipient, other
         ):
             recipient_address = erc_721_reverting_recipient.evm_contract_address
 
-            with pytest.raises(Exception) as e:
+            with kakarot_error():
                 await erc_721.safeMint(
                     recipient_address,
                     1337,
                     caller_address=other.starknet_address,
                 )
 
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 0"
-
         async def test_should_fail_to_safe_mint_to_RevertingERC721Recipient_with_data(
             self, erc_721, erc_721_reverting_recipient, other
         ):
             recipient_address = erc_721_reverting_recipient.evm_contract_address
 
-            with pytest.raises(Exception) as e:
+            with kakarot_error():
                 await erc_721.safeMint2(
                     recipient_address,
                     1337,
                     b"testing 123",
                     caller_address=other.starknet_address,
                 )
-
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 0"
 
         async def test_should_fail_to_safe_mint_to_ERC721RecipientWithWrongReturnData(
             self, erc_721, erc_721_recipient_with_wrong_return_data, other
@@ -709,32 +632,24 @@ class TestERC721:
                 erc_721_recipient_with_wrong_return_data.evm_contract_address
             )
 
-            with pytest.raises(Exception) as e:
+            with kakarot_error():
                 await erc_721.safeMint(
                     recipient_address,
                     1337,
                     caller_address=other.starknet_address,
                 )
 
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 3405692655"
-
         async def test_should_fail_to_safe_mint_to_ERC721RecipientWithWrongReturnData_with_data(
-            self, addresses, erc_721, erc_721_recipient_with_wrong_return_data, other
+            self, erc_721, erc_721_recipient_with_wrong_return_data, other
         ):
             recipient_address = (
                 erc_721_recipient_with_wrong_return_data.evm_contract_address
             )
 
-            with pytest.raises(Exception) as e:
+            with kakarot_error():
                 await erc_721.safeMint2(
                     recipient_address,
                     1337,
                     b"testing 123",
                     caller_address=other.starknet_address,
                 )
-
-            message = re.search(r"Error message: (.*)", e.value.message)[1]
-            # TODO: update with https://github.com/sayajin-labs/kakarot/issues/416
-            assert message == "Kakarot: Reverted with reason: 0"

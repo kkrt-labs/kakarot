@@ -18,7 +18,7 @@ contract Counter {
     }
 
     function decUnchecked() public greaterThanZero {
-        unchecked { 
+        unchecked {
             count -= 1;
         }
     }
@@ -26,7 +26,7 @@ contract Counter {
     function decInPlace() public greaterThanZero {
         count--;
     }
-    
+
     function dec() public greaterThanZero {
         count -= 1;
     }
