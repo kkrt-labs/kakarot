@@ -92,9 +92,7 @@ namespace RLP {
                     data=buffer_ptr + list_len,
                     items=items + Item.SIZE,
                 );
-            }
-            let is_le_255 = is_le(byte, 255);  // list > 55 bytes
-            if (is_le_255 != FALSE) {
+            } else {
                 local list_len_len = byte - 247;
                 let (dlen) = Helpers.bytes_to_felt(data_len=list_len_len, data=buffer_ptr, n=0);
                 let buffer_ptr = buffer_ptr + list_len_len;
@@ -109,7 +107,6 @@ namespace RLP {
                     items=items + Item.SIZE,
                 );
             }
-            return ();
         }
     }
 
@@ -137,7 +134,7 @@ namespace RLP {
             assert rlp[0] = 0xf7 + bytes_len;
             Helpers.fill_array(bytes_len, bytes, rlp + 1);
             Helpers.fill_array(data_len, data, rlp + 1 + bytes_len);
-            return (rlp_len=data_len + 1);
+            return (rlp_len=data_len + 1 + bytes_len);
         }
     }
 }
