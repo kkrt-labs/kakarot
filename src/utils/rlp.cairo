@@ -137,7 +137,7 @@ namespace RLP {
             assert rlp[0] = 0xf7 + bytes_len;
             Helpers.fill_array(bytes_len, bytes, rlp + 1);
             Helpers.fill_array(data_len, data, rlp + 1 + bytes_len);
-            return (rlp_len=data_len + 1);
+            return (rlp_len=data_len + 1 + bytes_len);
         }
     }
 }
