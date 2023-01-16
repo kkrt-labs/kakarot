@@ -54,11 +54,13 @@ format:
 	poetry run cairo-format -i ${cairo_files}
 	poetry run black tests/.
 	poetry run isort tests/.
+	poetry run autoflake . -r
 
 format-check:
 	poetry run cairo-format -c ${cairo_files}
 	poetry run black tests/. --check
 	poetry run isort tests/. --check
+	poetry run autoflake . -r -cd
 
 clean:
 	rm -rf build

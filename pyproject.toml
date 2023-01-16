@@ -28,6 +28,7 @@ eth-utils = "<2.0.0"
 eth-abi = "<3.0.0"
 eth-account = "<0.8.0"
 eth-keys = "<0.4.0"
+autoflake = "^2.0.0"
 
 [tool.pytest.ini_options]
 filterwarnings = [
@@ -118,6 +119,11 @@ markers = [
 
 [tool.isort]
 profile = "black"
+
+[tool.autoflake]
+in_place = true
+remove_unused_variables = true
+remove_all_unused_imports = true
 
 [build-system]
 requires = ["poetry-core"]
