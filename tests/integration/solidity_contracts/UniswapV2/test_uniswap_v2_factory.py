@@ -1,5 +1,4 @@
 import random
-import re
 from typing import Callable
 
 import pytest
@@ -7,7 +6,6 @@ import pytest_asyncio
 from eth_abi import encode_abi
 from eth_utils import keccak, to_checksum_address
 
-from tests.integration.helpers.helpers import get_create2_address
 from tests.utils.errors import kakarot_error
 
 # TODO: Fix these addresses with the original ones once
