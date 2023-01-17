@@ -29,8 +29,6 @@ contract UniswapV2Factory is IUniswapV2Factory {
         address tokenA,
         address tokenB
     ) external returns (address pair) {
-        require(tokenB != address(0), "UniswapV2: TokenB ZERO_ADDRESS");
-        require(tokenA != address(0), "UniswapV2: TokenA ZERO_ADDRESS");
         require(tokenA != tokenB, "UniswapV2: IDENTICAL_ADDRESSES");
         (address token0, address token1) = tokenA < tokenB
             ? (tokenA, tokenB)
