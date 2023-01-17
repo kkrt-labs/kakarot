@@ -81,7 +81,7 @@ def get_create2_address(
     return to_checksum_address(
         keccak(
             b"\xff" + decode_hex(sender_address) + salt + keccak(initialization_code)
-        ).hex()[-40:]
+        )[-20:]
     )
 
 

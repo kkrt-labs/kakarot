@@ -357,8 +357,8 @@ class TestPlainOpcodes:
         ):
             salt = 1234
             evm_address = await plain_opcodes.create2(
-                counter.constructor().data_in_transaction,
-                salt,
+                bytecode=counter.constructor().data_in_transaction,
+                salt=salt,
                 caller_address=addresses[0].starknet_address,
             )
             starknet_address = get_starknet_address(salt)
