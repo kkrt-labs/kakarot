@@ -1,5 +1,3 @@
-import re
-
 import pytest
 
 from tests.integration.helpers.constants import MAX_INT

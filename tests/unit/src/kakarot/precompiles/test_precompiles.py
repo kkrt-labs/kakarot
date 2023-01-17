@@ -1,9 +1,5 @@
-import random
-import re
-
 import pytest
 import pytest_asyncio
-from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
 from tests.utils.errors import kakarot_error

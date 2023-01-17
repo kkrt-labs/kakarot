@@ -23,11 +23,12 @@ setproctitle = "^1.3.2"
 pysha3 = "^1.0.2"
 web3 = "^5.31.1"
 python-dotenv = "^0.21.0"
-pycrypto = "2.6.1"
 eth-utils = "<2.0.0"
 eth-abi = "<3.0.0"
 eth-account = "<0.8.0"
 eth-keys = "<0.4.0"
+autoflake = "^2.0.0"
+pycryptodome = "^3.16.0"
 
 [tool.pytest.ini_options]
 filterwarnings = [
@@ -118,6 +119,11 @@ markers = [
 
 [tool.isort]
 profile = "black"
+
+[tool.autoflake]
+in_place = true
+remove_unused_variables = true
+remove_all_unused_imports = true
 
 [build-system]
 requires = ["poetry-core"]

@@ -538,12 +538,12 @@ class TestERC721:
 
             recipient_operator = await erc_721_recipient.operator()
             recipient_from = await erc_721_recipient.from_()
-            recipient_token_id = await erc_721_recipient.id()
+            recipient_id = await erc_721_recipient.id()
             recipient_data = await erc_721_recipient.data()
 
             assert recipient_operator == owner.address
             assert recipient_from == ZERO_ADDRESS
-            assert recipient_token_id == 1337
+            assert recipient_id == 1337
             assert recipient_data == b""
 
         async def test_should_safe_mint_to_ERC721Recipient_with_data(
