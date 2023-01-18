@@ -345,3 +345,44 @@ class TestPlainOpcodes:
         async def test_should_emit_log4(self, plain_opcodes, addresses, event):
             await plain_opcodes.opcodeLog4(caller_address=addresses[0].starknet_address)
             assert plain_opcodes.events.Log4 == [event]
+
+    class TestCreate2:
+        async def test_should_deploy_bytecode_at_address(
+            self,
+            plain_opcodes,
+            counter,
+            addresses,
+            get_starknet_address,
+            get_solidity_contract,
+        ):
+            salt = 1234
+            evm_address = await plain_opcodes.create2(
+                bytecode=counter.constructor().data_in_transaction,
+                salt=salt,
+                caller_address=addresses[0].starknet_address,
+            )
+            starknet_address = get_starknet_address(salt)
+            deployed_counter = get_solidity_contract(
+                "Counter", "Counter", starknet_address, evm_address, None
+            )
+            assert await deployed_counter.count() == 0
+
+    class TestRequire:
+        async def test_should_revert_when_address_is_zero(
+            self, plain_opcodes, addresses
+        ):
+            with kakarot_error("ZERO_ADDRESS"):
+                await plain_opcodes.requireNotZero(
+                    f"0x{0:040x}",
+                    caller_address=addresses[0].starknet_address,
+                )
+
+        @pytest.mark.skip("Test fails when address is 2**128 or greater")
+        @pytest.mark.parametrize("address", [2**127, 2**128])
+        async def test_should_not_revert_when_address_is_not_zero(
+            self, plain_opcodes, addresses, address
+        ):
+            await plain_opcodes.requireNotZero(
+                f"0x{address:x}",
+                caller_address=addresses[0].starknet_address,
+            )

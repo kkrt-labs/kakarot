@@ -77,29 +77,36 @@ def wrap_for_kakarot(
             decoded = codec.decode(types, data)
             normalized = map_abi_data(BASE_RETURN_NORMALIZERS, types, decoded)
             result = normalized[0] if len(normalized) == 1 else normalized
-            log_receipts = [
-                LogReceipt(
-                    address=Web3.toChecksumAddress(f"{evm_contract_address:040x}"),
-                    blockHash=bytes(),
-                    blockNumber=bytes(),
-                    data=bytes(event.data),
-                    logIndex=log_index,
-                    topic=bytes(),
-                    topics=[
-                        bytes.fromhex(
-                            # event "keys" in cairo are event "topics" in solidity
-                            # they're returned as list where consecutive values are indeed
-                            # low, high, low, high, etc. of the Uint256 cairo representation
-                            # of the bytes32 topics. This recomputes the original topic
-                            f"{(event.keys[i] + 2**128 * event.keys[i + 1]):064x}"
+            log_receipts = []
+            for log_index, event in enumerate(res.raw_events):
+                # Using try/except as some events are emitted by cairo code and not LOG opcode
+                try:
+                    log_receipts.append(
+                        LogReceipt(
+                            address=Web3.toChecksumAddress(
+                                f"{evm_contract_address:040x}"
+                            ),
+                            blockHash=bytes(),
+                            blockNumber=bytes(),
+                            data=bytes(event.data),
+                            logIndex=log_index,
+                            topic=bytes(),
+                            topics=[
+                                bytes.fromhex(
+                                    # event "keys" in cairo are event "topics" in solidity
+                                    # they're returned as list where consecutive values are indeed
+                                    # low, high, low, high, etc. of the Uint256 cairo representation
+                                    # of the bytes32 topics. This recomputes the original topic
+                                    f"{(event.keys[i] + 2**128 * event.keys[i + 1]):064x}"
+                                )
+                                for i in range(0, len(event.keys), 2)
+                            ],
+                            transactionHash=bytes(),
+                            transactionIndex=0,
                         )
-                        for i in range(0, len(event.keys), 2)
-                    ],
-                    transactionHash=bytes(),
-                    transactionIndex=0,
-                )
-                for log_index, event in enumerate(res.raw_events)
-            ]
+                    )
+                except:
+                    continue
 
             for event_abi in contract.events._events:
                 logs = []
