@@ -191,7 +191,7 @@ namespace Kakarot {
     ) {
         alloc_locals;
         let (current_salt) = salt.read();
-        let (evm_contract_address, starknet_contract_address) = ContractAccount.deploy(
+        let (evm_contract_address, starknet_contract_address) = ContractAccount.deploy_create(
             current_salt
         );
         salt.write(value=current_salt + 1);

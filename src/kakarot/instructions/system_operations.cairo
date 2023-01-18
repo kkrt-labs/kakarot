@@ -6,10 +6,11 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.cairo_keccak.keccak import keccak_bigend, finalize_keccak
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.memcpy import memcpy
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, uint256_and
 from starkware.starknet.common.syscalls import deploy as deploy_syscall
 from starkware.starknet.common.syscalls import get_contract_address
 
@@ -72,16 +73,38 @@ namespace SystemOperations {
         let size = popped[2];
         let (_salt) = salt.read();
 
-        // create2 dynamic gas:
+        // create dynamic gas:
         // dynamic_gas = 6 * minimum_word_size + memory_expansion_cost + deployment_code_execution_cost + code_deposit_cost
         // -> ``memory_expansion_cost + deployment_code_execution_cost + code_deposit_cost`` is handled inside ``initialize_sub_context``
         let (minimum_word_size) = Helpers.minimum_word_count(size.low);
         let word_size_gas = 6 * minimum_word_size;
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=word_size_gas);
 
-        let sub_ctx = CreateHelper.initialize_sub_context(
-            ctx, value.low, offset.low, size.low, _salt
+        let (evm_contract_address, starknet_contract_address) = ContractAccount.deploy_create(
+            _salt
         );
+
+        let (bytecode: felt*) = alloc();
+        let (memory, gas_cost) = Memory.load_n(
+            self=ctx.memory, element_len=size.low, element=bytecode, offset=offset.low
+        );
+
+        let ctx = ExecutionContext.update_memory(ctx, memory);
+
+        let ctx = ExecutionContext.increment_gas_used(
+            self=ctx, inc_value=gas_cost + SystemOperations.GAS_COST_CREATE
+        );
+
+        let sub_ctx = CreateHelper.initialize_sub_context(
+            ctx=ctx,
+            bytecode_len=size.low,
+            bytecode=bytecode,
+            value=value.low,
+            salt=_salt,
+            evm_contract_address=evm_contract_address,
+            starknet_contract_address=starknet_contract_address,
+        );
+
         salt.write(_salt + 1);
 
         return sub_ctx;
@@ -120,8 +143,34 @@ namespace SystemOperations {
         let size = popped[2];
         let salt = popped[3];
 
+        let (bytecode: felt*) = alloc();
+        let (memory, gas_cost) = Memory.load_n(
+            self=ctx.memory, element_len=size.low, element=bytecode, offset=offset.low
+        );
+
+        let ctx = ExecutionContext.update_memory(ctx, memory);
+
+        let ctx = ExecutionContext.increment_gas_used(
+            self=ctx, inc_value=gas_cost + SystemOperations.GAS_COST_CREATE
+        );
+
+        let (evm_contract_address) = CreateHelper.get_create2_address(
+            sender_address=ctx.evm_contract_address,
+            bytecode_len=size.low,
+            bytecode=bytecode,
+            salt=salt,
+        );
+
+        let (starknet_contract_address) = ContractAccount.deploy_create2(evm_contract_address);
+
         let sub_ctx = CreateHelper.initialize_sub_context(
-            ctx, value.low, offset.low, size.low, salt.low
+            ctx=ctx,
+            bytecode_len=size.low,
+            bytecode=bytecode,
+            value=value.low,
+            salt=salt.low,
+            evm_contract_address=evm_contract_address,
+            starknet_contract_address=starknet_contract_address,
         );
 
         return sub_ctx;
@@ -548,6 +597,101 @@ namespace CallHelper {
 }
 
 namespace CreateHelper {
+    // @notice Constructs an evm contract address for the create2 opcode
+    //         via last twenty bytes of the keccak hash of:
+    //         keccak256(0xff + sender_address + salt +
+    //         keccak256(initialisation_code))[12:]
+    //         See [CREATE2](https://www.evm.codes/#f5)
+    // @param sender_address - The evm sender address.
+    // @param bytecode_len - The length of the initialization code.
+    // @param bytecode - The offset to store the element at.
+    // @param salt - The salt given to the create2 opcode.
+    // @return The pointer to the updated calling context.
+    func get_create2_address{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(sender_address: felt, bytecode_len: felt, bytecode: felt*, salt: Uint256) -> (
+        evm_contract_address: felt
+    ) {
+        alloc_locals;
+        let (keccak_ptr: felt*) = alloc();
+        local keccak_ptr_start: felt* = keccak_ptr;
+
+        let (local bytecode_bytes8: felt*) = alloc();
+        Helpers.bytes_to_bytes8_little_endian(
+            bytes_len=bytecode_len,
+            bytes=bytecode,
+            index=0,
+            size=bytecode_len,
+            bytes8=0,
+            bytes8_shift=0,
+            dest=bytecode_bytes8,
+            dest_index=0,
+        );
+        with keccak_ptr {
+            // get keccak hash of bytecode
+            let (bytecode_hash_bigend) = keccak_bigend(
+                inputs=bytecode_bytes8, n_bytes=bytecode_len
+            );
+            // get keccak hash of
+            // marker + caller_address + salt + bytecode_hash
+            let (local concat_args_bytes: felt*) = alloc();
+            // 0xff is by convention the marker involved in deterministic address creation for create2
+
+            let (concat_args_bytes_len) = Helpers.felt_to_bytes(0xff, 0, concat_args_bytes);
+
+            let (concat_args_bytes_len) = Helpers.felt_to_bytes(
+                sender_address, concat_args_bytes_len, concat_args_bytes + concat_args_bytes_len
+            );
+
+            let (salt_bytes_array_len, salt_bytes_array) = Helpers.uint256_to_bytes_array(salt);
+            memcpy(
+                dst=concat_args_bytes + concat_args_bytes_len,
+                src=salt_bytes_array,
+                len=salt_bytes_array_len,
+            );
+
+            let (
+                bytecode_hash_bytes_array_len, bytecode_hash_bytes_array
+            ) = Helpers.uint256_to_bytes_array(bytecode_hash_bigend);
+            memcpy(
+                dst=concat_args_bytes + concat_args_bytes_len + salt_bytes_array_len,
+                src=bytecode_hash_bytes_array,
+                len=bytecode_hash_bytes_array_len,
+            );
+
+            let (local concat_args_bytes8: felt*) = alloc();
+
+            tempvar concat_args_bytes_len = concat_args_bytes_len + salt_bytes_array_len + bytecode_hash_bytes_array_len;
+            Helpers.bytes_to_bytes8_little_endian(
+                bytes_len=concat_args_bytes_len,
+                bytes=concat_args_bytes,
+                index=0,
+                size=concat_args_bytes_len,
+                bytes8=0,
+                bytes8_shift=0,
+                dest=concat_args_bytes8,
+                dest_index=0,
+            );
+
+            let (create2_hash) = keccak_bigend(
+                inputs=concat_args_bytes8, n_bytes=concat_args_bytes_len
+            );
+
+            finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
+        }
+        // this is the equivalent of a slice of the last 20 elements of a byte array
+        // i.e. in python address[-20:]
+        // This will keep the last 20 bytes of the byte array and set the rest of the bytes to 0 (here encoded as a uint256)
+        let mask = Helpers.to_uint256(0xffffffffffffffffffffffffffffffffffffffff);
+
+        let (create2_address_uint256) = uint256_and(a=create2_hash, b=mask);
+        let create2_address = Helpers.uint256_to_felt(create2_address_uint256);
+        return (create2_address,);
+    }
+
     // @notice Deploy a new Contract account and initialize a sub context at these addresses
     //         with bytecode from calling context memory.
     // @return The pointer to the updated calling context.
@@ -557,27 +701,21 @@ namespace CreateHelper {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(
-        ctx: model.ExecutionContext*, value: felt, offset: felt, size: felt, salt: felt
+        ctx: model.ExecutionContext*,
+        bytecode_len: felt,
+        bytecode: felt*,
+        value: felt,
+        salt: felt,
+        evm_contract_address: felt,
+        starknet_contract_address: felt,
     ) -> model.ExecutionContext* {
         alloc_locals;
-        let (evm_contract_address, starknet_contract_address) = ContractAccount.deploy(salt);
-
-        // Load bytecode code from memory
-        let (bytecode: felt*) = alloc();
-        let (memory, gas_cost) = Memory.load_n(
-            self=ctx.memory, element_len=size, element=bytecode, offset=offset
-        );
-        let ctx = ExecutionContext.update_memory(ctx, memory);
-
-        let ctx = ExecutionContext.increment_gas_used(
-            self=ctx, inc_value=gas_cost + SystemOperations.GAS_COST_CREATE
-        );
 
         // Prepare execution context
         let (empty_array: felt*) = alloc();
         tempvar call_context: model.CallContext* = new model.CallContext(
             bytecode=bytecode,
-            bytecode_len=size,
+            bytecode_len=bytecode_len,
             calldata=empty_array,
             calldata_len=0,
             value=value,
