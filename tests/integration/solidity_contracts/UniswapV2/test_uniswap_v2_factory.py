@@ -1,8 +1,6 @@
 import random
-from typing import Callable
 
 import pytest
-import pytest_asyncio
 from eth_abi import encode_abi
 from eth_utils import keccak, to_checksum_address
 
@@ -12,19 +10,6 @@ from tests.utils.errors import kakarot_error
 # TODO: https://github.com/sayajin-labs/kakarot/issues/439 is fixed
 random.seed(0)
 TEST_ADDRESSES = [to_checksum_address(random.getrandbits(160)) for _ in range(2)]
-
-
-@pytest_asyncio.fixture(scope="module")
-async def factory(
-    deploy_solidity_contract: Callable,
-    owner,
-):
-    return await deploy_solidity_contract(
-        "UniswapV2",
-        "UniswapV2Factory",
-        owner.address,
-        caller_address=owner.starknet_address,
-    )
 
 
 @pytest.mark.asyncio

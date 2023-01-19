@@ -157,7 +157,7 @@ class TestPlainOpcodes:
 
     class TestOriginAndSender:
         @pytest.mark.skip(
-            "Origin returns 0 because ORIGIN assumes currently assumes that the caller is a ContractAccount"
+            "Origin returns 0 because ORIGIN currently assumes that the caller is a ContractAccount"
             "See issue https://github.com/sayajin-labs/kakarot/issues/445"
         )
         async def test_should_return_owner_as_origin_and_sender(
