@@ -386,3 +386,30 @@ class TestPlainOpcodes:
                 f"0x{address:x}",
                 caller_address=addresses[0].starknet_address,
             )
+
+    class TestOriginAndSender:
+        @pytest.mark.skip(
+            "Origin returns 0 because ORIGIN assumes currently assumes that the caller is a ContractAccount"
+            "See issue https://github.com/sayajin-labs/kakarot/issues/445"
+        )
+        async def test_should_return_owner_as_origin_and_sender(
+            self, plain_opcodes, owner
+        ):
+            origin, sender = await plain_opcodes.originAndSender(
+                caller_address=owner.starknet_address
+            )
+            assert origin == sender == owner.address
+
+        @pytest.mark.skip(
+            "Raises in RETURNDATACOPY"
+            "See issue https://github.com/sayajin-labs/kakarot/issues/446"
+        )
+        async def test_should_return_owner_as_origin_and_caller_as_sender(
+            self, plain_opcodes, owner, caller
+        ):
+            success, data = await caller.call(
+                target=plain_opcodes.evm_contract_address,
+                payload=plain_opcodes.encodeABI("originAndSender"),
+                caller_address=owner.starknet_address,
+            )
+            assert success

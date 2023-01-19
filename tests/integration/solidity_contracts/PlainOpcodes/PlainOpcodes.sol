@@ -99,4 +99,12 @@ contract PlainOpcodes {
     function requireNotZero(address _address) external pure {
         require(_address != address(0), "ZERO_ADDRESS");
     }
+
+    function originAndSender()
+        external
+        view
+        returns (address origin, address sender)
+    {
+        return (tx.origin, msg.sender);
+    }
 }

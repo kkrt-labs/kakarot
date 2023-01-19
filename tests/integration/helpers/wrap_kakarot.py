@@ -28,38 +28,21 @@ def wrap_for_kakarot(
 
         async def _wrapped(contract, *args, **kwargs):
             abi = contract.get_function_by_name(fun).abi
-            if "gas_limit" in kwargs:
-                gas_limit = kwargs["gas_limit"]
-                del kwargs["gas_limit"]
-            else:
-                gas_limit = 1000000
+            gas_limit = kwargs.pop("gas_limit", 1_000_000)
+            value = kwargs.pop("value", 0)
+            caller_address = kwargs.pop("caller_address")
+            call = kakarot.execute_at_address(
+                address=evm_contract_address,
+                value=value,
+                gas_limit=gas_limit,
+                calldata=hex_string_to_bytes_array(
+                    contract.encodeABI(fun, args, kwargs)
+                ),
+            )
 
-            if abi["stateMutability"] == "view":
-                call = kakarot.execute_at_address(
-                    address=evm_contract_address,
-                    value=0,
-                    gas_limit=gas_limit,
-                    calldata=hex_string_to_bytes_array(
-                        contract.encodeABI(fun, args, kwargs)
-                    ),
-                )
+            if abi["stateMutability"] == "view" and caller_address is None:
                 res = await call.call()
             else:
-                caller_address = kwargs["caller_address"]
-                del kwargs["caller_address"]
-                if "value" in kwargs:
-                    value = kwargs["value"]
-                    del kwargs["value"]
-                else:
-                    value = 0
-                call = kakarot.execute_at_address(
-                    address=evm_contract_address,
-                    value=value,
-                    gas_limit=1000000,
-                    calldata=hex_string_to_bytes_array(
-                        contract.encodeABI(fun, args, kwargs)
-                    ),
-                )
                 res = await call.execute(caller_address=caller_address)
             if call._traced:
                 traceit.pop_record()
