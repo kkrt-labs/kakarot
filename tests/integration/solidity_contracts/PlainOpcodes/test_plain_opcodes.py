@@ -71,9 +71,10 @@ class TestPlainOpcodes:
         async def test_should_return_counter_code(
             self, plain_opcodes, counter, offset, size
         ):
-            size = len(counter.bytecode) if size is None else size
+            deployed_bytecode = counter.bytecode[counter.bytecode.index(0xFE) + 1 :]
+            size = len(deployed_bytecode) if size is None else size
             bytecode = await plain_opcodes.opcodeExtCodeCopy(offset=offset, size=size)
-            assert bytecode == counter.bytecode[offset : offset + size]
+            assert bytecode == deployed_bytecode[offset : offset + size]
 
     class TestLog:
         @pytest.fixture
