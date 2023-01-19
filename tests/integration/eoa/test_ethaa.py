@@ -1,14 +1,28 @@
 import os
-
 import pytest
 import web3
+import rlp
+from eth_keys import keys
 from eth_account._utils.legacy_transactions import (
+    ChainAwareUnsignedTransaction,
+    Transaction,
+    UnsignedTransaction,
+    encode_transaction,
     serializable_unsigned_transaction_from_dict,
+    strip_signature,
 )
 from starkware.starkware_utils.error_handling import StarkException
 
 from tests.utils.signer import MockEthSigner
-from tests.utils.uint256 import int_to_uint256
+from tests.utils.uint256 import int_to_uint256, uint256_to_int
+from eth_account._utils.legacy_transactions import (
+    ChainAwareUnsignedTransaction,
+    Transaction,
+    UnsignedTransaction,
+    encode_transaction,
+    serializable_unsigned_transaction_from_dict,
+    strip_signature,
+)
 
 
 @pytest.mark.asyncio
@@ -86,6 +100,22 @@ class TestExternallyOwnedAccount:
                 kakarot.contract_address,
                 "execute_at_address",
                 raw_tx.rawTransaction,
+            )
+
+        @pytest.mark.parametrize("address_idx", range(4))
+        async def test_should_execute_legacy_tx(
+            self, kakarot, legacy_tx, addresses, address_idx
+        ):
+            address = addresses[address_idx]
+            eth_account = MockEthSigner(private_key=address.private_key)
+            tmp_account = web3.Account().from_key(address.private_key)
+            raw_tx = tmp_account.sign_transaction(legacy_tx)
+
+            await eth_account.send_transaction(
+                address.starknet_contract,
+                kakarot.contract_address,
+                "execute_at_address",
+                list(web3.Web3.toBytes(raw_tx.rawTransaction)),
             )
 
         @pytest.mark.parametrize("address_idx", range(4))

@@ -39,3 +39,16 @@ async def default_tx() -> dict:
         "value": 10000000000000000,
         "data": b"",
     }
+
+
+@pytest_asyncio.fixture(scope="package")
+async def legacy_tx() -> dict:
+    return {
+        "chainId": 1263227476,
+        "nonce": 1,
+        "gasPrice": 1000,
+        "gas": 999999999,
+        "to": bytes.fromhex("95222290dd7278aa3ddd389cc1e1d165cc4bafe5"),
+        "value": 10000000000000000,
+        "data": b"",
+    }
