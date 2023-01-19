@@ -1,6 +1,7 @@
 [profile.default]
-src = 'solidity_contracts'
-out = 'out'
+src = 'tests/integration/solidity_contracts'
+test = 'tests/integration/solidity_contracts'
+out = 'tests/integration/solidity_contracts/build'
 libs = ['lib']
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

@@ -84,4 +84,4 @@ get-blockhashes:
 	poetry run python scripts/get_latest_blockhashes.py
 
 build-sol:
-	forge build --contracts tests/integration/solidity_contracts -o tests/integration/solidity_contracts/build
+	forge build
