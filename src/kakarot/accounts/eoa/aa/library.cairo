@@ -116,7 +116,7 @@ namespace ExternallyOwnedAccount {
         let (local items: RLP.Item*) = alloc();
         // decode the rlp array
         RLP.decode_rlp(calldata_len - 1, rlp_data, items);
-        // eip 1559 tx only for the moment
+        // eip-1559
         if (tx_type == 2) {
             // remove the sig to hash the tx
             let data_len: felt = [items].data_len - SIGNATURE_LEN;
@@ -150,8 +150,31 @@ namespace ExternallyOwnedAccount {
             finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
             return is_valid_eth_signature(tx_hash.res, r, s, v.n, eth_address);
         } else {
-            assert 1 = 0;
-            return (is_valid=0);
+            // legacy tx
+            let data_len: felt = [items].data_len - SIGNATURE_LEN;
+            let (list_ptr: felt*) = alloc();
+            let (rlp_len: felt) = RLP.encode_rlp_list(data_len, [items].data, list_ptr);
+            let (keccak_ptr: felt*) = alloc();
+            let keccak_ptr_start = keccak_ptr;
+            let (words: felt*) = alloc();
+            Helpers.bytes_to_bytes8_little_endian(
+                bytes_len=rlp_len,
+                bytes=list_ptr,
+                index=0,
+                size=rlp_len,
+                bytes8=0,
+                bytes8_shift=0,
+                dest=words,
+                dest_index=0,
+            );
+            let tx_hash = keccak_bigend{keccak_ptr=keccak_ptr}(inputs=words, n_bytes=rlp_len);
+            let (local sub_items: RLP.Item*) = alloc();
+            RLP.decode_rlp([items].data_len, [items].data, sub_items);
+            let v = Helpers.bytes_to_felt(sub_items[6].data_len, sub_items[6].data, 0);
+            let r = Helpers.bytes32_to_uint256(sub_items[7].data);
+            let s = Helpers.bytes32_to_uint256(sub_items[8].data);
+            finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
+            return is_valid_eth_signature(tx_hash.res, r, s, v.n, eth_address);
         }
     }
 

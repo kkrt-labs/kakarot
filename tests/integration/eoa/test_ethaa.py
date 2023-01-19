@@ -89,6 +89,24 @@ class TestExternallyOwnedAccount:
             )
 
         @pytest.mark.parametrize("address_idx", range(4))
+        async def test_should_execute_legacy_tx(
+            self, kakarot, legacy_tx, addresses, address_idx
+        ):
+            address = addresses[address_idx]
+            eth_account = MockEthSigner(private_key=address.private_key)
+            tmp_account = web3.Account().from_key(address.private_key)
+            raw_tx = tmp_account.sign_transaction(legacy_tx)
+
+            print(raw_tx)
+
+            await eth_account.send_transaction(
+                address.starknet_contract,
+                kakarot.contract_address,
+                "execute_at_address",
+                [0, *list(web3.Web3.toBytes(raw_tx.rawTransaction))],
+            )
+
+        @pytest.mark.parametrize("address_idx", range(4))
         async def test_should_fail_on_incorrect_signature(
             self, kakarot, default_tx, addresses, address_idx
         ):
