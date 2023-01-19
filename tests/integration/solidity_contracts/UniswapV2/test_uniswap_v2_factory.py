@@ -1,3 +1,4 @@
+import os
 import random
 from typing import Callable
 
@@ -10,9 +11,8 @@ from tests.utils.errors import kakarot_error
 
 # TODO: Fix these addresses with the original ones once
 # TODO: https://github.com/sayajin-labs/kakarot/issues/439 is fixed
-TEST_ADDRESSES = [
-    to_checksum_address(f"{random.randint(0, 2**160):x}") for _ in range(2)
-]
+random.seed(0)
+TEST_ADDRESSES = [to_checksum_address(os.urandom(20)) for _ in range(2)]
 
 
 @pytest_asyncio.fixture(scope="module")
