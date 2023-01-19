@@ -112,12 +112,18 @@ contract PlainOpcodes {
         uint256 offset,
         uint256 size
     ) external view returns (bytes memory extcode) {
+        // see https://docs.soliditylang.org/en/v0.8.17/assembly.html#example
         address target = address(counter);
         assembly {
             // Get a free memory location
             extcode := mload(0x40)
-            mstore(extcode, size)
+            // Update free memory pointer (pointer += size including padding)
+            mstore(
+                0x40,
+                add(extcode, and(add(add(size, 0x20), 0x1f), not(0x1f)))
+            )
             // Copy counter code to this location + size
+            mstore(extcode, size)
             extcodecopy(target, add(extcode, 0x20), offset, size)
         }
     }
