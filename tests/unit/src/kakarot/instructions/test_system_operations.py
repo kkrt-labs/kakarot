@@ -2,14 +2,14 @@ import string
 
 import pytest
 import pytest_asyncio
-from eth_utils import decode_hex, to_bytes
+from eth_utils import decode_hex, to_bytes, to_checksum_address
 from starkware.python.utils import from_bytes
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
 from tests.integration.helpers.helpers import get_create2_address
 from tests.utils.errors import kakarot_error
-from tests.utils.uint256 import int_to_uint256, uint256_to_int
+from tests.utils.uint256 import int_to_uint256
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -87,32 +87,28 @@ class TestSystemOperations:
         # we take that word at an offset and size and use it as the bytecode to determine the expected create2 evm contract address
         # Word is 0x 11 22 33 44 55 66 77 88 00 00 ... 00
         # bytecode should be 0x 44 55 66 77
-        memory_word_uint256 = (0, 22774453838368691922685013100469420032)
+        memory_word = 22774453838368691922685013100469420032
         offset = 3
         size = 4
         salt = 5
         padded_salt = salt.to_bytes(32, byteorder="big")
-        evm_caller_address = 15
-        bytecode = to_bytes(
-            uint256_to_int(memory_word_uint256[0], memory_word_uint256[1])
-        )[offset : offset + size]
+        evm_caller_address_int = 15
+        evm_caller_address_bytes = evm_caller_address_int.to_bytes(20, byteorder="big")
+        evm_caller_address = to_checksum_address(evm_caller_address_bytes)
+        bytecode = to_bytes(memory_word)[offset : offset + size]
 
         expected_create2_addr = get_create2_address(
-            hex(evm_caller_address), padded_salt, bytecode
+            evm_caller_address, padded_salt, bytecode
         )
-
-        expected_create2_addr2 = create2_address(
-            evm_caller_address, bytecode, padded_salt
-        )[20:]
 
         await system_operations.test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_at_expected_address(
             contract_account_class.class_hash,
             account_registry.contract_address,
-            evm_caller_address,
+            evm_caller_address_int,
             (offset, 0),
             (size, 0),
             (salt, 0),
-            memory_word_uint256,
+            (0, memory_word),
             from_bytes(decode_hex(expected_create2_addr)),
         ).call()
 

@@ -4,7 +4,7 @@ from typing import Tuple
 
 from eth_abi import encode_abi
 from eth_keys import keys
-from eth_utils import keccak, to_bytes, to_checksum_address
+from eth_utils import decode_hex, keccak, to_checksum_address
 
 from tests.integration.helpers.constants import CHAIN_ID
 
@@ -80,10 +80,7 @@ def get_create2_address(
     """
     return to_checksum_address(
         keccak(
-            b"\xff"
-            + to_bytes(hexstr=sender_address)
-            + salt
-            + keccak(initialization_code)
+            b"\xff" + decode_hex(sender_address) + salt + keccak(initialization_code)
         )[-20:]
     )
 

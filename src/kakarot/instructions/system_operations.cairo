@@ -637,48 +637,58 @@ namespace CreateHelper {
             );
             // get keccak hash of
             // marker + caller_address + salt + bytecode_hash
-            let (local concat_args_bytes: felt*) = alloc();
+            let (local packed_bytes: felt*) = alloc();
+
             // 0xff is by convention the marker involved in deterministic address creation for create2
+            let (packed_bytes_len) = Helpers.felt_to_bytes(0xff, 0, packed_bytes);
 
-            let (concat_args_bytes_len) = Helpers.felt_to_bytes(0xff, 0, concat_args_bytes);
-
-            let (concat_args_bytes_len) = Helpers.felt_to_bytes(
-                sender_address, concat_args_bytes_len, concat_args_bytes + concat_args_bytes_len
+            let (sender_address_high, sender_address_low) = split_felt(sender_address);
+            let (
+                sender_address_bytes_array_len, sender_address_bytes_array
+            ) = Helpers.uint256_to_bytes_array(
+                Uint256(low=sender_address_low, high=sender_address_high)
             );
 
+            // the address should be twenty bytes, so we skip the leading 12 elements
+            // and copy with a length of twenty
+            tempvar just_twenty_bytes_len = 20;
+            memcpy(
+                dst=packed_bytes + packed_bytes_len,
+                src=sender_address_bytes_array + 12,
+                len=just_twenty_bytes_len,
+            );
+
+            tempvar packed_bytes_len = packed_bytes_len + just_twenty_bytes_len;
             let (salt_bytes_array_len, salt_bytes_array) = Helpers.uint256_to_bytes_array(salt);
             memcpy(
-                dst=concat_args_bytes + concat_args_bytes_len,
-                src=salt_bytes_array,
-                len=salt_bytes_array_len,
+                dst=packed_bytes + packed_bytes_len, src=salt_bytes_array, len=salt_bytes_array_len
             );
 
+            tempvar packed_bytes_len = packed_bytes_len + salt_bytes_array_len;
             let (
                 bytecode_hash_bytes_array_len, bytecode_hash_bytes_array
             ) = Helpers.uint256_to_bytes_array(bytecode_hash_bigend);
             memcpy(
-                dst=concat_args_bytes + concat_args_bytes_len + salt_bytes_array_len,
+                dst=packed_bytes + packed_bytes_len,
                 src=bytecode_hash_bytes_array,
                 len=bytecode_hash_bytes_array_len,
             );
 
-            let (local concat_args_bytes8: felt*) = alloc();
+            let (local packed_bytes8: felt*) = alloc();
 
-            tempvar concat_args_bytes_len = concat_args_bytes_len + salt_bytes_array_len + bytecode_hash_bytes_array_len;
+            tempvar packed_bytes_len = packed_bytes_len + bytecode_hash_bytes_array_len;
             Helpers.bytes_to_bytes8_little_endian(
-                bytes_len=concat_args_bytes_len,
-                bytes=concat_args_bytes,
+                bytes_len=packed_bytes_len,
+                bytes=packed_bytes,
                 index=0,
-                size=concat_args_bytes_len,
+                size=packed_bytes_len,
                 bytes8=0,
                 bytes8_shift=0,
-                dest=concat_args_bytes8,
+                dest=packed_bytes8,
                 dest_index=0,
             );
 
-            let (create2_hash) = keccak_bigend(
-                inputs=concat_args_bytes8, n_bytes=concat_args_bytes_len
-            );
+            let (create2_hash) = keccak_bigend(inputs=packed_bytes8, n_bytes=packed_bytes_len);
 
             finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
         }
