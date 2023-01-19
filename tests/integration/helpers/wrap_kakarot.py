@@ -30,7 +30,7 @@ def wrap_for_kakarot(
             abi = contract.get_function_by_name(fun).abi
             gas_limit = kwargs.pop("gas_limit", 1_000_000)
             value = kwargs.pop("value", 0)
-            caller_address = kwargs.pop("caller_address")
+            caller_address = kwargs.pop("caller_address", None)
             call = kakarot.execute_at_address(
                 address=evm_contract_address,
                 value=value,

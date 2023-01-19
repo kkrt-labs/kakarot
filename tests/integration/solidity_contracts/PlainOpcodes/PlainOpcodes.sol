@@ -107,4 +107,18 @@ contract PlainOpcodes {
     {
         return (tx.origin, msg.sender);
     }
+
+    function opcodeExtCodeCopy(
+        uint256 offset,
+        uint256 size
+    ) external view returns (bytes memory extcode) {
+        address target = address(counter);
+        assembly {
+            // Get a free memory location
+            extcode := mload(0x40)
+            mstore(extcode, size)
+            // Copy counter code to this location + size
+            extcodecopy(target, add(extcode, 0x20), offset, size)
+        }
+    }
 }
