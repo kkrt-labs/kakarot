@@ -47,6 +47,7 @@ async def default_tx() -> dict:
         "data": b"",
     }
 
+
 @pytest_asyncio.fixture(scope="package")
 async def legacy_tx() -> dict:
     return {
