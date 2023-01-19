@@ -27,11 +27,6 @@ async def factory(
     )
 
 
-@pytest.fixture(scope="module")
-async def other(others):
-    return others[0]
-
-
 @pytest.mark.asyncio
 @pytest.mark.UniswapV2Factory
 @pytest.mark.usefixtures("starknet_snapshot")
