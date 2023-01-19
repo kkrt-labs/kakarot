@@ -18,6 +18,7 @@ from kakarot.model import model
 from kakarot.memory import Memory
 from kakarot.stack import Stack
 from kakarot.instructions import EVMInstructions
+from kakarot.instructions.system_operations import CreateHelper
 from kakarot.interfaces.interfaces import IRegistry, IEvmContract
 from kakarot.execution_context import ExecutionContext
 from kakarot.constants import (
@@ -191,9 +192,8 @@ namespace Kakarot {
     ) {
         alloc_locals;
         let (current_salt) = salt.read();
-        let (evm_contract_address, starknet_contract_address) = ContractAccount.deploy_create(
-            current_salt
-        );
+        let (evm_contract_address) = CreateHelper.get_create_address(0, current_salt);
+        let (starknet_contract_address) = ContractAccount.deploy(evm_contract_address);
         salt.write(value=current_salt + 1);
 
         // Prepare execution context

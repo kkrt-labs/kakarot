@@ -96,9 +96,9 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     local bytecode_len = 0;
     evm_contract_class_hash.write(evm_contract_class_hash_);
     registry_address.write(registry_address_);
-    let (
-        local evm_contract_address, local starknet_contract_address
-    ) = ContractAccount.deploy_create(0);
+
+    let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
+    let (local starknet_contract_address) = ContractAccount.deploy(evm_contract_address);
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
@@ -175,9 +175,9 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
     local bytecode_len = 0;
     evm_contract_class_hash.write(evm_contract_class_hash_);
     registry_address.write(registry_address_);
-    let (
-        local evm_contract_address, local starknet_contract_address
-    ) = ContractAccount.deploy_create(0);
+
+    let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
+    let (local starknet_contract_address) = ContractAccount.deploy(evm_contract_address);
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
@@ -254,9 +254,9 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
     local bytecode_len = 0;
     evm_contract_class_hash.write(evm_contract_class_hash_);
     registry_address.write(registry_address_);
-    let (
-        local evm_contract_address, local starknet_contract_address
-    ) = ContractAccount.deploy_create(0);
+
+    let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
+    let (local starknet_contract_address) = ContractAccount.deploy(evm_contract_address);
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
@@ -331,9 +331,9 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
     local bytecode_len = 0;
     evm_contract_class_hash.write(evm_contract_class_hash_);
     registry_address.write(registry_address_);
-    let (
-        local evm_contract_address, local starknet_contract_address
-    ) = ContractAccount.deploy_create(0);
+
+    let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
+    let (local starknet_contract_address) = ContractAccount.deploy(evm_contract_address);
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
@@ -612,7 +612,8 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     assert [sub_ctx + 16] = 0;  // read only
 
     // Simulate contract creation
-    let (evm_contract_address, starknet_contract_address) = ContractAccount.deploy_create(0);
+    let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
+    let (local starknet_contract_address) = ContractAccount.deploy(evm_contract_address);
 
     IRegistry.set_account_entry(
         contract_address=registry_address_,

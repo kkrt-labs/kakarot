@@ -68,58 +68,9 @@ namespace ContractAccount {
         return ();
     }
 
-    // TEMPORARY bifurcation of create/create2 as we refactor to their conventions of address construction
-    // @notice This function is a factory to handle salt and registration of EVM<>Starknet binding.
-    // @param salt: The salt for computing the corresponding EVM address
-    func deploy_create{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(salt: felt) -> (evm_contract_address: felt, starknet_contract_address: felt) {
-        alloc_locals;
-
-        // Prepare constructor data
-        let (local calldata: felt*) = alloc();
-        let (kakarot_address) = get_contract_address();
-        assert [calldata] = kakarot_address;
-        assert [calldata + 1] = 0;
-
-        // Deploy contract account with no bytecode
-        let (class_hash) = evm_contract_class_hash.read();
-        let (starknet_contract_address) = deploy_syscall(
-            class_hash=class_hash,
-            contract_address_salt=salt,
-            constructor_calldata_size=2,
-            constructor_calldata=calldata,
-            deploy_from_zero=FALSE,
-        );
-
-        // Generate EVM_contract address from the new cairo contract
-        // TODO: Use RLP to compute proper EVM address, see https://www.evm.codes/#f0
-        let (_, low) = split_felt(starknet_contract_address);
-        local evm_contract_address = 0xAbdE100700000000000000000000000000000000 + low;
-
-        evm_contract_deployed.emit(
-            evm_contract_address=evm_contract_address,
-            starknet_contract_address=starknet_contract_address,
-        );
-
-        // Save address of new contracts
-        let (reg_address) = registry_address.read();
-        IRegistry.set_account_entry(
-            contract_address=reg_address,
-            starknet_contract_address=starknet_contract_address,
-            evm_contract_address=evm_contract_address,
-        );
-
-        return (evm_contract_address, starknet_contract_address);
-    }
-
-    // TEMPORARY bifurcation of create/create2 as we refactor to their conventions of address construction
     // @notice This function is a factory to handle evm contract address and registration of EVM<>Starknet binding in the case of create2.
-    // @param salt: The salt for computing the corresponding EVM address
-    func deploy_create2{
+    // @param evm_contract_address: The computed evm contract address to map deployment to.
+    func deploy{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,

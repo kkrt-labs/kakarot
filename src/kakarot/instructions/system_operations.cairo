@@ -71,7 +71,6 @@ namespace SystemOperations {
         let value = popped[0];
         let offset = popped[1];
         let size = popped[2];
-        let (_salt) = salt.read();
 
         // create dynamic gas:
         // dynamic_gas = 6 * minimum_word_size + memory_expansion_cost + deployment_code_execution_cost + code_deposit_cost
@@ -80,32 +79,7 @@ namespace SystemOperations {
         let word_size_gas = 6 * minimum_word_size;
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=word_size_gas);
 
-        let (evm_contract_address, starknet_contract_address) = ContractAccount.deploy_create(
-            _salt
-        );
-
-        let (bytecode: felt*) = alloc();
-        let (memory, gas_cost) = Memory.load_n(
-            self=ctx.memory, element_len=size.low, element=bytecode, offset=offset.low
-        );
-
-        let ctx = ExecutionContext.update_memory(ctx, memory);
-
-        let ctx = ExecutionContext.increment_gas_used(
-            self=ctx, inc_value=gas_cost + SystemOperations.GAS_COST_CREATE
-        );
-
-        let sub_ctx = CreateHelper.initialize_sub_context(
-            ctx=ctx,
-            bytecode_len=size.low,
-            bytecode=bytecode,
-            value=value.low,
-            salt=_salt,
-            evm_contract_address=evm_contract_address,
-            starknet_contract_address=starknet_contract_address,
-        );
-
-        salt.write(_salt + 1);
+        let sub_ctx = CreateHelper.initialize_sub_context(ctx=ctx, popped_len=3, popped=popped);
 
         return sub_ctx;
     }
@@ -138,40 +112,7 @@ namespace SystemOperations {
         let (stack, popped) = Stack.pop_n(self=ctx.stack, n=4);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        let value = popped[0];
-        let offset = popped[1];
-        let size = popped[2];
-        let salt = popped[3];
-
-        let (bytecode: felt*) = alloc();
-        let (memory, gas_cost) = Memory.load_n(
-            self=ctx.memory, element_len=size.low, element=bytecode, offset=offset.low
-        );
-
-        let ctx = ExecutionContext.update_memory(ctx, memory);
-
-        let ctx = ExecutionContext.increment_gas_used(
-            self=ctx, inc_value=gas_cost + SystemOperations.GAS_COST_CREATE
-        );
-
-        let (evm_contract_address) = CreateHelper.get_create2_address(
-            sender_address=ctx.evm_contract_address,
-            bytecode_len=size.low,
-            bytecode=bytecode,
-            salt=salt,
-        );
-
-        let (starknet_contract_address) = ContractAccount.deploy_create2(evm_contract_address);
-
-        let sub_ctx = CreateHelper.initialize_sub_context(
-            ctx=ctx,
-            bytecode_len=size.low,
-            bytecode=bytecode,
-            value=value.low,
-            salt=salt.low,
-            evm_contract_address=evm_contract_address,
-            starknet_contract_address=starknet_contract_address,
-        );
+        let sub_ctx = CreateHelper.initialize_sub_context(ctx=ctx, popped_len=4, popped=popped);
 
         return sub_ctx;
     }
@@ -597,6 +538,24 @@ namespace CallHelper {
 }
 
 namespace CreateHelper {
+    // @notice Constructs an evm contract address for the create opcode
+    //         via last twenty bytes of the keccak hash of:
+    //         keccak256(rlp([sender_address,sender_nonce]))[
+    //         See [CREATE](https://www.evm.codes/#f0)
+    // @param sender_address - The evm sender address.
+    // @param bytecode_len - The length of the initialization code.
+    // @param nonce - The nonce given to the create opcode.
+    // @return The pointer to the updated calling context.
+    func get_create_address{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(sender_address: felt, nonce: felt) -> (evm_contract_address: felt) {
+        // dummy impl to aide refactoring
+        return (0xAbdE100700000000000000000000000000000000 + nonce,);
+    }
+
     // @notice Constructs an evm contract address for the create2 opcode
     //         via last twenty bytes of the keccak hash of:
     //         keccak256(0xff + sender_address + salt +
@@ -710,25 +669,68 @@ namespace CreateHelper {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(
-        ctx: model.ExecutionContext*,
-        bytecode_len: felt,
-        bytecode: felt*,
-        value: felt,
-        salt: felt,
-        evm_contract_address: felt,
-        starknet_contract_address: felt,
-    ) -> model.ExecutionContext* {
+    }(ctx: model.ExecutionContext*, popped_len: felt, popped: Uint256*) -> model.ExecutionContext* {
         alloc_locals;
+
+        // Load bytecode code from memory
+        let value = popped[0];
+        let offset = popped[1];
+        let size: Uint256 = popped[2];
+
+        let (bytecode: felt*) = alloc();
+        let (memory, gas_cost) = Memory.load_n(
+            self=ctx.memory, element_len=size.low, element=bytecode, offset=offset.low
+        );
+        let ctx = ExecutionContext.update_memory(ctx, memory);
+
+        let ctx = ExecutionContext.increment_gas_used(
+            self=ctx, inc_value=gas_cost + SystemOperations.GAS_COST_CREATE
+        );
+
+        // create2 context pops 4 off the stack, create pops 3
+        // so we use popped_len to derive the way we should handle
+        // the creation of evm addresses
+        local evm_contract_address;
+
+        if (popped_len != 4) {
+            let (nonce) = salt.read();
+            let (_evm_contract_address) = CreateHelper.get_create_address(
+                ctx.evm_contract_address, nonce
+            );
+            evm_contract_address = _evm_contract_address;
+            salt.write(nonce + 1);
+
+            tempvar bitwise_ptr = bitwise_ptr;
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+        } else {
+            let _salt = popped[3];
+            let (_evm_contract_address) = CreateHelper.get_create2_address(
+                sender_address=ctx.evm_contract_address,
+                bytecode_len=size.low,
+                bytecode=bytecode,
+                salt=_salt,
+            );
+
+            evm_contract_address = _evm_contract_address;
+
+            tempvar bitwise_ptr = bitwise_ptr;
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+        }
+
+        let (starknet_contract_address) = ContractAccount.deploy(evm_contract_address);
 
         // Prepare execution context
         let (empty_array: felt*) = alloc();
         tempvar call_context: model.CallContext* = new model.CallContext(
             bytecode=bytecode,
-            bytecode_len=bytecode_len,
+            bytecode_len=size.low,
             calldata=empty_array,
             calldata_len=0,
-            value=value,
+            value=value.low,
             );
         let (local return_data: felt*) = alloc();
         let (empty_destroy_contracts: felt*) = alloc();
