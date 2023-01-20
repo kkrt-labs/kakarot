@@ -152,10 +152,11 @@ async def addresses(deployer, starknet, externally_owned_account_class) -> List[
                     eth_aa_deploy_tx.call_info.internal_calls[0].contract_address,
                     eth_aa_deploy_tx,
                 ),
-                starknet_address=int(private_key.public_key.to_address(), 16),
+                starknet_address=eth_aa_deploy_tx.call_info.internal_calls[
+                    0
+                ].contract_address,
             )
         )
-
     return wallets
 
 

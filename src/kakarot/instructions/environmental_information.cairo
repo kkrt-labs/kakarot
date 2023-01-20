@@ -17,7 +17,7 @@ from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 from kakarot.memory import Memory
 from kakarot.constants import native_token_address, registry_address
-from kakarot.interfaces.interfaces import IEth, IRegistry, IEvmContract
+from kakarot.interfaces.interfaces import IEth, IRegistry, IEvmContract, IAccount
 
 // @title Environmental information opcodes.
 // @notice This file contains the functions to execute for environmental information opcodes.
@@ -163,8 +163,9 @@ namespace EnvironmentalInformation {
         alloc_locals;
         // Get caller address.
         let (current_address) = get_caller_address();
-        let caller_address = Helpers.to_uint256(current_address);
-        let stack: model.Stack* = Stack.push(self=ctx.stack, element=caller_address);
+        let (evm_address) = IAccount.get_eth_address(current_address);
+        let evm_address_uint256 = Helpers.to_uint256(evm_address);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=evm_address_uint256);
 
         // Update the execution context.
         // Update context stack.
