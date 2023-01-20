@@ -649,12 +649,7 @@ namespace CreateHelper {
 
             finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
         }
-        // this is the equivalent of a slice of the last 20 elements of a byte array
-        // i.e. in python address[-20:]
-        // This will keep the last 20 bytes of the byte array and set the rest of the bytes to 0 (here encoded as a uint256)
-        let mask = Helpers.to_uint256(0xffffffffffffffffffffffffffffffffffffffff);
 
-        // let (create2_address_uint256) = uint256_and(a=create2_hash, b=mask);
         let create2_address = Helpers.keccak_hash_to_evm_contract_address(create2_hash);
         return (create2_address,);
     }

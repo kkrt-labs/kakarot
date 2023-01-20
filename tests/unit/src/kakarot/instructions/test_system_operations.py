@@ -85,9 +85,8 @@ class TestSystemOperations:
         # we store a memory word in memory
         # and have our bytecode as the memory read from an offset and size
         # we take that word at an offset and size and use it as the bytecode to determine the expected create2 evm contract address
-        # Word is 0x 11 22 33 44 55 66 77 88 00 00 ... 00
         # bytecode should be 0x 44 55 66 77
-        memory_word = 22774453838368691922685013100469420032
+        memory_word = 0x11223344556677880000000000000000
         offset = 3
         size = 4
         salt = 5
