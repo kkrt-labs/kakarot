@@ -101,6 +101,7 @@ func execute_at_address{
     starknet_contract_address: felt,
     return_data_len: felt,
     return_data: felt*,
+    gas_used: felt,
 ) {
     alloc_locals;
     let summary = Kakarot.execute_at_address(
@@ -124,6 +125,7 @@ func execute_at_address{
         starknet_contract_address=summary.starknet_contract_address,
         return_data_len=summary.return_data_len,
         return_data=summary.return_data,
+        gas_used=summary.gas_used,
     );
 }
 
