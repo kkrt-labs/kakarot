@@ -84,4 +84,4 @@ get-blockhashes:
 	poetry run python scripts/get_latest_blockhashes.py
 
 build-sol:
-	forge build
+	forge build --force
