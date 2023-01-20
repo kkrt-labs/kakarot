@@ -1,16 +1,6 @@
 {
   "name": "Python 3",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "context": "..",
-    "args": {
-      // Update 'VARIANT' to pick a Python version: 3, 3.10, 3.9, 3.8, 3.7, 3.6
-      // Append -bullseye or -buster to pin to an OS version.
-      // Use -bullseye variants on local on arm64/Apple Silicon.
-      "VARIANT": "3.9.13"
-    }
-  },
-
+  "image": "mcr.microsoft.com/vscode/devcontainers/python:0-3.9",
   // Configure tool-specific properties.
   "customizations": {
     // Configure properties specific to VS Code.
@@ -30,18 +20,24 @@
         "python.linting.pydocstylePath": "/usr/local/py-utils/bin/pydocstyle",
         "python.linting.pylintPath": "/usr/local/py-utils/bin/pylint"
       },
-
       // Add the IDs of extensions you want installed when the container is created.
-      "extensions": ["ms-python.python", "ms-python.vscode-pylance"]
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ]
     }
   },
-
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // "forwardPorts": [],
-
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "make setup",
-
+  "postCreateCommand": [
+    "curl -L https: //foundry.paradigm.xyz | bash",
+    "foundryup",
+    "make setup"
+  ],
   // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-  "remoteUser": "vscode"
+  "remoteUser": "vscode",
+  "features": {
+    "ghcr.io/devcontainers-contrib/features/poetry:2": {}
+  }
 }
