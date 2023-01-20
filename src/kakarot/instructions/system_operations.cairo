@@ -552,7 +552,7 @@ namespace CreateHelper {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(sender_address: felt, nonce: felt) -> (evm_contract_address: felt) {
-        // dummy impl to aide refactoring
+        // TODO: see https://github.com/sayajin-labs/kakarot/issues/426
         return (0xAbdE100700000000000000000000000000000000 + nonce,);
     }
 
@@ -601,41 +601,39 @@ namespace CreateHelper {
             // 0xff is by convention the marker involved in deterministic address creation for create2
             let (packed_bytes_len) = Helpers.felt_to_bytes(0xff, 0, packed_bytes);
 
-            let (sender_address_high, sender_address_low) = split_felt(sender_address);
-            let (
-                sender_address_bytes_array_len, sender_address_bytes_array
-            ) = Helpers.uint256_to_bytes_array(
-                Uint256(low=sender_address_low, high=sender_address_high)
-            );
-
+            // pack sender address, padded twenty bytes
             // the address should be twenty bytes, so we skip the leading 12 elements
-            // and copy with a length of twenty
-            tempvar just_twenty_bytes_len = 20;
-            memcpy(
-                dst=packed_bytes + packed_bytes_len,
-                src=sender_address_bytes_array + 12,
-                len=just_twenty_bytes_len,
+            let (sender_address_high, sender_address_low) = split_felt(sender_address);
+            let (packed_bytes_len) = Helpers.uint256_to_dest_bytes_array(
+                value=Uint256(low=sender_address_low, high=sender_address_high),
+                byte_array_offset=12,
+                byte_array_len=Constants.ADDRESS_BYTES_LEN,
+                dest_offset=packed_bytes_len,
+                dest_len=packed_bytes_len,
+                dest=packed_bytes,
             );
 
-            tempvar packed_bytes_len = packed_bytes_len + just_twenty_bytes_len;
-            let (salt_bytes_array_len, salt_bytes_array) = Helpers.uint256_to_bytes_array(salt);
-            memcpy(
-                dst=packed_bytes + packed_bytes_len, src=salt_bytes_array, len=salt_bytes_array_len
+            // pack salt, padded 32 bytes
+            let (packed_bytes_len) = Helpers.uint256_to_dest_bytes_array(
+                value=salt,
+                byte_array_offset=0,
+                byte_array_len=32,
+                dest_offset=packed_bytes_len,
+                dest_len=packed_bytes_len,
+                dest=packed_bytes,
             );
 
-            tempvar packed_bytes_len = packed_bytes_len + salt_bytes_array_len;
-            let (
-                bytecode_hash_bytes_array_len, bytecode_hash_bytes_array
-            ) = Helpers.uint256_to_bytes_array(bytecode_hash_bigend);
-            memcpy(
-                dst=packed_bytes + packed_bytes_len,
-                src=bytecode_hash_bytes_array,
-                len=bytecode_hash_bytes_array_len,
+            // pack bytecode keccak hash, padded 32 bytes
+            let (packed_bytes_len) = Helpers.uint256_to_dest_bytes_array(
+                value=bytecode_hash_bigend,
+                byte_array_offset=0,
+                byte_array_len=32,
+                dest_offset=packed_bytes_len,
+                dest_len=packed_bytes_len,
+                dest=packed_bytes,
             );
 
             let (local packed_bytes8: felt*) = alloc();
-
-            tempvar packed_bytes_len = packed_bytes_len + bytecode_hash_bytes_array_len;
             Helpers.bytes_to_bytes8_little_endian(
                 bytes_len=packed_bytes_len,
                 bytes=packed_bytes,
@@ -656,8 +654,8 @@ namespace CreateHelper {
         // This will keep the last 20 bytes of the byte array and set the rest of the bytes to 0 (here encoded as a uint256)
         let mask = Helpers.to_uint256(0xffffffffffffffffffffffffffffffffffffffff);
 
-        let (create2_address_uint256) = uint256_and(a=create2_hash, b=mask);
-        let create2_address = Helpers.uint256_to_felt(create2_address_uint256);
+        // let (create2_address_uint256) = uint256_and(a=create2_hash, b=mask);
+        let create2_address = Helpers.keccak_hash_to_evm_contract_address(create2_hash);
         return (create2_address,);
     }
 
@@ -687,42 +685,6 @@ namespace CreateHelper {
             self=ctx, inc_value=gas_cost + SystemOperations.GAS_COST_CREATE
         );
 
-        // create2 context pops 4 off the stack, create pops 3
-        // so we use popped_len to derive the way we should handle
-        // the creation of evm addresses
-        local evm_contract_address;
-
-        if (popped_len != 4) {
-            let (nonce) = salt.read();
-            let (_evm_contract_address) = CreateHelper.get_create_address(
-                ctx.evm_contract_address, nonce
-            );
-            evm_contract_address = _evm_contract_address;
-            salt.write(nonce + 1);
-
-            tempvar bitwise_ptr = bitwise_ptr;
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar range_check_ptr = range_check_ptr;
-        } else {
-            let _salt = popped[3];
-            let (_evm_contract_address) = CreateHelper.get_create2_address(
-                sender_address=ctx.evm_contract_address,
-                bytecode_len=size.low,
-                bytecode=bytecode,
-                salt=_salt,
-            );
-
-            evm_contract_address = _evm_contract_address;
-
-            tempvar bitwise_ptr = bitwise_ptr;
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar range_check_ptr = range_check_ptr;
-        }
-
-        let (starknet_contract_address) = ContractAccount.deploy(evm_contract_address);
-
         // Prepare execution context
         let (empty_array: felt*) = alloc();
         tempvar call_context: model.CallContext* = new model.CallContext(
@@ -737,27 +699,72 @@ namespace CreateHelper {
         let stack = Stack.init();
         let memory = Memory.init();
         let empty_context = ExecutionContext.init_empty();
-        tempvar sub_ctx = new model.ExecutionContext(
-            call_context=call_context,
-            program_counter=0,
-            stopped=FALSE,
-            return_data=return_data,
-            return_data_len=0,
-            stack=stack,
-            memory=memory,
-            gas_used=0,
-            gas_limit=0,
-            gas_price=0,
-            starknet_contract_address=starknet_contract_address,
-            evm_contract_address=evm_contract_address,
-            calling_context=ctx,
-            sub_context=empty_context,
-            destroy_contracts_len=0,
-            destroy_contracts=empty_destroy_contracts,
-            read_only=FALSE,
+
+        // create2 context pops 4 off the stack, create pops 3
+        // so we use popped_len to derive the way we should handle
+        // the creation of evm addresses
+        if (popped_len != 4) {
+            let (nonce) = salt.read();
+            let (evm_contract_address) = CreateHelper.get_create_address(
+                ctx.evm_contract_address, nonce
             );
 
-        return sub_ctx;
+            salt.write(nonce + 1);
+            let (starknet_contract_address) = ContractAccount.deploy(evm_contract_address);
+
+            tempvar sub_ctx = new model.ExecutionContext(
+                call_context=call_context,
+                program_counter=0,
+                stopped=FALSE,
+                return_data=return_data,
+                return_data_len=0,
+                stack=stack,
+                memory=memory,
+                gas_used=0,
+                gas_limit=0,
+                gas_price=0,
+                starknet_contract_address=starknet_contract_address,
+                evm_contract_address=evm_contract_address,
+                calling_context=ctx,
+                sub_context=empty_context,
+                destroy_contracts_len=0,
+                destroy_contracts=empty_destroy_contracts,
+                read_only=FALSE,
+                );
+
+            return sub_ctx;
+        } else {
+            let _salt = popped[3];
+            let (evm_contract_address) = CreateHelper.get_create2_address(
+                sender_address=ctx.evm_contract_address,
+                bytecode_len=size.low,
+                bytecode=bytecode,
+                salt=_salt,
+            );
+
+            let (starknet_contract_address) = ContractAccount.deploy(evm_contract_address);
+            tempvar sub_ctx = new model.ExecutionContext(
+                call_context=call_context,
+                program_counter=0,
+                stopped=FALSE,
+                return_data=return_data,
+                return_data_len=0,
+                stack=stack,
+                memory=memory,
+                gas_used=0,
+                gas_limit=0,
+                gas_price=0,
+                starknet_contract_address=starknet_contract_address,
+                evm_contract_address=evm_contract_address,
+                calling_context=ctx,
+                sub_context=empty_context,
+                destroy_contracts_len=0,
+                destroy_contracts=empty_destroy_contracts,
+                read_only=FALSE,
+                );
+
+            return sub_ctx;
+        }
     }
 
     // @notice At the end of a sub-context initiated with CREATE or CREATE2, the calling context's stack is updated.
