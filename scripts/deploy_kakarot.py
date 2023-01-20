@@ -62,14 +62,14 @@ async def main():
     #                               #
     #################################
     
-    # Declare EVM Contract
+    # Declare EVM Account Contract
     evm_account_class_hash = await declare_contract(client,Path(BUILD_PATH, "contract_account.json").read_text("utf-8"))
     logging.info("✅ Contract Account Class Hash: %s", hex(evm_account_class_hash))
 
     # Deploy Kakarot
     contract_addresses = await declare_and_deploy_contract(client=client,compiled_contracts=[KAKAROT_COMPILED],calldata=[
         [
-            account_address, # Owner Address (of implementation and proxy)
+            account_address, # Owner Address
             ETH_ADDRESS, # ETH ERC20 on testnet 1 & 2
             evm_account_class_hash
         ]

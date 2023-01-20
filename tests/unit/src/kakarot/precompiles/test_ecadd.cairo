@@ -50,7 +50,9 @@ func test__ecadd_impl{
     Helpers.fill_array(
         bytes_expected_y_len, bytes_expected_y, bytes_expected_result + bytes_expected_x_len
     );
-    let (output_len, output: felt*, gas_used) = PrecompileEcAdd.run(calldata_len, calldata);
+    let (output_len, output: felt*, gas_used) = PrecompileEcAdd.run(
+        PrecompileEcAdd.PRECOMPILE_ADDRESS, calldata_len, calldata
+    );
 
     // Then
     TestHelpers.assert_array_equal(
@@ -72,8 +74,8 @@ func test__ecadd_via_staticcall{
 
     let (bytecode: felt*) = alloc();
     local bytecode_len = 0;
-    let x_uint256: Uint256 = Uint256(1, 0);
-    let y_uint256: Uint256 = Uint256(2, 0);
+    let x_uint256: Uint256 = Uint256(100, 0);
+    let y_uint256: Uint256 = Uint256(200, 0);
     // First place the parameters in memory, as in the evm.codes playground example for this precompile
     let stack: model.Stack* = Stack.init();
     // x0

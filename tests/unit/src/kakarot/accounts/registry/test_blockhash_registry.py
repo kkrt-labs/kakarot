@@ -1,7 +1,7 @@
 import pytest
 from starkware.starknet.testing.contract import StarknetContract
 
-from tests.integration.helpers.helpers import int_to_uint256
+from tests.utils.uint256 import int_to_uint256
 
 
 @pytest.mark.asyncio

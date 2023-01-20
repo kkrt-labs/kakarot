@@ -2,16 +2,11 @@ import random
 
 import pytest
 import pytest_asyncio
-from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
-
-from tests.integration.helpers.helpers import int_to_uint256
 
 
 @pytest_asyncio.fixture(scope="module")
-async def datacopy(
-    starknet: Starknet, blockhashes: dict, blockhash_registry: StarknetContract
-):
+async def datacopy(starknet: Starknet):
     return await starknet.deploy(
         source="./tests/unit/src/kakarot/precompiles/test_datacopy.cairo",
         cairo_path=["src"],

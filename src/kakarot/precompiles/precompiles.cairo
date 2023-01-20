@@ -16,6 +16,7 @@ from kakarot.model import model
 from kakarot.precompiles.datacopy import PrecompileDataCopy
 from kakarot.precompiles.ecadd import PrecompileEcAdd
 from kakarot.precompiles.ec_recover import PrecompileEcRecover
+from kakarot.precompiles.ripemd160 import PrecompileRIPEMD160
 from kakarot.stack import Stack
 
 // @title Precompile related functions.
@@ -101,6 +102,7 @@ namespace Precompiles {
         [ap] = pedersen_ptr, ap++;
         [ap] = range_check_ptr, ap++;
         [ap] = bitwise_ptr, ap++;
+        [ap] = address, ap++;
         [ap] = input_len, ap++;
         [ap] = input, ap++;
 
@@ -112,7 +114,7 @@ namespace Precompiles {
         ret;
         call not_implemented_precompile;  // 0x2
         ret;
-        call not_implemented_precompile;  // 0x3
+        call PrecompileRIPEMD160.run;  // 0x3
         ret;
         call PrecompileDataCopy.run;  // 0x4
         ret;
@@ -137,8 +139,8 @@ namespace Precompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx_ptr: model.ExecutionContext*) {
-        with_attr error_message("Kakarot: NotImplementedPrecompile") {
+    }(address: felt, _input_len: felt, _input: felt*) {
+        with_attr error_message("Kakarot: NotImplementedPrecompile {address}") {
             assert 0 = 1;
         }
         return ();

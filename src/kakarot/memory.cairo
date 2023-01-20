@@ -436,9 +436,10 @@ namespace Memory {
 
     // @notice Expand memory if necessary then load n bytes from it at given offset.
     // @param self - The pointer to the memory.
+    // @param element_len - The number of bytes to load.
+    // @param element - The pointer to the filled array.
     // @param offset - The number of bytes to add.
     // @return The new pointer to the memory.
-    // @return The loaded Uint256 from memory.
     // @return The gas cost of this expansion.
     func load_n{range_check_ptr}(
         self: model.Memory*, element_len: felt, element: felt*, offset: felt
