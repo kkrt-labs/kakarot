@@ -140,7 +140,7 @@ class TestPlainOpcodes:
             )
             starknet_address = get_starknet_address(salt)
             deployed_counter = get_solidity_contract(
-                "Counter", "Counter", starknet_address, evm_address, None
+                "PlainOpcodes", "Counter", starknet_address, evm_address, None
             )
             assert await deployed_counter.count() == 0
 
