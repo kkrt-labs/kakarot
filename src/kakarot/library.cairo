@@ -9,7 +9,7 @@ from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.starknet.common.syscalls import deploy as deploy_syscall
-from starkware.starknet.common.syscalls import get_contract_address
+from starkware.starknet.common.syscalls import get_caller_address, get_contract_address
 // OpenZeppelin dependencies
 from openzeppelin.access.ownable.library import Ownable
 
@@ -19,7 +19,7 @@ from kakarot.memory import Memory
 from kakarot.stack import Stack
 from kakarot.instructions import EVMInstructions
 from kakarot.instructions.system_operations import CreateHelper
-from kakarot.interfaces.interfaces import IRegistry, IEvmContract
+from kakarot.interfaces.interfaces import IRegistry, IAccount, IEvmContract
 from kakarot.execution_context import ExecutionContext
 from kakarot.constants import (
     native_token_address,
@@ -192,7 +192,11 @@ namespace Kakarot {
     ) {
         alloc_locals;
         let (current_salt) = salt.read();
-        let (evm_contract_address) = CreateHelper.get_create_address(0, current_salt);
+        let (current_address) = get_caller_address();
+        let (sender_eth_address) = IAccount.get_eth_address(current_address);
+        let (evm_contract_address) = CreateHelper.get_create_address(
+            sender_eth_address, current_salt
+        );
         let (starknet_contract_address) = ContractAccount.deploy(evm_contract_address);
         salt.write(value=current_salt + 1);
 
