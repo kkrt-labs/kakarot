@@ -60,24 +60,29 @@ func test__exec_return_should_return_context_with_updated_return_data{
 @external
 func test__exec_revert{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(reason: felt) {
+}(reason_low: felt, reason_high: felt, size: felt) {
     // Given
     alloc_locals;
+    let reason_uint256 = Uint256(low=reason_low, high=reason_high);
+    local offset: Uint256 = Uint256(32, 0);
+
     let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
-
-    let stack: model.Stack* = Stack.push(stack, Uint256(reason, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    let stack: model.Stack* = Stack.push(stack, reason_uint256);  // value
+    let stack: model.Stack* = Stack.push(stack, offset);  // offset
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
-
-    // When
     let ctx: model.ExecutionContext* = MemoryOperations.exec_mstore(ctx);
 
-    // Then
-    let stack: model.Stack* = Stack.push(ctx.stack, Uint256(32, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    let stack: model.Stack* = Stack.push(ctx.stack, Uint256(0, 0));  // offset is 0 to have the reason at 0x20
+    let stack: model.Stack* = Stack.push(stack, Uint256(size, 0));  // size
     let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
+
+    // When
     SystemOperations.exec_revert(ctx);
+
+    // Then
+    // TODO: update test when revert does not break the execution
+
     return ();
 }
 

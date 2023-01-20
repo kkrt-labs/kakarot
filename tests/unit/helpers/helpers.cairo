@@ -208,6 +208,15 @@ namespace TestHelpers {
         );
     }
 
+    func print_uint256(val: Uint256) {
+        %{
+            low = memory[ids.val.address_]
+            high = memory[ids.val.address_ + 1]
+            print(f"Uint256(low={low}, high={high}) = {2 ** 128 * high + low}")
+        %}
+        return ();
+    }
+
     func print_array(arr_len: felt, arr: felt*) {
         %{
             print(f"{ids.arr_len=}")

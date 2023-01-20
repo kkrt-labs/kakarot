@@ -200,6 +200,57 @@ Test architecture is the following:
   contracts that are compiled, deployed on kakarot local node and interacted
   with kakarot execute_at_address()
 
+## Deploy
+
+The following describes how to deploy the entire Kakarot **EVM** on StarkNet.
+
+It is **not** a description on how to deploy a contract on the official Kakarot zkEVM.
+
+
+The Kakarot EVM can be deployed on StarkNet using a python script utilizing the [starknet.py](https://starknetpy.readthedocs.io/en/latest/) library.
+
+First we need to declare some environment variables that are required for the deployment.
+
+Start by copying the `.env_example` file located in the root directory (`.files` are usually hidden by default in most explorers. You should be able to see the file in your IDE).
+
+Rename the copied file to `.env`.
+
+The file holds the following content:
+
+```
+PRIVATE_KEY=your_private_key
+ACCOUNT_ADDRESS=your_account_address
+NETWORK=<mainnet|testnet|testnet2>
+```
+
+Now replace the placeholder values with your account and network details.
+
+`PRIVATE_KEY` is the private key of the account contract that will pay for the deployment. **This should be a decimal number**
+
+`ACCOUNT_ADDRESS` is the address of the account contract that will pay for the deployment (not the public key). **This should be a hexadecimal number**
+
+`NETWORK` specify the network on which the Kakarot EVM should be deployed.
+
+Here is a concrete example:
+```
+PRIVATE_KEY=72893439023848923y4138741073892473874203487234872208352937239047293428374088
+ACCOUNT_ADDRESS=0x06e5d623aBe979c3DEFf52bE6DF5116352C12Ee21428D5b2CF91cA440c4edBD0
+NETWORK=testnet
+```
+
+Now run:
+```
+make build
+```
+then:
+```
+make deploy
+```
+
+Deployed contract addresses will be stored in `./deployed_addresses.json`.
+
+A step by step description of the individual components and how they are deployed/configured can be found [here](docs/general/kakarot_components.md).
+
 ## License
 
 **kakarot** is released under the [MIT](LICENSE).
@@ -211,6 +262,16 @@ Kakarot is provided **"as is"** without any **warranty**. Use at your own risk.
 
 _For more information and to report security issues, please refer to our
 [security documentation](docs/SECURITY.md)._
+
+## Callgraphs
+
+[The callgrap folder](callgraphs) contains all the contract's call graph. Those
+are generated using [thoth](https://github.com/FuzzingLabs/thoth) and can
+provide some more insight on the inside of this zkEVM.  
+The legend can be found
+[here](https://github.com/FuzzingLabs/thoth/blob/master/images/callgraph_legend.png).  
+You can use [this tool](https://dreampuf.github.io/GraphvizOnline/) to visualize
+the .gv files online.
 
 ## Questions / FAQ
 

@@ -5,8 +5,10 @@ from typing import cast
 from starkware.starknet.testing.starknet import StarknetContract
 from web3 import Web3
 from web3._utils.abi import map_abi_data
+from web3._utils.events import get_event_data
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.contract import Contract
+from web3.types import LogReceipt
 
 from tests.integration.helpers.helpers import hex_string_to_bytes_array
 from tests.utils.reporting import traceit
@@ -68,11 +70,54 @@ def wrap_for_kakarot(
                     args=args,
                     kwargs=kwargs,
                 )
+
+            codec = Web3().codec
             types = [o["type"] for o in abi["outputs"]]
             data = bytearray(res.result.return_data)
-            decoded = Web3().codec.decode(types, data)
+            decoded = codec.decode(types, data)
             normalized = map_abi_data(BASE_RETURN_NORMALIZERS, types, decoded)
-            return normalized[0] if len(normalized) == 1 else normalized
+            result = normalized[0] if len(normalized) == 1 else normalized
+            log_receipts = []
+            for log_index, event in enumerate(res.raw_events):
+                # Using try/except as some events are emitted by cairo code and not LOG opcode
+                try:
+                    log_receipts.append(
+                        LogReceipt(
+                            address=Web3.toChecksumAddress(
+                                f"{evm_contract_address:040x}"
+                            ),
+                            blockHash=bytes(),
+                            blockNumber=bytes(),
+                            data=bytes(event.data),
+                            logIndex=log_index,
+                            topic=bytes(),
+                            topics=[
+                                bytes.fromhex(
+                                    # event "keys" in cairo are event "topics" in solidity
+                                    # they're returned as list where consecutive values are indeed
+                                    # low, high, low, high, etc. of the Uint256 cairo representation
+                                    # of the bytes32 topics. This recomputes the original topic
+                                    f"{(event.keys[i] + 2**128 * event.keys[i + 1]):064x}"
+                                )
+                                for i in range(0, len(event.keys), 2)
+                            ],
+                            transactionHash=bytes(),
+                            transactionIndex=0,
+                        )
+                    )
+                except:
+                    continue
+
+            for event_abi in contract.events._events:
+                logs = []
+                for log_receipt in log_receipts:
+                    try:
+                        logs += [get_event_data(codec, event_abi, log_receipt).args]
+                    except:
+                        pass
+                setattr(contract.events, event_abi["name"], logs)
+
+            return result
 
         return _wrapped
 

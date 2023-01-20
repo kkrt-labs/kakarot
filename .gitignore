@@ -33,3 +33,8 @@ coverage/*
 # Scripts artifacts
 blockhashes.json
 deployed_addresses.json
+
+# thoth relateds stuff 
+output-callgraph/*
+build/*
+docs/callgraphs/*

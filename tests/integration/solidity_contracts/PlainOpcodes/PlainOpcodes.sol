@@ -19,6 +19,16 @@ contract PlainOpcodes {
                             METADATA STORAGE
     //////////////////////////////////////////////////////////////*/
     ICounter counter;
+    event Log0() anonymous;
+    event Log0Value(uint256 value) anonymous;
+    event Log1(uint256 value);
+    event Log2(address indexed owner, uint256 value);
+    event Log3(address indexed owner, address indexed spender, uint256 value);
+    event Log4(
+        address indexed owner,
+        address indexed spender,
+        uint256 indexed value
+    );
 
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
@@ -51,5 +61,42 @@ contract PlainOpcodes {
 
     function opcodeCall() public {
         counter.inc();
+    }
+
+    function opcodeLog0() public {
+        emit Log0();
+    }
+
+    function opcodeLog0Value() public {
+        emit Log0Value(10);
+    }
+
+    function opcodeLog1() public {
+        emit Log1(10);
+    }
+
+    function opcodeLog2() public {
+        emit Log2(address(0xa), 10);
+    }
+
+    function opcodeLog3() public {
+        emit Log3(address(0xa), address(0xb), 10);
+    }
+
+    function opcodeLog4() public {
+        emit Log4(address(0xa), address(0xb), 10);
+    }
+
+    function create2(
+        bytes memory bytecode,
+        uint256 salt
+    ) public returns (address _address) {
+        assembly {
+            _address := create2(0, add(bytecode, 32), mload(bytecode), salt)
+        }
+    }
+
+    function requireNotZero(address _address) external pure {
+        require(_address != address(0), "ZERO_ADDRESS");
     }
 }

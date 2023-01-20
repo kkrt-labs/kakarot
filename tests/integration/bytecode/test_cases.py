@@ -1613,4 +1613,38 @@ test_cases = [
         "id": "Precompiles - EC_RECOVER - playground test case",
         "marks": [pytest.mark.EC_RECOVER, pytest.mark.Precompiles],
     },
+    {
+        "params": {
+            "value": 0,
+            "code": "60ff600052602060206001601f600363fffffffffa50602051",
+            "calldata": "",
+            "stack": str(0x2C0C45D3ECAB80FE060E5F1D7057CD2F8DE5E557),
+            "memory": (
+                "00000000000000000000000000000000000000000000000000000000000000ff"
+                "0000000000000000000000002c0c45d3ecab80fe060e5f1d7057cd2f8de5e557"
+            ),
+            "return_value": "",
+        },
+        "id": "Precompiles - RIPEMD160 - playground test case",
+        "marks": [pytest.mark.RIPEMD160, pytest.mark.Precompiles],
+    },
+    {
+        "params": {
+            "value": 0,
+            "code": "60016000526002602052600160405260026060526040608060806000600663fffffffffa5060a051608051",
+            "calldata": "",
+            "stack": str(0x30644E72E131A029B85045B68181585D97816A916871CA8D3C208C16D87CFD315ED738C0E0A7C92E7845F96B2AE9C0A68A6A449E3538FC7FF3EBF7A5A18A2C4),
+            "memory": (
+                "0000000000000000000000000000000000000000000000000000000000000001"
+                "0000000000000000000000000000000000000000000000000000000000000002"
+                "0000000000000000000000000000000000000000000000000000000000000001"
+                "0000000000000000000000000000000000000000000000000000000000000002"
+                "030644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd3"
+                "15ed738c0e0a7c92e7845f96b2ae9c0a68a6a449e3538fc7ff3ebf7a5a18a2c4"
+            ),
+            "return_value": "",
+        },
+        "id": "Precompiles - EC_ADD - playground test case",
+        "marks": [pytest.mark.EC_ADD, pytest.mark.Precompiles],
+    }
 ]

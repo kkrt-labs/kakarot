@@ -50,7 +50,9 @@ func test__ecadd_impl{
     Helpers.fill_array(
         bytes_expected_y_len, bytes_expected_y, bytes_expected_result + bytes_expected_x_len
     );
-    let (output_len, output: felt*, gas_used) = PrecompileEcAdd.run(calldata_len, calldata);
+    let (output_len, output: felt*, gas_used) = PrecompileEcAdd.run(
+        PrecompileEcAdd.PRECOMPILE_ADDRESS, calldata_len, calldata
+    );
 
     // Then
     TestHelpers.assert_array_equal(
@@ -59,89 +61,6 @@ func test__ecadd_impl{
         array_1_len=output_len,
         array_1=output,
     );
-
-    return ();
-}
-
-@external
-func test__ecadd_via_staticcall{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-
-    let (bytecode: felt*) = alloc();
-    local bytecode_len = 0;
-    let x_uint256: Uint256 = Uint256(1, 0);
-    let y_uint256: Uint256 = Uint256(2, 0);
-    // First place the parameters in memory, as in the evm.codes playground example for this precompile
-    let stack: model.Stack* = Stack.init();
-    // x0
-    let stack: model.Stack* = Stack.push(stack, x_uint256);
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(
-        bytecode_len, bytecode, stack
-    );
-    let ctx: model.ExecutionContext* = MemoryOperations.exec_mstore(ctx);
-    // y0
-    let stack: model.Stack* = Stack.push(ctx.stack, y_uint256);
-    let stack: model.Stack* = Stack.push(stack, Uint256(0x20, 0));
-    let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
-    let ctx: model.ExecutionContext* = MemoryOperations.exec_mstore(ctx);
-    // x1
-    let stack: model.Stack* = Stack.push(ctx.stack, x_uint256);
-    let stack: model.Stack* = Stack.push(stack, Uint256(0x40, 0));
-    let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
-    let ctx: model.ExecutionContext* = MemoryOperations.exec_mstore(ctx);
-    // y1
-    let stack: model.Stack* = Stack.push(ctx.stack, y_uint256);
-    let stack: model.Stack* = Stack.push(stack, Uint256(0x60, 0));
-    let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
-    let ctx: model.ExecutionContext* = MemoryOperations.exec_mstore(ctx);
-
-    // Now prepare the stack for the call
-    let gas: Uint256 = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
-    let (address_high, address_low) = split_felt(PrecompileEcAdd.PRECOMPILE_ADDRESS);
-    let address: Uint256 = Uint256(address_low, address_high);
-
-    let args_offset: Uint256 = Uint256(0, 0);
-    let args_size: Uint256 = Uint256(0x80, 0);
-
-    tempvar ret_offset: Uint256 = Uint256(0x80, 0);
-    tempvar ret_size: Uint256 = Uint256(0x40, 0);
-
-    let stack: model.Stack* = Stack.push(ctx.stack, ret_size);
-    let stack: model.Stack* = Stack.push(stack, ret_offset);
-    let stack: model.Stack* = Stack.push(stack, args_size);
-    let stack: model.Stack* = Stack.push(stack, args_offset);
-    let stack: model.Stack* = Stack.push(stack, address);
-    let stack: model.Stack* = Stack.push(stack, gas);
-    let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
-
-    // When
-    let ctx: model.ExecutionContext* = SystemOperations.exec_staticcall(ctx);
-    let ctx: model.ExecutionContext* = CallHelper.finalize_calling_context(ctx);
-
-    // Put the resulting x and y on the stack
-    let ctx: model.ExecutionContext* = MemoryOperations.exec_pop(ctx);
-    let stack = Stack.push(ctx.stack, Uint256(0xA0, 0));
-    let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
-    let ctx: model.ExecutionContext* = MemoryOperations.exec_mload(ctx);
-    let (stack: model.Stack*, local result_y: Uint256) = Stack.peek(ctx.stack, 0);
-    let stack = Stack.push(stack, Uint256(0x80, 0));
-    let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
-    let ctx: model.ExecutionContext* = MemoryOperations.exec_mload(ctx);
-    let (stack: model.Stack*, local result_x: Uint256) = Stack.peek(ctx.stack, 0);
-
-    // Then
-    let (x: BigInt3) = uint256_to_bigint(x_uint256);
-    let (y: BigInt3) = uint256_to_bigint(y_uint256);
-    let (expected_point: G1Point) = ALT_BN128.ec_add(G1Point(x, y), G1Point(x, y));
-    let (expected_x_uint256: Uint256) = bigint_to_uint256(expected_point.x);
-    let (expected_y_uint256: Uint256) = bigint_to_uint256(expected_point.y);
-
-    assert_uint256_eq(result_x, expected_x_uint256);
-    assert_uint256_eq(result_y, expected_y_uint256);
 
     return ();
 }

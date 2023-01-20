@@ -6,10 +6,11 @@ authors = []
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.9,<3.10"
 cairo-lang = "^0.10.1"
 openzeppelin-cairo-contracts = "0.5.0"
 amarna = "^0.1.5"
+starknet-py = "^0.10.0a0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"
@@ -22,6 +23,12 @@ setproctitle = "^1.3.2"
 pysha3 = "^1.0.2"
 web3 = "^5.31.1"
 python-dotenv = "^0.21.0"
+eth-utils = "<2.0.0"
+eth-abi = "<3.0.0"
+eth-account = "<0.8.0"
+eth-keys = "<0.4.0"
+autoflake = "^2.0.0"
+pycryptodome = "^3.16.0"
 
 [tool.pytest.ini_options]
 filterwarnings = [
@@ -102,14 +109,22 @@ markers = [
     "INVALID:        Opcode Value 0xfe - Designated invalid instruction",
     "Precompiles",
     "EC_RECOVER:     Precompile Value 0x01 - Elliptic curve digital signature algorithm (ECDSA) public key recovery function",
+    "RIPEMD160:      Precompile Value 0x03 - Hash function",
+    "EC_ADD:         Precompile Value 0x06 - Point addition (ADD) on the elliptic curve 'alt_bn128'",
     "Counter",
     "PlainOpcodes",
     "SolmateERC20",
     "SolmateERC721",
+    "UniswapV2ERC20",
 ]
 
 [tool.isort]
 profile = "black"
+
+[tool.autoflake]
+in_place = true
+remove_unused_variables = true
+remove_all_unused_imports = true
 
 [build-system]
 requires = ["poetry-core"]
