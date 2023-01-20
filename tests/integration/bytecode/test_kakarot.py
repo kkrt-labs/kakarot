@@ -18,7 +18,9 @@ class TestKakarot:
         "params",
         params_execute,
     )
-    async def test_execute(self, kakarot: StarknetContract, owner, params: dict, request):
+    async def test_execute(
+        self, kakarot: StarknetContract, owner, params: dict, request
+    ):
         with traceit.context(request.node.callspec.id):
             res = await kakarot.execute(
                 value=int(params["value"]),
