@@ -25,9 +25,12 @@ contract PlainOpcodesTest is Test {
         vm.assume(size < counterSize + 1);
         vm.assume(offset < counterSize);
         bytes memory expectedResult;
+        // see https://docs.soliditylang.org/en/v0.8.17/assembly.html#example
         assembly {
             counterSize := extcodesize(target)
+            // get a free memory location to write result into
             expectedResult := mload(0x40)
+            // update free memory pointer: write at 0x40 an empty memory address
             mstore(
                 0x40,
                 add(
@@ -35,7 +38,10 @@ contract PlainOpcodesTest is Test {
                     and(add(add(counterSize, 0x20), 0x1f), not(0x1f))
                 )
             )
+            // store the size of the result at expectedResult
+            // a bytes array stores its size in the first word
             mstore(expectedResult, counterSize)
+            // actually copy the counter code from offset expectedResult + 0x20 (size location)
             extcodecopy(target, add(expectedResult, 0x20), 0, counterSize)
         }
 
