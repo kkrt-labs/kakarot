@@ -12,7 +12,7 @@ from starkware.cairo.common.uint256 import (
     uint256_mul,
     uint256_eq,
     uint256_sub,
-    uint256_unsigned_div_rem
+    uint256_unsigned_div_rem,
 )
 from starkware.cairo.common.bool import FALSE, TRUE
 
