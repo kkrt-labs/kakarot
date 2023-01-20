@@ -148,7 +148,8 @@ def get_contract(contract_app: str, contract_name: str) -> Contract:
     ]
     if len(compilation_output) != 1:
         raise ValueError(
-            f"Cannot locate a unique compilation output for target {target_solidity_file_path[0]}"
+            f"Cannot locate a unique compilation output for target {target_solidity_file_path[0]}: "
+            f"found {len(compilation_output)} outputs:\n{compilation_output}"
         )
 
     contract = Web3().eth.contract(
