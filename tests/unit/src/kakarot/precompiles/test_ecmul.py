@@ -14,6 +14,7 @@ async def ecmul(starknet: Starknet):
 
 
 @pytest.mark.asyncio
+@pytest.mark.EC_MUL
 class TestEcMul:
     async def test_ecmul(self, ecmul):
 
