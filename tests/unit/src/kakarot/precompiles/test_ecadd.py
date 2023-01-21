@@ -30,3 +30,4 @@ class TestEcAdd:
         calldata = [random.randint(0, 255) for _ in range((calldata_len))]
 
         await ecadd.test__ecadd_impl(calldata=calldata).call()
+        await ecadd.test__ecadd_via_staticcall().call()
