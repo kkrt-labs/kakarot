@@ -143,9 +143,9 @@ func is_valid_signature{
 }
 
 @view
-func get_tx_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
-    calldata_len: felt, calldata: felt*
-) -> (hash: Uint256, v: felt, r: Uint256, s: Uint256) {
+func get_tx_hash{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(calldata_len: felt, calldata: felt*) -> (hash: Uint256, v: felt, r: Uint256, s: Uint256) {
     alloc_locals;
     let (local items: RLP.Item*) = alloc();
     // decode the rlp array
@@ -176,5 +176,5 @@ func get_tx_hash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
     // let (_eth_address) = eth_address.read();
     // ExternallyOwnedAccount.is_valid_eth_signature(tx_hash.res, r, s, v.n, _eth_address);
-    return (hash=tx_hash.res, v=v.n,r=r,s=s);
+    return (hash=tx_hash.res, v=v.n, r=r, s=s);
 }
