@@ -42,6 +42,8 @@ namespace ExternallyOwnedAccount {
     const SIGNATURE_LEN = 67;
     const LEGACY_SIGNATURE_LEN = 71;
 
+    const CHAIN_ID_LEN = 7;
+
     func chain_id_bytes() -> (data: felt*) {
         let (data_address) = get_label_location(chain_id_bytes_start);
         return (data=cast(data_address, felt*));
@@ -130,75 +132,65 @@ namespace ExternallyOwnedAccount {
     }(eth_address: felt, calldata_len: felt, calldata: felt*) -> (is_valid: felt) {
         alloc_locals;
         let tx_type = [calldata];
+        let (local items: RLP.Item*) = alloc();
+        let (list_ptr: felt*) = alloc();
+        let (keccak_ptr: felt*) = alloc();
+        let keccak_ptr_start = keccak_ptr;
+        let (local sub_items: RLP.Item*) = alloc();
         // eip-1559
         if (tx_type == 2) {
             let rlp_data = calldata + 1;
-            let (local items: RLP.Item*) = alloc();
             // decode the rlp array
             RLP.decode_rlp(calldata_len - 1, rlp_data, items);
             // remove the sig to hash the tx
             let data_len: felt = [items].data_len - SIGNATURE_LEN;
-            let (list_ptr: felt*) = alloc();
             // add the tx type, see here: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1559.md#specification
             assert [list_ptr] = tx_type;
             // encode the rlp list without the sig
             let (rlp_len: felt) = RLP.encode_rlp_list(data_len, [items].data, list_ptr + 1);
-            let (keccak_ptr: felt*) = alloc();
-            let keccak_ptr_start = keccak_ptr;
-            let (words: felt*) = alloc();
-            // transforms bytes to groups of 64 bits (used for hashing)
-            Helpers.bytes_to_bytes8_little_endian(
-                bytes_len=rlp_len + 1,
-                bytes=list_ptr,
-                index=0,
-                size=rlp_len + 1,
-                bytes8=0,
-                bytes8_shift=0,
-                dest=words,
-                dest_index=0,
-            );
-            // keccak_bigend because verify_eth_signature_uint256 requires bigend
-            let tx_hash = keccak_bigend{keccak_ptr=keccak_ptr}(inputs=words, n_bytes=rlp_len + 1);
-            let (local sub_items: RLP.Item*) = alloc();
+            let (tx_hash: Uint256) = hash_rlp{keccak_ptr=keccak_ptr}(rlp_len + 1, list_ptr);
             // decode the rlp elements in the tx (was in the list element)
             RLP.decode_rlp([items].data_len, [items].data, sub_items);
-            let v = Helpers.bytes_to_felt(sub_items[V_IDX].data_len, sub_items[V_IDX].data, 0);
-            let r = Helpers.bytes32_to_uint256(sub_items[R_IDX].data);
-            let s = Helpers.bytes32_to_uint256(sub_items[S_IDX].data);
-            finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
-            return is_valid_eth_signature(tx_hash.res, r, s, v.n, eth_address);
+            return is_valid_eth_signature(tx_hash, sub_items, eth_address, 2, keccak_ptr, keccak_ptr_start);
         } else {
-            let (local items: RLP.Item*) = alloc();
+            // legacy tx
             RLP.decode_rlp(calldata_len, calldata, items);
+            // signature len is different in legacy see here: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md
             let data_len: felt = [items].data_len - LEGACY_SIGNATURE_LEN;
-            let (list_ptr: felt*) = alloc();
+            // rawTx to hash must include (chainId, 0, 0) see previous link
             let (tx_data: felt*) = alloc();
             Helpers.fill_array(data_len, [items].data, tx_data);
-            let (chain_id_data: felt*) = ExternallyOwnedAccount.chain_id_bytes();
-            Helpers.fill_array(7, chain_id_data, tx_data + data_len);
-            let (rlp_len: felt) = RLP.encode_rlp_list(data_len + 7, tx_data, list_ptr);
-            let (keccak_ptr: felt*) = alloc();
-            let keccak_ptr_start = keccak_ptr;
-            let (words: felt*) = alloc();
-            Helpers.bytes_to_bytes8_little_endian(
-                bytes_len=rlp_len,
-                bytes=list_ptr,
-                index=0,
-                size=rlp_len,
-                bytes8=0,
-                bytes8_shift=0,
-                dest=words,
-                dest_index=0,
-            );
-            let tx_hash = keccak_bigend{keccak_ptr=keccak_ptr}(inputs=words, n_bytes=rlp_len);
-            let (local sub_items: RLP.Item*) = alloc();
+            let (chain_id_data: felt*) = chain_id_bytes();
+            Helpers.fill_array(CHAIN_ID_LEN, chain_id_data, tx_data + data_len);
+            // decode the rlp elements in the tx (was in the list element)
+            let (rlp_len: felt) = RLP.encode_rlp_list(data_len + CHAIN_ID_LEN, tx_data, list_ptr);
+            let (tx_hash: Uint256) = hash_rlp{keccak_ptr=keccak_ptr}(rlp_len, list_ptr); 
             RLP.decode_rlp([items].data_len, [items].data, sub_items);
-            let v = Helpers.bytes_to_felt(sub_items[6].data_len, sub_items[6].data, 0);
-            let r = Helpers.bytes32_to_uint256(sub_items[7].data);
-            let s = Helpers.bytes32_to_uint256(sub_items[8].data);
-            finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
-            return is_valid_eth_signature(tx_hash.res, r, s, v.n - CHAINID_V_MODIFIER, eth_address);
+            return is_valid_eth_signature(tx_hash, sub_items, eth_address, 0, keccak_ptr, keccak_ptr_start);
         }
+    }
+
+    func hash_rlp{
+        keccak_ptr: felt*,
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        bitwise_ptr: BitwiseBuiltin*,
+        range_check_ptr,
+    }(rlp_len: felt, rlp: felt*) -> (tx_hash: Uint256) {
+        alloc_locals;
+        let (local words: felt*) = alloc();
+        Helpers.bytes_to_bytes8_little_endian(
+            bytes_len=rlp_len,
+            bytes=rlp,
+            index=0,
+            size=rlp_len,
+            bytes8=0,
+            bytes8_shift=0,
+            dest=words,
+            dest_index=0,
+        );
+        let tx_hash = keccak_bigend{keccak_ptr=keccak_ptr}(inputs=words, n_bytes=rlp_len);
+        return (tx_hash=tx_hash.res);
     }
 
     // @notice returns 1 (true) and does not fail if the signature is valid
@@ -211,15 +203,27 @@ namespace ExternallyOwnedAccount {
         pedersen_ptr: HashBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
-    }(msg_hash: Uint256, r: Uint256, s: Uint256, v: felt, eth_address: felt) -> (is_valid: felt) {
+    }(msg_hash: Uint256, sub_items: RLP.Item*, eth_address: felt, tx_type: felt, keccak_ptr: felt*, keccak_ptr_start: felt*) -> (is_valid: felt) {
         alloc_locals;
-        let (keccak_ptr: felt*) = alloc();
-        local keccak_ptr_start: felt* = keccak_ptr;
-        with keccak_ptr {
-            verify_eth_signature_uint256(msg_hash=msg_hash, r=r, s=s, v=v, eth_address=eth_address);
+        if(tx_type == 2) {
+            let v = Helpers.bytes_to_felt(sub_items[V_IDX].data_len, sub_items[V_IDX].data, 0);
+            let r = Helpers.bytes32_to_uint256(sub_items[R_IDX].data);
+            let s = Helpers.bytes32_to_uint256(sub_items[S_IDX].data);
+            with keccak_ptr {
+                verify_eth_signature_uint256(msg_hash=msg_hash, r=r, s=s, v=v.n, eth_address=eth_address);
+            }
+            finalize_keccak(keccak_ptr_start, keccak_ptr);
+            return (is_valid=1);
+        }else{
+            let v = Helpers.bytes_to_felt(sub_items[6].data_len, sub_items[6].data, 0);
+            let r = Helpers.bytes32_to_uint256(sub_items[7].data);
+            let s = Helpers.bytes32_to_uint256(sub_items[8].data);
+            with keccak_ptr {
+                verify_eth_signature_uint256(msg_hash=msg_hash, r=r, s=s, v=v.n - CHAINID_V_MODIFIER, eth_address=eth_address);
+            }
+            finalize_keccak(keccak_ptr_start, keccak_ptr);
+            return (is_valid=1);
         }
-        finalize_keccak(keccak_ptr_start, keccak_ptr);
-        return (is_valid=1);
     }
 
     func is_valid_signature{
@@ -235,6 +239,12 @@ namespace ExternallyOwnedAccount {
         let r: Uint256 = Uint256(low=signature[1], high=signature[2]);
         let s: Uint256 = Uint256(low=signature[3], high=signature[4]);
         let msg_hash: Uint256 = Uint256(low=hash[0], high=hash[1]);
-        return ExternallyOwnedAccount.is_valid_eth_signature(msg_hash, r, s, v, _eth_address);
+        let (keccak_ptr: felt*) = alloc();
+        let keccak_ptr_start = keccak_ptr;
+        with keccak_ptr {
+            verify_eth_signature_uint256(msg_hash=msg_hash, r=r, s=s, v=v, eth_address=_eth_address);
+        }
+        finalize_keccak(keccak_ptr_start, keccak_ptr);
+        return (is_valid=1);
     }
 }
