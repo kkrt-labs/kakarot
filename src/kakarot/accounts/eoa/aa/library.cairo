@@ -151,7 +151,9 @@ namespace ExternallyOwnedAccount {
             let (tx_hash: Uint256) = hash_rlp{keccak_ptr=keccak_ptr}(rlp_len + 1, list_ptr);
             // decode the rlp elements in the tx (was in the list element)
             RLP.decode_rlp([items].data_len, [items].data, sub_items);
-            return is_valid_eth_signature(tx_hash, sub_items, eth_address, 2, keccak_ptr, keccak_ptr_start);
+            return is_valid_eth_signature(
+                tx_hash, sub_items, eth_address, 2, keccak_ptr, keccak_ptr_start
+            );
         } else {
             // legacy tx
             RLP.decode_rlp(calldata_len, calldata, items);
@@ -164,9 +166,11 @@ namespace ExternallyOwnedAccount {
             Helpers.fill_array(CHAIN_ID_LEN, chain_id_data, tx_data + data_len);
             // decode the rlp elements in the tx (was in the list element)
             let (rlp_len: felt) = RLP.encode_rlp_list(data_len + CHAIN_ID_LEN, tx_data, list_ptr);
-            let (tx_hash: Uint256) = hash_rlp{keccak_ptr=keccak_ptr}(rlp_len, list_ptr); 
+            let (tx_hash: Uint256) = hash_rlp{keccak_ptr=keccak_ptr}(rlp_len, list_ptr);
             RLP.decode_rlp([items].data_len, [items].data, sub_items);
-            return is_valid_eth_signature(tx_hash, sub_items, eth_address, 0, keccak_ptr, keccak_ptr_start);
+            return is_valid_eth_signature(
+                tx_hash, sub_items, eth_address, 0, keccak_ptr, keccak_ptr_start
+            );
         }
     }
 
@@ -203,23 +207,34 @@ namespace ExternallyOwnedAccount {
         pedersen_ptr: HashBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
-    }(msg_hash: Uint256, sub_items: RLP.Item*, eth_address: felt, tx_type: felt, keccak_ptr: felt*, keccak_ptr_start: felt*) -> (is_valid: felt) {
+    }(
+        msg_hash: Uint256,
+        sub_items: RLP.Item*,
+        eth_address: felt,
+        tx_type: felt,
+        keccak_ptr: felt*,
+        keccak_ptr_start: felt*,
+    ) -> (is_valid: felt) {
         alloc_locals;
-        if(tx_type == 2) {
+        if (tx_type == 2) {
             let v = Helpers.bytes_to_felt(sub_items[V_IDX].data_len, sub_items[V_IDX].data, 0);
             let r = Helpers.bytes32_to_uint256(sub_items[R_IDX].data);
             let s = Helpers.bytes32_to_uint256(sub_items[S_IDX].data);
             with keccak_ptr {
-                verify_eth_signature_uint256(msg_hash=msg_hash, r=r, s=s, v=v.n, eth_address=eth_address);
+                verify_eth_signature_uint256(
+                    msg_hash=msg_hash, r=r, s=s, v=v.n, eth_address=eth_address
+                );
             }
             finalize_keccak(keccak_ptr_start, keccak_ptr);
             return (is_valid=1);
-        }else{
+        } else {
             let v = Helpers.bytes_to_felt(sub_items[6].data_len, sub_items[6].data, 0);
             let r = Helpers.bytes32_to_uint256(sub_items[7].data);
             let s = Helpers.bytes32_to_uint256(sub_items[8].data);
             with keccak_ptr {
-                verify_eth_signature_uint256(msg_hash=msg_hash, r=r, s=s, v=v.n - CHAINID_V_MODIFIER, eth_address=eth_address);
+                verify_eth_signature_uint256(
+                    msg_hash=msg_hash, r=r, s=s, v=v.n - CHAINID_V_MODIFIER, eth_address=eth_address
+                );
             }
             finalize_keccak(keccak_ptr_start, keccak_ptr);
             return (is_valid=1);
@@ -242,7 +257,9 @@ namespace ExternallyOwnedAccount {
         let (keccak_ptr: felt*) = alloc();
         let keccak_ptr_start = keccak_ptr;
         with keccak_ptr {
-            verify_eth_signature_uint256(msg_hash=msg_hash, r=r, s=s, v=v, eth_address=_eth_address);
+            verify_eth_signature_uint256(
+                msg_hash=msg_hash, r=r, s=s, v=v, eth_address=_eth_address
+            );
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
         return (is_valid=1);
