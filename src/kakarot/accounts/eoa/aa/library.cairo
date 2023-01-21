@@ -39,7 +39,8 @@ namespace ExternallyOwnedAccount {
     const CHAINID_V_MODIFIER = 35 + 2 * Constants.CHAIN_ID;
 
     // @dev 2 * len_byte + 2 * string_len (32) + v
-    const SIGNATURE_LEN = 71;
+    const SIGNATURE_LEN = 67;
+    const LEGACY_SIGNATURE_LEN = 71;
 
     func chain_id_bytes() -> (data: felt*) {
         let (data_address) = get_label_location(chain_id_bytes_start);
@@ -169,10 +170,7 @@ namespace ExternallyOwnedAccount {
         } else {
             let (local items: RLP.Item*) = alloc();
             RLP.decode_rlp(calldata_len, calldata, items);
-            let data_len: felt = [items].data_len - SIGNATURE_LEN;
-            let (list_ptr: felt*) = alloc();
-            RLP.decode_rlp(calldata_len, calldata, items);
-            let data_len: felt = [items].data_len - ExternallyOwnedAccount.SIGNATURE_LEN;
+            let data_len: felt = [items].data_len - LEGACY_SIGNATURE_LEN;
             let (list_ptr: felt*) = alloc();
             let (tx_data: felt*) = alloc();
             Helpers.fill_array(data_len, [items].data, tx_data);
