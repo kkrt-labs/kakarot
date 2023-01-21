@@ -55,7 +55,6 @@ namespace ExternallyOwnedAccount {
         dw 0x80;
     }
 
-
     struct Call {
         to: felt,
         selector: felt,
@@ -178,8 +177,8 @@ namespace ExternallyOwnedAccount {
             let (tx_data: felt*) = alloc();
             Helpers.fill_array(data_len, [items].data, tx_data);
             let (chain_id_data: felt*) = ExternallyOwnedAccount.chain_id_bytes();
-            Helpers.fill_array(7, chain_id_data, tx_data+data_len);
-            let (rlp_len: felt) = RLP.encode_rlp_list(data_len+7, tx_data, list_ptr);
+            Helpers.fill_array(7, chain_id_data, tx_data + data_len);
+            let (rlp_len: felt) = RLP.encode_rlp_list(data_len + 7, tx_data, list_ptr);
             let (keccak_ptr: felt*) = alloc();
             let keccak_ptr_start = keccak_ptr;
             let (words: felt*) = alloc();

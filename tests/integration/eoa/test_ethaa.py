@@ -1,9 +1,8 @@
 import os
 
 import pytest
-import web3
 import rlp
-from eth_keys import keys
+import web3
 from eth_account._utils.legacy_transactions import (
     ChainAwareUnsignedTransaction,
     Transaction,
@@ -12,6 +11,7 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
     strip_signature,
 )
+from eth_keys import keys
 from starkware.starkware_utils.error_handling import StarkException
 
 from tests.utils.signer import MockEthSigner
@@ -105,8 +105,19 @@ class TestExternallyOwnedAccount:
             tmp_account = web3.Account().from_key(address.private_key)
             raw_tx = tmp_account.sign_transaction(legacy_tx)
 
-            print(keys.ecdsa_verify(
-                message_hash=serializable_unsigned_transaction_from_dict(legacy_tx).hash(), signature=keys.Signature(vrs=[raw_tx.v-35-1263227476*2, raw_tx.r, raw_tx.s]), public_key=keys.PrivateKey(address.private_key.to_bytes()).public_key))
+            print(
+                keys.ecdsa_verify(
+                    message_hash=serializable_unsigned_transaction_from_dict(
+                        legacy_tx
+                    ).hash(),
+                    signature=keys.Signature(
+                        vrs=[raw_tx.v - 35 - 1263227476 * 2, raw_tx.r, raw_tx.s]
+                    ),
+                    public_key=keys.PrivateKey(
+                        address.private_key.to_bytes()
+                    ).public_key,
+                )
+            )
 
             await eth_account.send_transaction(
                 address.starknet_contract,
