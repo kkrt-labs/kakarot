@@ -71,9 +71,7 @@ class TestUniswapV2Factory:
             assert await pair.token0() == tokens[0]
             assert await pair.token1() == tokens[1]
 
-        @pytest.mark.skip("gas_usage is not yet returned by kakarot")
         async def test_should_use_correct_gas(self, factory, owner):
-            # TODO: see https://github.com/sayajin-labs/kakarot/issues/428
             tx = await factory.createPair(
                 *TEST_ADDRESSES, caller_address=owner.starknet_address
             )
