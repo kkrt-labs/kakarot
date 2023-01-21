@@ -1,10 +1,8 @@
-
 import pytest
 import web3
 from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
-from eth_keys import keys
 
 from tests.utils.signer import MockEthSigner
 
@@ -41,8 +39,7 @@ class TestExternallyOwnedAccount:
             address = addresses[address_idx]
             tmp_account = web3.Account.from_key(address.private_key)
             raw_tx = tmp_account.sign_transaction(default_tx)
-            tx_hash = serializable_unsigned_transaction_from_dict(
-                default_tx).hash()
+            tx_hash = serializable_unsigned_transaction_from_dict(default_tx).hash()
             call_info = await address.starknet_contract.is_valid_signature(
                 [*int_to_uint256(web3.Web3.toInt(tx_hash))],
                 [
