@@ -276,17 +276,17 @@ namespace ExternallyOwnedAccount {
     // }(kakarot_address: felt, eth_address: felt, calldata_len: felt, calldata: felt*) -> (response_len: felt, response: felt*) {
     //     alloc_locals;
 
-    //     let (tx_info) = get_tx_info();
+    // let (tx_info) = get_tx_info();
     //     with_attr error_message("Account: deprecated tx version") {
     //         assert is_le_felt(1, tx_info.version) = TRUE;
     //     }
 
-    //     let (caller) = get_caller_address();
+    // let (caller) = get_caller_address();
     //     with_attr error_message("Account: reentrant call") {
     //         assert caller = 0;
     //     }
 
-    //     let (local items: felt*) = alloc();
+    // let (local items: felt*) = alloc();
     //     let (local sub_items: felt*) = alloc();
     //     let (local starknet_calldata: felt*) = alloc();
     //     if (tx_type == 2) {
@@ -306,5 +306,5 @@ namespace ExternallyOwnedAccount {
     //         RLP.decode_rlp(calldata_len - 1, calldata + 1, items);
     //         RLP.decode_rlp([items].data_len, [items].data, sub_items);
     //     }
-    // } 
+    // }
 }
