@@ -32,9 +32,9 @@ async def default_tx() -> dict:
     return {
         "nonce": 1,
         "chainId": 1263227476,
-        "maxFeePerGas": 1000,
-        "maxPriorityFeePerGas": 667667,
-        "gas": 999999999,
+        "maxFeePerGas": 30549100000000000,
+        "maxPriorityFeePerGas": 20000000000,
+        "gas": 21000,
         "to": bytes.fromhex("95222290dd7278aa3ddd389cc1e1d165cc4bafe5"),
         "value": 10000000000000000,
         "data": b"",
@@ -46,8 +46,8 @@ async def legacy_tx() -> dict:
     return {
         "chainId": 1263227476,
         "nonce": 1,
-        "gasPrice": 1000,
-        "gas": 999999999,
+        "gasPrice": 14000000000,
+        "gas": 21000,
         "to": bytes.fromhex("95222290dd7278aa3ddd389cc1e1d165cc4bafe5"),
         "value": 10000000000000000,
         "data": b"",

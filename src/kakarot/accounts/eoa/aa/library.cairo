@@ -4,14 +4,15 @@ from utils.utils import Helpers
 from kakarot.constants import Constants
 from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_secp.signature import verify_eth_signature_uint256
-from starkware.starknet.common.syscalls import get_tx_info
+from starkware.starknet.common.syscalls import get_tx_info, get_caller_address, call_contract
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.cairo_keccak.keccak import keccak, finalize_keccak, keccak_bigend
 from utils.rlp import RLP
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_le, is_le_felt
 from starkware.cairo.common.registers import get_label_location
+from starkware.cairo.common.bool import TRUE, FALSE
 
 namespace ExternallyOwnedAccount {
     // Constants
@@ -137,6 +138,8 @@ namespace ExternallyOwnedAccount {
         let (keccak_ptr: felt*) = alloc();
         let keccak_ptr_start = keccak_ptr;
         let (local sub_items: RLP.Item*) = alloc();
+        let (tx_info) = get_tx_info();
+
         // eip-1559
         if (tx_type == 2) {
             let rlp_data = calldata + 1;
@@ -264,4 +267,44 @@ namespace ExternallyOwnedAccount {
         finalize_keccak(keccak_ptr_start, keccak_ptr);
         return (is_valid=1);
     }
+
+    // func execute{
+    //     syscall_ptr: felt*,
+    //     pedersen_ptr: HashBuiltin*,
+    //     bitwise_ptr: BitwiseBuiltin*,
+    //     range_check_ptr,
+    // }(kakarot_address: felt, eth_address: felt, calldata_len: felt, calldata: felt*) -> (response_len: felt, response: felt*) {
+    //     alloc_locals;
+
+    //     let (tx_info) = get_tx_info();
+    //     with_attr error_message("Account: deprecated tx version") {
+    //         assert is_le_felt(1, tx_info.version) = TRUE;
+    //     }
+
+    //     let (caller) = get_caller_address();
+    //     with_attr error_message("Account: reentrant call") {
+    //         assert caller = 0;
+    //     }
+
+    //     let (local items: felt*) = alloc();
+    //     let (local sub_items: felt*) = alloc();
+    //     let (local starknet_calldata: felt*) = alloc();
+    //     if (tx_type == 2) {
+    //         RLP.decode_rlp(calldata_len - 1, calldata + 1, items);
+    //         RLP.decode_rlp([items].data_len, [items].data, sub_items);
+    //         assert starknet_calldata[0] = 1; // temporary use account registry
+    //         assert starknet_calldata[1] = Helpers.bytes_to_felt(sub_items[AMOUNT_IDX].data_len, sub_items[AMOUNT_IDX].data, 0);
+    //         assert starknet_calldata[2] = Helpers.bytes_to_felt(sub_items[GAS_LIMIT_IDX].data_len, sub_items[GAS_LIMIT_IDX].data, 0);
+    //         assert starknet_calldata[3] = [items].data_len;
+    //         call_contract(
+    //             contract_address=kakarot_address,
+    //             function_selector=0xB18CF02D874A8ACA5B6480CE1D57FA9C6C58015FD68F6B6B6DF59F63BBA85D,
+    //             calldata_size=this_call.calldata_len,
+    //             calldata=starknet_calldata
+    //         );
+    //     } else {
+    //         RLP.decode_rlp(calldata_len - 1, calldata + 1, items);
+    //         RLP.decode_rlp([items].data_len, [items].data, sub_items);
+    //     }
+    // } 
 }
