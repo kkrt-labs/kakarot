@@ -51,6 +51,39 @@ namespace TestHelpers {
         return ctx;
     }
 
+    func init_context_at_address_with_stack{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(
+        address: felt, bytecode_len: felt, bytecode: felt*, stack: model.Stack*
+    ) -> model.ExecutionContext* {
+        alloc_locals;
+
+        let self: model.ExecutionContext* = init_context_with_stack(bytecode_len, bytecode, stack);
+
+        return new model.ExecutionContext(
+            call_context=self.call_context,
+            program_counter=self.program_counter,
+            stopped=self.stopped,
+            return_data=self.return_data,
+            return_data_len=self.return_data_len,
+            stack=self.stack,
+            memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit,
+            gas_price=self.gas_price,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=address,
+            calling_context=self.calling_context,
+            sub_context=self.sub_context,
+            destroy_contracts_len=self.destroy_contracts_len,
+            destroy_contracts=self.destroy_contracts,
+            read_only=self.read_only,
+            );
+    }
+
     // @notice Init an execution context where bytecode has "bytecode_count" entries of "value".
     func init_context_with_bytecode{
         syscall_ptr: felt*,

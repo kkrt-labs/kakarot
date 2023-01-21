@@ -28,38 +28,21 @@ def wrap_for_kakarot(
 
         async def _wrapped(contract, *args, **kwargs):
             abi = contract.get_function_by_name(fun).abi
-            if "gas_limit" in kwargs:
-                gas_limit = kwargs["gas_limit"]
-                del kwargs["gas_limit"]
-            else:
-                gas_limit = 1000000
+            gas_limit = kwargs.pop("gas_limit", 1_000_000)
+            value = kwargs.pop("value", 0)
+            caller_address = kwargs.pop("caller_address", None)
+            call = kakarot.execute_at_address(
+                address=evm_contract_address,
+                value=value,
+                gas_limit=gas_limit,
+                calldata=hex_string_to_bytes_array(
+                    contract.encodeABI(fun, args, kwargs)
+                ),
+            )
 
-            if abi["stateMutability"] == "view":
-                call = kakarot.execute_at_address(
-                    address=evm_contract_address,
-                    value=0,
-                    gas_limit=gas_limit,
-                    calldata=hex_string_to_bytes_array(
-                        contract.encodeABI(fun, args, kwargs)
-                    ),
-                )
+            if abi["stateMutability"] == "view" and caller_address is None:
                 res = await call.call()
             else:
-                caller_address = kwargs["caller_address"]
-                del kwargs["caller_address"]
-                if "value" in kwargs:
-                    value = kwargs["value"]
-                    del kwargs["value"]
-                else:
-                    value = 0
-                call = kakarot.execute_at_address(
-                    address=evm_contract_address,
-                    value=value,
-                    gas_limit=1000000,
-                    calldata=hex_string_to_bytes_array(
-                        contract.encodeABI(fun, args, kwargs)
-                    ),
-                )
                 res = await call.execute(caller_address=caller_address)
             if call._traced:
                 traceit.pop_record()
@@ -77,29 +60,36 @@ def wrap_for_kakarot(
             decoded = codec.decode(types, data)
             normalized = map_abi_data(BASE_RETURN_NORMALIZERS, types, decoded)
             result = normalized[0] if len(normalized) == 1 else normalized
-            log_receipts = [
-                LogReceipt(
-                    address=Web3.toChecksumAddress(f"{evm_contract_address:040x}"),
-                    blockHash=bytes(),
-                    blockNumber=bytes(),
-                    data=bytes(event.data),
-                    logIndex=log_index,
-                    topic=bytes(),
-                    topics=[
-                        bytes.fromhex(
-                            # event "keys" in cairo are event "topics" in solidity
-                            # they're returned as list where consecutive values are indeed
-                            # low, high, low, high, etc. of the Uint256 cairo representation
-                            # of the bytes32 topics. This recomputes the original topic
-                            f"{(event.keys[i] + 2**128 * event.keys[i + 1]):064x}"
+            log_receipts = []
+            for log_index, event in enumerate(res.raw_events):
+                # Using try/except as some events are emitted by cairo code and not LOG opcode
+                try:
+                    log_receipts.append(
+                        LogReceipt(
+                            address=Web3.toChecksumAddress(
+                                f"{evm_contract_address:040x}"
+                            ),
+                            blockHash=bytes(),
+                            blockNumber=bytes(),
+                            data=bytes(event.data),
+                            logIndex=log_index,
+                            topic=bytes(),
+                            topics=[
+                                bytes.fromhex(
+                                    # event "keys" in cairo are event "topics" in solidity
+                                    # they're returned as list where consecutive values are indeed
+                                    # low, high, low, high, etc. of the Uint256 cairo representation
+                                    # of the bytes32 topics. This recomputes the original topic
+                                    f"{(event.keys[i] + 2**128 * event.keys[i + 1]):064x}"
+                                )
+                                for i in range(0, len(event.keys), 2)
+                            ],
+                            transactionHash=bytes(),
+                            transactionIndex=0,
                         )
-                        for i in range(0, len(event.keys), 2)
-                    ],
-                    transactionHash=bytes(),
-                    transactionIndex=0,
-                )
-                for log_index, event in enumerate(res.raw_events)
-            ]
+                    )
+                except:
+                    continue
 
             for event_abi in contract.events._events:
                 logs = []
@@ -158,7 +148,8 @@ def get_contract(contract_app: str, contract_name: str) -> Contract:
     ]
     if len(compilation_output) != 1:
         raise ValueError(
-            f"Cannot locate a unique compilation output for target {target_solidity_file_path[0]}"
+            f"Cannot locate a unique compilation output for target {target_solidity_file_path[0]}: "
+            f"found {len(compilation_output)} outputs:\n{compilation_output}"
         )
 
     contract = Web3().eth.contract(

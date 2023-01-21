@@ -1,10 +1,6 @@
 import pytest
 from web3 import Web3
 
-from tests.integration.helpers.helpers import (
-    extract_memory_from_execute,
-    hex_string_to_bytes_array,
-)
 from tests.utils.errors import kakarot_error
 
 
@@ -71,242 +67,23 @@ class TestPlainOpcodes:
             )
 
     class TestExtCodeCopy:
-        async def test_extcodecopy_counter(self, counter, kakarot):
-            evm_contract_address = (
-                counter.contract_account.deploy_call_info.result.evm_contract_address
-            )
+        @pytest.mark.parametrize("offset, size", [[0, 32], [32, 32], [0, None]])
+        async def test_should_return_counter_code(
+            self, plain_opcodes, counter, offset, size
+        ):
+            """
+            The counter.bytecode is indeed the structured as follows
 
-            # instructions
-            push1 = 60
-            push20 = 73
-            extcodecopy = "3c"
+                constructor bytecode      contract bytecode       calldata
+            |------------------------FE|----------------------|---------------|
 
-            # stack elements
-            offset = 0
-            size = 8
-            dest_offset = 0
-
-            byte_code = f"{push1}\
-            {size:02x}\
-            {push1}\
-            {offset:02x}\
-            {push1}\
-            {dest_offset:02x}\
-            {push20}\
-            {evm_contract_address:x}\
-            {extcodecopy}"
-
-            res = await kakarot.execute(
-                value=int(0),
-                bytecode=hex_string_to_bytes_array(byte_code),
-                calldata=hex_string_to_bytes_array(""),
-            ).call(caller_address=1)
-
-            expected_memory_result = hex_string_to_bytes_array(counter.bytecode.hex())
-            memory_result = extract_memory_from_execute(res.result)
-
-            assert (
-                memory_result[dest_offset : size + dest_offset]
-                == expected_memory_result[offset : offset + size]
-            )
-
-            # instructions
-            push1 = 60
-            push20 = 73
-            extcodecopy = "3c"
-
-            # stack elements
-            offset = 10
-            size = 9
-            dest_offset = 100
-
-            byte_code = f"{push1}\
-            {size:02x}\
-            {push1}\
-            {offset:02x}\
-            {push1}\
-            {dest_offset:02x}\
-            {push20}\
-            {evm_contract_address:x}\
-            {extcodecopy}"
-
-            res = await kakarot.execute(
-                value=int(0),
-                bytecode=hex_string_to_bytes_array(byte_code),
-                calldata=hex_string_to_bytes_array(""),
-            ).call(caller_address=1)
-
-            memory_result = extract_memory_from_execute(res.result)
-
-            assert (
-                memory_result[dest_offset : size + dest_offset]
-                == expected_memory_result[offset : offset + size]
-            )
-
-        @pytest.mark.skip(
-            "Investigate why memory results differ in cases where offset and size are gte twenty"
-        )
-        async def test_extcodecopy_offset_and_size_gte_twenty_a(self, counter, kakarot):
-            evm_contract_address = (
-                counter.contract_account.deploy_call_info.result.evm_contract_address
-            )
-            expected_memory_result = hex_string_to_bytes_array(counter.bytecode.hex())
-
-            # instructions
-            push1 = 60
-            push20 = 73
-            extcodecopy = "3c"
-
-            # stack elements
-            offset = 10
-            size = 10
-            dest_offset = 0
-
-            byte_code = f"{push1}\
-            {size:02x}\
-            {push1}\
-            {offset:02x}\
-            {push1}\
-            {dest_offset:02x}\
-            {push20}\
-            {evm_contract_address:x}\
-            {extcodecopy}"
-
-            res = await kakarot.execute(
-                value=int(0),
-                bytecode=hex_string_to_bytes_array(byte_code),
-                calldata=hex_string_to_bytes_array(""),
-            ).call(caller_address=1)
-
-            memory_result = extract_memory_from_execute(res.result)
-
-            assert (
-                memory_result[dest_offset : size + dest_offset]
-                == expected_memory_result[offset : offset + size]
-            )
-
-        @pytest.mark.skip(
-            "Investigate why memory results differ in cases where offset and size are gte twenty"
-        )
-        async def test_extcodecopy_offset_and_size_gte_twenty_b(self, counter, kakarot):
-            evm_contract_address = (
-                counter.contract_account.deploy_call_info.result.evm_contract_address
-            )
-            expected_memory_result = hex_string_to_bytes_array(counter.bytecode.hex())
-
-            # instructions
-            push1 = 60
-            push20 = 73
-            extcodecopy = "3c"
-
-            # stack elements
-            offset = 11
-            size = 9
-            dest_offset = 0
-
-            byte_code = f"{push1}\
-            {size:02x}\
-            {push1}\
-            {offset:02x}\
-            {push1}\
-            {dest_offset:02x}\
-            {push20}\
-            {evm_contract_address:x}\
-            {extcodecopy}"
-
-            res = await kakarot.execute(
-                value=int(0),
-                bytecode=hex_string_to_bytes_array(byte_code),
-                calldata=hex_string_to_bytes_array(""),
-            ).call(caller_address=1)
-
-            memory_result = extract_memory_from_execute(res.result)
-
-            assert (
-                memory_result[dest_offset : size + dest_offset]
-                == expected_memory_result[offset : offset + size]
-            )
-
-        @pytest.mark.skip(
-            "Investigate why memory results differ in cases where offset and size are gte twenty"
-        )
-        async def test_extcodecopy_offset_and_size_gte_twenty_c(self, counter, kakarot):
-            evm_contract_address = (
-                counter.contract_account.deploy_call_info.result.evm_contract_address
-            )
-            expected_memory_result = hex_string_to_bytes_array(counter.bytecode.hex())
-
-            # instructions
-            push1 = 60
-            push20 = 73
-            extcodecopy = "3c"
-
-            # stack elements
-            offset = 18
-            size = 3
-            dest_offset = 0
-
-            byte_code = f"{push1}\
-            {size:02x}\
-            {push1}\
-            {offset:02x}\
-            {push1}\
-            {dest_offset:02x}\
-            {push20}\
-            {evm_contract_address:x}\
-            {extcodecopy}"
-
-            res = await kakarot.execute(
-                value=int(0),
-                bytecode=hex_string_to_bytes_array(byte_code),
-                calldata=hex_string_to_bytes_array(""),
-            ).call(caller_address=1)
-
-            memory_result = extract_memory_from_execute(res.result)
-
-            assert (
-                memory_result[dest_offset : size + dest_offset]
-                == expected_memory_result[offset : offset + size]
-            )
-
-        @pytest.mark.skip(
-            "Investigate why there is a difference between local and deployed contract code in the erc20 contract"
-        )
-        async def test_extcodecopy_erc20(self, erc_20, kakarot):
-            evm_contract_address = (
-                erc_20.contract_account.deploy_call_info.result.evm_contract_address
-            )
-
-            # instructions
-            push1 = 60
-            push20 = 73
-            extcodecopy = "3c"
-
-            # stack elements
-            offset = 0
-            size = 8
-            dest_offset = 0
-
-            byte_code = f"{push1}\
-            {size:02x}\
-            {push1}\
-            {offset:02x}\
-            {push1}\
-            {dest_offset:02x}\
-            {push20}\
-            {evm_contract_address:x}\
-            {extcodecopy}"
-
-            res = await kakarot.execute(
-                value=int(0),
-                bytecode=hex_string_to_bytes_array(byte_code),
-                calldata=hex_string_to_bytes_array(""),
-            ).call(caller_address=1)
-
-            expected_memory_result = hex_string_to_bytes_array(erc_20.bytecode.hex())
-            memory_result = extract_memory_from_execute(res.result)
-            # asserting to the first discrepancy
-            assert memory_result[dest_offset:2] == expected_memory_result[offset:2]
+            When deploying a contract, the constructor bytecode is run but not
+            stored eventually,
+            """
+            deployed_bytecode = counter.bytecode[counter.bytecode.index(0xFE) + 1 :]
+            size = len(deployed_bytecode) if size is None else size
+            bytecode = await plain_opcodes.opcodeExtCodeCopy(offset=offset, size=size)
+            assert bytecode == deployed_bytecode[offset : offset + size]
 
     class TestLog:
         @pytest.fixture
@@ -345,3 +122,71 @@ class TestPlainOpcodes:
         async def test_should_emit_log4(self, plain_opcodes, addresses, event):
             await plain_opcodes.opcodeLog4(caller_address=addresses[0].starknet_address)
             assert plain_opcodes.events.Log4 == [event]
+
+    class TestCreate2:
+        async def test_should_deploy_bytecode_at_address(
+            self,
+            plain_opcodes,
+            counter,
+            addresses,
+            get_starknet_address,
+            get_solidity_contract,
+        ):
+            salt = 1234
+            evm_address = await plain_opcodes.create2(
+                bytecode=counter.constructor().data_in_transaction,
+                salt=salt,
+                caller_address=addresses[0].starknet_address,
+            )
+            starknet_address = get_starknet_address(salt)
+            deployed_counter = get_solidity_contract(
+                "PlainOpcodes", "Counter", starknet_address, evm_address, None
+            )
+            assert await deployed_counter.count() == 0
+
+    class TestRequire:
+        async def test_should_revert_when_address_is_zero(
+            self, plain_opcodes, addresses
+        ):
+            with kakarot_error("ZERO_ADDRESS"):
+                await plain_opcodes.requireNotZero(
+                    f"0x{0:040x}",
+                    caller_address=addresses[0].starknet_address,
+                )
+
+        @pytest.mark.skip("Test fails when address is 2**128 or greater")
+        @pytest.mark.parametrize("address", [2**127, 2**128])
+        async def test_should_not_revert_when_address_is_not_zero(
+            self, plain_opcodes, addresses, address
+        ):
+            await plain_opcodes.requireNotZero(
+                f"0x{address:x}",
+                caller_address=addresses[0].starknet_address,
+            )
+
+    class TestOriginAndSender:
+        @pytest.mark.skip(
+            "Origin returns 0 because ORIGIN currently assumes that the caller is a ContractAccount"
+            "See issue https://github.com/sayajin-labs/kakarot/issues/445"
+        )
+        async def test_should_return_owner_as_origin_and_sender(
+            self, plain_opcodes, owner
+        ):
+            origin, sender = await plain_opcodes.originAndSender(
+                caller_address=owner.starknet_address
+            )
+            assert origin == sender == owner.address
+
+        @pytest.mark.skip(
+            "Raises in RETURNDATACOPY"
+            "See issue https://github.com/sayajin-labs/kakarot/issues/446"
+        )
+        async def test_should_return_owner_as_origin_and_caller_as_sender(
+            self, plain_opcodes, owner, caller
+        ):
+            success, data = await caller.call(
+                target=plain_opcodes.evm_contract_address,
+                payload=plain_opcodes.encodeABI("originAndSender"),
+                caller_address=owner.starknet_address,
+            )
+            assert success

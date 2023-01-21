@@ -1,4 +1,6 @@
-# source: https://github.com/OpenZeppelin/cairo-contracts/tree/main/tests/signers.py
+"""
+See: https://github.com/OpenZeppelin/cairo-contracts/tree/main/tests/signers.py
+"""
 
 from starkware.starknet.business_logic.transaction.objects import (
     InternalTransaction,
@@ -84,9 +86,9 @@ class MockEthSigner:
         signature = self.sign(transaction_hash)
 
         external_tx = InvokeFunction(
-            contract_address=account.contract_address,
-            calldata=raw_invocation.calldata,
-            entry_point_selector=None,
+            contract_address=account.contract_address,  # type: ignore
+            calldata=raw_invocation.calldata,  # type: ignore
+            entry_point_selector=None,  # type: ignore
             signature=signature,
             max_fee=max_fee,
             version=TRANSACTION_VERSION,

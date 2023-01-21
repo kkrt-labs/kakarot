@@ -56,13 +56,13 @@ namespace Sha3 {
         );
 
         let (local dest: felt*) = alloc();
-        bytes_to_byte8_little_endian(
+        Helpers.bytes_to_bytes8_little_endian(
             bytes_len=length.low,
             bytes=bigendian_data,
             index=0,
             size=length.low,
-            byte8=0,
-            byte8_shift=0,
+            bytes8=0,
+            bytes8_shift=0,
             dest=dest,
             dest_index=0,
         );
@@ -90,47 +90,5 @@ namespace Sha3 {
         );
 
         return ctx;
-    }
-
-    // TODO: natspec
-    func bytes_to_byte8_little_endian{range_check_ptr}(
-        bytes_len: felt,
-        bytes: felt*,
-        index: felt,
-        size: felt,
-        byte8: felt,
-        byte8_shift: felt,
-        dest: felt*,
-        dest_index: felt,
-    ) {
-        alloc_locals;
-        if (index == size) {
-            return ();
-        }
-
-        local current_byte;
-        let out_of_bound = is_le(a=bytes_len, b=index);
-        if (out_of_bound != FALSE) {
-            current_byte = 0;
-        } else {
-            assert current_byte = [bytes + index];
-        }
-
-        let (bit_shift) = pow(256, byte8_shift);
-
-        let _byte8 = byte8 + bit_shift * current_byte;
-
-        let byte8_full = is_le(a=7, b=byte8_shift);
-        let end_of_loop = is_le(size, index + 1);
-        let write_to_dest = is_le(1, byte8_full + end_of_loop);
-        if (write_to_dest != FALSE) {
-            assert dest[dest_index] = _byte8;
-            return bytes_to_byte8_little_endian(
-                bytes_len, bytes, index + 1, size, 0, 0, dest, dest_index + 1
-            );
-        }
-        return bytes_to_byte8_little_endian(
-            bytes_len, bytes, index + 1, size, _byte8, byte8_shift + 1, dest, dest_index
-        );
     }
 }
