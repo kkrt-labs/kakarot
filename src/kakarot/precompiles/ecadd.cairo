@@ -25,9 +25,14 @@ namespace PrecompileEcAdd {
     // @param input_len The length of input array.
     // @param input The input array.
     // @return The output length, output array, and gas usage of precompile.
-    func run{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        _address: felt, input_len: felt, input: felt*
-    ) -> (output_len: felt, output: felt*, gas_used: felt) {
+    func run{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(_address: felt, input_len: felt, input: felt*) -> (
+        output_len: felt, output: felt*, gas_used: felt
+    ) {
         alloc_locals;
 
         let x0: BigInt3 = Helpers.bytes32_to_bigint(input);
