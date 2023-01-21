@@ -51,6 +51,7 @@ async def default_tx() -> dict:
 @pytest_asyncio.fixture(scope="package")
 async def legacy_tx() -> dict:
     return {
+        "chainId": 1263227476,
         "nonce": 1,
         "gasPrice": 1000,
         "gas": 999999999,

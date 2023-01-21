@@ -1,6 +1,7 @@
 %lang starknet
 
 from utils.utils import Helpers
+from kakarot.constants import Constants
 from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_secp.signature import verify_eth_signature_uint256
 from starkware.starknet.common.syscalls import get_tx_info
@@ -10,6 +11,7 @@ from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.cairo_keccak.keccak import keccak, finalize_keccak, keccak_bigend
 from utils.rlp import RLP
 from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.registers import get_label_location
 
 namespace ExternallyOwnedAccount {
     // Constants
@@ -34,8 +36,25 @@ namespace ExternallyOwnedAccount {
     const R_IDX = 10;
     const S_IDX = 11;
 
+    const CHAINID_V_MODIFIER = 35 + 2 * Constants.CHAIN_ID;
+
     // @dev 2 * len_byte + 2 * string_len (32) + v
-    const SIGNATURE_LEN = 67;
+    const SIGNATURE_LEN = 71;
+
+    func chain_id_bytes() -> (data: felt*) {
+        let (data_address) = get_label_location(chain_id_bytes_start);
+        return (data=cast(data_address, felt*));
+
+        chain_id_bytes_start:
+        dw 0x84;
+        dw 0x4b;
+        dw 0x4b;
+        dw 0x52;
+        dw 0x54;
+        dw 0x80;
+        dw 0x80;
+    }
+
 
     struct Call {
         to: felt,
@@ -149,13 +168,18 @@ namespace ExternallyOwnedAccount {
             finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
             return is_valid_eth_signature(tx_hash.res, r, s, v.n, eth_address);
         } else {
-            // legacy tx
             let (local items: RLP.Item*) = alloc();
-            // decode the rlp array
             RLP.decode_rlp(calldata_len, calldata, items);
             let data_len: felt = [items].data_len - SIGNATURE_LEN;
             let (list_ptr: felt*) = alloc();
-            let (rlp_len: felt) = RLP.encode_rlp_list(data_len, [items].data, list_ptr);
+            RLP.decode_rlp(calldata_len, calldata, items);
+            let data_len: felt = [items].data_len - ExternallyOwnedAccount.SIGNATURE_LEN;
+            let (list_ptr: felt*) = alloc();
+            let (tx_data: felt*) = alloc();
+            Helpers.fill_array(data_len, [items].data, tx_data);
+            let (chain_id_data: felt*) = ExternallyOwnedAccount.chain_id_bytes();
+            Helpers.fill_array(7, chain_id_data, tx_data+data_len);
+            let (rlp_len: felt) = RLP.encode_rlp_list(data_len+7, tx_data, list_ptr);
             let (keccak_ptr: felt*) = alloc();
             let keccak_ptr_start = keccak_ptr;
             let (words: felt*) = alloc();
@@ -176,7 +200,7 @@ namespace ExternallyOwnedAccount {
             let r = Helpers.bytes32_to_uint256(sub_items[7].data);
             let s = Helpers.bytes32_to_uint256(sub_items[8].data);
             finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
-            return is_valid_eth_signature(tx_hash.res, r, s, v.n, eth_address);
+            return is_valid_eth_signature(tx_hash.res, r, s, v.n - CHAINID_V_MODIFIER, eth_address);
         }
     }
 
