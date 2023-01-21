@@ -8,7 +8,15 @@ from eth_account._utils.legacy_transactions import (
 from starkware.starkware_utils.error_handling import StarkException
 
 from tests.utils.signer import MockEthSigner
-from tests.utils.uint256 import int_to_uint256
+from tests.utils.uint256 import int_to_uint256, uint256_to_int
+from eth_account._utils.legacy_transactions import (
+    ChainAwareUnsignedTransaction,
+    Transaction,
+    UnsignedTransaction,
+    encode_transaction,
+    serializable_unsigned_transaction_from_dict,
+    strip_signature,
+)
 
 
 @pytest.mark.asyncio
@@ -43,7 +51,8 @@ class TestExternallyOwnedAccount:
             address = addresses[address_idx]
             tmp_account = web3.Account.from_key(address.private_key)
             raw_tx = tmp_account.sign_transaction(default_tx)
-            tx_hash = serializable_unsigned_transaction_from_dict(default_tx).hash()
+            tx_hash = serializable_unsigned_transaction_from_dict(
+                default_tx).hash()
             call_info = await address.starknet_contract.is_valid_signature(
                 [*int_to_uint256(web3.Web3.toInt(tx_hash))],
                 [
@@ -97,13 +106,21 @@ class TestExternallyOwnedAccount:
             tmp_account = web3.Account().from_key(address.private_key)
             raw_tx = tmp_account.sign_transaction(legacy_tx)
 
-            print(raw_tx)
+            tx = await address.starknet_contract.get_tx_hash(list(web3.Web3.toBytes(raw_tx.rawTransaction))).call()
+
+            assert uint256_to_int(
+                tx.result.hash.low, tx.result.hash.high) == web3.Web3.toInt(serializable_unsigned_transaction_from_dict(legacy_tx).hash())
+            assert tx.result.v == raw_tx.v
+            assert uint256_to_int(
+                tx.result.r.low, tx.result.r.high) == web3.Web3.toInt(raw_tx.r)
+            assert uint256_to_int(
+                tx.result.s.low, tx.result.s.high) == web3.Web3.toInt(raw_tx.s)
 
             await eth_account.send_transaction(
                 address.starknet_contract,
                 kakarot.contract_address,
                 "execute_at_address",
-                [0, *list(web3.Web3.toBytes(raw_tx.rawTransaction))],
+                list(web3.Web3.toBytes(raw_tx.rawTransaction))
             )
 
         @pytest.mark.parametrize("address_idx", range(4))

@@ -111,13 +111,12 @@ namespace ExternallyOwnedAccount {
     }(eth_address: felt, calldata_len: felt, calldata: felt*) -> (is_valid: felt) {
         alloc_locals;
         let tx_type = [calldata];
-        // remove the tx type
-        let rlp_data = calldata + 1;
-        let (local items: RLP.Item*) = alloc();
-        // decode the rlp array
-        RLP.decode_rlp(calldata_len - 1, rlp_data, items);
         // eip-1559
         if (tx_type == 2) {
+            let rlp_data = calldata + 1;
+            let (local items: RLP.Item*) = alloc();
+            // decode the rlp array
+            RLP.decode_rlp(calldata_len - 1, rlp_data, items);
             // remove the sig to hash the tx
             let data_len: felt = [items].data_len - SIGNATURE_LEN;
             let (list_ptr: felt*) = alloc();
@@ -151,6 +150,9 @@ namespace ExternallyOwnedAccount {
             return is_valid_eth_signature(tx_hash.res, r, s, v.n, eth_address);
         } else {
             // legacy tx
+            let (local items: RLP.Item*) = alloc();
+            // decode the rlp array
+            RLP.decode_rlp(calldata_len, calldata, items);
             let data_len: felt = [items].data_len - SIGNATURE_LEN;
             let (list_ptr: felt*) = alloc();
             let (rlp_len: felt) = RLP.encode_rlp_list(data_len, [items].data, list_ptr);
