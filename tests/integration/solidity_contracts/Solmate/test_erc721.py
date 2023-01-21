@@ -53,11 +53,6 @@ async def erc_721_non_recipient(deploy_solidity_contract, owner):
     )
 
 
-@pytest.fixture(scope="module")
-async def other(others):
-    return others[0]
-
-
 @pytest.mark.asyncio
 @pytest.mark.SolmateERC721
 @pytest.mark.usefixtures("starknet_snapshot")
