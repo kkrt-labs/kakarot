@@ -1,21 +1,12 @@
-import os
 
 import pytest
-import rlp
 import web3
 from eth_account._utils.legacy_transactions import (
-    ChainAwareUnsignedTransaction,
-    Transaction,
-    UnsignedTransaction,
-    encode_transaction,
     serializable_unsigned_transaction_from_dict,
-    strip_signature,
 )
 from eth_keys import keys
-from starkware.starkware_utils.error_handling import StarkException
 
 from tests.utils.signer import MockEthSigner
-from tests.utils.uint256 import int_to_uint256, uint256_to_int
 
 
 @pytest.mark.asyncio
