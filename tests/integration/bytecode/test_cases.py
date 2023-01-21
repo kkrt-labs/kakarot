@@ -1646,5 +1646,24 @@ test_cases = [
         },
         "id": "Precompiles - EC_ADD - playground test case",
         "marks": [pytest.mark.EC_ADD, pytest.mark.Precompiles],
+    },
+    {
+        "params": {
+            "value": 0,
+            "code": "6001600052600260205260026040526040606060606000600763fffffffffa50608051606051",
+            "calldata": "",
+            "stack": str(0x30644E72E131A029B85045B68181585D97816A916871CA8D3C208C16D87CFD315ED738C0E0A7C92E7845F96B2AE9C0A68A6A449E3538FC7FF3EBF7A5A18A2C4),
+            "memory": (
+                "0000000000000000000000000000000000000000000000000000000000000001"
+                "0000000000000000000000000000000000000000000000000000000000000002"
+                "0000000000000000000000000000000000000000000000000000000000000002"
+                "030644e72e131a029b85045b68181585d97816a916871ca8d3c208c16d87cfd3"
+                "15ed738c0e0a7c92e7845f96b2ae9c0a68a6a449e3538fc7ff3ebf7a5a18a2c4"
+            ),
+            "return_value": "",
+        },
+        "id": "Precompiles - EC_MUL - playground test case",
+        "marks": [pytest.mark.EC_MUL, pytest.mark.Precompiles],
     }
+    
 ]
