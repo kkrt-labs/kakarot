@@ -236,6 +236,28 @@ namespace Helpers {
         return (bytes_array_len=32, bytes_array=value_as_bytes_array);
     }
 
+    // @notice This function is like `uint256_to_bytes_array` except it writes the byte array to a given destination with the given offset and length
+    // @param value: value to convert.
+    // @param byte_array_offset: The starting offset of byte array that is copied to the destination array.
+    // @param byte_array_len: The length of byte array that is copied to the destination array.
+    // @param dest_offset: The offset of the destination array that the byte array is copied.
+    // @param dest_len: The length of the destination array.
+    // @param dest: The destination array
+    // @return: array length and felt array representation of the value.
+    func uint256_to_dest_bytes_array{range_check_ptr}(
+        value: Uint256,
+        byte_array_offset: felt,
+        byte_array_len: felt,
+        dest_offset: felt,
+        dest_len: felt,
+        dest: felt*,
+    ) -> (updated_dest_len: felt) {
+        alloc_locals;
+        let (_, bytes_array) = uint256_to_bytes_array(value);
+        memcpy(dst=dest + dest_offset, src=bytes_array + byte_array_offset, len=byte_array_len);
+        return (updated_dest_len=dest_len + byte_array_len);
+    }
+
     // @notice Loads a sequence of bytes into a single felt in big-endian.
     // @param len: number of bytes.
     // @param ptr: pointer to bytes array.
@@ -634,7 +656,7 @@ namespace Helpers {
     }
 
     // @notice transform muliple bytes into a single felt
-    // @param data_len The lenght of the bytes
+    // @param data_len The length of the bytes
     // @param data The pointer to the bytes array
     // @param n used for recursion, set to 0
     // @return n the resultant felt
@@ -646,5 +668,14 @@ namespace Helpers {
         let byte: felt = data[data_len - 1];
         let (res) = pow(256, e);
         return bytes_to_felt(data_len=data_len - 1, data=data, n=n + byte * res);
+    }
+
+    // @notice Transforms a keccak hash to an ethereum address by taking last 20 bytes
+    // @param hash - The keccak hash.
+    // @return address - The address.
+    func keccak_hash_to_evm_contract_address{range_check_ptr}(hash: Uint256) -> felt {
+        let (_, r) = unsigned_div_rem(hash.high, 256 ** 4);
+        let address = hash.low + r * 2 ** 128;
+        return address;
     }
 }

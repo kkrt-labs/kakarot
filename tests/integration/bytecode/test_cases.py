@@ -772,7 +772,7 @@ test_cases = [
             "value": 0,
             "code": "3300",
             "calldata": "",
-            "stack": "1",
+            "stack": "552990106838132297007705540970627247012975398931",
             "memory": "",
             "return_value": "",
         },
