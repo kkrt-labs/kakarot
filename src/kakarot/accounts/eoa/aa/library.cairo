@@ -296,7 +296,9 @@ namespace ExternallyOwnedAccount {
         }
 
         let (local response: felt*) = alloc();
-        let (response_len) = execute_list(kakarot_address, eth_address, call_array_len, call_array, calldata, response);
+        let (response_len) = execute_list(
+            kakarot_address, eth_address, call_array_len, call_array, calldata, response
+        );
 
         return (response_len, response);
     }
@@ -308,12 +310,12 @@ namespace ExternallyOwnedAccount {
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
     }(
-        kakarot_address: felt, 
-        eth_address: felt, 
+        kakarot_address: felt,
+        eth_address: felt,
         call_array_len: felt,
         call_array: CallArray*,
         calldata: felt*,
-        response: felt*
+        response: felt*,
     ) -> (response_len: felt) {
         alloc_locals;
 
@@ -326,7 +328,7 @@ namespace ExternallyOwnedAccount {
             selector=[call_array].selector,
             calldata_len=[call_array].data_len,
             calldata=calldata + [call_array].data_offset,
-        );
+            );
 
         let (local items: RLP.Item*) = alloc();
         let (local sub_items: RLP.Item*) = alloc();
@@ -334,23 +336,38 @@ namespace ExternallyOwnedAccount {
         if (_call.calldata[0] == 2) {
             RLP.decode_rlp(_call.calldata_len - 1, _call.calldata + 1, items);
             RLP.decode_rlp([items].data_len, [items].data, sub_items);
-            let (n) = Helpers.bytes_to_felt(sub_items[DESTINATION_IDX].data_len, sub_items[DESTINATION_IDX].data, 0);
+            let (n) = Helpers.bytes_to_felt(
+                sub_items[DESTINATION_IDX].data_len, sub_items[DESTINATION_IDX].data, 0
+            );
             assert starknet_calldata[0] = n;
-            let (n) = Helpers.bytes_to_felt(sub_items[AMOUNT_IDX].data_len, sub_items[AMOUNT_IDX].data, 0);
+            let (n) = Helpers.bytes_to_felt(
+                sub_items[AMOUNT_IDX].data_len, sub_items[AMOUNT_IDX].data, 0
+            );
             assert starknet_calldata[1] = n;
-            let (n) = Helpers.bytes_to_felt(sub_items[GAS_LIMIT_IDX].data_len, sub_items[GAS_LIMIT_IDX].data, 0);
+            let (n) = Helpers.bytes_to_felt(
+                sub_items[GAS_LIMIT_IDX].data_len, sub_items[GAS_LIMIT_IDX].data, 0
+            );
             assert starknet_calldata[2] = n;
             local evm_calldata_len = sub_items[PAYLOAD_IDX].data_len;
             assert starknet_calldata[3] = evm_calldata_len;
-            Helpers.fill_array(evm_calldata_len, sub_items[PAYLOAD_IDX].data, starknet_calldata+4);
+            Helpers.fill_array(
+                evm_calldata_len, sub_items[PAYLOAD_IDX].data, starknet_calldata + 4
+            );
             let res = call_contract(
                 contract_address=kakarot_address,
                 function_selector=0xB18CF02D874A8ACA5B6480CE1D57FA9C6C58015FD68F6B6B6DF59F63BBA85D,
-                calldata_size=4+evm_calldata_len,
-                calldata=starknet_calldata
+                calldata_size=4 + evm_calldata_len,
+                calldata=starknet_calldata,
             );
             memcpy(response, res.retdata, res.retdata_size);
-            let (response_len) = execute_list(kakarot_address, eth_address, call_array_len-1, call_array+CallArray.SIZE, calldata, response+res.retdata_size);
+            let (response_len) = execute_list(
+                kakarot_address,
+                eth_address,
+                call_array_len - 1,
+                call_array + CallArray.SIZE,
+                calldata,
+                response + res.retdata_size,
+            );
             return (response_len=res.retdata_size + response_len);
         } else {
             RLP.decode_rlp(_call.calldata_len, _call.calldata, items);
@@ -363,15 +380,22 @@ namespace ExternallyOwnedAccount {
             assert starknet_calldata[2] = n;
             local evm_calldata_len = sub_items[5].data_len;
             assert starknet_calldata[3] = evm_calldata_len;
-            Helpers.fill_array(evm_calldata_len, sub_items[5].data, starknet_calldata+4);
+            Helpers.fill_array(evm_calldata_len, sub_items[5].data, starknet_calldata + 4);
             let res = call_contract(
                 contract_address=kakarot_address,
                 function_selector=0xB18CF02D874A8ACA5B6480CE1D57FA9C6C58015FD68F6B6B6DF59F63BBA85D,
-                calldata_size=4+evm_calldata_len,
-                calldata=starknet_calldata
+                calldata_size=4 + evm_calldata_len,
+                calldata=starknet_calldata,
             );
             memcpy(response, res.retdata, res.retdata_size);
-            let (response_len) = execute_list(kakarot_address, eth_address, _call.calldata_len-1, call_array+CallArray.SIZE, calldata, response+res.retdata_size);
+            let (response_len) = execute_list(
+                kakarot_address,
+                eth_address,
+                _call.calldata_len - 1,
+                call_array + CallArray.SIZE,
+                calldata,
+                response + res.retdata_size,
+            );
             return (response_len=res.retdata_size + response_len);
         }
     }
