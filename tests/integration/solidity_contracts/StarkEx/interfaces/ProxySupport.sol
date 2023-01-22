@@ -14,11 +14,15 @@ import "./ContractInitializer.sol";
   Instantiation of the Governance and of the ContractInitializer, that are the app specific
   part of initialization, has to be done by the using contract.
 */
-abstract contract ProxySupport is Governance, BlockDirectCall, ContractInitializer {
+abstract contract ProxySupport is
+    Governance,
+    BlockDirectCall,
+    ContractInitializer
+{
     using Addresses for address;
 
     // The two function below (isFrozen & initialize) needed to bind to the Proxy.
-    function isFrozen() external view virtual returns (bool) {
+    function isFrozen() external pure virtual returns (bool) {
         return false;
     }
 
@@ -39,7 +43,10 @@ abstract contract ProxySupport is Governance, BlockDirectCall, ContractInitializ
         uint256 eicOffset = 32 * numOfSubContracts();
         uint256 expectedBaseSize = eicOffset + 32;
         require(data.length >= expectedBaseSize, "INIT_DATA_TOO_SMALL");
-        address eicAddress = abi.decode(data[eicOffset:expectedBaseSize], (address));
+        address eicAddress = abi.decode(
+            data[eicOffset:expectedBaseSize],
+            (address)
+        );
 
         bytes calldata subContractAddresses = data[:eicOffset];
 
@@ -63,15 +70,17 @@ abstract contract ProxySupport is Governance, BlockDirectCall, ContractInitializ
         }
     }
 
-    function callExternalInitializer(address externalInitializerAddr, bytes calldata eicData)
-        private
-    {
+    function callExternalInitializer(
+        address externalInitializerAddr,
+        bytes calldata eicData
+    ) private {
         require(externalInitializerAddr.isContract(), "EIC_NOT_A_CONTRACT");
 
         // NOLINTNEXTLINE: low-level-calls, controlled-delegatecall.
-        (bool success, bytes memory returndata) = externalInitializerAddr.delegatecall(
-            abi.encodeWithSelector(this.initialize.selector, eicData)
-        );
+        (bool success, bytes memory returndata) = externalInitializerAddr
+            .delegatecall(
+                abi.encodeWithSelector(this.initialize.selector, eicData)
+            );
         require(success, string(returndata));
         require(returndata.length == 0, string(returndata));
     }
