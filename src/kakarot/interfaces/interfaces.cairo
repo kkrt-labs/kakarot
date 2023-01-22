@@ -37,6 +37,12 @@ namespace IEth {
 }
 
 @contract_interface
+namespace IAccount {
+    func get_eth_address() -> (eth_address: felt) {
+    }
+}
+
+@contract_interface
 namespace IEvmContract {
     func bytecode_len() -> (len: felt) {
     }

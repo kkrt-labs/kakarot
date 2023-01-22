@@ -2,9 +2,12 @@ import string
 
 import pytest
 import pytest_asyncio
+from eth_utils import decode_hex, to_bytes, to_checksum_address
+from starkware.python.utils import from_bytes
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
+from tests.integration.helpers.helpers import get_create2_address
 from tests.utils.errors import kakarot_error
 from tests.utils.uint256 import int_to_uint256
 
@@ -79,9 +82,33 @@ class TestSystemOperations:
     async def test_create2(
         self, system_operations, contract_account_class, account_registry
     ):
-        await system_operations.test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_at_empty_address(
+        # we store a memory word in memory
+        # and have our bytecode as the memory read from an offset and size
+        # we take that word at an offset and size and use it as the bytecode to determine the expected create2 evm contract address
+        # bytecode should be 0x 44 55 66 77
+        memory_word = 0x11223344556677880000000000000000
+        offset = 3
+        size = 4
+        salt = 5
+        padded_salt = salt.to_bytes(32, byteorder="big")
+        evm_caller_address_int = 15
+        evm_caller_address_bytes = evm_caller_address_int.to_bytes(20, byteorder="big")
+        evm_caller_address = to_checksum_address(evm_caller_address_bytes)
+        bytecode = to_bytes(memory_word)[offset : offset + size]
+
+        expected_create2_addr = get_create2_address(
+            evm_caller_address, padded_salt, bytecode
+        )
+
+        await system_operations.test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_at_expected_address(
             contract_account_class.class_hash,
             account_registry.contract_address,
+            evm_caller_address_int,
+            (offset, 0),
+            (size, 0),
+            (salt, 0),
+            (0, memory_word),
+            from_bytes(decode_hex(expected_create2_addr)),
         ).call()
 
     async def test_selfdestruct(

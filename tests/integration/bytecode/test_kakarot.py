@@ -18,13 +18,15 @@ class TestKakarot:
         "params",
         params_execute,
     )
-    async def test_execute(self, kakarot: StarknetContract, params: dict, request):
+    async def test_execute(
+        self, kakarot: StarknetContract, owner, params: dict, request
+    ):
         with traceit.context(request.node.callspec.id):
             res = await kakarot.execute(
                 value=int(params["value"]),
                 bytecode=hex_string_to_bytes_array(params["code"]),
                 calldata=hex_string_to_bytes_array(params["calldata"]),
-            ).call(caller_address=1)
+            ).call(caller_address=owner.starknet_address)
 
         stack_result = extract_stack_from_execute(res.result)
         memory_result = extract_memory_from_execute(res.result)

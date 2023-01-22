@@ -29,6 +29,9 @@ func salt() -> (value: felt) {
 namespace Constants {
     // Define constants
 
+    // ADDRESSES
+    const ADDRESS_BYTES_LEN = 20;
+
     // BLOCK
     // CHAIN_ID = KKRT (0x4b4b5254) in ASCII
     const CHAIN_ID = 1263227476;
