@@ -248,7 +248,7 @@ func test__returndatacopy{
     let (bytecode) = alloc();
     let (return_data) = alloc();
     let return_data_len: felt = 32;
-    
+
     TestHelpers.array_fill(return_data, return_data_len, 0xFF);
     let child_ctx: model.ExecutionContext* = TestHelpers.init_context_with_return_data(
         0, bytecode, return_data_len, return_data
