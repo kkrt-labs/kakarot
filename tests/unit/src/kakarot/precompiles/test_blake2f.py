@@ -1,11 +1,9 @@
-import re
 import random
 from typing import List
 
 import pytest
 import pytest_asyncio
 from tests.utils.errors import kakarot_error
-from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 from eth._utils.blake2.compression import blake2b_compress
 
