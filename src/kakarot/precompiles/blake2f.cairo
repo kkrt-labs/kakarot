@@ -19,16 +19,7 @@ from utils.utils import Helpers
 // @custom:namespace PrecompileBlake2f
 namespace PrecompileBlake2f {
     const PRECOMPILE_ADDRESS = 0x09;
-    const GFROUND = 1;
-
-    const ROUNDS_BYTES_LEN = 4;
-    const WORD_BYTES_LEN = 8;
-    const F_BYTES_LEN = 1;
-
-    const H_BYTES_OFFSET = 4;
-    const M_BYTES_OFFSET = 68;
-    const T_BYTES_OFFSET = 196;
-    const F_BYTES_OFFSET = 212;
+    const GAS_COST_BLAKE2F = 0;
 
     // @notice Run the precompile.
     // @param input_len The length of input array.
@@ -41,6 +32,13 @@ namespace PrecompileBlake2f {
         bitwise_ptr: BitwiseBuiltin*,
     }(input_len: felt, input: felt*) -> (output_len: felt, output: felt*, gas_used: felt) {
         alloc_locals;
+        local rounds_bytes_len = 4;
+        local word_bytes_len = 8;
+        local h_bytes_offset = 4;
+        local m_bytes_offset = 68;
+        local t_bytes_offset = 196;
+        local f_bytes_offset = 212;
+
 
         // Check input length
         with_attr error_message(
@@ -49,42 +47,43 @@ namespace PrecompileBlake2f {
         }
 
         // Check the flag
-        tempvar f = input[F_BYTES_OFFSET];
+        tempvar f = input[f_bytes_offset];
         with_attr error_message(
                 "Kakarot: blake2f failed with incorrect flag: {f} instead of 0 or 1") {
             assert f = f * f;
         }
 
-        let rounds = Helpers.load_word(ROUNDS_BYTES_LEN, input);
+        let rounds = Helpers.load_word(rounds_bytes_len, input);
 
         let (local h: felt*) = alloc();
-        Helpers.load_64_bits_array(8, input + H_BYTES_OFFSET, h);
+        Helpers.load_64_bits_array(8, input + h_bytes_offset, h);
 
         let (m: felt*) = alloc();
-        Helpers.load_64_bits_array(16, input + M_BYTES_OFFSET, m);
+        Helpers.load_64_bits_array(16, input + m_bytes_offset, m);
 
-        let t0 = Helpers.bytes_to_64_bits_little_felt(input + T_BYTES_OFFSET);
-        let t1 = Helpers.bytes_to_64_bits_little_felt(input + T_BYTES_OFFSET + 8);
-        tempvar t = t0 + t1;
+        let t0 = Helpers.bytes_to_64_bits_little_felt(input + t_bytes_offset);
+        let t1 = Helpers.bytes_to_64_bits_little_felt(input + t_bytes_offset + 8);
 
         // Perform Blake2f compression
-        let (compressed) = Blake2.F(rounds, h, m, t, f);
+        let (compressed) = Blake2.F(rounds, h, m, t0, t1, f);
 
         let (output: felt*) = alloc();
-        Helpers.split_word_little(compressed[0], WORD_BYTES_LEN, output);
-        Helpers.split_word_little(compressed[1], WORD_BYTES_LEN, output + WORD_BYTES_LEN);
-        Helpers.split_word_little(compressed[2], WORD_BYTES_LEN, output + 2 * WORD_BYTES_LEN);
-        Helpers.split_word_little(compressed[3], WORD_BYTES_LEN, output + 3 * WORD_BYTES_LEN);
-        Helpers.split_word_little(compressed[4], WORD_BYTES_LEN, output + 4 * WORD_BYTES_LEN);
-        Helpers.split_word_little(compressed[5], WORD_BYTES_LEN, output + 5 * WORD_BYTES_LEN);
-        Helpers.split_word_little(compressed[6], WORD_BYTES_LEN, output + 6 * WORD_BYTES_LEN);
-        Helpers.split_word_little(compressed[7], WORD_BYTES_LEN, output + 7 * WORD_BYTES_LEN);
+        Helpers.split_word_little(compressed[0], word_bytes_len, output);
+        Helpers.split_word_little(compressed[1], word_bytes_len, output + word_bytes_len);
+        Helpers.split_word_little(compressed[2], word_bytes_len, output + 2 * word_bytes_len);
+        Helpers.split_word_little(compressed[3], word_bytes_len, output + 3 * word_bytes_len);
+        Helpers.split_word_little(compressed[4], word_bytes_len, output + 4 * word_bytes_len);
+        Helpers.split_word_little(compressed[5], word_bytes_len, output + 5 * word_bytes_len);
+        Helpers.split_word_little(compressed[6], word_bytes_len, output + 6 * word_bytes_len);
+        Helpers.split_word_little(compressed[7], word_bytes_len, output + 7 * word_bytes_len);
 
-        return (WORD_BYTES_LEN * 8, output, GFROUND * rounds);
+        return (word_bytes_len * 8, output, rounds);
     }
 }
 
 namespace Blake2 {
+    const MASK_ONES_64 = 2 ** 64;
+
     // @notice Performs the blake2b compression function
     // @param rounds The number of rounds for the compression function
     // @param h The internal state of the hash
@@ -97,12 +96,11 @@ namespace Blake2 {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(rounds: felt, h: felt*, m: felt*, t: felt, f: felt) -> (output: felt*) {
+    }(rounds: felt, h: felt*, m: felt*, t0: felt, t1: felt, f: felt) -> (output: felt*) {
         alloc_locals;
         let (__fp__, _) = get_fp_and_pc();
 
         let (local output) = alloc();
-        let (local t1, local t0) = unsigned_div_rem(t, 2 ** 64);
         let (sigma_address) = get_label_location(data);
         local sigma: felt* = cast(sigma_address, felt*);
 
@@ -127,26 +125,25 @@ namespace Blake2 {
             state14 = 0x1f83d9abfb41bd6b;
         }
 
-        local initial_state = h[0];
-        local initial_state_ = h[1];
-        local initial_state_ = h[2];
-        local initial_state_ = h[3];
-        local initial_state_ = h[4];
-        local initial_state_ = h[5];
-        local initial_state_ = h[6];
-        local initial_state_ = h[7];
-        local initial_state_ = 0x6a09e667f3bcc908;
-        local initial_state_ = 0xbb67ae8584caa73b;
-        local initial_state_ = 0x3c6ef372fe94f82b;
-        local initial_state_ = 0xa54ff53a5f1d36f1;
-        local initial_state_ = state12;
-        local initial_state_ = state13;
-        local initial_state_ = state14;
-        local initial_state_ = 0x5be0cd19137e2179;
+        let (local initial_state: felt*) = alloc();
+        assert initial_state[0] = h[0];
+        assert initial_state[1] = h[1];
+        assert initial_state[2] = h[2];
+        assert initial_state[3] = h[3];
+        assert initial_state[4] = h[4];
+        assert initial_state[5] = h[5];
+        assert initial_state[6] = h[6];
+        assert initial_state[7] = h[7];
+        assert initial_state[8] = 0x6a09e667f3bcc908;
+        assert initial_state[9] = 0xbb67ae8584caa73b;
+        assert initial_state[10] = 0x3c6ef372fe94f82b;
+        assert initial_state[11] = 0xa54ff53a5f1d36f1;
+        assert initial_state[12] = state12;
+        assert initial_state[13] = state13;
+        assert initial_state[14] = state14;
+        assert initial_state[15] = 0x5be0cd19137e2179;
 
-        let state = &initial_state;
-
-        let (state) = blake_rounds(rounds, 0, state, m, sigma);
+        let (state) = blake_rounds(rounds, 0, initial_state, m, sigma);
 
         tempvar old_h = h;
         tempvar last_state = state;
@@ -373,34 +370,18 @@ namespace Blake2 {
         bitwise_ptr: BitwiseBuiltin*,
     }(state: felt*, message: felt*, sigma: felt*) -> (new_state: felt*) {
         alloc_locals;
-        let state0 = state[0];
-        let state1 = state[1];
-        let state2 = state[2];
-        let state3 = state[3];
-        let state4 = state[4];
-        let state5 = state[5];
-        let state6 = state[6];
-        let state7 = state[7];
-        let state8 = state[8];
-        let state9 = state[9];
-        let state10 = state[10];
-        let state11 = state[11];
-        let state12 = state[12];
-        let state13 = state[13];
-        let state14 = state[14];
-        let state15 = state[15];
 
         let (state0, state4, state8, state12) = mix_one(
-            state0, state4, state8, state12, message[sigma[0]]
+            state[0], state[4], state[8], state[12], message[sigma[0]]
         );
         let (state1, state5, state9, state13) = mix_one(
-            state1, state5, state9, state13, message[sigma[1]]
+            state[1], state[5], state[9], state[13], message[sigma[1]]
         );
         let (state2, state6, state10, state14) = mix_one(
-            state2, state6, state10, state14, message[sigma[2]]
+            state[2], state[6], state[10], state[14], message[sigma[2]]
         );
         let (state3, state7, state11, state15) = mix_one(
-            state3, state7, state11, state15, message[sigma[3]]
+            state[3], state[7], state[11], state[15], message[sigma[3]]
         );
 
         let (state0, state4, state8, state12) = mix_two(
@@ -481,13 +462,8 @@ namespace Blake2 {
     }(a: felt, b: felt, c: felt, d: felt, m: felt) -> (a: felt, b: felt, c: felt, d: felt) {
         alloc_locals;
 
-        local mask64ones = (2 ** 64 - 1);
-
         // a = (a + b + m) % 2**64
-        assert bitwise_ptr[0].x = a + b + m;
-        assert bitwise_ptr[0].y = mask64ones;
-        tempvar a = bitwise_ptr[0].x_and_y;
-        let bitwise_ptr = bitwise_ptr + BitwiseBuiltin.SIZE;
+        let (_, a) = unsigned_div_rem(a + b + m, MASK_ONES_64);
 
         // d = right_rot((d ^ a), 32).
         assert bitwise_ptr[0].x = a;
@@ -496,14 +472,12 @@ namespace Blake2 {
         assert bitwise_ptr[1].x = a_xor_d;
         assert bitwise_ptr[1].y = (2 ** 64 - 2 ** 32);
         tempvar d = (
-            (2 ** (64 - 32)) * a_xor_d + (1 / 2 ** 32 - 2 ** (64 - 32)) * bitwise_ptr[1].x_and_y);
+            (2 ** (64 - 32)) * a_xor_d + (1 / 2 ** 32 - 2 ** (64 - 32)) * bitwise_ptr[1].x_and_y
+        );
         let bitwise_ptr = bitwise_ptr + 2 * BitwiseBuiltin.SIZE;
 
         // c = (c + d) % 2**64
-        assert bitwise_ptr[0].x = c + d;
-        assert bitwise_ptr[0].y = mask64ones;
-        tempvar c = bitwise_ptr[0].x_and_y;
-        let bitwise_ptr = bitwise_ptr + BitwiseBuiltin.SIZE;
+        let (_, c) = unsigned_div_rem(c + d, MASK_ONES_64);
 
         // b = right_rot((b ^ c), 24).
         assert bitwise_ptr[0].x = b;
@@ -512,7 +486,8 @@ namespace Blake2 {
         assert bitwise_ptr[1].x = b_xor_c;
         assert bitwise_ptr[1].y = (2 ** 64 - 2 ** 24);
         tempvar b = (
-            (2 ** (64 - 24)) * b_xor_c + (1 / 2 ** 24 - 2 ** (64 - 24)) * bitwise_ptr[1].x_and_y);
+            (2 ** (64 - 24)) * b_xor_c + (1 / 2 ** 24 - 2 ** (64 - 24)) * bitwise_ptr[1].x_and_y
+        );
         let bitwise_ptr = bitwise_ptr + 2 * BitwiseBuiltin.SIZE;
 
         return (a, b, c, d);
@@ -536,13 +511,8 @@ namespace Blake2 {
     }(a: felt, b: felt, c: felt, d: felt, m: felt) -> (a: felt, b: felt, c: felt, d: felt) {
         alloc_locals;
 
-        local mask64ones = (2 ** 64 - 1);
-
         // a = (a + b + m) % 2**64
-        assert bitwise_ptr[0].x = a + b + m;
-        assert bitwise_ptr[0].y = mask64ones;
-        tempvar a = bitwise_ptr[0].x_and_y;
-        let bitwise_ptr = bitwise_ptr + BitwiseBuiltin.SIZE;
+        let (_, a) = unsigned_div_rem(a + b + m, MASK_ONES_64);
 
         // d = right_rot((d ^ a), 16).
         assert bitwise_ptr[0].x = d;
@@ -554,10 +524,7 @@ namespace Blake2 {
         let bitwise_ptr = bitwise_ptr + 2 * BitwiseBuiltin.SIZE;
 
         // c = (c + d) % 2**64
-        assert bitwise_ptr[0].x = c + d;
-        assert bitwise_ptr[0].y = mask64ones;
-        tempvar c = bitwise_ptr[0].x_and_y;
-        let bitwise_ptr = bitwise_ptr + BitwiseBuiltin.SIZE;
+        let (_, c) = unsigned_div_rem(c + d, MASK_ONES_64);
 
         // b = right_rot((b ^ c), 63).
         assert bitwise_ptr[0].x = b;
