@@ -99,8 +99,16 @@ func __execute__{
     calldata: felt*,
 ) -> (response_len: felt, response: felt*) {
     let (response: felt*) = alloc();
-    // TODO: parse, call kakarot, and format response
-    return (response_len=0, response=response);
+    let (address) = eth_address.read();
+    let _kakarot = kakarot_address.read();
+    return ExternallyOwnedAccount.execute(
+        kakarot_address=_kakarot.address,
+        eth_address=address,
+        call_array_len=call_array_len,
+        call_array=call_array,
+        calldata_len=calldata_len,
+        calldata=calldata,
+    );
 }
 
 // @return eth_address The Ethereum address controlling this account
