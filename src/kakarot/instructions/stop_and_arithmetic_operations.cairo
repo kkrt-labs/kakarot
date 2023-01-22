@@ -13,7 +13,7 @@ from starkware.cairo.common.uint256 import (
     uint256_eq,
     uint256_sub,
     uint256_unsigned_div_rem,
-    uint256_mul_div_mod
+    uint256_mul_div_mod,
 )
 from starkware.cairo.common.bool import FALSE, TRUE
 
@@ -369,7 +369,7 @@ namespace StopAndArithmeticOperations {
         let c = popped[2];
 
         // Compute the mul mod
-        let (_ ,_ ,rem ) = uint256_mul_div_mod(a, b, c);
+        let (_, _, rem) = uint256_mul_div_mod(a, b, c);
 
         // Stack output:
         // integer result of the a * b % c
