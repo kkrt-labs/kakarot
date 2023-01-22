@@ -43,7 +43,8 @@ class TestExternallyOwnedAccount:
             address = addresses[address_idx]
             tmp_account = web3.Account.from_key(address.private_key)
             raw_tx = tmp_account.sign_transaction(default_tx)
-            tx_hash = serializable_unsigned_transaction_from_dict(default_tx).hash()
+            tx_hash = serializable_unsigned_transaction_from_dict(
+                default_tx).hash()
             call_info = await address.starknet_contract.is_valid_signature(
                 [*int_to_uint256(web3.Web3.toInt(tx_hash))],
                 [
@@ -100,11 +101,11 @@ class TestExternallyOwnedAccount:
             raw_tx = tmp_account.sign_transaction(legacy_tx)
 
             await eth_account.send_transaction(
-                address.starknet_contract,
-                kakarot.contract_address,
-                "execute_at_address",
-                list(web3.Web3.toBytes(raw_tx.rawTransaction)),
-                legacy_tx["gas"] * legacy_tx["gasPrice"],
+                account=address.starknet_contract,
+                to=kakarot.contract_address,
+                selector_name="execute_at_address",
+                calldata=list(web3.Web3.toBytes(raw_tx.rawTransaction)),
+                # max_fee=legacy_tx["gas"]*legacy_tx["gasPrice"]
             )
 
         @pytest.mark.parametrize("address_idx", range(4))
