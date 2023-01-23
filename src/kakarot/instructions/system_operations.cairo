@@ -574,12 +574,12 @@ namespace CreateHelper {
 
         // encode address rlp
         let (local packed_bytes: felt*) = alloc();
-        let (packed_bytes_len) = RLP.encode_element_byte_array(
+        let (packed_bytes_len) = RLP.encode_byte_array(
             address_packed_bytes_len, address_packed_bytes, 0, packed_bytes
         );
 
         // encode salt rlp
-        let (packed_bytes_len) = RLP.encode_element_felt(salt, packed_bytes_len, packed_bytes);
+        let (packed_bytes_len) = RLP.encode_felt(salt, packed_bytes_len, packed_bytes);
 
         let (local rlp_list: felt*) = alloc();
         let (rlp_list_len: felt) = RLP.encode_rlp_list(packed_bytes_len, packed_bytes, rlp_list);
