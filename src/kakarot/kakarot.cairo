@@ -87,6 +87,7 @@ func execute{
 // @return starknet_contract_address The Starknet-format address of the called contract's address
 // @return return_data_len The length of the return data
 // @return return_data The return data of the EVM
+// @return gas_used The gas used for the tx
 @external
 func execute_at_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*

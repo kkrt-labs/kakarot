@@ -13,6 +13,7 @@ from starkware.starknet.business_logic.execution.execute_entry_point import (
 )
 from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 from starkware.starknet.testing.starknet import Starknet
+from starkware.starknet.definitions.general_config import StarknetGeneralConfig
 
 from tests.utils.reporting import dump_coverage, dump_reports, timeit, traceit
 
@@ -26,7 +27,8 @@ logger = logging.getLogger()
 
 @pytest_asyncio.fixture(scope="session")
 async def starknet(worker_id, request, blockhashes) -> AsyncGenerator[Starknet, None]:
-    starknet = await Starknet.empty()
+    config = StarknetGeneralConfig(invoke_tx_max_n_steps=2**24, validate_max_n_steps=2**24)
+    starknet = await Starknet.empty(config)
     current_block_number = blockhashes["current_block"]["block_number"]
     current_block_timestamp = blockhashes["current_block"]["timestamp"]
     starknet.state.state.update_block_info(
