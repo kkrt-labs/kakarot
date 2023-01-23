@@ -401,7 +401,13 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
 @external
 func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at_expected_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(evm_contract_class_hash_: felt, registry_address_: felt, evm_caller_address: felt, salt: felt, expected_create_address: felt ) {
+}(
+    evm_contract_class_hash_: felt,
+    registry_address_: felt,
+    evm_caller_address: felt,
+    salt: felt,
+    expected_create_address: felt,
+) {
     alloc_locals;
     evm_contract_class_hash.write(evm_contract_class_hash_);
     registry_address.write(registry_address_);

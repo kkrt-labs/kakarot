@@ -7,7 +7,7 @@ from starkware.python.utils import from_bytes
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.integration.helpers.helpers import get_create_address, get_create2_address
+from tests.integration.helpers.helpers import get_create2_address, get_create_address
 from tests.utils.errors import kakarot_error
 from tests.utils.uint256 import int_to_uint256
 
@@ -85,7 +85,7 @@ class TestSystemOperations:
             account_registry.contract_address,
             evm_caller_address_int,
             salt,
-            from_bytes(decode_hex(expected_create_addr))            
+            from_bytes(decode_hex(expected_create_addr)),
         ).call()
 
     async def test_create2(

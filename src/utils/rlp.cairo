@@ -168,15 +168,10 @@ namespace RLP {
 
             let (item_high, item_low) = split_felt(item);
             let (item_bytes_len) = Helpers.uint256_to_bytes_no_padding(
-                Uint256(low=item_low, high=item_high),
-                0,
-                reversed_item_bytes,
-                item_bytes,
+                Uint256(low=item_low, high=item_high), 0, reversed_item_bytes, item_bytes
             );
 
-            let (updated_rlp_len) = encode_byte_array(
-                item_bytes_len, item_bytes, rlp_len, rlp
-            );
+            let (updated_rlp_len) = encode_byte_array(item_bytes_len, item_bytes, rlp_len, rlp);
             return (updated_rlp_len,);
         }
     }
@@ -210,15 +205,11 @@ namespace RLP {
             // then the element bytes (phew)
             let (local item_len_bytes: felt*) = alloc();
             // note the subtle shift of terms: we are taking the value of the length of bytes of the item and converting it to bytes!
-            let (item_len_bytes_len) = Helpers.felt_to_bytes(
-                byte_array_len, 0, item_len_bytes
-            );
+            let (item_len_bytes_len) = Helpers.felt_to_bytes(byte_array_len, 0, item_len_bytes);
             assert [rlp + rlp_len] = 0xb7 + item_len_bytes_len;
             Helpers.fill_array(item_len_bytes_len, item_len_bytes, rlp + rlp_len + 1);
 
-            Helpers.fill_array(
-                byte_array_len, byte_array, rlp + rlp_len + 1 + item_len_bytes_len
-            );
+            Helpers.fill_array(byte_array_len, byte_array, rlp + rlp_len + 1 + item_len_bytes_len);
 
             return (rlp_len + item_len_bytes_len + byte_array_len + 1,);
         }
