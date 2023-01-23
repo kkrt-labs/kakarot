@@ -180,8 +180,6 @@ class TestPlainOpcodes:
         @pytest.mark.skip(
             "ORIGIN returns address(0)"
             "See issue https://github.com/sayajin-labs/kakarot/issues/445"
-            # "Raises in RETURNDATACOPY"
-            # "See issue https://github.com/sayajin-labs/kakarot/issues/446"
         )
         async def test_should_return_owner_as_origin_and_caller_as_sender(
             self, plain_opcodes, owner, caller
