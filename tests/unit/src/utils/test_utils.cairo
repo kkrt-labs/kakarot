@@ -68,12 +68,12 @@ func test__bytes_to_words_32bit_array{
 
     // When
     let (expected: felt*) = alloc();
-    let (_, expected:felt *) = Helpers.bytes_to_words_32bit_array(12, data, 0, expected);
+    let (_, expected: felt*) = Helpers.bytes_to_words_32bit_array(12, data, 0, expected);
 
     // Then
-    assert expected[0] = 1751477356; // 'hell'
-    assert expected[1] = 1864398703; // 'o wo'
-    assert expected[2] = 1919706112; // 'rld\x00'
+    assert expected[0] = 1751477356;  // 'hell'
+    assert expected[1] = 1864398703;  // 'o wo'
+    assert expected[2] = 1919706112;  // 'rld\x00'
 
     return ();
 }
@@ -85,13 +85,13 @@ func test__words_32bit_to_bytes_array{
     alloc_locals;
     // Given
     let (data) = alloc();
-    assert data[0] = 1751477356; // 'hell'
-    assert data[1] = 1864398703; // 'o wo'
-    assert data[2] = 1919706112; // 'rld\x00'
+    assert data[0] = 1751477356;  // 'hell'
+    assert data[1] = 1864398703;  // 'o wo'
+    assert data[2] = 1919706112;  // 'rld\x00'
 
     // When
     let (expected: felt*) = alloc();
-    let (_, expected:felt *) = Helpers.words_32bit_to_bytes_array(3, data, 0, expected);
+    let (_, expected: felt*) = Helpers.words_32bit_to_bytes_array(3, data, 0, expected);
 
     // Then
     // hello world: 0x68656c6c6f20776f726c64

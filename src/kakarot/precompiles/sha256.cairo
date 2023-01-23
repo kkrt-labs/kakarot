@@ -42,38 +42,42 @@ namespace PrecompileSHA256 {
     }(_address: felt, input_len: felt, input: felt*) -> (
         output_len: felt, output: felt*, gas_used: felt
     ) {
-    alloc_locals;
+        alloc_locals;
 
-    // Copy input array
-    let (arr: felt*) = alloc();
-    memcpy(arr, input, input_len);
+        // Copy input array
+        let (arr: felt*) = alloc();
+        memcpy(arr, input, input_len);
 
-    // Zero-pad bytes array
-    // ex. 'rld\x00'
-    let (q: felt, r: felt) = unsigned_div_rem(input_len, 4);
-    if (r != 0) {
-        // Append zero elements at the end of array
-        Helpers.fill(4 - r, arr + input_len, 0);
-    }
-    let arr_len = (q + 1) * 4;
+        // Zero-pad bytes array
+        // ex. 'rld\x00'
+        let (q: felt, r: felt) = unsigned_div_rem(input_len, 4);
+        if (r != 0) {
+            // Append zero elements at the end of array
+            Helpers.fill(4 - r, arr + input_len, 0);
+        }
+        let arr_len = (q + 1) * 4;
 
-    // Prepare input bytes array to words of 32 bits (big endian).
-    let (prepared_input: felt*) = alloc();
-    let (prepared_input_len, prepared_input: felt*) = Helpers.bytes_to_words_32bit_array(arr_len, arr, 0, prepared_input);
+        // Prepare input bytes array to words of 32 bits (big endian).
+        let (prepared_input: felt*) = alloc();
+        let (prepared_input_len, prepared_input: felt*) = Helpers.bytes_to_words_32bit_array(
+            arr_len, arr, 0, prepared_input
+        );
 
-    // Compute hash, use input_len for number of bytes
-    let (local sha256_ptr: felt*) = alloc();
-    let sha256_ptr_start = sha256_ptr;
-    let (hash) = SHA256.sha256{sha256_ptr=sha256_ptr}(prepared_input, input_len);
+        // Compute hash, use input_len for number of bytes
+        let (local sha256_ptr: felt*) = alloc();
+        let sha256_ptr_start = sha256_ptr;
+        let (hash) = SHA256.sha256{sha256_ptr=sha256_ptr}(prepared_input, input_len);
 
-    // Finalize hash
-    SHA256.finalize_sha256(sha256_ptr_start=sha256_ptr_start, sha256_ptr_end=sha256_ptr);
+        // Finalize hash
+        SHA256.finalize_sha256(sha256_ptr_start=sha256_ptr_start, sha256_ptr_end=sha256_ptr);
 
-    // Split words and return bytes hash code.
-    let (hash_bytes_array: felt*) = alloc();
-    let (_, hash_bytes_array: felt*) = Helpers.words_32bit_to_bytes_array(8, hash, 0, hash_bytes_array);
-    let (minimum_word_size) = Helpers.minimum_word_count(input_len);
-    return (32, hash_bytes_array, 3 * minimum_word_size + GAS_COST_SHA256);
+        // Split words and return bytes hash code.
+        let (hash_bytes_array: felt*) = alloc();
+        let (_, hash_bytes_array: felt*) = Helpers.words_32bit_to_bytes_array(
+            8, hash, 0, hash_bytes_array
+        );
+        let (minimum_word_size) = Helpers.minimum_word_count(input_len);
+        return (32, hash_bytes_array, 3 * minimum_word_size + GAS_COST_SHA256);
     }
 }
 
@@ -184,7 +188,11 @@ namespace SHA256 {
             _sha256_chunk{sha256_start=message, state=state, output=output}();
 
             let sha256_ptr = sha256_ptr + SHA256_STATE_SIZE_FELTS;
-            memcpy(output + SHA256_STATE_SIZE_FELTS + SHA256_INPUT_CHUNK_SIZE_FELTS, output, SHA256_STATE_SIZE_FELTS);
+            memcpy(
+                output + SHA256_STATE_SIZE_FELTS + SHA256_INPUT_CHUNK_SIZE_FELTS,
+                output,
+                SHA256_STATE_SIZE_FELTS,
+            );
             let sha256_ptr = sha256_ptr + SHA256_STATE_SIZE_FELTS;
 
             return sha256_inner(data=data, n_bytes=n_bytes - r, total_bytes=total_bytes);
@@ -193,7 +201,11 @@ namespace SHA256 {
             _sha256_chunk{sha256_start=message, state=state, output=output}();
 
             let sha256_ptr = sha256_ptr + SHA256_STATE_SIZE_FELTS;
-            memcpy(output + SHA256_STATE_SIZE_FELTS + SHA256_INPUT_CHUNK_SIZE_FELTS, output, SHA256_STATE_SIZE_FELTS);
+            memcpy(
+                output + SHA256_STATE_SIZE_FELTS + SHA256_INPUT_CHUNK_SIZE_FELTS,
+                output,
+                SHA256_STATE_SIZE_FELTS,
+            );
             let sha256_ptr = sha256_ptr + SHA256_STATE_SIZE_FELTS;
 
             return sha256_inner(
