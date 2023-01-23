@@ -771,7 +771,6 @@ namespace Helpers {
     }
 
     // @notice transform array of 32-bit words (big endian) into a bytes array
-    // @param value The initial felt
     // @param data_len The length of the 32-bit array
     // @param data The pointer to the 32-bit array
     // @param bytes_len used for recursion, set to 0

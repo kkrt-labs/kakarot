@@ -11,14 +11,6 @@ from starkware.cairo.common.math import split_felt
 // Local dependencies
 from kakarot.precompiles.sha256 import PrecompileSHA256
 from utils.utils import Helpers
-from kakarot.model import model
-from kakarot.memory import Memory
-from kakarot.constants import Constants
-from kakarot.stack import Stack
-from kakarot.execution_context import ExecutionContext
-from kakarot.instructions.memory_operations import MemoryOperations
-from kakarot.instructions.system_operations import SystemOperations, CallHelper, CreateHelper
-from tests.unit.helpers.helpers import TestHelpers
 
 @external
 func test__sha256{
