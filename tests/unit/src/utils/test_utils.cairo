@@ -44,3 +44,69 @@ func test__bytes_i_to_uint256{
 
     return ();
 }
+
+@external
+func test__bytes_to_words_32bit_array{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    alloc_locals;
+    // Given
+    // hello world: 0x68656c6c6f20776f726c64
+    let (data) = alloc();
+    assert data[0] = 0x68;
+    assert data[1] = 0x65;
+    assert data[2] = 0x6c;
+    assert data[3] = 0x6c;
+    assert data[4] = 0x6f;
+    assert data[5] = 0x20;
+    assert data[6] = 0x77;
+    assert data[7] = 0x6f;
+    assert data[8] = 0x72;
+    assert data[9] = 0x6c;
+    assert data[10] = 0x64;
+    assert data[11] = 0x00;
+
+    // When
+    let (expected: felt*) = alloc();
+    let (_, expected:felt *) = Helpers.bytes_to_words_32bit_array(12, data, 0, expected);
+
+    // Then
+    assert expected[0] = 1751477356; // 'hell'
+    assert expected[1] = 1864398703; // 'o wo'
+    assert expected[2] = 1919706112; // 'rld\x00'
+
+    return ();
+}
+
+@external
+func test__words_32bit_to_bytes_array{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    alloc_locals;
+    // Given
+    let (data) = alloc();
+    assert data[0] = 1751477356; // 'hell'
+    assert data[1] = 1864398703; // 'o wo'
+    assert data[2] = 1919706112; // 'rld\x00'
+
+    // When
+    let (expected: felt*) = alloc();
+    let (_, expected:felt *) = Helpers.words_32bit_to_bytes_array(3, data, 0, expected);
+
+    // Then
+    // hello world: 0x68656c6c6f20776f726c64
+    assert expected[0] = 0x68;
+    assert expected[1] = 0x65;
+    assert expected[2] = 0x6c;
+    assert expected[3] = 0x6c;
+    assert expected[4] = 0x6f;
+    assert expected[5] = 0x20;
+    assert expected[6] = 0x77;
+    assert expected[7] = 0x6f;
+    assert expected[8] = 0x72;
+    assert expected[9] = 0x6c;
+    assert expected[10] = 0x64;
+    assert expected[11] = 0x00;
+
+    return ();
+}
