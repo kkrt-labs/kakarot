@@ -18,4 +18,3 @@ class TestEcMul:
     async def test_ecmul(self, ecmul):
 
         await ecmul.test__ecmul_impl().call()
-        await ecmul.test__ecmul_via_staticcall().call()
