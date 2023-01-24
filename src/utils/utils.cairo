@@ -14,10 +14,17 @@ from starkware.cairo.common.math import (
 from starkware.cairo.common.math_cmp import is_le, is_not_zero
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.pow import pow
-from starkware.cairo.common.uint256 import Uint256, uint256_check
+from starkware.cairo.common.uint256 import (
+    Uint256,
+    uint256_and,
+    uint256_check,
+    uint256_eq,
+    uint256_shr,
+)
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
 from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
@@ -234,6 +241,29 @@ namespace Helpers {
         // Reverse the temp_value array into value_as_bytes_array as memory is arranged in big endian order.
         reverse(old_arr_len=32, old_arr=temp_value, new_arr_len=32, new_arr=value_as_bytes_array);
         return (bytes_array_len=32, bytes_array=value_as_bytes_array);
+    }
+
+    // @notice This function is a variant of `uint256_to_bytes_array` that encodes the uint256 with no padding
+    // @param value: value to convert.
+    // @param idx: index of res array
+    // @param res: resultant encoded bytearray, but in reverse order
+    // @param dest: reversed res, putting byte array in right order
+    // @return bytes array len
+    func uint256_to_bytes_no_padding{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
+        value: Uint256, idx: felt, res: felt*, dest: felt*
+    ) -> (bytes_len: felt) {
+        alloc_locals;
+        let (is_zero) = uint256_eq(value, Uint256(0, 0));
+        if (is_zero == 1) {
+            reverse(old_arr_len=idx, old_arr=res - idx, new_arr_len=idx, new_arr=dest);
+            return (bytes_len=idx);
+        }
+        let (byte_uint256) = uint256_and(value, Uint256(low=255, high=0));
+        let byte = uint256_to_felt(byte_uint256);
+        assert [res] = byte;  // get the last 8 bits of the value
+        let (val_shifted_one_byte) = uint256_shr(value, Uint256(low=8, high=0));
+        let (bytes_len) = uint256_to_bytes_no_padding(val_shifted_one_byte, idx + 1, res + 1, dest);  // recursively call function with value shifted right by 8 bits
+        return (bytes_len=bytes_len);
     }
 
     // @notice This function is like `uint256_to_bytes_array` except it writes the byte array to a given destination with the given offset and length
