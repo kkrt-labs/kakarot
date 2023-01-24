@@ -30,7 +30,9 @@ namespace PrecompileBlake2f {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(input_len: felt, input: felt*) -> (output_len: felt, output: felt*, gas_used: felt) {
+    }(_address: felt, input_len: felt, input: felt*) -> (
+        output_len: felt, output: felt*, gas_used: felt
+    ) {
         alloc_locals;
         local rounds_bytes_len = 4;
         local word_bytes_len = 8;
@@ -38,7 +40,6 @@ namespace PrecompileBlake2f {
         local m_bytes_offset = 68;
         local t_bytes_offset = 196;
         local f_bytes_offset = 212;
-
 
         // Check input length
         with_attr error_message(
@@ -472,8 +473,7 @@ namespace Blake2 {
         assert bitwise_ptr[1].x = a_xor_d;
         assert bitwise_ptr[1].y = (2 ** 64 - 2 ** 32);
         tempvar d = (
-            (2 ** (64 - 32)) * a_xor_d + (1 / 2 ** 32 - 2 ** (64 - 32)) * bitwise_ptr[1].x_and_y
-        );
+            (2 ** (64 - 32)) * a_xor_d + (1 / 2 ** 32 - 2 ** (64 - 32)) * bitwise_ptr[1].x_and_y);
         let bitwise_ptr = bitwise_ptr + 2 * BitwiseBuiltin.SIZE;
 
         // c = (c + d) % 2**64
@@ -486,8 +486,7 @@ namespace Blake2 {
         assert bitwise_ptr[1].x = b_xor_c;
         assert bitwise_ptr[1].y = (2 ** 64 - 2 ** 24);
         tempvar b = (
-            (2 ** (64 - 24)) * b_xor_c + (1 / 2 ** 24 - 2 ** (64 - 24)) * bitwise_ptr[1].x_and_y
-        );
+            (2 ** (64 - 24)) * b_xor_c + (1 / 2 ** 24 - 2 ** (64 - 24)) * bitwise_ptr[1].x_and_y);
         let bitwise_ptr = bitwise_ptr + 2 * BitwiseBuiltin.SIZE;
 
         return (a, b, c, d);
