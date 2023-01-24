@@ -2,9 +2,10 @@ import random
 from textwrap import wrap
 from typing import Tuple
 
+import rlp
 from eth_abi import encode_abi
 from eth_keys import keys
-from eth_utils import decode_hex, keccak, to_checksum_address
+from eth_utils import decode_hex, keccak, to_bytes, to_checksum_address
 
 from tests.integration.helpers.constants import CHAIN_ID
 
@@ -69,6 +70,15 @@ def get_domain_separator(name: str, token_address: str) -> bytes:
                 token_address,
             ],
         )
+    )
+
+
+def get_create_address(sender_address: str, salt: int) -> str:
+    """
+    See [CREATE](https://www.evm.codes/#f0)
+    """
+    return to_checksum_address(
+        keccak(rlp.encode([decode_hex(sender_address), to_bytes(salt)]))[-20:]
     )
 
 

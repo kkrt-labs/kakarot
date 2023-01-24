@@ -14,10 +14,17 @@ from starkware.cairo.common.math import (
 from starkware.cairo.common.math_cmp import is_le, is_not_zero
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.pow import pow
-from starkware.cairo.common.uint256 import Uint256, uint256_check
+from starkware.cairo.common.uint256 import (
+    Uint256,
+    uint256_and,
+    uint256_check,
+    uint256_eq,
+    uint256_shr,
+)
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
 from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
@@ -234,6 +241,51 @@ namespace Helpers {
         // Reverse the temp_value array into value_as_bytes_array as memory is arranged in big endian order.
         reverse(old_arr_len=32, old_arr=temp_value, new_arr_len=32, new_arr=value_as_bytes_array);
         return (bytes_array_len=32, bytes_array=value_as_bytes_array);
+    }
+
+    // @notice This function is a variant of `uint256_to_bytes_array` that encodes the uint256 with no padding
+    // @param value: value to convert.
+    // @param idx: index of res array
+    // @param res: resultant encoded bytearray, but in reverse order
+    // @param dest: reversed res, putting byte array in right order
+    // @return bytes array len
+    func uint256_to_bytes_no_padding{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
+        value: Uint256, idx: felt, res: felt*, dest: felt*
+    ) -> (bytes_len: felt) {
+        alloc_locals;
+        let (is_zero) = uint256_eq(value, Uint256(0, 0));
+        if (is_zero == 1) {
+            reverse(old_arr_len=idx, old_arr=res - idx, new_arr_len=idx, new_arr=dest);
+            return (bytes_len=idx);
+        }
+        let (byte_uint256) = uint256_and(value, Uint256(low=255, high=0));
+        let byte = uint256_to_felt(byte_uint256);
+        assert [res] = byte;  // get the last 8 bits of the value
+        let (val_shifted_one_byte) = uint256_shr(value, Uint256(low=8, high=0));
+        let (bytes_len) = uint256_to_bytes_no_padding(val_shifted_one_byte, idx + 1, res + 1, dest);  // recursively call function with value shifted right by 8 bits
+        return (bytes_len=bytes_len);
+    }
+
+    // @notice This function is like `uint256_to_bytes_array` except it writes the byte array to a given destination with the given offset and length
+    // @param value: value to convert.
+    // @param byte_array_offset: The starting offset of byte array that is copied to the destination array.
+    // @param byte_array_len: The length of byte array that is copied to the destination array.
+    // @param dest_offset: The offset of the destination array that the byte array is copied.
+    // @param dest_len: The length of the destination array.
+    // @param dest: The destination array
+    // @return: array length and felt array representation of the value.
+    func uint256_to_dest_bytes_array{range_check_ptr}(
+        value: Uint256,
+        byte_array_offset: felt,
+        byte_array_len: felt,
+        dest_offset: felt,
+        dest_len: felt,
+        dest: felt*,
+    ) -> (updated_dest_len: felt) {
+        alloc_locals;
+        let (_, bytes_array) = uint256_to_bytes_array(value);
+        memcpy(dst=dest + dest_offset, src=bytes_array + byte_array_offset, len=byte_array_len);
+        return (updated_dest_len=dest_len + byte_array_len);
     }
 
     // @notice Loads a sequence of bytes into a single felt in big-endian.
@@ -634,7 +686,7 @@ namespace Helpers {
     }
 
     // @notice transform muliple bytes into a single felt
-    // @param data_len The lenght of the bytes
+    // @param data_len The length of the bytes
     // @param data The pointer to the bytes array
     // @param n used for recursion, set to 0
     // @return n the resultant felt
@@ -646,5 +698,14 @@ namespace Helpers {
         let byte: felt = data[data_len - 1];
         let (res) = pow(256, e);
         return bytes_to_felt(data_len=data_len - 1, data=data, n=n + byte * res);
+    }
+
+    // @notice Transforms a keccak hash to an ethereum address by taking last 20 bytes
+    // @param hash - The keccak hash.
+    // @return address - The address.
+    func keccak_hash_to_evm_contract_address{range_check_ptr}(hash: Uint256) -> felt {
+        let (_, r) = unsigned_div_rem(hash.high, 256 ** 4);
+        let address = hash.low + r * 2 ** 128;
+        return address;
     }
 }

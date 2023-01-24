@@ -2,6 +2,8 @@
 
 %lang starknet
 
+// Library copied from https://github.com/tekkac/cairo-alt_bn128
+
 // Basic definitions for the alt_bn128 elliptic curve.
 // The curve is given by the equation
 //   y^2 = x^3 + 3
