@@ -36,12 +36,6 @@ class TestBlake2f:
         ):
             await blake2f.test_should_fail_when_flag_is_not_0_or_1().call()
 
-    async def test_should_return_blake2f_compression_with_flag_1(self, blake2f):
-        await blake2f.test_should_return_blake2f_compression_with_flag_1().call()
-
-    async def test_should_return_blake2f_compression_with_flag_0(self, blake2f):
-        await blake2f.test_should_return_blake2f_compression_with_flag_0().call()
-
     @pytest.mark.parametrize("f", [0, 1])
     @pytest.mark.parametrize("seed", [0, 1, 2, 3, 4])
     async def test_should_return_blake2f_compression(self, blake2f, f, seed):
