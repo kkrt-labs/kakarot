@@ -28,7 +28,7 @@ def wrap_for_kakarot(
 
         async def _wrapped(contract, *args, **kwargs):
             abi = contract.get_function_by_name(fun).abi
-            gas_limit = kwargs.pop("gas_limit", 1_000_000)
+            gas_limit = kwargs.pop("gas_limit", 1_000_000_000)
             value = kwargs.pop("value", 0)
             caller_address = kwargs.pop("caller_address", None)
             call = kakarot.execute_at_address(
@@ -100,7 +100,7 @@ def wrap_for_kakarot(
                         pass
                 setattr(contract.events, event_abi["name"], logs)
             
-            setattr(contract, "tx", res.result)
+            setattr(contract, "tx", res)
 
             return result
 
