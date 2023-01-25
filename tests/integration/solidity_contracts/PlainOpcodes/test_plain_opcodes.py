@@ -178,8 +178,8 @@ class TestPlainOpcodes:
             assert origin == sender == owner.address
 
         @pytest.mark.skip(
-            "Raises in RETURNDATACOPY"
-            "See issue https://github.com/sayajin-labs/kakarot/issues/446"
+            "ORIGIN returns address(0)"
+            "See issue https://github.com/sayajin-labs/kakarot/issues/445"
         )
         async def test_should_return_owner_as_origin_and_caller_as_sender(
             self, plain_opcodes, owner, caller
@@ -190,3 +190,6 @@ class TestPlainOpcodes:
                 caller_address=owner.starknet_address,
             )
             assert success
+            decoded = Web3().codec.decode(["address", "address"], data)
+            assert owner.address == decoded[0]  # tx.origin
+            assert caller.evm_contract_address == decoded[1]  # msg.sender

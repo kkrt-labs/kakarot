@@ -18,6 +18,7 @@ async def ecadd(
 
 
 @pytest.mark.asyncio
+@pytest.mark.EC_ADD
 class TestEcAdd:
     @pytest.mark.parametrize(
         "calldata_len",

@@ -653,8 +653,7 @@ namespace EnvironmentalInformation {
         let element_len = popped[2];
 
         let return_data_len: felt = ctx.sub_context.return_data_len;
-        // Note: +1 see the CALL opcode: the return_data[0] stores the ret_offset in memory
-        let return_data: felt* = ctx.sub_context.return_data + 1;
+        let return_data: felt* = ctx.sub_context.return_data;
 
         let sliced_return_data: felt* = Helpers.slice_data(
             data_len=return_data_len,

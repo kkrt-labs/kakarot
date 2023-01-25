@@ -10,7 +10,7 @@ from starkware.cairo.common.cairo_keccak.keccak import keccak_bigend, finalize_k
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.memcpy import memcpy
-from starkware.cairo.common.uint256 import Uint256, uint256_and
+from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import deploy as deploy_syscall
 from starkware.starknet.common.syscalls import get_contract_address
 
@@ -29,6 +29,7 @@ from kakarot.interfaces.interfaces import IEvmContract, IRegistry, IEth
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
+from utils.rlp import RLP
 from utils.utils import Helpers
 
 // @title System operations opcodes.
@@ -551,9 +552,58 @@ namespace CreateHelper {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(sender_address: felt, nonce: felt) -> (evm_contract_address: felt) {
-        // TODO: see https://github.com/sayajin-labs/kakarot/issues/426
-        return (0xAbdE100700000000000000000000000000000000 + nonce,);
+    }(sender_address: felt, salt: felt) -> (evm_contract_address: felt) {
+        alloc_locals;
+        let (keccak_ptr: felt*) = alloc();
+        local keccak_ptr_start: felt* = keccak_ptr;
+
+        let (local address_packed_bytes: felt*) = alloc();
+
+        // pack sender address, padded twenty bytes
+        // the address should be twenty bytes, so we skip the leading 12 elements
+        let (sender_address_high, sender_address_low) = split_felt(sender_address);
+
+        let (address_packed_bytes_len) = Helpers.uint256_to_dest_bytes_array(
+            value=Uint256(low=sender_address_low, high=sender_address_high),
+            byte_array_offset=12,
+            byte_array_len=Constants.ADDRESS_BYTES_LEN,
+            dest_offset=0,
+            dest_len=0,
+            dest=address_packed_bytes,
+        );
+
+        // encode address rlp
+        let (local packed_bytes: felt*) = alloc();
+        let (packed_bytes_len) = RLP.encode_byte_array(
+            address_packed_bytes_len, address_packed_bytes, 0, packed_bytes
+        );
+
+        // encode salt rlp
+        let (packed_bytes_len) = RLP.encode_felt(salt, packed_bytes_len, packed_bytes);
+
+        let (local rlp_list: felt*) = alloc();
+        let (rlp_list_len: felt) = RLP.encode_rlp_list(packed_bytes_len, packed_bytes, rlp_list);
+
+        let (local packed_bytes8: felt*) = alloc();
+        Helpers.bytes_to_bytes8_little_endian(
+            bytes_len=rlp_list_len,
+            bytes=rlp_list,
+            index=0,
+            size=rlp_list_len,
+            bytes8=0,
+            bytes8_shift=0,
+            dest=packed_bytes8,
+            dest_index=0,
+        );
+
+        with keccak_ptr {
+            let (create_hash) = keccak_bigend(inputs=packed_bytes8, n_bytes=rlp_list_len);
+
+            finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
+        }
+
+        let create_address = Helpers.keccak_hash_to_evm_contract_address(create_hash);
+        return (create_address,);
     }
 
     // @notice Constructs an evm contract address for the create2 opcode
