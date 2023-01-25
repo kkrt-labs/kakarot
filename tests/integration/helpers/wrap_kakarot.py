@@ -30,7 +30,8 @@ def wrap_for_kakarot(
             abi = contract.get_function_by_name(fun).abi
             gas_limit = kwargs.pop("gas_limit", 1_000_000_000)
             value = kwargs.pop("value", 0)
-            caller_address = kwargs.pop("caller_address", None)
+            # 0 is the default caller_address in both call and execute
+            caller_address = kwargs.pop("caller_address", 0)
             call = kakarot.execute_at_address(
                 address=evm_contract_address,
                 value=value,
@@ -40,8 +41,8 @@ def wrap_for_kakarot(
                 ),
             )
 
-            if abi["stateMutability"] == "view" and caller_address is None:
-                res = await call.call()
+            if abi["stateMutability"] == "view":
+                res = await call.call(caller_address=caller_address)
             else:
                 res = await call.execute(caller_address=caller_address)
             if call._traced:

@@ -7,7 +7,7 @@ from starkware.python.utils import from_bytes
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.integration.helpers.helpers import get_create2_address
+from tests.integration.helpers.helpers import get_create2_address, get_create_address
 from tests.utils.errors import kakarot_error
 from tests.utils.uint256 import int_to_uint256
 
@@ -71,12 +71,21 @@ class TestSystemOperations:
             contract_account_class.class_hash, account_registry.contract_address
         ).call()
 
+    @pytest.mark.parametrize("salt", [127, 256, 2**55 - 1])
     async def test_create(
-        self, system_operations, contract_account_class, account_registry
+        self, system_operations, contract_account_class, account_registry, salt
     ):
-        await system_operations.test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at_empty_address(
+        evm_caller_address_int = 15
+        evm_caller_address_bytes = evm_caller_address_int.to_bytes(20, byteorder="big")
+        evm_caller_address = to_checksum_address(evm_caller_address_bytes)
+        expected_create_addr = get_create_address(evm_caller_address, salt)
+
+        await system_operations.test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at_expected_address(
             contract_account_class.class_hash,
             account_registry.contract_address,
+            evm_caller_address_int,
+            salt,
+            from_bytes(decode_hex(expected_create_addr)),
         ).call()
 
     async def test_create2(
