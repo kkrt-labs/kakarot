@@ -220,7 +220,7 @@ namespace MemoryOperations {
 
         // Update pc if skip_jump is anything other then 0
 
-        let (is_condition_valid) = uint256_le(Uint256(1,0), skip_condition);
+        let (is_condition_valid) = uint256_le(Uint256(1, 0), skip_condition);
 
         if (is_condition_valid != FALSE) {
             // Update pc counter.

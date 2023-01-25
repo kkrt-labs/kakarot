@@ -154,7 +154,7 @@ class TestPlainOpcodes:
                     caller_address=addresses[0].starknet_address,
                 )
 
-        @pytest.mark.parametrize("address", [2**127 , 2**128])
+        @pytest.mark.parametrize("address", [2**127, 2**128])
         async def test_should_not_revert_when_address_is_not_zero(
             self, plain_opcodes, addresses, address
         ):
