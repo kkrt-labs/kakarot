@@ -73,7 +73,7 @@ class TestUniswapV2Factory:
 
         @pytest.mark.skip("Skipped because gas metering is inaccurate in kakarot")
         async def test_should_use_correct_gas(self, factory, owner):
-            tx = await factory.createPair(
+            await factory.createPair(
                 *TEST_ADDRESSES, caller_address=owner.starknet_address
             )
             assert factory.tx.result.gas_used == 2512920

@@ -100,7 +100,7 @@ def wrap_for_kakarot(
                     except:
                         pass
                 setattr(contract.events, event_abi["name"], logs)
-            
+
             setattr(contract, "tx", res)
 
             return result
