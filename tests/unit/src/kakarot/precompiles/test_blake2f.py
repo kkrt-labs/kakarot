@@ -3,9 +3,10 @@ from typing import List
 
 import pytest
 import pytest_asyncio
-from tests.utils.errors import kakarot_error
-from starkware.starknet.testing.starknet import Starknet
 from eth._utils.blake2.compression import blake2b_compress
+from starkware.starknet.testing.starknet import Starknet
+
+from tests.utils.errors import kakarot_error
 
 
 def pack_64_bits_little(input: List[int]):
@@ -47,10 +48,14 @@ class TestBlake2f:
         m = [random.getrandbits(8) for _ in range(128)]
         t0 = random.getrandbits(64)
         t1 = random.getrandbits(64)
-        h_starting_state = [pack_64_bits_little(h[i*8:(i+1)*8]) for i in range(8)]
+        h_starting_state = [
+            pack_64_bits_little(h[i * 8 : (i + 1) * 8]) for i in range(8)
+        ]
 
         # When
-        got = await blake2f.test_should_return_blake2f_compression(rounds, h, m, t0, t1, f).call()
+        got = await blake2f.test_should_return_blake2f_compression(
+            rounds, h, m, t0, t1, f
+        ).call()
 
         # Then
         compress = blake2b_compress(rounds, h_starting_state, m, [t0, t1], bool(f))
