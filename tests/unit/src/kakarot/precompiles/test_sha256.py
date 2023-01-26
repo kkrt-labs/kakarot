@@ -21,8 +21,7 @@ class TestSHA256:
     async def test_sha256_hello_world_should_return_correct_hash(self, sha256):
 
         # Build message to be hashed
-        message = "hello world"
-        message_bytes = message.encode()
+        message_bytes = b"hello world"
 
         # Hash with SHA256
         m = py_sha256()
@@ -33,7 +32,7 @@ class TestSHA256:
         expected_result_byte_array = list(bytes.fromhex(hash))
 
         # Build bytes array to pass through precompile
-        bytes_array = [elem for elem in bytearray(message_bytes)]
+        bytes_array = list(message_bytes)
         precompile_hash = (await sha256.test__sha256(bytes_array).call()).result[0]
         assert precompile_hash == expected_result_byte_array
 
@@ -52,6 +51,6 @@ class TestSHA256:
         expected_result_byte_array = list(bytes.fromhex(hash))
 
         # Build bytes array to pass through precompile
-        bytes_array = [elem for elem in bytearray(message_bytes)]
+        bytes_array = list(bytearray(message_bytes))
         precompile_hash = (await sha256.test__sha256(bytes_array).call()).result[0]
         assert precompile_hash == expected_result_byte_array
