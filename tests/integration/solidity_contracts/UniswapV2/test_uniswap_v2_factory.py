@@ -71,13 +71,12 @@ class TestUniswapV2Factory:
             assert await pair.token0() == tokens[0]
             assert await pair.token1() == tokens[1]
 
-        @pytest.mark.skip("gas_usage is not yet returned by kakarot")
+        @pytest.mark.skip("Skipped because gas metering is inaccurate in kakarot")
         async def test_should_use_correct_gas(self, factory, owner):
-            # TODO: see https://github.com/sayajin-labs/kakarot/issues/428
-            tx = await factory.createPair(
+            await factory.createPair(
                 *TEST_ADDRESSES, caller_address=owner.starknet_address
             )
-            assert tx.gas_used == 2512920
+            assert factory.tx.result.gas_used == 2512920
 
     class TestSetFeeTo:
         async def test_should_revert_when_caller_is_not_owner(self, factory, other):
