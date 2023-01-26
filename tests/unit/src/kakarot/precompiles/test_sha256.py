@@ -1,8 +1,10 @@
-import random
+from datetime import timedelta
 from hashlib import sha256 as py_sha256
 
 import pytest
 import pytest_asyncio
+from hypothesis import given, settings
+from hypothesis.strategies import integers
 from starkware.starknet.testing.starknet import Starknet
 
 
@@ -36,11 +38,17 @@ class TestSHA256:
         precompile_hash = (await sha256.test__sha256(bytes_array).call()).result[0]
         assert precompile_hash == expected_result_byte_array
 
-    @pytest.mark.parametrize("data", [random.randint(1, 56) for _ in range(3)])
-    async def test_sha256_should_return_correct_hash(self, sha256, data):
+    @given(
+        data_len=integers(min_value=1, max_value=56),
+        random_bytes=integers(min_value=0, max_value=255),
+    )
+    @settings(deadline=timedelta(milliseconds=10000), max_examples=10)
+    async def test_sha256_should_return_correct_hash(
+        self, sha256, data_len, random_bytes
+    ):
 
         # Build message to be hashed
-        message_bytes = bytearray([random.randint(0, 255) for _ in range(data)])
+        message_bytes = bytearray([random_bytes for _ in range(data_len)])
 
         # Hash with SHA256
         m = py_sha256()
@@ -53,4 +61,7 @@ class TestSHA256:
         # Build bytes array to pass through precompile
         bytes_array = list(bytearray(message_bytes))
         precompile_hash = (await sha256.test__sha256(bytes_array).call()).result[0]
+        print(
+            f"random_bytes: {random_bytes}, hash: {expected_result_byte_array} {precompile_hash}"
+        )
         assert precompile_hash == expected_result_byte_array
