@@ -13,6 +13,7 @@ from kakarot.constants import Constants
 from kakarot.execution_context import ExecutionContext
 from kakarot.memory import Memory
 from kakarot.model import model
+from kakarot.precompiles.blake2f import PrecompileBlake2f
 from kakarot.precompiles.datacopy import PrecompileDataCopy
 from kakarot.precompiles.ecadd import PrecompileEcAdd
 from kakarot.precompiles.ecmul import PrecompileEcMul
@@ -127,7 +128,7 @@ namespace Precompiles {
         ret;
         call not_implemented_precompile;  // 0x8
         ret;
-        call not_implemented_precompile;  // 0x9
+        call PrecompileBlake2f.run;  // 0x9
         ret;
     }
 

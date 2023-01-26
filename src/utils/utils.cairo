@@ -318,6 +318,19 @@ namespace Helpers {
         return current;
     }
 
+    // @notice Load sequences of 8 bytes little endian into an array of felts
+    // @param len: final length of the output.
+    // @param input: pointer to bytes array input.
+    // @param output: pointer to bytes array output.
+    func load_64_bits_array(len: felt, input: felt*, output: felt*) {
+        if (len == 0) {
+            return ();
+        }
+        let loaded = bytes_to_64_bits_little_felt(input);
+        assert [output] = loaded;
+        return load_64_bits_array(len - 1, input + 8, output + 1);
+    }
+
     // @notice Divides a 128-bit number with remainder.
     // @dev This is almost identical to cairo.common.math.unsigned_dev_rem, but supports the case
     // @dev of div == 2**128 as well.
@@ -371,7 +384,7 @@ namespace Helpers {
         dw 1;
     }
 
-    // @notice Splits a felt into `len` bytes, big-endien, and outputs to `dst`.
+    // @notice Splits a felt into `len` bytes, big-endian, and outputs to `dst`.
     func split_word{range_check_ptr}(value: felt, len: felt, dst: felt*) {
         if (len == 0) {
             assert value = 0;
@@ -388,6 +401,24 @@ namespace Helpers {
         tempvar low_part = [output];
         assert_nn_le(low_part, 255);
         return split_word((value - low_part) / 256, len, dst);
+    }
+
+    // @notice Splits a felt into `len` bytes, little-endian, and outputs to `dst`.
+    func split_word_little{range_check_ptr}(value: felt, len: felt, dst: felt*) {
+        if (len == 0) {
+            assert value = 0;
+            return ();
+        }
+        let output = &dst[0];
+        let base = 256;
+        let bound = 256;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar low_part = [output];
+        assert_nn_le(low_part, 255);
+        return split_word_little((value - low_part) / 256, len - 1, dst + 1);
     }
 
     // @notice Splits a felt into 16 bytes, big-endien, and outputs to `dst`.
