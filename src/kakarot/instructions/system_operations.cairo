@@ -582,7 +582,7 @@ namespace CreateHelper {
         let (packed_bytes_len) = RLP.encode_felt(salt, packed_bytes_len, packed_bytes);
 
         let (local rlp_list: felt*) = alloc();
-        let (rlp_list_len: felt) = RLP.encode_rlp_list(packed_bytes_len, packed_bytes, rlp_list);
+        let (rlp_list_len: felt) = RLP.encode_list(packed_bytes_len, packed_bytes, rlp_list);
 
         let (local packed_bytes8: felt*) = alloc();
         Helpers.bytes_to_bytes8_little_endian(
