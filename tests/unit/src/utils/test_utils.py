@@ -12,16 +12,13 @@ async def helpers(starknet):
 
 
 @pytest.mark.asyncio
-class TestStack:
+@pytest.mark.Utils
+class TestHelpers:
     async def test__bytes_i_to_uint256(self, helpers):
         await helpers.test__bytes_i_to_uint256().call()
 
+    async def test__bytes_to_bytes4_array(self, helpers):
+        await helpers.test__bytes_to_bytes4_array().call()
 
-@pytest.mark.asyncio
-@pytest.mark.Utils
-class TestHelpers:
-    async def test__bytes_to_words_32bit_array(self, helpers):
-        await helpers.test__bytes_to_words_32bit_array().call()
-
-    async def test__words_32bit_to_bytes_array(self, helpers):
-        await helpers.test__words_32bit_to_bytes_array().call()
+    async def test__bytes4_array_to_bytes(self, helpers):
+        await helpers.test__bytes4_array_to_bytes().call()

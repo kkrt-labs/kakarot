@@ -46,7 +46,7 @@ func test__bytes_i_to_uint256{
 }
 
 @external
-func test__bytes_to_words_32bit_array{
+func test__bytes_to_bytes4_array{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     alloc_locals;
@@ -79,7 +79,7 @@ func test__bytes_to_words_32bit_array{
 }
 
 @external
-func test__words_32bit_to_bytes_array{
+func test__bytes4_array_to_bytes{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     alloc_locals;
