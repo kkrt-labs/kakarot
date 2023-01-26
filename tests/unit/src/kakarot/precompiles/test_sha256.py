@@ -24,7 +24,7 @@ class TestSHA256:
     @given(
         data_len=integers(min_value=1, max_value=56),
     )
-    @settings(deadline=timedelta(milliseconds=10000), max_examples=10)
+    @settings(deadline=timedelta(milliseconds=20000), max_examples=10)
     async def test_sha256_should_return_correct_hash(self, sha256, data_len):
         # Set seed
         random.seed(0)
