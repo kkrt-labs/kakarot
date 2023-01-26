@@ -68,7 +68,7 @@ func test__bytes_to_words_32bit_array{
 
     // When
     let (expected: felt*) = alloc();
-    let (_, expected: felt*) = Helpers.bytes_to_words_32bit_array(12, data, 0, expected);
+    let (_, expected: felt*) = Helpers.bytes_to_bytes4_array(12, data, 0, expected);
 
     // Then
     assert expected[0] = 1751477356;  // 'hell'
@@ -91,7 +91,7 @@ func test__words_32bit_to_bytes_array{
 
     // When
     let (expected: felt*) = alloc();
-    let (_, expected: felt*) = Helpers.words_32bit_to_bytes_array(3, data, 0, expected);
+    let (_, expected: felt*) = Helpers.bytes4_array_to_bytes(3, data, 0, expected);
 
     // Then
     // hello world: 0x68656c6c6f20776f726c64

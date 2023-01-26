@@ -749,7 +749,7 @@ namespace Helpers {
     // @param n used for recursion, set to pointer
     // @return n_len the resulting array length
     // @return n the resulting array
-    func bytes_to_words_32bit_array{range_check_ptr}(
+    func bytes_to_bytes4_array{range_check_ptr}(
         data_len: felt, data: felt*, n_len: felt, n: felt*
     ) -> (n_len: felt, n: felt*) {
         alloc_locals;
@@ -765,7 +765,7 @@ namespace Helpers {
         // Load sequence of 4 bytes into a single 32-bit word (big endian)
         let res = load_word(4, data);
         assert n[n_len] = res;
-        return bytes_to_words_32bit_array(
+        return bytes_to_bytes4_array(
             data_len=data_len - 4, data=data + 4, n_len=n_len + 1, n=n
         );
     }
@@ -777,7 +777,7 @@ namespace Helpers {
     // @param bytes used for recursion, set to pointer
     // @return bytes_len the resulting array length
     // @return bytes the resulting array
-    func words_32bit_to_bytes_array{range_check_ptr}(
+    func bytes4_array_to_bytes{range_check_ptr}(
         data_len: felt, data: felt*, bytes_len: felt, bytes: felt*
     ) -> (bytes_len: felt, bytes: felt*) {
         alloc_locals;
@@ -795,7 +795,7 @@ namespace Helpers {
         memcpy(res, bytes, bytes_len);
         memcpy(res + bytes_len, temp, 4);
 
-        return words_32bit_to_bytes_array(
+        return bytes4_array_to_bytes(
             data_len=data_len - 1, data=data + 1, bytes_len=bytes_len + 4, bytes=res
         );
     }

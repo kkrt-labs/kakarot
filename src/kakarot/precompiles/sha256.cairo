@@ -59,7 +59,7 @@ namespace PrecompileSHA256 {
 
         // Prepare input bytes array to words of 32 bits (big endian).
         let (prepared_input: felt*) = alloc();
-        let (prepared_input_len, prepared_input: felt*) = Helpers.bytes_to_words_32bit_array(
+        let (prepared_input_len, prepared_input: felt*) = Helpers.bytes_to_bytes4_array(
             arr_len, arr, 0, prepared_input
         );
 
@@ -73,7 +73,7 @@ namespace PrecompileSHA256 {
 
         // Split words and return bytes hash code.
         let (hash_bytes_array: felt*) = alloc();
-        let (_, hash_bytes_array: felt*) = Helpers.words_32bit_to_bytes_array(
+        let (_, hash_bytes_array: felt*) = Helpers.bytes4_array_to_bytes(
             8, hash, 0, hash_bytes_array
         );
         let (minimum_word_size) = Helpers.minimum_word_count(input_len);
