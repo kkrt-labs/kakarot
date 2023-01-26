@@ -9,7 +9,7 @@ from starkware.cairo.common.uint256 import Uint256
 // @title Blockhash registry contract.
 
 // Local dependencies
-from kakarot.accounts.registry.blockhash.library import BlockhashRegistry
+from kakarot.registry.blockhash.library import BlockhashRegistry
 
 // Constructor
 @constructor

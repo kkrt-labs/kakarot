@@ -13,8 +13,7 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import deploy as deploy_syscall
 from starkware.starknet.common.syscalls import get_contract_address
 
-from kakarot.constants import native_token_address, registry_address, evm_contract_class_hash
-from kakarot.interfaces.interfaces import IRegistry
+from kakarot.constants import native_token_address, contract_account_class_hash
 
 // @title SmartContractAccount main library file.
 // @notice This file contains the EVM smart contract account representation logic.
@@ -39,6 +38,10 @@ func storage_(key: Uint256) -> (value: Uint256) {
 func is_initialized_() -> (res: felt) {
 }
 
+@storage_var
+func evm_address() -> (evm_address: felt) {
+}
+
 // An event emitted whenever kakarot deploys a evm contract
 // evm_contract_address is the representation of the evm address of the contract
 // starknet_contract_address if the starknet address of the contract
@@ -52,62 +55,26 @@ namespace ContractAccount {
     const BYTES_PER_FELT = 16;
 
     // @notice This function is used to initialize the smart contract account.
-    // @param kakarot_address: The address of the Kakarot smart contract.
-    // @param bytecode_len: The length of the smart contract bytecode.
-    // @param bytecode: The bytecode of the smart contract.
-    func constructor{
+    func initialize{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(kakarot_address: felt, bytecode_len: felt, bytecode: felt*) {
-        // Initialize access control.
+    }(kakarot_address: felt, _evm_address) {
+        let (is_initialized) = is_initialized_.read();
+        assert is_initialized = 0;
+        is_initialized_.write(1);
         Ownable.initializer(kakarot_address);
-        // Store the bytecode.
-        internal.write_bytecode(0, bytecode_len, bytecode, 0, BYTES_PER_FELT);
+        evm_address.write(_evm_address);
         return ();
     }
 
-    // @notice This function is a factory to handle evm contract address and registration of EVM<>Starknet binding in the case of create2.
-    // @param evm_contract_address: The computed evm contract address to map deployment to.
-    func deploy{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(evm_contract_address: felt) -> (starknet_contract_address: felt) {
-        alloc_locals;
-
-        // Prepare constructor data
-        let (local calldata: felt*) = alloc();
-        let (kakarot_address) = get_contract_address();
-        assert [calldata] = kakarot_address;
-        assert [calldata + 1] = 0;
-
-        // Deploy contract account with no bytecode
-        let (class_hash) = evm_contract_class_hash.read();
-        let (starknet_contract_address) = deploy_syscall(
-            class_hash=class_hash,
-            contract_address_salt=evm_contract_address,
-            constructor_calldata_size=2,
-            constructor_calldata=calldata,
-            deploy_from_zero=FALSE,
-        );
-
-        evm_contract_deployed.emit(
-            evm_contract_address=evm_contract_address,
-            starknet_contract_address=starknet_contract_address,
-        );
-
-        // Save address of new contracts
-        let (reg_address) = registry_address.read();
-        IRegistry.set_account_entry(
-            contract_address=reg_address,
-            starknet_contract_address=starknet_contract_address,
-            evm_contract_address=evm_contract_address,
-        );
-
-        return (starknet_contract_address,);
+    // @return evm address of the contract account
+    func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        address: felt
+    ) {
+        let (address) = evm_address.read();
+        return (address=address);
     }
 
     // @notice Store the bytecode of the contract.
@@ -134,7 +101,7 @@ namespace ContractAccount {
     }
 
     // @notice This function is used to get the bytecode_len of the smart contract.
-    // @return bytecode_len: The lenght of the bytecode.
+    // @return bytecode_len: The length of the bytecode.
     func bytecode_len{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -147,7 +114,7 @@ namespace ContractAccount {
     }
 
     // @notice This function is used to get the bytecode of the smart contract.
-    // @return bytecode_len: The lenght of the bytecode.
+    // @return bytecode_len: The length of the bytecode.
     // @return bytecode: The bytecode of the smart contract.
     func bytecode{
         syscall_ptr: felt*,
@@ -209,20 +176,6 @@ namespace ContractAccount {
     }() -> (is_initialized: felt) {
         let is_initialized: felt = is_initialized_.read();
         return (is_initialized=is_initialized);
-    }
-
-    // @notice This function is used to initialized the smart contract.
-    func initialize{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }() {
-        // Access control check.
-        Ownable.assert_only_owner();
-        // initialize Evm contract
-        is_initialized_.write(1);
-        return ();
     }
 }
 

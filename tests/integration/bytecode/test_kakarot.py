@@ -1,4 +1,5 @@
 import pytest
+import web3
 from starkware.starknet.testing.contract import StarknetContract
 
 from tests.integration.bytecode.test_cases import test_cases
@@ -19,8 +20,13 @@ class TestKakarot:
         params_execute,
     )
     async def test_execute(
-        self, kakarot: StarknetContract, owner, params: dict, request
+        self,
+        kakarot: StarknetContract,
+        owner,
+        params: dict,
+        request,
     ):
+        # TODO Call with MockSigner for TxInfo to be set with the right caller
         with traceit.context(request.node.callspec.id):
             res = await kakarot.execute(
                 value=int(params["value"]),

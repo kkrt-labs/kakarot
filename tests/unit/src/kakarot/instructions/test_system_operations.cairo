@@ -6,13 +6,17 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
-from starkware.starknet.common.syscalls import deploy
+from starkware.starknet.common.syscalls import deploy, get_contract_address
 from starkware.cairo.common.math import split_felt, assert_not_zero, assert_le
 
 // Local dependencies
-from kakarot.accounts.contract.library import ContractAccount
-from kakarot.constants import Constants, native_token_address, salt as salt_storage
-from kakarot.constants import evm_contract_class_hash, registry_address
+from kakarot.constants import (
+    Constants,
+    native_token_address,
+    contract_account_class_hash,
+    account_proxy_class_hash,
+    salt
+)
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.system_operations import (
@@ -21,13 +25,24 @@ from kakarot.instructions.system_operations import (
     CreateHelper,
     SelfDestructHelper,
 )
-from kakarot.interfaces.interfaces import IEvmContract, IKakarot, IRegistry
+from kakarot.interfaces.interfaces import IContractAccount, IKakarot, IAccount
 from kakarot.library import Kakarot
+from kakarot.accounts.library import Accounts
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.memory import Memory
 from tests.unit.helpers.helpers import TestHelpers
 from utils.utils import Helpers
+
+@constructor
+func constructor{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(contract_account_class_hash_: felt, account_proxy_class_hash_) {
+    account_proxy_class_hash.write(account_proxy_class_hash_);
+    contract_account_class_hash.write(contract_account_class_hash_);
+    let (contract_address: felt) = get_contract_address();
+    return ();
+}
 
 @external
 func test__exec_return_should_return_context_with_updated_return_data{
@@ -89,17 +104,17 @@ func test__exec_revert{
 @external
 func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(evm_contract_class_hash_: felt, registry_address_: felt) {
+}() {
     // Deploy an empty contract
     alloc_locals;
-    let (bytecode) = alloc();
-    local bytecode_len = 0;
-    evm_contract_class_hash.write(evm_contract_class_hash_);
-    registry_address.write(registry_address_);
-
+    
+    let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (local starknet_contract_address) = ContractAccount.deploy(evm_contract_address);
+    let (local starknet_contract_address) = Accounts.create(
+        contract_account_class_hash_, evm_contract_address
+    );
 
+    
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
     let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
@@ -124,6 +139,8 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     let memory_offset = Uint256(0, 0);
     let stack = Stack.push(stack, memory_word);
     let stack = Stack.push(stack, memory_offset);
+    let (bytecode) = alloc();
+    local bytecode_len = 0;
     let ctx = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
     let ctx = MemoryOperations.exec_mstore(ctx);
 
@@ -168,16 +185,15 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
 @external
 func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(evm_contract_class_hash_: felt, registry_address_: felt) {
+}() {
     // Deploy another contract
     alloc_locals;
-    let (bytecode) = alloc();
-    local bytecode_len = 0;
-    evm_contract_class_hash.write(evm_contract_class_hash_);
-    registry_address.write(registry_address_);
 
+    let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (local starknet_contract_address) = ContractAccount.deploy(evm_contract_address);
+    let (local starknet_contract_address) = Accounts.create(
+        contract_account_class_hash_, evm_contract_address
+    );
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
@@ -203,6 +219,8 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
     let memory_offset = Uint256(0, 0);
     let stack = Stack.push(stack, memory_word);
     let stack = Stack.push(stack, memory_offset);
+    let (bytecode) = alloc();
+    local bytecode_len = 0;
     let ctx = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
     let ctx = MemoryOperations.exec_mstore(ctx);
 
@@ -247,16 +265,15 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
 @external
 func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(evm_contract_class_hash_: felt, registry_address_: felt) {
+}() {
     // Deploy another contract
     alloc_locals;
-    let (bytecode) = alloc();
-    local bytecode_len = 0;
-    evm_contract_class_hash.write(evm_contract_class_hash_);
-    registry_address.write(registry_address_);
 
+    let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (local starknet_contract_address) = ContractAccount.deploy(evm_contract_address);
+    let (local starknet_contract_address) = Accounts.create(
+        contract_account_class_hash_, evm_contract_address
+    );
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
@@ -280,6 +297,8 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
     let memory_offset = Uint256(0, 0);
     let stack = Stack.push(stack, memory_word);
     let stack = Stack.push(stack, memory_offset);
+    let (bytecode) = alloc();
+    local bytecode_len = 0;
     let ctx = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
     let ctx = MemoryOperations.exec_mstore(ctx);
 
@@ -324,16 +343,15 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
 @external
 func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(evm_contract_class_hash_: felt, registry_address_: felt) {
+}() {
     // Deploy another contract
     alloc_locals;
-    let (bytecode) = alloc();
-    local bytecode_len = 0;
-    evm_contract_class_hash.write(evm_contract_class_hash_);
-    registry_address.write(registry_address_);
-
+    
+    let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (local starknet_contract_address) = ContractAccount.deploy(evm_contract_address);
+    let (local starknet_contract_address) = Accounts.create(
+        contract_account_class_hash_, evm_contract_address
+    );
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
@@ -357,6 +375,8 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
     let memory_offset = Uint256(0, 0);
     let stack = Stack.push(stack, memory_word);
     let stack = Stack.push(stack, memory_offset);
+    let (bytecode) = alloc();
+    local bytecode_len = 0;
     let ctx = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
     let ctx = MemoryOperations.exec_mstore(ctx);
 
@@ -397,21 +417,17 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
 
     return ();
 }
-
 @external
 func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at_expected_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
-    evm_contract_class_hash_: felt,
-    registry_address_: felt,
     evm_caller_address: felt,
-    salt: felt,
+    salt_: felt,
     expected_create_address: felt,
 ) {
     alloc_locals;
-    evm_contract_class_hash.write(evm_contract_class_hash_);
-    registry_address.write(registry_address_);
-    salt_storage.write(salt);
+
+    salt.write(salt_);
 
     // Fill the stack with exec_create args
     let stack: model.Stack* = Stack.init();
@@ -456,7 +472,7 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
     assert sub_ctx.gas_price = 0;
     assert_not_zero(sub_ctx.starknet_contract_address);
     assert_not_zero(sub_ctx.evm_contract_address);
-    let (sub_ctx_contract_stored_bytecode) = IEvmContract.bytecode_len(
+    let (sub_ctx_contract_stored_bytecode) = IAccount.bytecode_len(
         sub_ctx.starknet_contract_address
     );
     assert sub_ctx_contract_stored_bytecode = 0;
@@ -476,7 +492,7 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
     assert evm_contract_address = sub_ctx.evm_contract_address;
     assert sub_ctx.evm_contract_address = expected_create_address;
     TestHelpers.assert_execution_context_equal(ctx.sub_context, sub_ctx);
-    let (created_contract_bytecode_len, created_contract_bytecode) = IEvmContract.bytecode(
+    let (created_contract_bytecode_len, created_contract_bytecode) = IAccount.bytecode(
         sub_ctx.starknet_contract_address
     );
     TestHelpers.assert_array_equal(
@@ -493,8 +509,6 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
 func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_at_expected_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
-    evm_contract_class_hash_: felt,
-    registry_address_: felt,
     evm_caller_address: felt,
     bytecode_offset: Uint256,
     bytecode_size: Uint256,
@@ -503,8 +517,6 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     expected_create2_address: felt,
 ) {
     alloc_locals;
-    evm_contract_class_hash.write(evm_contract_class_hash_);
-    registry_address.write(registry_address_);
 
     // Fill the stack with exec_create2 args
     let stack: model.Stack* = Stack.init();
@@ -549,7 +561,7 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     assert sub_ctx.gas_price = 0;
     assert_not_zero(sub_ctx.starknet_contract_address);
     assert_not_zero(sub_ctx.evm_contract_address);
-    let (sub_ctx_contract_stored_bytecode) = IEvmContract.bytecode_len(
+    let (sub_ctx_contract_stored_bytecode) = IAccount.bytecode_len(
         sub_ctx.starknet_contract_address
     );
     assert sub_ctx_contract_stored_bytecode = 0;
@@ -569,7 +581,7 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     assert evm_contract_address = sub_ctx.evm_contract_address;
     assert sub_ctx.evm_contract_address = expected_create2_address;
     TestHelpers.assert_execution_context_equal(ctx.sub_context, sub_ctx);
-    let (created_contract_bytecode_len, created_contract_bytecode) = IEvmContract.bytecode(
+    let (created_contract_bytecode_len, created_contract_bytecode) = IAccount.bytecode(
         sub_ctx.starknet_contract_address
     );
     TestHelpers.assert_array_equal(
@@ -585,11 +597,9 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
 @external
 func test__exec_selfdestruct__should_delete_account_bytecode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(eth_address: felt, evm_contract_class_hash_: felt, registry_address_: felt) {
+}(evm_address: felt) {
     alloc_locals;
-    evm_contract_class_hash.write(evm_contract_class_hash_);
-    registry_address.write(registry_address_);
-    native_token_address.write(eth_address);
+    native_token_address.write(evm_address);
 
     // Create sub_ctx writing directly in memory because need to update calling_context
     let (bytecode) = alloc();
@@ -623,13 +633,10 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     assert [sub_ctx + 16] = 0;  // read only
 
     // Simulate contract creation
+    let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (local starknet_contract_address) = ContractAccount.deploy(evm_contract_address);
-
-    IRegistry.set_account_entry(
-        contract_address=registry_address_,
-        starknet_contract_address=starknet_contract_address,
-        evm_contract_address=evm_contract_address,
+    let (local starknet_contract_address) = Accounts.create(
+        contract_account_class_hash_, evm_contract_address
     );
     assert [sub_ctx + 10] = starknet_contract_address;  // starknet_contract_address
     assert [sub_ctx + 11] = evm_contract_address;  // evm_contract_address
@@ -637,7 +644,7 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     // Fill contract bytecode
     let (bytecode) = alloc();
     assert [bytecode] = 1907;
-    IEvmContract.write_bytecode(
+    IContractAccount.write_bytecode(
         contract_address=starknet_contract_address, bytecode_len=1, bytecode=bytecode
     );
 
@@ -661,14 +668,10 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     let ctx = SelfDestructHelper.finalize(ctx);
 
     // Then
-    let (evm_contract_address) = IRegistry.get_evm_contract_address(
-        contract_address=registry_address_, starknet_contract_address=starknet_contract_address
-    );
-    let (evm_contract_byte_len) = IEvmContract.bytecode_len(
+    let (evm_contract_byte_len) = IAccount.bytecode_len(
         contract_address=starknet_contract_address
     );
 
-    assert evm_contract_address = 0;
     assert evm_contract_byte_len = 0;
     return ();
 }

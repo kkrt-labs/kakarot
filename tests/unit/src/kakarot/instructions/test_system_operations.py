@@ -4,7 +4,6 @@ import pytest
 import pytest_asyncio
 from eth_utils import decode_hex, to_bytes, to_checksum_address
 from starkware.python.utils import from_bytes
-from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
 from tests.integration.helpers.helpers import get_create2_address, get_create_address
@@ -13,24 +12,17 @@ from tests.utils.uint256 import int_to_uint256
 
 
 @pytest_asyncio.fixture(scope="module")
-async def system_operations(starknet: Starknet):
+async def system_operations(
+    starknet: Starknet, contract_account_class, account_proxy_class
+):
     return await starknet.deploy(
         source="./tests/unit/src/kakarot/instructions/test_system_operations.cairo",
         cairo_path=["src"],
+        constructor_calldata=[
+            contract_account_class.class_hash,
+            account_proxy_class.class_hash,
+        ],
         disable_hint_validation=True,
-    )
-
-
-@pytest_asyncio.fixture(scope="module", autouse=True)
-async def set_account_registry(
-    system_operations: StarknetContract, account_registry: StarknetContract
-):
-    await account_registry.transfer_ownership(
-        system_operations.contract_address
-    ).execute(caller_address=1)
-    yield
-    await account_registry.transfer_ownership(1).execute(
-        caller_address=system_operations.contract_address
     )
 
 
@@ -52,28 +44,19 @@ class TestSystemOperations:
             1000
         ).call()
 
-    async def test_call(
-        self, system_operations, contract_account_class, account_registry
-    ):
-        await system_operations.test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack(
-            contract_account_class.class_hash, account_registry.contract_address
-        ).call()
+    async def test_call(self, system_operations):
+        await system_operations.test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack().call()
 
-        await system_operations.test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack(
-            contract_account_class.class_hash, account_registry.contract_address
-        ).call()
+        await system_operations.test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack().call()
 
-        await system_operations.test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_stack(
-            contract_account_class.class_hash, account_registry.contract_address
-        ).call()
+        await system_operations.test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_stack().call()
 
-        await system_operations.test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_stack(
-            contract_account_class.class_hash, account_registry.contract_address
-        ).call()
+        await system_operations.test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_stack().call()
+
 
     @pytest.mark.parametrize("salt", [127, 256, 2**55 - 1])
     async def test_create(
-        self, system_operations, contract_account_class, account_registry, salt
+        self, system_operations, salt
     ):
         evm_caller_address_int = 15
         evm_caller_address_bytes = evm_caller_address_int.to_bytes(20, byteorder="big")
@@ -81,16 +64,12 @@ class TestSystemOperations:
         expected_create_addr = get_create_address(evm_caller_address, salt)
 
         await system_operations.test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at_expected_address(
-            contract_account_class.class_hash,
-            account_registry.contract_address,
             evm_caller_address_int,
             salt,
             from_bytes(decode_hex(expected_create_addr)),
         ).call()
 
-    async def test_create2(
-        self, system_operations, contract_account_class, account_registry
-    ):
+    async def test_create2(self, system_operations):
         # we store a memory word in memory
         # and have our bytecode as the memory read from an offset and size
         # we take that word at an offset and size and use it as the bytecode to determine the expected create2 evm contract address
@@ -110,8 +89,6 @@ class TestSystemOperations:
         )
 
         await system_operations.test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_at_expected_address(
-            contract_account_class.class_hash,
-            account_registry.contract_address,
             evm_caller_address_int,
             (offset, 0),
             (size, 0),
@@ -120,11 +97,7 @@ class TestSystemOperations:
             from_bytes(decode_hex(expected_create2_addr)),
         ).call()
 
-    async def test_selfdestruct(
-        self, system_operations, contract_account_class, account_registry, eth
-    ):
+    async def test_selfdestruct(self, system_operations, eth):
         await system_operations.test__exec_selfdestruct__should_delete_account_bytecode(
             eth.contract_address,
-            contract_account_class.class_hash,
-            account_registry.contract_address,
         ).call()

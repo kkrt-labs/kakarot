@@ -8,18 +8,35 @@ from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from starkware.cairo.common.math import split_felt
+from starkware.starknet.common.syscalls import get_contract_address
 
 // Local dependencies
 from utils.utils import Helpers
 from kakarot.model import model
-from kakarot.interfaces.interfaces import IKakarot
+from kakarot.interfaces.interfaces import IKakarot, IContractAccount
 from kakarot.stack import Stack
 from kakarot.memory import Memory
-from kakarot.constants import Constants, registry_address, evm_contract_class_hash
+from kakarot.constants import (
+    Constants,
+    contract_account_class_hash,
+    account_proxy_class_hash,
+)
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.environmental_information import EnvironmentalInformation
 from tests.unit.helpers.helpers import TestHelpers
+from kakarot.library import Kakarot
+from kakarot.accounts.library import Accounts
+from kakarot.instructions.system_operations import CreateHelper
+
+@constructor
+func constructor{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(contract_account_class_hash_: felt, account_proxy_class_hash_) {
+    account_proxy_class_hash.write(account_proxy_class_hash_);
+    contract_account_class_hash.write(contract_account_class_hash_);
+    return ();
+}
 
 func init_context{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -90,18 +107,24 @@ func test__exec_address__should_push_address_to_stack{
 @external
 func test__exec_extcodesize__should_handle_address_with_no_code{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(account_registry_address: felt) {
+}() {
     // Given
     alloc_locals;
 
-    registry_address.write(account_registry_address);
 
-    let bytecode_len = 0;
-    let (bytecode) = alloc();
-    let address = Uint256(0, 0);
+    let (contract_account_class_hash_) = contract_account_class_hash.read();
+    let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
+    let (local starknet_contract_address) = Accounts.create(
+        contract_account_class_hash_, evm_contract_address
+    );
+    let evm_contract_address_uint256 = Helpers.to_uint256(evm_contract_address);
+    
+    let address = evm_contract_address_uint256;
     let stack = Stack.init();
     let stack = Stack.push(stack, address);
 
+    let bytecode_len = 0;
+    let (bytecode) = alloc();
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(
         bytecode_len, bytecode, stack
     );
@@ -125,27 +148,29 @@ func test__exec_extcodesize__should_handle_address_with_no_code{
 @external
 func test__exec_extcodecopy__should_handle_address_with_code{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(
-    account_registry_address: felt,
-    evm_contract_address: felt,
-    size: felt,
-    offset: felt,
-    dest_offset: felt,
-) -> (memory_len: felt, memory: felt*) {
+}(bytecode_len: felt, bytecode: felt*, size: felt, offset: felt, dest_offset: felt) -> (
+    memory_len: felt, memory: felt*
+) {
     // Given
     alloc_locals;
 
-    // make a deployed registry contract available
-    registry_address.write(account_registry_address);
+    let (contract_account_class_hash_) = contract_account_class_hash.read();
+    let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
+    let (local starknet_contract_address) = Accounts.create(
+        contract_account_class_hash_, evm_contract_address
+    );
+    IContractAccount.write_bytecode(starknet_contract_address, bytecode_len, bytecode);
+    let evm_contract_address_uint256 = Helpers.to_uint256(evm_contract_address);
 
-    let (bytecode) = alloc();
+    // make a deployed registry contract available
+
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(size, 0));  // size
     let stack: model.Stack* = Stack.push(stack, Uint256(offset, 0));  // offset
     let stack: model.Stack* = Stack.push(stack, Uint256(dest_offset, 0));  // dest_offset
-    let stack: model.Stack* = Stack.push(stack, Uint256(evm_contract_address, 0));  // address
+    let stack: model.Stack* = Stack.push(stack, evm_contract_address_uint256);  // address
 
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
 
     // we are hardcoding an assumption of 'cold' address access, for now.
     let address_access_cost = 2600;
@@ -170,21 +195,29 @@ func test__exec_extcodecopy__should_handle_address_with_code{
 @external
 func test__exec_extcodecopy__should_handle_address_with_no_code{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(account_registry_address: felt) {
+}() {
     // Given
     alloc_locals;
 
     // make a deployed registry contract available
-    registry_address.write(account_registry_address);
 
-    let (bytecode) = alloc();
+    
+    let (contract_account_class_hash_) = contract_account_class_hash.read();
+    let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
+    let (local starknet_contract_address) = Accounts.create(
+        contract_account_class_hash_, evm_contract_address
+    );
+    let evm_contract_address_uint256 = Helpers.to_uint256(evm_contract_address);
+
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));  // size
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));  // offset
     let stack: model.Stack* = Stack.push(stack, Uint256(32, 0));  // dest_offset
-    let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));  // address
+    let stack: model.Stack* = Stack.push(stack, evm_contract_address_uint256);  // address
+    let (bytecode) = alloc();
+    let bytecode_len = 0;
 
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
 
     // we are hardcoding an assumption of 'cold' address access, for now.
     // but the dynamic gas values of  `minimum_word_size` and `memory_expansion_cost`
@@ -304,11 +337,9 @@ func test__returndatacopy{
 @external
 func test__exec_extcodehash__should_handle_invalid_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(account_registry_address: felt) {
+}() {
     // Given
     alloc_locals;
-
-    registry_address.write(account_registry_address);
 
     let bytecode_len = 0;
     let (bytecode) = alloc();
@@ -336,20 +367,18 @@ func test__exec_extcodehash__should_handle_invalid_address{
 @external
 func test__exec_extcodehash__should_handle_address_with_code{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(
-    account_registry_address: felt,
-    evm_contract_address: felt,
-    expected_hash_low: felt,
-    expected_hash_high: felt,
-) {
+}(bytecode_len: felt, bytecode: felt*, expected_hash_low: felt, expected_hash_high: felt) {
     // Given
     alloc_locals;
 
-    registry_address.write(account_registry_address);
-
-    let bytecode_len = 0;
-    let (bytecode) = alloc();
-    let address = Uint256(evm_contract_address, 0);
+    let (contract_account_class_hash_) = contract_account_class_hash.read();
+    let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
+    let (local starknet_contract_address) = Accounts.create(
+        contract_account_class_hash_, evm_contract_address
+    );
+    IContractAccount.write_bytecode(starknet_contract_address, bytecode_len, bytecode);
+    let evm_contract_address_uint256 = Helpers.to_uint256(evm_contract_address);
+    let address = evm_contract_address_uint256;
     let stack = Stack.init();
     let stack = Stack.push(stack, address);
 
