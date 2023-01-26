@@ -765,9 +765,7 @@ namespace Helpers {
         // Load sequence of 4 bytes into a single 32-bit word (big endian)
         let res = load_word(4, data);
         assert n[n_len] = res;
-        return bytes_to_bytes4_array(
-            data_len=data_len - 4, data=data + 4, n_len=n_len + 1, n=n
-        );
+        return bytes_to_bytes4_array(data_len=data_len - 4, data=data + 4, n_len=n_len + 1, n=n);
     }
 
     // @notice transform array of 32-bit words (big endian) into a bytes array

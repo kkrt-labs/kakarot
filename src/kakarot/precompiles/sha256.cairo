@@ -54,8 +54,10 @@ namespace PrecompileSHA256 {
         if (r != 0) {
             // Append zero elements at the end of array
             Helpers.fill(4 - r, arr + input_len, 0);
+            tempvar arr_len = (q + 1) * 4;
+        } else {
+            tempvar arr_len = q * 4;
         }
-        let arr_len = (q + 1) * 4;
 
         // Prepare input bytes array to words of 32 bits (big endian).
         let (prepared_input: felt*) = alloc();
