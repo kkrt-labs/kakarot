@@ -1685,4 +1685,21 @@ test_cases = [
         "id": "Precompiles - BLAKE2F - playground test case",
         "marks": [pytest.mark.BLAKE2F, pytest.mark.Precompiles],
     },
+    {
+        "params": {
+            "value": 0,
+            "code": "60ff600052602060206001601f600263fffffffffa50602051",
+            "calldata": "",
+            "stack": str(
+                0xA8100AE6AA1940D0B663BB31CD466142EBBDBD5187131B92D93818987832EB89
+            ),
+            "memory": (
+                "00000000000000000000000000000000000000000000000000000000000000ff"
+                "a8100ae6aa1940d0b663bb31cd466142ebbdbd5187131b92d93818987832eb89"
+            ),
+            "return_value": "",
+        },
+        "id": "Precompiles - SHA2-256 - playground test case",
+        "marks": [pytest.mark.SHA256, pytest.mark.Precompiles],
+    },
 ]
