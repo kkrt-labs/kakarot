@@ -57,7 +57,7 @@ func bytecode_len{
     return (len=len);
 }
 
-// @notice Store a key-value pair
+// @notice Store a key-value pair.
 // @param key: The bytes32 storage key.
 // @param value: The bytes32 stored value.
 @external

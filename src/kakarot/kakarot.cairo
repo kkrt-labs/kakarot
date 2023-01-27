@@ -31,7 +31,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     );
 }
 
-// @notice Execute EVM bytecode
+// @notice Execute EVM bytecode.
 // @dev Executes a provided array of evm opcodes/bytes
 // @param value The deposited value by the instruction/transaction responsible for this execution
 // @param bytecode_len The bytecode length
