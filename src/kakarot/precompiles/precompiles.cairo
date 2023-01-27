@@ -19,6 +19,7 @@ from kakarot.precompiles.ecadd import PrecompileEcAdd
 from kakarot.precompiles.ecmul import PrecompileEcMul
 from kakarot.precompiles.ec_recover import PrecompileEcRecover
 from kakarot.precompiles.ripemd160 import PrecompileRIPEMD160
+from kakarot.precompiles.sha256 import PrecompileSHA256
 from kakarot.stack import Stack
 
 // @title Precompile related functions.
@@ -114,7 +115,7 @@ namespace Precompiles {
         ret;
         call PrecompileEcRecover.run;  // 0x1
         ret;
-        call not_implemented_precompile;  // 0x2
+        call PrecompileSHA256.run;  // 0x2
         ret;
         call PrecompileRIPEMD160.run;  // 0x3
         ret;

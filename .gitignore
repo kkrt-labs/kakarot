@@ -38,3 +38,6 @@ deployed_addresses.json
 output-callgraph/*
 build/*
 docs/callgraphs/*
+
+# Hypothesis
+.hypothesis/*

@@ -739,4 +739,62 @@ namespace Helpers {
         let address = hash.low + r * 2 ** 128;
         return address;
     }
+
+    // @notice transform muliple bytes into words of 32 bits (big endian)
+    // @dev the input data must have length in multiples of 4
+    // @dev you may use the function `fill` to pad it with zeros
+    // @param data_len The length of the bytes
+    // @param data The pointer to the bytes array
+    // @param n_len used for recursion, set to 0
+    // @param n used for recursion, set to pointer
+    // @return n_len the resulting array length
+    // @return n the resulting array
+    func bytes_to_bytes4_array{range_check_ptr}(
+        data_len: felt, data: felt*, n_len: felt, n: felt*
+    ) -> (n_len: felt, n: felt*) {
+        alloc_locals;
+        if (data_len == 0) {
+            return (n_len=n_len, n=n);
+        }
+
+        let (_, r) = unsigned_div_rem(data_len, 4);
+        with_attr error_message("data length must be multiple of 4") {
+            assert r = 0;
+        }
+
+        // Load sequence of 4 bytes into a single 32-bit word (big endian)
+        let res = load_word(4, data);
+        assert n[n_len] = res;
+        return bytes_to_bytes4_array(data_len=data_len - 4, data=data + 4, n_len=n_len + 1, n=n);
+    }
+
+    // @notice transform array of 32-bit words (big endian) into a bytes array
+    // @param data_len The length of the 32-bit array
+    // @param data The pointer to the 32-bit array
+    // @param bytes_len used for recursion, set to 0
+    // @param bytes used for recursion, set to pointer
+    // @return bytes_len the resulting array length
+    // @return bytes the resulting array
+    func bytes4_array_to_bytes{range_check_ptr}(
+        data_len: felt, data: felt*, bytes_len: felt, bytes: felt*
+    ) -> (bytes_len: felt, bytes: felt*) {
+        alloc_locals;
+        if (data_len == 0) {
+            return (bytes_len=bytes_len, bytes=bytes);
+        }
+
+        // Split a 32-bit big endian word into 4 bytes
+        // Store result in a temporary array
+        let (temp: felt*) = alloc();
+        split_word([data], 4, temp);
+
+        // Append temp array to bytes array
+        let (local res: felt*) = alloc();
+        memcpy(res, bytes, bytes_len);
+        memcpy(res + bytes_len, temp, 4);
+
+        return bytes4_array_to_bytes(
+            data_len=data_len - 1, data=data + 1, bytes_len=bytes_len + 4, bytes=res
+        );
+    }
 }
