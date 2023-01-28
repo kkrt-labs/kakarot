@@ -27,7 +27,7 @@ namespace RLP {
     // @param data_len The lenght of the bytes
     // @param data The pointer to the first byte in array
     // @param items A pointer to an empty array of items, will be filled with found items
-    func decode_rlp{
+    func decode{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
@@ -48,7 +48,7 @@ namespace RLP {
                     data=buffer_ptr - 1,
                     is_list=0
                     );
-                return decode_rlp(data_len=data_len - 1, data=buffer_ptr, items=items + Item.SIZE);
+                return decode(data_len=data_len - 1, data=buffer_ptr, items=items + Item.SIZE);
             }
             let is_le_183 = is_le(byte, 183);  // a max 55 bytes long string
             if (is_le_183 != FALSE) {
@@ -58,7 +58,7 @@ namespace RLP {
                     data=buffer_ptr,
                     is_list=0
                     );
-                return decode_rlp(
+                return decode(
                     data_len=data_len - 1 - string_len,
                     data=buffer_ptr + string_len,
                     items=items + Item.SIZE,
@@ -74,7 +74,7 @@ namespace RLP {
                     data=buffer_ptr,
                     is_list=0
                     );
-                return decode_rlp(
+                return decode(
                     data_len=data_len - 1 - len_len - dlen,
                     data=buffer_ptr + dlen,
                     items=items + Item.SIZE,
@@ -88,14 +88,12 @@ namespace RLP {
                     data=buffer_ptr,
                     is_list=1
                     );
-                return decode_rlp(
+                return decode(
                     data_len=data_len - 1 - list_len,
                     data=buffer_ptr + list_len,
                     items=items + Item.SIZE,
                 );
-            }
-            let is_le_255 = is_le(byte, 255);  // list > 55 bytes
-            if (is_le_255 != FALSE) {
+            } else {
                 local list_len_len = byte - 247;
                 let (dlen) = Helpers.bytes_to_felt(data_len=list_len_len, data=buffer_ptr, n=0);
                 let buffer_ptr = buffer_ptr + list_len_len;
@@ -104,13 +102,12 @@ namespace RLP {
                     data=buffer_ptr,
                     is_list=1
                     );
-                return decode_rlp(
+                return decode(
                     data_len=data_len - 1 - list_len_len - dlen,
                     data=buffer_ptr + dlen,
                     items=items + Item.SIZE,
                 );
             }
-            return ();
         }
     }
 
@@ -120,7 +117,7 @@ namespace RLP {
     // @param data The pointer to the first byte in the array to copy from
     // @param rlp The pointer receiving the rlp encoded list
     // @return rlp_len The length of the encoded list in bytes
-    func encode_rlp_list{
+    func encode_list{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
@@ -138,7 +135,7 @@ namespace RLP {
             assert rlp[0] = 0xf7 + bytes_len;
             Helpers.fill_array(bytes_len, bytes, rlp + 1);
             Helpers.fill_array(data_len, data, rlp + 1 + bytes_len);
-            return (rlp_len=data_len + 1);
+            return (rlp_len=data_len + 1 + bytes_len);
         }
     }
 
