@@ -1,15 +1,11 @@
-import random
-
 import pytest
-from eth_abi import encode_abi
-from eth_utils import keccak, to_checksum_address
 
 from tests.utils.errors import kakarot_error
 
-# TODO: Fix these addresses with the original ones once
-# TODO: https://github.com/sayajin-labs/kakarot/issues/439 is fixed
-random.seed(0)
-TEST_ADDRESSES = [to_checksum_address(random.getrandbits(160)) for _ in range(2)]
+TEST_ADDRESSES = [
+    "0x1000000000000000000000000000000000000000",
+    "0x2000000000000000000000000000000000000000",
+]
 
 
 @pytest.mark.asyncio
@@ -23,7 +19,6 @@ class TestUniswapV2Factory:
             assert await factory.allPairsLength() == 0
 
     class TestCreatePair:
-        @pytest.mark.skip("Raises with StarknetErrorCode.OUT_OF_RESOURCES: 42")
         @pytest.mark.parametrize("tokens", [TEST_ADDRESSES, TEST_ADDRESSES[::-1]])
         async def test_should_create_pair_only_once(
             self,
@@ -41,7 +36,7 @@ class TestUniswapV2Factory:
                     "token0": tokens[0],
                     "token1": tokens[1],
                     "pair": pair_evm_address,
-                    "all_pairs_length": 1,
+                    "": 1,
                 }
             ]
 
@@ -62,10 +57,13 @@ class TestUniswapV2Factory:
             assert await factory.allPairs(0) == pair_evm_address
             assert await factory.allPairsLength() == 1
 
-            salt = keccak(encode_abi(["address", "address"], sorted(tokens)))
-            pair_starknet_address = await get_starknet_address(salt)
+            pair_starknet_address = get_starknet_address(int(pair_evm_address, 16))
             pair = get_solidity_contract(
-                "UniswapV2", "UniswapV2Pair", pair_starknet_address, pair_evm_address
+                "UniswapV2",
+                "UniswapV2Pair",
+                pair_starknet_address,
+                pair_evm_address,
+                None,
             )
             assert await pair.factory() == factory.evm_contract_address
             assert await pair.token0() == tokens[0]
