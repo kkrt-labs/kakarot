@@ -260,6 +260,84 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "Flydexo",
+      "name": "Flydexo",
+      "avatar_url": "https://avatars.githubusercontent.com/u/66029824?v=4",
+      "profile": "https://bezier.fi/",
+      "contributions": [
+        "code",
+        "test",
+        "doc"
+      ]
+    },
+    {
+      "login": "petarcalic99",
+      "name": "Petar Calic",
+      "avatar_url": "https://avatars.githubusercontent.com/u/47250382?v=4",
+      "profile": "https://github.com/petarcalic99",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "gaetbout",
+      "name": "gaetbout",
+      "avatar_url": "https://avatars.githubusercontent.com/u/16206518?v=4",
+      "profile": "https://github.com/gaetbout",
+      "contributions": [
+        "infra"
+      ]
+    },
+    {
+      "login": "greged93",
+      "name": "greged93",
+      "avatar_url": "https://avatars.githubusercontent.com/u/82421016?v=4",
+      "profile": "https://github.com/greged93",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "FranFiuba",
+      "name": "Francisco Strambini",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5733366?v=4",
+      "profile": "https://github.com/FranFiuba",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "mradolux",
+      "name": "mradolux",
+      "avatar_url": "https://avatars.githubusercontent.com/u/37338401?v=4",
+      "profile": "https://github.com/mradolux",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "omahs",
+      "name": "omahs",
+      "avatar_url": "https://avatars.githubusercontent.com/u/73983677?v=4",
+      "profile": "https://github.com/omahs",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "ArnaudBD",
+      "name": "ArnaudBD",
+      "avatar_url": "https://avatars.githubusercontent.com/u/20355199?v=4",
+      "profile": "https://github.com/ArnaudBD",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
