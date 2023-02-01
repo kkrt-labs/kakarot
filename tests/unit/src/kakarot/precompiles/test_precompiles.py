@@ -51,7 +51,7 @@ class TestPrecompiles:
             self, precompiles
         ):
             # we choose an address of a non implemented precompile and we check that the Non Implemented Precompile error msg appear.
-            not_impl_precompile_address = 0x9
+            not_impl_precompile_address = 0x8
             with kakarot_error(
                 "Kakarot: NotImplementedPrecompile " + str(not_impl_precompile_address)
             ):
@@ -64,7 +64,7 @@ class TestPrecompiles:
             self, precompiles
         ):
             # we choose an address of a non implemented precompile and we check that the Non Implemented Precompile error msg appear.
-            not_impl_precompile_address = 0x9
+            not_impl_precompile_address = 0x8
             with kakarot_error(
                 "Kakarot: NotImplementedPrecompile " + str(not_impl_precompile_address)
             ):
