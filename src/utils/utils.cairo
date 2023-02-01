@@ -318,6 +318,19 @@ namespace Helpers {
         return current;
     }
 
+    // @notice Load sequences of 8 bytes little endian into an array of felts
+    // @param len: final length of the output.
+    // @param input: pointer to bytes array input.
+    // @param output: pointer to bytes array output.
+    func load_64_bits_array(len: felt, input: felt*, output: felt*) {
+        if (len == 0) {
+            return ();
+        }
+        let loaded = bytes_to_64_bits_little_felt(input);
+        assert [output] = loaded;
+        return load_64_bits_array(len - 1, input + 8, output + 1);
+    }
+
     // @notice Divides a 128-bit number with remainder.
     // @dev This is almost identical to cairo.common.math.unsigned_dev_rem, but supports the case
     // @dev of div == 2**128 as well.
@@ -371,7 +384,7 @@ namespace Helpers {
         dw 1;
     }
 
-    // @notice Splits a felt into `len` bytes, big-endien, and outputs to `dst`.
+    // @notice Splits a felt into `len` bytes, big-endian, and outputs to `dst`.
     func split_word{range_check_ptr}(value: felt, len: felt, dst: felt*) {
         if (len == 0) {
             assert value = 0;
@@ -388,6 +401,24 @@ namespace Helpers {
         tempvar low_part = [output];
         assert_nn_le(low_part, 255);
         return split_word((value - low_part) / 256, len, dst);
+    }
+
+    // @notice Splits a felt into `len` bytes, little-endian, and outputs to `dst`.
+    func split_word_little{range_check_ptr}(value: felt, len: felt, dst: felt*) {
+        if (len == 0) {
+            assert value = 0;
+            return ();
+        }
+        let output = &dst[0];
+        let base = 256;
+        let bound = 256;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar low_part = [output];
+        assert_nn_le(low_part, 255);
+        return split_word_little((value - low_part) / 256, len - 1, dst + 1);
     }
 
     // @notice Splits a felt into 16 bytes, big-endien, and outputs to `dst`.
@@ -671,18 +702,33 @@ namespace Helpers {
     // @param bytes_len The number of bytes (used for recursion, set to 0)
     // @param bytes The pointer to the bytes
     // @return bytes_len The final length of the bytes array
-    func felt_to_bytes{range_check_ptr}(value: felt, bytes_len: felt, bytes: felt*) -> (
+    func felt_to_bytes_little{range_check_ptr}(value: felt, bytes_len: felt, bytes: felt*) -> (
         bytes_len: felt
     ) {
-        let (q, r) = unsigned_div_rem(value, 256);
-        let is_le_256 = is_le(r, 256);
+        let is_le_256 = is_le(value, 256);
         if (is_le_256 != FALSE) {
             assert [bytes] = value;
             return (bytes_len=bytes_len + 1);
         } else {
+            let (q, r) = unsigned_div_rem(value, 256);
             assert [bytes] = r;
-            return felt_to_bytes(value=q, bytes_len=bytes_len + 1, bytes=bytes + 1);
+            return felt_to_bytes_little(value=q, bytes_len=bytes_len + 1, bytes=bytes + 1);
         }
+    }
+
+    // @notice transform a felt to little endian bytes
+    // @param value The initial felt
+    // @param bytes_len The number of bytes (used for recursion, set to 0)
+    // @param bytes The pointer to the bytes
+    // @return bytes_len The final length of the bytes array
+    func felt_to_bytes{range_check_ptr}(value: felt, bytes_len: felt, bytes: felt*) -> (
+        bytes_len: felt
+    ) {
+        alloc_locals;
+        let (local little: felt*) = alloc();
+        let little_res = felt_to_bytes_little(value, bytes_len, little);
+        reverse(little_res.bytes_len, little, little_res.bytes_len, bytes);
+        return little_res;
     }
 
     // @notice transform muliple bytes into a single felt
@@ -695,9 +741,9 @@ namespace Helpers {
             return (n=n);
         }
         let e: felt = data_len - 1;
-        let byte: felt = data[data_len - 1];
+        let byte: felt = data[0];
         let (res) = pow(256, e);
-        return bytes_to_felt(data_len=data_len - 1, data=data, n=n + byte * res);
+        return bytes_to_felt(data_len=data_len - 1, data=data + 1, n=n + byte * res);
     }
 
     // @notice Transforms a keccak hash to an ethereum address by taking last 20 bytes
@@ -707,5 +753,63 @@ namespace Helpers {
         let (_, r) = unsigned_div_rem(hash.high, 256 ** 4);
         let address = hash.low + r * 2 ** 128;
         return address;
+    }
+
+    // @notice transform muliple bytes into words of 32 bits (big endian)
+    // @dev the input data must have length in multiples of 4
+    // @dev you may use the function `fill` to pad it with zeros
+    // @param data_len The length of the bytes
+    // @param data The pointer to the bytes array
+    // @param n_len used for recursion, set to 0
+    // @param n used for recursion, set to pointer
+    // @return n_len the resulting array length
+    // @return n the resulting array
+    func bytes_to_bytes4_array{range_check_ptr}(
+        data_len: felt, data: felt*, n_len: felt, n: felt*
+    ) -> (n_len: felt, n: felt*) {
+        alloc_locals;
+        if (data_len == 0) {
+            return (n_len=n_len, n=n);
+        }
+
+        let (_, r) = unsigned_div_rem(data_len, 4);
+        with_attr error_message("data length must be multiple of 4") {
+            assert r = 0;
+        }
+
+        // Load sequence of 4 bytes into a single 32-bit word (big endian)
+        let res = load_word(4, data);
+        assert n[n_len] = res;
+        return bytes_to_bytes4_array(data_len=data_len - 4, data=data + 4, n_len=n_len + 1, n=n);
+    }
+
+    // @notice transform array of 32-bit words (big endian) into a bytes array
+    // @param data_len The length of the 32-bit array
+    // @param data The pointer to the 32-bit array
+    // @param bytes_len used for recursion, set to 0
+    // @param bytes used for recursion, set to pointer
+    // @return bytes_len the resulting array length
+    // @return bytes the resulting array
+    func bytes4_array_to_bytes{range_check_ptr}(
+        data_len: felt, data: felt*, bytes_len: felt, bytes: felt*
+    ) -> (bytes_len: felt, bytes: felt*) {
+        alloc_locals;
+        if (data_len == 0) {
+            return (bytes_len=bytes_len, bytes=bytes);
+        }
+
+        // Split a 32-bit big endian word into 4 bytes
+        // Store result in a temporary array
+        let (temp: felt*) = alloc();
+        split_word([data], 4, temp);
+
+        // Append temp array to bytes array
+        let (local res: felt*) = alloc();
+        memcpy(res, bytes, bytes_len);
+        memcpy(res + bytes_len, temp, 4);
+
+        return bytes4_array_to_bytes(
+            data_len=data_len - 1, data=data + 1, bytes_len=bytes_len + 4, bytes=res
+        );
     }
 }

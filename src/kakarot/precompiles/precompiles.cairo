@@ -13,10 +13,13 @@ from kakarot.constants import Constants
 from kakarot.execution_context import ExecutionContext
 from kakarot.memory import Memory
 from kakarot.model import model
+from kakarot.precompiles.blake2f import PrecompileBlake2f
 from kakarot.precompiles.datacopy import PrecompileDataCopy
 from kakarot.precompiles.ecadd import PrecompileEcAdd
+from kakarot.precompiles.ecmul import PrecompileEcMul
 from kakarot.precompiles.ec_recover import PrecompileEcRecover
 from kakarot.precompiles.ripemd160 import PrecompileRIPEMD160
+from kakarot.precompiles.sha256 import PrecompileSHA256
 from kakarot.stack import Stack
 
 // @title Precompile related functions.
@@ -112,7 +115,7 @@ namespace Precompiles {
         ret;
         call PrecompileEcRecover.run;  // 0x1
         ret;
-        call not_implemented_precompile;  // 0x2
+        call PrecompileSHA256.run;  // 0x2
         ret;
         call PrecompileRIPEMD160.run;  // 0x3
         ret;
@@ -122,11 +125,11 @@ namespace Precompiles {
         ret;
         call PrecompileEcAdd.run;  // 0x6
         ret;
-        call not_implemented_precompile;  // 0x7
+        call PrecompileEcMul.run;  // 0x7
         ret;
         call not_implemented_precompile;  // 0x8
         ret;
-        call not_implemented_precompile;  // 0x9
+        call PrecompileBlake2f.run;  // 0x9
         ret;
     }
 

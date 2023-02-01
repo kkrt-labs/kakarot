@@ -115,7 +115,7 @@ namespace ExternallyOwnedAccount {
         let rlp_data = calldata + 1;
         let (local items: RLP.Item*) = alloc();
         // decode the rlp array
-        RLP.decode_rlp(calldata_len - 1, rlp_data, items);
+        RLP.decode(calldata_len - 1, rlp_data, items);
         // eip 1559 tx only for the moment
         if (tx_type == 2) {
             // remove the sig to hash the tx
@@ -124,7 +124,7 @@ namespace ExternallyOwnedAccount {
             // add the tx type, see here: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1559.md#specification
             assert [list_ptr] = tx_type;
             // encode the rlp list without the sig
-            let (rlp_len: felt) = RLP.encode_rlp_list(data_len, [items].data, list_ptr + 1);
+            let (rlp_len: felt) = RLP.encode_list(data_len, [items].data, list_ptr + 1);
             let (keccak_ptr: felt*) = alloc();
             let keccak_ptr_start = keccak_ptr;
             let (words: felt*) = alloc();
@@ -143,7 +143,7 @@ namespace ExternallyOwnedAccount {
             let tx_hash = keccak_bigend{keccak_ptr=keccak_ptr}(inputs=words, n_bytes=rlp_len + 1);
             let (local sub_items: RLP.Item*) = alloc();
             // decode the rlp elements in the tx (was in the list element)
-            RLP.decode_rlp([items].data_len, [items].data, sub_items);
+            RLP.decode([items].data_len, [items].data, sub_items);
             let v = Helpers.bytes_to_felt(sub_items[V_IDX].data_len, sub_items[V_IDX].data, 0);
             let r = Helpers.bytes32_to_uint256(sub_items[R_IDX].data);
             let s = Helpers.bytes32_to_uint256(sub_items[S_IDX].data);
