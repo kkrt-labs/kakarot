@@ -31,10 +31,11 @@ class TestUniswapV2Factory:
             pair_evm_address = await factory.createPair(
                 *tokens, caller_address=owner.starknet_address
             )
+            token_0, token_1 = sorted(tokens)
             assert factory.events.PairCreated == [
                 {
-                    "token0": tokens[0],
-                    "token1": tokens[1],
+                    "token0": token_0,
+                    "token1": token_1,
                     "pair": pair_evm_address,
                     "": 1,
                 }
@@ -66,8 +67,8 @@ class TestUniswapV2Factory:
                 None,
             )
             assert await pair.factory() == factory.evm_contract_address
-            assert await pair.token0() == tokens[0]
-            assert await pair.token1() == tokens[1]
+            assert await pair.token0() == token_0
+            assert await pair.token1() == token_1
 
         @pytest.mark.skip("Skipped because gas metering is inaccurate in kakarot")
         async def test_should_use_correct_gas(self, factory, owner):
