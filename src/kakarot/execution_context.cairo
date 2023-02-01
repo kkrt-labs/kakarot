@@ -223,7 +223,7 @@ namespace ExecutionContext {
     // @param self The pointer to the execution context.
     // @return TRUE if the execution context is root, FALSE otherwise.
     func is_root(self: model.ExecutionContext*) -> felt {
-        if (self.calling_context.evm_contract_address == 0) {
+        if (cast(self.calling_context.call_context, felt) == 0) {
             return TRUE;
         }
         return FALSE;
@@ -234,7 +234,7 @@ namespace ExecutionContext {
     // @param self The pointer to the execution context.
     // @return TRUE if the execution context is a leaf, FALSE otherwise.
     func is_leaf(self: model.ExecutionContext*) -> felt {
-        if (self.sub_context.evm_contract_address == 0) {
+        if (cast(self.sub_context.call_context, felt) == 0) {
             return TRUE;
         }
         return FALSE;
