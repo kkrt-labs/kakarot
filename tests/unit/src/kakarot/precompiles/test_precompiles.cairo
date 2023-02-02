@@ -37,19 +37,6 @@ func test__precompiles_should_throw_on_out_of_bounds{
 }
 
 @external
-func test__is_precompile_should_return_false_when_address_is_greater_than_last_precompile{
-    range_check_ptr
-}(address: felt) {
-    // When
-    let result = Precompiles.is_precompile(address);
-
-    // Then
-    assert result = 0;
-
-    return ();
-}
-
-@external
 func test__is_precompile{range_check_ptr}(address: felt) -> (is_precompile: felt) {
     return (is_precompile=Precompiles.is_precompile(address));
 }
