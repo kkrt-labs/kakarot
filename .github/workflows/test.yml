@@ -10,7 +10,6 @@ jobs:
       CI_COMMIT_AUTHOR: ${{ github.event.repository.name }} CI
     steps:
       - uses: actions/checkout@v3
-      # Python setup - Might not work with self-hosted
       - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
