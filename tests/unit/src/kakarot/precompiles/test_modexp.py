@@ -18,8 +18,7 @@ async def modexp(starknet: Starknet):
 class TestModExp:
     async def test_modexp(self, modexp):
         
-        # 2^256-1
-        max_int = 115792089237316195423570985008687907853269984665640564039457584007913129639935;
+        max_int = 2 ** 256 - 1
         b = random.randint(0, max_int)
         b_size = math.ceil(math.log(b,256))
         b_size_bytes = b_size.to_bytes(32, "big")
