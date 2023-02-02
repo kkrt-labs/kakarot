@@ -31,7 +31,9 @@ class TestPrecompiles:
         async def test__is_precompile_should_return_true_up_to_9(
             self, precompiles, address
         ):
-            is_precompile = (await precompiles.test__is_precompile(address).call()).result[0]
+            is_precompile = (
+                await precompiles.test__is_precompile(address).call()
+            ).result[0]
             assert is_precompile == (address <= 0x9)
 
     class TestNotImplementedPrecompile:
