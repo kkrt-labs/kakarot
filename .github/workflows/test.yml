@@ -55,6 +55,7 @@ jobs:
 
   python-tests:
     runs-on: self-hosted
+    container: ptisserand/kakarot-builder:latest
     steps:
       - uses: actions/checkout@v3
       - name: Load cached Poetry installation
