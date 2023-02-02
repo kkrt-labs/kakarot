@@ -37,8 +37,10 @@ class TestPrecompiles:
                 address=address
             ).call()
 
-        @pytest.mark.parametrize("address", range(1,10))
-        async def test__is_precompile_should_return_true_up_to_9(self, precompiles, address):
+        @pytest.mark.parametrize("address", range(1, 10))
+        async def test__is_precompile_should_return_true_up_to_9(
+            self, precompiles, address
+        ):
             await precompiles.test__is_precompile(address).call()
 
     class TestNotImplementedPrecompile:
@@ -48,7 +50,7 @@ class TestPrecompiles:
             # we choose an address of a non implemented precompile and we check that the Non Implemented Precompile error msg appear.
             not_impl_precompile_address = 0x8
             with kakarot_error(
-                f"Kakarot: NotImplementedPrecompile {not_impl_precompile_address}" 
+                f"Kakarot: NotImplementedPrecompile {not_impl_precompile_address}"
             ):
                 await precompiles.test__precompiles_should_throw_on_out_of_bounds(
                     address=not_impl_precompile_address
@@ -59,7 +61,7 @@ class TestPrecompiles:
             self, precompiles
         ):
             # we choose an address of a non implemented precompile and we check that the Non Implemented Precompile error msg appear.
-            not_impl_precompile_address = 0x9 + 1 
+            not_impl_precompile_address = 0x9 + 1
             with kakarot_error():
                 await precompiles.test__exec_precompiles_should_throw_non_implemented_precompile_message(
                     address=not_impl_precompile_address
