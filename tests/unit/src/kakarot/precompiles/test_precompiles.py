@@ -21,9 +21,9 @@ class TestPrecompiles:
             self, precompiles
         ):
             # we choose datacopy precompile address
-            dataCopy_address = 0x4
+            data_copy_address = 0x4
             await precompiles.test__run_should_return_a_stopped_execution_context(
-                address=dataCopy_address
+                address=data_copy_address
             ).call()
 
     class TestIsPrecompile:
@@ -37,14 +37,9 @@ class TestPrecompiles:
                 address=address
             ).call()
 
-        async def test__is_precompile_should_return_true_when_address_is_lower_than_last_precompile(
-            self, precompiles
-        ):
-            # we choose the address of an implemented precompile
-            address = 0x6
-            await precompiles.test__is_precompile_should_return_true_when_address_is_lower_than_last_precompile(
-                address=address
-            ).call()
+        @pytest.mark.parametrize("address", range(1,10))
+        async def test__is_precompile_should_return_true_up_to_9(self, precompiles, address):
+            await precompiles.test__is_precompile(address).call()
 
     class TestNotImplementedPrecompile:
         async def test__not_implemented_precompile_should_raise_with_detailed_error_message(
@@ -53,21 +48,19 @@ class TestPrecompiles:
             # we choose an address of a non implemented precompile and we check that the Non Implemented Precompile error msg appear.
             not_impl_precompile_address = 0x8
             with kakarot_error(
-                "Kakarot: NotImplementedPrecompile " + str(not_impl_precompile_address)
+                f"Kakarot: NotImplementedPrecompile {not_impl_precompile_address}" 
             ):
                 await precompiles.test__precompiles_should_throw_on_out_of_bounds(
                     address=not_impl_precompile_address
                 ).call()
 
     class TestExecPrecompile:
-        async def test__exec_precompiles_should_throw_on_out_of_bounds(
+        async def test__exec_precompiles_should_throw_non_implemented_precompiler(
             self, precompiles
         ):
             # we choose an address of a non implemented precompile and we check that the Non Implemented Precompile error msg appear.
-            not_impl_precompile_address = 0x8
-            with kakarot_error(
-                "Kakarot: NotImplementedPrecompile " + str(not_impl_precompile_address)
-            ):
+            not_impl_precompile_address = 0x9 + 1 
+            with kakarot_error():
                 await precompiles.test__exec_precompiles_should_throw_non_implemented_precompiler_message(
                     address=not_impl_precompile_address
                 ).call()
