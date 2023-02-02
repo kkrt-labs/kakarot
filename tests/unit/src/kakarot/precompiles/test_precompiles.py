@@ -55,12 +55,12 @@ class TestPrecompiles:
                 ).call()
 
     class TestExecPrecompile:
-        async def test__exec_precompiles_should_throw_non_implemented_precompiler(
+        async def test__exec_precompiles_should_throw_non_implemented_precompile(
             self, precompiles
         ):
             # we choose an address of a non implemented precompile and we check that the Non Implemented Precompile error msg appear.
             not_impl_precompile_address = 0x9 + 1 
             with kakarot_error():
-                await precompiles.test__exec_precompiles_should_throw_non_implemented_precompiler_message(
+                await precompiles.test__exec_precompiles_should_throw_non_implemented_precompile_message(
                     address=not_impl_precompile_address
                 ).call()
