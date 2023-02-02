@@ -17,7 +17,7 @@ jobs:
       - name: Load cached Poetry installation
         uses: actions/cache@v3
         with:
-          path: ~/.local # the path depends on the OS
+          path: ~/.local # the path depends on the OS. this is for linux
           key: poetry-1 # increment to reset poetry cache
       - name: Install Poetry
         uses: snok/install-poetry@v1
@@ -81,8 +81,9 @@ jobs:
         with:
           path: .venv
           key:
-            self-hosted-venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version
-            }}-${{ hashFiles('**/poetry.lock') }}
+            self-hosted-venv-${{ runner.os }}-${{
+            steps.setup-python.outputs.python-version }}-${{
+            hashFiles('**/poetry.lock') }}
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
