@@ -27,21 +27,12 @@ class TestPrecompiles:
             ).call()
 
     class TestIsPrecompile:
-        async def test__is_precompile_should_return_false_when_address_is_greater_than_last_precompile(
-            self, precompiles
-        ):
-            # we choose the address after the last precompile address
-            last_precompile_address = 0x9
-            address = last_precompile_address + 1
-            await precompiles.test__is_precompile_should_return_false_when_address_is_greater_than_last_precompile(
-                address=address
-            ).call()
-
-        @pytest.mark.parametrize("address", range(1, 10))
+        @pytest.mark.parametrize("address", range(1, 11))
         async def test__is_precompile_should_return_true_up_to_9(
             self, precompiles, address
         ):
-            await precompiles.test__is_precompile(address).call()
+            is_precompile = (await precompiles.test__is_precompile(address).call()).result[0]
+            assert is_precompile == (address <= 0x9)
 
     class TestNotImplementedPrecompile:
         async def test__not_implemented_precompile_should_raise_with_detailed_error_message(

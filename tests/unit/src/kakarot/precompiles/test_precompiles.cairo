@@ -50,13 +50,8 @@ func test__is_precompile_should_return_false_when_address_is_greater_than_last_p
 }
 
 @external
-func test__is_precompile{range_check_ptr}(address: felt) {
-    let result = Precompiles.is_precompile(address);
-
-    // Then
-    assert result = 1;
-
-    return ();
+func test__is_precompile{range_check_ptr}(address: felt) -> (is_precompile: felt) {
+    return (is_precompile=Precompiles.is_precompile(address));
 }
 
 @external
