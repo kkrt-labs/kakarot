@@ -217,28 +217,25 @@ namespace ExternallyOwnedAccount {
     ) -> (is_valid: felt) {
         alloc_locals;
         if (tx_type == 2) {
-            let v = Helpers.bytes_to_felt(sub_items[V_IDX].data_len, sub_items[V_IDX].data, 0);
-            let r = Helpers.bytes32_to_uint256(sub_items[R_IDX].data);
-            let s = Helpers.bytes32_to_uint256(sub_items[S_IDX].data);
-            with keccak_ptr {
-                verify_eth_signature_uint256(
-                    msg_hash=msg_hash, r=r, s=s, v=v.n, eth_address=eth_address
-                );
-            }
-            finalize_keccak(keccak_ptr_start, keccak_ptr);
-            return (is_valid=1);
+            [ap] = 0, ap++;
+            [ap] = 0, ap++;
         } else {
-            let v = Helpers.bytes_to_felt(sub_items[6].data_len, sub_items[6].data, 0);
-            let r = Helpers.bytes32_to_uint256(sub_items[7].data);
-            let s = Helpers.bytes32_to_uint256(sub_items[8].data);
-            with keccak_ptr {
-                verify_eth_signature_uint256(
-                    msg_hash=msg_hash, r=r, s=s, v=v.n - CHAINID_V_MODIFIER, eth_address=eth_address
-                );
-            }
-            finalize_keccak(keccak_ptr_start, keccak_ptr);
-            return (is_valid=1);
+            [ap] = 3, ap++;
+            [ap] = CHAINID_V_MODIFIER, ap++;
         }
+        let v_modifier = [ap - 1];
+        let shift = [ap - 2];
+        let v = Helpers.bytes_to_felt(
+            sub_items[V_IDX - shift].data_len, sub_items[V_IDX - shift].data, 0
+        );
+        let r = Helpers.bytes32_to_uint256(sub_items[R_IDX - shift].data);
+        let s = Helpers.bytes32_to_uint256(sub_items[S_IDX - shift].data);
+        with keccak_ptr {
+            verify_eth_signature_uint256(
+                msg_hash=msg_hash, r=r, s=s, v=v.n - v_modifier, eth_address=eth_address
+            );
+        }
+        finalize_keccak(keccak_ptr_start, keccak_ptr);
     }
 
     func is_valid_signature{
