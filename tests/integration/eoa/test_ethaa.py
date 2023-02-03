@@ -92,7 +92,13 @@ class TestExternallyOwnedAccount:
 
         @pytest.mark.parametrize("address_idx", range(1))
         async def test_should_execute_legacy_tx(
-            self, kakarot, legacy_tx, deploy_solidity_contract, addresses, address_idx, owner
+            self,
+            kakarot,
+            legacy_tx,
+            deploy_solidity_contract,
+            addresses,
+            address_idx,
+            owner,
         ):
             address = addresses[address_idx]
             eth_account = MockEthSigner(private_key=address.private_key)
