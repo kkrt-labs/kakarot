@@ -15,7 +15,7 @@ func test__encode_list{
 }
 
 @view
-func test__decode_at_index{
+func test__rlp_decode_at_index{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
 }(data_len: felt, data: felt*, index: felt) -> (data_len: felt, data: felt*, is_list: felt) {
     alloc_locals;

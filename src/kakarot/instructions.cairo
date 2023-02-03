@@ -601,6 +601,7 @@ namespace EVMInstructions {
     // @param ctx The pointer to the execution context.
     // @return The pointer to the updated execution context.
     func run{
+        debug: felt,
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
@@ -613,6 +614,13 @@ namespace EVMInstructions {
         // Check if execution should be stopped
         let stopped: felt = ExecutionContext.is_stopped(self=ctx);
         let is_root: felt = ExecutionContext.is_root(self=ctx);
+        %{
+            from datetime import datetime        
+            if ids.debug == 1: 
+              ts = int(datetime.timestamp(datetime.now()))
+              with open("execute_at_address.org", "a") as logfile:
+                  logfile.write(f"{{:at {ts} :from :run :program-counter {ids.ctx.program_counter} :opcode {hex(memory.get(ids.ctx.call_context.bytecode + ids.ctx.program_counter))} }} \n\n")
+        %}
 
         // Terminate execution
         if (stopped != FALSE) {
@@ -626,17 +634,17 @@ namespace EVMInstructions {
                 let is_precompile = Precompiles.is_precompile(address=ctx.evm_contract_address);
                 if (is_precompile != FALSE) {
                     let ctx = CallHelper.finalize_calling_context(ctx);
-                    return run(ctx=ctx);
+                    return run{debug=debug}(ctx=ctx);
                 }
                 let (bytecode_len) = IAccount.bytecode_len(
                     contract_address=ctx.starknet_contract_address
                 );
                 if (bytecode_len == 0) {
                     let ctx = CreateHelper.finalize_calling_context(ctx);
-                    return run(ctx=ctx);
+                    return run{debug=debug}(ctx=ctx);
                 } else {
                     let ctx = CallHelper.finalize_calling_context(ctx);
-                    return run(ctx=ctx);
+                    return run{debug=debug}(ctx=ctx);
                 }
             }
         }

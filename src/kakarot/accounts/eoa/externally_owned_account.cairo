@@ -10,7 +10,16 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_secp.signature import verify_eth_signature_uint256
 from starkware.cairo.common.uint256 import Uint256
 // Account library
-from kakarot.accounts.eoa.library import ExternallyOwnedAccount
+from kakarot.accounts.eoa.library import (
+    ExternallyOwnedAccount,
+    evm_address,
+    kakarot_address,
+    is_initialized_,
+)
+from utils.rlp import RLP
+from utils.utils import Helpers
+from starkware.cairo.common.cairo_keccak.keccak import keccak, finalize_keccak, keccak_bigend
+from starkware.cairo.common.math_cmp import is_le
 
 // Externally Owned Account initializer
 @external
@@ -81,8 +90,16 @@ func __execute__{
     calldata: felt*,
 ) -> (response_len: felt, response: felt*) {
     let (response: felt*) = alloc();
-    // TODO: parse, call kakarot, and format response
-    return (response_len=0, response=response);
+    let (address) = evm_address.read();
+    let (_kakarot) = kakarot_address.read();
+    return ExternallyOwnedAccount.execute(
+        kakarot_address=_kakarot,
+        evm_address=address,
+        call_array_len=call_array_len,
+        call_array=call_array,
+        calldata_len=calldata_len,
+        calldata=calldata,
+    );
 }
 
 // @dev returns true if the interface_id is supported
