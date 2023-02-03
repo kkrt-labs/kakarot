@@ -53,11 +53,8 @@ class TestSystemOperations:
 
         await system_operations.test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_stack().call()
 
-
     @pytest.mark.parametrize("salt", [127, 256, 2**55 - 1])
-    async def test_create(
-        self, system_operations, salt
-    ):
+    async def test_create(self, system_operations, salt):
         evm_caller_address_int = 15
         evm_caller_address_bytes = evm_caller_address_int.to_bytes(20, byteorder="big")
         evm_caller_address = to_checksum_address(evm_caller_address_bytes)

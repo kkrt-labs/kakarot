@@ -1,5 +1,4 @@
 import pytest
-import web3
 from starkware.starknet.testing.contract import StarknetContract
 
 from tests.integration.bytecode.test_cases import test_cases

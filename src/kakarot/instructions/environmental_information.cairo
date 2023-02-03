@@ -463,9 +463,7 @@ namespace EnvironmentalInformation {
         // TODO (https://github.com/sayajin-labs/kakarot/issues/474)
         //      should be able to check that there is a deployed starknet contract at this address
         // if not return bytecode_len 0
-        let (bytecode_len) = IAccount.bytecode_len(
-            contract_address=starknet_contract_address
-        );
+        let (bytecode_len) = IAccount.bytecode_len(contract_address=starknet_contract_address);
 
         // bytecode_len cannot be greater than 24k in the EVM
         let stack = Stack.push(stack, Uint256(low=bytecode_len, high=0));
@@ -668,7 +666,7 @@ namespace EnvironmentalInformation {
 
         // Get the starknet address from the given evm address
         let (starknet_contract_address) = Accounts.compute_starknet_address(address_felt);
-        
+
         // TODO (https://github.com/sayajin-labs/kakarot/issues/474)
         //      should be able to check that there is a deployed starknet contract at this address
         let (bytecode_len, bytecode) = IAccount.bytecode(

@@ -15,7 +15,7 @@ from kakarot.constants import (
     native_token_address,
     contract_account_class_hash,
     account_proxy_class_hash,
-    salt
+    salt,
 )
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.memory_operations import MemoryOperations
@@ -107,14 +107,13 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
 }() {
     // Deploy an empty contract
     alloc_locals;
-    
+
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
     let (local starknet_contract_address) = Accounts.create(
         contract_account_class_hash_, evm_contract_address
     );
 
-    
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
     let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
@@ -346,7 +345,7 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
 }() {
     // Deploy another contract
     alloc_locals;
-    
+
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
     let (local starknet_contract_address) = Accounts.create(
@@ -420,11 +419,7 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
 @external
 func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at_expected_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(
-    evm_caller_address: felt,
-    salt_: felt,
-    expected_create_address: felt,
-) {
+}(evm_caller_address: felt, salt_: felt, expected_create_address: felt) {
     alloc_locals;
 
     salt.write(salt_);
@@ -668,9 +663,7 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     let ctx = SelfDestructHelper.finalize(ctx);
 
     // Then
-    let (evm_contract_byte_len) = IAccount.bytecode_len(
-        contract_address=starknet_contract_address
-    );
+    let (evm_contract_byte_len) = IAccount.bytecode_len(contract_address=starknet_contract_address);
 
     assert evm_contract_byte_len = 0;
     return ();

@@ -16,11 +16,7 @@ from kakarot.model import model
 from kakarot.interfaces.interfaces import IKakarot, IContractAccount
 from kakarot.stack import Stack
 from kakarot.memory import Memory
-from kakarot.constants import (
-    Constants,
-    contract_account_class_hash,
-    account_proxy_class_hash,
-)
+from kakarot.constants import Constants, contract_account_class_hash, account_proxy_class_hash
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.environmental_information import EnvironmentalInformation
@@ -111,14 +107,13 @@ func test__exec_extcodesize__should_handle_address_with_no_code{
     // Given
     alloc_locals;
 
-
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
     let (local starknet_contract_address) = Accounts.create(
         contract_account_class_hash_, evm_contract_address
     );
     let evm_contract_address_uint256 = Helpers.to_uint256(evm_contract_address);
-    
+
     let address = evm_contract_address_uint256;
     let stack = Stack.init();
     let stack = Stack.push(stack, address);
@@ -170,7 +165,9 @@ func test__exec_extcodecopy__should_handle_address_with_code{
     let stack: model.Stack* = Stack.push(stack, Uint256(dest_offset, 0));  // dest_offset
     let stack: model.Stack* = Stack.push(stack, evm_contract_address_uint256);  // address
 
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(
+        bytecode_len, bytecode, stack
+    );
 
     // we are hardcoding an assumption of 'cold' address access, for now.
     let address_access_cost = 2600;
@@ -201,7 +198,6 @@ func test__exec_extcodecopy__should_handle_address_with_no_code{
 
     // make a deployed registry contract available
 
-    
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
     let (local starknet_contract_address) = Accounts.create(
@@ -217,7 +213,9 @@ func test__exec_extcodecopy__should_handle_address_with_no_code{
     let (bytecode) = alloc();
     let bytecode_len = 0;
 
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(
+        bytecode_len, bytecode, stack
+    );
 
     // we are hardcoding an assumption of 'cold' address access, for now.
     // but the dynamic gas values of  `minimum_word_size` and `memory_expansion_cost`

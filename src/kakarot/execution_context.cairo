@@ -160,9 +160,7 @@ namespace ExecutionContext {
         let memory: model.Memory* = Memory.init();
 
         // Get the starknet address from the given evm address
-        let (starknet_contract_address) = Accounts.compute_starknet_address(
-            evm_address=address
-        );
+        let (starknet_contract_address) = Accounts.compute_starknet_address(evm_address=address);
 
         // Get the bytecode from the Starknet_contract
         let (bytecode_len, bytecode) = IAccount.bytecode(

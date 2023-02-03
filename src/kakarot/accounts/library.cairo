@@ -88,9 +88,7 @@ namespace Accounts {
         );
         assert constructor_calldata[0] = kakarot_address;
         assert constructor_calldata[1] = evm_address;
-        IAccount.initialize(
-            account_address, class_hash, 2, constructor_calldata
-        );
+        IAccount.initialize(account_address, class_hash, 2, constructor_calldata);
         return (account_address=account_address);
     }
 }
