@@ -136,6 +136,7 @@ namespace RLP {
             Helpers.fill_array(bytes_len, bytes, rlp + 1);
             Helpers.fill_array(data_len, data, rlp + 1 + bytes_len);
             return (rlp_len=data_len + 1 + bytes_len);
+<<<<<<< HEAD
         }
     }
 
@@ -209,6 +210,8 @@ namespace RLP {
             Helpers.fill_array(byte_array_len, byte_array, rlp + rlp_len + 1 + item_len_bytes_len);
 
             return (rlp_len + item_len_bytes_len + byte_array_len + 1,);
+=======
+>>>>>>> ce1c8b8528e6b3423923facb3806e08a90723615
         }
     }
 }
