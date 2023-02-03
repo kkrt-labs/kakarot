@@ -47,14 +47,3 @@ async def declare_contract(client: AccountClient, contract: str) -> int:
     logger.info(f"✅ {contract} class hash: {declare_result.class_hash:x}")
 
     return declare_result.class_hash
-
-
-def create_log_file():
-
-    # initial data
-    json_str = '{"addresses": {"kakarot": "0x0", "account_registry": "0x0", "blockhash_registry": "0x0", "kakarot_class_hash": "0x0"}}'
-    data = json.loads(json_str)
-
-    # Create log file
-    with open("deployed_addresses.json", "w") as f:
-        json.dump(data, f)
