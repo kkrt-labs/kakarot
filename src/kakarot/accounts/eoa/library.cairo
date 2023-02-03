@@ -179,22 +179,22 @@ namespace ExternallyOwnedAccount {
         if (tx_type == 2) {
             let rlp_data = calldata + 1;
             // decode the rlp array
-            RLP.decode_rlp(calldata_len - 1, rlp_data, items);
+            RLP.decode(calldata_len - 1, rlp_data, items);
             // remove the sig to hash the tx
             let data_len: felt = [items].data_len - SIGNATURE_LEN;
             // add the tx type, see here: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1559.md#specification
             assert [list_ptr] = tx_type;
             // encode the rlp list without the sig
-            let (rlp_len: felt) = RLP.encode_rlp_list(data_len, [items].data, list_ptr + 1);
+            let (rlp_len: felt) = RLP.encode_list(data_len, [items].data, list_ptr + 1);
             let (tx_hash: Uint256) = hash_rlp{keccak_ptr=keccak_ptr}(rlp_len + 1, list_ptr);
             // decode the rlp elements in the tx (was in the list element)
-            RLP.decode_rlp([items].data_len, [items].data, sub_items);
-            return is_valid_eth_signature(
-                tx_hash, sub_items, eth_address, 2, keccak_ptr, keccak_ptr_start
+            RLP.decode([items].data_len, [items].data, sub_items);
+            return is_valid_evm_signature(
+                tx_hash, sub_items, evm_address, 2, keccak_ptr, keccak_ptr_start
             );
         } else {
             // legacy tx
-            RLP.decode_rlp(calldata_len, calldata, items);
+            RLP.decode(calldata_len, calldata, items);
             // signature len is different in legacy see here: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md
             let data_len: felt = [items].data_len - LEGACY_SIGNATURE_LEN;
             // rawTx to hash must include (chainId, 0, 0) see previous link
@@ -203,11 +203,11 @@ namespace ExternallyOwnedAccount {
             let (chain_id_data: felt*) = chain_id_bytes();
             Helpers.fill_array(CHAIN_ID_LEN, chain_id_data, tx_data + data_len);
             // decode the rlp elements in the tx (was in the list element)
-            let (rlp_len: felt) = RLP.encode_rlp_list(data_len + CHAIN_ID_LEN, tx_data, list_ptr);
+            let (rlp_len: felt) = RLP.encode_list(data_len + CHAIN_ID_LEN, tx_data, list_ptr);
             let (tx_hash: Uint256) = hash_rlp{keccak_ptr=keccak_ptr}(rlp_len, list_ptr);
-            RLP.decode_rlp([items].data_len, [items].data, sub_items);
-            return is_valid_eth_signature(
-                tx_hash, sub_items, eth_address, 0, keccak_ptr, keccak_ptr_start
+            RLP.decode([items].data_len, [items].data, sub_items);
+            return is_valid_evm_signature(
+                tx_hash, sub_items, evm_address, 0, keccak_ptr, keccak_ptr_start
             );
         }
     }
@@ -248,7 +248,7 @@ namespace ExternallyOwnedAccount {
     }(
         msg_hash: Uint256,
         sub_items: RLP.Item*,
-        eth_address: felt,
+        evm_address: felt,
         tx_type: felt,
         keccak_ptr: felt*,
         keccak_ptr_start: felt*,
@@ -260,7 +260,7 @@ namespace ExternallyOwnedAccount {
             let s = Helpers.bytes32_to_uint256(sub_items[S_IDX].data);
             with keccak_ptr {
                 verify_eth_signature_uint256(
-                    msg_hash=msg_hash, r=r, s=s, v=v.n, eth_address=eth_address
+                    msg_hash=msg_hash, r=r, s=s, v=v.n, eth_address=evm_address
                 );
             }
             finalize_keccak(keccak_ptr_start, keccak_ptr);
@@ -271,7 +271,7 @@ namespace ExternallyOwnedAccount {
             let s = Helpers.bytes32_to_uint256(sub_items[8].data);
             with keccak_ptr {
                 verify_eth_signature_uint256(
-                    msg_hash=msg_hash, r=r, s=s, v=v.n - CHAINID_V_MODIFIER, eth_address=eth_address
+                    msg_hash=msg_hash, r=r, s=s, v=v.n - CHAINID_V_MODIFIER, eth_address=evm_address
                 );
             }
             finalize_keccak(keccak_ptr_start, keccak_ptr);
@@ -296,7 +296,7 @@ namespace ExternallyOwnedAccount {
         let keccak_ptr_start = keccak_ptr;
         with keccak_ptr {
             verify_eth_signature_uint256(
-                msg_hash=msg_hash, r=r, s=s, v=v, eth_address=_eth_address
+                msg_hash=msg_hash, r=r, s=s, v=v, eth_address=_evm_address
             );
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
@@ -311,7 +311,7 @@ namespace ExternallyOwnedAccount {
         range_check_ptr,
     }(
         kakarot_address: felt,
-        eth_address: felt,
+        evm_address: felt,
         call_array_len: felt,
         call_array: CallArray*,
         calldata_len: felt,
@@ -331,7 +331,7 @@ namespace ExternallyOwnedAccount {
 
         let (local response: felt*) = alloc();
         let (response_len) = execute_list(
-            kakarot_address, eth_address, call_array_len, call_array, calldata, response
+            kakarot_address, evm_address, call_array_len, call_array, calldata, response
         );
 
         return (response_len, response);
@@ -345,7 +345,7 @@ namespace ExternallyOwnedAccount {
         range_check_ptr,
     }(
         kakarot_address: felt,
-        eth_address: felt,
+        evm_address: felt,
         call_array_len: felt,
         call_array: CallArray*,
         calldata: felt*,
@@ -368,8 +368,8 @@ namespace ExternallyOwnedAccount {
         let (local sub_items: RLP.Item*) = alloc();
         let (local starknet_calldata: felt*) = alloc();
         if (_call.calldata[0] == 2) {
-            RLP.decode_rlp(_call.calldata_len - 1, _call.calldata + 1, items);
-            RLP.decode_rlp([items].data_len, [items].data, sub_items);
+            RLP.decode(_call.calldata_len - 1, _call.calldata + 1, items);
+            RLP.decode([items].data_len, [items].data, sub_items);
             let (n) = Helpers.bytes_to_felt(
                 sub_items[DESTINATION_IDX].data_len, sub_items[DESTINATION_IDX].data, 0
             );
@@ -396,7 +396,7 @@ namespace ExternallyOwnedAccount {
             memcpy(response, res.retdata, res.retdata_size);
             let (response_len) = execute_list(
                 kakarot_address,
-                eth_address,
+                evm_address,
                 call_array_len - 1,
                 call_array + CallArray.SIZE,
                 calldata,
@@ -404,8 +404,8 @@ namespace ExternallyOwnedAccount {
             );
             return (response_len=res.retdata_size + response_len);
         } else {
-            RLP.decode_rlp(_call.calldata_len, _call.calldata, items);
-            RLP.decode_rlp([items].data_len, [items].data, sub_items);
+            RLP.decode(_call.calldata_len, _call.calldata, items);
+            RLP.decode([items].data_len, [items].data, sub_items);
             let (n) = Helpers.bytes_to_felt(sub_items[3].data_len, sub_items[3].data, 0);
             assert starknet_calldata[0] = n;
             let (n) = Helpers.bytes_to_felt(sub_items[4].data_len, sub_items[4].data, 0);
@@ -424,7 +424,7 @@ namespace ExternallyOwnedAccount {
             memcpy(response, res.retdata, res.retdata_size);
             let (response_len) = execute_list(
                 kakarot_address,
-                eth_address,
+                evm_address,
                 _call.calldata_len - 1,
                 call_array + CallArray.SIZE,
                 calldata,
