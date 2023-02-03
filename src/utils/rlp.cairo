@@ -138,7 +138,7 @@ namespace RLP {
             return (rlp_len=data_len + 1 + bytes_len);
         }
     }
-    
+
     // @notice encodes felt into an rlp item
     // @param item The felt that is encoded into rlp
     // @param rlp_len The length of the rlp array

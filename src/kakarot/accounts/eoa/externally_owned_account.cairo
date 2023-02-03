@@ -10,7 +10,12 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_secp.signature import verify_eth_signature_uint256
 from starkware.cairo.common.uint256 import Uint256
 // Account library
-from kakarot.accounts.eoa.library import ExternallyOwnedAccount, evm_address, kakarot_address, is_initialized_
+from kakarot.accounts.eoa.library import (
+    ExternallyOwnedAccount,
+    evm_address,
+    kakarot_address,
+    is_initialized_,
+)
 from utils.rlp import RLP
 from utils.utils import Helpers
 from starkware.cairo.common.cairo_keccak.keccak import keccak, finalize_keccak, keccak_bigend
