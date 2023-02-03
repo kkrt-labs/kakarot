@@ -29,8 +29,7 @@ jobs:
           path: .venv
           key:
             self-hosted-venv-${{ runner.os }}-${{
-            steps.setup-python.outputs.python-version }}-${{
-            hashFiles('**/poetry.lock') }}-1
+            hashFiles('**/poetry.lock')}}-1
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
@@ -76,8 +75,7 @@ jobs:
           path: .venv
           key:
             self-hosted-venv-${{ runner.os }}-${{
-            steps.setup-python.outputs.python-version }}-${{
-            hashFiles('**/poetry.lock') }}-1
+            hashFiles('**/poetry.lock')}}-1
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
@@ -121,8 +119,7 @@ jobs:
           path: .venv
           key:
             self-hosted-venv-${{ runner.os }}-${{
-            steps.setup-python.outputs.python-version }}-${{
-            hashFiles('**/poetry.lock') }}-1
+            hashFiles('**/poetry.lock')}}-1
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
