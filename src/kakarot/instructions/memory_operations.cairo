@@ -13,7 +13,7 @@ from utils.utils import Helpers
 from kakarot.stack import Stack
 from kakarot.memory import Memory
 from kakarot.execution_context import ExecutionContext
-from kakarot.interfaces.interfaces import IEvmContract
+from kakarot.interfaces.interfaces import IContractAccount
 
 // @title Exchange operations opcodes.
 // @notice This file contains the functions to execute for memory operations opcodes.
@@ -375,7 +375,7 @@ namespace MemoryOperations {
 
         // 3. Call Write storage on contract with starknet address
         with_attr error_message("Contract call failed") {
-            IEvmContract.write_storage(
+            IContractAccount.write_storage(
                 contract_address=starknet_contract_address, key=key, value=value
             );
         }
@@ -414,7 +414,7 @@ namespace MemoryOperations {
         // local value: Uint256;
         // 3. Get the data from storage
 
-        let (local value: Uint256) = IEvmContract.storage(
+        let (local value: Uint256) = IContractAccount.storage(
             contract_address=starknet_contract_address, key=key
         );
 
