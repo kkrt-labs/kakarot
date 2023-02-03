@@ -103,10 +103,6 @@ jobs:
     needs: python-tests
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
       - name: Load cached Poetry installation
         uses: actions/cache@v3
         with:
