@@ -99,6 +99,7 @@ jobs:
 
   resources-tests:
     runs-on: self-hosted
+    container: ptisserand/kakarot-builder:latest
     needs: python-tests
     steps:
       - uses: actions/checkout@v3
