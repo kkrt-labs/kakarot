@@ -1,22 +1,9 @@
-<<<<<<< HEAD
-import random
-
-import pytest
-import pytest_asyncio
-from rlp import Serializable, decode, encode
-from rlp.sedes import big_endian_int, binary
-
-from tests.utils.errors import kakarot_error
-
-random.seed(0)
-=======
 import os
 from random import randint
 
 import pytest
 import pytest_asyncio
 from rlp import decode
->>>>>>> ce1c8b8528e6b3423923facb3806e08a90723615
 
 
 @pytest_asyncio.fixture
@@ -29,85 +16,6 @@ async def rlp(starknet):
 
 
 @pytest.fixture
-<<<<<<< HEAD
-def legacy_tx():
-    class LegacyTx(Serializable):
-        fields = [
-            ("nonce", big_endian_int),
-            ("gas_price", big_endian_int),
-            ("gas", big_endian_int),
-            ("to", binary),
-            ("value", big_endian_int),
-            ("data", binary),
-            ("v", big_endian_int),
-            ("r", binary),
-            ("s", binary),
-        ]
-
-    def _factory(i=0):
-        random.seed(i)
-        return LegacyTx(
-            nonce=random.randint(0, 10_000),
-            gas_price=random.randint(0, 10_000),
-            gas=random.randint(0, 10_000),
-            to=random.randbytes(20),
-            value=random.randint(0, 10_000),
-            data=random.randbytes(32),
-            v=random.randint(0, 10_000),
-            r=random.randbytes(32),
-            s=random.randbytes(32),
-        )
-
-    return _factory
-
-
-@pytest.fixture
-def eip1559_tx():
-    class EIP1559Tx(Serializable):
-        fields = [
-            ("chain_id", big_endian_int),
-            ("nonce", big_endian_int),
-            ("max_priority_fee_per_gas", big_endian_int),
-            ("max_fee_per_gas", big_endian_int),
-            ("gas", big_endian_int),
-            ("to", binary),
-            ("value", big_endian_int),
-            ("data", binary),
-            ("access_list", binary),
-            ("v", big_endian_int),
-            ("r", binary),
-            ("s", binary),
-        ]
-
-    def _factory(i=0):
-        random.seed(i)
-        return EIP1559Tx(
-            chain_id=random.randint(0, 10_000),
-            nonce=random.randint(0, 10_000),
-            max_priority_fee_per_gas=random.randint(0, 10_000),
-            max_fee_per_gas=random.randint(0, 10_000),
-            gas=random.randint(0, 10_000),
-            to=random.randbytes(20),
-            value=random.randint(0, 10_000),
-            data=random.randbytes(32),
-            access_list=random.randbytes(32),
-            v=random.randint(0, 10_000),
-            r=random.randbytes(32),
-            s=random.randbytes(32),
-        )
-
-    return _factory
-
-
-@pytest.fixture
-def tx_fixture(legacy_tx, eip1559_tx):
-    def _factory(tx_type, i=0):
-        if tx_type == 2:
-            return eip1559_tx(i)
-        return legacy_tx(i)
-
-    return _factory
-=======
 def data_to_list_long():
     return list(
         b"\x80\x85\x040\xe24\x00\x82R\x08\x94\xdcTM\x1a\xa8\x8f\xf8\xbb\xd2\xf2\xae\xc7T\xb1\xf1\xe9\x9e\x18\x12\xfd\x01\x80\x1b\xa0\x11\r\x8f\xee\x1d\xe5=\xf0\x87\x0en\xb5\x99\xed;\xf6\x8f\xb3\xf1\xe6,\x82\xdf\xe5\x97lF|\x97%;\x15\xa04P\xb7=*\xef \t\xf0&\xbc\xbf\tz%z\xe7\xa3~\xb5\xd3\xb7=\xc0v\n\xef\xad+\x98\xe3'"
@@ -139,12 +47,10 @@ def raw_tx_samples():
             "f86f830216c58506676ef5ec826b6c941cedc0f3af8f9841b0a1f5c1a4ddc6e1a1629074880101009bbb1fb5aa8026a0044e77af97e063a12b87fbcc083eae2b4b8daeaac46f967b5dcc82cfa1725192a06a9626195a8430f83676b3c1ca8037bbf5d2108161b0aaf07968a2cd442dc8ef"
         ),
     ]
->>>>>>> ce1c8b8528e6b3423923facb3806e08a90723615
 
 
 @pytest.mark.asyncio
 class TestRLP:
-<<<<<<< HEAD
     class TestEncodeList:
         @pytest.mark.parametrize("payload_len", [55, 56])
         async def test_should_match_encode_reference_implementation(
@@ -194,65 +100,3 @@ class TestRLP:
             with kakarot_error():
                 # test that the output len is correct by raising out_of_bound for next index
                 await rlp.test__decode_at_index(output.data, len(tx)).call()
-=======
-    class TestRLPListEncode:
-        async def test__encode_rlp_list_longer_55_bytes(self, rlp, data_to_list_long):
-            rlp_list = await rlp.test__encode_rlp_list(data_to_list_long).call()
-            data_len = len(data_to_list_long)
-            data_len_len = len(
-                data_len.to_bytes((data_len.bit_length() + 7) // 8, "big")
-            )
-            prefix = 0xF7 + data_len_len
-            expected_list = [
-                prefix,
-                *list(data_len.to_bytes((data_len.bit_length() + 7) // 8, "big")),
-                *data_to_list_long,
-            ]
-            assert expected_list == rlp_list.result.data
-
-        async def test__encode_rlp_list_smaller_55_bytes(self, rlp, data_to_list_short):
-            rlp_list = await rlp.test__encode_rlp_list(data_to_list_short).call()
-            data_len = len(data_to_list_short)
-            prefix = 0xC0 + data_len
-            expected_list = [prefix, *data_to_list_short]
-            assert expected_list == rlp_list.result.data
-
-    class TestRLPDecode:
-        async def test__decode_int_le_127(self, rlp):
-            number = randint(0, 127)
-            decoded = await rlp.test__rlp_decode_at_index([number], 0).call()
-            assert decoded.result.data == [number]
-            assert decoded.result.is_list == False
-
-        async def test__decode_string_le_55(self, rlp):
-            string = list(os.urandom(randint(2, 54)))
-            prefix = 0x80 + len(string)
-            decoded = await rlp.test__rlp_decode_at_index([prefix, *string], 0).call()
-            assert decoded.result.data == string
-            assert decoded.result.is_list == False
-
-        async def test__decode_string_gt_55(self, rlp):
-            data_len = randint(56, 100000)
-            string = list(os.urandom(data_len))
-            data_len = list(data_len.to_bytes((data_len.bit_length() + 7) // 8, "big"))
-            data_len_len = len(data_len)
-            prefix = 0xB7 + data_len_len
-            decoded = await rlp.test__rlp_decode_at_index(
-                [prefix, *data_len, *string], 0
-            ).call()
-            assert decoded.result.data == string
-            assert decoded.result.is_list == False
-
-        @pytest.mark.parametrize("raw_tx", raw_tx_samples())
-        async def test__decode_list_le_55(self, rlp, raw_tx):
-            contract_decoded = await rlp.test__rlp_decode_at_index(
-                list(raw_tx), 0
-            ).call()
-            assert contract_decoded.result.is_list == True
-            decoded = decode(raw_tx)
-            for i in range(0, len(decoded)):
-                sub_decoded = await rlp.test__rlp_decode_at_index(
-                    contract_decoded.result.data, i
-                ).call()
-                assert list(decoded[i]) == sub_decoded.result.data
->>>>>>> ce1c8b8528e6b3423923facb3806e08a90723615
