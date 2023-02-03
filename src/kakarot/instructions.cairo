@@ -612,11 +612,11 @@ namespace EVMInstructions {
 
         // Check if execution should be stopped
         let stopped: felt = ExecutionContext.is_stopped(self=ctx);
-        let is_parent_root: felt = ExecutionContext.is_root(self=ctx.calling_context);
+        let is_root: felt = ExecutionContext.is_root(self=ctx);
 
         // Terminate execution
         if (stopped != FALSE) {
-            if (is_parent_root != FALSE) {
+            if (is_root != FALSE) {
                 if (ctx.destroy_contracts_len != 0) {
                     let ctx = SelfDestructHelper.finalize(ctx);
                     return ctx;
