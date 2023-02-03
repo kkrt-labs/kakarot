@@ -11,6 +11,18 @@ from starkware.cairo.common.cairo_keccak.keccak import keccak, finalize_keccak, 
 from utils.rlp import RLP
 from starkware.cairo.common.math_cmp import is_le
 
+@storage_var
+func evm_address() -> (evm_address: felt) {
+}
+
+@storage_var
+func kakarot_address() -> (kakarot_address: felt) {
+}
+
+@storage_var
+func is_initialized_() -> (res: felt) {
+}
+
 namespace ExternallyOwnedAccount {
     // Constants
     // keccak250(ascii('execute_at_address'))
@@ -52,8 +64,30 @@ namespace ExternallyOwnedAccount {
         data_len: felt,
     }
 
+    // @notice This function is used to initialize the externally owned account.
+    func initialize{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(_kakarot_address: felt, _evm_address) {
+        let (is_initialized) = is_initialized_.read();
+        assert is_initialized = 0;
+        evm_address.write(_evm_address);
+        kakarot_address.write(_kakarot_address);
+        is_initialized_.write(1);
+        return ();
+    }
+
+    func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        evm_address: felt
+    ) {
+        let (address) = evm_address.read();
+        return (evm_address=address);
+    }
+
     // @notice checks if tx is signed and valid for each call
-    // @param eth_address The ethereum address owning this account
+    // @param evm_address The ethereum address owning this account
     // @param call_array_len The length of the call array
     // @param call_array The call array
     // @param calldata_len The length of the calldata
@@ -64,7 +98,7 @@ namespace ExternallyOwnedAccount {
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
     }(
-        eth_address: felt,
+        evm_address: felt,
         call_array_len: felt,
         call_array: CallArray*,
         calldata_len: felt,
@@ -82,10 +116,10 @@ namespace ExternallyOwnedAccount {
             calldata=calldata + [call_array].data_offset,
             );
 
-        is_valid_eth_tx(eth_address, _call.calldata_len, _call.calldata);
+        is_valid_eth_tx(evm_address, _call.calldata_len, _call.calldata);
 
         return validate(
-            eth_address=eth_address,
+            evm_address=evm_address,
             call_array_len=call_array_len - 1,
             call_array=call_array + CallArray.SIZE,
             calldata_len=calldata_len,
@@ -98,9 +132,9 @@ namespace ExternallyOwnedAccount {
     // @dev 2. recodes the list without the signature
     // @dev 3. hashes the tx
     // @dev 4. verifies the signature
-    // @dev TODO https://github.com/Flydexo/kakarot-eth-aa/issues/6
-    // @param eth_address The ethereum address owning the account
-    // @param calldata_len The lenght of the calldata
+    // @dev TODO https://github.com/Flydexo/kakarot-evm-aa/issues/6
+    // @param evm_address The ethereum address owning the account
+    // @param calldata_len The length of the calldata
     // @param calldata The calldata
     // @return is_valid 1 if the transaction is valid
     func is_valid_eth_tx{
@@ -108,7 +142,7 @@ namespace ExternallyOwnedAccount {
         pedersen_ptr: HashBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
-    }(eth_address: felt, calldata_len: felt, calldata: felt*) -> (is_valid: felt) {
+    }(evm_address: felt, calldata_len: felt, calldata: felt*) -> (is_valid: felt) {
         alloc_locals;
         let tx_type = [calldata];
         // remove the tx type
@@ -148,7 +182,7 @@ namespace ExternallyOwnedAccount {
             let r = Helpers.bytes32_to_uint256(sub_items[R_IDX].data);
             let s = Helpers.bytes32_to_uint256(sub_items[S_IDX].data);
             finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
-            return is_valid_eth_signature(tx_hash.res, r, s, v.n, eth_address);
+            return is_valid_evm_signature(tx_hash.res, r, s, v.n, evm_address);
         } else {
             assert 1 = 0;
             return (is_valid=0);
@@ -158,19 +192,19 @@ namespace ExternallyOwnedAccount {
     // @notice returns 1 (true) and does not fail if the signature is valid
     // @param hash The Hash to verify if signed
     // @param v, r, s The signature
-    // @param eth_address The ethereum address to compare the signature
+    // @param evm_address The ethereum address to compare the signature
     // @return is_valid 1 if the signature is valid
-    func is_valid_eth_signature{
+    func is_valid_evm_signature{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
-    }(msg_hash: Uint256, r: Uint256, s: Uint256, v: felt, eth_address: felt) -> (is_valid: felt) {
+    }(msg_hash: Uint256, r: Uint256, s: Uint256, v: felt, evm_address: felt) -> (is_valid: felt) {
         alloc_locals;
         let (keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
         with keccak_ptr {
-            verify_eth_signature_uint256(msg_hash=msg_hash, r=r, s=s, v=v, eth_address=eth_address);
+            verify_eth_signature_uint256(msg_hash=msg_hash, r=r, s=s, v=v, eth_address=evm_address);
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
         return (is_valid=1);
@@ -181,7 +215,7 @@ namespace ExternallyOwnedAccount {
         pedersen_ptr: HashBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
-    }(_eth_address: felt, hash_len: felt, hash: felt*, signature_len: felt, signature: felt*) -> (
+    }(_evm_address: felt, hash_len: felt, hash: felt*, signature_len: felt, signature: felt*) -> (
         is_valid: felt
     ) {
         alloc_locals;
@@ -189,6 +223,6 @@ namespace ExternallyOwnedAccount {
         let r: Uint256 = Uint256(low=signature[1], high=signature[2]);
         let s: Uint256 = Uint256(low=signature[3], high=signature[4]);
         let msg_hash: Uint256 = Uint256(low=hash[0], high=hash[1]);
-        return ExternallyOwnedAccount.is_valid_eth_signature(msg_hash, r, s, v, _eth_address);
+        return ExternallyOwnedAccount.is_valid_evm_signature(msg_hash, r, s, v, _evm_address);
     }
 }

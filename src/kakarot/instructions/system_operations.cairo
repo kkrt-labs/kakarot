@@ -15,22 +15,22 @@ from starkware.starknet.common.syscalls import deploy as deploy_syscall
 from starkware.starknet.common.syscalls import get_contract_address
 
 // Internal dependencies
-from kakarot.accounts.contract.library import ContractAccount
 from kakarot.constants import (
-    registry_address,
-    evm_contract_class_hash,
+    account_proxy_class_hash,
+    contract_account_class_hash,
     salt,
     native_token_address,
     Constants,
 )
 from kakarot.precompiles.precompiles import Precompiles
 from kakarot.execution_context import ExecutionContext
-from kakarot.interfaces.interfaces import IEvmContract, IRegistry, IEth
+from kakarot.interfaces.interfaces import IContractAccount, IEth, IAccount
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
 from utils.rlp import RLP
 from utils.utils import Helpers
+from kakarot.accounts.library import Accounts
 
 // @title System operations opcodes.
 // @notice This file contains the functions to execute for system operations opcodes.
@@ -609,7 +609,7 @@ namespace CreateHelper {
     // @notice Constructs an evm contract address for the create2 opcode
     //         via last twenty bytes of the keccak hash of:
     //         keccak256(0xff + sender_address + salt +
-    //         keccak256(initialisation_code))[12:]
+    //         keccak256(initialization_code))[12:]
     //         See [CREATE2](https://www.evm.codes/#f5)
     // @param sender_address - The evm sender address.
     // @param bytecode_len - The length of the initialization code.
@@ -755,7 +755,10 @@ namespace CreateHelper {
             );
 
             salt.write(nonce + 1);
-            let (starknet_contract_address) = ContractAccount.deploy(evm_contract_address);
+            let (contract_account_class_hash_) = contract_account_class_hash.read();
+            let (starknet_contract_address) = Accounts.create(
+                contract_account_class_hash_, evm_contract_address
+            );
 
             tempvar sub_ctx = new model.ExecutionContext(
                 call_context=call_context,
@@ -787,7 +790,10 @@ namespace CreateHelper {
                 salt=_salt,
             );
 
-            let (starknet_contract_address) = ContractAccount.deploy(evm_contract_address);
+            let (contract_account_class_hash_) = contract_account_class_hash.read();
+            let (starknet_contract_address) = Accounts.create(
+                contract_account_class_hash_, evm_contract_address
+            );
             tempvar sub_ctx = new model.ExecutionContext(
                 call_context=call_context,
                 program_counter=0,
@@ -822,7 +828,7 @@ namespace CreateHelper {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        IEvmContract.write_bytecode(
+        IContractAccount.write_bytecode(
             contract_address=ctx.starknet_contract_address,
             bytecode_len=ctx.return_data_len,
             bytecode=ctx.return_data,
@@ -830,7 +836,7 @@ namespace CreateHelper {
 
         // code_deposit_code := 200 * deployed_code_size * BYTES_PER_FELT (as Kakarot packs bytes inside a felt)
         // dynamic_gas :=  deployment_code_execution_cost + code_deposit_cost
-        let dynamic_gas = ctx.gas_used + 200 * ctx.return_data_len * ContractAccount.BYTES_PER_FELT;
+        let dynamic_gas = ctx.gas_used + 200 * ctx.return_data_len * Constants.BYTES_PER_FELT;
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=dynamic_gas);
 
         local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(self=ctx.calling_context, sub_context=ctx);
@@ -865,19 +871,11 @@ namespace SelfDestructHelper {
         }
 
         let starknet_contract_address = [destroy_contracts];
-        let (bytecode_len) = IEvmContract.bytecode_len(contract_address=starknet_contract_address);
+        let (bytecode_len) = IAccount.bytecode_len(contract_address=starknet_contract_address);
         let (erase_data) = alloc();
         Helpers.fill(bytecode_len, erase_data, 0);
-        IEvmContract.write_bytecode(
+        IContractAccount.write_bytecode(
             contract_address=starknet_contract_address, bytecode_len=0, bytecode=erase_data
-        );
-
-        // Remove contract from registry
-        let (registry_address_) = registry_address.read();
-        IRegistry.set_account_entry(
-            contract_address=registry_address_,
-            starknet_contract_address=starknet_contract_address,
-            evm_contract_address=0,
         );
 
         return _finalize_loop(destroy_contracts_len - 1, destroy_contracts + 1);

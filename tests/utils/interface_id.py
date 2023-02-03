@@ -9,7 +9,7 @@ def get_interface_id():
     execute = keccak(
         text="__execute__(call_array_len: felt, call_array: ExternallyOwnedAccount.CallArray*, calldata_len: felt, calldata: felt*)"
     )
-    get_eth_address = keccak(text="get_eth_address()")
+    get_evm_address = keccak(text="get_evm_address()")
     supports_interface = keccak(text="supports_interface(interface_id: felt)")
     is_valid_signature = keccak(
         text="is_valid_signature(hash_len: felt, hash: felt*, signature_len: felt, signature: felt*)"
@@ -18,7 +18,7 @@ def get_interface_id():
         validate[i]
         ^ validate_declare[i]
         ^ execute[i]
-        ^ get_eth_address[i]
+        ^ get_evm_address[i]
         ^ supports_interface[i]
         ^ is_valid_signature[i]
         for i in range(4)

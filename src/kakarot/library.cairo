@@ -6,8 +6,6 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import FALSE
-from starkware.cairo.common.math import split_felt
-from starkware.cairo.common.memcpy import memcpy
 from starkware.starknet.common.syscalls import deploy as deploy_syscall
 from starkware.starknet.common.syscalls import get_caller_address, get_contract_address
 // OpenZeppelin dependencies
@@ -19,16 +17,18 @@ from kakarot.memory import Memory
 from kakarot.stack import Stack
 from kakarot.instructions import EVMInstructions
 from kakarot.instructions.system_operations import CreateHelper
-from kakarot.interfaces.interfaces import IRegistry, IAccount, IEvmContract
+from kakarot.interfaces.interfaces import IAccount, IContractAccount
 from kakarot.execution_context import ExecutionContext
 from kakarot.constants import (
     native_token_address,
-    registry_address,
-    evm_contract_class_hash,
+    contract_account_class_hash,
+    externally_owned_account_class_hash,
     salt,
     blockhash_registry_address,
+    Constants,
+    account_proxy_class_hash,
 )
-from kakarot.accounts.contract.library import ContractAccount
+from kakarot.accounts.library import Accounts
 
 // @title Kakarot main library file.
 // @notice This file contains the core EVM execution logic.
@@ -39,13 +39,19 @@ namespace Kakarot {
     // @dev Setting initial owner, contract account class hash and native token
     // @param owner The address of the owner of the contract
     // @param native_token_address_ The ERC20 contract used to emulate ETH
-    // @param evm_contract_class_hash_ The clash hash of the contract account
+    // @param contract_account_class_hash_ The clash hash of the contract account
     func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        owner: felt, native_token_address_, evm_contract_class_hash_: felt
+        owner: felt,
+        native_token_address_,
+        contract_account_class_hash_,
+        externally_owned_account_class_hash_,
+        account_proxy_class_hash_,
     ) {
         Ownable.initializer(owner);
         native_token_address.write(native_token_address_);
-        evm_contract_class_hash.write(evm_contract_class_hash_);
+        contract_account_class_hash.write(contract_account_class_hash_);
+        externally_owned_account_class_hash.write(externally_owned_account_class_hash_);
+        account_proxy_class_hash.write(account_proxy_class_hash_);
         return ();
     }
 
@@ -125,26 +131,6 @@ namespace Kakarot {
         return summary;
     }
 
-    // @notice Set the account registry used by kakarot
-    // @dev Set the account regestry which will be used to convert
-    //      given starknet addresses to evm addresses and vice versa
-    // @param registry_address_ The address of the new account registry contract
-    func set_account_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        registry_address_: felt
-    ) {
-        Ownable.assert_only_owner();
-        registry_address.write(registry_address_);
-        return ();
-    }
-
-    // @notice Get the account registry used by kakarot
-    // @return address The address of the current account registry contract
-    func get_account_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ) -> (address: felt) {
-        let (reg_address) = registry_address.read();
-        return (reg_address,);
-    }
-
     // @notice Set the blockhash registry used by kakarot
     // @dev Set the blockhash registry which will be used to get the blockhashes
     // @param blockhash_registry_address_ The address of the new blockhash registry contract
@@ -182,7 +168,7 @@ namespace Kakarot {
     // @param bytecode: the deploy bytecode
     // @return evm_contract_address The evm address that is mapped to the newly deployed starknet contract address
     // @return starknet_contract_address The newly deployed starknet contract address
-    func deploy{
+    func deploy_contract_account{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
@@ -193,11 +179,13 @@ namespace Kakarot {
         alloc_locals;
         let (current_salt) = salt.read();
         let (current_address) = get_caller_address();
-        let (sender_eth_address) = IAccount.get_eth_address(current_address);
+        let (sender_evm_address) = IAccount.get_evm_address(current_address);
         let (evm_contract_address) = CreateHelper.get_create_address(
-            sender_eth_address, current_salt
+            sender_evm_address, current_salt
         );
-        let (starknet_contract_address) = ContractAccount.deploy(evm_contract_address);
+        let (class_hash) = contract_account_class_hash.read();
+        let (starknet_contract_address) = Accounts.create(class_hash, evm_contract_address);
+
         salt.write(value=current_salt + 1);
 
         // Prepare execution context
@@ -243,15 +231,28 @@ namespace Kakarot {
         let ctx = EVMInstructions.run(ctx);
 
         // Update contract bytecode with execution result
-        IEvmContract.write_bytecode(
+        IContractAccount.write_bytecode(
             contract_address=starknet_contract_address,
             bytecode_len=ctx.return_data_len,
             bytecode=ctx.return_data,
         );
-
         return (
             evm_contract_address=evm_contract_address,
             starknet_contract_address=starknet_contract_address,
         );
+    }
+
+    // @notice Deploy a new externally owned account
+    // @return evm_contract_address The evm address that is mapped to the newly deployed starknet contract address
+    // @return starknet_contract_address The newly deployed starknet contract address
+    func deploy_externally_owned_account{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(evm_address: felt) -> (starknet_contract_address: felt) {
+        let (class_hash) = externally_owned_account_class_hash.read();
+        let (starknet_contract_address) = Accounts.create(class_hash, evm_address);
+        return (starknet_contract_address=starknet_contract_address);
     }
 }
