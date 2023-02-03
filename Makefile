@@ -7,6 +7,7 @@ build: check
 	poetry run starknet-compile ./src/kakarot/registry/blockhash/blockhash_registry.cairo --output build/blockhash_registry.json --cairo_path ./src --abi build/blockhash_registry_abi.json
 	poetry run starknet-compile ./src/kakarot/accounts/contract/contract_account.cairo --output build/contract_account.json --cairo_path ./src --abi build/contract_account_abi.json
 	poetry run starknet-compile ./src/kakarot/accounts/eoa/externally_owned_account.cairo --account_contract --output build/externally_owned_account.json --cairo_path ./src --abi build/externally_owned_account_abi.json
+	poetry run starknet-compile ./src/kakarot/accounts/proxy/proxy.cairo --output build/proxy_account.json --cairo_path ./src --abi build/proxy_account_abi.json
 
 
 build-mac: check
@@ -15,6 +16,7 @@ build-mac: check
 	starknet-compile ./src/kakarot/registry/blockhash/blockhash_registry.cairo --output build/blockhash_registry.json --cairo_path ./src --abi build/blockhash_registry_abi.json
 	starknet-compile ./src/kakarot/accounts/contract/contract_account.cairo --output build/contract_account.json --cairo_path ./src --abi build/contract_account_abi.json
 	starknet-compile ./src/kakarot/accounts/eoa/externally_owned_account.cairo --account_contract --output build/externally_owned_account.json --cairo_path ./src --abi build/externally_owned_account_abi.json
+	starknet-compile ./src/kakarot/accounts/proxy/proxy.cairo --output build/proxy_account.json --cairo_path ./src --abi build/proxy_account_abi.json
 
 check:
 	poetry lock --check
