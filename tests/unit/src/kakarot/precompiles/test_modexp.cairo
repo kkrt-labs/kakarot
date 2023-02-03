@@ -21,13 +21,10 @@ from kakarot.instructions.system_operations import SystemOperations, CallHelper,
 from tests.unit.helpers.helpers import TestHelpers
 
 
-const MOD_EXP_BYTES_LEN = 32;
-
 @external
 func test__modexp_impl{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(data_len: felt, data: felt*) -> (result: Uint256) {
-    // Given
     alloc_locals;
     
     let (output_len, output, gas_used) = PrecompileModExp.run(

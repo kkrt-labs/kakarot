@@ -17,7 +17,8 @@ async def modexp(starknet: Starknet):
 @pytest.mark.asyncio
 class TestModExp:
     async def test_modexp(self, modexp):
-        
+
+        random.seed(0)
         max_int = 2 ** 256 - 1
         b = random.randint(0, max_int)
         b_size = math.ceil(math.log(b,256))
@@ -38,6 +39,8 @@ class TestModExp:
             b_size_bytes + e_size_bytes + m_size_bytes + b_bytes + e_bytes + m_bytes
         )
         expected_result = pow(b,e,m)
-        cairo_result = (await modexp.test__modexp_impl(bytes_array).call()).result[0]
-        cairo_uint256 = uint256_to_int(cairo_result.low,cairo_result.high)
-        assert expected_result == cairo_uint256
+
+        cairo_uint256 = (await modexp.test__modexp_impl(bytes_array).call()).result[0]
+        cairo_result = uint256_to_int(cairo_uint256.low, cairo_uint256.high)
+
+        assert expected_result == cairo_result
