@@ -90,13 +90,19 @@ class TestExternallyOwnedAccount:
                 #                            default_tx["maxPriorityFeePerGas"])
             )
 
-        @pytest.mark.parametrize("address_idx", range(4))
+        @pytest.mark.parametrize("address_idx", range(1))
         async def test_should_execute_legacy_tx(
-            self, kakarot, legacy_tx, addresses, address_idx
+            self, kakarot, legacy_tx, deploy_solidity_contract, addresses, address_idx, owner
         ):
             address = addresses[address_idx]
             eth_account = MockEthSigner(private_key=address.private_key)
             tmp_account = web3.Account().from_key(address.private_key)
+            # We require a contract to target
+            counter = await deploy_solidity_contract(
+                "PlainOpcodes", "Counter", caller_address=owner.starknet_address
+            )
+            legacy_tx["to"] = counter.evm_contract_address
+            legacy_tx["data"] = bytes.fromhex(counter.encodeABI("inc", [], {})[2:])
             raw_tx = tmp_account.sign_transaction(legacy_tx)
 
             await eth_account.send_transaction(

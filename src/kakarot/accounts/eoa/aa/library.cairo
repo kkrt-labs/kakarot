@@ -135,11 +135,6 @@ namespace ExternallyOwnedAccount {
         alloc_locals;
         let tx_type = [calldata];
         let (local items: RLP.Item*) = alloc();
-<<<<<<< HEAD
-        // decode the rlp array
-        RLP.decode(calldata_len - 1, rlp_data, items);
-        // eip 1559 tx only for the moment
-=======
         let (list_ptr: felt*) = alloc();
         let (keccak_ptr: felt*) = alloc();
         let keccak_ptr_start = keccak_ptr;
@@ -147,7 +142,6 @@ namespace ExternallyOwnedAccount {
         let (tx_info) = get_tx_info();
 
         // eip-1559
->>>>>>> ce1c8b8528e6b3423923facb3806e08a90723615
         if (tx_type == 2) {
             let rlp_data = calldata + 1;
             // decode the rlp array
@@ -157,33 +151,6 @@ namespace ExternallyOwnedAccount {
             // add the tx type, see here: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1559.md#specification
             assert [list_ptr] = tx_type;
             // encode the rlp list without the sig
-<<<<<<< HEAD
-            let (rlp_len: felt) = RLP.encode_list(data_len, [items].data, list_ptr + 1);
-            let (keccak_ptr: felt*) = alloc();
-            let keccak_ptr_start = keccak_ptr;
-            let (words: felt*) = alloc();
-            // transforms bytes to groups of 64 bits (used for hashing)
-            Helpers.bytes_to_bytes8_little_endian(
-                bytes_len=rlp_len + 1,
-                bytes=list_ptr,
-                index=0,
-                size=rlp_len + 1,
-                bytes8=0,
-                bytes8_shift=0,
-                dest=words,
-                dest_index=0,
-            );
-            // keccak_bigend because verify_eth_signature_uint256 requires bigend
-            let tx_hash = keccak_bigend{keccak_ptr=keccak_ptr}(inputs=words, n_bytes=rlp_len + 1);
-            let (local sub_items: RLP.Item*) = alloc();
-            // decode the rlp elements in the tx (was in the list element)
-            RLP.decode([items].data_len, [items].data, sub_items);
-            let v = Helpers.bytes_to_felt(sub_items[V_IDX].data_len, sub_items[V_IDX].data, 0);
-            let r = Helpers.bytes32_to_uint256(sub_items[R_IDX].data);
-            let s = Helpers.bytes32_to_uint256(sub_items[S_IDX].data);
-            finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
-            return is_valid_eth_signature(tx_hash.res, r, s, v.n, eth_address);
-=======
             let (rlp_len: felt) = RLP.encode_rlp_list(data_len, [items].data, list_ptr + 1);
             let (tx_hash: Uint256) = hash_rlp{keccak_ptr=keccak_ptr}(rlp_len + 1, list_ptr);
             // decode the rlp elements in the tx (was in the list element)
@@ -191,7 +158,6 @@ namespace ExternallyOwnedAccount {
             return is_valid_eth_signature(
                 tx_hash, sub_items, eth_address, 2, keccak_ptr, keccak_ptr_start
             );
->>>>>>> ce1c8b8528e6b3423923facb3806e08a90723615
         } else {
             // legacy tx
             RLP.decode_rlp(calldata_len, calldata, items);
@@ -389,7 +355,7 @@ namespace ExternallyOwnedAccount {
             );
             let res = call_contract(
                 contract_address=kakarot_address,
-                function_selector=0xB18CF02D874A8ACA5B6480CE1D57FA9C6C58015FD68F6B6B6DF59F63BBA85D,
+                function_selector=EXECUTE_AT_ADDRESS_SELECTOR,
                 calldata_size=4 + evm_calldata_len,
                 calldata=starknet_calldata,
             );
@@ -417,7 +383,7 @@ namespace ExternallyOwnedAccount {
             Helpers.fill_array(evm_calldata_len, sub_items[5].data, starknet_calldata + 4);
             let res = call_contract(
                 contract_address=kakarot_address,
-                function_selector=0xB18CF02D874A8ACA5B6480CE1D57FA9C6C58015FD68F6B6B6DF59F63BBA85D,
+                function_selector=EXECUTE_AT_ADDRESS_SELECTOR,
                 calldata_size=4 + evm_calldata_len,
                 calldata=starknet_calldata,
             );
