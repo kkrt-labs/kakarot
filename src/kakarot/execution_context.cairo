@@ -16,8 +16,8 @@ from kakarot.model import model
 from kakarot.memory import Memory
 from kakarot.stack import Stack
 from kakarot.constants import Constants
-from kakarot.constants import registry_address
-from kakarot.interfaces.interfaces import IRegistry, IEvmContract
+from kakarot.interfaces.interfaces import IAccount, IContractAccount
+from kakarot.accounts.library import Accounts
 
 // @title ExecutionContext related functions.
 // @notice This file contains functions related to the execution context.
@@ -160,13 +160,10 @@ namespace ExecutionContext {
         let memory: model.Memory* = Memory.init();
 
         // Get the starknet address from the given evm address
-        let (registry_address_) = registry_address.read();
-        let (starknet_contract_address) = IRegistry.get_starknet_contract_address(
-            contract_address=registry_address_, evm_contract_address=address
-        );
+        let (starknet_contract_address) = Accounts.compute_starknet_address(evm_address=address);
 
         // Get the bytecode from the Starknet_contract
-        let (bytecode_len, bytecode) = IEvmContract.bytecode(
+        let (bytecode_len, bytecode) = IAccount.bytecode(
             contract_address=starknet_contract_address
         );
         local call_context: model.CallContext* = new model.CallContext(
@@ -223,7 +220,7 @@ namespace ExecutionContext {
     // @param self The pointer to the execution context.
     // @return TRUE if the execution context is root, FALSE otherwise.
     func is_root(self: model.ExecutionContext*) -> felt {
-        if (cast(self.calling_context, felt) == 0) {
+        if (cast(self.calling_context.call_context, felt) == 0) {
             return TRUE;
         }
         return FALSE;
@@ -234,7 +231,7 @@ namespace ExecutionContext {
     // @param self The pointer to the execution context.
     // @return TRUE if the execution context is a leaf, FALSE otherwise.
     func is_leaf(self: model.ExecutionContext*) -> felt {
-        if (cast(self.sub_context, felt) == 0) {
+        if (cast(self.sub_context.call_context, felt) == 0) {
             return TRUE;
         }
         return FALSE;

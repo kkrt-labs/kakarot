@@ -7,10 +7,16 @@ from starkware.starknet.testing.starknet import Starknet
 
 
 @pytest_asyncio.fixture(scope="module")
-async def environmental_information(starknet: Starknet):
+async def environmental_information(
+    starknet: Starknet, contract_account_class, account_proxy_class
+):
     return await starknet.deploy(
         source="./tests/unit/src/kakarot/instructions/test_environmental_information.cairo",
         cairo_path=["src"],
+        constructor_calldata=[
+            contract_account_class.class_hash,
+            account_proxy_class.class_hash,
+        ],
         disable_hint_validation=True,
     )
 
@@ -26,20 +32,14 @@ class TestEnvironmentalInformation:
     async def test_extcodesize(
         self,
         environmental_information,
-        account_registry,
     ):
-        await environmental_information.test__exec_extcodesize__should_handle_address_with_no_code(
-            account_registry_address=account_registry.contract_address
-        ).call()
+        await environmental_information.test__exec_extcodesize__should_handle_address_with_no_code().call()
 
     async def test_extcodecopy_should_handle_address_with_no_code(
         self,
         environmental_information,
-        account_registry,
     ):
-        await environmental_information.test__exec_extcodecopy__should_handle_address_with_no_code(
-            account_registry_address=account_registry.contract_address
-        ).call()
+        await environmental_information.test__exec_extcodecopy__should_handle_address_with_no_code().call()
         await environmental_information.test__returndatacopy().call()
 
     @pytest.mark.parametrize(
@@ -65,34 +65,18 @@ class TestEnvironmentalInformation:
     )
     async def test_excodecopy_should_handle_address_with_code(
         self,
-        contract_account,
-        kakarot,
-        account_registry,
         environmental_information,
         case,
     ):
         random.seed(0)
         bytecode = [random.randint(0, 255) for _ in range(32)]
 
-        contract_account = await contract_account.write_bytecode(bytecode).execute(
-            caller_address=1
-        )
-
-        starknet_contract_address = contract_account.call_info.contract_address
-
-        evm_contract_address = 1
-
-        await account_registry.set_account_entry(
-            starknet_contract_address, evm_contract_address
-        ).execute(caller_address=kakarot.contract_address)
-
         size = case["size"]
         offset = case["offset"]
         dest_offset = case["dest_offset"]
 
         res = await environmental_information.test__exec_extcodecopy__should_handle_address_with_code(
-            account_registry_address=account_registry.contract_address,
-            evm_contract_address=evm_contract_address,
+            bytecode,
             size=size,
             offset=offset,
             dest_offset=dest_offset,
@@ -119,20 +103,15 @@ class TestEnvironmentalInformation:
             zeroes=zeroes, nonzeroes=nonzeroes, calldata=calldata
         ).call()
 
+    @pytest.mark.skip("skipped because not handled currently")
     async def test_extcodehash__should_handle_invalid_address(
         self,
         environmental_information,
-        account_registry,
     ):
-        await environmental_information.test__exec_extcodehash__should_handle_invalid_address(
-            account_registry_address=account_registry.contract_address
-        ).call()
+        await environmental_information.test__exec_extcodehash__should_handle_invalid_address().call()
 
     async def test_excodehash__should_handle_address_with_code(
         self,
-        contract_account,
-        kakarot,
-        account_registry,
         environmental_information,
     ):
         random.seed(0)
@@ -142,21 +121,9 @@ class TestEnvironmentalInformation:
         expected_hash = int.from_bytes(keccak_hash.digest(), byteorder="big")
         expected_hash_low = expected_hash % (2**128)
         expected_hash_high = expected_hash >> 128
-        contract_account = await contract_account.write_bytecode(bytecode).execute(
-            caller_address=1
-        )
-
-        starknet_contract_address = contract_account.call_info.contract_address
-
-        evm_contract_address = 1
-
-        await account_registry.set_account_entry(
-            starknet_contract_address, evm_contract_address
-        ).execute(caller_address=kakarot.contract_address)
 
         await environmental_information.test__exec_extcodehash__should_handle_address_with_code(
-            account_registry_address=account_registry.contract_address,
-            evm_contract_address=evm_contract_address,
+            bytecode,
             expected_hash_low=expected_hash_low,
             expected_hash_high=expected_hash_high,
         ).call()

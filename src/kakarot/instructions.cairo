@@ -32,7 +32,7 @@ from kakarot.instructions.system_operations import (
     CreateHelper,
     SelfDestructHelper,
 )
-from kakarot.interfaces.interfaces import IEvmContract
+from kakarot.interfaces.interfaces import IAccount
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.precompiles.precompiles import Precompiles
@@ -612,11 +612,11 @@ namespace EVMInstructions {
 
         // Check if execution should be stopped
         let stopped: felt = ExecutionContext.is_stopped(self=ctx);
-        let is_parent_root: felt = ExecutionContext.is_root(self=ctx.calling_context);
+        let is_root: felt = ExecutionContext.is_root(self=ctx);
 
         // Terminate execution
         if (stopped != FALSE) {
-            if (is_parent_root != FALSE) {
+            if (is_root != FALSE) {
                 if (ctx.destroy_contracts_len != 0) {
                     let ctx = SelfDestructHelper.finalize(ctx);
                     return ctx;
@@ -628,7 +628,7 @@ namespace EVMInstructions {
                     let ctx = CallHelper.finalize_calling_context(ctx);
                     return run(ctx=ctx);
                 }
-                let (bytecode_len) = IEvmContract.bytecode_len(
+                let (bytecode_len) = IAccount.bytecode_len(
                     contract_address=ctx.starknet_contract_address
                 );
                 if (bytecode_len == 0) {

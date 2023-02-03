@@ -16,8 +16,9 @@ from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 from kakarot.memory import Memory
-from kakarot.constants import native_token_address, registry_address
-from kakarot.interfaces.interfaces import IEth, IRegistry, IEvmContract, IAccount
+from kakarot.constants import native_token_address
+from kakarot.interfaces.interfaces import IEth, IAccount
+from kakarot.accounts.library import Accounts
 
 // @title Environmental information opcodes.
 // @notice This file contains the functions to execute for environmental information opcodes.
@@ -90,11 +91,9 @@ namespace EnvironmentalInformation {
         // Get the evm address.
         let (stack: model.Stack*, address: Uint256) = Stack.pop(ctx.stack);
 
+        let felt_address = Helpers.uint256_to_felt(address);
         // Get the starknet account address from the evm account address
-        let (registry_address_) = registry_address.read();
-        let (starknet_contract_address) = IRegistry.get_starknet_contract_address(
-            contract_address=registry_address_, evm_contract_address=address.low
-        );
+        let (starknet_contract_address) = Accounts.compute_starknet_address(felt_address);
         // Get the number of native tokens owned by the given starknet account
         let (native_token_address_) = native_token_address.read();
         let (balance: Uint256) = IEth.balanceOf(
@@ -131,10 +130,7 @@ namespace EnvironmentalInformation {
         // Get the transaction info which contains the starknet origin address
         let (tx_info) = get_tx_info();
         // Get the EVM address from Starknet address
-        let (registry_address_) = registry_address.read();
-        let (evm_contract_address) = IRegistry.get_evm_contract_address(
-            registry_address_, starknet_contract_address=tx_info.account_contract_address
-        );
+        let (evm_contract_address) = IAccount.get_evm_address(tx_info.account_contract_address);
         let origin_address = Helpers.to_uint256(evm_contract_address);
 
         // Update Context stack
@@ -163,7 +159,9 @@ namespace EnvironmentalInformation {
         alloc_locals;
         // Get caller address.
         let (current_address) = get_caller_address();
-        let (evm_address) = IAccount.get_eth_address(current_address);
+        let (current_evm_address) = IAccount.get_evm_address(current_address);
+        let is_root = ExecutionContext.is_root(ctx);
+        let evm_address = (1 - is_root) * ctx.calling_context.evm_contract_address + is_root * current_evm_address;
         let evm_address_uint256 = Helpers.to_uint256(evm_address);
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=evm_address_uint256);
 
@@ -459,29 +457,13 @@ namespace EnvironmentalInformation {
         let address_felt = Helpers.uint256_to_felt(address_uint256);
 
         // Get the starknet address from the given evm address
-        let (registry_address_) = registry_address.read();
-        let (starknet_contract_address) = IRegistry.get_starknet_contract_address(
-            contract_address=registry_address_, evm_contract_address=address_felt
-        );
+        let (starknet_contract_address) = Accounts.compute_starknet_address(address_felt);
 
         local bytecode_len;
-        if (starknet_contract_address != 0) {
-            let (_bytecode_len, _) = IEvmContract.bytecode(
-                contract_address=starknet_contract_address
-            );
-
-            bytecode_len = _bytecode_len;
-
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar range_check_ptr = range_check_ptr;
-        } else {
-            bytecode_len = 0;
-
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar range_check_ptr = range_check_ptr;
-        }
-
-        tempvar syscall_ptr = syscall_ptr;
+        // TODO (https://github.com/sayajin-labs/kakarot/issues/474)
+        //      should be able to check that there is a deployed starknet contract at this address
+        // if not return bytecode_len 0
+        let (bytecode_len) = IAccount.bytecode_len(contract_address=starknet_contract_address);
 
         // bytecode_len cannot be greater than 24k in the EVM
         let stack = Stack.push(stack, Uint256(low=bytecode_len, high=0));
@@ -530,39 +512,19 @@ namespace EnvironmentalInformation {
         let address_felt = Helpers.uint256_to_felt(address_uint256);
 
         // Get the starknet address from the given evm address
-        let (registry_address_) = registry_address.read();
 
-        let (starknet_contract_address) = IRegistry.get_starknet_contract_address(
-            contract_address=registry_address_, evm_contract_address=address_felt
+        let (starknet_contract_address) = Accounts.compute_starknet_address(address_felt);
+
+        // TODO (https://github.com/sayajin-labs/kakarot/issues/474)
+        //      should be able to check that there is a deployed starknet contract at this address
+        // we get the bytecode from the Starknet_contract
+        let (bytecode_len, bytecode) = IAccount.bytecode(
+            contract_address=starknet_contract_address
         );
-
-        if (starknet_contract_address != 0) {
-            // we get the bytecode from the Starknet_contract
-            let (bytecode_len, bytecode) = IEvmContract.bytecode(
-                contract_address=starknet_contract_address
-            );
-
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar range_check_ptr = range_check_ptr;
-            tempvar bytecode_len = bytecode_len;
-        } else {
-            // otherwise handle case where there is no eth -> stark address mapping
-            let bytecode: felt* = alloc();
-            let bytecode_len = 0;
-
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar range_check_ptr = range_check_ptr;
-            tempvar bytecode_len = bytecode_len;
-        }
-
-        tempvar syscall_ptr = syscall_ptr;
-        tempvar pedersen_ptr = pedersen_ptr;
 
         // Get bytecode slice from offset to size
         // in the case were
-        // eth address returns no bytecode or has no `starknet_contract_address`
+        // evm address returns no bytecode or has no `starknet_contract_address`
         // the bytecode len would be zero and the byte array empty,
         // which `Helpers.slice_data` would return an array
         // with the requested `size` of zeroes
@@ -703,19 +665,11 @@ namespace EnvironmentalInformation {
         let address_felt = Helpers.uint256_to_felt(address_uint256);
 
         // Get the starknet address from the given evm address
-        let (registry_address_) = registry_address.read();
-        let (starknet_contract_address) = IRegistry.get_starknet_contract_address(
-            contract_address=registry_address_, evm_contract_address=address_felt
-        );
-        if (starknet_contract_address == 0) {
-            let stack = Stack.push(stack, Uint256(low=0, high=0));
-            let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
-            // Increment gas used (COLD ACCESS)
-            let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_EXTCODEHASH);
-            return ctx;
-        }
+        let (starknet_contract_address) = Accounts.compute_starknet_address(address_felt);
 
-        let (bytecode_len, bytecode) = IEvmContract.bytecode(
+        // TODO (https://github.com/sayajin-labs/kakarot/issues/474)
+        //      should be able to check that there is a deployed starknet contract at this address
+        let (bytecode_len, bytecode) = IAccount.bytecode(
             contract_address=starknet_contract_address
         );
 
