@@ -195,7 +195,7 @@ func deploy_externally_owned_account{
 // @return contract_address The starknet address of the contract
 @view
 func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        evm_address: felt
-    ) -> (contract_address: felt) {
+    evm_address: felt
+) -> (contract_address: felt) {
     return Accounts.compute_starknet_address(evm_address);
 }
