@@ -612,14 +612,14 @@ namespace EVMInstructions {
 
         // Check if execution should be stopped
         let stopped: felt = ExecutionContext.is_stopped(self=ctx);
+        let is_root: felt = ExecutionContext.is_root(self=ctx);
         let is_reverted: felt = ExecutionContext.is_reverted(self=ctx);
-        let is_parent_root: felt = ExecutionContext.is_root(self=ctx.calling_context);
 
         // Terminate execution
         if (stopped != FALSE) {
-            // emit events for stopped execution contexts
+            // TODO should only emit if stopped and not reverted
             let ctx = LoggingHelper.finalize(ctx);
-            if (is_parent_root != FALSE) {
+            if (is_root != FALSE) {
                 if (ctx.destroy_contracts_len != 0) {
                     let ctx = SelfDestructHelper.finalize(ctx);
                     return ctx;
@@ -635,8 +635,13 @@ namespace EVMInstructions {
                     contract_address=ctx.starknet_contract_address
                 );
                 if (bytecode_len == 0) {
-                    let ctx = CreateHelper.finalize_calling_context(ctx);
-                    return run(ctx=ctx);
+                    if (is_reverted != 0) {
+                        // TODO need to reason about the 'when' a create contract gets deleted
+                        return run(ctx=ctx);
+                    } else {
+                        let ctx = CreateHelper.finalize_calling_context(ctx);
+                        return run(ctx=ctx);
+                    }
                 } else {
                     let ctx = CallHelper.finalize_calling_context(ctx);
                     return run(ctx=ctx);

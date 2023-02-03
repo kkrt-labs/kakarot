@@ -5,6 +5,7 @@
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import deploy, get_contract_address
 from starkware.cairo.common.math import split_felt, assert_not_zero, assert_le
@@ -95,68 +96,6 @@ func test__exec_return_should_return_context_with_updated_return_data{
 }
 
 @external
-func test__exec_revert_callhelper_calling_context{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(
-    reason_low: felt,
-    reason_high: felt,
-    size: felt,
-    account_registry_address: felt,
-    evm_contract_address: felt,
-    registry_address_: felt,
-) -> (reason: Uint256) {
-    // Given
-    alloc_locals;
-
-    registry_address.write(registry_address_);
-
-    let calling_context = ExecutionContext.init_empty();
-    let ctx = ExecutionContext.init_at_address(
-        evm_contract_address, 10000, 0, cast(0, felt*), 0, calling_context, 0, cast(0, felt*), 0
-    );
-
-    let key = 1;
-    let stack: model.Stack* = Stack.push(ctx.stack, Uint256(3, 0));  // value
-    let stack: model.Stack* = Stack.push(stack, Uint256(key, 0));  // key
-    let ctx = ExecutionContext.update_stack(ctx, stack);
-    let ctx = MemoryOperations.exec_sstore(ctx);
-
-    let stack: model.Stack* = Stack.push(ctx.stack, Uint256(4, 0));  // value
-    let stack: model.Stack* = Stack.push(stack, Uint256(key, 0));  // key
-    let ctx = ExecutionContext.update_stack(ctx, stack);
-    let ctx = MemoryOperations.exec_sstore(ctx);
-
-    // When
-    let revert_contract_state_dict_end = ctx.revert_contract_state.dict_end;
-    %{ print(f"{ids.revert_contract_state_dict_end=} {ids.ctx.revert_contract_state=}") %}
-
-    let reason_uint256 = Uint256(low=reason_low, high=reason_high);
-    local offset: Uint256 = Uint256(32, 0);
-
-    let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
-    let stack: model.Stack* = Stack.push(stack, reason_uint256);  // value
-    let stack: model.Stack* = Stack.push(stack, offset);  // offset
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
-    let ctx: model.ExecutionContext* = MemoryOperations.exec_mstore(ctx);
-
-    let stack: model.Stack* = Stack.push(ctx.stack, Uint256(0, 0));  // offset is 0 to have the reason at 0x20
-    let stack: model.Stack* = Stack.push(stack, Uint256(size, 0));  // size
-    let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
-
-    // When
-    let ctx = SystemOperations.exec_revert(ctx);
-    let ctx = CallHelper.finalize_calling_context(ctx);
-
-    let (stack, success) = Stack.peek(ctx.stack, 0);
-    assert success.low = 0;
-
-    // Then
-    // TODO: update test when revert does not break the execution
-
-    return (reason=Uint256(10, 10));
-}
-
 func test__exec_revert{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(reason_low: felt, reason_high: felt, size: felt) {
@@ -172,16 +111,18 @@ func test__exec_revert{
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
     let ctx: model.ExecutionContext* = MemoryOperations.exec_mstore(ctx);
 
-    let stack: model.Stack* = Stack.push(ctx.stack, Uint256(0, 0));  // offset is 0 to have the reason at 0x20
-    let stack: model.Stack* = Stack.push(stack, Uint256(size, 0));  // size
+    let stack: model.Stack* = Stack.push(ctx.stack, Uint256(size, 0));  // size
+    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));  // offset is 0 to have the reason at 0x20
+
     let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
 
     // When
     let ctx = SystemOperations.exec_revert(ctx);
+    let is_reverted = ExecutionContext.is_reverted(ctx);
 
     // Then
-    // TODO: update test when revert does not break the execution
-
+    assert is_reverted = 1;
+    ExecutionContext.maybe_throw_revert(ctx);
     return ();
 }
 
@@ -696,6 +637,9 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     );
     let stack = Stack.push(stack, Uint256(10, 0));
     let (sub_ctx: felt*) = alloc();
+    let (local revert_contract_state_dict_start) = default_dict_new(0);
+    tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(revert_contract_state_dict_start, revert_contract_state_dict_start);
+
     assert [sub_ctx] = cast(call_context, felt);  // call_context
     assert [sub_ctx + 1] = 0;  // program_counter
     assert [sub_ctx + 2] = 0;  // stopped
@@ -709,7 +653,12 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     assert [sub_ctx + 13] = 0;  // sub_context
     assert [sub_ctx + 14] = 0;  // destroy_contracts_len
     assert [sub_ctx + 15] = cast(destroy_contracts, felt);  // destroy_contracts
-    assert [sub_ctx + 16] = 0;  // read only
+    assert [sub_ctx + 16] = 0;  // events_len
+    assert [sub_ctx + 17] = cast(0, felt);  // events
+    assert [sub_ctx + 18] = 0;  // create_addresses_len
+    assert [sub_ctx + 19] = cast(0, felt);  // create_addresses
+    assert [sub_ctx + 20] = cast(revert_contract_state, felt);  // revert_contract_state
+    assert [sub_ctx + 21] = 0;  // read only
 
     // Simulate contract creation
     let (contract_account_class_hash_) = contract_account_class_hash.read();

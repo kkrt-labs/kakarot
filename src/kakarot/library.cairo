@@ -5,7 +5,7 @@
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
+from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.bool import FALSE
 from starkware.starknet.common.syscalls import deploy as deploy_syscall
 from starkware.starknet.common.syscalls import get_caller_address
@@ -126,7 +126,7 @@ namespace Kakarot {
 
         // Start execution
         let ctx = EVMInstructions.run(ctx);
-
+        ExecutionContext.maybe_throw_revert(ctx);
         // Finalize
         // TODO: Consider finalizing on `ret` instruction, to get the memory efficiently.
         let summary = ExecutionContext.finalize(self=ctx);

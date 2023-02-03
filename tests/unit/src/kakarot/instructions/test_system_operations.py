@@ -1,4 +1,3 @@
-import random
 import string
 
 import pytest
@@ -29,39 +28,16 @@ async def system_operations(
 
 @pytest.mark.asyncio
 class TestSystemOperations:
-    @pytest.mark.parametrize("size", [35])  # range(34, 65)
-    async def test_revert(
-        self,
-        system_operations,
-        size,
-        contract_account,
-        kakarot,
-        account_registry,
-    ):
-        random.seed(0)
-        bytecode = [random.randint(0, 255) for _ in range(32)]
-
-        contract_account = await contract_account.write_bytecode(bytecode).execute(
-            caller_address=1
-        )
-
-        starknet_contract_address = contract_account.call_info.contract_address
-        evm_contract_address = 1
-
+    @pytest.mark.parametrize("size", range(34, 65))
+    async def test_revert(self, system_operations, size):
         # reason = 0x abcdefghijklmnopqrstuvwxyzABCDEF
         reason = int(string.ascii_letters[:32].encode().hex(), 16)
         reason_low, reason_high = int_to_uint256(reason)
         # The current implementation takes the 31 first bytes of the last 32 bytes
-        # with kakarot_error(string.ascii_letters[: (size - 32 - 1)][-31:]):
-        res = await system_operations.test__exec_revert_callhelper_calling_context(
-            reason_low,
-            reason_high,
-            size,
-            evm_contract_address=evm_contract_address,
-            registry_address_=account_registry.contract_address,
-        ).call(caller_address=starknet_contract_address)
-
-        breakpoint()
+        with kakarot_error(string.ascii_letters[: (size - 32 - 1)][-31:]):
+            await system_operations.test__exec_revert(
+                reason_low, reason_high, size
+            ).call()
 
     async def test_return(self, system_operations):
         await system_operations.test__exec_return_should_return_context_with_updated_return_data(

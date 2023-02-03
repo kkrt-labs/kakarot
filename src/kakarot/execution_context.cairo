@@ -6,9 +6,10 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
+from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.dict import DictAccess
 from starkware.cairo.common.math import assert_le, assert_nn
+from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256
@@ -304,18 +305,30 @@ namespace ExecutionContext {
             );
     }
 
-    // TODO add docstring
+    // @notice Return whether the current execution context is reverted.
+    // @dev When the execution context is reverted, no more instructions can be executed (it is stopped) and its contract creation and contract storage writes are reverted on its finalization.
+    // @param self The pointer to the execution context.
+    // @return is_reverted TRUE if the execution context is reverted, FALSE otherwise.
     func is_reverted(self: model.ExecutionContext*) -> felt {
         return self.reverted;
     }
 
-    func revert(self: model.ExecutionContext*, revert_reason: felt) -> model.ExecutionContext* {
+    // @notice Revert the current execution context.
+    // @dev When the execution context is reverted, no more instructions can be executed (it is stopped) and its contract creation and contract storage writes are reverted on its finalization.
+    // @param self The pointer to the execution context.
+    // @param revert_reason The byte array of the revert reason.
+    // @param size The size of the byte array.
+    // @return ExecutionContext The pointer to the updated execution context.
+    func revert(
+        self: model.ExecutionContext*, revert_reason: felt*, size: felt
+    ) -> model.ExecutionContext* {
+        memcpy(self.return_data, revert_reason, size);
         return new model.ExecutionContext(
             call_context=self.call_context,
             program_counter=self.program_counter,
-            stopped=self.stopped,
+            stopped=TRUE,
             return_data=self.return_data,
-            return_data_len=self.return_data_len,
+            return_data_len=size,
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,
@@ -332,9 +345,47 @@ namespace ExecutionContext {
             create_addresses_len=self.create_addresses_len,
             create_addresses=self.create_addresses,
             revert_contract_state=self.revert_contract_state,
-            reverted=revert_reason,
+            reverted=TRUE,
             read_only=self.read_only,
         );
+    }
+
+    // @notice If execution context is reverted, we take its revert reason in bytes, encode it as a short string felt, and convey it as a thrown error message. Otherwise we do nothing.
+    // @dev Meant to be used at 'top level' entry points so we can be sure there is no calling context that handles a revert.
+    // @param self The pointer to the execution context.
+    func maybe_throw_revert{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.ExecutionContext*) {
+        alloc_locals;
+
+        let is_reverted = ExecutionContext.is_reverted(self);
+
+        if (is_reverted != 0) {
+            let revert_reason_bytes: felt* = self.return_data;
+            let size = self.return_data_len;
+            // revert with loaded revert reason short string: 31 bytes of the last word
+            let reason_is_single_word = is_le(size, 32);
+            if (reason_is_single_word != FALSE) {
+                tempvar initial_byte: felt* = revert_reason_bytes;
+                tempvar actual_size = size;
+            } else {
+                tempvar byte_shift = size - 32;
+                tempvar initial_byte: felt* = revert_reason_bytes + byte_shift;
+                tempvar actual_size = 31;
+            }
+            let revert_reason_uint256 = Helpers.bytes_i_to_uint256(initial_byte, actual_size);
+            local revert_reason = Helpers.uint256_to_felt(revert_reason_uint256);
+            with_attr error_message("Kakarot: Reverted with reason: {revert_reason}") {
+                assert is_reverted = 0;
+            }
+
+            return ();
+        } else {
+            return ();
+        }
     }
 
     // @notice Read and return data from bytecode.
@@ -649,11 +700,11 @@ namespace ExecutionContext {
             );
     }
 
-    // @notice Update the array of events to emit in the case of a execution context successfully running to completion.
+    // @notice Update the array of events to emit in the case of a execution context successfully running to completion (see `LoggingHelper.finalize`).
     // @param self The pointer to the execution context.
     // @param destroy_contracts_len Array length of events to add.
     // @param destroy_contracts The pointer to the new array of contracts to destroy.
-    func add_event_to_emit(
+    func push_event_to_emit(
         self: model.ExecutionContext*,
         event_keys_len: felt,
         event_keys: Uint256*,
@@ -663,9 +714,7 @@ namespace ExecutionContext {
         let event: model.Event = model.Event(
             keys_len=event_keys_len, keys=event_keys, data_len=event_data_len, data=event_data
         );
-
         assert [self.events + self.events_len * model.Event.SIZE] = event;
-
         return new model.ExecutionContext(
             call_context=self.call_context,
             program_counter=self.program_counter,
@@ -693,9 +742,9 @@ namespace ExecutionContext {
             );
     }
 
-    // @notice Add one contract to the array of create contracts to destroy on revert.
+    // @notice Add one contract to the array of create contracts to destroy in the case of the execution context reverting.
     // @param self The pointer to the execution context.
-    // @param destroy_contract contract to destroy.
+    // @param create_contract_address The address of the contract from the create(2) opcode called from the execution context.
     func push_create_address(
         self: model.ExecutionContext*, create_contract_address: felt
     ) -> model.ExecutionContext* {
@@ -762,10 +811,9 @@ namespace ExecutionContext {
             );
     }
 
-    // TODO: doc string
-    // @notice Add one contract to the array of contracts to destroy.
+    // @notice Updates the dictionary that keeps track of the prior-to-first-write value of a contract storage key so it can be reverted to if the writing execution context reverts.
     // @param self The pointer to the execution context.
-    // @param destroy_contract contract to destroy.
+    // @param dict_end   The pointer to the updated end of the DictAccess array.
     func update_revert_contract_state(
         self: model.ExecutionContext*, dict_end: DictAccess*
     ) -> model.ExecutionContext* {

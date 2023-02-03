@@ -34,4 +34,9 @@ contract Counter {
     function reset() public {
         count = 0;
     }
+
+    function doRevert() public {
+        count = 42;
+        revert("Revert reason");
+    }
 }

@@ -384,13 +384,11 @@ namespace MemoryOperations {
 
         // 3. Call Write storage on contract with starknet address
         with_attr error_message("Contract call failed") {
-            let (local prior_value: Uint256) = IEvmContract.storage(
+            let (local prior_value: Uint256) = IContractAccount.storage(
                 contract_address=starknet_contract_address, key=key
             );
 
-            %{ print(f"{ids.key=} {ids.prior_value=}  {ids.value=}") %}
-
-            IEvmContract.write_storage(
+            IContractAccount.write_storage(
                 contract_address=starknet_contract_address, key=key, value=value
             );
         }
@@ -400,11 +398,6 @@ namespace MemoryOperations {
         let revert_contract_state_dict_end = ctx.revert_contract_state.dict_end;
 
         let (maybe_written) = dict_read{dict_ptr=revert_contract_state_dict_end}(key=key.low);
-
-        %{
-            print(f"{ids.maybe_written=}") 
-            breakpoint()
-        %}
 
         // we only want to track the initial state of a written value relative to the beginning of the execution context, which is the very first write to the dictionary
         // we initialize a default dictionary with the default value as zero.
@@ -418,6 +411,8 @@ namespace MemoryOperations {
             let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SSTORE);
             return ctx;
         } else {
+            // TODO: reason about key/value here
+            // i.e. the likelihood of unexpected behavior of using key.low as the key
             dict_write{dict_ptr=revert_contract_state_dict_end}(
                 key=key.low, new_value=cast(key_val, felt)
             );

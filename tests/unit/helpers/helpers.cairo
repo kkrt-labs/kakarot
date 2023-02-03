@@ -5,7 +5,7 @@
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
+from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.uint256 import (
     Uint256,
@@ -38,7 +38,6 @@ namespace TestHelpers {
             bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
         );
         let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
-
         return ctx;
     }
 
@@ -91,9 +90,7 @@ namespace TestHelpers {
         bitwise_ptr: BitwiseBuiltin*,
     }(bytecode_len: felt, bytecode: felt*, stack: model.Stack*) -> model.ExecutionContext* {
         let ctx: model.ExecutionContext* = init_context(bytecode_len, bytecode);
-
         let ctx = ExecutionContext.update_stack(ctx, stack);
-
         return ctx;
     }
 

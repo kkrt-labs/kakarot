@@ -60,7 +60,7 @@ namespace LoggingOperations {
             self=ctx.memory, element_len=actual_size, element=data, offset=actual_offset
         );
 
-        let ctx = ExecutionContext.add_event_to_emit(
+        let ctx = ExecutionContext.push_event_to_emit(
             self=ctx,
             event_keys_len=topics_len * 2,
             event_keys=popped + 4,
@@ -189,8 +189,6 @@ namespace LoggingHelper {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         _finalize_loop(ctx.events_len, ctx.events);
-
-        // TODO: return a considered execution context
         return ctx;
     }
 }

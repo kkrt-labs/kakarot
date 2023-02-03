@@ -47,30 +47,32 @@ namespace model {
         value: felt,
     }
 
+    // @notice A dictionary that keeps track of the prior-to-first-write-of-operating-execution-context value of a contract storage key so it can be reverted to if the writing execution context reverts.
+    // @param dict_start pointer to a DictAccess used to store the revert contract states's value at a contract storage key.
+    // @param dict_start The pointer to the end of the DictAccess array.
+    // @param dict_end The pointer to the end of the DictAccess array.
     struct RevertContractState {
-        // A dictionary that tracks the accounts' state.
         dict_start: DictAccess*,
         dict_end: DictAccess*,
     }
 
+    // @notice The prior-to-first-write-of-operating-execution-context value of a contract storage key in `RevertContractState`
+    // @param key The key of memory of contract storage (see `MemoryOperations.exec_sstore`).
+    // @param value The value of memory of contract storage (see `MemoryOperations.exec_sstore`).
+    struct KeyValue {
+        key: Uint256,
+        value: Uint256,
+    }
+
+    // TODO: possible to just import `EmitEvent` struct from `starkware.starknet.common.syscalls`
     // @notice info: https://www.evm.codes/about#calldata
     // @notice Struct storing data related to an event emitting, as in when calling `emit_event`
     // @notice conveying the data as a struct is necessary because we want to delay the actual emitting until an execution context is completed and not reverted
-    // TODO: touch up params doc string below
-    // @param keys_len - the executed bytecode
-    // @param keys - length of bytecode
-    // @param data_len - byte space where the data parameter of a transaction or call is held
-    // @param data - length of calldata
     struct Event {
         keys_len: felt,
         keys: Uint256*,
         data_len: felt,
         data: felt*,
-    }
-
-    struct KeyValue {
-        key: Uint256,
-        value: Uint256,
     }
 
     // @dev Stores all data relevant to the current execution context.
@@ -91,6 +93,11 @@ namespace model {
     // @param sub_context The child context of the current execution context, can be empty.
     // @param destroy_contracts_len The destroy_contract length.
     // @param destroy_contracts The array of contracts to destroy at the end of the transaction.
+    // @param events_len The events length.
+    // @param events The events to be emitted upon a non-reverted stopped execution context.
+    // @param create_addresses_len The create_addresses length.
+    // @param events The addresses of contracts initialized by the create(2) opcodes that are deleted if the creating context is reverted.
+    // @param revert_contract_state A dictionary that keeps track of the prior-to-first-write value of a contract storage key so it can be reverted to if the writing execution context reverts.
     // @param read_only if set to true, context cannot do any state modifying instructions or send ETH in the sub context.
     struct ExecutionContext {
         call_context: CallContext*,
