@@ -1,4 +1,5 @@
 import pytest
+from eth_utils import to_checksum_address
 from web3 import Web3
 
 from tests.utils.errors import kakarot_error
@@ -194,4 +195,6 @@ class TestPlainOpcodes:
             assert success
             decoded = Web3().codec.decode(["address", "address"], data)
             assert owner.address == decoded[0]  # tx.origin
-            assert caller.evm_contract_address == decoded[1]  # msg.sender
+            assert caller.evm_contract_address == to_checksum_address(
+                decoded[1]
+            )  # msg.sender

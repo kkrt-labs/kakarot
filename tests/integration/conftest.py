@@ -27,9 +27,9 @@ def get_starknet_address(contract_account_class, kakarot):
     Fixture to return the starknet address of a contract deployed by kakarot using CREATE2
     """
 
-    def _factory(salt):
+    def _factory(evm_contract_address):
         return calculate_contract_address_from_hash(
-            salt=salt,
+            salt=evm_contract_address,
             class_hash=contract_account_class.class_hash,
             constructor_calldata=[kakarot.contract_address, 0],
             deployer_address=kakarot.contract_address,
