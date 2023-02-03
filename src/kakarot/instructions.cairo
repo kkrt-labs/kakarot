@@ -32,7 +32,7 @@ from kakarot.instructions.system_operations import (
     CreateHelper,
     SelfDestructHelper,
 )
-from kakarot.interfaces.interfaces import IEvmContract
+from kakarot.interfaces.interfaces import IAccount
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.precompiles.precompiles import Precompiles
@@ -628,7 +628,7 @@ namespace EVMInstructions {
                     let ctx = CallHelper.finalize_calling_context(ctx);
                     return run(ctx=ctx);
                 }
-                let (bytecode_len) = IEvmContract.bytecode_len(
+                let (bytecode_len) = IAccount.bytecode_len(
                     contract_address=ctx.starknet_contract_address
                 );
                 if (bytecode_len == 0) {

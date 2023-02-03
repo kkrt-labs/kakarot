@@ -8,7 +8,7 @@ from tests.utils.uint256 import int_to_uint256
 @pytest_asyncio.fixture(scope="session")
 async def blockhash_registry(starknet: Starknet):
     return await starknet.deploy(
-        source="./src/kakarot/accounts/registry/blockhash/blockhash_registry.cairo",
+        source="./src/kakarot/registry/blockhash/blockhash_registry.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
         constructor_calldata=[1],

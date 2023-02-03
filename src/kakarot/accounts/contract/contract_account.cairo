@@ -12,12 +12,20 @@ from kakarot.accounts.contract.library import ContractAccount
 // @title EVM smart contract account representation.
 // @author @abdelhamidbakhta
 
-// Constructor
-@constructor
-func constructor{
+// Contract initializer
+@external
+func initialize{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(kakarot_address: felt, bytecode_len: felt, bytecode: felt*) {
-    return ContractAccount.constructor(kakarot_address, bytecode_len, bytecode);
+}(kakarot_address: felt, evm_address: felt) {
+    return ContractAccount.initialize(kakarot_address, evm_address);
+}
+
+// @return evm address of the contract account
+@external
+func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    address: felt
+) {
+    return ContractAccount.get_evm_address();
 }
 
 // @notice Store the bytecode of the contract.
@@ -66,14 +74,6 @@ func storage{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(key: Uint256) -> (value: Uint256) {
     return ContractAccount.storage(key);
-}
-
-// @notice This function is used to initialize the smart contract.
-@external
-func initialize{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    return ContractAccount.initialize();
 }
 
 // @notice This function checks if the account was initialized.

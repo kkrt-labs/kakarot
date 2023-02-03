@@ -36,7 +36,7 @@ func test_should_fail_when_recovery_identifier_is_neither_27_nor_28{
 }
 
 @external
-func test_should_return_eth_address_in_bytes32{
+func test_should_return_evm_address_in_bytes32{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     alloc_locals;
@@ -54,17 +54,17 @@ func test_should_return_eth_address_in_bytes32{
         PrecompileEcRecover.PRECOMPILE_ADDRESS, input_len, input
     );
     assert output_len = 32;
-    let eth_address = Helpers.bytes32_to_uint256(output);
-    assert_not_zero(eth_address.high);
-    // evm address is 20 bytes = 16 bytes in low + 4 bytes in high
+    let evm_address = Helpers.bytes32_to_uint256(output);
+    assert_not_zero(evm_address.high);
+    // eth address is 20 bytes = 16 bytes in low + 4 bytes in high
     // first 12 bytes of high should be 0
-    let (leading_bytes, _) = unsigned_div_rem(eth_address.high, 256 ** 4);
+    let (leading_bytes, _) = unsigned_div_rem(evm_address.high, 256 ** 4);
     assert leading_bytes = 0;
     return ();
 }
 
 @external
-func test_should_return_eth_address_for_playground_example{
+func test_should_return_evm_address_for_playground_example{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     alloc_locals;
