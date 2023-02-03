@@ -189,3 +189,13 @@ func deploy_externally_owned_account{
 }(evm_address: felt) -> (starknet_contract_address: felt) {
     return Kakarot.deploy_externally_owned_account(evm_address);
 }
+
+// @notice Compute the starknet address of a contract given its EVM address
+// @param evm_address The EVM address of the contract
+// @return contract_address The starknet address of the contract
+@view
+func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    evm_address: felt
+) -> (contract_address: felt) {
+    return Accounts.compute_starknet_address(evm_address);
+}
