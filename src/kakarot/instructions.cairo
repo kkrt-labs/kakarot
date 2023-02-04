@@ -614,13 +614,6 @@ namespace EVMInstructions {
         // Check if execution should be stopped
         let stopped: felt = ExecutionContext.is_stopped(self=ctx);
         let is_root: felt = ExecutionContext.is_root(self=ctx);
-        %{
-            from datetime import datetime        
-            if ids.debug == 1: 
-              ts = int(datetime.timestamp(datetime.now()))
-              with open("execute_at_address.org", "a") as logfile:
-                  logfile.write(f"{{:at {ts} :from :run :program-counter {ids.ctx.program_counter} :opcode {hex(memory.get(ids.ctx.call_context.bytecode + ids.ctx.program_counter))} }} \n\n")
-        %}
 
         // Terminate execution
         if (stopped != FALSE) {

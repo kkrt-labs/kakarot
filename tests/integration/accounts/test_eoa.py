@@ -60,7 +60,7 @@ class TestExternallyOwnedAccount:
                 ).call()
 
     class TestExecute:
-        @pytest.mark.parametrize("address_idx", range(1))
+        @pytest.mark.parametrize("address_idx", range(4))
         async def test_should_execute_tx(
             self, kakarot, default_tx, addresses, address_idx
         ):
@@ -76,23 +76,6 @@ class TestExternallyOwnedAccount:
                 calldata=raw_tx.rawTransaction,
                 # max_fee=default_tx["gas"]*(default_tx["maxFeePerGas"] +
                 #                            default_tx["maxPriorityFeePerGas"])
-            )
-
-        @pytest.mark.parametrize("address_idx", range(4))
-        async def test_should_execute_legacy_tx(
-            self, kakarot, legacy_tx, addresses, address_idx
-        ):
-            address = addresses[address_idx]
-            eth_account = MockEthSigner(private_key=address.private_key)
-            tmp_account = web3.Account().from_key(address.private_key)
-            raw_tx = tmp_account.sign_transaction(legacy_tx)
-
-            await eth_account.send_transaction(
-                account=address.starknet_contract,
-                to=kakarot.contract_address,
-                selector_name="execute_at_address",
-                calldata=list(web3.Web3.toBytes(raw_tx.rawTransaction)),
-                # max_fee=legacy_tx["gas"]*legacy_tx["gasPrice"]
             )
 
         @pytest.mark.parametrize("address_idx", range(4))
