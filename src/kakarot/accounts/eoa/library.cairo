@@ -389,10 +389,7 @@ namespace ExternallyOwnedAccount {
             Helpers.fill_array(
                 evm_calldata_len, sub_items[PAYLOAD_IDX].data, starknet_calldata + 4
             );
-            %{
-            print(f"{ids.starknet_calldata=} {ids.evm_calldata_len=}")
-            breakpoint()
-            %}
+
             let res = call_contract(
                 contract_address=kakarot_address,
                 function_selector=EXECUTE_AT_ADDRESS_SELECTOR,

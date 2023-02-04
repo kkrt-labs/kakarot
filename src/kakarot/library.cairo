@@ -103,11 +103,6 @@ namespace Kakarot {
     ) -> ExecutionContext.Summary* {
         alloc_locals;
 
-        %{
-        print(f"{ids.calldata_len=} {ids.calldata=}")
-        breakpoint();
-        %}
-
         // Prepare execution context
         let root_context = ExecutionContext.init_empty();
         let return_data: felt* = alloc();
