@@ -1,5 +1,5 @@
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
-from starkware.cairo.common.Uint256 import (
+from starkware.cairo.common.uint256 import (
     Uint256,
     uint256_add,
     uint256_and,
@@ -44,10 +44,8 @@ namespace ModExpHelpers {
 
         if (is_greater_than == 0) {
             tempvar max_length = b_size;
-            tempvar bitwise_ptr = bitwise_ptr;
         } else {
             tempvar max_length = m_size;
-            tempvar bitwise_ptr = bitwise_ptr;
         }
         let (words_step_1,_) = uint256_add(max_length, Uint256(low=8,high=0));
 
@@ -64,7 +62,6 @@ namespace ModExpHelpers {
                 tempvar range_check_ptr = range_check_ptr;
                 tempvar bitwise_ptr = bitwise_ptr;
             } else {
-                local bitwise_ptr: BitwiseBuiltin* = bitwise_ptr;
                 let u256_l = get_u256_bitlength(e);
                 let inner_step = u256_l - 1;
                 tempvar iteration_count = Uint256(low=inner_step,high=0);
@@ -90,6 +87,7 @@ namespace ModExpHelpers {
             tempvar range_check_ptr = range_check_ptr;
             tempvar bitwise_ptr = bitwise_ptr;
         }
+        tempvar bitwise_ptr = bitwise_ptr;
         let another_var = iteration_count_res;
         let (mci, carry) = uint256_mul(multiplication_complexity, another_var);
         assert carry = Uint256(low=0,high=0);
@@ -105,7 +103,6 @@ namespace ModExpHelpers {
             tempvar gas_cost = division_mci;
         }
         let res = gas_cost.low;
-        local bitwise_ptr: BitwiseBuiltin* = bitwise_ptr;
         return (gas_cost=res);
     }
 
