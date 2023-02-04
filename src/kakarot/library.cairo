@@ -30,6 +30,13 @@ from kakarot.constants import (
 )
 from kakarot.accounts.library import Accounts
 
+// An event emitted whenever kakarot deploys a evm contract
+// evm_contract_address is the representation of the evm address of the contract
+// starknet_contract_address if the starknet address of the contract
+@event
+func evm_contract_deployed(evm_contract_address: felt) {
+}
+
 // @title Kakarot main library file.
 // @notice This file contains the core EVM execution logic.
 // @author @abdelhamidbakhta

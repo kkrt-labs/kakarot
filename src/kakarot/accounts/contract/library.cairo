@@ -42,13 +42,6 @@ func is_initialized_() -> (res: felt) {
 func evm_address() -> (evm_address: felt) {
 }
 
-// An event emitted whenever kakarot deploys a evm contract
-// evm_contract_address is the representation of the evm address of the contract
-// starknet_contract_address if the starknet address of the contract
-@event
-func evm_contract_deployed(evm_contract_address: felt, starknet_contract_address: felt) {
-}
-
 namespace ContractAccount {
     // Define the number of bytes per felt. Above 16, the following code won't work as it uses unsigned_div_rem
     // which is bounded by RC_BOUND = 2 ** 128 ~ uint128 ~ bytes16

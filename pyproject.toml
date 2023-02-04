@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "EVM interpreter written in Cairo, a sort of ZK-EVM emulator, leveraging STARK proof system."
 authors = []
 readme = "README.md"
+packages = [{ include = "scripts" }]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.10"
