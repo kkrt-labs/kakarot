@@ -20,17 +20,16 @@ from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.system_operations import SystemOperations, CallHelper, CreateHelper
 from tests.unit.helpers.helpers import TestHelpers
 
-
 @external
 func test__modexp_impl{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(data_len: felt, data: felt*) -> (result: Uint256) {
     alloc_locals;
-    
+
     let (output_len, output, gas_used) = PrecompileModExp.run(
         PrecompileModExp.PRECOMPILE_ADDRESS, data_len, data
     );
-    let result = Helpers.bytes_i_to_uint256(output,output_len);
+    let result = Helpers.bytes_i_to_uint256(output, output_len);
     assert output_len = 32;
     assert gas_used = 0;
 

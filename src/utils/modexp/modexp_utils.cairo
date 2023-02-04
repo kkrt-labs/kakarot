@@ -20,11 +20,11 @@ from starkware.cairo.common.registers import get_label_location
 // @author @dragan2234
 // @custom:namespace Helpers
 namespace ModExpHelpers {
-
     const GAS_COST_MOD_EXP = 200;
 
-
-    func calculate_modexp_gas{range_check_ptr: felt, bitwise_ptr: BitwiseBuiltin*} (b_size: Uint256, e_size: Uint256, m_size: Uint256, e: Uint256) -> (gas_cost: felt) {
+    func calculate_modexp_gas{range_check_ptr: felt, bitwise_ptr: BitwiseBuiltin*}(
+        b_size: Uint256, e_size: Uint256, m_size: Uint256, e: Uint256
+    ) -> (gas_cost: felt) {
         alloc_locals;
 
         let (is_greater_than) = uint256_lt(b_size, m_size);
@@ -34,24 +34,24 @@ namespace ModExpHelpers {
         } else {
             tempvar max_length = m_size;
         }
-        let (words_step_1,_) = uint256_add(max_length, Uint256(low=8,high=0));
+        let (words_step_1, _) = uint256_add(max_length, Uint256(low=8, high=0));
 
-        let (words,_) = uint256_unsigned_div_rem(words_step_1,Uint256(low=8,high=0));
+        let (words, _) = uint256_unsigned_div_rem(words_step_1, Uint256(low=8, high=0));
 
         let (multiplication_complexity, carry) = uint256_mul(words, words);
         assert carry = Uint256(0, 0);
 
-        let (is_greater_than_32) = uint256_lt(b_size, Uint256(low=32,high=0));
+        let (is_greater_than_32) = uint256_lt(b_size, Uint256(low=32, high=0));
         if (is_greater_than_32 == 0) {
-            let (is_zero) = uint256_eq(e, Uint256(low=0,high=0));
+            let (is_zero) = uint256_eq(e, Uint256(low=0, high=0));
             if (is_zero == 0) {
-                tempvar iteration_count = Uint256(low=0,high=0);
+                tempvar iteration_count = Uint256(low=0, high=0);
                 tempvar range_check_ptr = range_check_ptr;
                 tempvar bitwise_ptr = bitwise_ptr;
             } else {
                 let u256_l = get_u256_bitlength(e);
                 let inner_step = u256_l - 1;
-                tempvar iteration_count = Uint256(low=inner_step,high=0);
+                tempvar iteration_count = Uint256(low=inner_step, high=0);
                 tempvar range_check_ptr = range_check_ptr;
                 tempvar bitwise_ptr = bitwise_ptr;
             }
@@ -59,17 +59,19 @@ namespace ModExpHelpers {
             tempvar range_check_ptr = range_check_ptr;
             tempvar bitwise_ptr = bitwise_ptr;
         } else {
-            let sub_step: Uint256 = uint256_sub(e_size, Uint256(low=32,high=0));
-            let (local result,local carry) = uint256_mul(Uint256(low=8,high=0), sub_step);
+            let sub_step: Uint256 = uint256_sub(e_size, Uint256(low=32, high=0));
+            let (local result, local carry) = uint256_mul(Uint256(low=8, high=0), sub_step);
             assert carry = Uint256(low=0, high=0);
-            let (bitwise_high) = bitwise_and(e.high, 2**128 - 1);
-            let (bitwise_low) = bitwise_and(e.low, 2**128 - 1);
-            let e_bit_length = get_u256_bitlength(Uint256(low=bitwise_low,high=bitwise_high));
+            let (bitwise_high) = bitwise_and(e.high, 2 ** 128 - 1);
+            let (bitwise_low) = bitwise_and(e.low, 2 ** 128 - 1);
+            let e_bit_length = get_u256_bitlength(Uint256(low=bitwise_low, high=bitwise_high));
 
             let e_bit_length_uint256 = Uint256(low=e_bit_length, high=0);
-            let (subtracted_e_bit_length) = uint256_sub(e_bit_length_uint256, Uint256(low=1,high=0));
+            let (subtracted_e_bit_length) = uint256_sub(
+                e_bit_length_uint256, Uint256(low=1, high=0)
+            );
 
-            let (addition,_) = uint256_add(result, subtracted_e_bit_length);
+            let (addition, _) = uint256_add(result, subtracted_e_bit_length);
             tempvar iteration_count_res = addition;
             tempvar range_check_ptr = range_check_ptr;
             tempvar bitwise_ptr = bitwise_ptr;
@@ -77,15 +79,14 @@ namespace ModExpHelpers {
         tempvar bitwise_ptr = bitwise_ptr;
         let another_var = iteration_count_res;
         let (mci, carry) = uint256_mul(multiplication_complexity, another_var);
-        assert carry = Uint256(low=0,high=0);
+        assert carry = Uint256(low=0, high=0);
 
-        let (division_mci,_) = uint256_unsigned_div_rem(mci, Uint256(low=3,high=0));
+        let (division_mci, _) = uint256_unsigned_div_rem(mci, Uint256(low=3, high=0));
 
-
-        let (gas_is_greater_than) = uint256_lt(division_mci, Uint256(low=200,high=0));
+        let (gas_is_greater_than) = uint256_lt(division_mci, Uint256(low=200, high=0));
 
         if ((gas_is_greater_than) == 0) {
-            tempvar gas_cost = Uint256(low=GAS_COST_MOD_EXP,high=0);
+            tempvar gas_cost = Uint256(low=GAS_COST_MOD_EXP, high=0);
         } else {
             tempvar gas_cost = division_mci;
         }
@@ -96,33 +97,44 @@ namespace ModExpHelpers {
     // Computes x ** y % p for Uint256 numbers via fast modular eiation algorithm.
     // Time complexity is log_2(y).
     // Loop is implemented via uint256_expmod_recursive_call() function.
-    func uint256_expmod{range_check_ptr: felt}(x: Uint256, y: Uint256, p: Uint256) -> (remainder: Uint256) {
+    func uint256_expmod{range_check_ptr: felt}(x: Uint256, y: Uint256, p: Uint256) -> (
+        remainder: Uint256
+    ) {
         alloc_locals;
-        let res = Uint256(low=1,high=0);
-        let (r_x,r_y,r_res) = uint256_expmod_recursive_call(x,y,res,p);
-        let (quotient,remainder) = uint256_unsigned_div_rem(r_res,p);
+        let res = Uint256(low=1, high=0);
+        let (r_x, r_y, r_res) = uint256_expmod_recursive_call(x, y, res, p);
+        let (quotient, remainder) = uint256_unsigned_div_rem(r_res, p);
         return (remainder=remainder);
     }
 
-    func uint256_expmod_recursive_call{range_check_ptr: felt}(x: Uint256, y: Uint256, res: Uint256, p: Uint256) -> (r_x: Uint256, r_y: Uint256, r_res: Uint256) {
+    func uint256_expmod_recursive_call{range_check_ptr: felt}(
+        x: Uint256, y: Uint256, res: Uint256, p: Uint256
+    ) -> (r_x: Uint256, r_y: Uint256, r_res: Uint256) {
         alloc_locals;
-        let (is_greater_than_zero) = uint256_lt(Uint256(low=0, high=0),y);
+        let (is_greater_than_zero) = uint256_lt(Uint256(low=0, high=0), y);
         if ((is_greater_than_zero) == 0) {
-            return (r_x=x,r_y=y,r_res=res);
+            return (r_x=x, r_y=y, r_res=res);
         }
 
-        let (quotient, remainder) = uint256_unsigned_div_rem(y,Uint256(low=2, high=0));
-        let (is_equal_to_one) = uint256_eq(remainder,Uint256(low=1, high=0));
+        let (quotient, remainder) = uint256_unsigned_div_rem(y, Uint256(low=2, high=0));
+        let (is_equal_to_one) = uint256_eq(remainder, Uint256(low=1, high=0));
         if ((is_equal_to_one) == 0) {
-            let (x_res_quotient,  x_res_quotient_high,  x_res_remainder) = uint256_mul_div_mod(x,x,p);
-            return uint256_expmod_recursive_call(x=x_res_remainder,y=quotient,res=res,p=p);
+            let (x_res_quotient, x_res_quotient_high, x_res_remainder) = uint256_mul_div_mod(
+                x, x, p
+            );
+            return uint256_expmod_recursive_call(x=x_res_remainder, y=quotient, res=res, p=p);
         } else {
-            let (x_res_res_quotient, x_res_res_quotient_high, x_res_res_remainder) = uint256_mul_div_mod(res,x,p);
-            let (x_res_quotient,  x_res_quotient_high,  x_res_remainder) = uint256_mul_div_mod(x,x,p);
-            return uint256_expmod_recursive_call(x=x_res_remainder,y=quotient,res=x_res_res_remainder,p=p);
+            let (
+                x_res_res_quotient, x_res_res_quotient_high, x_res_res_remainder
+            ) = uint256_mul_div_mod(res, x, p);
+            let (x_res_quotient, x_res_quotient_high, x_res_remainder) = uint256_mul_div_mod(
+                x, x, p
+            );
+            return uint256_expmod_recursive_call(
+                x=x_res_remainder, y=quotient, res=x_res_res_remainder, p=p
+            );
         }
     }
-
 
     // @credits feltroidprime
     func get_felt_bitlength{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x: felt) -> felt {
@@ -153,6 +165,7 @@ namespace ModExpHelpers {
     func pow2(i) -> felt {
         let (data_address) = get_label_location(data);
         return [data_address + i];
+
         data:
         dw 0x1;
         dw 0x2;

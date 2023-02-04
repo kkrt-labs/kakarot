@@ -18,7 +18,6 @@ namespace PrecompileModExp {
     const PRECOMPILE_ADDRESS = 0x05;
     const MOD_EXP_BYTES_LEN = 32;
 
-
     // @notice Run the precompile.
     // @param input_len The length of input array.
     // @param input The input array.
@@ -36,15 +35,20 @@ namespace PrecompileModExp {
         let e_size: Uint256 = Helpers.bytes32_to_uint256(input + MOD_EXP_BYTES_LEN);
         let m_size: Uint256 = Helpers.bytes32_to_uint256(input + MOD_EXP_BYTES_LEN * 2);
         let b: Uint256 = Helpers.bytes_i_to_uint256(input + MOD_EXP_BYTES_LEN * 3, b_size.low);
-        let e: Uint256 = Helpers.bytes_i_to_uint256(input + MOD_EXP_BYTES_LEN * 3 + b_size.low, e_size.low);
-        let m: Uint256 = Helpers.bytes_i_to_uint256(input + MOD_EXP_BYTES_LEN * 3 + b_size.low + e_size.low, m_size.low);
+        let e: Uint256 = Helpers.bytes_i_to_uint256(
+            input + MOD_EXP_BYTES_LEN * 3 + b_size.low, e_size.low
+        );
+        let m: Uint256 = Helpers.bytes_i_to_uint256(
+            input + MOD_EXP_BYTES_LEN * 3 + b_size.low + e_size.low, m_size.low
+        );
 
         with_attr error_message("Kakarot: modexp failed") {
-            let (result) = ModExpHelpers.uint256_expmod(b,e,m);
+            let (result) = ModExpHelpers.uint256_expmod(b, e, m);
         }
 
         let (bytes_result_len, output: felt*) = Helpers.uint256_to_bytes_array(result);
         let (gas_cost) = ModExpHelpers.calculate_modexp_gas(b_size, m_size, e_size, e);
+        assert gas_cost = 0;
         return (output_len=bytes_result_len, output=output, gas_used=gas_cost);
     }
 }
