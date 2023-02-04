@@ -15,19 +15,6 @@ from starkware.cairo.common.uint256 import (
 from starkware.cairo.common.bitwise import bitwise_and
 from starkware.cairo.common.registers import get_label_location
 
-// max_length = max(Bsize, Msize)
-// words = (max_length + 7) / 8
-// multiplication_complexity = words**2
-
-// iteration_count = 0
-// if Esize <= 32 and exponent == 0: iteration_count = 0
-// elif Esize <= 32: iteration_count = exponent.bit_length() - 1
-// elif Esize > 32: iteration_count = (8 * (Esize - 32)) + ((exponent & (2**256 - 1)).bit_length() - 1)
-// calculate_iteration_count = max(iteration_count, 1)
-
-// static_gas = 0
-// dynamic_gas = max(200, multiplication_complexity * iteration_count / 3)
-
 // @title ModExpHelper Functions
 // @notice This file contains a selection of helper functions for modular exponentiation and gas cost calculation.
 // @author @dragan2234
@@ -105,12 +92,6 @@ namespace ModExpHelpers {
         let res = gas_cost.low;
         return (gas_cost=res);
     }
-
-    // func calculate_iteration_count{range_check_ptr: felt}(e: Uint256) -> (res: Uint256) {
-    //     alloc_locals;
-
-    //     return (res=iteration_count);
-    // }
 
     // Computes x ** y % p for Uint256 numbers via fast modular eiation algorithm.
     // Time complexity is log_2(y).
