@@ -146,3 +146,5 @@ def ec_sign(
         int.to_bytes(signature.r, 32, "big"),
         int.to_bytes(signature.s, 32, "big"),
     )
+
+# def mine_block()
