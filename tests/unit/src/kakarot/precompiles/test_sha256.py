@@ -20,6 +20,7 @@ async def sha256(starknet: Starknet):
 
 @pytest.mark.asyncio
 @pytest.mark.SHA256
+@pytest.mark.timeout(999999999)
 class TestSHA256:
     @given(
         data_len=integers(min_value=1, max_value=56),

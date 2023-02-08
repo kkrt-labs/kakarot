@@ -1,4 +1,5 @@
-import random
+import json
+from web3 import Web3
 from textwrap import wrap
 from typing import Tuple
 
@@ -147,4 +148,6 @@ def ec_sign(
         int.to_bytes(signature.s, 32, "big"),
     )
 
-# def mine_block()
+async def mine_block(provider: Web3, timestamp: int):
+    response = await provider.make_request("evm_mine", [timestamp])
+    return response
