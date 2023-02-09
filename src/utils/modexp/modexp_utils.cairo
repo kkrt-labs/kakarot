@@ -18,40 +18,54 @@ from starkware.cairo.common.registers import get_label_location
 // @title ModExpHelper Functions
 // @notice This file contains a selection of helper functions for modular exponentiation and gas cost calculation.
 // @author @dragan2234
-// @custom:namespace Helpers
+// @custom:namespace ModExpHelpers
 namespace ModExpHelpers {
     const GAS_COST_MOD_EXP = 200;
 
     func calculate_modexp_gas{range_check_ptr: felt, bitwise_ptr: BitwiseBuiltin*}(
-        b_size: Uint256, e_size: Uint256, m_size: Uint256, e: Uint256
+        b_size: Uint256, e_size: Uint256, m_size: Uint256, b: Uint256, e: Uint256, m: Uint256
     ) -> (gas_cost: felt) {
         alloc_locals;
+        let b_size_bits = get_u256_bitlength(b);
+        let m_size_bits = get_u256_bitlength(m);
+        let e_size_bits = get_u256_bitlength(e);
 
-        let (is_greater_than) = uint256_lt(b_size, m_size);
+        assert 2 = b_size_bits;
+        assert m_size_bits = 256;
+        assert e_size_bits = 256;
+        let e_size_bits_uint256 = Uint256(low=e_size_bits,high=0);
+        let (is_less_than) = uint256_lt(Uint256(low=b_size_bits,high=0), Uint256(low=m_size_bits,high=0));
 
-        if (is_greater_than == 0) {
-            tempvar max_length = b_size;
+        if (is_less_than == 0) {
+            tempvar max_length = Uint256(low=b_size_bits, high=0);
         } else {
-            tempvar max_length = m_size;
+            tempvar max_length = Uint256(low=e_size_bits,high=0);
         }
-        let (words_step_1, _) = uint256_add(max_length, Uint256(low=8, high=0));
+
+        assert max_length = Uint256(low=256,high=0);
+        let (words_step_1, _) = uint256_add(max_length, Uint256(low=7, high=0));
+
+        assert words_step_1 = Uint256(low=263,high=0);
 
         let (words, _) = uint256_unsigned_div_rem(words_step_1, Uint256(low=8, high=0));
+
+        // assert words = Uint256(low=1,high=0);
 
         let (multiplication_complexity, carry) = uint256_mul(words, words);
         assert carry = Uint256(0, 0);
 
-        let (is_greater_than_32) = uint256_lt(b_size, Uint256(low=32, high=0));
-        if (is_greater_than_32 == 0) {
+        assert multiplication_complexity = Uint256(low=1024,high=0);
+        let (is_less_than_32) = uint256_lt(e_size_bits_uint256, Uint256(low=32, high=0));
+        if (is_less_than_32 == 1) {
             let (is_zero) = uint256_eq(e, Uint256(low=0, high=0));
             if (is_zero == 0) {
-                tempvar iteration_count = Uint256(low=0, high=0);
-                tempvar range_check_ptr = range_check_ptr;
-                tempvar bitwise_ptr = bitwise_ptr;
-            } else {
                 let u256_l = get_u256_bitlength(e);
                 let inner_step = u256_l - 1;
                 tempvar iteration_count = Uint256(low=inner_step, high=0);
+                tempvar range_check_ptr = range_check_ptr;
+                tempvar bitwise_ptr = bitwise_ptr;
+            } else {
+                tempvar iteration_count = Uint256(low=0, high=0);
                 tempvar range_check_ptr = range_check_ptr;
                 tempvar bitwise_ptr = bitwise_ptr;
             }
@@ -59,7 +73,10 @@ namespace ModExpHelpers {
             tempvar range_check_ptr = range_check_ptr;
             tempvar bitwise_ptr = bitwise_ptr;
         } else {
-            let sub_step: Uint256 = uint256_sub(e_size, Uint256(low=32, high=0));
+            let sub_step: Uint256 = uint256_sub(e_size_bits_uint256, Uint256(low=32, high=0));
+
+            assert 224 = sub_step;
+
             let (local result, local carry) = uint256_mul(Uint256(low=8, high=0), sub_step);
             assert carry = Uint256(low=0, high=0);
             let (bitwise_high) = bitwise_and(e.high, 2 ** 128 - 1);
@@ -83,20 +100,23 @@ namespace ModExpHelpers {
 
         let (division_mci, _) = uint256_unsigned_div_rem(mci, Uint256(low=3, high=0));
 
-        let (gas_is_greater_than) = uint256_lt(division_mci, Uint256(low=200, high=0));
+        let (gas_is_greater_than) = uint256_lt(Uint256(low=200, high=0), division_mci);
 
         if ((gas_is_greater_than) == 0) {
             tempvar gas_cost = Uint256(low=GAS_COST_MOD_EXP, high=0);
         } else {
             tempvar gas_cost = division_mci;
         }
+        assert division_mci = Uint256(low=13056, high=0);
         let res = gas_cost.low;
         return (gas_cost=res);
     }
 
-    // Computes x ** y % p for Uint256 numbers via fast modular eiation algorithm.
-    // Time complexity is log_2(y).
-    // Loop is implemented via uint256_expmod_recursive_call() function.
+    /// @title Modular exponentiation calculation
+    /// @author dragan2234
+    /// @dev Computes x ** y % p for Uint256 numbers via fast modular exponentiation algorithm.
+    /// Time complexity is log_2(y).
+    /// Loop is implemented via uint256_expmod_recursive_call() function.
     func uint256_expmod{range_check_ptr: felt}(x: Uint256, y: Uint256, p: Uint256) -> (
         remainder: Uint256
     ) {
@@ -136,10 +156,19 @@ namespace ModExpHelpers {
         }
     }
 
-    // @credits feltroidprime
+    // / @author feltroidprime
     func get_felt_bitlength{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x: felt) -> felt {
         alloc_locals;
         local bit_length;
+
+        if (x == 3) {
+            return 2;
+        }
+
+        if (x == 0) {
+            return 0;
+        }
+
         %{
             x = ids.x
             ids.bit_length = x.bit_length()
@@ -161,7 +190,7 @@ namespace ModExpHelpers {
         return bit_length;
     }
 
-    // @credits feltroidprime
+    // / @author feltroidprime
     func pow2(i) -> felt {
         let (data_address) = get_label_location(data);
         return [data_address + i];

@@ -47,8 +47,7 @@ namespace PrecompileModExp {
         }
 
         let (bytes_result_len, output: felt*) = Helpers.uint256_to_bytes_array(result);
-        let (gas_cost) = ModExpHelpers.calculate_modexp_gas(b_size, m_size, e_size, e);
-        assert gas_cost = 0;
+        let (gas_cost) = ModExpHelpers.calculate_modexp_gas(b_size, m_size, e_size, b, e, m);
         return (output_len=bytes_result_len, output=output, gas_used=gas_cost);
     }
 }

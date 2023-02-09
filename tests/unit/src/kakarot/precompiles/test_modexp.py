@@ -23,17 +23,17 @@ class TestModExp:
 
         random.seed(0)
         max_int = 2**256 - 1
-        b = random.randint(0, max_int)
+        b = 3
         b_size = math.ceil(math.log(b, 256))
         b_size_bytes = b_size.to_bytes(32, "big")
         b_bytes = b.to_bytes(b_size, "big")
 
-        e = random.randint(0, max_int)
+        e = 2**256 - 2**32 - 978
         e_size = math.ceil(math.log(e, 256))
         e_size_bytes = e_size.to_bytes(32, "big")
         e_bytes = e.to_bytes(e_size, "big")
 
-        m = random.randint(0, max_int)
+        m = 2**256 - 2**32 - 977
         m_size = math.ceil(math.log(m, 256))
         m_size_bytes = m_size.to_bytes(32, "big")
         m_bytes = m.to_bytes(m_size, "big")
@@ -43,7 +43,10 @@ class TestModExp:
         )
         expected_result = pow(b, e, m)
 
-        cairo_uint256 = (await modexp.test__modexp_impl(bytes_array).call()).result[0]
+        cairo_modexp = await modexp.test__modexp_impl(bytes_array).call()
+        cairo_uint256 = cairo_modexp.result[0]
         cairo_result = uint256_to_int(cairo_uint256.low, cairo_uint256.high)
-
+        gas_cost = cairo_modexp.result[1]
         assert expected_result == cairo_result
+
+        assert 13056 == gas_cost
