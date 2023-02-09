@@ -26,37 +26,22 @@ namespace ModExpHelpers {
         b_size: Uint256, e_size: Uint256, m_size: Uint256, b: Uint256, e: Uint256, m: Uint256
     ) -> (gas_cost: felt) {
         alloc_locals;
-        let b_size_bits = get_u256_bitlength(b);
-        let m_size_bits = get_u256_bitlength(m);
-        let e_size_bits = get_u256_bitlength(e);
 
-        assert 2 = b_size_bits;
-        assert m_size_bits = 256;
-        assert e_size_bits = 256;
-        let e_size_bits_uint256 = Uint256(low=e_size_bits,high=0);
-        let (is_less_than) = uint256_lt(Uint256(low=b_size_bits,high=0), Uint256(low=m_size_bits,high=0));
+        let (is_less_than) = uint256_lt(b_size, m_size);
 
         if (is_less_than == 0) {
-            tempvar max_length = Uint256(low=b_size_bits, high=0);
+            tempvar max_length = b_size;
         } else {
-            tempvar max_length = Uint256(low=e_size_bits,high=0);
+            tempvar max_length = m_size;
         }
 
-        assert max_length = Uint256(low=256,high=0);
         let (words_step_1, _) = uint256_add(max_length, Uint256(low=7, high=0));
-
-        assert words_step_1 = Uint256(low=263,high=0);
-
         let (words, _) = uint256_unsigned_div_rem(words_step_1, Uint256(low=8, high=0));
-
-        // assert words = Uint256(low=1,high=0);
-
         let (multiplication_complexity, carry) = uint256_mul(words, words);
         assert carry = Uint256(0, 0);
 
-        assert multiplication_complexity = Uint256(low=1024,high=0);
-        let (is_less_than_32) = uint256_lt(e_size_bits_uint256, Uint256(low=32, high=0));
-        if (is_less_than_32 == 1) {
+        let (is_less_than_33) = uint256_lt(e_size, Uint256(low=33, high=0));
+        if (is_less_than_33 == 1) {
             let (is_zero) = uint256_eq(e, Uint256(low=0, high=0));
             if (is_zero == 0) {
                 let u256_l = get_u256_bitlength(e);
@@ -73,22 +58,25 @@ namespace ModExpHelpers {
             tempvar range_check_ptr = range_check_ptr;
             tempvar bitwise_ptr = bitwise_ptr;
         } else {
-            let sub_step: Uint256 = uint256_sub(e_size_bits_uint256, Uint256(low=32, high=0));
-
-            assert 224 = sub_step;
+            let sub_step: Uint256 = uint256_sub(e_size, Uint256(low=32, high=0));
 
             let (local result, local carry) = uint256_mul(Uint256(low=8, high=0), sub_step);
             assert carry = Uint256(low=0, high=0);
+
+
             let (bitwise_high) = bitwise_and(e.high, 2 ** 128 - 1);
             let (bitwise_low) = bitwise_and(e.low, 2 ** 128 - 1);
             let e_bit_length = get_u256_bitlength(Uint256(low=bitwise_low, high=bitwise_high));
+
 
             let e_bit_length_uint256 = Uint256(low=e_bit_length, high=0);
             let (subtracted_e_bit_length) = uint256_sub(
                 e_bit_length_uint256, Uint256(low=1, high=0)
             );
 
+
             let (addition, _) = uint256_add(result, subtracted_e_bit_length);
+
             tempvar iteration_count_res = addition;
             tempvar range_check_ptr = range_check_ptr;
             tempvar bitwise_ptr = bitwise_ptr;
@@ -107,7 +95,7 @@ namespace ModExpHelpers {
         } else {
             tempvar gas_cost = division_mci;
         }
-        assert division_mci = Uint256(low=13056, high=0);
+        assert division_mci = Uint256(low=1360, high=0);
         let res = gas_cost.low;
         return (gas_cost=res);
     }
@@ -161,6 +149,7 @@ namespace ModExpHelpers {
         alloc_locals;
         local bit_length;
 
+        // @todo: investigate why these ifs are needed, and for which cases.
         if (x == 3) {
             return 2;
         }

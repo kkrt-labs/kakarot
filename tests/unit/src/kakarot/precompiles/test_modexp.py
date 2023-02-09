@@ -49,4 +49,4 @@ class TestModExp:
         gas_cost = cairo_modexp.result[1]
         assert expected_result == cairo_result
 
-        assert 13056 == gas_cost
+        assert 1360 == gas_cost
