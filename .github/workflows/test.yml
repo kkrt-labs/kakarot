@@ -4,12 +4,11 @@ on: [push, pull_request]
 env:
   KEY_POETRY_CACHE: poetry-20230210 # use new date to reset poetry cache
   PATH_POETRY_CACHE: ~/.local # depends on the OS
-  KAKAROT_BUILDER_IMG: 'ptisserand/kakarot-builder:latest'
 
 jobs:
   setup:
     runs-on: self-hosted
-    container: ${{ env.KAKAROT_BUILDER_IMG }}
+    container: ptisserand/kakarot-builder:latest
     env:
       CI_COMMIT_MESSAGE: CI Formatting Auto Commit
       CI_COMMIT_AUTHOR: ${{ github.event.repository.name }} CI
@@ -52,7 +51,7 @@ jobs:
 
   compilation-tests:
     runs-on: self-hosted
-    container: ${{ env.KAKAROT_BUILDER_IMG }}
+    container: ptisserand/kakarot-builder:latest
     needs: setup
     steps:
       - uses: actions/checkout@v3
@@ -90,7 +89,7 @@ jobs:
 
   python-tests:
     runs-on: self-hosted
-    container: ${{ env.KAKAROT_BUILDER_IMG }}
+    container: ptisserand/kakarot-builder:latest
     needs: compilation-tests
     strategy:
       matrix:
@@ -142,7 +141,7 @@ jobs:
 
   resources-tests:
     runs-on: self-hosted
-    container: ${{ env.KAKAROT_BUILDER_IMG }}
+    container: ptisserand/kakarot-builder:latest
     needs: python-tests
     steps:
       - uses: actions/checkout@v3
