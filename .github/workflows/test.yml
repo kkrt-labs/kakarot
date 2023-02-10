@@ -4,11 +4,11 @@ on: [push, pull_request]
 env:
   KEY_POETRY_CACHE: poetry-20230210 # use new date to reset poetry cache
   PATH_POETRY_CACHE: ~/.local # depends on the OS
-  KAKAROT_BUILDER_IMG: ptisserand/kakarot-builder:latest
+  KAKAROT_BUILDER_IMG: 'ptisserand/kakarot-builder:latest'
 
 jobs:
   setup:
-    runs-on: ubuntu-latest # self-hosted
+    runs-on: self-hosted
     container: ${{ env.KAKAROT_BUILDER_IMG }}
     env:
       CI_COMMIT_MESSAGE: CI Formatting Auto Commit
