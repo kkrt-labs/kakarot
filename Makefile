@@ -22,7 +22,7 @@ check:
 	poetry lock --check
 
 setup:
-	poetry install --no-root
+	poetry install --no-root --no-ansi
 
 test: build-sol
 	poetry run pytest tests --log-cli-level=INFO -n logical
@@ -33,8 +33,14 @@ test-no-log: build-sol
 test-integration: build-sol
 	poetry run pytest tests/integration --log-cli-level=INFO -n logical
 
+test-integration-no-log: build-sol
+	poetry run pytest tests/integration -n logical
+
 test-unit: build-sol
 	poetry run pytest tests/unit --log-cli-level=INFO
+
+test-unit-no-log: build-sol
+	poetry run pytest tests/unit -n logical
 
 run-test-log: build-sol
 	poetry run pytest -k $(test) --log-cli-level=INFO -vvv

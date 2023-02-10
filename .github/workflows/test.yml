@@ -1,22 +1,28 @@
 name: TESTS
 
 on: [push, pull_request]
+env:
+  KEY_POETRY_CACHE: poetry-20230210 # use new date to reset poetry cache
+  PATH_POETRY_CACHE: ~/.local # depends on the OS
+  KAKAROT_BUILDER_IMG: ptisserand/kakarot-builder:latest
 
 jobs:
-  compilation-tests:
-    runs-on: self-hosted
-    container: ptisserand/kakarot-builder:latest
+  setup:
+    runs-on: ubuntu-latest # self-hosted
+    container: ${{ env.KAKAROT_BUILDER_IMG }}
     env:
       CI_COMMIT_MESSAGE: CI Formatting Auto Commit
       CI_COMMIT_AUTHOR: ${{ github.event.repository.name }} CI
     steps:
       - uses: actions/checkout@v3
       - name: Load cached Poetry installation
+        id: cache-poetry
         uses: actions/cache@v3
         with:
-          path: ~/.local # the path depends on the OS.
-          key: poetry-03022023 # use new date to reset poetry cache
+          path: ${{ env.PATH_POETRY_CACHE }}
+          key: ${{ env.KEY_POETRY_CACHE }}
       - name: Install Poetry
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
         with:
           virtualenvs-create: true
@@ -33,10 +39,6 @@ jobs:
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
-
-      # Build artifacts
-      - name: Event name
-        run: echo "github.event_name=${{ github.event_name }}"
       - name: Format all the cairo files
         run: make format
       - name: Commit changes
@@ -47,21 +49,59 @@ jobs:
           git config --global user.email "sayajin-labs@users.noreply.github.com"
           git add -A
           git diff-index --quiet HEAD || (git commit -m "${{ env.CI_COMMIT_MESSAGE }}" && git push)
+
+  compilation-tests:
+    runs-on: self-hosted
+    container: ${{ env.KAKAROT_BUILDER_IMG }}
+    needs: setup
+    steps:
+      - uses: actions/checkout@v3
+      - name: Load cached Poetry installation
+        id: cache-poetry
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.PATH_POETRY_CACHE }}
+          key: ${{ env.KEY_POETRY_CACHE }}
+      - name: Install Poetry
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key:
+            self-hosted-venv-${{ runner.os }}-${{
+            hashFiles('**/poetry.lock')}}-1
+      # Build artifacts
       - name: Compile all the cairo files
         run: |
           make format-check
           make build
+      - name: Upload build result
+        uses: actions/upload-artifact@v3
+        with:
+          path: ./build
+          name: build
 
   python-tests:
     runs-on: self-hosted
-    container: ptisserand/kakarot-builder:latest
+    container: ${{ env.KAKAROT_BUILDER_IMG }}
+    needs: compilation-tests
+    strategy:
+      matrix:
+        test_rule: [test-unit-no-log, test-integration-no-log]
     steps:
       - uses: actions/checkout@v3
       - name: Load cached Poetry installation
         uses: actions/cache@v3
         with:
-          path: ~/.local # the path depends on the OS
-          key: poetry-03022023 # increment to reset cache
+          path: ${{ env.PATH_POETRY_CACHE }}
+          key: ${{ env.KEY_POETRY_CACHE }}
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
@@ -79,12 +119,17 @@ jobs:
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
+      - name: Restore build directory
+        uses: actions/download-artifact@v3
+        with:
+          path: ./build
+          name: build
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
-      - name: Run tests
-        run: make test-no-log
+      - name: Run test ${{ matrix.test_rule }}
+        run: make ${{ matrix.test_rule }}
       - name: Upload coverage report to codecov
         uses: codecov/codecov-action@v3
         with:
@@ -93,19 +138,19 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           path: ./coverage/
-          name: coverage
+          name: 'coverage-${{ matrix.test_rule }}'
 
   resources-tests:
     runs-on: self-hosted
-    container: ptisserand/kakarot-builder:latest
+    container: ${{ env.KAKAROT_BUILDER_IMG }}
     needs: python-tests
     steps:
       - uses: actions/checkout@v3
       - name: Load cached Poetry installation
         uses: actions/cache@v3
         with:
-          path: ~/.local # the path depends on the OS
-          key: poetry-03022023 # increment to reset cache
+          path: ${{ env.PATH_POETRY_CACHE }}
+          key: ${{ env.KEY_POETRY_CACHE }}
       - name: Install Poetry
         uses: snok/install-poetry@v1
         with:
