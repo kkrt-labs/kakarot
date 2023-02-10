@@ -2,14 +2,9 @@
 
 %lang starknet
 
-// Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin, BitwiseBuiltin
-from starkware.starknet.common.syscalls import get_caller_address
-from starkware.cairo.common.math_cmp import is_le_felt
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.cairo_secp.signature import verify_eth_signature_uint256
-from starkware.cairo.common.uint256 import Uint256
-// Account library
+
 from kakarot.accounts.eoa.library import ExternallyOwnedAccount
 
 // Externally Owned Account initializer
@@ -37,10 +32,7 @@ func __validate__{
     calldata_len: felt,
     calldata: felt*,
 ) {
-    alloc_locals;
-    let (address) = ExternallyOwnedAccount.get_evm_address();
     ExternallyOwnedAccount.validate(
-        evm_address=address,
         call_array_len=call_array_len,
         call_array=call_array,
         calldata_len=calldata_len,
@@ -80,9 +72,12 @@ func __execute__{
     calldata_len: felt,
     calldata: felt*,
 ) -> (response_len: felt, response: felt*) {
-    let (response: felt*) = alloc();
-    // TODO: parse, call kakarot, and format response
-    return (response_len=0, response=response);
+    return ExternallyOwnedAccount.execute(
+        call_array_len=call_array_len,
+        call_array=call_array,
+        calldata_len=calldata_len,
+        calldata=calldata,
+    );
 }
 
 // @dev returns true if the interface_id is supported
@@ -98,23 +93,6 @@ func supports_interface{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_ch
     return (success=0);
 }
 
-// @notice checks if the signature is valid
-// @dev returns true if the signature is signed by the account controller
-// @param hash_len The hash length which was signed
-// @param hash The hash [low_128_bits, high_128_bits]
-// @param signature_len The length of the signature array
-// @param signature The array of the ethereum signature (as v, r, s)
-@view
-func is_valid_signature{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
-}(hash_len: felt, hash: felt*, signature_len: felt, signature: felt*) -> (is_valid: felt) {
-    alloc_locals;
-    let (_evm_address) = ExternallyOwnedAccount.get_evm_address();
-    return ExternallyOwnedAccount.is_valid_signature(
-        _evm_address, hash_len, hash, signature_len, signature
-    );
-}
-
 // @notice return ethereum address of the externally owned account
 @view
 func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
@@ -123,7 +101,7 @@ func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
     return ExternallyOwnedAccount.get_evm_address();
 }
 
-// @notice empty bytecode needed for EXTCODEHASH.
+// @notice empty bytecode needed for EXTCODE opcodes.
 @view
 func bytecode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -131,7 +109,8 @@ func bytecode{
     let (bytecode) = alloc();
     return (0, bytecode);
 }
-// @notice empty bytecode but needed for EXTCODEHASH.
+
+// @notice empty bytecode needed for EXTCODE opcodes.
 @view
 func bytecode_len{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*

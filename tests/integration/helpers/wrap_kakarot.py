@@ -10,7 +10,7 @@ from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.contract import Contract
 from web3.types import LogReceipt
 
-from tests.integration.helpers.helpers import hex_string_to_bytes_array
+from tests.utils.helpers import hex_string_to_bytes_array
 from tests.utils.reporting import traceit
 
 

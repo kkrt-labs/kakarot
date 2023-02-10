@@ -1,14 +1,14 @@
 import pytest
 
-from tests.integration.helpers.constants import MAX_INT
-from tests.integration.helpers.helpers import (
+from tests.integration.solidity_contracts.UniswapV2.conftest import TOTAL_SUPPLY
+from tests.utils.constants import MAX_INT
+from tests.utils.errors import kakarot_error
+from tests.utils.helpers import (
     PERMIT_TYPEHASH,
     ec_sign,
     get_approval_digest,
     get_domain_separator,
 )
-from tests.integration.solidity_contracts.UniswapV2.conftest import TOTAL_SUPPLY
-from tests.utils.errors import kakarot_error
 
 TEST_AMOUNT = 10 * 10**18
 

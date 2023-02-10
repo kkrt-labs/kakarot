@@ -1,14 +1,58 @@
-import os
-
 import pytest
-import web3
-from eth_account._utils.legacy_transactions import (
-    serializable_unsigned_transaction_from_dict,
-)
-from starkware.starkware_utils.error_handling import StarkException
+from eth_account.account import Account
 
-from tests.utils.signer import MockEthSigner
-from tests.utils.uint256 import int_to_uint256
+from tests.utils.constants import CHAIN_ID
+from tests.utils.errors import kakarot_error
+
+# Taken from eth_account.account.Account.sign_transaction docstring
+TRANSACTIONS = [
+    {
+        # Note that the address must be in checksum format or native bytes:
+        "to": "0xF0109fC8DF283027b6285cc889F5aA624EaC1F55",
+        "value": 1000000000,
+        "gas": 2000000,
+        "gasPrice": 234567897654321,
+        "nonce": 0,
+        "chainId": CHAIN_ID,
+    },
+    {
+        "type": 1,
+        "gas": 100000,
+        "gasPrice": 1000000000,
+        "data": "0x616263646566",
+        "nonce": 34,
+        "to": "0x09616C3d61b3331fc4109a9E41a8BDB7d9776609",
+        "value": "0x5af3107a4000",
+        "accessList": (
+            {
+                "address": "0x0000000000000000000000000000000000000001",
+                "storageKeys": (
+                    "0x0100000000000000000000000000000000000000000000000000000000000000",
+                ),
+            },
+        ),
+        "chainId": CHAIN_ID,
+    },
+    {
+        "type": 2,
+        "gas": 100000,
+        "maxFeePerGas": 2000000000,
+        "maxPriorityFeePerGas": 2000000000,
+        "data": "0x616263646566",
+        "nonce": 34,
+        "to": "0x09616C3d61b3331fc4109a9E41a8BDB7d9776609",
+        "value": "0x5af3107a4000",
+        "accessList": (
+            {
+                "address": "0x0000000000000000000000000000000000000001",
+                "storageKeys": (
+                    "0x0100000000000000000000000000000000000000000000000000000000000000",
+                ),
+            },
+        ),
+        "chainId": CHAIN_ID,
+    },
+]
 
 
 @pytest.mark.asyncio
@@ -22,71 +66,86 @@ class TestExternallyOwnedAccount:
             call_info = await address.starknet_contract.get_evm_address().call()
             assert call_info.result.evm_address == int(address.address, 16)
 
-    class TestEthSignature:
-        @pytest.mark.parametrize("address_idx", range(4))
-        async def test_should_validate_signature(
-            self, default_tx, addresses, address_idx
-        ):
-            address = addresses[address_idx]
-            tmp_account = web3.Account.from_key(address.private_key)
-            raw_tx = tmp_account.sign_transaction(default_tx)
-            tx_hash = serializable_unsigned_transaction_from_dict(default_tx).hash()
-            call_info = await address.starknet_contract.is_valid_signature(
-                [*int_to_uint256(web3.Web3.toInt(tx_hash))],
-                [
-                    raw_tx.v,
-                    *int_to_uint256(raw_tx.r),
-                    *int_to_uint256(raw_tx.s),
-                ],
+    class TestValidate:
+        @pytest.mark.parametrize("transaction", TRANSACTIONS)
+        async def test_should_pass_all_transactions_types(self, owner, transaction):
+            # to and selector are starknet params and are not used
+            to = 0x0
+            selector = 0x0
+            data_offset = 0
+            signed = Account.sign_transaction(transaction, owner.private_key)
+            data_len = len(signed["rawTransaction"])
+            await owner.starknet_contract.__validate__(
+                [(to, selector, data_offset, data_len)], list(signed["rawTransaction"])
             ).call()
-            assert call_info.result.is_valid == True
 
-        @pytest.mark.parametrize("address_idx", range(4))
-        async def test_should_fail_when_verifying_fake_signature(
-            self, default_tx, addresses, address_idx
-        ):
-            address = addresses[address_idx]
-            tmp_account = web3.Account.from_key(address.private_key)
-            raw_tx = tmp_account.sign_transaction(default_tx)
-            with pytest.raises(StarkException):
-                await address.starknet_contract.is_valid_signature(
-                    [*int_to_uint256(web3.Web3.toInt(os.urandom(32)))],
-                    [
-                        raw_tx.v,
-                        *int_to_uint256(raw_tx.r),
-                        *int_to_uint256(raw_tx.s),
-                    ],
+        @pytest.mark.parametrize("transaction", TRANSACTIONS)
+        async def test_should_raise_with_wrong_chain_id(self, owner, transaction):
+            # to and selector are starknet params and are not used
+            to = 0x0
+            selector = 0x0
+            data_offset = 0
+            t = {**transaction, "chainId": 1}
+            signed = Account.sign_transaction(t, owner.private_key)
+            data_len = len(signed["rawTransaction"])
+            with kakarot_error():
+                await owner.starknet_contract.__validate__(
+                    [(to, selector, data_offset, data_len)],
+                    list(signed["rawTransaction"]),
                 ).call()
 
+        @pytest.mark.parametrize("transaction", TRANSACTIONS)
+        async def test_should_raise_with_altered_signature(self, owner, transaction):
+            # to and selector are starknet params and are not used
+            to = 0x0
+            selector = 0x0
+            data_offset = 0
+            signed = Account.sign_transaction(transaction, owner.private_key)
+            data_len = len(signed["rawTransaction"])
+            with kakarot_error():
+                await owner.starknet_contract.__validate__(
+                    [(to, selector, data_offset, data_len)],
+                    list(signed["rawTransaction"]),
+                ).call()
+
+        @pytest.mark.parametrize("transaction", TRANSACTIONS)
+        async def test_should_raise_with_wrong_address(self, owner, other, transaction):
+            # to and selector are starknet params and are not used
+            to = 0x0
+            selector = 0x0
+            data_offset = 0
+            signed = Account.sign_transaction(transaction, other.private_key)
+            data_len = len(signed["rawTransaction"])
+            with kakarot_error():
+                await owner.starknet_contract.__validate__(
+                    [(to, selector, data_offset, data_len)],
+                    list(signed["rawTransaction"]),
+                ).call()
+
+    class TestValidateDeclare:
+        async def test_should_raise(self, owner):
+            with kakarot_error():
+                await owner.starknet_contract.__validate_declare__(0).call()
+
+    @pytest.mark.parametrize("interface_id, res", [(0, False), (10, True)])
+    async def test_supports_interface(self, interface_id, res):
+        pass
+
+    async def test_bytecode(self, owner):
+        assert (await owner.starknet_contract.bytecode()).result.bytecode == []
+
+    async def test_bytecode_len(self, owner):
+        assert (await owner.starknet_contract.bytecode_len()).result.len == 0
+
     class TestExecute:
-        @pytest.mark.parametrize("address_idx", range(4))
-        async def test_should_execute_tx(
-            self, kakarot, default_tx, addresses, address_idx
-        ):
-            address = addresses[address_idx]
-            eth_account = MockEthSigner(private_key=address.private_key)
-            tmp_account = web3.Account().from_key(address.private_key)
-            raw_tx = tmp_account.sign_transaction(default_tx)
-
-            await eth_account.send_transaction(
-                address.starknet_contract,
-                kakarot.contract_address,
-                "execute_at_address",
-                raw_tx.rawTransaction,
-            )
-
-        @pytest.mark.parametrize("address_idx", range(4))
-        async def test_should_fail_on_incorrect_signature(
-            self, kakarot, default_tx, addresses, address_idx
-        ):
-            address = addresses[address_idx]
-            eth_account = MockEthSigner(private_key=address.private_key)
-            fake_evm_eoa = web3.Account.from_key(os.urandom(32))
-            raw_tx = fake_evm_eoa.sign_transaction(default_tx)
-            with pytest.raises(StarkException):
-                await eth_account.send_transaction(
-                    address.starknet_contract,
-                    kakarot.contract_address,
-                    "execute_at_address",
-                    raw_tx.rawTransaction,
-                )
+        @pytest.mark.parametrize("transaction", TRANSACTIONS)
+        async def test_should_pass_all_transactions_types(self, owner, transaction):
+            # to and selector are starknet params and are not used
+            to = 0x0
+            selector = 0x0
+            data_offset = 0
+            signed = Account.sign_transaction(transaction, owner.private_key)
+            data_len = len(signed["rawTransaction"])
+            await owner.starknet_contract.__execute__(
+                [(to, selector, data_offset, data_len)], list(signed["rawTransaction"])
+            ).call()
