@@ -29,12 +29,12 @@ class TestModExp:
         b_size_bytes = b_size.to_bytes(32, "big")
         b_bytes = b.to_bytes(b_size, "big")
 
-        e = 2**256 - 2**32 - 978 # FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2E
+        e = 2**256 - 2**32 - 978
         e_size = math.ceil(math.log(e, 256))
         e_size_bytes = e_size.to_bytes(32, "big")
         e_bytes = e.to_bytes(e_size, "big")
 
-        m = 2**256 - 2**32 - 977 # FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F
+        m = 2**256 - 2**32 - 977
         m_size = math.ceil(math.log(m, 256))
         m_size_bytes = m_size.to_bytes(32, "big")
         m_bytes = m.to_bytes(m_size, "big")
