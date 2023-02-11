@@ -34,17 +34,3 @@ func test__modexp_impl{
 
     return (result=result, gas_cost=gas_used);
 }
-
-
-// @external
-// func test__modexp_gas_calc_impl{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-//     data_len: felt, data: felt*
-// ) -> felt {
-//     let (output_len, output, gas_used) = PrecompileModExp.run(
-//         PrecompileModExp.PRECOMPILE_ADDRESS, data_len, data
-//     );
-//     let result = Helpers.bytes_i_to_uint256(output, output_len);
-//     assert output_len = 32;
-
-//     return (result=result, gas_cost=gas_used);
-// }
