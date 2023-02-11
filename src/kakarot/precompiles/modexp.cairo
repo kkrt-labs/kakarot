@@ -43,11 +43,10 @@ namespace PrecompileModExp {
         );
 
         with_attr error_message("Kakarot: modexp failed") {
-            let (result) = ModExpHelpers.uint256_expmod(b, e, m);
+            let (result) = ModExpHelpers.uint256_modexp(b, e, m);
         }
 
         let (bytes_result_len, output: felt*) = Helpers.uint256_to_bytes_array(result);
-        let (gas_cost) = ModExpHelpers.calculate_modexp_gas(b_size, m_size, e_size, b, e, m);
-        return (output_len=bytes_result_len, output=output, gas_used=gas_cost);
+        return (output_len=bytes_result_len, output=output, gas_used=0);
     }
 }
