@@ -23,7 +23,17 @@ namespace EthTransaction {
         pedersen_ptr: HashBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
-    }(tx_data_len: felt, tx_data: felt*) -> (tx_hash: Uint256, v: felt, r: Uint256, s: Uint256) {
+    }(tx_data_len: felt, tx_data: felt*) -> (
+        gas_limit: felt,
+        destination: felt,
+        amount: felt,
+        payload_len: felt,
+        payload: felt*,
+        tx_hash: Uint256,
+        v: felt,
+        r: Uint256,
+        s: Uint256,
+    ) {
         // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md
         alloc_locals;
 
@@ -89,7 +99,20 @@ namespace EthTransaction {
             let (tx_hash) = keccak_bigend(inputs=words, n_bytes=rlp_data_len);
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
-        return (tx_hash, v, r, s);
+
+        let gas_limit_idx = 2;
+        let (gas_limit) = Helpers.bytes_to_felt(
+            sub_items[gas_limit_idx].data_len, sub_items[gas_limit_idx].data, 0
+        );
+        let (destination) = Helpers.bytes_to_felt(
+            sub_items[gas_limit_idx + 1].data_len, sub_items[gas_limit_idx + 1].data, 0
+        );
+        let (amount) = Helpers.bytes_to_felt(
+            sub_items[gas_limit_idx + 2].data_len, sub_items[gas_limit_idx + 2].data, 0
+        );
+        let payload_len = sub_items[gas_limit_idx + 3].data_len;
+        let payload: felt* = sub_items[gas_limit_idx + 3].data;
+        return (gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s);
     }
 
     func decode_tx{
@@ -97,7 +120,17 @@ namespace EthTransaction {
         pedersen_ptr: HashBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
-    }(tx_data_len: felt, tx_data: felt*) -> (tx_hash: Uint256, v: felt, r: Uint256, s: Uint256) {
+    }(tx_data_len: felt, tx_data: felt*) -> (
+        gas_limit: felt,
+        destination: felt,
+        amount: felt,
+        payload_len: felt,
+        payload: felt*,
+        tx_hash: Uint256,
+        v: felt,
+        r: Uint256,
+        s: Uint256,
+    ) {
         // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1559.md#specification
         alloc_locals;
         tempvar tx_type = [tx_data];
@@ -156,7 +189,20 @@ namespace EthTransaction {
             let (tx_hash) = keccak_bigend(inputs=words, n_bytes=rlp_len + 1);
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
-        return (tx_hash, v, r, s);
+
+        let gas_limit_idx = tx_type + 1;
+        let (gas_limit) = Helpers.bytes_to_felt(
+            sub_items[gas_limit_idx].data_len, sub_items[gas_limit_idx].data, 0
+        );
+        let (destination) = Helpers.bytes_to_felt(
+            sub_items[gas_limit_idx + 1].data_len, sub_items[gas_limit_idx + 1].data, 0
+        );
+        let (amount) = Helpers.bytes_to_felt(
+            sub_items[gas_limit_idx + 2].data_len, sub_items[gas_limit_idx + 2].data, 0
+        );
+        let payload_len = sub_items[gas_limit_idx + 3].data_len;
+        let payload: felt* = sub_items[gas_limit_idx + 3].data;
+        return (gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s);
     }
 
     func is_legacy_tx{
@@ -178,7 +224,17 @@ namespace EthTransaction {
         pedersen_ptr: HashBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
-    }(tx_data_len: felt, tx_data: felt*) -> (tx_hash: Uint256, v: felt, r: Uint256, s: Uint256) {
+    }(tx_data_len: felt, tx_data: felt*) -> (
+        gas_limit: felt,
+        destination: felt,
+        amount: felt,
+        payload_len: felt,
+        payload: felt*,
+        tx_hash: Uint256,
+        v: felt,
+        r: Uint256,
+        s: Uint256,
+    ) {
         let _is_legacy = is_legacy_tx(tx_data);
         if (_is_legacy == FALSE) {
             return decode_tx(tx_data_len, tx_data);
@@ -194,7 +250,9 @@ namespace EthTransaction {
         range_check_ptr,
     }(address: felt, tx_data_len: felt, tx_data: felt*) {
         alloc_locals;
-        let (tx_hash, v, r, s) = decode(tx_data_len, tx_data);
+        let (gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s) = decode(
+            tx_data_len, tx_data
+        );
         let (local keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
         with keccak_ptr {

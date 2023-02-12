@@ -7,21 +7,51 @@ from starkware.cairo.common.uint256 import Uint256
 @view
 func test__decode_legacy_tx{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
-}(tx_data_len: felt, tx_data: felt*) -> (tx_hash: Uint256, v: felt, r: Uint256, s: Uint256) {
+}(tx_data_len: felt, tx_data: felt*) -> (
+    gas_limit: felt,
+    destination: felt,
+    amount: felt,
+    payload_len: felt,
+    payload: felt*,
+    tx_hash: Uint256,
+    v: felt,
+    r: Uint256,
+    s: Uint256,
+) {
     return EthTransaction.decode_legacy_tx(tx_data_len, tx_data);
 }
 
 @view
 func test__decode_tx{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
-}(tx_data_len: felt, tx_data: felt*) -> (tx_hash: Uint256, v: felt, r: Uint256, s: Uint256) {
+}(tx_data_len: felt, tx_data: felt*) -> (
+    gas_limit: felt,
+    destination: felt,
+    amount: felt,
+    payload_len: felt,
+    payload: felt*,
+    tx_hash: Uint256,
+    v: felt,
+    r: Uint256,
+    s: Uint256,
+) {
     return EthTransaction.decode_tx(tx_data_len, tx_data);
 }
 
 @view
 func test__decode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
-}(tx_data_len: felt, tx_data: felt*) -> (tx_hash: Uint256, v: felt, r: Uint256, s: Uint256) {
+}(tx_data_len: felt, tx_data: felt*) -> (
+    gas_limit: felt,
+    destination: felt,
+    amount: felt,
+    payload_len: felt,
+    payload: felt*,
+    tx_hash: Uint256,
+    v: felt,
+    r: Uint256,
+    s: Uint256,
+) {
     return EthTransaction.decode(tx_data_len, tx_data);
 }
 

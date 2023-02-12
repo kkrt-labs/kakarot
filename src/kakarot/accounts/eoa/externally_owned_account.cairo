@@ -4,6 +4,8 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin, BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
+from starkware.starknet.common.syscalls import get_tx_info, get_caller_address
+from starkware.cairo.common.math import assert_le
 
 from kakarot.accounts.eoa.library import ExternallyOwnedAccount
 
@@ -72,12 +74,27 @@ func __execute__{
     calldata_len: felt,
     calldata: felt*,
 ) -> (response_len: felt, response: felt*) {
-    return ExternallyOwnedAccount.execute(
+    alloc_locals;
+    let (tx_info) = get_tx_info();
+    let version = tx_info.version;
+    with_attr error_message("ExternallyOwnedAccount: deprecated tx version: {version}") {
+        assert_le(1, version);
+    }
+
+    let (caller) = get_caller_address();
+    with_attr error_message("ExternallyOwnedAccount: reentrant call") {
+        assert caller = 0;
+    }
+
+    let (local response: felt*) = alloc();
+    let (response_len) = ExternallyOwnedAccount.execute(
         call_array_len=call_array_len,
         call_array=call_array,
         calldata_len=calldata_len,
         calldata=calldata,
+        response=response,
     );
+    return (response_len, response);
 }
 
 // @dev returns true if the interface_id is supported
