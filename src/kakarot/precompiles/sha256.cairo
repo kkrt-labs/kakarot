@@ -79,7 +79,7 @@ namespace PrecompileSHA256 {
             8, hash, 0, hash_bytes_array
         );
         let (minimum_word_size) = Helpers.minimum_word_count(input_len);
-        return (32, hash_bytes_array, 3 * minimum_word_size + GAS_COST_SHA256);
+        return (32, hash_bytes_array, 12 * minimum_word_size + GAS_COST_SHA256);
     }
 }
 
