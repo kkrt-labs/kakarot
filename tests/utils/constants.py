@@ -26,6 +26,7 @@ MAX_INT = 2**256 - 1
 ZERO_ADDRESS = "0x" + 40 * "0"
 
 # Taken from eth_account.account.Account.sign_transaction docstring
+# https://eth-account.readthedocs.io/en/stable/eth_account.html?highlight=sign_transaction#eth_account.account.Account.sign_transaction
 TRANSACTIONS = [
     {
         # Note that the address must be in checksum format or native bytes:
