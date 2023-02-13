@@ -8,7 +8,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin, HashBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import keccak, finalize_keccak, keccak_bigend
 from starkware.cairo.common.cairo_secp.signature import verify_eth_signature_uint256
-from starkware.cairo.common.math_cmp import is_not_zero
+from starkware.cairo.common.math_cmp import is_not_zero, is_le
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
 from utils.rlp import RLP
@@ -205,18 +205,10 @@ namespace EthTransaction {
         return (gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s);
     }
 
-    func is_legacy_tx{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        bitwise_ptr: BitwiseBuiltin*,
-        range_check_ptr,
-    }(tx_data: felt*) -> felt {
+    func is_legacy_tx{range_check_ptr}(tx_data: felt*) -> felt {
         tempvar type = [tx_data];
-        if ((type - 2) * (type - 1) == 0) {
-            return FALSE;
-        } else {
-            return TRUE;
-        }
+        // See https://eips.ethereum.org/EIPS/eip-2718#transactiontype-only-goes-up-to-0x7f
+        return is_le(0xc0, type);
     }
 
     func decode{
