@@ -5,33 +5,19 @@
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import get_caller_address
-from starkware.starknet.common.eth_utils import assert_eth_address_range
 from starkware.cairo.common.math_cmp import is_le_felt
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_secp.signature import verify_eth_signature_uint256
 from starkware.cairo.common.uint256 import Uint256
 // Account library
-from kakarot.accounts.eoa.aa.library import ExternallyOwnedAccount
+from kakarot.accounts.eoa.library import ExternallyOwnedAccount
 
-@storage_var
-func eth_address() -> (adress: felt) {
-}
-
-@storage_var
-func kakarot_address() -> (address: felt) {
-}
-
-// Constructor
-// @param _eth_address The Ethereum address which will control the account
-// @param _kakarot_address The Starknet address of the Kakarot contract
-@constructor
-func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    _eth_address: felt, _kakarot_address: felt
-) {
-    assert_eth_address_range(_eth_address);
-    eth_address.write(_eth_address);
-    kakarot_address.write(_kakarot_address);
-    return ();
+// Externally Owned Account initializer
+@external
+func initialize{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(kakarot_address: felt, evm_address: felt) {
+    return ExternallyOwnedAccount.initialize(kakarot_address, evm_address);
 }
 
 // Account specific methods
@@ -52,9 +38,9 @@ func __validate__{
     calldata: felt*,
 ) {
     alloc_locals;
-    let (address) = eth_address.read();
+    let (address) = ExternallyOwnedAccount.get_evm_address();
     ExternallyOwnedAccount.validate(
-        eth_address=address,
+        evm_address=address,
         call_array_len=call_array_len,
         call_array=call_array,
         calldata_len=calldata_len,
@@ -64,7 +50,7 @@ func __validate__{
 }
 
 // @notice validates this account class for declaration
-// @dev For our usecase the account doesn't need to declare contracts
+// @dev For our use case the account doesn't need to declare contracts
 @external
 func __validate_declare__{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
@@ -99,15 +85,6 @@ func __execute__{
     return (response_len=0, response=response);
 }
 
-// @return eth_address The Ethereum address controlling this account
-@view
-func get_eth_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
-    eth_address: felt
-) {
-    let (address) = eth_address.read();
-    return (eth_address=address);
-}
-
 // @dev returns true if the interface_id is supported
 // @dev TODO: check what interfaces the contract should support and maybe create one for a kakarot account
 // @param interface_id The interface Id to verify if supported
@@ -132,8 +109,32 @@ func is_valid_signature{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
 }(hash_len: felt, hash: felt*, signature_len: felt, signature: felt*) -> (is_valid: felt) {
     alloc_locals;
-    let (_eth_address) = eth_address.read();
+    let (_evm_address) = ExternallyOwnedAccount.get_evm_address();
     return ExternallyOwnedAccount.is_valid_signature(
-        _eth_address, hash_len, hash, signature_len, signature
+        _evm_address, hash_len, hash, signature_len, signature
     );
+}
+
+// @notice return ethereum address of the externally owned account
+@view
+func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    evm_address: felt
+) {
+    return ExternallyOwnedAccount.get_evm_address();
+}
+
+// @notice empty bytecode needed for EXTCODEHASH.
+@view
+func bytecode{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() -> (bytecode_len: felt, bytecode: felt*) {
+    let (bytecode) = alloc();
+    return (0, bytecode);
+}
+// @notice empty bytecode but needed for EXTCODEHASH.
+@view
+func bytecode_len{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() -> (len: felt) {
+    return (len=0);
 }

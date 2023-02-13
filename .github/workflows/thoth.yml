@@ -57,18 +57,11 @@ jobs:
       # Build artifacts
       - name: Compile all the cairo files && Generate contract's call graphs
         run: make build
-
       - name: Generate contract's call graphs
         run: |
           for file in $(ls build | grep -v "abi"); do thoth local build/$file -call; done
-          rm -rf docs/callgraphs
-          mv output-callgraph docs/callgraphs
-
-      - name: Commit changes
-        # Run on push events and commit only when there are changes, otherwise it continues
-        if: github.event_name == 'push'
-        run: |
-          git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
-          git config --global user.email "sayajin-labs@users.noreply.github.com"
-          git add -f docs/callgraphs/*
-          git diff-index --quiet HEAD || (git commit -m "${{ env.CI_COMMIT_MESSAGE }}" && git push)
+      - name: Store artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          path: output-callgraph
+          name: callgraphs

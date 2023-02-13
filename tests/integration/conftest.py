@@ -22,16 +22,16 @@ logger = logging.getLogger()
 
 
 @pytest.fixture(scope="package")
-def get_starknet_address(contract_account_class, kakarot):
+def get_starknet_address(account_proxy_class, kakarot):
     """
     Fixture to return the starknet address of a contract deployed by kakarot using CREATE2
     """
 
-    def _factory(salt):
+    def _factory(evm_contract_address):
         return calculate_contract_address_from_hash(
-            salt=salt,
-            class_hash=contract_account_class.class_hash,
-            constructor_calldata=[kakarot.contract_address, 0],
+            salt=evm_contract_address,
+            class_hash=account_proxy_class.class_hash,
+            constructor_calldata=[],
             deployer_address=kakarot.contract_address,
         )
 
@@ -99,11 +99,10 @@ def deploy_solidity_contract(kakarot, get_solidity_contract):
         deploy_bytecode = hex_string_to_bytes_array(
             contract.constructor(*args, **kwargs).data_in_transaction
         )
-
         with traceit.context(contract_name):
-            tx = await kakarot.deploy(bytecode=deploy_bytecode).execute(
-                caller_address=caller_address
-            )
+            tx = await kakarot.deploy_contract_account(
+                bytecode=deploy_bytecode
+            ).execute(caller_address=caller_address)
 
         starknet_contract_address = tx.result.starknet_contract_address
         evm_contract_address = Web3.toChecksumAddress(
@@ -126,7 +125,7 @@ Wallet = namedtuple(
 
 
 @pytest_asyncio.fixture(scope="package")
-async def addresses(deployer, starknet, externally_owned_account_class) -> List[Wallet]:
+async def addresses(kakarot, starknet, externally_owned_account_class) -> List[Wallet]:
     """
     Returns a list of addresses to be used in tests.
     Addresses are returned as named tuples with
@@ -138,8 +137,8 @@ async def addresses(deployer, starknet, externally_owned_account_class) -> List[
     wallets = []
     for private_key in private_keys:
         evm_address = private_key.public_key.to_checksum_address()
-        eth_aa_deploy_tx = await deployer.create_account(
-            evm_address=int(evm_address, 16)
+        eoa_deploy_tx = await kakarot.deploy_externally_owned_account(
+            int(evm_address, 16)
         ).execute()
 
         wallets.append(
@@ -149,10 +148,10 @@ async def addresses(deployer, starknet, externally_owned_account_class) -> List[
                 starknet_contract=StarknetContract(
                     starknet.state,
                     externally_owned_account_class.abi,
-                    eth_aa_deploy_tx.call_info.internal_calls[0].contract_address,
-                    eth_aa_deploy_tx,
+                    eoa_deploy_tx.call_info.internal_calls[0].contract_address,
+                    eoa_deploy_tx,
                 ),
-                starknet_address=eth_aa_deploy_tx.call_info.internal_calls[
+                starknet_address=eoa_deploy_tx.call_info.internal_calls[
                     0
                 ].contract_address,
             )

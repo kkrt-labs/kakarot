@@ -122,6 +122,7 @@ markers = [
     "SolmateERC20",
     "SolmateERC721",
     "UniswapV2ERC20",
+    "UniswapV2Factory",
     "Utils",
 ]
 

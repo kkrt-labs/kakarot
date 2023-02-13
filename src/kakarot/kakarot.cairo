@@ -11,17 +11,24 @@ from starkware.cairo.common.alloc import alloc
 from kakarot.library import Kakarot
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.interfaces.interfaces import IEvmContract
 from kakarot.memory import Memory
-from kakarot.execution_context import ExecutionContext
-from starkware.cairo.common.dict import DictAccess
-
+from kakarot.accounts.library import Accounts
 // Constructor
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    owner: felt, native_token_address_: felt, evm_contract_class_hash: felt
+    owner: felt,
+    native_token_address_: felt,
+    contract_account_class_hash_,
+    externally_owned_account_class_hash,
+    account_proxy_class_hash,
 ) {
-    return Kakarot.constructor(owner, native_token_address_, evm_contract_class_hash);
+    return Kakarot.constructor(
+        owner,
+        native_token_address_,
+        contract_account_class_hash_,
+        externally_owned_account_class_hash,
+        account_proxy_class_hash,
+    );
 }
 
 // @notice Execute EVM bytecode
@@ -130,26 +137,6 @@ func execute_at_address{
     );
 }
 
-// @notice Set the account registry used by kakarot
-// @dev Set the account regestry which will be used to convert
-//      given starknet addresses to evm addresses and vice versa
-// @param registry_address_ The address of the new account registry contract
-@external
-func set_account_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    registry_address_: felt
-) {
-    return Kakarot.set_account_registry(registry_address_);
-}
-
-// @notice Get the account registry used by kakarot
-// @return address The address of the current account registry contract
-@view
-func get_account_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
-    address: felt
-) {
-    return Kakarot.get_account_registry();
-}
-
 // @notice Set the blockhash registry used by kakarot
 // @dev Set the blockhash registry which will be used to get the blockhashes
 // @param blockhash_registry_address_ The address of the new blockhash registry contract
@@ -185,10 +172,30 @@ func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 // @return evm_contract_address The evm address that is mapped to the newly deployed starknet contract address
 // @return starknet_contract_address The newly deployed starknet contract address
 @external
-func deploy{
+func deploy_contract_account{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(bytecode_len: felt, bytecode: felt*) -> (
     evm_contract_address: felt, starknet_contract_address: felt
 ) {
-    return Kakarot.deploy(bytecode_len, bytecode);
+    return Kakarot.deploy_contract_account(bytecode_len, bytecode);
+}
+
+// @notice Deploy a new externally owned account
+// @return evm_contract_address The evm address that is mapped to the newly deployed starknet contract address
+// @return starknet_contract_address The newly deployed starknet contract address
+@external
+func deploy_externally_owned_account{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(evm_address: felt) -> (starknet_contract_address: felt) {
+    return Kakarot.deploy_externally_owned_account(evm_address);
+}
+
+// @notice Compute the starknet address of a contract given its EVM address
+// @param evm_address The EVM address of the contract
+// @return contract_address The starknet address of the contract
+@view
+func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    evm_address: felt
+) -> (contract_address: felt) {
+    return Accounts.compute_starknet_address(evm_address);
 }
