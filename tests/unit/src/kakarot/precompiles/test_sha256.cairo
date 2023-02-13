@@ -21,7 +21,7 @@ func test__sha256{
         PrecompileSHA256.PRECOMPILE_ADDRESS, data_len, data
     );
     let (minimum_word_size) = Helpers.minimum_word_count(data_len);
-    assert gas_used = 3 * minimum_word_size + PrecompileSHA256.GAS_COST_SHA256;
+    assert gas_used = 12 * minimum_word_size + PrecompileSHA256.GAS_COST_SHA256;
 
     return (hash_len, hash);
 }
