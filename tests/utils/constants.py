@@ -30,16 +30,16 @@ TRANSACTIONS = [
     {
         # Note that the address must be in checksum format or native bytes:
         "to": "0xF0109fC8DF283027b6285cc889F5aA624EaC1F55",
-        "value": 1000000000,
-        "gas": 2000000,
+        "value": 1_000_000_000,
+        "gas": 2_000_000,
         "gasPrice": 234567897654321,
         "nonce": 0,
         "chainId": CHAIN_ID,
     },
     {
         "type": 1,
-        "gas": 100000,
-        "gasPrice": 1000000000,
+        "gas": 100_000,
+        "gasPrice": 1_000_000_000,
         "data": "0x616263646566",
         "nonce": 34,
         "to": "0x09616C3d61b3331fc4109a9E41a8BDB7d9776609",
@@ -56,9 +56,9 @@ TRANSACTIONS = [
     },
     {
         "type": 2,
-        "gas": 100000,
-        "maxFeePerGas": 2000000000,
-        "maxPriorityFeePerGas": 2000000000,
+        "gas": 100_000,
+        "maxFeePerGas": 2_000_000_000,
+        "maxPriorityFeePerGas": 2_000_000_000,
         "data": "0x616263646566",
         "nonce": 34,
         "to": "0x09616C3d61b3331fc4109a9E41a8BDB7d9776609",

@@ -190,7 +190,7 @@ namespace EthTransaction {
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
 
-        let gas_limit_idx = tx_type + 1;
+        let gas_limit_idx = tx_type + 2;
         let (gas_limit) = Helpers.bytes_to_felt(
             sub_items[gas_limit_idx].data_len, sub_items[gas_limit_idx].data, 0
         );

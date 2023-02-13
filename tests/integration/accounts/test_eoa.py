@@ -20,7 +20,7 @@ class TestExternallyOwnedAccount:
                 await owner.starknet_contract.__validate_declare__(0).call()
 
     async def test_bytecode(self, owner):
-        assert (await owner.starknet_contract.bytecode()).result.bytecode == []
+        assert (await owner.starknet_contract.bytecode().call()).result.bytecode == []
 
     async def test_bytecode_len(self, owner):
-        assert (await owner.starknet_contract.bytecode_len()).result.len == 0
+        assert (await owner.starknet_contract.bytecode_len().call()).result.len == 0
