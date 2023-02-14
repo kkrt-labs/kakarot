@@ -174,10 +174,10 @@ func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 @external
 func deploy_contract_account{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(bytecode_len: felt, bytecode: felt*) -> (
+}(gas_limit: felt, bytecode_len: felt, bytecode: felt*) -> (
     evm_contract_address: felt, starknet_contract_address: felt
 ) {
-    return Kakarot.deploy_contract_account(bytecode_len, bytecode);
+    return Kakarot.deploy_contract_account(gas_limit, bytecode_len, bytecode);
 }
 
 // @notice Deploy a new externally owned account
