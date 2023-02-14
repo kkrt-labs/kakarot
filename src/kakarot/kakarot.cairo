@@ -167,6 +167,7 @@ func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 }
 
 // @notice Deploy a new contract account and execute constructor
+// @param gas_limit: maximum amount of gas the constructor can use
 // @param bytes_len: the constructor + contract bytecode lenght
 // @param bytes: the constructor + contract bytecode
 // @return evm_contract_address The evm address that is mapped to the newly deployed starknet contract address
@@ -174,10 +175,10 @@ func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 @external
 func deploy_contract_account{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(bytecode_len: felt, bytecode: felt*) -> (
+}(gas_limit: felt, bytecode_len: felt, bytecode: felt*) -> (
     evm_contract_address: felt, starknet_contract_address: felt
 ) {
-    return Kakarot.deploy_contract_account(bytecode_len, bytecode);
+    return Kakarot.deploy_contract_account(gas_limit, bytecode_len, bytecode);
 }
 
 // @notice Deploy a new externally owned account

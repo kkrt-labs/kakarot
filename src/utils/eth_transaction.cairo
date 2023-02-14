@@ -245,6 +245,11 @@ namespace EthTransaction {
         let (gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s) = decode(
             tx_data_len, tx_data
         );
+        if (destination == FALSE){
+            with_attr error_message("ExternallyOwnedAccount: account creations are not payable") {
+                assert amount = 0;
+            }
+        }
         let (local keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
         with keccak_ptr {

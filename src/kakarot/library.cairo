@@ -164,6 +164,7 @@ namespace Kakarot {
     // @notice deploy contract account
     // @dev First deploy a contract_account with no bytecode, then run the calldata as bytecode with the new address,
     //      then set the bytecode with the result of the initial run
+    // @param gas_limit: maximum amount of gas the constructor can use
     // @param bytecode_len: the deploy bytecode length
     // @param bytecode: the deploy bytecode
     // @return evm_contract_address The evm address that is mapped to the newly deployed starknet contract address
@@ -173,7 +174,7 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(bytecode_len: felt, bytecode: felt*) -> (
+    }(gas_limit: felt, bytecode_len: felt, bytecode: felt*) -> (
         evm_contract_address: felt, starknet_contract_address: felt
     ) {
         alloc_locals;

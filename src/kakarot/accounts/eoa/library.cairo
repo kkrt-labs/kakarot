@@ -32,6 +32,8 @@ namespace ExternallyOwnedAccount {
     // Constants
     // keccak250(ascii('execute_at_address'))
     const EXECUTE_AT_ADDRESS_SELECTOR = 175332271055223547208505378209204736960926292802627036960758298143252682610;
+    // keccak250(ascii('deploy_contract_account'))
+    const DEPLOY_CONTRACT_ACCOUNT = 1793893178491056210152325574444006027492498768972445405939198352014726462427;
     // @dev see utils/interface_id.py
     const INTERFACE_ID = 0x68bca1a;
 
@@ -122,18 +124,34 @@ namespace ExternallyOwnedAccount {
         ) = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
 
         let (_kakarot_address) = kakarot_address.read();
-        // execute_at_address signature is
-        // address: felt, value: felt, gas_limit: felt, calldata_len: felt, calldata: felt*
+
         let (current_tx_calldata: felt*) = alloc();
-        assert [current_tx_calldata] = destination;
-        assert [current_tx_calldata + 1] = amount;
-        assert [current_tx_calldata + 2] = gas_limit;
-        assert [current_tx_calldata + 3] = payload_len;
-        memcpy(current_tx_calldata + 4, payload, payload_len);
+        local offset;
+        local selector;
+        // If destination is 0, we are deploying a contract
+        if (destination == FALSE) {
+            // deploy_contract_account signature is
+            // gas_limit: felt, calldata_len: felt, calldata: felt*
+            assert [current_tx_calldata] = gas_limit;
+            assert [current_tx_calldata + 1] = payload_len;
+            assert offset = 2;
+            assert selector = DEPLOY_CONTRACT_ACCOUNT;
+        // Else run the bytecode of a specified contract
+        }else{
+            // execute_at_address signature is
+            // address: felt, value: felt, gas_limit: felt, calldata_len: felt, calldata: felt*
+            assert [current_tx_calldata] = destination;
+            assert [current_tx_calldata + 1] = amount;
+            assert [current_tx_calldata + 2] = gas_limit;
+            assert [current_tx_calldata + 3] = payload_len;
+            assert offset = 4;
+            assert selector = EXECUTE_AT_ADDRESS_SELECTOR;
+        }
+        memcpy(current_tx_calldata + offset, payload, payload_len); 
         let res = call_contract(
             contract_address=_kakarot_address,
-            function_selector=EXECUTE_AT_ADDRESS_SELECTOR,
-            calldata_size=4 + payload_len,
+            function_selector=selector,
+            calldata_size=offset + payload_len,
             calldata=current_tx_calldata,
         );
         memcpy(response, res.retdata, res.retdata_size);

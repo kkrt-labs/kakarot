@@ -101,6 +101,7 @@ def deploy_solidity_contract(kakarot, get_solidity_contract):
         )
         with traceit.context(contract_name):
             tx = await kakarot.deploy_contract_account(
+                gas_limit=0,
                 bytecode=deploy_bytecode
             ).execute(caller_address=caller_address)
 
