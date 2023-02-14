@@ -2,7 +2,7 @@ import pytest
 from starkware.starknet.testing.contract import StarknetContract
 
 from tests.integration.bytecode.test_cases import test_cases
-from tests.integration.helpers.helpers import (
+from tests.utils.helpers import (
     extract_memory_from_execute,
     extract_stack_from_execute,
     hex_string_to_bytes_array,

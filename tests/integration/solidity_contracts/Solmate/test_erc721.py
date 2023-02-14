@@ -2,7 +2,7 @@ import pytest
 import pytest_asyncio
 from eth_utils import keccak
 
-from tests.integration.helpers.constants import ZERO_ADDRESS
+from tests.utils.constants import ZERO_ADDRESS
 from tests.utils.errors import kakarot_error
 
 

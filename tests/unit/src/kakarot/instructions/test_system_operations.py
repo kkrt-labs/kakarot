@@ -6,8 +6,8 @@ from eth_utils import decode_hex, to_bytes, to_checksum_address
 from starkware.python.utils import from_bytes
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.integration.helpers.helpers import get_create2_address, get_create_address
 from tests.utils.errors import kakarot_error
+from tests.utils.helpers import get_create2_address, get_create_address
 from tests.utils.uint256 import int_to_uint256
 
 

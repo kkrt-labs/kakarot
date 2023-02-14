@@ -37,6 +37,7 @@ async def externally_owned_account_class(starknet: Starknet):
     return await starknet.declare(
         source="src/kakarot/accounts/eoa/externally_owned_account.cairo",
         cairo_path=["src"],
+        disable_hint_validation=True,
     )
 
 
