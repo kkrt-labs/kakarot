@@ -10,7 +10,7 @@ from starkware.cairo.common.math import split_felt
 
 // Local dependencies
 from utils.utils import Helpers
-from kakarot.precompiles.modexp import PrecompileModExp
+from kakarot.precompiles.modexp import PrecompileModExpMVP
 from kakarot.model import model
 from kakarot.memory import Memory
 from kakarot.constants import Constants
@@ -23,14 +23,13 @@ from tests.unit.helpers.helpers import TestHelpers
 @external
 func test__modexp_impl{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(data_len: felt, data: felt*) -> (result: Uint256, gas_cost: felt) {
+}(data_len: felt, data: felt*) -> (result: felt, gas_cost: felt) {
     alloc_locals;
 
-    let (output_len, output, gas_used) = PrecompileModExp.run(
-        PrecompileModExp.PRECOMPILE_ADDRESS, data_len, data
+    let (output_len, output, gas_used) = PrecompileModExpMVP.run(
+        PrecompileModExpMVP.PRECOMPILE_ADDRESS, data_len, data
     );
-    let result = Helpers.bytes_i_to_uint256(output, output_len);
-    assert output_len = 32;
 
+    let (result) = Helpers.bytes_to_felt(output_len, output, 0);
     return (result=result, gas_cost=gas_used);
 }

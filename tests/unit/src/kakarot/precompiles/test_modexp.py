@@ -5,8 +5,6 @@ import pytest
 import pytest_asyncio
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.uint256 import uint256_to_int
-
 
 @pytest_asyncio.fixture(scope="module")
 async def modexp(starknet: Starknet):
@@ -23,18 +21,18 @@ class TestModExp:
     async def test_modexp(self, modexp):
 
         random.seed(0)
-        max_int = 2**256 - 1
-        b = 3
+        2**256 - 1
+        b = 8
         b_size = math.ceil(math.log(b, 256))
         b_size_bytes = b_size.to_bytes(32, "big")
         b_bytes = b.to_bytes(b_size, "big")
 
-        e = 2**256 - 2**32 - 978
+        e = 9
         e_size = math.ceil(math.log(e, 256))
         e_size_bytes = e_size.to_bytes(32, "big")
         e_bytes = e.to_bytes(e_size, "big")
 
-        m = 2**256 - 2**32 - 977
+        m = 402
         m_size = math.ceil(math.log(m, 256))
         m_size_bytes = m_size.to_bytes(32, "big")
         m_bytes = m.to_bytes(m_size, "big")
@@ -45,6 +43,5 @@ class TestModExp:
         expected_result = pow(b, e, m)
 
         cairo_modexp = await modexp.test__modexp_impl(bytes_array).call()
-        cairo_uint256 = cairo_modexp.result[0]
-        cairo_result = uint256_to_int(cairo_uint256.low, cairo_uint256.high)
+        cairo_result = cairo_modexp.result[0]
         assert expected_result == cairo_result

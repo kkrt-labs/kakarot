@@ -1667,7 +1667,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Precompiles - ModExp - playground test case",
-        "marks": [pytest.mark.ModExp, pytest.mark.Precompiles],
+        "marks": [pytest.mark.MODEXP, pytest.mark.Precompiles],
     },
     {
         "params": {

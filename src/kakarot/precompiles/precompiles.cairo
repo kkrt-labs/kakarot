@@ -19,7 +19,7 @@ from kakarot.precompiles.ecadd import PrecompileEcAdd
 from kakarot.precompiles.ecmul import PrecompileEcMul
 from kakarot.precompiles.ec_recover import PrecompileEcRecover
 from kakarot.precompiles.ripemd160 import PrecompileRIPEMD160
-from kakarot.precompiles.modexp import PrecompileModExp
+from kakarot.precompiles.modexp import PrecompileModExpMVP
 from kakarot.precompiles.sha256 import PrecompileSHA256
 from kakarot.stack import Stack
 
@@ -122,7 +122,7 @@ namespace Precompiles {
         ret;
         call PrecompileDataCopy.run;  // 0x4
         ret;
-        call PrecompileModExp.run;  // 0x5
+        call PrecompileModExpMVP.run;  // 0x5
         ret;
         call PrecompileEcAdd.run;  // 0x6
         ret;

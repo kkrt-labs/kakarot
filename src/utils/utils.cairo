@@ -72,6 +72,7 @@ namespace Helpers {
         );
         return res;
     }
+
     // @notice This function is used to convert a sequence of i bytes to Uint256.
     // @param val: pointer to the first byte.
     // @param i: sequence size.
