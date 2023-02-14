@@ -13,8 +13,7 @@ from utils.utils import Helpers
 from utils.modexp.modexp_utils import ModExpHelpers
 
 // @title ModExpMVP Precompile related functions.
-// @notice This file contains the logic required to run the modexp precompile MVP
-// @notice It is an MVP implementation since it only supports uint256 numbers and not bigint.
+// @notice It is an MVP implementation since it only supports uint256 numbers with m_size<=16 and not bigint which requires bigint library in cairo 0.10.
 // @author @dragan2234
 // @custom:namespace PrecompileModExpMVP
 namespace PrecompileModExpMVP {
