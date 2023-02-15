@@ -12,7 +12,7 @@ from starkware.cairo.common.memcpy import memcpy
 from utils.utils import Helpers
 from utils.modexp.modexp_utils import ModExpHelpersUint256
 
-// @title ModExpMVP Precompile related functions.
+// @title ModExpUint256 MVP Precompile related functions.
 // @notice It is an MVP implementation since it only supports uint256 numbers with m_size<=16 and not bigint which requires bigint library in cairo 0.10.
 // @author @dragan2234
 // @custom:namespace PrecompileModExpUint256
