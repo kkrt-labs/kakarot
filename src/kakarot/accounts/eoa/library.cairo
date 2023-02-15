@@ -72,6 +72,8 @@ namespace ExternallyOwnedAccount {
         return ();
     }
 
+    // @notice Read stored EVM address.
+    // @return evm_address The stored address.
     func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         evm_address: felt
     ) {
@@ -79,11 +81,11 @@ namespace ExternallyOwnedAccount {
         return (evm_address=address);
     }
 
-    // @notice checks if tx is signed and valid for each call
-    // @param call_array_len The length of the call array
-    // @param call_array The call array
-    // @param calldata_len The length of the calldata
-    // @param calldata The calldata
+    // @notice Check if tx is signed and valid for each call.
+    // @param call_array_len The length of the call array.
+    // @param call_array The call array.
+    // @param calldata_len The length of the calldata.
+    // @param calldata The calldata.
     func validate{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

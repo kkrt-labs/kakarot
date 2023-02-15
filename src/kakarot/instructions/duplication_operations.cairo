@@ -21,7 +21,7 @@ namespace DuplicationOperations {
     // @notice Generic DUP operation
     // @dev Duplicate the top i-th stack item to the top of the stack.
     // @param ctx The pointer to the execution context.
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_dup_i{range_check_ptr}(
         ctx: model.ExecutionContext*, i: felt
     ) -> model.ExecutionContext* {
@@ -50,7 +50,7 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_dup1{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -68,7 +68,7 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_dup2{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -86,7 +86,7 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_dup3{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -104,7 +104,7 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_dup4{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -122,7 +122,7 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_dup5{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -140,7 +140,7 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_dup6{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -158,7 +158,7 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_dup7{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -176,7 +176,7 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_dup8{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -194,7 +194,7 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_dup9{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -212,7 +212,7 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_dup10{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -230,7 +230,7 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_dup11{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -248,7 +248,7 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_dup12{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -266,7 +266,7 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_dup13{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -284,7 +284,7 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_dup14{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -302,7 +302,7 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_dup15{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -320,7 +320,7 @@ namespace DuplicationOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_dup16{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

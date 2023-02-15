@@ -40,7 +40,7 @@ namespace Memory {
     }
 
     // @notice Initialize the memory.
-    // @return The pointer to the memory.
+    // @return memory The pointer to the memory.
     func init() -> model.Memory* {
         alloc_locals;
         let (word_dict_start: DictAccess*) = default_dict_new(0);
@@ -50,8 +50,8 @@ namespace Memory {
             bytes_len=0);
     }
 
-    // @notice Finalizes the memory.
-    // @return The pointer to the memory Summary.
+    // @notice Finalize the memory.
+    // @return summary The pointer to the memory Summary.
     func finalize{range_check_ptr}(self: model.Memory*) -> Summary* {
         let (squashed_start, squashed_end) = default_dict_finalize(
             self.word_dict_start, self.word_dict, 0
@@ -62,10 +62,10 @@ namespace Memory {
     }
 
     // @notice Store an element into the memory.
-    // @param self - The pointer to the memory.
-    // @param element - The element to push.
-    // @param offset - The offset to store the element at.
-    // @return The new pointer to the memory.
+    // @param self The pointer to the memory.
+    // @param element The element to push.
+    // @param offset The offset to store the element at.
+    // @return memory The new pointer to the memory.
     func store{range_check_ptr}(
         self: model.Memory*, element: Uint256, offset: felt
     ) -> model.Memory* {
@@ -132,12 +132,12 @@ namespace Memory {
             ));
     }
 
-    // @notice store_n Store N bytes into the memory.
+    // @notice Store N bytes into the memory.
     // @param self The pointer to the memory.
     // @param element_len byte length of the array to be saved on memory.
     // @param element pointer to the array that will be saved on memory.
     // @param offset The offset to store the element at.
-    // @return The new pointer to the memory.
+    // @return memory The new pointer to the memory.
     func store_n{range_check_ptr}(
         self: model.Memory*, element_len: felt, element: felt*, offset: felt
     ) -> model.Memory* {
@@ -238,11 +238,11 @@ namespace Memory {
     }
 
     // @notice Load an element from the memory.
-    // @param self - The pointer to the memory.
-    // @param offset - The offset to load the element from.
-    // @param n - The number of bytes to load from memory.
-    // @return The new pointer to the memory.
-    // @return The loaded element.
+    // @param self The pointer to the memory.
+    // @param offset The offset to load the element from.
+    // @param n The number of bytes to load from memory.
+    // @return memory The new pointer to the memory.
+    // @return loaded_element The loaded element.
     func _load{range_check_ptr}(self: model.Memory*, offset: felt) -> (model.Memory*, Uint256) {
         let word_dict = self.word_dict;
 
@@ -295,12 +295,12 @@ namespace Memory {
         );
     }
 
-    // @notice load_n Load N bytes from the memory.
+    // @notice Load N bytes from the memory.
     // @param self The pointer to the memory.
     // @param element_len byte length of the output array.
     // @param element pointer to the output array.
     // @param offset The memory offset to load from.
-    // @return The new pointer to the memory.
+    // @return memory The new pointer to the memory.
     func _load_n{range_check_ptr}(
         self: model.Memory*, element_len: felt, element: felt*, offset: felt
     ) -> model.Memory* {
@@ -371,10 +371,10 @@ namespace Memory {
     }
 
     // @notice Expend the memory with length bytes
-    // @param self - The pointer to the memory.
-    // @param length - The number of bytes to add.
-    // @return The new pointer to the memory.
-    // @return The gas cost of this expansion.
+    // @param self The pointer to the memory.
+    // @param length The number of bytes to add.
+    // @return new_memory The new pointer to the memory.
+    // @return cost The gas cost of this expansion.
     func expand{range_check_ptr}(self: model.Memory*, length: felt) -> (
         new_memory: model.Memory*, cost: felt
     ) {
@@ -404,10 +404,10 @@ namespace Memory {
     }
 
     // @notice Ensure that the memory as at least length bytes. Expand if necessary.
-    // @param self - The pointer to the memory.
-    // @param offset - The number of bytes to add.
-    // @return The new pointer to the memory.
-    // @return The gas cost of this expansion.
+    // @param self The pointer to the memory.
+    // @param offset The number of bytes to add.
+    // @return new_memory The new pointer to the memory.
+    // @return cost The gas cost of this expansion.
     func ensure_length{range_check_ptr}(self: model.Memory*, length: felt) -> (
         new_memory: model.Memory*, cost: felt
     ) {
@@ -420,11 +420,11 @@ namespace Memory {
     }
 
     // @notice Expand memory if necessary then load 32 bytes from it at given offset.
-    // @param self - The pointer to the memory.
-    // @param offset - The number of bytes to add.
-    // @return The new pointer to the memory.
-    // @return The loaded Uint256 from memory.
-    // @return The gas cost of this expansion.
+    // @param self The pointer to the memory.
+    // @param offset The number of bytes to add.
+    // @return new_memory The new pointer to the memory.
+    // @return loaded_element The loaded Uint256 from memory.
+    // @return gas_cost The gas cost of this expansion.
     func load{range_check_ptr}(self: model.Memory*, offset: felt) -> (
         new_memory: model.Memory*, loaded_element: Uint256, gas_cost: felt
     ) {
@@ -435,12 +435,12 @@ namespace Memory {
     }
 
     // @notice Expand memory if necessary then load n bytes from it at given offset.
-    // @param self - The pointer to the memory.
-    // @param element_len - The number of bytes to load.
-    // @param element - The pointer to the filled array.
-    // @param offset - The number of bytes to add.
-    // @return The new pointer to the memory.
-    // @return The gas cost of this expansion.
+    // @param self The pointer to the memory.
+    // @param element_len The number of bytes to load.
+    // @param element The pointer to the filled array.
+    // @param offset The number of bytes to add.
+    // @return new_memory The new pointer to the memory.
+    // @return gas_cost The gas cost of this expansion.
     func load_n{range_check_ptr}(
         self: model.Memory*, element_len: felt, element: felt*, offset: felt
     ) -> (new_memory: model.Memory*, gas_cost: felt) {
