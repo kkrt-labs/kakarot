@@ -61,7 +61,6 @@ class TestLibrary:
             # Deploy Contract
             else:
                 expected_result += [
-                    transaction["gas"],
                     len(
                         bytes.fromhex(transaction.get("data", "").replace("0x", ""))
                     ),  # calldata_len
