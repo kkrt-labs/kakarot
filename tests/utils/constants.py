@@ -75,16 +75,14 @@ TRANSACTIONS = [
         "chainId": CHAIN_ID,
     },
     {
-        # Empty "to" field results in contract creation
         "type": 2,
         "gas": 100_000,
         "maxFeePerGas": 2_000_000_000,
         "maxPriorityFeePerGas": 2_000_000_000,
-        # Counter Contract
         "data": "0x616263646566",
         "nonce": 34,
-        "to": "0x00",
-        "value": 0x0,
+        "to": "",
+        "value": 0x00,
         "accessList": (
             {
                 "address": "0x0000000000000000000000000000000000000001",

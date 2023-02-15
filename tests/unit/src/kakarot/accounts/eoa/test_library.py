@@ -45,17 +45,31 @@ class TestLibrary:
                 )
             ]
             calldata += tx
-            expected_result += [
-                int(transaction["to"], 16),
-                transaction["value"],
-                transaction["gas"],
-                len(
-                    bytes.fromhex(transaction.get("data", "").replace("0x", ""))
-                ),  # calldata_len
-                *list(
-                    bytes.fromhex(transaction.get("data", "").replace("0x", ""))
-                ),  # calldata
-            ]
+            # Execute contract bytecode
+            if transaction["to"] != "":
+                expected_result += [
+                    int(transaction["to"], 16),
+                    transaction["value"],
+                    transaction["gas"],
+                    len(
+                        bytes.fromhex(transaction.get("data", "").replace("0x", ""))
+                    ),  # calldata_len
+                    *list(
+                        bytes.fromhex(transaction.get("data", "").replace("0x", ""))
+                    ),  # calldata
+                ]
+            # Deploy Contract
+            else:
+                expected_result += [
+                   transaction["gas"],
+                    len(
+                        bytes.fromhex(transaction.get("data", "").replace("0x", ""))
+                    ),  # calldata_len
+                    *list(
+                        bytes.fromhex(transaction.get("data", "").replace("0x", ""))
+                    ),  # calldata
+                ]
+
 
         assert (
             await externally_owned_account.test__execute__should_make_all_calls_and_return_concat_results(
