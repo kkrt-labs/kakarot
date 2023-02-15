@@ -46,7 +46,7 @@ namespace ModExpHelpers {
 
         let (quotient, remainder) = uint256_unsigned_div_rem(y, Uint256(low=2, high=0));
         let (is_equal_to_one) = uint256_eq(remainder, Uint256(low=1, high=0));
-        if ((is_equal_to_one) == 0) {
+        if (is_equal_to_one == FALSE) {
             let (x_res_quotient, x_res_quotient_high, x_res_remainder) = uint256_mul_div_mod(
                 x, x, p
             );
