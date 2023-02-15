@@ -136,7 +136,7 @@ namespace ExternallyOwnedAccount {
             assert [current_tx_calldata + 1] = payload_len;
             assert offset = 2;
             assert selector = DEPLOY_CONTRACT_ACCOUNT;
-        // Else run the bytecode of a specified contract
+        // Else run the bytecode of the destination contract
         }else{
             // execute_at_address signature is
             // address: felt, value: felt, gas_limit: felt, calldata_len: felt, calldata: felt*
