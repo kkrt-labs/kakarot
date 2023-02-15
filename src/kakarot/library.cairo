@@ -213,7 +213,7 @@ namespace Kakarot {
             stack=stack,
             memory=memory,
             gas_used=0,
-            gas_limit=0,
+            gas_limit=gas_limit,
             gas_price=0,
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=evm_contract_address,
