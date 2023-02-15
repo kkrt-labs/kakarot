@@ -28,6 +28,8 @@ StarkNet. Kakarot is the super sayajin zkEVM! Why? Because:
 
 It is a work in progress, and it is not ready for production.
 
+[Latest presentation of Kakarot at Starkware Session TLV 2023](https://www.youtube.com/watch?v=HnIqnhWdxpA)
+
 [Getting started](#getting-started) • [Supported opcodes](#supported-opcodes) •
 [Build](#build) • [Test](#test) •
 [Report a bug](https://github.com/sayajin-labs/kakarot/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+)
@@ -64,7 +66,7 @@ Here is the list of supported opcodes: [opcodes](docs/supported_opcodes.md)
 
 - ✅ Kakarot is an EVM bytecode interpreter.
 
-- ❌ Kakarot is not a blockchain
+- ❌ Kakarot is not a blockchain.
 
 - ❌ Kakarot is not a compiler. Check out
   [Warp](https://github.com/NethermindEth/warp) for a Solidity -> Cairo
