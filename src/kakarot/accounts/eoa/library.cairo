@@ -131,10 +131,9 @@ namespace ExternallyOwnedAccount {
         // If destination is 0, we are deploying a contract
         if (destination == FALSE) {
             // deploy_contract_account signature is
-            // gas_limit: felt, calldata_len: felt, calldata: felt*
-            assert [current_tx_calldata] = gas_limit;
-            assert [current_tx_calldata + 1] = payload_len;
-            assert offset = 2;
+            // calldata_len: felt, calldata: felt*
+            assert [current_tx_calldata] = payload_len;
+            assert offset = 1;
             assert selector = DEPLOY_CONTRACT_ACCOUNT;
         // Else run the bytecode of the destination contract
         }else{
