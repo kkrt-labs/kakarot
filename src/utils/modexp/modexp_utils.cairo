@@ -13,11 +13,11 @@ from starkware.cairo.common.bitwise import bitwise_and
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.bool import TRUE, FALSE
 
-// @title ModExpHelperMVP Functions
+// @title ModExpHelpersUint256 Functions
 // @notice This file contains a selection of helper functions for modular exponentiation and gas cost calculation.
 // @author @dragan2234
-// @custom:namespace ModExpHelpers
-namespace ModExpHelpers {
+// @custom:namespace ModExpHelpersUint256
+namespace ModExpHelpersUint256 {
     const GAS_COST_MOD_EXP = 200;
 
     // @title Modular exponentiation calculation
