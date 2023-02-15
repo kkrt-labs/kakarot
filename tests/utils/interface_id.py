@@ -23,6 +23,3 @@ def get_interface_id():
         ^ is_valid_signature[i]
         for i in range(4)
     )
-
-
-print(get_interface_id().hex())

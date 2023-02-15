@@ -42,3 +42,4 @@ docs/callgraphs/*
 # Hypothesis
 .hypothesis/*
 node_modules
+tmp
