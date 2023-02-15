@@ -65,7 +65,6 @@ namespace Helpers {
         );
         return res;
     }
-
     // @notice This function is used to convert a sequence of i bytes to Uint256.
     // @param val: pointer to the first byte.
     // @param i: sequence size.
@@ -77,6 +76,7 @@ namespace Helpers {
             let res = Uint256(0, 0);
             return res;
         }
+
         let is_sequence_32_bytes_or_less = is_le(i, 32);
         with_attr error_message("number must be shorter than 32 bytes") {
             assert is_sequence_32_bytes_or_less = 1;
