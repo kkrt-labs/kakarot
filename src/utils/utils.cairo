@@ -16,18 +16,11 @@ from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.pow import pow
 from starkware.cairo.common.uint256 import (
     Uint256,
-    uint256_add,
     uint256_and,
     uint256_check,
-    uint256_mul_div_mod,
-    uint256_mul,
     uint256_eq,
-    uint256_lt,
     uint256_shr,
-    uint256_sub,
-    uint256_unsigned_div_rem,
 )
-
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
 from starkware.cairo.common.bool import FALSE
@@ -84,7 +77,6 @@ namespace Helpers {
             let res = Uint256(0, 0);
             return res;
         }
-
         let is_sequence_32_bytes_or_less = is_le(i, 32);
         with_attr error_message("number must be shorter than 32 bytes") {
             assert is_sequence_32_bytes_or_less = 1;
