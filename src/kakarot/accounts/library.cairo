@@ -27,6 +27,10 @@ from kakarot.constants import (
 )
 from kakarot.interfaces.interfaces import IAccount
 
+@event
+func evm_contract_deployed(evm_contract_address: felt, starknet_contract_address: felt) {
+}
+
 namespace Accounts {
     // @dev As contract addresses are deterministic we can know what will be the address of a starknet contract from its input EVM address
     // @dev Adapted code from: https://github.com/starkware-libs/cairo-lang/blob/master/src/starkware/starknet/core/os/contract_address/contract_address.cairo
@@ -89,6 +93,7 @@ namespace Accounts {
         assert constructor_calldata[0] = kakarot_address;
         assert constructor_calldata[1] = evm_address;
         IAccount.initialize(account_address, class_hash, 2, constructor_calldata);
+        evm_contract_deployed.emit(evm_address,account_address);
         return (account_address=account_address);
     }
 }

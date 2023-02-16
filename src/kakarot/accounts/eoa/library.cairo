@@ -134,14 +134,13 @@ namespace ExternallyOwnedAccount {
         local offset;
         local selector;
         // If destination is 0, we are deploying a contract
-        if (destination == 0) {
+        if (destination == FALSE) {
             // deploy_contract_account signature is
-            // gas_limit: felt, calldata_len: felt, calldata: felt*
-            assert [current_tx_calldata] = gas_limit;
-            assert [current_tx_calldata + 1] = payload_len;
-            assert offset = 2;
+            // calldata_len: felt, calldata: felt*
+            assert [current_tx_calldata] = payload_len;
+            assert offset = 1;
             assert selector = DEPLOY_CONTRACT_ACCOUNT;
-        // Else run the bytecode of a specified contract
+        // Else run the bytecode of the destination contract
         }else{
             // execute_at_address signature is
             // address: felt, value: felt, gas_limit: felt, calldata_len: felt, calldata: felt*
@@ -150,7 +149,7 @@ namespace ExternallyOwnedAccount {
             assert [current_tx_calldata + 2] = gas_limit;
             assert [current_tx_calldata + 3] = payload_len;
             assert offset = 4;
-            assert selector = DEPLOY_CONTRACT_ACCOUNT;
+            assert selector = EXECUTE_AT_ADDRESS_SELECTOR;
         }
         memcpy(current_tx_calldata + offset, payload, payload_len); 
         let res = call_contract(
