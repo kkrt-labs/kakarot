@@ -6,6 +6,7 @@ from eth_account._utils.legacy_transactions import (
     serializable_unsigned_transaction_from_dict,
 )
 from starkware.starkware_utils.error_handling import StarkException
+from starkware.starknet.testing.starknet import Starknet
 
 from tests.utils.signer import MockEthSigner
 from tests.utils.uint256 import int_to_uint256
@@ -14,14 +15,31 @@ from tests.utils.uint256 import int_to_uint256
 @pytest.mark.asyncio
 class TestExternallyOwnedAccount:
     class TestGetEvmAddress:
+        # @pytest.mark.parametrize("address_idx", range(4))
+        # async def test_should_return_the_evm_address_used_at_deploy(
+        #     self, addresses, address_idx
+        # ):
+        #     address = addresses[address_idx]
+        #     call_info = await address.starknet_contract.get_evm_address().call()
+        #     assert call_info.result.evm_address == int(address.address, 16)
+
         @pytest.mark.parametrize("address_idx", range(4))
-        async def test_should_return_the_evm_address_used_at_deploy(
-            self, addresses, address_idx
+        async def test_compute_starknet_address(
+            self, starknet: Starknet, addresses, address_idx
         ):
             address = addresses[address_idx]
             call_info = await address.starknet_contract.get_evm_address().call()
             assert call_info.result.evm_address == int(address.address, 16)
 
+            test_cairo_file = await starknet.deploy(
+                source="./tests/unit/src/kakarot/accounts/contract/starknet_address/test_accounts.cairo",
+                cairo_path=["src"],
+                disable_hint_validation=True,
+            )
+
+            starknet_address = (await test_cairo_file.test__compute_starknet_address(evm_address=call_info.result.evm_address).call()).result[0]
+
+            assert starknet_address == address.starknet_address
     class TestEthSignature:
         @pytest.mark.parametrize("address_idx", range(4))
         async def test_should_validate_signature(
