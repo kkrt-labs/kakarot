@@ -3,13 +3,14 @@
 %lang starknet
 
 // Starkware dependencies
+from kakarot.interfaces.interfaces import IEth, IKakarot
 from openzeppelin.access.ownable.library import Ownable
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.registers import get_label_location
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, uint256_not
 
 // @title ContractAccount main library file.
 // @notice This file contains the EVM smart contract account representation logic.
@@ -55,6 +56,10 @@ namespace ContractAccount {
         is_initialized_.write(1);
         Ownable.initializer(kakarot_address);
         evm_address.write(_evm_address);
+        // Give infinite ETH transfer allowance to Kakarot
+        let (native_token_address) = IKakarot.get_native_token(kakarot_address);
+        let (infinite) = uint256_not(Uint256(0,0));
+        IEth.approve(native_token_address,kakarot_address,infinite);
         return ();
     }
 
