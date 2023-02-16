@@ -167,7 +167,6 @@ func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 }
 
 // @notice Deploy a new contract account and execute constructor
-// @param gas_limit: maximum amount of gas the constructor can use
 // @param bytes_len: the constructor + contract bytecode lenght
 // @param bytes: the constructor + contract bytecode
 // @return evm_contract_address The evm address that is mapped to the newly deployed starknet contract address
