@@ -2,17 +2,21 @@
 
 %lang starknet
 
+from openzeppelin.token.erc20.IERC20 import IERC20
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.uint256 import Uint256, uint256_not
 
 from kakarot.accounts.eoa.library import kakarot_address, ExternallyOwnedAccount
 
 // Constructor
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    _kakarot_address: felt
+    _kakarot_address: felt, native_token_address: felt
 ) {
     kakarot_address.write(_kakarot_address);
+    let (infinite) = uint256_not(Uint256(0,0));
+    IERC20.approve(native_token_address, _kakarot_address, infinite);
     return ();
 }
 

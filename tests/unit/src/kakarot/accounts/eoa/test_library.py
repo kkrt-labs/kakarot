@@ -7,21 +7,22 @@ from tests.utils.helpers import generate_random_private_key
 
 
 @pytest_asyncio.fixture(scope="module")
-async def mock_kakarot(starknet):
+async def mock_kakarot(starknet, eth):
     return await starknet.deploy(
         source="./tests/unit/src/kakarot/accounts/eoa/mock_kakarot.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
+        constructor_calldata=[eth.contract_address],
     )
 
 
 @pytest_asyncio.fixture(scope="module")
-async def externally_owned_account(starknet, mock_kakarot):
+async def externally_owned_account(starknet, mock_kakarot, eth):
     return await starknet.deploy(
         source="./tests/unit/src/kakarot/accounts/eoa/test_library.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
-        constructor_calldata=[mock_kakarot.contract_address],
+        constructor_calldata=[mock_kakarot.contract_address, eth.contract_address],
     )
 
 
@@ -75,3 +76,19 @@ class TestLibrary:
                 calls, list(calldata)
             ).call()
         ).result.response == expected_result
+
+    async def test_approval_is_infinite(
+        self, externally_owned_account, mock_kakarot, eth
+    ):        
+        # Ensure approval is max after deployment
+        assert str((
+            await eth.allowance(externally_owned_account.contract_address,mock_kakarot.contract_address).call()
+        ).result.remaining) == "Uint256(low=340282366920938463463374607431768211455, high=340282366920938463463374607431768211455)"
+
+        # Perform a token transfer
+        mock_kakarot.transfer_from_contract(externally_owned_account.contract_address, mock_kakarot.contract_address,(1000,0))
+
+        # After a token transfer by kakarot, the allowance should still be max
+        assert str((
+            await eth.allowance(externally_owned_account.contract_address,mock_kakarot.contract_address).call()
+        ).result.remaining) == "Uint256(low=340282366920938463463374607431768211455, high=340282366920938463463374607431768211455)"
