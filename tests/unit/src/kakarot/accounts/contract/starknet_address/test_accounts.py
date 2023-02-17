@@ -22,13 +22,12 @@ class TestStarknetAccount:
 
         kakarot_starknet_address = eoa_deploy_tx.call_info.internal_calls[0].contract_address
 
-        test_cairo_file = await starknet.deploy(
+        test_starknet_address_computation = await starknet.deploy(
             source="./tests/unit/src/kakarot/accounts/contract/starknet_address/test_accounts.cairo",
             cairo_path=["src"],
-            disable_hint_validation=True,
         )
 
-        computed_starknet_address = (await test_cairo_file.test__compute_starknet_address(evm_address=int(evm_address, 16)).call()).result[0]
+        computed_starknet_address = (await test_starknet_address_computation.test__compute_starknet_address(evm_address=int(evm_address, 16)).call()).result[0]
 
 
         assert computed_starknet_address == kakarot_starknet_address
