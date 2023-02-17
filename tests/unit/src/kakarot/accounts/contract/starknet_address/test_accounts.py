@@ -1,20 +1,13 @@
 import pytest
-import logging
-import random
 from starkware.starknet.testing.starknet import Starknet
 
 import pytest
 from starkware.starknet.testing.contract import StarknetContract
 
-from tests.integration.helpers.helpers import (
+from tests.utils.helpers import (
     generate_random_private_key,
 )
 
-logger = logging.getLogger()
-
-
-
-random.seed(0)
 
 @pytest.mark.asyncio
 class TestStarknetAccount:
