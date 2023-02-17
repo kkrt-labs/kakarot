@@ -3,7 +3,7 @@ cairo_files = $(shell find . -name "*.cairo")
 
 build: check
 	$(MAKE) clean
-	poetry run starknet-compile ./src/kakarot/kakarot.cairo --output build/kakarot.json --cairo_path ./src --abi build/kakarot_abi.json --disable_hint_validation
+	poetry run starknet-compile ./src/kakarot/kakarot.cairo --output build/kakarot.json --cairo_path ./src --abi build/kakarot_abi.json
 	poetry run starknet-compile ./src/kakarot/registry/blockhash/blockhash_registry.cairo --output build/blockhash_registry.json --cairo_path ./src --abi build/blockhash_registry_abi.json
 	poetry run starknet-compile ./src/kakarot/accounts/contract/contract_account.cairo --output build/contract_account.json --cairo_path ./src --abi build/contract_account_abi.json
 	poetry run starknet-compile ./src/kakarot/accounts/eoa/externally_owned_account.cairo --account_contract --output build/externally_owned_account.json --cairo_path ./src --abi build/externally_owned_account_abi.json
@@ -12,7 +12,7 @@ build: check
 
 build-mac: check
 	$(MAKE) clean
-	starknet-compile ./src/kakarot/kakarot.cairo --output build/kakarot.json --cairo_path ./src --abi build/kakarot_abi.json --disable_hint_validation
+	starknet-compile ./src/kakarot/kakarot.cairo --output build/kakarot.json --cairo_path ./src --abi build/kakarot_abi.json
 	starknet-compile ./src/kakarot/registry/blockhash/blockhash_registry.cairo --output build/blockhash_registry.json --cairo_path ./src --abi build/blockhash_registry_abi.json
 	starknet-compile ./src/kakarot/accounts/contract/contract_account.cairo --output build/contract_account.json --cairo_path ./src --abi build/contract_account_abi.json
 	starknet-compile ./src/kakarot/accounts/eoa/externally_owned_account.cairo --account_contract --output build/externally_owned_account.json --cairo_path ./src --abi build/externally_owned_account_abi.json
@@ -83,3 +83,6 @@ get-blockhashes:
 
 build-sol:
 	forge build --names --force
+
+run:
+	poetry run starknet-devnet --lite-mode  --seed 0

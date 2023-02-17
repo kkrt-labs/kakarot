@@ -228,10 +228,9 @@ Rename the copied file to `.env`.
 
 The file holds the following content:
 
-```
+```text
 PRIVATE_KEY=your_private_key
 ACCOUNT_ADDRESS=your_account_address
-NETWORK=<mainnet|testnet|testnet2>
 ```
 
 Now replace the placeholder values with your account and network details.
@@ -242,29 +241,26 @@ deployment. **This should be a decimal number**
 `ACCOUNT_ADDRESS` is the address of the account contract that will pay for the
 deployment (not the public key). **This should be a hexadecimal number**
 
-`NETWORK` specify the network on which the Kakarot EVM should be deployed.
-
 Here is a concrete example:
 
-```
+```text
 PRIVATE_KEY=72893439023848923y4138741073892473874203487234872208352937239047293428374088
 ACCOUNT_ADDRESS=0x06e5d623aBe979c3DEFf52bE6DF5116352C12Ee21428D5b2CF91cA440c4edBD0
-NETWORK=testnet
 ```
 
-Now run:
+By default, everything will run on a local starknet-devnet (started with
+`make run`). If you want to deploy to a given target, set the `STARKNET_NETWORK`
+env variable, for example:
 
-```
-make build
-```
-
-then:
-
-```
-make deploy
+```bash
+make deploy # localhost
+STARKNET_NETWORK=testnet make deploy
+STARKNET_NETWORK=testnet2 make deploy
+STARKNET_NETWORK=mainnet make deploy
 ```
 
-Deployed contract addresses will be stored in `./deployed_addresses.json`.
+Deployed contract addresses will be stored in
+`./deployments/{networks}/deployments.json`.
 
 A step by step description of the individual components and how they are
 deployed/configured can be found [here](docs/general/kakarot_components.md).
@@ -283,11 +279,10 @@ _For more information and to report security issues, please refer to our
 
 ## Callgraphs
 
-[The callgrap folder](callgraphs) contains all the contract's call graph. Those
-are generated using [thoth](https://github.com/FuzzingLabs/thoth) and can
-provide some more insight on the inside of this zkEVM.  
-The legend can be found
-[here](https://github.com/FuzzingLabs/thoth/blob/master/images/callgraph_legend.png).  
+The callgraph artifacts contains all the contract's call graph. Those are
+generated using [thoth](https://github.com/FuzzingLabs/thoth) and can provide
+some more insight on the inside of this zkEVM. The legend can be found
+[here](https://github.com/FuzzingLabs/thoth/blob/master/images/callgraph_legend.png).
 You can use [this tool](https://dreampuf.github.io/GraphvizOnline/) to visualize
 the .gv files online.
 
