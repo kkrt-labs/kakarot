@@ -146,6 +146,13 @@ async def get_eth_contract() -> Contract:
     )
 
 
+async def get_contract(contract_name) -> Contract:
+    return await Contract.from_address(
+        get_deployments()[contract_name]["address"],
+        get_account(),
+    )
+
+
 async def fund_address(address: Union[int, str], amount: int):
     address = int(address, 16) if isinstance(address, str) else address
     account = get_account()
