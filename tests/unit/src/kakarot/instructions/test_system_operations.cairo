@@ -9,6 +9,9 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import deploy, get_contract_address
 from starkware.cairo.common.math import split_felt, assert_not_zero, assert_le
 
+// Third party dependencies
+from openzeppelin.token.erc20.library import ERC20
+
 // Local dependencies
 from kakarot.constants import (
     Constants,
@@ -41,7 +44,22 @@ func constructor{
     account_proxy_class_hash.write(account_proxy_class_hash_);
     contract_account_class_hash.write(contract_account_class_hash_);
     let (contract_address: felt) = get_contract_address();
+    native_token_address.write(contract_address);
     return ();
+}
+
+@view
+func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    native_token_address: felt
+) {
+    return Kakarot.get_native_token();
+}
+
+@external
+func approve{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    spender: felt, amount: Uint256
+) -> (success: felt) {
+    return ERC20.approve(spender, amount);
 }
 
 @external

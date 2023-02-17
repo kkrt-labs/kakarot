@@ -1,11 +1,27 @@
 import random
 
 import pytest
+import pytest_asyncio
 from starkware.starknet.testing.contract import StarknetContract
+from starkware.starknet.testing.starknet import Starknet
 
+from tests.utils.errors import kakarot_error
 from tests.utils.reporting import traceit
 
 random.seed(0)
+
+
+@pytest_asyncio.fixture(scope="module")
+async def contract_account(starknet: Starknet, kakarot: StarknetContract):
+    contract = await starknet.deploy(
+        source="./src/kakarot/accounts/contract/contract_account.cairo",
+        cairo_path=["src"],
+        disable_hint_validation=True,
+    )
+    await contract.initialize(kakarot.contract_address, 1).execute(
+        caller_address=kakarot.contract_address
+    )
+    return contract
 
 
 @pytest.mark.asyncio
@@ -22,3 +38,55 @@ class TestContractAccount:
             )
         stored_bytecode = (await contract_account.bytecode().call()).result.bytecode
         assert stored_bytecode == bytecode
+
+    class TestInitialize:
+        async def test_should_run_only_once(
+            self, contract_account: StarknetContract, kakarot
+        ):
+            with kakarot_error():
+                await contract_account.initialize(kakarot.contract_address, 1).execute(
+                    caller_address=kakarot.contract_address
+                )
+
+        async def test_should_set_ownership(
+            self, contract_account: StarknetContract, kakarot
+        ):
+            with kakarot_error():
+                await contract_account.write_bytecode([0]).execute(caller_address=1)
+            await contract_account.write_bytecode([0]).execute(
+                caller_address=kakarot.contract_address
+            )
+
+        async def test_should_give_inifinite_allowance_to_kakarot(
+            self, contract_account: StarknetContract, kakarot, eth
+        ):
+            # Check that current allowance is MAX Uint256
+            assert (
+                str(
+                    (
+                        await eth.allowance(
+                            contract_account.contract_address,
+                            kakarot.contract_address,
+                        ).call()
+                    ).result.remaining
+                )
+                == "Uint256(low=340282366920938463463374607431768211455, high=340282366920938463463374607431768211455)"
+            )
+            # Test whether this actually results in having infinite allowance
+            await eth.mint(contract_account.contract_address, (1000, 0)).execute(
+                caller_address=2
+            )
+            await eth.transferFrom(
+                contract_account.contract_address, 1, (1000, 0)
+            ).execute(caller_address=kakarot.contract_address)
+            assert (
+                str(
+                    (
+                        await eth.allowance(
+                            contract_account.contract_address,
+                            kakarot.contract_address,
+                        ).call()
+                    ).result.remaining
+                )
+                == "Uint256(low=340282366920938463463374607431768211455, high=340282366920938463463374607431768211455)"
+            )

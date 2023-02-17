@@ -22,19 +22,6 @@ async def contract_account_class(starknet: Starknet) -> DeclaredClass:
 
 
 @pytest_asyncio.fixture(scope="session")
-async def contract_account(starknet: Starknet, kakarot: StarknetContract):
-    contract = await starknet.deploy(
-        source="./src/kakarot/accounts/contract/contract_account.cairo",
-        cairo_path=["src"],
-        disable_hint_validation=True,
-    )
-    await contract.initialize(kakarot.contract_address, 1).execute(
-        caller_address=kakarot.contract_address
-    )
-    return contract
-
-
-@pytest_asyncio.fixture(scope="session")
 async def externally_owned_account_class(starknet: Starknet):
     return await starknet.declare(
         source="src/kakarot/accounts/eoa/externally_owned_account.cairo",
