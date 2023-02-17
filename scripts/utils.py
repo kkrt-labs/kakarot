@@ -249,13 +249,24 @@ async def declare(contract_name):
 async def deploy(contract_name, *args):
     logger.info(f"⏳ Deploying {contract_name}")
     abi = json.loads(Path(get_abi(contract_name)).read_text())
-    deploy_result = await Contract.deploy_contract(
-        account=get_account(),
-        class_hash=get_declarations()[contract_name],
-        abi=abi,
-        constructor_args=list(args),
-        max_fee=int(1e16),
-    )
+    account = get_account()
+    artifact = get_artifact(contract_name)
+    # TODO: upgrade to starknet-devnet latest to remove this
+    # TODO: In current version, UDC is not available
+    if NETWORK == "devnet":
+        deploy_result = await Contract.deploy(
+            client=account,
+            compiled_contract=Path(artifact).read_text(),
+            constructor_args=list(args),
+        )
+    else:
+        deploy_result = await Contract.deploy_contract(
+            account=account,
+            class_hash=get_declarations()[contract_name],
+            abi=abi,
+            constructor_args=list(args),
+            max_fee=int(1e16),
+        )
     await deploy_result.wait_for_acceptance()
     logger.info(
         f"✅ {contract_name} deployed at: {hex(deploy_result.deployed_contract.address)}"
