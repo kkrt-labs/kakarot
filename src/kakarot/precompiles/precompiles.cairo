@@ -15,11 +15,8 @@ from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.precompiles.blake2f import PrecompileBlake2f
 from kakarot.precompiles.datacopy import PrecompileDataCopy
-from kakarot.precompiles.ecadd import PrecompileEcAdd
-from kakarot.precompiles.ecmul import PrecompileEcMul
 from kakarot.precompiles.ec_recover import PrecompileEcRecover
 from kakarot.precompiles.ripemd160 import PrecompileRIPEMD160
-from kakarot.precompiles.modexp import PrecompileModExpUint256
 from kakarot.precompiles.sha256 import PrecompileSHA256
 from kakarot.stack import Stack
 
@@ -122,11 +119,11 @@ namespace Precompiles {
         ret;
         call PrecompileDataCopy.run;  // 0x4
         ret;
-        call PrecompileModExpUint256.run;  // 0x5
+        call not_implemented_precompile;  // 0x5
         ret;
-        call PrecompileEcAdd.run;  // 0x6
+        call not_implemented_precompile;  // 0x6
         ret;
-        call PrecompileEcMul.run;  // 0x7
+        call not_implemented_precompile;  // 0x7
         ret;
         call not_implemented_precompile;  // 0x8
         ret;
