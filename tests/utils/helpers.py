@@ -7,7 +7,7 @@ from eth_abi import encode_abi
 from eth_keys import keys
 from eth_utils import decode_hex, keccak, to_bytes, to_checksum_address
 
-from tests.integration.helpers.constants import CHAIN_ID
+from tests.utils.constants import CHAIN_ID
 
 PERMIT_TYPEHASH = keccak(
     text="Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"

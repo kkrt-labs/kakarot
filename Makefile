@@ -22,7 +22,7 @@ check:
 	poetry lock --check
 
 setup:
-	poetry install --no-root
+	poetry install
 
 test: build-sol
 	poetry run pytest tests --log-cli-level=INFO -n logical
@@ -48,7 +48,7 @@ run-test-mark-log: build-sol
 run-test-mark: build-sol
 	poetry run pytest -m $(mark)
 
-deploy:
+deploy: build
 	poetry run python ./scripts/deploy_kakarot.py
 
 format:

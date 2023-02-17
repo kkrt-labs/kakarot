@@ -21,7 +21,7 @@ func initialize{
 }
 
 // @return evm address of the contract account
-@external
+@view
 func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     address: felt
 ) {

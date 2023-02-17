@@ -1,9 +1,9 @@
 import pytest
 import pytest_asyncio
 
-from tests.integration.helpers.constants import MAX_INT
-from tests.integration.helpers.helpers import ec_sign, get_approval_digest
+from tests.utils.constants import MAX_INT
 from tests.utils.errors import kakarot_error
+from tests.utils.helpers import ec_sign, get_approval_digest
 
 TEST_SUPPLY = 10**18
 TEST_AMOUNT = int(0.9 * 10**18)

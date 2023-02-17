@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "EVM interpreter written in Cairo, a sort of ZK-EVM emulator, leveraging STARK proof system."
 authors = []
 readme = "README.md"
+packages = [{ include = "scripts" }]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.10"
@@ -114,6 +115,7 @@ markers = [
     "EC_RECOVER:     Precompile Value 0x01 - Elliptic curve digital signature algorithm (ECDSA) public key recovery function",
     "SHA256:         Precompile Value 0x02 - Hash function",
     "RIPEMD160:      Precompile Value 0x03 - Hash function",
+    "MODEXP:         Precompile Value 0x05 - Modular exponentiation MVP - missing support for bigint",
     "EC_ADD:         Precompile Value 0x06 - Point addition (ADD) on the elliptic curve 'alt_bn128'",
     "EC_MUL:         Precompile Value 0x07 - Scalar multiplication (MUL) on the elliptic curve 'alt_bn128'",
     "BLAKE2F:        Precompile Value 0x09 - Blake2 compression function",

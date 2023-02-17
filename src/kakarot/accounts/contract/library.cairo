@@ -7,15 +7,11 @@ from openzeppelin.access.ownable.library import Ownable
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math import unsigned_div_rem, split_felt
+from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256
-from starkware.starknet.common.syscalls import deploy as deploy_syscall
-from starkware.starknet.common.syscalls import get_contract_address
 
-from kakarot.constants import native_token_address, contract_account_class_hash
-
-// @title SmartContractAccount main library file.
+// @title ContractAccount main library file.
 // @notice This file contains the EVM smart contract account representation logic.
 // @author @abdelhamidbakhta
 // @custom:namespace ContractAccount
@@ -40,13 +36,6 @@ func is_initialized_() -> (res: felt) {
 
 @storage_var
 func evm_address() -> (evm_address: felt) {
-}
-
-// An event emitted whenever kakarot deploys a evm contract
-// evm_contract_address is the representation of the evm address of the contract
-// starknet_contract_address if the starknet address of the contract
-@event
-func evm_contract_deployed(evm_contract_address: felt, starknet_contract_address: felt) {
 }
 
 namespace ContractAccount {

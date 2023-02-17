@@ -72,7 +72,8 @@ namespace PrecompileRIPEMD160 {
         let (_, _) = dict_squash{range_check_ptr=range_check_ptr}(h0, hash);
 
         // 5. return bytes hash code.
-        return (32, arr_x - 12, GAS_COST_RIPEMD160);
+        let (minimum_word_size) = Helpers.minimum_word_count(input_len);
+        return (32, arr_x - 12, 120 * minimum_word_size + GAS_COST_RIPEMD160);
     }
 }
 
