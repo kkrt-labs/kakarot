@@ -15,7 +15,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     _kakarot_address: felt, native_token_address: felt
 ) {
     kakarot_address.write(_kakarot_address);
-    let (infinite) = uint256_not(Uint256(0,0));
+    let (infinite) = uint256_not(Uint256(0, 0));
     IERC20.approve(native_token_address, _kakarot_address, infinite);
     return ();
 }

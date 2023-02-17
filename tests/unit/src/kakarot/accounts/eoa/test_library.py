@@ -70,7 +70,6 @@ class TestLibrary:
                     ),  # calldata
                 ]
 
-
         assert (
             await externally_owned_account.test__execute__should_make_all_calls_and_return_concat_results(
                 calls, list(calldata)
@@ -79,16 +78,36 @@ class TestLibrary:
 
     async def test_approval_is_infinite(
         self, externally_owned_account, mock_kakarot, eth
-    ):        
+    ):
         # Ensure approval is max after deployment
-        assert str((
-            await eth.allowance(externally_owned_account.contract_address,mock_kakarot.contract_address).call()
-        ).result.remaining) == "Uint256(low=340282366920938463463374607431768211455, high=340282366920938463463374607431768211455)"
+        assert (
+            str(
+                (
+                    await eth.allowance(
+                        externally_owned_account.contract_address,
+                        mock_kakarot.contract_address,
+                    ).call()
+                ).result.remaining
+            )
+            == "Uint256(low=340282366920938463463374607431768211455, high=340282366920938463463374607431768211455)"
+        )
 
         # Perform a token transfer
-        mock_kakarot.transfer_from_contract(externally_owned_account.contract_address, mock_kakarot.contract_address,(1000,0))
+        mock_kakarot.transfer_from_contract(
+            externally_owned_account.contract_address,
+            mock_kakarot.contract_address,
+            (1000, 0),
+        )
 
         # After a token transfer by kakarot, the allowance should still be max
-        assert str((
-            await eth.allowance(externally_owned_account.contract_address,mock_kakarot.contract_address).call()
-        ).result.remaining) == "Uint256(low=340282366920938463463374607431768211455, high=340282366920938463463374607431768211455)"
+        assert (
+            str(
+                (
+                    await eth.allowance(
+                        externally_owned_account.contract_address,
+                        mock_kakarot.contract_address,
+                    ).call()
+                ).result.remaining
+            )
+            == "Uint256(low=340282366920938463463374607431768211455, high=340282366920938463463374607431768211455)"
+        )

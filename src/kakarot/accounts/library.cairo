@@ -93,7 +93,7 @@ namespace Accounts {
         assert constructor_calldata[0] = kakarot_address;
         assert constructor_calldata[1] = evm_address;
         IAccount.initialize(account_address, class_hash, 2, constructor_calldata);
-        evm_contract_deployed.emit(evm_address,account_address);
+        evm_contract_deployed.emit(evm_address, account_address);
         return (account_address=account_address);
     }
 }

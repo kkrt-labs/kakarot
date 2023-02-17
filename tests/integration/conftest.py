@@ -11,11 +11,8 @@ from starkware.starknet.core.os.contract_address.contract_address import (
 from starkware.starknet.testing.contract import StarknetContract
 from web3 import Web3
 
-from tests.utils.helpers import (
-    generate_random_private_key,
-    hex_string_to_bytes_array,
-)
 from tests.integration.helpers.wrap_kakarot import get_contract, wrap_for_kakarot
+from tests.utils.helpers import generate_random_private_key, hex_string_to_bytes_array
 from tests.utils.reporting import traceit
 
 logger = logging.getLogger()

@@ -58,8 +58,8 @@ namespace ContractAccount {
         evm_address.write(_evm_address);
         // Give infinite ETH transfer allowance to Kakarot
         let (native_token_address) = IKakarot.get_native_token(kakarot_address);
-        let (infinite) = uint256_not(Uint256(0,0));
-        IEth.approve(native_token_address,kakarot_address,infinite);
+        let (infinite) = uint256_not(Uint256(0, 0));
+        IEth.approve(native_token_address, kakarot_address, infinite);
         return ();
     }
 

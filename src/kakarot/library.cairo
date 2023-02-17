@@ -164,8 +164,9 @@ namespace Kakarot {
     // @notice Get the native token address
     // @dev Return the address used to emulate the role of ETH on Ethereum
     // @return native_token_address The address of the native token
-    func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    ) -> (native_token_address: felt) {
+    func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        native_token_address: felt
+    ) {
         let (native_token_address_) = native_token_address.read();
         return (native_token_address_,);
     }

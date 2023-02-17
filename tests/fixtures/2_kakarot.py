@@ -28,7 +28,9 @@ async def contract_account(starknet: Starknet, kakarot: StarknetContract):
         cairo_path=["src"],
         disable_hint_validation=True,
     )
-    await contract.initialize(kakarot.contract_address, 1).execute(caller_address=kakarot.contract_address)
+    await contract.initialize(kakarot.contract_address, 1).execute(
+        caller_address=kakarot.contract_address
+    )
     return contract
 
 

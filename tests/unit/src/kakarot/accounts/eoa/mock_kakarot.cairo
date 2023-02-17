@@ -33,9 +33,7 @@ func execute_at_address{
 @external
 func deploy_contract_account{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(bytecode_len: felt, bytecode: felt*) -> (
-    bytecode_len: felt, bytecode: felt*
-) {
+}(bytecode_len: felt, bytecode: felt*) -> (bytecode_len: felt, bytecode: felt*) {
     return (bytecode_len, bytecode);
 }
 
@@ -44,10 +42,10 @@ func deploy_contract_account{
 // @param to_address address to send eth to
 // @param value amount of eth to send
 @external
-func transfer_from_contract{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}(from_address: felt, to_address: felt, value: Uint256){
+func transfer_from_contract{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    from_address: felt, to_address: felt, value: Uint256
+) {
     let (native_token_address_) = native_token_address.read();
-    IERC20.transferFrom(native_token_address_,from_address,to_address,value);
-    return();
+    IERC20.transferFrom(native_token_address_, from_address, to_address, value);
+    return ();
 }
