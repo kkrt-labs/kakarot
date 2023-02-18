@@ -7,22 +7,21 @@ from tests.utils.helpers import generate_random_private_key
 
 
 @pytest_asyncio.fixture(scope="module")
-async def mock_kakarot(starknet, eth):
+async def mock_kakarot(starknet):
     return await starknet.deploy(
         source="./tests/unit/src/kakarot/accounts/eoa/mock_kakarot.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
-        constructor_calldata=[eth.contract_address],
     )
 
 
 @pytest_asyncio.fixture(scope="module")
-async def externally_owned_account(starknet, mock_kakarot, eth):
+async def externally_owned_account(starknet, mock_kakarot):
     return await starknet.deploy(
         source="./tests/unit/src/kakarot/accounts/eoa/test_library.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
-        constructor_calldata=[mock_kakarot.contract_address, eth.contract_address],
+        constructor_calldata=[mock_kakarot.contract_address],
     )
 
 
