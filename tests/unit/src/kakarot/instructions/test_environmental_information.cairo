@@ -10,13 +10,21 @@ from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from starkware.cairo.common.math import split_felt
 from starkware.starknet.common.syscalls import get_contract_address
 
+// Third party dependencies
+from openzeppelin.token.erc20.library import ERC20
+
 // Local dependencies
 from utils.utils import Helpers
 from kakarot.model import model
 from kakarot.interfaces.interfaces import IKakarot, IContractAccount
 from kakarot.stack import Stack
 from kakarot.memory import Memory
-from kakarot.constants import Constants, contract_account_class_hash, account_proxy_class_hash
+from kakarot.constants import (
+    Constants,
+    contract_account_class_hash,
+    account_proxy_class_hash,
+    native_token_address,
+)
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.environmental_information import EnvironmentalInformation
@@ -31,7 +39,23 @@ func constructor{
 }(contract_account_class_hash_: felt, account_proxy_class_hash_) {
     account_proxy_class_hash.write(account_proxy_class_hash_);
     contract_account_class_hash.write(contract_account_class_hash_);
+    let (contract_address: felt) = get_contract_address();
+    native_token_address.write(contract_address);
     return ();
+}
+
+@view
+func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    native_token_address: felt
+) {
+    return Kakarot.get_native_token();
+}
+
+@external
+func approve{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    spender: felt, amount: Uint256
+) -> (success: felt) {
+    return ERC20.approve(spender, amount);
 }
 
 func init_context{
