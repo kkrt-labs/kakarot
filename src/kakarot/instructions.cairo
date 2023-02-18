@@ -21,7 +21,7 @@ from kakarot.instructions.comparison_operations import ComparisonOperations
 from kakarot.instructions.duplication_operations import DuplicationOperations
 from kakarot.instructions.environmental_information import EnvironmentalInformation
 from kakarot.instructions.exchange_operations import ExchangeOperations
-from kakarot.instructions.logging_operations import LoggingOperations
+from kakarot.instructions.logging_operations import LoggingOperations, LoggingHelper
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.push_operations import PushOperations
 from kakarot.instructions.sha3 import Sha3
@@ -612,11 +612,14 @@ namespace EVMInstructions {
 
         // Check if execution should be stopped
         let stopped: felt = ExecutionContext.is_stopped(self=ctx);
-        let is_root: felt = ExecutionContext.is_root(self=ctx);
+        let is_reverted: felt = ExecutionContext.is_reverted(self=ctx);
+        let is_parent_root: felt = ExecutionContext.is_root(self=ctx.calling_context);
 
         // Terminate execution
         if (stopped != FALSE) {
-            if (is_root != FALSE) {
+            // emit events for stopped execution contexts
+            let ctx = LoggingHelper.finalize(ctx);
+            if (is_parent_root != FALSE) {
                 if (ctx.destroy_contracts_len != 0) {
                     let ctx = SelfDestructHelper.finalize(ctx);
                     return ctx;

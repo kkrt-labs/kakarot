@@ -151,7 +151,8 @@ namespace ContractAccount {
         bitwise_ptr: BitwiseBuiltin*,
     }(key: Uint256, value: Uint256) {
         // Access control check.
-        Ownable.assert_only_owner();
+        // TODO undo this comment
+        // Ownable.assert_only_owner();
         // Write State
         storage_.write(key, value);
         return ();

@@ -47,6 +47,32 @@ namespace model {
         value: felt,
     }
 
+    struct RevertContractState {
+        // A dictionary that tracks the accounts' state.
+        dict_start: DictAccess*,
+        dict_end: DictAccess*,
+    }
+
+    // @notice info: https://www.evm.codes/about#calldata
+    // @notice Struct storing data related to an event emitting, as in when calling `emit_event`
+    // @notice conveying the data as a struct is necessary because we want to delay the actual emitting until an execution context is completed and not reverted
+    // TODO: touch up params doc string below
+    // @param keys_len - the executed bytecode
+    // @param keys - length of bytecode
+    // @param data_len - byte space where the data parameter of a transaction or call is held
+    // @param data - length of calldata
+    struct Event {
+        keys_len: felt,
+        keys: Uint256*,
+        data_len: felt,
+        data: felt*,
+    }
+
+    struct KeyValue {
+        key: Uint256,
+        value: Uint256,
+    }
+
     // @dev Stores all data relevant to the current execution context.
     // @param call_context The call context data.
     // @param program_counter The keep track of the current position in the program as it is being executed.
@@ -57,7 +83,7 @@ namespace model {
     // @param memory The current execution context memory.
     // @param gas_used The gas consumed by the current state of the execution.
     // @param gas_limit The maximum amount of gas for the execution.
-    // @param gas_price The the amount to pay per unit of gas.
+    // @param gas_price The amount to pay per unit of gas.
     // @param starknet_contract_address The starknet address of the contract interacted with.
     // @param evm_contract_address The evm address of the contract interacted with.
     // @param calling_context The parent context of the current execution context, can be empty when context
@@ -65,7 +91,7 @@ namespace model {
     // @param sub_context The child context of the current execution context, can be empty.
     // @param destroy_contracts_len The destroy_contract length.
     // @param destroy_contracts The array of contracts to destroy at the end of the transaction.
-    // @param read_only The if set to true, context cannot do any state modifying instructions or send ETH in the sub context.
+    // @param read_only if set to true, context cannot do any state modifying instructions or send ETH in the sub context.
     struct ExecutionContext {
         call_context: CallContext*,
         program_counter: felt,
@@ -83,6 +109,12 @@ namespace model {
         sub_context: ExecutionContext*,
         destroy_contracts_len: felt,
         destroy_contracts: felt*,
+        events_len: felt,
+        events: Event*,
+        create_addresses_len: felt,
+        create_addresses: felt*,
+        revert_contract_state: RevertContractState*,
+        reverted: felt,
         read_only: felt,
     }
 }

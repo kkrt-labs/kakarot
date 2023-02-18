@@ -6,9 +6,12 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
+from starkware.cairo.common.dict import DictAccess
 from starkware.cairo.common.math import assert_le, assert_nn
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_label_location
+from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
 from utils.utils import Helpers
@@ -60,6 +63,12 @@ namespace ExecutionContext {
         dw 0;  // sub_context
         dw 0;  // destroy_contracts_len
         dw 0;  // destroy_contracts
+        dw 0;  // events_len
+        dw 0;  // events
+        dw 0;  // create_contracts_len
+        dw 0;  // create_contracts
+        dw 0;  // revert_contract_state
+        dw 0;  // reverted
         dw 0;  // read only
     }
 
@@ -71,6 +80,11 @@ namespace ExecutionContext {
         alloc_locals;
         let (empty_return_data: felt*) = alloc();
         let (empty_destroy_contracts: felt*) = alloc();
+        let (empty_events: model.Event*) = alloc();
+        let (empty_create_addresses: felt*) = alloc();
+
+        let (local revert_contract_state_dict_start) = default_dict_new(0);
+        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(revert_contract_state_dict_start, revert_contract_state_dict_start);
 
         // Define initial program counter
         let initial_pc = 0;
@@ -102,6 +116,12 @@ namespace ExecutionContext {
             sub_context=sub_context,
             destroy_contracts_len=0,
             destroy_contracts=empty_destroy_contracts,
+            events_len=0,
+            events=empty_events,
+            create_addresses_len=0,
+            create_addresses=empty_create_addresses,
+            revert_contract_state=revert_contract_state,
+            reverted=FALSE,
             read_only=FALSE,
         );
         return ctx;
@@ -156,6 +176,10 @@ namespace ExecutionContext {
         alloc_locals;
 
         let (empty_destroy_contracts: felt*) = alloc();
+        let (empty_events: model.Event*) = alloc();
+        let (empty_create_contracts: felt*) = alloc();
+        let (local revert_contract_state_dict_start) = default_dict_new(0);
+        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(revert_contract_state_dict_start, revert_contract_state_dict_start);
 
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();
@@ -194,6 +218,12 @@ namespace ExecutionContext {
             sub_context=sub_context,
             destroy_contracts_len=0,
             destroy_contracts=empty_destroy_contracts,
+            events_len=0,
+            events=empty_events,
+            create_addresses_len=0,
+            create_addresses=empty_create_contracts,
+            revert_contract_state=revert_contract_state,
+            reverted=FALSE,
             read_only=read_only,
         );
     }
@@ -264,6 +294,45 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
+            read_only=self.read_only,
+            );
+    }
+
+    // TODO add docstring
+    func is_reverted(self: model.ExecutionContext*) -> felt {
+        return self.reverted;
+    }
+
+    func revert(self: model.ExecutionContext*, revert_reason: felt) -> model.ExecutionContext* {
+        return new model.ExecutionContext(
+            call_context=self.call_context,
+            program_counter=self.program_counter,
+            stopped=self.stopped,
+            return_data=self.return_data,
+            return_data_len=self.return_data_len,
+            stack=self.stack,
+            memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit,
+            gas_price=self.gas_price,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
+            calling_context=self.calling_context,
+            sub_context=self.sub_context,
+            destroy_contracts_len=self.destroy_contracts_len,
+            destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=revert_reason,
             read_only=self.read_only,
         );
     }
@@ -313,6 +382,12 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }
@@ -342,6 +417,12 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }
@@ -377,6 +458,12 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }
@@ -406,6 +493,12 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }
@@ -435,6 +528,12 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }
@@ -464,6 +563,12 @@ namespace ExecutionContext {
             sub_context=sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }
@@ -494,6 +599,12 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }
@@ -528,6 +639,90 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len + destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
+            read_only=self.read_only,
+            );
+    }
+
+    // @notice Update the array of events to emit in the case of a execution context successfully running to completion.
+    // @param self The pointer to the execution context.
+    // @param destroy_contracts_len Array length of events to add.
+    // @param destroy_contracts The pointer to the new array of contracts to destroy.
+    func add_event_to_emit(
+        self: model.ExecutionContext*,
+        event_keys_len: felt,
+        event_keys: Uint256*,
+        event_data_len: felt,
+        event_data: felt*,
+    ) -> model.ExecutionContext* {
+        let event: model.Event = model.Event(
+            keys_len=event_keys_len, keys=event_keys, data_len=event_data_len, data=event_data
+        );
+
+        assert [self.events + self.events_len * model.Event.SIZE] = event;
+
+        return new model.ExecutionContext(
+            call_context=self.call_context,
+            program_counter=self.program_counter,
+            stopped=self.stopped,
+            return_data=self.return_data,
+            return_data_len=self.return_data_len,
+            stack=self.stack,
+            memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit,
+            gas_price=self.gas_price,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
+            calling_context=self.calling_context,
+            sub_context=self.sub_context,
+            destroy_contracts_len=self.destroy_contracts_len,
+            destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len + 1,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
+            read_only=self.read_only,
+            );
+    }
+
+    // @notice Add one contract to the array of create contracts to destroy on revert.
+    // @param self The pointer to the execution context.
+    // @param destroy_contract contract to destroy.
+    func push_create_address(
+        self: model.ExecutionContext*, create_contract_address: felt
+    ) -> model.ExecutionContext* {
+        assert [self.create_addresses + self.create_addresses_len] = create_contract_address;
+        return new model.ExecutionContext(
+            call_context=self.call_context,
+            program_counter=self.program_counter,
+            stopped=self.stopped,
+            return_data=self.return_data,
+            return_data_len=self.return_data_len,
+            stack=self.stack,
+            memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit,
+            gas_price=self.gas_price,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
+            calling_context=self.calling_context,
+            sub_context=self.sub_context,
+            destroy_contracts_len=self.destroy_contracts_len,
+            destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len + 1,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }
@@ -557,6 +752,47 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len + 1,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
+            read_only=self.read_only,
+            );
+    }
+
+    // TODO: doc string
+    // @notice Add one contract to the array of contracts to destroy.
+    // @param self The pointer to the execution context.
+    // @param destroy_contract contract to destroy.
+    func update_revert_contract_state(
+        self: model.ExecutionContext*, dict_end: DictAccess*
+    ) -> model.ExecutionContext* {
+        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(self.revert_contract_state.dict_start, dict_end);
+        return new model.ExecutionContext(
+            call_context=self.call_context,
+            program_counter=self.program_counter,
+            stopped=FALSE,
+            return_data=self.return_data,
+            return_data_len=self.return_data_len,
+            stack=self.stack,
+            memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit,
+            gas_price=self.gas_price,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
+            calling_context=self.calling_context,
+            sub_context=self.sub_context,
+            destroy_contracts_len=self.destroy_contracts_len,
+            destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }
@@ -606,6 +842,12 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }

@@ -7,6 +7,15 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256, uint256_le, uint256_unsigned_div_rem
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.dict import (
+    DictAccess,
+    dict_new,
+    dict_read,
+    dict_squash,
+    dict_update,
+    dict_write,
+)
+from starkware.cairo.common.registers import get_fp_and_pc
 
 from kakarot.model import model
 from utils.utils import Helpers
@@ -375,14 +384,52 @@ namespace MemoryOperations {
 
         // 3. Call Write storage on contract with starknet address
         with_attr error_message("Contract call failed") {
-            IContractAccount.write_storage(
+            let (local prior_value: Uint256) = IEvmContract.storage(
+                contract_address=starknet_contract_address, key=key
+            );
+
+            %{ print(f"{ids.key=} {ids.prior_value=}  {ids.value=}") %}
+
+            IEvmContract.write_storage(
                 contract_address=starknet_contract_address, key=key, value=value
             );
         }
 
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SSTORE);
-        return ctx;
+        let (__fp__, _) = get_fp_and_pc();
+        tempvar key_val = new model.KeyValue(key, prior_value);
+        let revert_contract_state_dict_end = ctx.revert_contract_state.dict_end;
+
+        let (maybe_written) = dict_read{dict_ptr=revert_contract_state_dict_end}(key=key.low);
+
+        %{
+            print(f"{ids.maybe_written=}") 
+            breakpoint()
+        %}
+
+        // we only want to track the initial state of a written value relative to the beginning of the execution context, which is the very first write to the dictionary
+        // we initialize a default dictionary with the default value as zero.
+        // we check if return value of a read is zero to mark whether we want to write the prior value in this case or not.
+        if (maybe_written != 0) {
+            let ctx = ExecutionContext.update_revert_contract_state(
+                ctx, revert_contract_state_dict_end
+            );
+
+            // Increment gas used.
+            let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SSTORE);
+            return ctx;
+        } else {
+            dict_write{dict_ptr=revert_contract_state_dict_end}(
+                key=key.low, new_value=cast(key_val, felt)
+            );
+
+            let ctx = ExecutionContext.update_revert_contract_state(
+                ctx, revert_contract_state_dict_end
+            );
+
+            // Increment gas used.
+            let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SSTORE);
+            return ctx;
+        }
     }
 
     // @notice SLOAD operation
