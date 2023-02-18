@@ -1649,7 +1649,11 @@ test_cases = [
             "return_value": "",
         },
         "id": "Precompiles - EC_ADD - playground test case",
-        "marks": [pytest.mark.EC_ADD, pytest.mark.Precompiles],
+        "marks": [
+            pytest.mark.EC_ADD,
+            pytest.mark.Precompiles,
+            pytest.mark.skip("Hint is not whitelisted"),
+        ],
     },
     {
         "params": {
@@ -1667,7 +1671,11 @@ test_cases = [
             "return_value": "",
         },
         "id": "Precompiles - ModExp - playground test case",
-        "marks": [pytest.mark.MODEXP, pytest.mark.Precompiles],
+        "marks": [
+            pytest.mark.MOD_EXP,
+            pytest.mark.Precompiles,
+            pytest.mark.skip("Hint is not whitelisted"),
+        ],
     },
     {
         "params": {
@@ -1685,7 +1693,11 @@ test_cases = [
             "return_value": "",
         },
         "id": "Precompiles - EC_MUL - playground test case",
-        "marks": [pytest.mark.EC_MUL, pytest.mark.Precompiles],
+        "marks": [
+            pytest.mark.EC_MUL,
+            pytest.mark.Precompiles,
+            pytest.mark.skip("Hint is not whitelisted"),
+        ],
     },
     {
         "params": {
