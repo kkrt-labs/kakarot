@@ -57,7 +57,9 @@ namespace PrecompileModExpUint256 {
             bytes_len = bytes_len_low;
         }
 
-        let (gas_cost) = ModExpHelpersUint256.calculate_mod_exp_gas(b_size, m_size, e_size, b, e, m);
+        let (gas_cost) = ModExpHelpersUint256.calculate_mod_exp_gas(
+            b_size, m_size, e_size, b, e, m
+        );
 
         return (output_len=bytes_len, output=bytes, gas_used=gas_cost);
     }

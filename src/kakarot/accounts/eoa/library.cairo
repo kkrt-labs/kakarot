@@ -2,10 +2,11 @@
 
 from utils.utils import Helpers
 from kakarot.constants import Constants
+from kakarot.interfaces.interfaces import IEth, IKakarot
 from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_secp.signature import verify_eth_signature_uint256
 from starkware.starknet.common.syscalls import get_tx_info, get_caller_address, call_contract
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, uint256_not
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.cairo_keccak.keccak import keccak, finalize_keccak, keccak_bigend
@@ -63,6 +64,10 @@ namespace ExternallyOwnedAccount {
         assert is_initialized = 0;
         evm_address.write(_evm_address);
         kakarot_address.write(_kakarot_address);
+        // Give infinite ETH transfer allowance to Kakarot
+        let (native_token_address) = IKakarot.get_native_token(_kakarot_address);
+        let (infinite) = uint256_not(Uint256(0, 0));
+        IEth.approve(native_token_address, _kakarot_address, infinite);
         is_initialized_.write(1);
         return ();
     }
@@ -135,8 +140,8 @@ namespace ExternallyOwnedAccount {
             assert [current_tx_calldata] = payload_len;
             assert offset = 1;
             assert selector = DEPLOY_CONTRACT_ACCOUNT;
-        // Else run the bytecode of the destination contract
-        }else{
+            // Else run the bytecode of the destination contract
+        } else {
             // execute_at_address signature is
             // address: felt, value: felt, gas_limit: felt, calldata_len: felt, calldata: felt*
             assert [current_tx_calldata] = destination;
@@ -146,7 +151,7 @@ namespace ExternallyOwnedAccount {
             assert offset = 4;
             assert selector = EXECUTE_AT_ADDRESS_SELECTOR;
         }
-        memcpy(current_tx_calldata + offset, payload, payload_len); 
+        memcpy(current_tx_calldata + offset, payload, payload_len);
         let res = call_contract(
             contract_address=_kakarot_address,
             function_selector=selector,

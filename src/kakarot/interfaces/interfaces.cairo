@@ -20,6 +20,9 @@ namespace IEth {
 
     func transfer(recipient: felt, amount: Uint256) -> (success: felt) {
     }
+
+    func approve(spender: felt, amount: Uint256) -> (success: felt) {
+    }
 }
 
 @contract_interface
@@ -64,6 +67,9 @@ namespace IKakarot {
     }
 
     func set_native_token(native_token_address_: felt) {
+    }
+
+    func get_native_token() -> (native_token_address: felt) {
     }
 
     func deploy(bytecode_len: felt, bytecode: felt*) -> (

@@ -7,7 +7,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import FALSE
 from starkware.starknet.common.syscalls import deploy as deploy_syscall
-from starkware.starknet.common.syscalls import get_caller_address, get_contract_address
+from starkware.starknet.common.syscalls import get_caller_address
 // OpenZeppelin dependencies
 from openzeppelin.access.ownable.library import Ownable
 
@@ -159,6 +159,16 @@ namespace Kakarot {
         Ownable.assert_only_owner();
         native_token_address.write(native_token_address_);
         return ();
+    }
+
+    // @notice Get the native token address
+    // @dev Return the address used to emulate the role of ETH on Ethereum
+    // @return native_token_address The address of the native token
+    func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        native_token_address: felt
+    ) {
+        let (native_token_address_) = native_token_address.read();
+        return (native_token_address_,);
     }
 
     // @notice deploy contract account

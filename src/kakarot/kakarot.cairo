@@ -166,6 +166,16 @@ func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     return Kakarot.set_native_token(native_token_address_);
 }
 
+// @notice Get the native token address
+// @dev Return the address used to emulate the role of ETH on Ethereum
+// @return native_token_address The address of the native token
+@view
+func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    native_token_address: felt
+) {
+    return Kakarot.get_native_token();
+}
+
 // @notice Deploy a new contract account and execute constructor
 // @param bytes_len: the constructor + contract bytecode lenght
 // @param bytes: the constructor + contract bytecode
