@@ -90,12 +90,10 @@ class TestLibrary:
         ).result.response == expected_result
 
         # verify the value was transfered
-        for transaction in TRANSACTIONS:
-            if transaction["to"] != "":
-                account_address = int(transaction["to"], 16)
-                assert (
-                    await eth.balanceOf(account_address).call()
-                ).result.balance.low == ledger[account_address]
+        for account_address, amount in ledger.items():
+            assert (
+                await eth.balanceOf(account_address).call()
+            ).result.balance.low == amount
         # verify EOA is empty
         assert (
             await eth.balanceOf(externally_owned_account.contract_address).call()
