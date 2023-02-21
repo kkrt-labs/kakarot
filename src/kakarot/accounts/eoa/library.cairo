@@ -140,8 +140,22 @@ namespace ExternallyOwnedAccount {
             assert [current_tx_calldata] = payload_len;
             assert offset = 1;
             assert selector = DEPLOY_CONTRACT_ACCOUNT;
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar range_check_ptr = range_check_ptr;
             // Else run the bytecode of the destination contract
         } else {
+            // transfer the amount from the call to the destination
+            let (native_token_address_) = IKakarot.get_native_token(
+                contract_address=_kakarot_address
+            );
+            let (success) = IEth.transfer(
+                contract_address=native_token_address_,
+                recipient=destination,
+                amount=Uint256(amount, 0),
+            );
+            with_attr error_message("Kakarot: Transfer failed") {
+                assert success = TRUE;
+            }
             // execute_at_address signature is
             // address: felt, value: felt, gas_limit: felt, calldata_len: felt, calldata: felt*
             assert [current_tx_calldata] = destination;
@@ -150,7 +164,11 @@ namespace ExternallyOwnedAccount {
             assert [current_tx_calldata + 3] = payload_len;
             assert offset = 4;
             assert selector = EXECUTE_AT_ADDRESS_SELECTOR;
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar range_check_ptr = range_check_ptr;
         }
+        tempvar syscall_ptr = syscall_ptr;
+        tempvar range_check_ptr = range_check_ptr;
         memcpy(current_tx_calldata + offset, payload, payload_len);
         let res = call_contract(
             contract_address=_kakarot_address,
