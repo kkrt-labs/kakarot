@@ -3,6 +3,23 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from kakarot.library import Kakarot, native_token_address
+
+@constructor
+func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    native_token_address_: felt
+) {
+    native_token_address.write(native_token_address_);
+    return();
+}
+
+// @dev mock function that returns the kakarot native token
+@view
+func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    native_token_address: felt
+) {
+    return Kakarot.get_native_token();
+}
 
 // @dev mock function that returns inputs for execute_at_address
 @external
