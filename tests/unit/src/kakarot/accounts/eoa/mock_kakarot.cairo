@@ -18,8 +18,6 @@ func execute_at_address{
 @external
 func deploy_contract_account{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(bytecode_len: felt, bytecode: felt*) -> (
-    bytecode_len: felt, bytecode: felt*
-) {
+}(bytecode_len: felt, bytecode: felt*) -> (bytecode_len: felt, bytecode: felt*) {
     return (bytecode_len, bytecode);
 }

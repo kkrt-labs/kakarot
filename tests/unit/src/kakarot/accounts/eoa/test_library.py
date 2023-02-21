@@ -69,7 +69,6 @@ class TestLibrary:
                     ),  # calldata
                 ]
 
-
         assert (
             await externally_owned_account.test__execute__should_make_all_calls_and_return_concat_results(
                 calls, list(calldata)

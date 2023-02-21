@@ -6,7 +6,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import FALSE
 from starkware.starknet.common.syscalls import deploy as deploy_syscall
-from starkware.starknet.common.syscalls import get_caller_address, get_contract_address
+from starkware.starknet.common.syscalls import get_contract_address
 from starkware.starknet.common.storage import normalize_address
 from starkware.cairo.common.hash_state import (
     hash_finalize,
@@ -93,7 +93,7 @@ namespace Accounts {
         assert constructor_calldata[0] = kakarot_address;
         assert constructor_calldata[1] = evm_address;
         IAccount.initialize(account_address, class_hash, 2, constructor_calldata);
-        evm_contract_deployed.emit(evm_address,account_address);
+        evm_contract_deployed.emit(evm_address, account_address);
         return (account_address=account_address);
     }
 }
