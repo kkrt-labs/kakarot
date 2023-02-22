@@ -7,15 +7,6 @@ from kakarot.accounts.proxy.upgradable import _get_implementation, _set_implemen
 from kakarot.constants import Constants
 
 // ///////////////////
-// CONSTRUCTOR
-// ///////////////////
-
-@constructor
-func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    return ();
-}
-
-// ///////////////////
 // EXTERNAL FUNCTIONS
 // ///////////////////
 
