@@ -41,7 +41,7 @@ namespace MemoryOperations {
     // @custom:stack_consumed_elements 1
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_mload{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -80,7 +80,7 @@ namespace MemoryOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_mstore{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -115,7 +115,7 @@ namespace MemoryOperations {
     // @custom:since Frontier
     // @custom:group Stack Memory Storage and Flow operations.
     // @custom:stack_produced_elements 1
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_pc{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -140,7 +140,7 @@ namespace MemoryOperations {
     // @custom:group Stack Memory Storage and Flow operations.
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_msize{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -167,7 +167,7 @@ namespace MemoryOperations {
     // @custom:gas 8
     // @custom:stack_consumed_elements 1
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_jump{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -200,7 +200,7 @@ namespace MemoryOperations {
     // @custom:gas 10
     // @custom:stack_consumed_elements 2
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_jumpi{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -245,7 +245,7 @@ namespace MemoryOperations {
     // @custom:group Stack Memory Storage and Flow operations.
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_jumpdest{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -266,7 +266,7 @@ namespace MemoryOperations {
     // @custom:stack_consumed_elements 1
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_pop{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -296,7 +296,7 @@ namespace MemoryOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_mstore8{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -342,7 +342,7 @@ namespace MemoryOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_sstore{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -393,7 +393,7 @@ namespace MemoryOperations {
     // @custom:stack_consumed_elements 1
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_sload{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -434,7 +434,7 @@ namespace MemoryOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_gas{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

@@ -34,6 +34,7 @@ eth-utils = "^2.1.0"
 hypothesis = "^6.65.0"
 case-converter = "^1.1.0"
 starknet-devnet = "^0.3.5"
+requests = "^2.28.2"
 
 [tool.pytest.ini_options]
 filterwarnings = [

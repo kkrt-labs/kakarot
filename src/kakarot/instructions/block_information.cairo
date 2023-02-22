@@ -43,7 +43,7 @@ namespace BlockInformation {
     // @custom:stack_consumed_elements 1
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_blockhash{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -98,7 +98,7 @@ namespace BlockInformation {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_coinbase{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -126,7 +126,7 @@ namespace BlockInformation {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_timestamp{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -157,7 +157,7 @@ namespace BlockInformation {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_number{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -188,7 +188,7 @@ namespace BlockInformation {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_difficulty{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -216,7 +216,7 @@ namespace BlockInformation {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_gaslimit{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -243,7 +243,7 @@ namespace BlockInformation {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_chainid{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -270,7 +270,7 @@ namespace BlockInformation {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_selfbalance{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -301,7 +301,7 @@ namespace BlockInformation {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_basefee{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
