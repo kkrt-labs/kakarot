@@ -9,6 +9,7 @@ from starkware.starknet.common.syscalls import get_tx_info, get_caller_address, 
 from starkware.cairo.common.uint256 import Uint256, uint256_not
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import split_felt
+from starkware.cairo.common.math_cmp import is_nn
 from starkware.cairo.common.cairo_keccak.keccak import keccak, finalize_keccak, keccak_bigend
 from utils.rlp import RLP
 from utils.eth_transaction import EthTransaction
@@ -144,17 +145,31 @@ namespace ExternallyOwnedAccount {
             tempvar range_check_ptr = range_check_ptr;
             // Else run the bytecode of the destination contract
         } else {
-            // transfer the amount from the call to the destination
-            let (native_token_address_) = IKakarot.get_native_token(
-                contract_address=_kakarot_address
-            );
-            let (success) = IEth.transfer(
-                contract_address=native_token_address_,
-                recipient=destination,
-                amount=Uint256(amount, 0),
-            );
-            with_attr error_message("Kakarot: Transfer failed") {
-                assert success = TRUE;
+            // transfer the amount from the EOA to the destination
+            let is_amount_positive = is_nn(amount - 1);
+            if (is_amount_positive == 1) {
+                // get kakarot native token address,
+                // compute starknet address from evm address,
+                let (native_token_address_) = IKakarot.get_native_token(
+                    contract_address=_kakarot_address
+                );
+                let (starknet_address_) = IKakarot.compute_starknet_address(
+                    contract_address=_kakarot_address, evm_address=destination
+                );
+                let amount_u256 = Helpers.to_uint256(amount);
+                let (success) = IEth.transfer(
+                    contract_address=native_token_address_,
+                    recipient=starknet_address_,
+                    amount=amount_u256,
+                );
+                with_attr error_message("Kakarot: EOA: failed to transfer token to {destination}") {
+                    assert success = TRUE;
+                }
+                tempvar syscall_ptr = syscall_ptr;
+                tempvar range_check_ptr = range_check_ptr;
+            } else {
+                tempvar syscall_ptr = syscall_ptr;
+                tempvar range_check_ptr = range_check_ptr;
             }
             // execute_at_address signature is
             // address: felt, value: felt, gas_limit: felt, calldata_len: felt, calldata: felt*
