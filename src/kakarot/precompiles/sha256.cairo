@@ -12,6 +12,7 @@ from starkware.cairo.common.math_cmp import is_le_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.memset import memset
 from starkware.cairo.common.pow import pow
+from starkware.cairo.common.bool import TRUE
 
 // Internal dependencies
 from utils.sha_256.packed_sha256 import (
@@ -171,7 +172,7 @@ namespace SHA256 {
         let zero_chunk = zero_bytes - zero_total_bytes - missing_bit_one;
 
         let is_last_block = is_le_felt(n_bytes, 55);
-        if (is_last_block == 1) {
+        if (is_last_block == TRUE) {
             _sha256_input(data, n_bytes, SHA256_INPUT_CHUNK_SIZE_FELTS - 2, zero_chunk);
             // Append the original message length at the end of the message block as a 64-bit big-endian integer.
             assert sha256_ptr[0] = 0;
@@ -185,7 +186,7 @@ namespace SHA256 {
 
         let (q, r) = unsigned_div_rem(n_bytes, SHA256_INPUT_CHUNK_SIZE_BYTES);
         let is_remainder_block = is_le_felt(q, 0);
-        if (is_remainder_block == 1) {
+        if (is_remainder_block == TRUE) {
             _sha256_input(data, r, SHA256_INPUT_CHUNK_SIZE_FELTS, 0);
             _sha256_chunk{sha256_start=message, state=state, output=output}();
 

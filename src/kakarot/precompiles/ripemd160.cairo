@@ -13,6 +13,7 @@ from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
 from starkware.cairo.common.dict import dict_new, dict_read, dict_write, dict_squash
 from starkware.cairo.common.registers import get_label_location
+from starkware.cairo.common.bool import TRUE
 
 // Internal dependencies
 from kakarot.model import model
@@ -125,7 +126,7 @@ func compress_data{dict_ptr: DictAccess*, range_check_ptr, bitwise_ptr: BitwiseB
 ) -> (res: felt*, rsize: felt, new_msg: felt*) {
     alloc_locals;
     let len_lt_63 = is_le(input_len, 63);
-    if (len_lt_63 == 1) {
+    if (len_lt_63 == TRUE) {
         return (buf, bufsize, input);
     }
 
@@ -449,7 +450,7 @@ func finish{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
     let (val_15) = uint32_or(factor, len_8);
 
     let next_block = is_nn_le(55, len);
-    if (next_block == 1) {
+    if (next_block == TRUE) {
         let (local arr_x: felt*) = alloc();
         dict_to_array{dict_ptr=x}(arr_x, 16);
         let (buf, bufsize) = compress(buf, bufsize, arr_x, 16);

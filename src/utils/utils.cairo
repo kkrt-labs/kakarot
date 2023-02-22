@@ -23,7 +23,7 @@ from starkware.cairo.common.uint256 import (
 )
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
-from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 
 // @title Helper Functions
@@ -254,7 +254,7 @@ namespace Helpers {
     ) -> (bytes_len: felt) {
         alloc_locals;
         let (is_zero) = uint256_eq(value, Uint256(0, 0));
-        if (is_zero == 1) {
+        if (is_zero == TRUE) {
             reverse(old_arr_len=idx, old_arr=res - idx, new_arr_len=idx, new_arr=dest);
             return (bytes_len=idx);
         }
@@ -637,7 +637,7 @@ namespace Helpers {
 
     // @notice Returns the min value between a and b
     func min{range_check_ptr}(a: felt, b: felt) -> felt {
-        if (is_le(a, b) == 0) {
+        if (is_le(a, b) == FALSE) {
             return b;
         } else {
             return a;
