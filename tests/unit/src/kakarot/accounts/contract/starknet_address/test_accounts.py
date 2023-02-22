@@ -21,6 +21,7 @@ class TestStarknetAccount:
 
         kakarot_starknet_address = eoa_deploy_tx.call_info.internal_calls[0].contract_address
 
-        computed_starknet_address = await kakarot.compute_starknet_address(evm_address=int(evm_address, 16)).execute().result[0]
+        test_compute_starknet_address = await kakarot.compute_starknet_address(evm_address=int(evm_address, 16)).execute()
 
+        computed_starknet_address = test_compute_starknet_address.result[0]
         assert computed_starknet_address == kakarot_starknet_address
