@@ -82,7 +82,7 @@ namespace ExternallyOwnedAccount {
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
     }(call_array_len: felt, call_array: CallArray*, calldata_len: felt, calldata: felt*) -> () {
-        if (call_array_len == FALSE) {
+        if (call_array_len == 0) {
             return ();
         }
 
@@ -112,7 +112,7 @@ namespace ExternallyOwnedAccount {
         response: felt*,
     ) -> (response_len: felt) {
         alloc_locals;
-        if (call_array_len == FALSE) {
+        if (call_array_len == 0) {
             return (response_len=0);
         }
 
