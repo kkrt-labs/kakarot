@@ -70,3 +70,14 @@ func __l1_default__{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     return ();
 }
 
+// ///////////////////
+// VIEW FUNCTIONS
+// ///////////////////
+
+@view
+func get_implementation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    implementation: felt
+) {
+    let (implementation) = _get_implementation();
+    return (implementation=implementation);
+}
