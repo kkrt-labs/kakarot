@@ -11,7 +11,7 @@ from kakarot.constants import Constants
 // ///////////////////
 
 // Using initializer because we need to remove implementation from constructor calldata
-// to be able to compute starknet address for bot externally owned account and contract account.
+// to be able to compute starknet address for both externally owned account and contract account.
 // Should not be a security issue because initializer can be called only 1 time in implementation.
 @external
 func initialize{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
