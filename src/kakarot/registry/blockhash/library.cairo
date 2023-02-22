@@ -16,9 +16,9 @@ func blockhash_(block_number: Uint256) -> (blockhash: felt) {
 }
 
 namespace BlockhashRegistry {
-    // @notice This function is used to initialize the registry.
-    // @dev Sets the kakarot smart contract as the owner
-    // @param kakarot_address: The address of the Kakarot smart contract.
+    // @notice Initialize the registry.
+    // @dev Set the kakarot smart contract as the owner.
+    // @param kakarot_address The address of the Kakarot smart contract.
     func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         kakarot_address: felt
     ) {
@@ -27,8 +27,8 @@ namespace BlockhashRegistry {
         return ();
     }
 
-    // @notice Transfer ownership of the registry to a new starknet address
-    // @param new_owner The new owner of the blockhash registry
+    // @notice Transfer ownership of the registry to a new starknet address.
+    // @param new_owner The new owner of the blockhash registry.
     func transfer_ownership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         new_owner: felt
     ) {
@@ -37,10 +37,10 @@ namespace BlockhashRegistry {
     }
 
     // @notice Update or create an entry in the registry.
-    // @param block_number_len: the length of block numbers
-    // @param block_number: the block numbers
-    // @param block_hash_len: the length of block hashes
-    // @param block_hash: the block hashes
+    // @param block_number_len The length of block numbers.
+    // @param block_number The block numbers.
+    // @param block_hash_len The length of block hashes.
+    // @param block_hash The block hashes.
     func set_blockhashes{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         block_number_len: felt, block_number: Uint256*, block_hash_len: felt, block_hash: felt*
     ) {
@@ -65,7 +65,8 @@ namespace BlockhashRegistry {
     }
 
     // @notice Get the blockhash of a certain block number.
-    // @param block_number: the block number
+    // @param block_number The block number
+    // @return blockhash The block hash.
     func get_blockhash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         block_number: Uint256
     ) -> (blockhash: felt) {

@@ -19,7 +19,7 @@ func initialize{
 
 // Account specific methods
 
-// @notice validate a transaction
+// @notice Validate a transaction
 // @dev the transaction is considered as valid if it is signed with the correct address and is a valid kakarot transaction
 // @param call_array_len The length of the call_array
 // @param call_array An array containing all the calls of the transaction see: https://docs.openzeppelin.com/contracts-cairo/0.6.0/accounts#call_and_accountcallarray_format
@@ -43,8 +43,9 @@ func __validate__{
     return ();
 }
 
-// @notice validates this account class for declaration
+// @notice Validate this account class for declaration
 // @dev For our use case the account doesn't need to declare contracts
+// @param class_hash The account class
 @external
 func __validate_declare__{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
@@ -53,7 +54,7 @@ func __validate_declare__{
     return ();
 }
 
-// @notice executes the Kakarot transaction
+// @notice Execute the Kakarot transaction
 // @dev this is executed only if the __validate__ function succeeded
 // @param call_array_len The length of the call_array
 // @param call_array An array containing all the calls of the transaction see: https://docs.openzeppelin.com/contracts-cairo/0.6.0/accounts#call_and_accountcallarray_format
@@ -97,7 +98,7 @@ func __execute__{
     return (response_len, response);
 }
 
-// @dev returns true if the interface_id is supported
+// @dev Return true if the interface_id is supported
 // @dev TODO: check what interfaces the contract should support and maybe create one for a kakarot account
 // @param interface_id The interface Id to verify if supported
 @view
@@ -110,7 +111,7 @@ func supports_interface{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_ch
     return (success=0);
 }
 
-// @notice return ethereum address of the externally owned account
+// @notice Return ethereum address of the externally owned account
 @view
 func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     evm_address: felt
@@ -118,7 +119,7 @@ func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
     return ExternallyOwnedAccount.get_evm_address();
 }
 
-// @notice empty bytecode needed for EXTCODE opcodes.
+// @notice Empty bytecode needed for EXTCODE opcodes.
 @view
 func bytecode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -127,7 +128,7 @@ func bytecode{
     return (0, bytecode);
 }
 
-// @notice empty bytecode needed for EXTCODE opcodes.
+// @notice Empty bytecode needed for EXTCODE opcodes.
 @view
 func bytecode_len{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*

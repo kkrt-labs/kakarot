@@ -20,7 +20,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 }
 
 // @notice Transfer ownership of the registry to a new starknet address
-// @param new_address: The new owner of the blockhash registry
+// @param new_address The new owner of the blockhash registry
 @external
 func transfer_ownership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     new_address: felt
@@ -31,10 +31,10 @@ func transfer_ownership{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_ch
 }
 
 // @notice Update or create an entry in the registry.
-// @param block_number_len: the length of block numbers
-// @param block_number: the block numbers
-// @param block_hash_len: the length of block hashes
-// @param block_hash: the block hashes
+// @param block_number_len The length of block numbers.
+// @param block_number The block numbers.
+// @param block_hash_len The length of block hashes.
+// @param block_hash The block hashes.
 @external
 func set_blockhashes{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     block_number_len: felt, block_number: Uint256*, block_hash_len: felt, block_hash: felt*
@@ -45,7 +45,8 @@ func set_blockhashes{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 }
 
 // @notice Get the blockhash of a certain block number.
-// @param block_number: the block number
+// @param block_number The block number.
+// @return blockhash The block hash.
 @view
 func get_blockhash{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     block_number: Uint256

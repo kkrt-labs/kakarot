@@ -22,7 +22,7 @@ namespace ExchangeOperations {
     // @dev Exchange 1st and i-th stack items
     // @param i The index in the stack to swap with the item at index 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_swap_i{range_check_ptr}(
         ctx: model.ExecutionContext*, i: felt
     ) -> model.ExecutionContext* {
@@ -48,7 +48,7 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_swap1{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -66,7 +66,7 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_swap2{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -84,7 +84,7 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_swap3{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -102,7 +102,7 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_swap4{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -120,7 +120,7 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_swap5{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -138,7 +138,7 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_swap6{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -156,7 +156,7 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_swap7{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -174,7 +174,7 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_swap8{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -192,7 +192,7 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_swap9{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -210,7 +210,7 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_swap10{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -228,7 +228,7 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_swap11{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -246,7 +246,7 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_swap12{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -264,7 +264,7 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_swap13{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -282,7 +282,7 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_swap14{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -300,7 +300,7 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_swap15{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -318,7 +318,7 @@ namespace ExchangeOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_swap16{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
