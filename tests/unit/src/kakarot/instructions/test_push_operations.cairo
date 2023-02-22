@@ -41,6 +41,17 @@ func test__exec_push2_should_add_2_byte_to_stack{
 }
 
 @external
+func test__exec_push2_should_not_add_2_byte_to_stack{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    alloc_locals;
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(3, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF);
+    let result = PushOperations.exec_push2(ctx);
+    TestHelpers.assert_stack_last_element_not_contains_uint256(result.stack, Uint256(0xFFFF, 0));
+    return ();
+}
+
+@external
 func test__exec_push3_should_add_3_byte_to_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
@@ -49,6 +60,17 @@ func test__exec_push3_should_add_3_byte_to_stack{
     let result = PushOperations.exec_push3(ctx);
     TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFF, 0));
 
+    return ();
+}
+
+@external
+func test__exec_push3_should_not_add_3_byte_to_stack{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    alloc_locals;
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(4, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF);
+    let result = PushOperations.exec_push2(ctx);
+    TestHelpers.assert_stack_last_element_not_contains_uint256(result.stack, Uint256(0xFFFFFF, 0));
     return ();
 }
 
@@ -65,6 +87,17 @@ func test__exec_push4_should_add_4_byte_to_stack{
 }
 
 @external
+func test__exec_push4_should_not_add_4_byte_to_stack{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    alloc_locals;
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(5, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF);
+    let result = PushOperations.exec_push2(ctx);
+    TestHelpers.assert_stack_last_element_not_contains_uint256(result.stack, Uint256(0xFFFFFFFF, 0));
+    return ();
+}
+
+@external
 func test__exec_push5_should_add_5_byte_to_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
@@ -73,6 +106,17 @@ func test__exec_push5_should_add_5_byte_to_stack{
     let result = PushOperations.exec_push5(ctx);
     TestHelpers.assert_stack_last_element_contains_uint256(result.stack, Uint256(0xFFFFFFFFFF, 0));
 
+    return ();
+}
+
+@external
+func test__exec_push5_should_not_add_5_byte_to_stack{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    alloc_locals;
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(6, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF);
+    let result = PushOperations.exec_push2(ctx);
+    TestHelpers.assert_stack_last_element_not_contains_uint256(result.stack, Uint256(0xFFFFFFFFFF, 0));
     return ();
 }
 

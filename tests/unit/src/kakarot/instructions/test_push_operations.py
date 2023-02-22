@@ -20,14 +20,26 @@ class TestPushOperations:
     async def test__exec_push2_should_add_2_byte_to_stack(self, push_operations):
         await push_operations.test__exec_push2_should_add_2_byte_to_stack().call()
 
+    async def test__exec_push2_should_not_add_2_byte_to_stack(self, push_operations):
+        await push_operations.test__exec_push2_should_not_add_2_byte_to_stack().call()
+
     async def test__exec_push3_should_add_3_byte_to_stack(self, push_operations):
         await push_operations.test__exec_push3_should_add_3_byte_to_stack().call()
+
+    async def test__exec_push3_should_not_add_3_byte_to_stack(self, push_operations):
+        await push_operations.test__exec_push3_should_not_add_3_byte_to_stack().call()
 
     async def test__exec_push4_should_add_4_byte_to_stack(self, push_operations):
         await push_operations.test__exec_push4_should_add_4_byte_to_stack().call()
 
+    async def test__exec_push4_should_not_add_4_byte_to_stack(self, push_operations):
+        await push_operations.test__exec_push4_should_not_add_4_byte_to_stack().call()
+
     async def test__exec_push5_should_add_5_byte_to_stack(self, push_operations):
         await push_operations.test__exec_push5_should_add_5_byte_to_stack().call()
+
+    async def test__exec_push5_should_not_add_5_byte_to_stack(self, push_operations):
+        await push_operations.test__exec_push5_should_not_add_5_byte_to_stack().call() 
 
     async def test__exec_push6_should_add_6_byte_to_stack(self, push_operations):
         await push_operations.test__exec_push6_should_add_6_byte_to_stack().call()
