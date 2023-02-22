@@ -8,7 +8,8 @@ from starknet_py.net.gateway_client import GatewayClient
 
 load_dotenv()
 
-
+ETH_TOKEN_ADDRESS = 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7
+EVM_ADDRESS = os.getenv("EVM_ADDRESS")
 NETWORK = os.getenv("STARKNET_NETWORK", "starknet-devnet")
 NETWORK = (
     "testnet"
