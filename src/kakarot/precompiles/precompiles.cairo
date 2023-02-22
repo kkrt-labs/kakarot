@@ -30,7 +30,11 @@ namespace Precompiles {
     // @param address The precompile address to be executed
     // @param calldata_len The calldata length
     // @param calldata The calldata.
-    // @return The initialized execution context.
+    // @param value The value.
+    // @param calling_context The calling context.
+    // @param return_data_len The length of the return data array.
+    // @param return_data The return data array.
+    // @return ExecutionContext The initialized execution context.
     func run{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -80,12 +84,14 @@ namespace Precompiles {
         return is_not_zero(address) * is_le(address, Constants.LAST_PRECOMPILE_ADDRESS);
     }
 
-    // @notice Executes associated function of precompiled address
-    // @dev This function uses an internal jump table to execute the corresponding precompile impmentation
+    // @notice Executes associated function of precompiled address.
+    // @dev This function uses an internal jump table to execute the corresponding precompile impmentation.
     // @param address The precompile address.
     // @param input_len The length of the input array.
     // @param input The input array.
-    // @return The output length, output array, and gas used of the application of the precompile.
+    // @return output_len The output length.
+    // @return output The output array.
+    // @return gas_used The gas usage of precompile.
     func _exec_precompile{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -131,10 +137,11 @@ namespace Precompiles {
         ret;
     }
 
-    // @notice A placeholder for precompile that are not implemented yet
-    // @dev Halts execution
-    // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @notice A placeholder for precompile that are not implemented yet.
+    // @dev Halts execution.
+    // @param address The address.
+    // @param _input_len The length of the input array.
+    // @param _input The input array.
     func not_implemented_precompile{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

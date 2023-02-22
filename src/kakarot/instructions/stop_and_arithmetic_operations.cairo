@@ -45,8 +45,8 @@ namespace StopAndArithmeticOperations {
     // @custom:since Frontier
     // @custom:group Stop and Arithmetic Operations
     // @custom:gas 0
-    // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @param ctx The pointer to the execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_stop{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -65,7 +65,7 @@ namespace StopAndArithmeticOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_add{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -100,7 +100,7 @@ namespace StopAndArithmeticOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_mul{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -135,7 +135,7 @@ namespace StopAndArithmeticOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_sub{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -170,7 +170,7 @@ namespace StopAndArithmeticOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_div{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -205,7 +205,7 @@ namespace StopAndArithmeticOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_sdiv{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -240,7 +240,7 @@ namespace StopAndArithmeticOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_mod{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -275,7 +275,7 @@ namespace StopAndArithmeticOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_smod{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -310,7 +310,7 @@ namespace StopAndArithmeticOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_addmod{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -349,7 +349,7 @@ namespace StopAndArithmeticOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_mulmod{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -386,7 +386,7 @@ namespace StopAndArithmeticOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_exp{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -421,7 +421,7 @@ namespace StopAndArithmeticOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_signextend{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -471,7 +471,7 @@ namespace StopAndArithmeticOperations {
     // @param ctx The pointer to the execution context.
     // @param stack The pointer to the stack.
     // @param gas_cost The gas cost to increment.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func apply_context_changes(
         ctx: model.ExecutionContext*, stack: model.Stack*, gas_cost: felt
     ) -> model.ExecutionContext* {

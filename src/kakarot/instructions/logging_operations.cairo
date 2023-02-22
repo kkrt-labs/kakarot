@@ -29,7 +29,7 @@ namespace LoggingOperations {
     // @custom:group Logging Operations
     // @param ctx The pointer to the execution context
     // @param Topic length.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_log_i{syscall_ptr: felt*, range_check_ptr}(
         ctx: model.ExecutionContext*, topics_len: felt
     ) -> model.ExecutionContext* {
@@ -75,7 +75,7 @@ namespace LoggingOperations {
     // @custom:since Frontier
     // @custom:group Logging Operations
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_log_0{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -91,7 +91,7 @@ namespace LoggingOperations {
     // @custom:since Frontier
     // @custom:group Logging Operations
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_log_1{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -107,7 +107,7 @@ namespace LoggingOperations {
     // @custom:since Frontier
     // @custom:group Logging Operations
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_log_2{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -123,7 +123,7 @@ namespace LoggingOperations {
     // @custom:since Frontier
     // @custom:group Logging Operations
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_log_3{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -139,7 +139,7 @@ namespace LoggingOperations {
     // @custom:since Frontier
     // @custom:group Logging Operations
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_log_4{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
