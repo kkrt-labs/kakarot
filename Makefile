@@ -85,4 +85,4 @@ build-sol:
 	forge build --names --force
 
 run:
-	poetry run starknet-devnet --lite-mode  --seed 0
+	poetry run starknet-devnet --lite-mode --seed 0 --dump-on exit --dump-path devnet.pkl
