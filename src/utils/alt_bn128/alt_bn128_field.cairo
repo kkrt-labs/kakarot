@@ -462,7 +462,7 @@ func nondet_fq12{range_check_ptr}() -> (res: FQ12) {
             segments.write_arg(var.address_, split(val))
     %}
     const MAX_SUM = 12 * 3 * (2 ** 86 - 1);
-    // TODO RANGE CHECKS? (WHY THE ASSERT LIKE THS BTW?)
+    // TODO RANGE CHECKS? (WHY THE ASSERT LIKE THIS BTW?)
     assert [range_check_ptr] = MAX_SUM - (res.e0.d0 + res.e0.d1 + res.e0.d2 + res.e1.d0 + res.e1.d1 + res.e1.d2 +
         res.e2.d0 + res.e2.d1 + res.e2.d2 + res.e3.d0 + res.e3.d1 + res.e3.d2 +
         res.e4.d0 + res.e4.d1 + res.e4.d2 + res.e5.d0 + res.e5.d1 + res.e5.d2 +

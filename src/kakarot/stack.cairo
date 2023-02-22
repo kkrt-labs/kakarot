@@ -206,10 +206,10 @@ namespace Stack {
             assert_le(i * 2, position_zero);
         }
 
-        // Read elements at stack postition 1
+        // Read elements at stack position 1
         let (el1_high) = dict_read{dict_ptr=word_dict}(position_zero - 2);
         let (el1_low) = dict_read{dict_ptr=word_dict}(position_zero - 1);
-        // Read elements at stack postition N
+        // Read elements at stack position N
         let (el2_high) = dict_read{dict_ptr=word_dict}(position_zero - i * 2);
         let (el2_low) = dict_read{dict_ptr=word_dict}(position_zero - i * 2 + 1);
 
