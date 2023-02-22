@@ -20,7 +20,6 @@ from kakarot.constants import (
     native_token_address,
     contract_account_class_hash,
     externally_owned_account_class_hash,
-    salt,
     blockhash_registry_address,
     Constants,
     account_proxy_class_hash,

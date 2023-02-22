@@ -23,7 +23,6 @@ from kakarot.constants import (
     native_token_address,
     contract_account_class_hash,
     externally_owned_account_class_hash,
-    salt,
     blockhash_registry_address,
     Constants,
     account_proxy_class_hash,
@@ -183,20 +182,17 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(bytecode_len: felt, bytecode: felt*) -> (
+    }(nonce: felt, bytecode_len: felt, bytecode: felt*) -> (
         evm_contract_address: felt, starknet_contract_address: felt
     ) {
         alloc_locals;
-        let (current_salt) = salt.read();
         let (current_address) = get_caller_address();
         let (sender_evm_address) = IAccount.get_evm_address(current_address);
         let (evm_contract_address) = CreateHelper.get_create_address(
-            sender_evm_address, current_salt
+            sender_evm_address, nonce
         );
         let (class_hash) = contract_account_class_hash.read();
         let (starknet_contract_address) = Accounts.create(class_hash, evm_contract_address);
-
-        salt.write(value=current_salt + 1);
 
         // Prepare execution context
         let (empty_array: felt*) = alloc();

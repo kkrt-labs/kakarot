@@ -128,18 +128,19 @@ namespace ExternallyOwnedAccount {
             gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s
         ) = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
 
-        let (_kakarot_address) = kakarot_address.read();
-
         let (current_tx_calldata: felt*) = alloc();
         local offset;
         local selector;
         // If destination is 0, we are deploying a contract
         if (destination == FALSE) {
             // deploy_contract_account signature is
-            // calldata_len: felt, calldata: felt*
-            assert [current_tx_calldata] = payload_len;
-            assert offset = 1;
+            // nonce: felt, calldata_len: felt, calldata: felt*
+            let (tx_info) = get_tx_info();
+            assert [current_tx_calldata] = tx_info.nonce;
+            assert [current_tx_calldata + 1] = payload_len;
+            assert offset = 2;
             assert selector = DEPLOY_CONTRACT_ACCOUNT;
+            return execute_at_address(call_array_len, call_array, calldata_len, calldata, current_tx_calldata,offset,payload_len,payload,selector,response);
             // Else run the bytecode of the destination contract
         } else {
             // execute_at_address signature is
@@ -150,7 +151,34 @@ namespace ExternallyOwnedAccount {
             assert [current_tx_calldata + 3] = payload_len;
             assert offset = 4;
             assert selector = EXECUTE_AT_ADDRESS_SELECTOR;
+            return execute_at_address(call_array_len, call_array, calldata_len, calldata, current_tx_calldata,offset,payload_len,payload,selector,response);
         }
+    }
+
+    // @notice Internal function 
+    // @param call_array_len The length of the call array
+    // @param call_array The call array
+    // @param calldata_len The length of the calldata
+    // @param calldata The calldata
+    func execute_at_address{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        bitwise_ptr: BitwiseBuiltin*,
+        range_check_ptr,
+    }(
+        call_array_len: felt,
+        call_array: CallArray*,
+        calldata_len: felt,
+        calldata: felt*,
+        current_tx_calldata: felt*,
+        offset: felt,
+        payload_len: felt,
+        payload: felt*,
+        selector: felt,
+        response: felt*,
+    ) -> (response_len: felt) {
+        alloc_locals;
+        let (local _kakarot_address) = kakarot_address.read();
         memcpy(current_tx_calldata + offset, payload, payload_len);
         let res = call_contract(
             contract_address=_kakarot_address,
@@ -168,4 +196,4 @@ namespace ExternallyOwnedAccount {
         );
         return (response_len=res.retdata_size + response_len);
     }
-}
+} 
