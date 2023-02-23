@@ -51,7 +51,7 @@ namespace EnvironmentalInformation {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_address{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -79,7 +79,7 @@ namespace EnvironmentalInformation {
     // @custom:stack_consumed_elements 1
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_balance{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -118,7 +118,7 @@ namespace EnvironmentalInformation {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_origin{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -149,7 +149,7 @@ namespace EnvironmentalInformation {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_caller{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -180,7 +180,7 @@ namespace EnvironmentalInformation {
     // @custom:gas 2
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_callvalue{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -206,7 +206,7 @@ namespace EnvironmentalInformation {
     // @custom:stack_consumed_elements 1
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_calldataload{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -250,7 +250,7 @@ namespace EnvironmentalInformation {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_calldatasize{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -329,7 +329,7 @@ namespace EnvironmentalInformation {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_codesize{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -357,7 +357,7 @@ namespace EnvironmentalInformation {
     // @custom:stack_consumed_elements 3
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_codecopy{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -409,7 +409,7 @@ namespace EnvironmentalInformation {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_gasprice{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -440,7 +440,7 @@ namespace EnvironmentalInformation {
     // @custom:stack_consumed_elements 1
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_extcodesize{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -487,7 +487,7 @@ namespace EnvironmentalInformation {
     // @custom:stack_consumed_elements 4
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_extcodecopy{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -567,7 +567,7 @@ namespace EnvironmentalInformation {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_returndatasize{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -594,7 +594,7 @@ namespace EnvironmentalInformation {
     // @custom:stack_consumed_elements 3
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @return ExecutionContext Updated execution context.
     func exec_returndatacopy{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -648,7 +648,7 @@ namespace EnvironmentalInformation {
     // @custom:stack_consumed_elements 1
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context
+    // @return ExecutionContext The pointer to the updated execution context
     func exec_extcodehash{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

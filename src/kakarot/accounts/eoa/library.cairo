@@ -3,14 +3,9 @@
 from utils.utils import Helpers
 from kakarot.constants import Constants
 from kakarot.interfaces.interfaces import IEth, IKakarot
-from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin, BitwiseBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_secp.signature import verify_eth_signature_uint256
-from starkware.starknet.common.syscalls import (
-    get_tx_info,
-    get_caller_address,
-    call_contract,
-    CallContract,
-)
+from starkware.starknet.common.syscalls import CallContract
 from starkware.cairo.common.uint256 import Uint256, uint256_not
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import split_felt
@@ -78,6 +73,8 @@ namespace ExternallyOwnedAccount {
         return ();
     }
 
+    // @notice Read stored EVM address.
+    // @return evm_address The stored address.
     func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         evm_address: felt
     ) {
@@ -85,11 +82,11 @@ namespace ExternallyOwnedAccount {
         return (evm_address=address);
     }
 
-    // @notice checks if tx is signed and valid for each call
-    // @param call_array_len The length of the call array
-    // @param call_array The call array
-    // @param calldata_len The length of the calldata
-    // @param calldata The calldata
+    // @notice Check if tx is signed and valid for each call.
+    // @param call_array_len The length of the call array.
+    // @param call_array The call array.
+    // @param calldata_len The length of the calldata.
+    // @param calldata The calldata.
     func validate{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
