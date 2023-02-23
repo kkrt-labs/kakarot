@@ -9,8 +9,6 @@ from starkware.starknet.common.syscalls import (
     get_tx_info,
     get_caller_address,
     call_contract,
-    CallContractRequest,
-    CallContractResponse,
     CallContract,
 )
 from starkware.cairo.common.uint256 import Uint256, uint256_not
