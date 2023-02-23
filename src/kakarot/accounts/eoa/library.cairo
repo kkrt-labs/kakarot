@@ -1,20 +1,12 @@
 %lang starknet
 
 from utils.utils import Helpers
-from kakarot.constants import Constants
 from kakarot.interfaces.interfaces import IEth, IKakarot
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.cairo_secp.signature import verify_eth_signature_uint256
 from starkware.starknet.common.syscalls import CallContract
 from starkware.cairo.common.uint256 import Uint256, uint256_not
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.math import split_felt
-from starkware.cairo.common.math_cmp import is_nn
-from starkware.cairo.common.cairo_keccak.keccak import keccak, finalize_keccak, keccak_bigend
-from utils.rlp import RLP
 from utils.eth_transaction import EthTransaction
-from starkware.cairo.common.math_cmp import is_le, is_le_felt, is_not_zero
-from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.memcpy import memcpy
 

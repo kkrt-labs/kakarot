@@ -78,7 +78,7 @@ class TestLibrary:
         # execute the multicall
         await mock_externally_owned_account.execute(calls, list(calldata)).execute()
 
-        # verify the value was transfered
+        # verify the value was transferred
         for evm_address, amount in expected_balances.items():
             assert (
                 await eth.balanceOf(evm_to_starknet_address[evm_address]).call()
