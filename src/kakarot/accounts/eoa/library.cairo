@@ -147,7 +147,7 @@ namespace ExternallyOwnedAccount {
             // Else run the bytecode of the destination contract
         } else {
             // execute_at_address signature
-            let res = IKakarot.execute_at_address(
+            IKakarot.execute_at_address(
                 contract_address=_kakarot_address,
                 address=destination,
                 value=amount,
@@ -160,35 +160,34 @@ namespace ExternallyOwnedAccount {
         // copy retdata into response using the syscall_ptr
         tempvar syscall_ptr = syscall_ptr;
         tempvar range_check_ptr = range_check_ptr;
-        let syscall = [cast(syscall_ptr - CallContract.SIZE, CallContract*)];
-        memcpy(response, syscall.response.retdata, syscall.response.retdata_size);
-        assert retdata_size = syscall.response.retdata_size;
+        let res = [cast(syscall_ptr - CallContract.SIZE, CallContract*)];
+        memcpy(response, res.response.retdata, res.response.retdata_size);
+        assert retdata_size = res.response.retdata_size;
+
+        if (amount == 0) {
+            let (response_len) = execute(
+                call_array_len - 1,
+                call_array + CallArray.SIZE,
+                calldata_len,
+                calldata,
+                response + retdata_size,
+            );
+            return (response_len=retdata_size + response_len);
+        }
 
         // transfer the amount from the EOA to the destination
-        let is_amount_positive = is_nn(amount - 1);
-        if (is_amount_positive == 1) {
-            // get kakarot native token address,
-            // compute starknet address from evm address,
-            let (native_token_address_) = IKakarot.get_native_token(
-                contract_address=_kakarot_address
-            );
-            let (starknet_address_) = IKakarot.compute_starknet_address(
-                contract_address=_kakarot_address, evm_address=destination
-            );
-            let amount_u256 = Helpers.to_uint256(amount);
-            let (success) = IEth.transfer(
-                contract_address=native_token_address_,
-                recipient=starknet_address_,
-                amount=amount_u256,
-            );
-            with_attr error_message("Kakarot: EOA: failed to transfer token to {destination}") {
-                assert success = TRUE;
-            }
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar range_check_ptr = range_check_ptr;
-        } else {
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar range_check_ptr = range_check_ptr;
+        // get kakarot native token address,
+        // compute starknet address from evm address,
+        let (native_token_address_) = IKakarot.get_native_token(contract_address=_kakarot_address);
+        let (starknet_address_) = IKakarot.compute_starknet_address(
+            contract_address=_kakarot_address, evm_address=destination
+        );
+        let amount_u256 = Helpers.to_uint256(amount);
+        let (success) = IEth.transfer(
+            contract_address=native_token_address_, recipient=starknet_address_, amount=amount_u256
+        );
+        with_attr error_message("Kakarot: EOA: failed to transfer token to {destination}") {
+            assert success = TRUE;
         }
 
         let (response_len) = execute(

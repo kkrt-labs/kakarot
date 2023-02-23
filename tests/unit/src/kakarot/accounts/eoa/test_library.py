@@ -1,5 +1,6 @@
 import pytest
 import pytest_asyncio
+from collections import defaultdict
 
 from tests.utils.constants import TRANSACTIONS
 from tests.utils.helpers import generate_random_private_key, get_multicall_from_evm_txs
@@ -55,7 +56,7 @@ class TestLibrary:
         total_transferred_value = sum([x["value"] for x in txs])
 
         evm_to_starknet_address = dict()
-        expected_balances = dict()
+        expected_balances = defaultdict(lambda: 0)
 
         # Mint tokens to the EOA
         await eth.mint(
@@ -65,9 +66,7 @@ class TestLibrary:
         for transaction in txs:
             # Update expected balances
             evm_address = int(transaction["to"], 16)
-            expected_balances[evm_address] = (
-                int(expected_balances.get(evm_address, 0)) + transaction["value"]
-            )
+            expected_balances[evm_address] += transaction["value"]
 
             # Update address mapping
             if evm_address not in evm_to_starknet_address:
