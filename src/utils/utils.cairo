@@ -731,7 +731,7 @@ namespace Helpers {
         return little_res;
     }
 
-    // @notice transform muliple bytes into a single felt
+    // @notice transform multiple bytes into a single felt
     // @param data_len The length of the bytes
     // @param data The pointer to the bytes array
     // @param n used for recursion, set to 0
@@ -755,7 +755,7 @@ namespace Helpers {
         return address;
     }
 
-    // @notice transform muliple bytes into words of 32 bits (big endian)
+    // @notice transform multiple bytes into words of 32 bits (big endian)
     // @dev the input data must have length in multiples of 4
     // @dev you may use the function `fill` to pad it with zeros
     // @param data_len The length of the bytes

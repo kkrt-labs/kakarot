@@ -48,7 +48,7 @@ func constructor{
     return ();
 }
 
-// @dev The contract account initilization includes a call to the Kakarot contract
+// @dev The contract account initialization includes a call to the Kakarot contract
 // in order to get the native token address. As the Kakarot contract is not deployed within this test, we make a call to this contract instead.
 @view
 func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
@@ -57,7 +57,7 @@ func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     return Kakarot.get_native_token();
 }
 
-// @dev The contract account initilization includes a call to an ERC20 contract to set an infitite transfer allowance to Kakarot.
+// @dev The contract account initialization includes a call to an ERC20 contract to set an infitite transfer allowance to Kakarot.
 // As the ERC20 contract is not deployed within this test, we make a call to this contract instead.
 @external
 func approve{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(

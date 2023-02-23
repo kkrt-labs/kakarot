@@ -213,7 +213,7 @@ namespace internal {
 
         if (remaining_shift == 0) {
             // end of packed felt case, store current "pending" felt
-            // continue loop with a new current_felt and increament index in bytecode_ storage
+            // continue loop with a new current_felt and increment index in bytecode_ storage
             bytecode_.write(index, current_felt);
             return write_bytecode(
                 index + 1, bytecode_len, bytecode, 0, ContractAccount.BYTES_PER_FELT

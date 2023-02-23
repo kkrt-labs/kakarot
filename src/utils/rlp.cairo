@@ -24,7 +24,7 @@ namespace RLP {
     }
 
     // @notice decodes RLP data see this: https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp
-    // @param data_len The lenght of the bytes
+    // @param data_len The length of the bytes
     // @param data The pointer to the first byte in array
     // @param items A pointer to an empty array of items, will be filled with found items
     func decode{
@@ -113,7 +113,7 @@ namespace RLP {
 
     // @notice encodes data into an rlp list
     // @dev data must be rlp encoded before using this function
-    // @param data_len The lenght of the bytes to copy from
+    // @param data_len The length of the bytes to copy from
     // @param data The pointer to the first byte in the array to copy from
     // @param rlp The pointer receiving the rlp encoded list
     // @return rlp_len The length of the encoded list in bytes
