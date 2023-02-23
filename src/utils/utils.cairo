@@ -23,7 +23,7 @@ from starkware.cairo.common.uint256 import (
 )
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
-from starkware.cairo.common.bool import FALSE, TRUE
+from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 
 // @title Helper Functions
