@@ -6,6 +6,8 @@ import rlp
 from eth_abi import encode_abi
 from eth_keys import keys
 from eth_utils import decode_hex, keccak, to_bytes, to_checksum_address
+from eth_account import Account
+from eth_keys.datatypes import PrivateKey
 
 from tests.utils.constants import CHAIN_ID
 
@@ -146,3 +148,47 @@ def ec_sign(
         int.to_bytes(signature.r, 32, "big"),
         int.to_bytes(signature.s, 32, "big"),
     )
+
+
+def get_multicall_from_evm_txs(
+    evm_txs: list, private_key: PrivateKey
+) -> Tuple[list, str, list]:
+    calls = []
+    calldata = b""
+    expected_result = []
+    for transaction in evm_txs:
+        tx = Account.sign_transaction(transaction, private_key)["rawTransaction"]
+        calls += [
+            (
+                0x0,  # to
+                0x0,  # selector
+                len(calldata),  # data_offset
+                len(tx),  # data_len
+            )
+        ]
+        calldata += tx
+        # Execute contract bytecode
+        if transaction["to"] != "":
+            expected_result += [
+                int(transaction["to"], 16),
+                transaction["value"],
+                transaction["gas"],
+                len(
+                    bytes.fromhex(transaction.get("data", "").replace("0x", ""))
+                ),  # calldata_len
+                *list(
+                    bytes.fromhex(transaction.get("data", "").replace("0x", ""))
+                ),  # calldata
+            ]
+        # Deploy Contract
+        else:
+            expected_result += [
+                len(
+                    bytes.fromhex(transaction.get("data", "").replace("0x", ""))
+                ),  # calldata_len
+                *list(
+                    bytes.fromhex(transaction.get("data", "").replace("0x", ""))
+                ),  # calldata
+            ]
+
+    return (calls, calldata, expected_result)
