@@ -12,7 +12,6 @@ from starkware.cairo.common.uint256 import (
     uint256_add,
     uint256_eq,
     assert_uint256_eq,
-    assert_uint256_le,
 )
 from starkware.cairo.common.math import split_felt
 
@@ -168,15 +167,6 @@ namespace TestHelpers {
     ) {
         let (stack, result) = Stack.peek(stack, 0);
         assert_uint256_eq(result, value);
-
-        return ();
-    }
-
-    func assert_stack_last_element_not_contains_uint256{range_check_ptr}(
-        stack: model.Stack*, value: Uint256
-    ) {
-        let (stack, result) = Stack.peek(stack, 0);
-        assert_uint256_le(result, value);
 
         return ();
     }
