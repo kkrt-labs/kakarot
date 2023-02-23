@@ -1,6 +1,5 @@
 import pytest
 import pytest_asyncio
-from eth_account import Account
 
 from tests.utils.constants import TRANSACTIONS
 from tests.utils.helpers import generate_random_private_key, get_multicall_from_evm_txs

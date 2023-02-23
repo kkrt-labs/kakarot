@@ -5,7 +5,14 @@ from kakarot.constants import Constants
 from kakarot.interfaces.interfaces import IEth, IKakarot
 from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_secp.signature import verify_eth_signature_uint256
-from starkware.starknet.common.syscalls import get_tx_info, get_caller_address, call_contract
+from starkware.starknet.common.syscalls import (
+    get_tx_info,
+    get_caller_address,
+    call_contract,
+    CallContractRequest,
+    CallContractResponse,
+    CallContract,
+)
 from starkware.cairo.common.uint256 import Uint256, uint256_not
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import split_felt
@@ -130,75 +137,69 @@ namespace ExternallyOwnedAccount {
         ) = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
 
         let (_kakarot_address) = kakarot_address.read();
+        local retdata_size;
 
-        let (current_tx_calldata: felt*) = alloc();
-        local offset;
-        local selector;
         // If destination is 0, we are deploying a contract
-        if (destination == FALSE) {
+        if (destination == 0) {
             // deploy_contract_account signature is
             // calldata_len: felt, calldata: felt*
-            assert [current_tx_calldata] = payload_len;
-            assert offset = 1;
-            assert selector = DEPLOY_CONTRACT_ACCOUNT;
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar range_check_ptr = range_check_ptr;
+            IKakarot.deploy_contract_account(
+                contract_address=_kakarot_address, bytecode_len=payload_len, bytecode=payload
+            );
             // Else run the bytecode of the destination contract
         } else {
-            // transfer the amount from the EOA to the destination
-            let is_amount_positive = is_nn(amount - 1);
-            if (is_amount_positive == 1) {
-                // get kakarot native token address,
-                // compute starknet address from evm address,
-                let (native_token_address_) = IKakarot.get_native_token(
-                    contract_address=_kakarot_address
-                );
-                let (starknet_address_) = IKakarot.compute_starknet_address(
-                    contract_address=_kakarot_address, evm_address=destination
-                );
-                let amount_u256 = Helpers.to_uint256(amount);
-                let (success) = IEth.transfer(
-                    contract_address=native_token_address_,
-                    recipient=starknet_address_,
-                    amount=amount_u256,
-                );
-                with_attr error_message("Kakarot: EOA: failed to transfer token to {destination}") {
-                    assert success = TRUE;
-                }
-                tempvar syscall_ptr = syscall_ptr;
-                tempvar range_check_ptr = range_check_ptr;
-            } else {
-                tempvar syscall_ptr = syscall_ptr;
-                tempvar range_check_ptr = range_check_ptr;
+            // execute_at_address signature
+            let res = IKakarot.execute_at_address(
+                contract_address=_kakarot_address,
+                address=destination,
+                value=amount,
+                gas_limit=gas_limit,
+                calldata_len=payload_len,
+                calldata=payload,
+            );
+        }
+
+        // copy retdata into response using the syscall_ptr
+        tempvar syscall_ptr = syscall_ptr;
+        tempvar range_check_ptr = range_check_ptr;
+        let syscall = [cast(syscall_ptr - CallContract.SIZE, CallContract*)];
+        memcpy(response, syscall.response.retdata, syscall.response.retdata_size);
+        assert retdata_size = syscall.response.retdata_size;
+
+        // transfer the amount from the EOA to the destination
+        let is_amount_positive = is_nn(amount - 1);
+        if (is_amount_positive == 1) {
+            // get kakarot native token address,
+            // compute starknet address from evm address,
+            let (native_token_address_) = IKakarot.get_native_token(
+                contract_address=_kakarot_address
+            );
+            let (starknet_address_) = IKakarot.compute_starknet_address(
+                contract_address=_kakarot_address, evm_address=destination
+            );
+            let amount_u256 = Helpers.to_uint256(amount);
+            let (success) = IEth.transfer(
+                contract_address=native_token_address_,
+                recipient=starknet_address_,
+                amount=amount_u256,
+            );
+            with_attr error_message("Kakarot: EOA: failed to transfer token to {destination}") {
+                assert success = TRUE;
             }
-            // execute_at_address signature is
-            // address: felt, value: felt, gas_limit: felt, calldata_len: felt, calldata: felt*
-            assert [current_tx_calldata] = destination;
-            assert [current_tx_calldata + 1] = amount;
-            assert [current_tx_calldata + 2] = gas_limit;
-            assert [current_tx_calldata + 3] = payload_len;
-            assert offset = 4;
-            assert selector = EXECUTE_AT_ADDRESS_SELECTOR;
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+        } else {
             tempvar syscall_ptr = syscall_ptr;
             tempvar range_check_ptr = range_check_ptr;
         }
-        tempvar syscall_ptr = syscall_ptr;
-        tempvar range_check_ptr = range_check_ptr;
-        memcpy(current_tx_calldata + offset, payload, payload_len);
-        let res = call_contract(
-            contract_address=_kakarot_address,
-            function_selector=selector,
-            calldata_size=offset + payload_len,
-            calldata=current_tx_calldata,
-        );
-        memcpy(response, res.retdata, res.retdata_size);
+
         let (response_len) = execute(
             call_array_len - 1,
             call_array + CallArray.SIZE,
             calldata_len,
             calldata,
-            response + res.retdata_size,
+            response + retdata_size,
         );
-        return (response_len=res.retdata_size + response_len);
+        return (response_len=retdata_size + response_len);
     }
 }
