@@ -1,8 +1,15 @@
+import logging
 import subprocess
 import time
+from pathlib import Path
 
 import requests
 
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+logger.info(f"⏳ Starting devnet in background")
 devnet = subprocess.Popen(["make", "run"])
 
 alive = False
@@ -17,7 +24,12 @@ while not alive and attempts < max_retries:
     finally:
         attempts += 1
 
+logger.info(f"✅ Devnet live")
+
 deploy = subprocess.run(["make", "deploy"])
 deploy.check_returncode()
 
 devnet.terminate()
+devnet.wait()
+logger.info(f"ℹ️  Kakarot cache size: {Path('devnet.pkl').stat().st_size}")
+logger.info(f"ℹ️  Kakarot cache dir: {Path('devnet.pkl').absolute()}")

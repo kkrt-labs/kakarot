@@ -1,8 +1,12 @@
 FROM python:3.9.13 as builder
 
 WORKDIR /kakarot
-COPY . .
+COPY ./poetry.lock poetry.lock
+COPY ./pyproject.toml pyproject.toml
 RUN pip3 install poetry
+RUN poetry install --no-root
+
+COPY . .
 RUN poetry install
 RUN poetry run python ./docker/devnet/run_and_deploy.py
 
