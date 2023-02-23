@@ -254,16 +254,16 @@ namespace Helpers {
     ) -> (bytes_len: felt) {
         alloc_locals;
         let (is_zero) = uint256_eq(value, Uint256(0, 0));
-        if (is_zero == TRUE) {
-            reverse(old_arr_len=idx, old_arr=res - idx, new_arr_len=idx, new_arr=dest);
-            return (bytes_len=idx);
+        if (is_zero == FALSE) {
+            let (byte_uint256) = uint256_and(value, Uint256(low=255, high=0));
+            let byte = uint256_to_felt(byte_uint256);
+            assert [res] = byte;  // get the last 8 bits of the value
+            let (val_shifted_one_byte) = uint256_shr(value, Uint256(low=8, high=0));
+            let (bytes_len) = uint256_to_bytes_no_padding(val_shifted_one_byte, idx + 1, res + 1, dest);  // recursively call function with value shifted right by 8 bits
+            return (bytes_len=bytes_len);
         }
-        let (byte_uint256) = uint256_and(value, Uint256(low=255, high=0));
-        let byte = uint256_to_felt(byte_uint256);
-        assert [res] = byte;  // get the last 8 bits of the value
-        let (val_shifted_one_byte) = uint256_shr(value, Uint256(low=8, high=0));
-        let (bytes_len) = uint256_to_bytes_no_padding(val_shifted_one_byte, idx + 1, res + 1, dest);  // recursively call function with value shifted right by 8 bits
-        return (bytes_len=bytes_len);
+        reverse(old_arr_len=idx, old_arr=res - idx, new_arr_len=idx, new_arr=dest);
+        return (bytes_len=idx);
     }
 
     // @notice This function is like `uint256_to_bytes_array` except it writes the byte array to a given destination with the given offset and length
