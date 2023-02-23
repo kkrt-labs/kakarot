@@ -1,4 +1,4 @@
-name: THOTH
+name: Thoth
 
 on:
   push:
