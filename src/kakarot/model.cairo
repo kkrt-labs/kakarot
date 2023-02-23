@@ -7,13 +7,13 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.dict import DictAccess
 
 namespace model {
-    // @notice info: https://www.evm.codes/about#stack
+    // @notice Info: https://www.evm.codes/about#stack
     // @notice Stack with a 1024 items maximum size. Each item is a 256 bits word. The stack is used by most
     // @notice opcodes to consume their parameters from.
     // @dev Each word is represented by two 128bits (16bytes) chunks.
-    // @param word_dict_start - pointer to a DictAccess array used to store the stack's value at a given index
-    // @param word_dict - pointer to the end of the DictAccess array
-    // @param len_16_bytes - length of the DictAccess array
+    // @param word_dict_start pointer to a DictAccess array used to store the stack's value at a given index.
+    // @param word_dict pointer to the end of the DictAccess array.
+    // @param len_16_bytes length of the DictAccess array.
     struct Stack {
         word_dict_start: DictAccess*,
         word_dict: DictAccess*,
@@ -23,9 +23,9 @@ namespace model {
     // @notice info: https://www.evm.codes/about#memory
     // @notice Transient memory maintained by the EVM during an execution which doesn't persist
     // @notice between transactions.
-    // @param word_dict_start - pointer to a DictAccess used to store the memory's value at a given index
-    // @param word_dict - pointer to the end of the DictAccess array
-    // @param len_16_bytes - length of the DictAccess array
+    // @param word_dict_start pointer to a DictAccess used to store the memory's value at a given index.
+    // @param word_dict pointer to the end of the DictAccess array.
+    // @param bytes_len length of the DictAccess array.
     struct Memory {
         word_dict_start: DictAccess*,
         word_dict: DictAccess*,
@@ -33,12 +33,12 @@ namespace model {
     }
 
     // @notice info: https://www.evm.codes/about#calldata
-    // @notice Struct storing data related to a call
-    // @param bytecode - the executed bytecode
-    // @param bytecode_len - length of bytecode
-    // @param calldata - byte space where the data parameter of a transaction or call is held
-    // @param calldata_len - length of calldata
-    // @param value - amount of native token to transfer
+    // @notice Struct storing data related to a call.
+    // @param bytecode The executed bytecode.
+    // @param bytecode_len The length of bytecode.
+    // @param calldata byte The space where the data parameter of a transaction or call is held.
+    // @param calldata_len The length of calldata.
+    // @param value The amount of native token to transfer.
     struct CallContext {
         bytecode: felt*,
         bytecode_len: felt,
@@ -47,25 +47,25 @@ namespace model {
         value: felt,
     }
 
-    // @dev Stores all data relevant to the current execution context
-    // @param call_context - call context data
-    // @param program_counter - keep track of the current position in the program as it is being executed
-    // @param stopped - boolean that state if the current execution is halted
-    // @param return_data - region used to return a value after a call
-    // @param return_data_len - return_data length
-    // @param stack - current execution context stack
-    // @param memory - current execution context memory
-    // @param gas_used - gas consumed by the current state of the execution
-    // @param gas_limit - maximum amount of gas for the execution
-    // @param gas_price - the amount to pay per unit of gas
-    // @param starknet_contract_address - starknet address of the contract interacted with
-    // @param evm_contract_address - evm address of the contract interacted with
-    // @param calling_context - parent context of the current execution context, can be empty when context
-    //                          is root context | see ExecutionContext.is_root(ctx)
-    // @param sub_context - child context of the current execution context, can be empty
-    // @param destroy_contracts_len - destroy_contract length
-    // @param destroy_contracts - array of contracts to destroy at the end of the transaction
-    // @param read_only - if set to true, context cannot do any state modifying instructions or send ETH in the sub context.
+    // @dev Stores all data relevant to the current execution context.
+    // @param call_context The call context data.
+    // @param program_counter The keep track of the current position in the program as it is being executed.
+    // @param stopped A boolean that state if the current execution is halted.
+    // @param return_data The region used to return a value after a call.
+    // @param return_data_len The return_data length.
+    // @param stack The current execution context stack.
+    // @param memory The current execution context memory.
+    // @param gas_used The gas consumed by the current state of the execution.
+    // @param gas_limit The maximum amount of gas for the execution.
+    // @param gas_price The the amount to pay per unit of gas.
+    // @param starknet_contract_address The starknet address of the contract interacted with.
+    // @param evm_contract_address The evm address of the contract interacted with.
+    // @param calling_context The parent context of the current execution context, can be empty when context
+    //                        is root context | see ExecutionContext.is_root(ctx).
+    // @param sub_context The child context of the current execution context, can be empty.
+    // @param destroy_contracts_len The destroy_contract length.
+    // @param destroy_contracts The array of contracts to destroy at the end of the transaction.
+    // @param read_only The if set to true, context cannot do any state modifying instructions or send ETH in the sub context.
     struct ExecutionContext {
         call_context: CallContext*,
         program_counter: felt,

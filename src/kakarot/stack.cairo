@@ -41,7 +41,8 @@ namespace Stack {
     }
 
     // @notice Finalizes the stack.
-    // @return The pointer to the stack Summary.
+    // @param self The pointer to the stack.
+    // @return summary The pointer to the stack Summary.
     func finalize{range_check_ptr}(self: model.Stack*) -> Summary* {
         let (squashed_start, squashed_end) = default_dict_finalize(
             self.word_dict_start, self.word_dict, 0
@@ -52,10 +53,10 @@ namespace Stack {
     }
 
     // @notice Store an element into the stack.
-    // @param self - The pointer to the stack.
-    // @param element - The element to push.
-    // @param offset - The offset to store the element at.
-    // @return The new pointer to the stack.
+    // @param self The pointer to the stack.
+    // @param element The element to push.
+    // @param offset The offset to store the element at.
+    // @return stack The new pointer to the stack.
     func push{range_check_ptr}(self: model.Stack*, element: Uint256) -> model.Stack* {
         let word_dict = self.word_dict;
         let position_zero = self.len_16bytes;
@@ -79,10 +80,10 @@ namespace Stack {
     }
 
     // @notice Pop N elements from the stack.
-    // @param self - The pointer to the stack.
-    // @param len - The len of elements to pop.
-    // @return The new pointer to the stack.
-    // @return elements the pointer to the first popped element.
+    // @param self The pointer to the stack.
+    // @param n The len of elements to pop.
+    // @return new_stack The new pointer to the stack.
+    // @return elements The pointer to the first popped element.
     func pop_n{range_check_ptr}(self: model.Stack*, n: felt) -> (
         new_stack: model.Stack*, elements: Uint256*
     ) {
@@ -133,9 +134,9 @@ namespace Stack {
     }
 
     // @notice Pop an element from the stack.
-    // @param self - The pointer to the stack.
-    // @return The new pointer to the stack.
-    // @return The popped element.
+    // @param self The pointer to the stack.
+    // @return new_stack The new pointer to the stack.
+    // @return element The popped element.
     func pop{range_check_ptr}(self: model.Stack*) -> (new_stack: model.Stack*, element: Uint256) {
         let word_dict = self.word_dict;
         let position_zero = self.len_16bytes;
@@ -164,9 +165,10 @@ namespace Stack {
 
     // @notice Return a value from the stack at a given stack index.
     // @dev stack_index is 0-based, 0 is the top of the stack.
-    // @param self - The pointer to the stack.
-    // @param stack_index - The index of the element to return.
-    // @return The element at the given index.
+    // @param self The pointer to the stack.
+    // @param stack_index The index of the element to return.
+    // @return self The new pointer to the stack.
+    // @return value The element at the given index.
     func peek{range_check_ptr}(self: model.Stack*, stack_index: felt) -> (
         self: model.Stack*, value: Uint256
     ) {
@@ -192,9 +194,9 @@ namespace Stack {
 
     // @notice Swap two elements in the stack.
     // @dev i is 0-based, 0 is the top of the stack.
-    // @param self - The pointer to the stack.
-    // @param i - The index of the second element to swap.
-    // @return The new pointer to the stack.
+    // @param self The pointer to the stack.
+    // @param i The index of the second element to swap.
+    // @return stack The new pointer to the stack.
     func swap_i{range_check_ptr}(self: model.Stack*, i: felt) -> model.Stack* {
         let word_dict = self.word_dict;
         let position_zero = self.len_16bytes;

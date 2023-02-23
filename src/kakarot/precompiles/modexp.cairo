@@ -23,7 +23,9 @@ namespace PrecompileModExpUint256 {
     // @notice Run the precompile.
     // @param input_len The length of input array.
     // @param input The input array.
-    // @return The output length, output array, and gas usage of precompile.
+    // @return output_len The output length.
+    // @return output The output array.
+    // @return gas_used The gas usage of precompile.
     func run{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

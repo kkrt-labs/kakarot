@@ -63,7 +63,7 @@ namespace ContractAccount {
         return ();
     }
 
-    // @return evm address of the contract account
+    // @return address The EVM address of the contract account
     func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         address: felt
     ) {
@@ -72,8 +72,8 @@ namespace ContractAccount {
     }
 
     // @notice Store the bytecode of the contract.
-    // @param bytecode_len: The length of the bytecode.
-    // @param bytecode: The bytecode of the contract.
+    // @param bytecode_len The length of the bytecode.
+    // @param bytecode The bytecode of the contract.
     func write_bytecode{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -95,7 +95,7 @@ namespace ContractAccount {
     }
 
     // @notice This function is used to get the bytecode_len of the smart contract.
-    // @return bytecode_len: The length of the bytecode.
+    // @return bytecode_len The length of the bytecode.
     func bytecode_len{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -108,8 +108,8 @@ namespace ContractAccount {
     }
 
     // @notice This function is used to get the bytecode of the smart contract.
-    // @return bytecode_len: The length of the bytecode.
-    // @return bytecode: The bytecode of the smart contract.
+    // @return bytecode_len The length of the bytecode.
+    // @return bytecode The bytecode of the smart contract.
     func bytecode{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -132,8 +132,8 @@ namespace ContractAccount {
     }
 
     // @notice This function is used to read the storage at a key.
-    // @param key: The key to the stored value .
-    // @return value: The store value.
+    // @param key The key to the stored value.
+    // @return value The store value.
     func storage{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -145,8 +145,8 @@ namespace ContractAccount {
     }
 
     // @notice This function is used to write to the storage of the account.
-    // @param key: The key to the value to store.
-    // @param value: The value to store.
+    // @param key The key to the value to store.
+    // @param value The value to store.
     func write_storage{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -161,7 +161,7 @@ namespace ContractAccount {
     }
 
     // @notice This function checks if the account was initialized.
-    // @return is_initialized: 1 if the account has been initialized 0 otherwise.
+    // @return is_initialized 1 if the account has been initialized 0 otherwise.
     func is_initialized{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -197,9 +197,9 @@ namespace internal {
     dw 2 ** 120;
 
     // @notice Store the bytecode of the contract.
-    // @param index: The current free index in the bytecode_ storage.
-    // @param bytecode_len: The length of the bytecode.
-    // @param bytecode: The bytecode of the contract.
+    // @param index The current free index in the bytecode_ storage.
+    // @param bytecode_len The length of the bytecode.
+    // @param bytecode The bytecode of the contract.
     func write_bytecode{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         index: felt, bytecode_len: felt, bytecode: felt*, current_felt: felt, remaining_shift: felt
     ) {
@@ -239,9 +239,9 @@ namespace internal {
     }
 
     // @notice Load the bytecode of the contract in the specified array.
-    // @param index: The index in the bytecode.
-    // @param bytecode_len: The length of the bytecode.
-    // @param bytecode: The bytecode of the contract.
+    // @param index The index in the bytecode.
+    // @param bytecode_len The length of the bytecode.
+    // @param bytecode The bytecode of the contract.
     func load_bytecode{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
