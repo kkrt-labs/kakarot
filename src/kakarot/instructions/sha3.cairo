@@ -44,7 +44,7 @@ namespace Sha3 {
         let stack = ctx.stack;
 
         // Stack input:
-        // 0 - offset: memory offset for the begining of the hash.
+        // 0 - offset: memory offset for the beginning of the hash.
         // 1 - length: how many values we hash.
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let offset = popped[0];
