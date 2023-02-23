@@ -44,11 +44,12 @@ namespace ALT_BN128 {
 
         verify_zero5(
             UnreducedBigInt5(
-            d0=3 * x_sqr.d0 - 2 * slope_y.d0,
-            d1=3 * x_sqr.d1 - 2 * slope_y.d1,
-            d2=3 * x_sqr.d2 - 2 * slope_y.d2,
-            d3=3 * x_sqr.d3 - 2 * slope_y.d3,
-            d4=3 * x_sqr.d4 - 2 * slope_y.d4),
+                d0=3 * x_sqr.d0 - 2 * slope_y.d0,
+                d1=3 * x_sqr.d1 - 2 * slope_y.d1,
+                d2=3 * x_sqr.d2 - 2 * slope_y.d2,
+                d3=3 * x_sqr.d3 - 2 * slope_y.d3,
+                d4=3 * x_sqr.d4 - 2 * slope_y.d4,
+            ),
         );
 
         return (slope=slope);
@@ -79,11 +80,12 @@ namespace ALT_BN128 {
 
         verify_zero5(
             UnreducedBigInt5(
-            d0=x_diff_slope.d0 - pt0.y.d0 + pt1.y.d0,
-            d1=x_diff_slope.d1 - pt0.y.d1 + pt1.y.d1,
-            d2=x_diff_slope.d2 - pt0.y.d2 + pt1.y.d2,
-            d3=x_diff_slope.d3,
-            d4=x_diff_slope.d4),
+                d0=x_diff_slope.d0 - pt0.y.d0 + pt1.y.d0,
+                d1=x_diff_slope.d1 - pt0.y.d1 + pt1.y.d1,
+                d2=x_diff_slope.d2 - pt0.y.d2 + pt1.y.d2,
+                d3=x_diff_slope.d3,
+                d4=x_diff_slope.d4,
+            ),
         );
 
         return (slope,);
@@ -119,11 +121,12 @@ namespace ALT_BN128 {
 
         verify_zero5(
             UnreducedBigInt5(
-            d0=slope_sqr.d0 - new_x.d0 - 2 * pt.x.d0,
-            d1=slope_sqr.d1 - new_x.d1 - 2 * pt.x.d1,
-            d2=slope_sqr.d2 - new_x.d2 - 2 * pt.x.d2,
-            d3=slope_sqr.d3,
-            d4=slope_sqr.d4),
+                d0=slope_sqr.d0 - new_x.d0 - 2 * pt.x.d0,
+                d1=slope_sqr.d1 - new_x.d1 - 2 * pt.x.d1,
+                d2=slope_sqr.d2 - new_x.d2 - 2 * pt.x.d2,
+                d3=slope_sqr.d3,
+                d4=slope_sqr.d4,
+            ),
         );
 
         let (x_diff_slope: UnreducedBigInt5) = bigint_mul(
@@ -132,11 +135,12 @@ namespace ALT_BN128 {
 
         verify_zero5(
             UnreducedBigInt5(
-            d0=x_diff_slope.d0 - pt.y.d0 - new_y.d0,
-            d1=x_diff_slope.d1 - pt.y.d1 - new_y.d1,
-            d2=x_diff_slope.d2 - pt.y.d2 - new_y.d2,
-            d3=x_diff_slope.d3,
-            d4=x_diff_slope.d4),
+                d0=x_diff_slope.d0 - pt.y.d0 - new_y.d0,
+                d1=x_diff_slope.d1 - pt.y.d1 - new_y.d1,
+                d2=x_diff_slope.d2 - pt.y.d2 - new_y.d2,
+                d3=x_diff_slope.d3,
+                d4=x_diff_slope.d4,
+            ),
         );
 
         return (G1Point(new_x, new_y),);
@@ -183,11 +187,12 @@ namespace ALT_BN128 {
 
         verify_zero5(
             UnreducedBigInt5(
-            d0=slope_sqr.d0 - new_x.d0 - pt0.x.d0 - pt1.x.d0,
-            d1=slope_sqr.d1 - new_x.d1 - pt0.x.d1 - pt1.x.d1,
-            d2=slope_sqr.d2 - new_x.d2 - pt0.x.d2 - pt1.x.d2,
-            d3=slope_sqr.d3,
-            d4=slope_sqr.d4),
+                d0=slope_sqr.d0 - new_x.d0 - pt0.x.d0 - pt1.x.d0,
+                d1=slope_sqr.d1 - new_x.d1 - pt0.x.d1 - pt1.x.d1,
+                d2=slope_sqr.d2 - new_x.d2 - pt0.x.d2 - pt1.x.d2,
+                d3=slope_sqr.d3,
+                d4=slope_sqr.d4,
+            ),
         );
 
         let (x_diff_slope: UnreducedBigInt5) = bigint_mul(
@@ -196,11 +201,12 @@ namespace ALT_BN128 {
 
         verify_zero5(
             UnreducedBigInt5(
-            d0=x_diff_slope.d0 - pt0.y.d0 - new_y.d0,
-            d1=x_diff_slope.d1 - pt0.y.d1 - new_y.d1,
-            d2=x_diff_slope.d2 - pt0.y.d2 - new_y.d2,
-            d3=x_diff_slope.d3,
-            d4=x_diff_slope.d4),
+                d0=x_diff_slope.d0 - pt0.y.d0 - new_y.d0,
+                d1=x_diff_slope.d1 - pt0.y.d1 - new_y.d1,
+                d2=x_diff_slope.d2 - pt0.y.d2 - new_y.d2,
+                d3=x_diff_slope.d3,
+                d4=x_diff_slope.d4,
+            ),
         );
 
         return (G1Point(new_x, new_y),);
@@ -280,40 +286,53 @@ namespace ALT_BN128 {
     func g1_two() -> (res: G1Point) {
         return (
             G1Point(
-            BigInt3(0x71ca8d3c208c16d87cfd3, 0x116da060561765e05aa45a, 0x30644e72e131a029b850),
-            BigInt3(0x138fc7ff3ebf7a5a18a2c4, 0x3e5acaba7029a29a91278d, 0x15ed738c0e0a7c92e7845)),
+                BigInt3(0x71ca8d3c208c16d87cfd3, 0x116da060561765e05aa45a, 0x30644e72e131a029b850),
+                BigInt3(
+                    0x138fc7ff3ebf7a5a18a2c4, 0x3e5acaba7029a29a91278d, 0x15ed738c0e0a7c92e7845
+                ),
+            ),
         );
     }
 
     func g1_three() -> (res: G1Point) {
         return (
             G1Point(
-            BigInt3(0x38e679f2d355961915abf0, 0xaf2c6daf4564c57611c56, 0x769bf9ac56bea3ff4023),
-            BigInt3(0x1c5b57cdf1ff3dd9fe2261, 0x2df2342191d4c6798ed02e, 0x2ab799bee0489429554fd)),
+                BigInt3(0x38e679f2d355961915abf0, 0xaf2c6daf4564c57611c56, 0x769bf9ac56bea3ff4023),
+                BigInt3(
+                    0x1c5b57cdf1ff3dd9fe2261, 0x2df2342191d4c6798ed02e, 0x2ab799bee0489429554fd
+                ),
+            ),
         );
     }
 
     func g1_negone() -> (res: G1Point) {
         return (
             G1Point(
-            BigInt3(0x1, 0x0, 0x0),
-            BigInt3(0x31ca8d3c208c16d87cfd45, 0x16da060561765e05aa45a1, 0x30644e72e131a029b8504)),
+                BigInt3(0x1, 0x0, 0x0),
+                BigInt3(
+                    0x31ca8d3c208c16d87cfd45, 0x16da060561765e05aa45a1, 0x30644e72e131a029b8504
+                ),
+            ),
         );
     }
 
     func g1_negtwo() -> (res: G1Point) {
         return (
             G1Point(
-            BigInt3(0x71ca8d3c208c16d87cfd3, 0x116da060561765e05aa45a, 0x30644e72e131a029b850),
-            BigInt3(0x1e3ac53ce1cc9c7e645a83, 0x187f3b4af14cbb6b191e14, 0x1a76dae6d3272396d0cbe)),
+                BigInt3(0x71ca8d3c208c16d87cfd3, 0x116da060561765e05aa45a, 0x30644e72e131a029b850),
+                BigInt3(
+                    0x1e3ac53ce1cc9c7e645a83, 0x187f3b4af14cbb6b191e14, 0x1a76dae6d3272396d0cbe
+                ),
+            ),
         );
     }
 
     func g1_negthree() -> (res: G1Point) {
         return (
             G1Point(
-            BigInt3(0x38e679f2d355961915abf0, 0xaf2c6daf4564c57611c56, 0x769bf9ac56bea3ff4023),
-            BigInt3(0x156f356e2e8cd8fe7edae6, 0x28e7d1e3cfa1978c1b7573, 0x5acb4b400e90c0063006)),
+                BigInt3(0x38e679f2d355961915abf0, 0xaf2c6daf4564c57611c56, 0x769bf9ac56bea3ff4023),
+                BigInt3(0x156f356e2e8cd8fe7edae6, 0x28e7d1e3cfa1978c1b7573, 0x5acb4b400e90c0063006),
+            ),
         );
     }
 }

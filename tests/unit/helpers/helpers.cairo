@@ -35,7 +35,7 @@ namespace TestHelpers {
         assert [calldata] = '';
         local call_context: model.CallContext* = new model.CallContext(
             bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
-            );
+        );
         let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
         return ctx;
     }
@@ -81,7 +81,7 @@ namespace TestHelpers {
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             read_only=self.read_only,
-            );
+        );
     }
 
     // @notice Init an execution context where bytecode has "bytecode_count" entries of "value".
@@ -234,7 +234,8 @@ namespace TestHelpers {
 
         assert execution_context_0.gas_limit = execution_context_1.gas_limit;
         assert execution_context_0.gas_price = execution_context_1.gas_price;
-        assert execution_context_0.starknet_contract_address = execution_context_1.starknet_contract_address;
+        assert execution_context_0.starknet_contract_address = execution_context_1.starknet_contract_address
+            ;
         assert execution_context_0.evm_contract_address = execution_context_1.evm_contract_address;
         return assert_execution_context_equal(
             execution_context_0.calling_context, execution_context_1.calling_context

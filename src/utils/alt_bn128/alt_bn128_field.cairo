@@ -61,19 +61,24 @@ func fq_zero() -> (res: BigInt3) {
 }
 
 func fq2_zero() -> (res: FQ2) {
-    return (FQ2(
-        e0=BigInt3(0, 0, 0),
-        e1=BigInt3(0, 0, 0),
-        ),);
+    return (FQ2(e0=BigInt3(0, 0, 0), e1=BigInt3(0, 0, 0)),);
 }
 
 func fq12_zero() -> (res: FQ12) {
     return (
         FQ12(
-        e0=BigInt3(0, 0, 0), e1=BigInt3(0, 0, 0), e2=BigInt3(0, 0, 0),
-        e3=BigInt3(0, 0, 0), e4=BigInt3(0, 0, 0), e5=BigInt3(0, 0, 0),
-        e6=BigInt3(0, 0, 0), e7=BigInt3(0, 0, 0), e8=BigInt3(0, 0, 0),
-        e9=BigInt3(0, 0, 0), eA=BigInt3(0, 0, 0), eB=BigInt3(0, 0, 0),
+            e0=BigInt3(0, 0, 0),
+            e1=BigInt3(0, 0, 0),
+            e2=BigInt3(0, 0, 0),
+            e3=BigInt3(0, 0, 0),
+            e4=BigInt3(0, 0, 0),
+            e5=BigInt3(0, 0, 0),
+            e6=BigInt3(0, 0, 0),
+            e7=BigInt3(0, 0, 0),
+            e8=BigInt3(0, 0, 0),
+            e9=BigInt3(0, 0, 0),
+            eA=BigInt3(0, 0, 0),
+            eB=BigInt3(0, 0, 0),
         ),
     );
 }
@@ -81,10 +86,18 @@ func fq12_zero() -> (res: FQ12) {
 func fq12_one() -> (res: FQ12) {
     return (
         FQ12(
-        e0=BigInt3(1, 0, 0), e1=BigInt3(0, 0, 0), e2=BigInt3(0, 0, 0),
-        e3=BigInt3(0, 0, 0), e4=BigInt3(0, 0, 0), e5=BigInt3(0, 0, 0),
-        e6=BigInt3(0, 0, 0), e7=BigInt3(0, 0, 0), e8=BigInt3(0, 0, 0),
-        e9=BigInt3(0, 0, 0), eA=BigInt3(0, 0, 0), eB=BigInt3(0, 0, 0),
+            e0=BigInt3(1, 0, 0),
+            e1=BigInt3(0, 0, 0),
+            e2=BigInt3(0, 0, 0),
+            e3=BigInt3(0, 0, 0),
+            e4=BigInt3(0, 0, 0),
+            e5=BigInt3(0, 0, 0),
+            e6=BigInt3(0, 0, 0),
+            e7=BigInt3(0, 0, 0),
+            e8=BigInt3(0, 0, 0),
+            e9=BigInt3(0, 0, 0),
+            eA=BigInt3(0, 0, 0),
+            eB=BigInt3(0, 0, 0),
         ),
     );
 }
@@ -194,11 +207,8 @@ func is_zero{range_check_ptr}(x: BigInt3) -> (res: felt) {
     // Check that x * x_inv = 1 to verify that x != 0.
     verify_zero5(
         UnreducedBigInt5(
-        d0=x_x_inv.d0 - 1,
-        d1=x_x_inv.d1,
-        d2=x_x_inv.d2,
-        d3=x_x_inv.d3,
-        d4=x_x_inv.d4),
+            d0=x_x_inv.d0 - 1, d1=x_x_inv.d1, d2=x_x_inv.d2, d3=x_x_inv.d3, d4=x_x_inv.d4
+        ),
     );
     return (res=0);
 }
@@ -322,36 +332,38 @@ func fq12_is_zero{range_check_ptr}(x: FQ12) -> (res: felt) {
 func fq12_diff(x: FQ12, y: FQ12) -> (res: FQ12) {
     return (
         res=FQ12(
-        BigInt3(d0=x.e0.d0 - y.e0.d0, d1=x.e0.d1 - y.e0.d1, d2=x.e0.d2 - y.e0.d2),
-        BigInt3(d0=x.e1.d0 - y.e1.d0, d1=x.e1.d1 - y.e1.d1, d2=x.e1.d2 - y.e1.d2),
-        BigInt3(d0=x.e2.d0 - y.e2.d0, d1=x.e2.d1 - y.e2.d1, d2=x.e2.d2 - y.e2.d2),
-        BigInt3(d0=x.e3.d0 - y.e3.d0, d1=x.e3.d1 - y.e3.d1, d2=x.e3.d2 - y.e3.d2),
-        BigInt3(d0=x.e4.d0 - y.e4.d0, d1=x.e4.d1 - y.e4.d1, d2=x.e4.d2 - y.e4.d2),
-        BigInt3(d0=x.e5.d0 - y.e5.d0, d1=x.e5.d1 - y.e5.d1, d2=x.e5.d2 - y.e5.d2),
-        BigInt3(d0=x.e6.d0 - y.e6.d0, d1=x.e6.d1 - y.e6.d1, d2=x.e6.d2 - y.e6.d2),
-        BigInt3(d0=x.e7.d0 - y.e7.d0, d1=x.e7.d1 - y.e7.d1, d2=x.e7.d2 - y.e7.d2),
-        BigInt3(d0=x.e8.d0 - y.e8.d0, d1=x.e8.d1 - y.e8.d1, d2=x.e8.d2 - y.e8.d2),
-        BigInt3(d0=x.e9.d0 - y.e9.d0, d1=x.e9.d1 - y.e9.d1, d2=x.e9.d2 - y.e9.d2),
-        BigInt3(d0=x.eA.d0 - y.eA.d0, d1=x.eA.d1 - y.eA.d1, d2=x.eA.d2 - y.eA.d2),
-        BigInt3(d0=x.eB.d0 - y.eB.d0, d1=x.eB.d1 - y.eB.d1, d2=x.eB.d2 - y.eB.d2)),
+            BigInt3(d0=x.e0.d0 - y.e0.d0, d1=x.e0.d1 - y.e0.d1, d2=x.e0.d2 - y.e0.d2),
+            BigInt3(d0=x.e1.d0 - y.e1.d0, d1=x.e1.d1 - y.e1.d1, d2=x.e1.d2 - y.e1.d2),
+            BigInt3(d0=x.e2.d0 - y.e2.d0, d1=x.e2.d1 - y.e2.d1, d2=x.e2.d2 - y.e2.d2),
+            BigInt3(d0=x.e3.d0 - y.e3.d0, d1=x.e3.d1 - y.e3.d1, d2=x.e3.d2 - y.e3.d2),
+            BigInt3(d0=x.e4.d0 - y.e4.d0, d1=x.e4.d1 - y.e4.d1, d2=x.e4.d2 - y.e4.d2),
+            BigInt3(d0=x.e5.d0 - y.e5.d0, d1=x.e5.d1 - y.e5.d1, d2=x.e5.d2 - y.e5.d2),
+            BigInt3(d0=x.e6.d0 - y.e6.d0, d1=x.e6.d1 - y.e6.d1, d2=x.e6.d2 - y.e6.d2),
+            BigInt3(d0=x.e7.d0 - y.e7.d0, d1=x.e7.d1 - y.e7.d1, d2=x.e7.d2 - y.e7.d2),
+            BigInt3(d0=x.e8.d0 - y.e8.d0, d1=x.e8.d1 - y.e8.d1, d2=x.e8.d2 - y.e8.d2),
+            BigInt3(d0=x.e9.d0 - y.e9.d0, d1=x.e9.d1 - y.e9.d1, d2=x.e9.d2 - y.e9.d2),
+            BigInt3(d0=x.eA.d0 - y.eA.d0, d1=x.eA.d1 - y.eA.d1, d2=x.eA.d2 - y.eA.d2),
+            BigInt3(d0=x.eB.d0 - y.eB.d0, d1=x.eB.d1 - y.eB.d1, d2=x.eB.d2 - y.eB.d2),
+        ),
     );
 }
 
 func fq12_sum(x: FQ12, y: FQ12) -> (res: FQ12) {
     return (
         res=FQ12(
-        BigInt3(d0=x.e0.d0 + y.e0.d0, d1=x.e0.d1 + y.e0.d1, d2=x.e0.d2 + y.e0.d2),
-        BigInt3(d0=x.e1.d0 + y.e1.d0, d1=x.e1.d1 + y.e1.d1, d2=x.e1.d2 + y.e1.d2),
-        BigInt3(d0=x.e2.d0 + y.e2.d0, d1=x.e2.d1 + y.e2.d1, d2=x.e2.d2 + y.e2.d2),
-        BigInt3(d0=x.e3.d0 + y.e3.d0, d1=x.e3.d1 + y.e3.d1, d2=x.e3.d2 + y.e3.d2),
-        BigInt3(d0=x.e4.d0 + y.e4.d0, d1=x.e4.d1 + y.e4.d1, d2=x.e4.d2 + y.e4.d2),
-        BigInt3(d0=x.e5.d0 + y.e5.d0, d1=x.e5.d1 + y.e5.d1, d2=x.e5.d2 + y.e5.d2),
-        BigInt3(d0=x.e6.d0 + y.e6.d0, d1=x.e6.d1 + y.e6.d1, d2=x.e6.d2 + y.e6.d2),
-        BigInt3(d0=x.e7.d0 + y.e7.d0, d1=x.e7.d1 + y.e7.d1, d2=x.e7.d2 + y.e7.d2),
-        BigInt3(d0=x.e8.d0 + y.e8.d0, d1=x.e8.d1 + y.e8.d1, d2=x.e8.d2 + y.e8.d2),
-        BigInt3(d0=x.e9.d0 + y.e9.d0, d1=x.e9.d1 + y.e9.d1, d2=x.e9.d2 + y.e9.d2),
-        BigInt3(d0=x.eA.d0 + y.eA.d0, d1=x.eA.d1 + y.eA.d1, d2=x.eA.d2 + y.eA.d2),
-        BigInt3(d0=x.eB.d0 + y.eB.d0, d1=x.eB.d1 + y.eB.d1, d2=x.eB.d2 + y.eB.d2)),
+            BigInt3(d0=x.e0.d0 + y.e0.d0, d1=x.e0.d1 + y.e0.d1, d2=x.e0.d2 + y.e0.d2),
+            BigInt3(d0=x.e1.d0 + y.e1.d0, d1=x.e1.d1 + y.e1.d1, d2=x.e1.d2 + y.e1.d2),
+            BigInt3(d0=x.e2.d0 + y.e2.d0, d1=x.e2.d1 + y.e2.d1, d2=x.e2.d2 + y.e2.d2),
+            BigInt3(d0=x.e3.d0 + y.e3.d0, d1=x.e3.d1 + y.e3.d1, d2=x.e3.d2 + y.e3.d2),
+            BigInt3(d0=x.e4.d0 + y.e4.d0, d1=x.e4.d1 + y.e4.d1, d2=x.e4.d2 + y.e4.d2),
+            BigInt3(d0=x.e5.d0 + y.e5.d0, d1=x.e5.d1 + y.e5.d1, d2=x.e5.d2 + y.e5.d2),
+            BigInt3(d0=x.e6.d0 + y.e6.d0, d1=x.e6.d1 + y.e6.d1, d2=x.e6.d2 + y.e6.d2),
+            BigInt3(d0=x.e7.d0 + y.e7.d0, d1=x.e7.d1 + y.e7.d1, d2=x.e7.d2 + y.e7.d2),
+            BigInt3(d0=x.e8.d0 + y.e8.d0, d1=x.e8.d1 + y.e8.d1, d2=x.e8.d2 + y.e8.d2),
+            BigInt3(d0=x.e9.d0 + y.e9.d0, d1=x.e9.d1 + y.e9.d1, d2=x.e9.d2 + y.e9.d2),
+            BigInt3(d0=x.eA.d0 + y.eA.d0, d1=x.eA.d1 + y.eA.d1, d2=x.eA.d2 + y.eA.d2),
+            BigInt3(d0=x.eB.d0 + y.eB.d0, d1=x.eB.d1 + y.eB.d1, d2=x.eB.d2 + y.eB.d2),
+        ),
     );
 }
 
@@ -463,12 +475,44 @@ func nondet_fq12{range_check_ptr}() -> (res: FQ12) {
     %}
     const MAX_SUM = 12 * 3 * (2 ** 86 - 1);
     // TODO RANGE CHECKS? (WHY THE ASSERT LIKE THIS BTW?)
-    assert [range_check_ptr] = MAX_SUM - (res.e0.d0 + res.e0.d1 + res.e0.d2 + res.e1.d0 + res.e1.d1 + res.e1.d2 +
-        res.e2.d0 + res.e2.d1 + res.e2.d2 + res.e3.d0 + res.e3.d1 + res.e3.d2 +
-        res.e4.d0 + res.e4.d1 + res.e4.d2 + res.e5.d0 + res.e5.d1 + res.e5.d2 +
-        res.e6.d0 + res.e6.d1 + res.e6.d2 + res.e7.d0 + res.e7.d1 + res.e7.d2 +
-        res.e8.d0 + res.e8.d1 + res.e8.d2 + res.e9.d0 + res.e9.d1 + res.e9.d2 +
-        res.eA.d0 + res.eA.d1 + res.eA.d2 + res.eB.d0 + res.eB.d1 + res.eB.d2);
+    assert [range_check_ptr] = MAX_SUM - (
+        res.e0.d0 +
+        res.e0.d1 +
+        res.e0.d2 +
+        res.e1.d0 +
+        res.e1.d1 +
+        res.e1.d2 +
+        res.e2.d0 +
+        res.e2.d1 +
+        res.e2.d2 +
+        res.e3.d0 +
+        res.e3.d1 +
+        res.e3.d2 +
+        res.e4.d0 +
+        res.e4.d1 +
+        res.e4.d2 +
+        res.e5.d0 +
+        res.e5.d1 +
+        res.e5.d2 +
+        res.e6.d0 +
+        res.e6.d1 +
+        res.e6.d2 +
+        res.e7.d0 +
+        res.e7.d1 +
+        res.e7.d2 +
+        res.e8.d0 +
+        res.e8.d1 +
+        res.e8.d2 +
+        res.e9.d0 +
+        res.e9.d1 +
+        res.e9.d2 +
+        res.eA.d0 +
+        res.eA.d1 +
+        res.eA.d2 +
+        res.eB.d0 +
+        res.eB.d1 +
+        res.eB.d2
+    );
 
     tempvar range_check_ptr = range_check_ptr + 37;
     [range_check_ptr - 1] = res.e0.d0, ap++;

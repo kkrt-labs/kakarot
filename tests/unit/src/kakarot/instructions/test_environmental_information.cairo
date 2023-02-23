@@ -75,7 +75,7 @@ func init_context{
     assert [calldata] = '';
     local call_context: model.CallContext* = new model.CallContext(
         bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
-        );
+    );
 
     // Initialize ExecutionContext
     let (empty_return_data: felt*) = alloc();
@@ -104,7 +104,7 @@ func init_context{
         destroy_contracts_len=0,
         destroy_contracts=empty_destroy_contracts,
         read_only=FALSE,
-        );
+    );
     return ctx;
 }
 
@@ -284,8 +284,12 @@ func test__exec_gasprice{
 
     // When
     local call_context: model.CallContext* = new model.CallContext(
-        bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=calldata_len, value=0
-        );
+        bytecode=bytecode,
+        bytecode_len=bytecode_len,
+        calldata=calldata,
+        calldata_len=calldata_len,
+        value=0,
+    );
     let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
     let result = EnvironmentalInformation.exec_gasprice(ctx);
     let (stack, gasprice) = Stack.peek(result.stack, 0);

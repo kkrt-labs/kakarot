@@ -103,7 +103,7 @@ namespace ExecutionContext {
             destroy_contracts_len=0,
             destroy_contracts=empty_destroy_contracts,
             read_only=FALSE,
-            );
+        );
         return ctx;
     }
 
@@ -123,7 +123,7 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
-            );
+        );
     }
 
     // @notice Initialize the execution context.
@@ -168,8 +168,12 @@ namespace ExecutionContext {
             contract_address=starknet_contract_address
         );
         local call_context: model.CallContext* = new model.CallContext(
-            bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=calldata_len, value=value
-            );
+            bytecode=bytecode,
+            bytecode_len=bytecode_len,
+            calldata=calldata,
+            calldata_len=calldata_len,
+            value=value,
+        );
 
         let sub_context = init_empty();
 
@@ -191,7 +195,7 @@ namespace ExecutionContext {
             destroy_contracts_len=0,
             destroy_contracts=empty_destroy_contracts,
             read_only=read_only,
-            );
+        );
     }
 
     // @notice Compute the intrinsic gas cost of the current transaction.
@@ -261,7 +265,7 @@ namespace ExecutionContext {
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             read_only=self.read_only,
-            );
+        );
     }
 
     // @notice Read and return data from bytecode.
@@ -310,7 +314,7 @@ namespace ExecutionContext {
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             read_only=self.read_only,
-            );
+        );
     }
 
     // @notice Update the memory of the current execution context.
@@ -339,7 +343,7 @@ namespace ExecutionContext {
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             read_only=self.read_only,
-            );
+        );
     }
 
     // @notice Update the return data of the current execution context.
@@ -374,7 +378,7 @@ namespace ExecutionContext {
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             read_only=self.read_only,
-            );
+        );
     }
 
     // @notice Increment the program counter.
@@ -403,7 +407,7 @@ namespace ExecutionContext {
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             read_only=self.read_only,
-            );
+        );
     }
 
     // @notice Increment the gas used.
@@ -432,7 +436,7 @@ namespace ExecutionContext {
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             read_only=self.read_only,
-            );
+        );
     }
 
     // @notice Update the child context of the current execution context.
@@ -461,7 +465,7 @@ namespace ExecutionContext {
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             read_only=self.read_only,
-            );
+        );
     }
 
     // @notice Update the starknet and evm contract addresses.
@@ -491,7 +495,7 @@ namespace ExecutionContext {
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             read_only=self.read_only,
-            );
+        );
     }
 
     // @notice Update the array of contracts to destroy.
@@ -525,7 +529,7 @@ namespace ExecutionContext {
             destroy_contracts_len=self.destroy_contracts_len + destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             read_only=self.read_only,
-            );
+        );
     }
 
     // @notice Add one contract to the array of contracts to destroy.
@@ -554,7 +558,7 @@ namespace ExecutionContext {
             destroy_contracts_len=self.destroy_contracts_len + 1,
             destroy_contracts=self.destroy_contracts,
             read_only=self.read_only,
-            );
+        );
     }
 
     // @notice Dump the current execution context.
@@ -603,7 +607,7 @@ namespace ExecutionContext {
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             read_only=self.read_only,
-            );
+        );
     }
 
     // @notice Check if location is a valid Jump destination

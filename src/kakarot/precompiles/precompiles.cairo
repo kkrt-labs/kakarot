@@ -75,7 +75,7 @@ namespace Precompiles {
             destroy_contracts_len=0,
             destroy_contracts=cast(0, felt*),
             read_only=FALSE,
-            );
+        );
 
         return sub_ctx;
     }

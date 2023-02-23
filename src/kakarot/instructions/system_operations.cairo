@@ -432,7 +432,8 @@ namespace CallHelper {
         let value_nn = is_nn(value);
         let value_not_zero = is_not_zero(value);
         let value_is_positive = value_nn * value_not_zero;
-        let dynamic_gas = gas_cost + SystemOperations.GAS_COST_COLD_ADDRESS_ACCESS + SystemOperations.GAS_COST_POSITIVE_VALUE * value_is_positive;
+        let dynamic_gas = gas_cost + SystemOperations.GAS_COST_COLD_ADDRESS_ACCESS +
+            SystemOperations.GAS_COST_POSITIVE_VALUE * value_is_positive;
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=dynamic_gas);
 
         let remaining_gas = ctx.gas_limit - ctx.gas_used;
@@ -741,7 +742,7 @@ namespace CreateHelper {
             calldata=empty_array,
             calldata_len=0,
             value=value.low,
-            );
+        );
         let (local return_data: felt*) = alloc();
         let (empty_destroy_contracts: felt*) = alloc();
         let stack = Stack.init();
@@ -781,7 +782,7 @@ namespace CreateHelper {
                 destroy_contracts_len=0,
                 destroy_contracts=empty_destroy_contracts,
                 read_only=FALSE,
-                );
+            );
 
             return sub_ctx;
         } else {
@@ -815,7 +816,7 @@ namespace CreateHelper {
                 destroy_contracts_len=0,
                 destroy_contracts=empty_destroy_contracts,
                 read_only=FALSE,
-                );
+            );
 
             return sub_ctx;
         }
@@ -843,7 +844,9 @@ namespace CreateHelper {
         let dynamic_gas = ctx.gas_used + 200 * ctx.return_data_len * Constants.BYTES_PER_FELT;
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=dynamic_gas);
 
-        local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(self=ctx.calling_context, sub_context=ctx);
+        local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(
+            self=ctx.calling_context, sub_context=ctx
+        );
         let ctx = ExecutionContext.increment_gas_used(ctx, ctx.sub_context.gas_used);
 
         // Append contracts to selfdestruct to the calling_context
@@ -862,7 +865,6 @@ namespace CreateHelper {
 }
 
 namespace SelfDestructHelper {
-
     // @notice The recursive function to destroy contracts.
     // @param destroy_contracts_len The length of destroy_contracts.
     // @param destroy_contracts The contracts to destroy.
@@ -925,6 +927,6 @@ namespace SelfDestructHelper {
             destroy_contracts_len=0,
             destroy_contracts=empty_destroy_contracts,
             read_only=FALSE,
-            );
+        );
     }
 }
