@@ -18,7 +18,6 @@ from kakarot.constants import (
     native_token_address,
     contract_account_class_hash,
     account_proxy_class_hash,
-    salt,
 )
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.memory_operations import MemoryOperations
@@ -441,10 +440,8 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
 @external
 func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at_expected_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(evm_caller_address: felt, salt_: felt, expected_create_address: felt) {
+}(evm_caller_address: felt, nonce_: felt, expected_create_address: felt) {
     alloc_locals;
-
-    salt.write(salt_);
 
     // Fill the stack with exec_create args
     let stack: model.Stack* = Stack.init();
@@ -529,7 +526,7 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     evm_caller_address: felt,
     bytecode_offset: Uint256,
     bytecode_size: Uint256,
-    salt: Uint256,
+    nonce: Uint256,
     memory_word: Uint256,
     expected_create2_address: felt,
 ) {
@@ -540,8 +537,8 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     tempvar value = Uint256(1, 0);
     let offset = bytecode_offset;
     let size = bytecode_size;
-    let salt = salt;
-    let stack = Stack.push(stack, salt);
+    let nonce = nonce;
+    let stack = Stack.push(stack, nonce);
     let stack = Stack.push(stack, size);
     let stack = Stack.push(stack, offset);
     let stack = Stack.push(stack, value);

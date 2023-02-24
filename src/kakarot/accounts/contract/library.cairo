@@ -39,6 +39,10 @@ func is_initialized_() -> (res: felt) {
 func evm_address() -> (evm_address: felt) {
 }
 
+@storage_var
+func nonce() -> (nonce: felt) {
+}
+
 namespace ContractAccount {
     // Define the number of bytes per felt. Above 16, the following code won't work as it uses unsigned_div_rem
     // which is bounded by RC_BOUND = 2 ** 128 ~ uint128 ~ bytes16
@@ -170,6 +174,22 @@ namespace ContractAccount {
     }() -> (is_initialized: felt) {
         let is_initialized: felt = is_initialized_.read();
         return (is_initialized=is_initialized);
+    }
+
+    // @notice This function is used to read the nonce from storage
+    // @return nonce: The current nonce of the contract account
+    func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        nonce: felt
+    ) {
+        return nonce.read();
+    }
+
+    // @notice This function increases the contract accounts nonce by 1
+    func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    ) {
+        Ownable.assert_only_owner();
+        let (current_nonce: felt) = nonce.read();
+        return nonce.write(current_nonce + 1);
     }
 }
 
