@@ -24,7 +24,9 @@ namespace PrecompileBlake2f {
     // @notice Run the precompile.
     // @param input_len The length of input array.
     // @param input The input array.
-    // @return The output length, output array, and gas usage of precompile.
+    // @return output_len The output length.
+    // @return output The output array.
+    // @return gas_used The gas usage of precompile.
     func run{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -85,13 +87,13 @@ namespace PrecompileBlake2f {
 namespace Blake2 {
     const MASK_ONES_64 = 2 ** 64;
 
-    // @notice Performs the blake2b compression function
-    // @param rounds The number of rounds for the compression function
-    // @param h The internal state of the hash
-    // @param m The sixteen words of a single message
-    // @param t The message byte offset
-    // @param f The flag indicating the last block
-    // @return output The final state of the compression
+    // @notice Perform the blake2b compression function.
+    // @param rounds The number of rounds for the compression function.
+    // @param h The internal state of the hash.
+    // @param m The sixteen words of a single message.
+    // @param t The message byte offset.
+    // @param f The flag indicating the last block.
+    // @return output The final state of the compression.
     func F{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -337,13 +339,13 @@ namespace Blake2 {
         dw 0;
     }
 
-    // @notice Performs all blake2b compression function rounds
-    // @param rounds The number of rounds for the compression function
-    // @param i The current round
-    // @param h The internal state of the hash
-    // @param m The sixteen words of a single message
-    // @param sigma The message schedule
-    // @return output The final hash
+    // @notice Perform all blake2b compression function rounds.
+    // @param rounds The number of rounds for the compression function.
+    // @param i The current round.
+    // @param h The internal state of the hash.
+    // @param m The sixteen words of a single message.
+    // @param sigma The message schedule.
+    // @return final_h The final hash.
     func blake_rounds{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -359,11 +361,11 @@ namespace Blake2 {
         return blake_rounds(rounds - 1, i + 1, h_new, m, sigma);
     }
 
-    // @notice Performs a single round of the blake2b compression function
-    // @param state The internal state of the hash
-    // @param message The sixteen words of a single message
-    // @param sigma The message schedule
-    // @return new_state The new state of the compression function
+    // @notice Perform a single round of the blake2b compression function.
+    // @param state The internal state of the hash.
+    // @param message The sixteen words of a single message.
+    // @param sigma The message schedule.
+    // @return new_state The new state of the compression function.
     func blake_round{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -445,16 +447,16 @@ namespace Blake2 {
         return (new_state=new_state);
     }
 
-    // @notice Performs a mixing of inputs
-    // @param a The first state word
-    // @param b The second state word
-    // @param c The third state word
-    // @param d The fourth state word
-    // @param m The message word used in mixing
-    // @return a The new first state word
-    // @return b The new second state word
-    // @return c The new third state word
-    // @return d The new fourth state word
+    // @notice Perform a mixing of inputs.
+    // @param a The first state word.
+    // @param b The second state word.
+    // @param c The third state word.
+    // @param d The fourth state word.
+    // @param m The message word used in mixing.
+    // @return a The new first state word.
+    // @return b The new second state word.
+    // @return c The new third state word.
+    // @return d The new fourth state word.
     func mix_one{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -492,16 +494,16 @@ namespace Blake2 {
         return (a, b, c, d);
     }
 
-    // @notice Performs a mixing of inputs
-    // @param a The first state word
-    // @param b The second state word
-    // @param c The third state word
-    // @param d The fourth state word
-    // @param m The message word used in mixing
-    // @return a The new first state word
-    // @return b The new second state word
-    // @return c The new third state word
-    // @return d The new fourth state word
+    // @notice Perform a mixing of inputs.
+    // @param a The first state word.
+    // @param b The second state word.
+    // @param c The third state word.
+    // @param d The fourth state word.
+    // @param m The message word used in mixing.
+    // @return a The new first state word.
+    // @return b The new second state word.
+    // @return c The new third state word.
+    // @return d The new fourth state word.
     func mix_two{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

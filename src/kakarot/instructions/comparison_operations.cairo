@@ -55,7 +55,7 @@ namespace ComparisonOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_lt{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -95,7 +95,7 @@ namespace ComparisonOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_gt{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -135,7 +135,7 @@ namespace ComparisonOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_slt{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -175,7 +175,7 @@ namespace ComparisonOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_sgt{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -215,7 +215,7 @@ namespace ComparisonOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_eq{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -255,7 +255,7 @@ namespace ComparisonOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_iszero{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -292,7 +292,7 @@ namespace ComparisonOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_and{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -332,7 +332,7 @@ namespace ComparisonOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_or{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -371,7 +371,7 @@ namespace ComparisonOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_xor{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -409,7 +409,7 @@ namespace ComparisonOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_byte{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -451,7 +451,7 @@ namespace ComparisonOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_shl{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -491,7 +491,7 @@ namespace ComparisonOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_shr{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -531,7 +531,7 @@ namespace ComparisonOperations {
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_sar{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -599,7 +599,7 @@ namespace ComparisonOperations {
     // @custom:stack_consumed_elements 1
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the execution context.
+    // @return ExecutionContext The pointer to the execution context.
     func exec_not{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

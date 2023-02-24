@@ -26,7 +26,7 @@ namespace PushOperations {
     // @dev Place i bytes items on stack
     // @param ctx The pointer to the execution context
     // @param i The number of byte items to push on to the stack
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push_i{range_check_ptr}(
         ctx: model.ExecutionContext*, i: felt
     ) -> model.ExecutionContext* {
@@ -59,7 +59,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push1{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -78,7 +78,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push2{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -97,7 +97,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push3{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -116,7 +116,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push4{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -135,7 +135,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push5{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -154,7 +154,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push6{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -173,7 +173,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push7{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -192,7 +192,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push8{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -211,7 +211,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push9{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -230,7 +230,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push10{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -249,7 +249,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push11{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -268,7 +268,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push12{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -287,7 +287,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push13{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -306,7 +306,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push14{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -325,7 +325,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push15{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -344,7 +344,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push16{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -363,7 +363,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push17{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -382,7 +382,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push18{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -401,7 +401,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push19{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -420,7 +420,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push20{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -439,7 +439,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push21{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -458,7 +458,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push22{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -477,7 +477,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push23{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -496,7 +496,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push24{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -515,7 +515,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push25{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -534,7 +534,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push26{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -553,7 +553,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push27{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -572,7 +572,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push28{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -591,7 +591,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push29{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -610,7 +610,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push30{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -629,7 +629,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push31{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -648,7 +648,7 @@ namespace PushOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_push32{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

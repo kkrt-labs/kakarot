@@ -6,6 +6,7 @@ from tests.utils.helpers import (
     extract_memory_from_execute,
     extract_stack_from_execute,
     hex_string_to_bytes_array,
+    generate_random_private_key,
 )
 from tests.utils.reporting import traceit
 
@@ -50,3 +51,25 @@ class TestKakarot:
                 ]
                 for event in sorted(res.call_info.events, key=lambda x: x.order)
             ] == events
+
+    class TestComputeStarknetAddress:
+        async def test_should_return_same_as_deployed_address(
+            self, kakarot: StarknetContract
+        ):
+            private_key = generate_random_private_key()
+            evm_address = private_key.public_key.to_checksum_address()
+            eoa_deploy_tx = await kakarot.deploy_externally_owned_account(
+                int(evm_address, 16)
+            ).execute()
+
+            kakarot_starknet_address = eoa_deploy_tx.call_info.internal_calls[
+                0
+            ].contract_address
+
+            computed_starknet_address = (
+                await kakarot.compute_starknet_address(
+                    evm_address=int(evm_address, 16)
+                ).call()
+            ).result[0]
+
+            assert kakarot_starknet_address == computed_starknet_address

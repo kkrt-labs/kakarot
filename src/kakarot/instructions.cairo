@@ -46,7 +46,7 @@ namespace EVMInstructions {
     // @notice Decode the current opcode and execute associated function.
     // @dev The function uses an internal jump table to execute the corresponding opcode
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func decode_and_execute{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -599,7 +599,7 @@ namespace EVMInstructions {
 
     // @notice Iteratively decode and execute the bytecode of an ExecutionContext
     // @param ctx The pointer to the execution context.
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func run{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -648,7 +648,6 @@ namespace EVMInstructions {
     // @notice A placeholder for opcodes that don't exist
     // @dev Halts execution
     // @param ctx The pointer to the execution context
-    // @return Updated execution context.
     func unknown_opcode{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -661,10 +660,9 @@ namespace EVMInstructions {
         return ();
     }
 
-    // @notice A placeholder for opcodes that are not implemented yet
-    // @dev Halts execution
-    // @param ctx The pointer to the execution context
-    // @return Updated execution context.
+    // @notice A placeholder for opcodes that are not implemented yet.
+    // @dev Halts execution.
+    // @param ctx The pointer to the execution context.
     func not_implemented_opcode{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

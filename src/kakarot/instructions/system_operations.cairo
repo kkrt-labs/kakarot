@@ -47,7 +47,7 @@ namespace SystemOperations {
     // @custom:gas 0 + dynamic gas
     // @custom:stack_consumed_elements 3
     // @custom:stack_produced_elements 1
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_create{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -90,7 +90,7 @@ namespace SystemOperations {
     // @custom:gas 0 + dynamic gas
     // @custom:stack_consumed_elements 4
     // @custom:stack_produced_elements 1
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_create2{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -125,7 +125,7 @@ namespace SystemOperations {
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_invalid{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -147,7 +147,7 @@ namespace SystemOperations {
     // @custom:gas NaN
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 0
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_return{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -185,7 +185,7 @@ namespace SystemOperations {
     // @custom:gas 0 + dynamic gas
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 0
-    // @return The pointer to the updated execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
     func exec_revert{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -241,7 +241,7 @@ namespace SystemOperations {
     // @custom:gas 0 + dynamic gas
     // @custom:stack_consumed_elements 7
     // @custom:stack_produced_elements 1
-    // @return The pointer to the sub context.
+    // @return ExecutionContext The pointer to the sub context.
     func exec_call{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -266,7 +266,7 @@ namespace SystemOperations {
     // @custom:gas 0 + dynamic gas
     // @custom:stack_consumed_elements 6
     // @custom:stack_produced_elements 1
-    // @return The pointer to the sub context.
+    // @return ExecutionContext The pointer to the sub context.
     func exec_staticcall{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -286,7 +286,7 @@ namespace SystemOperations {
     // @custom:gas 0 + dynamic gas
     // @custom:stack_consumed_elements 7
     // @custom:stack_produced_elements 1
-    // @return The pointer to the sub context.
+    // @return ExecutionContext The pointer to the sub context.
     func exec_callcode{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -310,7 +310,7 @@ namespace SystemOperations {
     // @custom:gas 0 + dynamic gas
     // @custom:stack_consumed_elements 6
     // @custom:stack_produced_elements 1
-    // @return The pointer to the sub context.
+    // @return ExecutionContext The pointer to the sub context.
     func exec_delegatecall{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -333,7 +333,7 @@ namespace SystemOperations {
     // @custom:group System Operations
     // @custom:gas 3000 + dynamic gas
     // @custom:stack_consumed_elements 1
-    // @return The pointer to the updated execution_context.
+    // @return ExecutionContext The pointer to the updated execution_context.
     func exec_selfdestruct{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -393,7 +393,7 @@ namespace CallHelper {
     }
 
     // @dev: with_value arg lets specify if the call requires a value (CALL, CALLCODE) or not (STATICCALL, DELEGATECALL).
-    // @return The pointer to the context and call args.
+    // @return ExecutionContext The pointer to the context and call args.
     func prepare_args{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -457,7 +457,7 @@ namespace CallHelper {
     // @param calling_ctx The pointer to the calling execution context.
     // @param with_value The boolean that determines whether the sub-context's calling context has a value read from the calling context's stack or the calling context's calling context.
     // @param read_only The boolean that determines whether state modifications can be executed from the sub-execution context.
-    // @return The pointer to the sub context.
+    // @return ExecutionContext The pointer to the sub context.
     func init_sub_context{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -500,7 +500,7 @@ namespace CallHelper {
         return sub_ctx;
     }
     // @notice At the end of a sub-context call, the calling context's stack and memory are updated.
-    // @return The pointer to the updated calling context.
+    // @return ExecutionContext The pointer to the updated calling context.
     func finalize_calling_context{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -540,12 +540,12 @@ namespace CallHelper {
 namespace CreateHelper {
     // @notice Constructs an evm contract address for the create opcode
     //         via last twenty bytes of the keccak hash of:
-    //         keccak256(rlp([sender_address,sender_nonce]))[
-    //         See [CREATE](https://www.evm.codes/#f0)
-    // @param sender_address - The evm sender address.
-    // @param bytecode_len - The length of the initialization code.
-    // @param nonce - The nonce given to the create opcode.
-    // @return The pointer to the updated calling context.
+    //         keccak256(rlp([sender_address,sender_nonce])).
+    //         See [CREATE](https://www.evm.codes/#f0).
+    // @param sender_address The evm sender address.
+    // @param bytecode_len The length of the initialization code.
+    // @param nonce The nonce given to the create opcode.
+    // @return ExecutionContext The pointer to the updated calling context.
     func get_create_address{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -607,14 +607,14 @@ namespace CreateHelper {
 
     // @notice Constructs an evm contract address for the create2 opcode
     //         via last twenty bytes of the keccak hash of:
-    //         keccak256(0xff + sender_address + nonce +
-    //         keccak256(initialization_code))[12:]
-    //         See [CREATE2](https://www.evm.codes/#f5)
-    // @param sender_address - The evm sender address.
-    // @param bytecode_len - The length of the initialization code.
-    // @param bytecode - The offset to store the element at.
-    // @param nonce - The nonce given to the create2 opcode.
-    // @return The pointer to the updated calling context.
+    //         keccak256(0xff + sender_address + salt +
+    //         keccak256(initialization_code))[12:].
+    //         See [CREATE2](https://www.evm.codes/#f5).
+    // @param sender_address The evm sender address.
+    // @param bytecode_len The length of the initialization code.
+    // @param bytecode The offset to store the element at.
+    // @param salt The salt given to the create2 opcode.
+    // @return ExecutionContext The pointer to the updated calling context.
     func get_create2_address{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -705,7 +705,10 @@ namespace CreateHelper {
 
     // @notice Deploy a new Contract account and initialize a sub context at these addresses
     //         with bytecode from calling context memory.
-    // @return The pointer to the updated calling context.
+    // @param ctx The pointer to the calling context.
+    // @param popped_len The length of popped.
+    // @param popped The memory.
+    // @return ExecutionContext The pointer to the updated calling context.
     func initialize_sub_context{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -818,7 +821,8 @@ namespace CreateHelper {
     }
 
     // @notice At the end of a sub-context initiated with CREATE or CREATE2, the calling context's stack is updated.
-    // @return The pointer to the updated calling context.
+    // @param ctx The pointer to the calling context.
+    // @return ExecutionContext The pointer to the updated calling context.
     func finalize_calling_context{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -857,6 +861,11 @@ namespace CreateHelper {
 }
 
 namespace SelfDestructHelper {
+
+    // @notice The recursive function to destroy contracts.
+    // @param destroy_contracts_len The length of destroy_contracts.
+    // @param destroy_contracts The contracts to destroy.
+    // @return empty_destroy_contracts The destroyed contracts.
     func _finalize_loop{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -880,10 +889,11 @@ namespace SelfDestructHelper {
         return _finalize_loop(destroy_contracts_len - 1, destroy_contracts + 1);
     }
 
-    // @notice helper for SELFDESTRUCT operation.
-    // @notice overwrite contract account bytecode with 0s
-    // @notice remove contract from registry
-    // @return The pointer to the updated execution_context.
+    // @notice A helper for SELFDESTRUCT operation.
+    //         It overwrites contract account bytecode with 0s
+    //         remove contract from registry
+    // @param ctx The pointer to the calling context.
+    // @return ExecutionContext The pointer to the updated execution_context.
     func finalize{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

@@ -154,19 +154,35 @@ async def get_contract(contract_name) -> Contract:
 
 
 async def fund_address(address: Union[int, str], amount: int):
-    address = int(address, 16) if isinstance(address, str) else address
-    account = get_account()
-    eth_contract = await get_eth_contract()
-    balance = (await eth_contract.functions["balanceOf"].call(account.address)).balance  # type: ignore
-    if balance / 1e18 < amount:
-        raise ValueError(
-            f"Cannot send {amount} ETH from default account with current balance {balance / 1e18} ETH"
+    address = hex(address) if isinstance(address, int) else address
+    if NETWORK == "devnet":
+        response = requests.post(
+            f"{GATEWAY_CLIENT.net}/mint", json={"address": address, "amount": amount}
         )
-    tx = await eth_contract.functions["transfer"].invoke(
-        address, int_to_uint256(amount * 1e18), max_fee=int(1e16)
+        if response.status_code != 200:
+            logger.error(f"Cannot mint token to {address}: {response.text}")
+        logger.info(f"{amount} ETH minted to {address}")
+    else:
+        account = get_account()
+        eth_contract = await get_eth_contract()
+        balance = (await eth_contract.functions["balanceOf"].call(account.address)).balance  # type: ignore
+        if balance / 1e18 < amount:
+            raise ValueError(
+                f"Cannot send {amount} ETH from default account with current balance {balance / 1e18} ETH"
+            )
+        tx = await eth_contract.functions["transfer"].invoke(
+            address, int_to_uint256(amount * 1e18), max_fee=int(1e16)
+        )
+        await tx.wait_for_acceptance()
+        logger.info(f"{amount} ETH sent from {hex(account.address)} to {address}")
+
+
+async def deploy_and_fund_evm_address(evm_address: str, amount: int):
+    starknet_address = await call(
+        "kakarot", "compute_starknet_address", int(evm_address, 16)
     )
-    await tx.wait_for_acceptance()
-    logger.info(f"{amount} ETH sent from {hex(account.address)} to {address}")
+    await invoke("kakarot", "deploy_externally_owned_account", int(evm_address, 16))
+    await fund_address(starknet_address[0], amount)
 
 
 def dump_declarations(declarations):

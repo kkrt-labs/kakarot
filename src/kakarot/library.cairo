@@ -34,11 +34,13 @@ from kakarot.accounts.library import Accounts
 // @author @abdelhamidbakhta
 // @custom:namespace Kakarot
 namespace Kakarot {
-    // @notice The constructor of the contract
-    // @dev Setting initial owner, contract account class hash and native token
-    // @param owner The address of the owner of the contract
-    // @param native_token_address_ The ERC20 contract used to emulate ETH
-    // @param contract_account_class_hash_ The clash hash of the contract account
+    // @notice The constructor of the contract.
+    // @dev Set up the initial owner, contract account class hash and native token.
+    // @param owner The address of the owner of the contract.
+    // @param native_token_address_ The ERC20 contract used to emulate ETH.
+    // @param contract_account_class_hash_ The clash hash of the contract account.
+    // @param externally_owned_account_class_hash_ The externally owned account class hash.
+    // @param account_proxy_class_hash_ The account proxy class hash.
     func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         owner: felt,
         native_token_address_,
@@ -55,11 +57,9 @@ namespace Kakarot {
     }
 
     // @notice Execute EVM bytecode.
-    // @dev Executes a provided array of evm opcodes/bytecode
-    // @param code_len The bytecode length
-    // @param code The bytecode to execute
-    // @param calldata The calldata which can be referenced by the bytecode
-    // @return The pointer to the execution context.
+    // @dev Executes a provided array of evm opcodes/bytecode.
+    // @param call_context The pointer to the call context.
+    // @return Summary The pointer to the execution context.
     func execute{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -85,12 +85,14 @@ namespace Kakarot {
         return summary;
     }
 
-    // @notice execute bytecode of a given EVM contract
-    // @dev reads the bytecode content of an EVM contract and then executes it
-    // @param address The address of the contract whose bytecode will be executed
-    // @param calldata The calldata which contains the entry point and method parameters
-    // @param gas_limit Max gas the transaction can use
-    // @return The pointer to the updated execution context.
+    // @notice execute bytecode of a given EVM contract.
+    // @dev reads the bytecode content of an EVM contract and then executes it.
+    // @param address The address of the contract whose bytecode will be executed.
+    // @param calldata_len The length of the calldata array.
+    // @param calldata The calldata which contains the entry point and method parameters.
+    // @param value The value.
+    // @param gas_limit Max gas the transaction can use.
+    // @return Summary The pointer to the updated execution context.
     func execute_at_address{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -130,9 +132,9 @@ namespace Kakarot {
         return summary;
     }
 
-    // @notice Set the blockhash registry used by kakarot
-    // @dev Set the blockhash registry which will be used to get the blockhashes
-    // @param blockhash_registry_address_ The address of the new blockhash registry contract
+    // @notice Set the blockhash registry used by kakarot.
+    // @dev Set the blockhash registry which will be used to get the blockhashes.
+    // @param blockhash_registry_address_ The address of the new blockhash registry contract.
     func set_blockhash_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         blockhash_registry_address_: felt
     ) {
@@ -141,17 +143,17 @@ namespace Kakarot {
         return ();
     }
 
-    // @notice Get the blockhash registry used by kakarot
-    // @return address The address of the current blockhash registry contract
+    // @notice Get the blockhash registry used by kakarot.
+    // @return address The address of the current blockhash registry contract.
     func get_blockhash_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         ) -> (address: felt) {
         let (blockhash_registry_address_) = blockhash_registry_address.read();
         return (blockhash_registry_address_,);
     }
 
-    // @notice Set the native token used by kakarot
-    // @dev Set the native token which will emulate the role of ETH on Ethereum
-    // @param native_token_address_ The address of the native token
+    // @notice Set the native token used by kakarot.
+    // @dev Set the native token which will emulate the role of ETH on Ethereum.
+    // @param native_token_address_ The address of the native token.
     func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         native_token_address_: felt
     ) {
@@ -170,13 +172,13 @@ namespace Kakarot {
         return (native_token_address_,);
     }
 
-    // @notice deploy contract account
+    // @notice Deploy contract account.
     // @dev First deploy a contract_account with no bytecode, then run the calldata as bytecode with the new address,
-    //      then set the bytecode with the result of the initial run
-    // @param bytecode_len: the deploy bytecode length
-    // @param bytecode: the deploy bytecode
-    // @return evm_contract_address The evm address that is mapped to the newly deployed starknet contract address
-    // @return starknet_contract_address The newly deployed starknet contract address
+    //      then set the bytecode with the result of the initial run.
+    // @param bytecode_len The deploy bytecode length.
+    // @param bytecode The deploy bytecode.
+    // @return evm_contract_address The evm address that is mapped to the newly deployed starknet contract address.
+    // @return starknet_contract_address The newly deployed starknet contract address.
     func deploy_contract_account{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -248,9 +250,9 @@ namespace Kakarot {
         );
     }
 
-    // @notice Deploy a new externally owned account
-    // @return evm_contract_address The evm address that is mapped to the newly deployed starknet contract address
-    // @return starknet_contract_address The newly deployed starknet contract address
+    // @notice Deploy a new externally owned account.
+    // @param evm_contract_address The evm address that is mapped to the newly deployed starknet contract address.
+    // @return starknet_contract_address The newly deployed starknet contract address.
     func deploy_externally_owned_account{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

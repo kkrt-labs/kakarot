@@ -31,21 +31,21 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     );
 }
 
-// @notice Execute EVM bytecode
-// @dev Executes a provided array of evm opcodes/bytes
-// @param value The deposited value by the instruction/transaction responsible for this execution
-// @param bytecode_len The bytecode length
-// @param bytecode The bytecode to be executed
-// @param calldata_len The calldata length
-// @param calldata The calldata which can be referenced by the bytecode
-// @return stack_accesses_len The size of the accesses array of the stack delta
-// @return stack_accesses The dict accesses in the stack delta
-// @return stack_len The length of the stack
-// @return memory_accesses_len The size of the accesses arrayof the memory delta
-// @return memory_accesses The dict accesses in the memory delta
-// @return memory_bytes_len The memory length
-// @return memory The EVM memory content
-// @return gas_used The total amount of gas used to execute the given bytecode
+// @notice Execute EVM bytecode.
+// @dev Execute a provided array of evm opcodes/bytes.
+// @param value The deposited value by the instruction/transaction responsible for this execution.
+// @param bytecode_len The bytecode length.
+// @param bytecode The bytecode to be executed.
+// @param calldata_len The calldata length.
+// @param calldata The calldata which can be referenced by the bytecode.
+// @return stack_accesses_len The size of the accesses array of the stack delta.
+// @return stack_accesses The dict accesses in the stack delta.
+// @return stack_len The length of the stack.
+// @return memory_accesses_len The size of the accesses arrayof the memory delta.
+// @return memory_accesses The dict accesses in the memory delta.
+// @return memory_bytes_len The memory length.
+// @return memory The EVM memory content.
+// @return gas_used The total amount of gas used to execute the given bytecode.
 @view
 func execute{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -77,24 +77,24 @@ func execute{
     );
 }
 
-// @notice execute bytecode of a given contract account
-// @dev reads the bytecode content of an contract account and then executes it
-// @param address The address of the contract whose bytecode will be executed
-// @param value The deposited value by the instruction/transaction responsible for this execution
-// @param gas_limit Max gas the transaction can use
-// @param calldata_len The calldata length
-// @param calldata The calldata which contains the entry point and method parameters
-// @return stack_accesses_len The size of the accesses array of the stack delta
-// @return stack_accesses The dict accesses in the stack delta
-// @return stack_len The length of the stack
-// @return memory_accesses_len The size of the accesses array of the memory delta
-// @return memory_accesses The dict accesses in the memory delta
-// @return memory_bytes_len The memory length
-// @return evm_contract_address The EVM-format address of the called contract's address, i.e. the input variable "address"
-// @return starknet_contract_address The Starknet-format address of the called contract's address
-// @return return_data_len The length of the return data
-// @return return_data The return data of the EVM
-// @return gas_used The gas used for the tx
+// @notice Execute bytecode of a given contract account.
+// @dev Read the bytecode content of an contract account and then executes it.
+// @param address The address of the contract whose bytecode will be executed.
+// @param value The deposited value by the instruction/transaction responsible for this execution.
+// @param gas_limit Max gas the transaction can use.
+// @param calldata_len The calldata length.
+// @param calldata The calldata which contains the entry point and method parameters.
+// @return stack_accesses_len The size of the accesses array of the stack delta.
+// @return stack_accesses The dict accesses in the stack delta.
+// @return stack_len The length of the stack.
+// @return memory_accesses_len The size of the accesses array of the memory delta.
+// @return memory_accesses The dict accesses in the memory delta.
+// @return memory_bytes_len The memory length.
+// @return evm_contract_address The EVM-format address of the called contract's address, i.e. the input variable "address".
+// @return starknet_contract_address The Starknet-format address of the called contract's address.
+// @return return_data_len The length of the return data.
+// @return return_data The return data of the EVM.
+// @return gas_used The gas used for the tx.
 @external
 func execute_at_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -137,9 +137,9 @@ func execute_at_address{
     );
 }
 
-// @notice Set the blockhash registry used by kakarot
-// @dev Set the blockhash registry which will be used to get the blockhashes
-// @param blockhash_registry_address_ The address of the new blockhash registry contract
+// @notice Set the blockhash registry used by kakarot.
+// @dev Set the blockhash registry which will be used to get the blockhashes.
+// @param blockhash_registry_address_ The address of the new blockhash registry contract.
 @external
 func set_blockhash_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     blockhash_registry_address_: felt
@@ -147,8 +147,8 @@ func set_blockhash_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
     return Kakarot.set_blockhash_registry(blockhash_registry_address_);
 }
 
-// @notice Get the blockhash registry used by kakarot
-// @return address The address of the current blockhash registry contract
+// @notice Get the blockhash registry used by kakarot.
+// @return address The address of the current blockhash registry contract.
 @view
 func get_blockhash_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     address: felt
@@ -176,11 +176,11 @@ func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     return Kakarot.get_native_token();
 }
 
-// @notice Deploy a new contract account and execute constructor
-// @param bytes_len: the constructor + contract bytecode lenght
-// @param bytes: the constructor + contract bytecode
-// @return evm_contract_address The evm address that is mapped to the newly deployed starknet contract address
-// @return starknet_contract_address The newly deployed starknet contract address
+// @notice Deploy a new contract account and execute constructor.
+// @param bytes_len the constructor + contract bytecode length.
+// @param bytes the constructor + contract bytecode.
+// @return evm_contract_address The evm address that is mapped to the newly deployed starknet contract address.
+// @return starknet_contract_address The newly deployed starknet contract address.
 @external
 func deploy_contract_account{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -190,9 +190,9 @@ func deploy_contract_account{
     return Kakarot.deploy_contract_account(nonce, bytecode_len, bytecode);
 }
 
-// @notice Deploy a new externally owned account
-// @return evm_contract_address The evm address that is mapped to the newly deployed starknet contract address
-// @return starknet_contract_address The newly deployed starknet contract address
+// @notice Deploy a new externally owned account.
+// @param evm_address The evm address that is mapped to the newly deployed starknet contract address.
+// @return starknet_contract_address The newly deployed starknet contract address.
 @external
 func deploy_externally_owned_account{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*

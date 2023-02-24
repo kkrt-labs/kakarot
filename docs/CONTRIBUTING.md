@@ -34,6 +34,9 @@ Common caveats:
 - python3.10 is not compatible with the cairo-lang library. Make sure poetry and
   your pyenv are using the 3.9 version of Python. Your machine may have
   conflicting versions of python.
+  - 3.9-dev will fail when running `make setup` since it is evaluated as 3.9.10+
+      and therefore an invalid PEP 440 version (Poetry
+      [enforces PEP 440 versioning](https://python-poetry.org/docs/faq#why-does-poetry-enforce-pep-440-versions)). 
 - Mac M1 chips are subject to some quirks/bugs with regards to some
   cryptographic libraries used by `cairo-lang`.
   - you may need to run `brew install gmp`.

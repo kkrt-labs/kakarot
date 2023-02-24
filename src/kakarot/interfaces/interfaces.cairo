@@ -78,8 +78,12 @@ namespace IKakarot {
     func get_native_token() -> (native_token_address: felt) {
     }
 
-    func deploy(bytecode_len: felt, bytecode: felt*) -> (
-        evm_contract_address: felt, starknet_contract_address: felt
-    ) {
+    func deploy_contract_account(bytecode_len: felt, bytecode: felt*) {
+    }
+
+    func deploy_externally_owned_account(evm_address: felt) {
+    }
+
+    func compute_starknet_address(evm_address: felt) -> (contract_address: felt) {
     }
 }
