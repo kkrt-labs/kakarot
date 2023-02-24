@@ -862,7 +862,6 @@ namespace CreateHelper {
 }
 
 namespace SelfDestructHelper {
-
     // @notice The recursive function to destroy contracts.
     // @param destroy_contracts_len The length of destroy_contracts.
     // @param destroy_contracts The contracts to destroy.
