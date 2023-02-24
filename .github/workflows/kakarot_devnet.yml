@@ -24,6 +24,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: sayajin-labs/kakarot:latest
+          tags: ghcr.io/sayajin-labs/kakarot/devnet:latest
           context: .
           file: ./docker/devnet/Dockerfile
