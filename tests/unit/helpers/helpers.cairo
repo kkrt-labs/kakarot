@@ -206,40 +206,32 @@ namespace TestHelpers {
     }
 
     func assert_execution_context_equal(
-        execution_context_0: model.ExecutionContext*, execution_context_1: model.ExecutionContext*
+        ctx_0: model.ExecutionContext*, ctx_1: model.ExecutionContext*
     ) {
-        let is_context_0_root = ExecutionContext.is_root(execution_context_0);
-        let is_context_1_root = ExecutionContext.is_root(execution_context_1);
+        let is_context_0_root = ExecutionContext.is_root(ctx_0);
+        let is_context_1_root = ExecutionContext.is_root(ctx_1);
         assert is_context_0_root = is_context_1_root;
         if (is_context_0_root != FALSE) {
             return ();
         }
 
-        assert_call_context_equal(
-            execution_context_0.call_context, execution_context_1.call_context
-        );
-        assert execution_context_0.program_counter = execution_context_1.program_counter;
-        assert execution_context_0.stopped = execution_context_1.stopped;
+        assert_call_context_equal(ctx_0.call_context, ctx_1.call_context);
+        assert ctx_0.program_counter = ctx_1.program_counter;
+        assert ctx_0.stopped = ctx_1.stopped;
 
         assert_array_equal(
-            execution_context_0.return_data_len,
-            execution_context_0.return_data,
-            execution_context_1.return_data_len,
-            execution_context_1.return_data,
+            ctx_0.return_data_len, ctx_0.return_data, ctx_1.return_data_len, ctx_1.return_data
         );
 
         // TODO: Implement assert_dict_access_equal and finalize this helper once Stack and Memory are stabilized
-        // assert execution_context_0.stack = execution_context_1.stack;
-        // assert execution_context_0.memory = execution_context_1.memory;
+        // assert ctx_0.stack = ctx_1.stack;
+        // assert ctx_0.memory = ctx_1.memory;
 
-        assert execution_context_0.gas_limit = execution_context_1.gas_limit;
-        assert execution_context_0.gas_price = execution_context_1.gas_price;
-        assert execution_context_0.starknet_contract_address = execution_context_1.starknet_contract_address
-            ;
-        assert execution_context_0.evm_contract_address = execution_context_1.evm_contract_address;
-        return assert_execution_context_equal(
-            execution_context_0.calling_context, execution_context_1.calling_context
-        );
+        assert ctx_0.gas_limit = ctx_1.gas_limit;
+        assert ctx_0.gas_price = ctx_1.gas_price;
+        assert ctx_0.starknet_contract_address = ctx_1.starknet_contract_address;
+        assert ctx_0.evm_contract_address = ctx_1.evm_contract_address;
+        return assert_execution_context_equal(ctx_0.calling_context, ctx_1.calling_context);
     }
 
     func print_uint256(val: Uint256) {

@@ -4,10 +4,10 @@ from typing import Tuple
 
 import rlp
 from eth_abi import encode_abi
-from eth_keys import keys
-from eth_utils import decode_hex, keccak, to_bytes, to_checksum_address
 from eth_account import Account
+from eth_keys import keys
 from eth_keys.datatypes import PrivateKey
+from eth_utils import decode_hex, keccak, to_bytes, to_checksum_address
 
 from tests.utils.constants import CHAIN_ID
 
