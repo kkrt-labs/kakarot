@@ -175,6 +175,7 @@ namespace Kakarot {
     // @notice Deploy contract account.
     // @dev First deploy a contract_account with no bytecode, then run the calldata as bytecode with the new address,
     //      then set the bytecode with the result of the initial run.
+    // @param nonce The nonce used to determine the deployed contracts evm address
     // @param bytecode_len The deploy bytecode length.
     // @param bytecode The deploy bytecode.
     // @return evm_contract_address The evm address that is mapped to the newly deployed starknet contract address.
