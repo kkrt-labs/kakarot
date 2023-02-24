@@ -134,8 +134,8 @@ namespace ExternallyOwnedAccount {
             IKakarot.deploy_contract_account(
                 contract_address=_kakarot_address,
                 nonce=tx_info.nonce,
-                bytecode_len=payload_len, 
-                bytecode=payload
+                bytecode_len=payload_len,
+                bytecode=payload,
             );
             // Else run the bytecode of the destination contract
         } else {
@@ -192,4 +192,4 @@ namespace ExternallyOwnedAccount {
         );
         return (response_len=retdata_size + response_len);
     }
-} 
+}

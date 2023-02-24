@@ -47,6 +47,16 @@ func constructor{
     return ();
 }
 
+// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                          MOCK FUNCTIONS                                                      //
+// The Kakarot, EOA, Account Contract and ETH contracts often times require communitcation between each other.  //
+// Instead of deploying each contract for every test-case we mock the required functions in this contract.      //
+// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//
+// Kakarot
+//
+
 // @dev The contract account initialization includes a call to the Kakarot contract
 // in order to get the native token address. As the Kakarot contract is not deployed within this test, we make a call to this contract instead.
 @view
@@ -56,6 +66,10 @@ func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     return Kakarot.get_native_token();
 }
 
+//
+// ETH ERC20
+//
+
 // @dev The contract account initialization includes a call to an ERC20 contract to set an infitite transfer allowance to Kakarot.
 // As the ERC20 contract is not deployed within this test, we make a call to this contract instead.
 @external
@@ -64,6 +78,33 @@ func approve{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 ) -> (success: felt) {
     return ERC20.approve(spender, amount);
 }
+
+//
+// Contract Account
+//
+
+// @dev We are using a storage var, so that we can set custom nonces whilst still being able to increment them during the create execution.
+@storage_var
+func mock_nonce() -> (nonce: felt) {
+}
+
+// @notice the current nonce of the mocked contract account
+@view
+func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (nonce: felt) {
+    return mock_nonce.read();
+}
+
+// @notice increases the current nonce by 1
+@external
+func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> () {
+    let (current_nonce: felt) = mock_nonce.read();
+    mock_nonce.write(current_nonce + 1);
+    return ();
+}
+
+// ///////////////////
+//    Test Cases    //
+// ///////////////////
 
 @external
 func test__exec_return_should_return_context_with_updated_return_data{
@@ -461,11 +502,16 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
     let stack = Stack.push(stack, memory_offset);
     let bytecode_len = 0;
     let (bytecode: felt*) = alloc();
-    let ctx = TestHelpers.init_context_at_address_with_stack(
-        evm_caller_address, bytecode_len, bytecode, stack
+    // As this test contract is mocking the contract account we have to set this contract address as the starknet_contract_address.
+    let (contract_address: felt) = get_contract_address();
+    let ctx = TestHelpers.init_context_at_address_with_stack_and_caller_address(
+        evm_caller_address, bytecode_len, bytecode, stack, contract_address
     );
 
     let ctx = MemoryOperations.exec_mstore(ctx);
+
+    // We set the nonce of the mocked contract account
+    mock_nonce.write(nonce_);
 
     // When
     let sub_ctx = SystemOperations.exec_create(ctx);
@@ -549,8 +595,9 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     let stack = Stack.push(stack, memory_offset);
     let bytecode_len = 0;
     let (bytecode: felt*) = alloc();
-    let ctx = TestHelpers.init_context_at_address_with_stack(
-        evm_caller_address, bytecode_len, bytecode, stack
+    let (contract_address: felt) = get_contract_address();
+    let ctx = TestHelpers.init_context_at_address_with_stack_and_caller_address(
+        evm_caller_address, bytecode_len, bytecode, stack, contract_address
     );
 
     assert ctx.evm_contract_address = evm_caller_address;

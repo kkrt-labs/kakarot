@@ -751,12 +751,14 @@ namespace CreateHelper {
         // so we use popped_len to derive the way we should handle
         // the creation of evm addresses
         if (popped_len != 4) {
+            // Increment happens before we fetch nonce
+            // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-161.md
+            IContractAccount.increment_nonce(ctx.starknet_contract_address);
             let (nonce: felt) = IContractAccount.get_nonce(ctx.starknet_contract_address);
             let (evm_contract_address) = CreateHelper.get_create_address(
                 ctx.evm_contract_address, nonce
             );
 
-            IContractAccount.increment_nonce(ctx.starknet_contract_address);
             let (contract_account_class_hash_) = contract_account_class_hash.read();
             let (starknet_contract_address) = Accounts.create(
                 contract_account_class_hash_, evm_contract_address
@@ -861,7 +863,6 @@ namespace CreateHelper {
 }
 
 namespace SelfDestructHelper {
-
     // @notice The recursive function to destroy contracts.
     // @param destroy_contracts_len The length of destroy_contracts.
     // @param destroy_contracts The contracts to destroy.
