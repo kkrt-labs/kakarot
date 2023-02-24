@@ -474,32 +474,34 @@ namespace CallHelper {
 
         // Check if the called address is a precompiled contract
         let is_precompile = Precompiles.is_precompile(address=call_args.address);
-        if (is_precompile == TRUE) {
-            let sub_ctx = Precompiles.run(
+        if (is_precompile == FALSE) {
+            let sub_ctx = ExecutionContext.init_at_address(
                 address=call_args.address,
+                gas_limit=call_args.gas,
                 calldata_len=call_args.args_size,
                 calldata=call_args.calldata,
                 value=call_args.value,
                 calling_context=calling_ctx,
                 return_data_len=call_args.ret_size,
                 return_data=call_args.return_data,
+                read_only=read_only,
             );
+
             return sub_ctx;
         }
 
-        let sub_ctx = ExecutionContext.init_at_address(
+        let sub_ctx = Precompiles.run(
             address=call_args.address,
-            gas_limit=call_args.gas,
             calldata_len=call_args.args_size,
             calldata=call_args.calldata,
             value=call_args.value,
             calling_context=calling_ctx,
             return_data_len=call_args.ret_size,
             return_data=call_args.return_data,
-            read_only=read_only,
         );
-
+        
         return sub_ctx;
+
     }
     // @notice At the end of a sub-context call, the calling context's stack and memory are updated.
     // @return ExecutionContext The pointer to the updated calling context.

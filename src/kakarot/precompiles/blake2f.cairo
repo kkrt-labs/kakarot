@@ -9,6 +9,7 @@ from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.registers import get_fp_and_pc, get_label_location
 from starkware.cairo.common.math_cmp import is_nn, is_le
+from starkware.cairo.common.bool import FALSE
 
 // Internal dependencies
 from utils.utils import Helpers
@@ -121,11 +122,11 @@ namespace Blake2 {
 
         // Compute state[14].
         local state14;
-        if (f == 1) {
+        if (f == FALSE) {
             // 0x1f83d9abfb41bd6b ^ 0xffffffffffffffff
-            state14 = 0xe07c265404be4294;
-        } else {
             state14 = 0x1f83d9abfb41bd6b;
+        } else {
+            state14 = 0xe07c265404be4294;
         }
 
         let (local initial_state: felt*) = alloc();
