@@ -5,8 +5,8 @@ from tests.integration.bytecode.test_cases import test_cases
 from tests.utils.helpers import (
     extract_memory_from_execute,
     extract_stack_from_execute,
-    hex_string_to_bytes_array,
     generate_random_private_key,
+    hex_string_to_bytes_array,
 )
 from tests.utils.reporting import traceit
 

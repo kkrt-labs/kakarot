@@ -43,21 +43,13 @@ namespace RLP {
             let buffer_ptr = buffer_ptr + 1;
             let is_le_127: felt = is_le(byte, 127);
             if (is_le_127 != FALSE) {
-                assert [items] = Item(
-                    data_len=1,
-                    data=buffer_ptr - 1,
-                    is_list=0
-                    );
+                assert [items] = Item(data_len=1, data=buffer_ptr - 1, is_list=0);
                 return decode(data_len=data_len - 1, data=buffer_ptr, items=items + Item.SIZE);
             }
             let is_le_183 = is_le(byte, 183);  // a max 55 bytes long string
             if (is_le_183 != FALSE) {
                 let string_len = byte - 128;
-                assert [items] = Item(
-                    data_len=string_len,
-                    data=buffer_ptr,
-                    is_list=0
-                    );
+                assert [items] = Item(data_len=string_len, data=buffer_ptr, is_list=0);
                 return decode(
                     data_len=data_len - 1 - string_len,
                     data=buffer_ptr + string_len,
@@ -69,11 +61,7 @@ namespace RLP {
                 local len_len = byte - 183;
                 let (dlen) = Helpers.bytes_to_felt(data_len=len_len, data=buffer_ptr, n=0);
                 let buffer_ptr = buffer_ptr + len_len;
-                assert [items] = Item(
-                    data_len=dlen,
-                    data=buffer_ptr,
-                    is_list=0
-                    );
+                assert [items] = Item(data_len=dlen, data=buffer_ptr, is_list=0);
                 return decode(
                     data_len=data_len - 1 - len_len - dlen,
                     data=buffer_ptr + dlen,
@@ -83,11 +71,7 @@ namespace RLP {
             let is_le_247 = is_le(byte, 247);  // list 0-55 bytes long
             if (is_le_247 != FALSE) {
                 local list_len = byte - 192;
-                assert [items] = Item(
-                    data_len=list_len,
-                    data=buffer_ptr,
-                    is_list=1
-                    );
+                assert [items] = Item(data_len=list_len, data=buffer_ptr, is_list=1);
                 return decode(
                     data_len=data_len - 1 - list_len,
                     data=buffer_ptr + list_len,
@@ -97,11 +81,7 @@ namespace RLP {
                 local list_len_len = byte - 247;
                 let (dlen) = Helpers.bytes_to_felt(data_len=list_len_len, data=buffer_ptr, n=0);
                 let buffer_ptr = buffer_ptr + list_len_len;
-                assert [items] = Item(
-                    data_len=dlen,
-                    data=buffer_ptr,
-                    is_list=1
-                    );
+                assert [items] = Item(data_len=dlen, data=buffer_ptr, is_list=1);
                 return decode(
                     data_len=data_len - 1 - list_len_len - dlen,
                     data=buffer_ptr + dlen,

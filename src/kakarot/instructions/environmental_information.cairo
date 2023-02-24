@@ -161,7 +161,8 @@ namespace EnvironmentalInformation {
         let (current_address) = get_caller_address();
         let (current_evm_address) = IAccount.get_evm_address(current_address);
         let is_root = ExecutionContext.is_root(ctx);
-        let evm_address = (1 - is_root) * ctx.calling_context.evm_contract_address + is_root * current_evm_address;
+        let evm_address = (1 - is_root) * ctx.calling_context.evm_contract_address + is_root *
+            current_evm_address;
         let evm_address_uint256 = Helpers.to_uint256(evm_address);
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=evm_address_uint256);
 

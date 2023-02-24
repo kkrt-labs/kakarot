@@ -316,8 +316,9 @@ namespace SHA256 {
         tempvar x6 = sha256_ptr[6 * SHA256_INSTANCE_SIZE];
         assert [range_check_ptr + 12] = x6;
         assert [range_check_ptr + 13] = MAX_VALUE - x6;
-        assert message[0] = x0 + 2 ** 35 * x1 + 2 ** (35 * 2) * x2 + 2 ** (35 * 3) * x3 +
-            2 ** (35 * 4) * x4 + 2 ** (35 * 5) * x5 + 2 ** (35 * 6) * x6;
+        assert message[0] = x0 + 2 ** 35 * x1 + 2 ** (35 * 2) * x2 + 2 ** (35 * 3) * x3 + 2 ** (
+            35 * 4
+        ) * x4 + 2 ** (35 * 5) * x5 + 2 ** (35 * 6) * x6;
 
         tempvar message = message + 1;
         tempvar sha256_ptr = sha256_ptr + 1;
@@ -354,8 +355,9 @@ namespace SHA256 {
         tempvar x6 = sha256_ptr[6 * SHA256_INSTANCE_SIZE];
         assert [range_check_ptr + 12] = x6;
         assert [range_check_ptr + 13] = MAX_VALUE - x6;
-        assert input_state[0] = x0 + 2 ** 35 * x1 + 2 ** (35 * 2) * x2 + 2 ** (35 * 3) * x3 +
-            2 ** (35 * 4) * x4 + 2 ** (35 * 5) * x5 + 2 ** (35 * 6) * x6;
+        assert input_state[0] = x0 + 2 ** 35 * x1 + 2 ** (35 * 2) * x2 + 2 ** (35 * 3) * x3 + 2 ** (
+            35 * 4
+        ) * x4 + 2 ** (35 * 5) * x5 + 2 ** (35 * 6) * x6;
 
         tempvar input_state = input_state + 1;
         tempvar sha256_ptr = sha256_ptr + 1;
@@ -401,8 +403,9 @@ namespace SHA256 {
         assert [range_check_ptr + 12] = x6;
         assert [range_check_ptr + 13] = MAX_VALUE - x6;
 
-        assert outputs[0] = x0 + 2 ** 35 * x1 + 2 ** (35 * 2) * x2 + 2 ** (35 * 3) * x3 +
-            2 ** (35 * 4) * x4 + 2 ** (35 * 5) * x5 + 2 ** (35 * 6) * x6;
+        assert outputs[0] = x0 + 2 ** 35 * x1 + 2 ** (35 * 2) * x2 + 2 ** (35 * 3) * x3 + 2 ** (
+            35 * 4
+        ) * x4 + 2 ** (35 * 5) * x5 + 2 ** (35 * 6) * x6;
 
         tempvar outputs = outputs + 1;
         tempvar sha256_ptr = sha256_ptr + 1;

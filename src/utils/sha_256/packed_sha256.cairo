@@ -7,8 +7,9 @@ const ALL_ONES = 2 ** 251 - 1;
 // Pack the different instances with offsets of 35 bits. This is the maximal possible offset for
 // 7 32-bit words and it allows space for carry bits in integer addition operations (up to
 // 8 summands).
-const SHIFTS = 1 + 2 ** 35 + 2 ** (35 * 2) + 2 ** (35 * 3) + 2 ** (35 * 4) + 2 ** (35 * 5) +
-    2 ** (35 * 6);
+const SHIFTS = 1 + 2 ** 35 + 2 ** (35 * 2) + 2 ** (35 * 3) + 2 ** (35 * 4) + 2 ** (35 * 5) + 2 ** (
+    35 * 6
+);
 
 // Given an array of size 16, extends it to the message schedule array (of size 64) by writing
 // 48 more values.

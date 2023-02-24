@@ -45,9 +45,8 @@ namespace Memory {
         alloc_locals;
         let (word_dict_start: DictAccess*) = default_dict_new(0);
         return new model.Memory(
-            word_dict_start=word_dict_start,
-            word_dict=word_dict_start,
-            bytes_len=0);
+            word_dict_start=word_dict_start, word_dict=word_dict_start, bytes_len=0
+        );
     }
 
     // @notice Finalize the memory.
@@ -58,7 +57,7 @@ namespace Memory {
         );
         return new Summary(
             bytes_len=self.bytes_len, squashed_start=squashed_start, squashed_end=squashed_end
-            );
+        );
     }
 
     // @notice Store an element into the memory.
@@ -89,11 +88,13 @@ namespace Memory {
             // so we optimize for it. Note that no locals were allocated at all.
             dict_write{dict_ptr=word_dict}(chunk_index, element.high);
             dict_write{dict_ptr=word_dict}(chunk_index + 1, element.low);
-            return (new model.Memory(
-                word_dict_start=self.word_dict_start,
-                word_dict=word_dict,
-                bytes_len=new_bytes_len,
-                ));
+            return (
+                new model.Memory(
+                    word_dict_start=self.word_dict_start,
+                    word_dict=word_dict,
+                    bytes_len=new_bytes_len,
+                )
+            );
         }
 
         // Offset is misaligned.
@@ -125,11 +126,11 @@ namespace Memory {
         dict_write{dict_ptr=word_dict}(chunk_index, new_w0);
         dict_write{dict_ptr=word_dict}(chunk_index + 1, new_w1);
         dict_write{dict_ptr=word_dict}(chunk_index + 2, new_w2);
-        return (new model.Memory(
-            word_dict_start=self.word_dict_start,
-            word_dict=word_dict,
-            bytes_len=new_bytes_len,
-            ));
+        return (
+            new model.Memory(
+                word_dict_start=self.word_dict_start, word_dict=word_dict, bytes_len=new_bytes_len
+            )
+        );
     }
 
     // @notice Store N bytes into the memory.
@@ -175,10 +176,13 @@ namespace Memory {
             let x = Helpers.load_word(element_len, element);
             let new_w = w_h * mask_i + x * mask_f + w_ll;
             dict_write{dict_ptr=word_dict}(chunk_index_i, new_w);
-            return (new model.Memory(
-                word_dict_start=self.word_dict_start,
-                word_dict=word_dict,
-                bytes_len=new_bytes_len));
+            return (
+                new model.Memory(
+                    word_dict_start=self.word_dict_start,
+                    word_dict=word_dict,
+                    bytes_len=new_bytes_len,
+                )
+            );
         }
 
         // Otherwise.
@@ -199,17 +203,18 @@ namespace Memory {
             word_dict, chunk_index_i + 1, chunk_index_f, element + 16 - offset_in_chunk_i
         );
 
-        return (new model.Memory(
-            word_dict_start=self.word_dict_start,
-            word_dict=word_dict,
-            bytes_len=new_bytes_len));
+        return (
+            new model.Memory(
+                word_dict_start=self.word_dict_start, word_dict=word_dict, bytes_len=new_bytes_len
+            )
+        );
     }
 
     func store_aligned_words{range_check_ptr}(
         word_dict: DictAccess*, chunk_index: felt, chunk_index_f: felt, element: felt*
     ) -> (word_dict: DictAccess*) {
         if (chunk_index == chunk_index_f) {
-            return (word_dict=word_dict,);
+            return (word_dict=word_dict);
         }
         let current = (
             element[0] * 256 ** 15 +
@@ -227,7 +232,8 @@ namespace Memory {
             element[12] * 256 ** 3 +
             element[13] * 256 ** 2 +
             element[14] * 256 ** 1 +
-            element[15] * 256 ** 0);
+            element[15] * 256 ** 0
+        );
         dict_write{dict_ptr=word_dict}(chunk_index, current);
         return store_aligned_words(
             word_dict=word_dict,
@@ -256,9 +262,9 @@ namespace Memory {
             let (el_l) = dict_read{dict_ptr=word_dict}(chunk_index + 1);
             return (
                 new model.Memory(
-                word_dict_start=self.word_dict_start,
-                word_dict=word_dict,
-                bytes_len=self.bytes_len,
+                    word_dict_start=self.word_dict_start,
+                    word_dict=word_dict,
+                    bytes_len=self.bytes_len,
                 ),
                 Uint256(low=el_l, high=el_h),
             );
@@ -287,9 +293,7 @@ namespace Memory {
         let el_l = w1_l * mask_c + w2_h;
         return (
             new model.Memory(
-            word_dict_start=self.word_dict_start,
-            word_dict=word_dict,
-            bytes_len=self.bytes_len,
+                word_dict_start=self.word_dict_start, word_dict=word_dict, bytes_len=self.bytes_len
             ),
             Uint256(low=el_l, high=el_h),
         );
@@ -324,10 +328,13 @@ namespace Memory {
             let (_, w_l) = Helpers.div_rem(w, mask_i);
             let (w_lh, _) = Helpers.div_rem(w_l, mask_f);
             Helpers.split_word(w_lh, element_len, element);
-            return (new model.Memory(
-                word_dict_start=self.word_dict_start,
-                word_dict=word_dict,
-                bytes_len=self.bytes_len));
+            return (
+                new model.Memory(
+                    word_dict_start=self.word_dict_start,
+                    word_dict=word_dict,
+                    bytes_len=self.bytes_len,
+                )
+            );
         }
 
         // Otherwise.
@@ -346,17 +353,18 @@ namespace Memory {
             word_dict, chunk_index_i + 1, chunk_index_f, element + 16 - offset_in_chunk_i
         );
 
-        return (new model.Memory(
-            word_dict_start=self.word_dict_start,
-            word_dict=word_dict,
-            bytes_len=self.bytes_len));
+        return (
+            new model.Memory(
+                word_dict_start=self.word_dict_start, word_dict=word_dict, bytes_len=self.bytes_len
+            )
+        );
     }
 
     func load_aligned_words{range_check_ptr}(
         word_dict: DictAccess*, chunk_index: felt, chunk_index_f: felt, element: felt*
     ) -> (word_dict: DictAccess*) {
         if (chunk_index == chunk_index_f) {
-            return (word_dict=word_dict,);
+            return (word_dict=word_dict);
         }
         let original_word_dict = word_dict;
         let (value) = dict_read{dict_ptr=word_dict}(chunk_index);
@@ -395,9 +403,9 @@ namespace Memory {
 
         return (
             new model.Memory(
-            word_dict_start=self.word_dict_start,
-            word_dict=self.word_dict,
-            bytes_len=new_bytes_len,
+                word_dict_start=self.word_dict_start,
+                word_dict=self.word_dict,
+                bytes_len=new_bytes_len,
             ),
             cost,
         );

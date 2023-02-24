@@ -24,10 +24,6 @@ func is_initialized_() -> (res: felt) {
 
 namespace ExternallyOwnedAccount {
     // Constants
-    // keccak250(ascii('execute_at_address'))
-    const EXECUTE_AT_ADDRESS_SELECTOR = 175332271055223547208505378209204736960926292802627036960758298143252682610;
-    // keccak250(ascii('deploy_contract_account'))
-    const DEPLOY_CONTRACT_ACCOUNT = 1793893178491056210152325574444006027492498768972445405939198352014726462427;
     // @dev see utils/interface_id.py
     const INTERFACE_ID = 0x68bca1a;
 

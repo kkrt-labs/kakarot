@@ -19,6 +19,7 @@ from scripts.constants import (
     CHAIN_ID,
     CONTRACTS,
     DEPLOYMENTS_DIR,
+    ETH_TOKEN_ADDRESS,
     GATEWAY_CLIENT,
     NETWORK,
     SOURCE_DIR,
@@ -134,14 +135,9 @@ def get_account(
 
 
 async def get_eth_contract() -> Contract:
-    address = (
-        int(requests.get(f"{GATEWAY_CLIENT.net}/fee_token").json()["address"], 16)
-        if NETWORK == "devnet"
-        else 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7
-    )
     account = get_account()
     return await Contract.from_address(
-        address,
+        ETH_TOKEN_ADDRESS,
         account,
     )
 
@@ -153,35 +149,44 @@ async def get_contract(contract_name) -> Contract:
     )
 
 
-async def fund_address(address: Union[int, str], amount: int):
+async def fund_address(address: Union[int, str], amount: float):
+    """
+    Fund a given starknet address with {amount} ETH
+    """
     address = hex(address) if isinstance(address, int) else address
+    amount = amount * 1e18
     if NETWORK == "devnet":
         response = requests.post(
             f"{GATEWAY_CLIENT.net}/mint", json={"address": address, "amount": amount}
         )
         if response.status_code != 200:
             logger.error(f"Cannot mint token to {address}: {response.text}")
-        logger.info(f"{amount} ETH minted to {address}")
+        logger.info(f"{amount / 1e18} ETH minted to {address}")
     else:
         account = get_account()
         eth_contract = await get_eth_contract()
         balance = (await eth_contract.functions["balanceOf"].call(account.address)).balance  # type: ignore
-        if balance / 1e18 < amount:
+        if balance < amount:
             raise ValueError(
-                f"Cannot send {amount} ETH from default account with current balance {balance / 1e18} ETH"
+                f"Cannot send {amount / 1e18} ETH from default account with current balance {balance / 1e18} ETH"
             )
         tx = await eth_contract.functions["transfer"].invoke(
-            address, int_to_uint256(amount * 1e18), max_fee=int(1e16)
+            address, int_to_uint256(amount), max_fee=int(1e16)
         )
         await tx.wait_for_acceptance()
-        logger.info(f"{amount} ETH sent from {hex(account.address)} to {address}")
+        logger.info(
+            f"{amount / 1e18} ETH sent from {hex(account.address)} to {address}"
+        )
 
 
-async def deploy_and_fund_evm_address(evm_address: str, amount: int):
+async def deploy_and_fund_evm_address(evm_address: str, amount: float):
+    """
+    Deploy an EOA linked to the given EVM address and fund it with amount ETH
+    """
+    await invoke("kakarot", "deploy_externally_owned_account", int(evm_address, 16))
     starknet_address = await call(
         "kakarot", "compute_starknet_address", int(evm_address, 16)
     )
-    await invoke("kakarot", "deploy_externally_owned_account", int(evm_address, 16))
     await fund_address(starknet_address[0], amount)
 
 
@@ -273,23 +278,13 @@ async def deploy(contract_name, *args):
     logger.info(f"⏳ Deploying {contract_name}")
     abi = json.loads(Path(get_abi(contract_name)).read_text())
     account = get_account()
-    artifact = get_artifact(contract_name)
-    # TODO: upgrade to starknet-devnet latest to remove this
-    # TODO: In current version, UDC is not available
-    if NETWORK == "devnet":
-        deploy_result = await Contract.deploy(
-            client=account,
-            compiled_contract=Path(artifact).read_text(),
-            constructor_args=list(args),
-        )
-    else:
-        deploy_result = await Contract.deploy_contract(
-            account=account,
-            class_hash=get_declarations()[contract_name],
-            abi=abi,
-            constructor_args=list(args),
-            max_fee=int(1e16),
-        )
+    deploy_result = await Contract.deploy_contract(
+        account=account,
+        class_hash=get_declarations()[contract_name],
+        abi=abi,
+        constructor_args=list(args),
+        max_fee=int(1e16),
+    )
     await deploy_result.wait_for_acceptance()
     logger.info(
         f"✅ {contract_name} deployed at: {hex(deploy_result.deployed_contract.address)}"
@@ -310,13 +305,13 @@ async def invoke(contract_name, function_name, *inputs, address=None):
         account,
     )
     call = contract.functions[function_name].prepare(*inputs, max_fee=int(1e16))
-    logger.info(f"⏳ Invoking {contract_name}.{function_name}({call.arguments})")
+    logger.info(f"⏳ Invoking {contract_name}.{function_name}({json.dumps(inputs)})")
     response = await account.execute(call, max_fee=int(1e16))
+    await account.wait_for_tx(response.transaction_hash)
     logger.info(
-        f"⏳ {contract_name}.{function_name} invoked at tx: %s",
+        f"✅ {contract_name}.{function_name} invoked at tx: %s",
         hex(response.transaction_hash),
     )
-    await account.wait_for_tx(response.transaction_hash)
     return response.transaction_hash
 
 

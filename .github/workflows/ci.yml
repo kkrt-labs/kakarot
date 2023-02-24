@@ -1,9 +1,9 @@
-name: TESTS
+name: CI
 
 on: [push, pull_request]
 
 jobs:
-  compilation-tests:
+  build:
     runs-on: self-hosted
     container: ptisserand/kakarot-builder:latest
     env:
@@ -52,7 +52,7 @@ jobs:
           make format-check
           make build
 
-  python-tests:
+  tests:
     runs-on: self-hosted
     container: ptisserand/kakarot-builder:latest
     steps:
@@ -95,10 +95,10 @@ jobs:
           path: ./coverage/
           name: coverage
 
-  resources-tests:
+  resources:
     runs-on: self-hosted
     container: ptisserand/kakarot-builder:latest
-    needs: python-tests
+    needs: tests
     steps:
       - uses: actions/checkout@v3
       - name: Load cached Poetry installation
