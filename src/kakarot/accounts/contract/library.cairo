@@ -102,7 +102,6 @@ namespace ContractAccount {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }() -> felt {
-        alloc_locals;
         let (_bytecode_len) = bytecode_len_.read();
         return _bytecode_len;
     }
