@@ -498,39 +498,6 @@ namespace CallHelper {
 
     }
 
-    func finalize_reverting_writes{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*, dict_start: DictAccess*, dict_end: DictAccess*) {
-        alloc_locals;
-        if (dict_start == dict_end) {
-            return ();
-        }
-
-        let starknet_contract_address: felt = ctx.starknet_contract_address;
-        let reverted_state = dict_start.new_value;
-        let casted_reverted_state = cast(reverted_state, model.KeyValue*);
-        let p_reverted_state = dict_start.prev_value;
-        let casted_p_reverted_state = cast(p_reverted_state, model.KeyValue*);
-
-        if (reverted_state != 0) {
-            IContractAccount.write_storage(
-                contract_address=starknet_contract_address,
-                key=casted_reverted_state.key,
-                value=casted_reverted_state.value,
-            );
-            return finalize_reverting_writes(
-                ctx=ctx, dict_start=dict_start + DictAccess.SIZE, dict_end=dict_end
-            );
-        } else {
-            return finalize_reverting_writes(
-                ctx=ctx, dict_start=dict_start + DictAccess.SIZE, dict_end=dict_end
-            );
-        }
-    }
-
     // @notice At the end of a sub-context call, the calling context's stack and memory are updated.
     // @return ExecutionContext The pointer to the updated calling context.
     func finalize_calling_context{
@@ -542,64 +509,41 @@ namespace CallHelper {
         alloc_locals;
 
         let is_reverted: felt = ExecutionContext.is_reverted(self=ctx);
-
+        local status: Uint256;
         if (is_reverted != 0) {
-            let revert_contract_state_dict_end = ctx.revert_contract_state.dict_end;
-            let revert_contract_state_dict_start = ctx.revert_contract_state.dict_start;
-            let (squashed_dict_start, squashed_dict_end) = default_dict_finalize(
-                revert_contract_state_dict_start, revert_contract_state_dict_end, 0
-            );
-            finalize_reverting_writes(ctx, squashed_dict_start, squashed_dict_end);
-            SelfDestructHelper._finalize_loop(ctx.create_addresses_len, ctx.create_addresses);
-            let ctx = ExecutionContext.update_sub_context(ctx.calling_context, ctx);
-            let ctx = ExecutionContext.increment_gas_used(ctx, ctx.sub_context.gas_used);
-
-            // Append contracts selfdestruct to the calling_context
-            let ctx = ExecutionContext.push_to_destroy_contracts(
-                self=ctx,
-                destroy_contracts_len=ctx.sub_context.destroy_contracts_len,
-                destroy_contracts=ctx.sub_context.destroy_contracts,
-            );
-            let status = Uint256(low=0, high=0);
-            let stack = Stack.push(ctx.stack, status);
-            let ctx = ExecutionContext.update_stack(ctx, stack);
-            let ret_offset = [ctx.sub_context.return_data - 1];
-
-            // ret_offset, see prepare_args
-            let memory = Memory.store_n(
-                ctx.memory,
-                ctx.sub_context.return_data_len,
-                ctx.sub_context.return_data,
-                [ctx.sub_context.return_data - 1],
-            );
-
-            let ctx = ExecutionContext.update_memory(ctx, memory);
-            return ctx;
+            // reverted contexts put a zero on the calling context's stack,
+            // so the calling context can handle failing cases
+            assert status = Uint256(low=0, high=0);
         } else {
-            let status = Uint256(low=1, high=0);
-            let ctx = ExecutionContext.update_sub_context(ctx.calling_context, ctx);
-            let ctx = ExecutionContext.increment_gas_used(ctx, ctx.sub_context.gas_used);
-
-            // Append contracts selfdestruct to the calling_context
-            let ctx = ExecutionContext.push_to_destroy_contracts(
-                self=ctx,
-                destroy_contracts_len=ctx.sub_context.destroy_contracts_len,
-                destroy_contracts=ctx.sub_context.destroy_contracts,
-            );
-
-            let stack = Stack.push(ctx.stack, status);
-            let ctx = ExecutionContext.update_stack(ctx, stack);
-            // ret_offset, see prepare_args
-            let memory = Memory.store_n(
-                ctx.memory,
-                ctx.sub_context.return_data_len,
-                ctx.sub_context.return_data,
-                [ctx.sub_context.return_data - 1],
-            );
-            let ctx = ExecutionContext.update_memory(ctx, memory);
-
-            return ctx;
+            // otherwise, we put 1
+            assert status = Uint256(low=1, high=0);
         }
+
+        let ctx = ExecutionContext.update_sub_context(ctx.calling_context, ctx);
+        // TODO need to reason about gas in the reverting case
+        let ctx = ExecutionContext.increment_gas_used(ctx, ctx.sub_context.gas_used);
+
+        // Append contracts selfdestruct to the calling_context
+        let ctx = ExecutionContext.push_to_destroy_contracts(
+            self=ctx,
+            destroy_contracts_len=ctx.sub_context.destroy_contracts_len,
+            destroy_contracts=ctx.sub_context.destroy_contracts,
+        );
+
+        let stack = Stack.push(ctx.stack, status);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ret_offset = [ctx.sub_context.return_data - 1];
+
+        // ret_offset, see prepare_args
+        let memory = Memory.store_n(
+            ctx.memory,
+            ctx.sub_context.return_data_len,
+            ctx.sub_context.return_data,
+            [ctx.sub_context.return_data - 1],
+        );
+
+        let ctx = ExecutionContext.update_memory(ctx, memory);
+        return ctx;
     }
 }
 
@@ -916,65 +860,57 @@ namespace CreateHelper {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        IContractAccount.write_bytecode(
-            contract_address=ctx.starknet_contract_address,
-            bytecode_len=ctx.return_data_len,
-            bytecode=ctx.return_data,
-        );
+        let is_reverted = ExecutionContext.is_reverted(ctx);
 
-        // code_deposit_code := 200 * deployed_code_size * BYTES_PER_FELT (as Kakarot packs bytes inside a felt)
-        // dynamic_gas :=  deployment_code_execution_cost + code_deposit_cost
-        let dynamic_gas = ctx.gas_used + 200 * ctx.return_data_len * Constants.BYTES_PER_FELT;
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=dynamic_gas);
+        if (is_reverted != 0) {
+            local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(self=ctx.calling_context, sub_context=ctx);
+            // TODO: reason about gas in reverting case
+            // let ctx = ExecutionContext.increment_gas_used(ctx, ctx.sub_context.gas_used);
 
-        local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(
-            self=ctx.calling_context, sub_context=ctx
-        );
-        let ctx = ExecutionContext.increment_gas_used(ctx, ctx.sub_context.gas_used);
+            // Append contracts to selfdestruct to the calling_context
+            let ctx = ExecutionContext.push_to_destroy_contracts(
+                self=ctx,
+                destroy_contracts_len=ctx.sub_context.destroy_contracts_len,
+                destroy_contracts=ctx.sub_context.destroy_contracts,
+            );
 
-        // Append contracts to selfdestruct to the calling_context
-        let ctx = ExecutionContext.push_to_destroy_contracts(
-            self=ctx,
-            destroy_contracts_len=ctx.sub_context.destroy_contracts_len,
-            destroy_contracts=ctx.sub_context.destroy_contracts,
-        );
+            let status = Uint256(0, 0);
+            let stack = Stack.push(ctx.stack, status);
+            let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        let (address_high, address_low) = split_felt(ctx.sub_context.evm_contract_address);
-        let stack = Stack.push(ctx.stack, Uint256(low=address_low, high=address_high));
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+            return ctx;
+        } else {
+            IContractAccount.write_bytecode(
+                contract_address=ctx.starknet_contract_address,
+                bytecode_len=ctx.return_data_len,
+                bytecode=ctx.return_data,
+            );
 
-        return ctx;
+            // code_deposit_code := 200 * deployed_code_size * BYTES_PER_FELT (as Kakarot packs bytes inside a felt)
+            // dynamic_gas :=  deployment_code_execution_cost + code_deposit_cost
+            let dynamic_gas = ctx.gas_used + 200 * ctx.return_data_len * Constants.BYTES_PER_FELT;
+            let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=dynamic_gas);
+
+            local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(self=ctx.calling_context, sub_context=ctx);
+            let ctx = ExecutionContext.increment_gas_used(ctx, ctx.sub_context.gas_used);
+
+            // Append contracts to selfdestruct to the calling_context
+            let ctx = ExecutionContext.push_to_destroy_contracts(
+                self=ctx,
+                destroy_contracts_len=ctx.sub_context.destroy_contracts_len,
+                destroy_contracts=ctx.sub_context.destroy_contracts,
+            );
+
+            let (address_high, address_low) = split_felt(ctx.sub_context.evm_contract_address);
+            let stack = Stack.push(ctx.stack, Uint256(low=address_low, high=address_high));
+            let ctx = ExecutionContext.update_stack(ctx, stack);
+
+            return ctx;
+        }
     }
 }
 
 namespace SelfDestructHelper {
-    // @notice The recursive function to destroy contracts.
-    // @param destroy_contracts_len The length of destroy_contracts.
-    // @param destroy_contracts The contracts to destroy.
-    // @return empty_destroy_contracts The destroyed contracts.
-    func _finalize_loop{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(destroy_contracts_len: felt, destroy_contracts: felt*) -> felt* {
-        alloc_locals;
-
-        if (destroy_contracts_len == 0) {
-            return (destroy_contracts);
-        }
-
-        let starknet_contract_address = [destroy_contracts];
-        let (bytecode_len) = IAccount.bytecode_len(contract_address=starknet_contract_address);
-        let (erase_data) = alloc();
-        Helpers.fill(bytecode_len, erase_data, 0);
-        IContractAccount.write_bytecode(
-            contract_address=starknet_contract_address, bytecode_len=0, bytecode=erase_data
-        );
-
-        return _finalize_loop(destroy_contracts_len - 1, destroy_contracts + 1);
-    }
-
     // @notice A helper for SELFDESTRUCT operation.
     //         It overwrites contract account bytecode with 0s
     //         remove contract from registry
@@ -988,7 +924,7 @@ namespace SelfDestructHelper {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let empty_destroy_contracts = _finalize_loop(
+        let empty_destroy_contracts = Helpers.erase_contracts(
             ctx.destroy_contracts_len, ctx.destroy_contracts
         );
         let (empty_create_addresses: felt*) = alloc();

@@ -6,12 +6,13 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.default_dict import default_dict_new
+from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
 from starkware.cairo.common.dict import DictAccess
 from starkware.cairo.common.math import assert_le, assert_nn
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_label_location
+from starkware.starknet.common.syscalls import emit_event
 from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
@@ -44,8 +45,8 @@ namespace ExecutionContext {
     // @return ExecutionContext A stopped execution context.
     func init_empty() -> model.ExecutionContext* {
         let (root_context) = get_label_location(empty_context);
-        let ctx = cast(root_context, model.ExecutionContext*);
-        return ctx;
+        let self = cast(root_context, model.ExecutionContext*);
+        return self;
 
         empty_context:
         dw 0;  // call_context
@@ -100,7 +101,7 @@ namespace ExecutionContext {
         let calling_context = init_empty();
         let sub_context = init_empty();
 
-        local ctx: model.ExecutionContext* = new model.ExecutionContext(
+        local self: model.ExecutionContext* = new model.ExecutionContext(
             call_context=call_context,
             program_counter=initial_pc,
             stopped=FALSE,
@@ -124,8 +125,8 @@ namespace ExecutionContext {
             revert_contract_state=revert_contract_state,
             reverted=FALSE,
             read_only=FALSE,
-        );
-        return ctx;
+            );
+        return self;
     }
 
     // @notice Finalizes the execution context.
@@ -348,6 +349,93 @@ namespace ExecutionContext {
             reverted=TRUE,
             read_only=self.read_only,
         );
+    }
+
+    // @notice Iterates through the `revert_contract_state` dict and restores a contract state to what it was prior to the reverting execution context's writes.
+    // @param starknet_contract_address The contract address whose state is being restored to prior the execution contexts writes.
+    // @param dict_start The start of the `revert_contract_state` dict.
+    // @param dict_end The end of the `revert_contract_state` dict.
+    // @return ExecutionContext The pointer to the updated execution context.
+    func finalize_reverting_writes{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(starknet_contract_address: felt, dict_start: DictAccess*, dict_end: DictAccess*) {
+        alloc_locals;
+        if (dict_start == dict_end) {
+            return ();
+        }
+
+        let reverted_state = dict_start.new_value;
+        let casted_reverted_state = cast(reverted_state, model.KeyValue*);
+        IContractAccount.write_storage(
+            contract_address=starknet_contract_address,
+            key=casted_reverted_state.key,
+            value=casted_reverted_state.value,
+        );
+        return finalize_reverting_writes(
+            starknet_contract_address=starknet_contract_address,
+            dict_start=dict_start + DictAccess.SIZE,
+            dict_end=dict_end,
+        );
+    }
+
+    // @notice Iterates through a list of events and emits them on the case that a context ran successfully (stopped and not reverted).
+    // @param events_len The length of the events array.
+    // @param events The array of Event structs that are emitted via the `emit_event` syscall.
+    func emit_events{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(events_len: felt, events: model.Event*) -> felt* {
+        alloc_locals;
+
+        if (events_len == 0) {
+            return (events);
+        }
+
+        let event: model.Event = [events];
+
+        emit_event(
+            keys_len=event.keys_len, keys=event.keys, data_len=event.data_len, data=event.data
+        );
+        // we maintain the semantics of one event struct involves iterating a full event struct size recursively
+        return emit_events(events_len - 1, events + 1 * model.Event.SIZE);
+    }
+
+    // @notice Handles the necessary state upkeep of a context, depending on whether it is reverted or ran successfully.
+    // @param self The pointer to the execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
+    func finalize_state{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+
+        let is_reverted = ExecutionContext.is_reverted(self);
+
+        if (is_reverted != 0) {
+            let revert_contract_state_dict_end = self.revert_contract_state.dict_end;
+            let revert_contract_state_dict_start = self.revert_contract_state.dict_start;
+            let (squashed_dict_start, squashed_dict_end) = default_dict_finalize(
+                revert_contract_state_dict_start, revert_contract_state_dict_end, 0
+            );
+            finalize_reverting_writes(
+                self.starknet_contract_address, squashed_dict_start, squashed_dict_end
+            );
+            Helpers.erase_contracts(self.create_addresses_len, self.create_addresses);
+            return self;
+        } else {
+            // this is called after a top level check that a given context is stopped
+            // so this is the case of a stopped, non reverted context
+            // meaning events should be fired off!
+            emit_events(self.events_len, self.events);
+            return self;
+        }
     }
 
     // @notice If execution context is reverted, we take its revert reason in bytes, encode it as a short string felt, and convey it as a thrown error message. Otherwise we do nothing.

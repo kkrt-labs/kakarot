@@ -190,12 +190,23 @@ class TestPlainOpcodes:
             assert "Revert reason" == Web3().codec.decode(["string"], data[4:])[0]
             assert success == False
             assert await counter.count() == 0
+            # TODO: is this just asserting that there were no events firing from a contract,
+            # or that there were no events fired from all touched contracts in an execution?
+            assert caller.events._events == []
 
         async def test_calling_context_should_propogate_revert_from_sub_context(
             self, plain_opcodes, owner
         ):
             with kakarot_error("FAIL"):
                 await plain_opcodes.testCallingContextShouldPropogateRevertFromSubContext(
+                    caller_address=owner.starknet_address
+                )
+
+        async def test_calling_context_should_propogate_revert_from_sub_context_on_create(
+            self, plain_opcodes, owner
+        ):
+            with kakarot_error("FAIL"):
+                await plain_opcodes.testCallingContextShouldPropogateRevertFromSubContextOnCreate(
                     caller_address=owner.starknet_address
                 )
 

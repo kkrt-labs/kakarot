@@ -393,7 +393,6 @@ namespace MemoryOperations {
             );
         }
 
-        let (__fp__, _) = get_fp_and_pc();
         tempvar key_val = new model.KeyValue(key, prior_value);
         let revert_contract_state_dict_end = ctx.revert_contract_state.dict_end;
 
@@ -403,16 +402,16 @@ namespace MemoryOperations {
         // we initialize a default dictionary with the default value as zero.
         // we check if return value of a read is zero to mark whether we want to write the prior value in this case or not.
         if (maybe_written != 0) {
-            let ctx = ExecutionContext.update_revert_contract_state(
-                ctx, revert_contract_state_dict_end
-            );
+            // if the value is not zero, then we treat it as a pointer to a keyvalue struct,
+            // meaning that the prior state was already written, so we do no writing
 
             // Increment gas used.
             let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SSTORE);
             return ctx;
         } else {
-            // TODO: reason about key/value here
-            // i.e. the likelihood of unexpected behavior of using key.low as the key
+            // otherwise, there has been no write yet for this given context,
+            // so this prior is the prior to the entire execution context
+            // so we *do* write the keyvalue struct pointer to the dict
             dict_write{dict_ptr=revert_contract_state_dict_end}(
                 key=key.low, new_value=cast(key_val, felt)
             );

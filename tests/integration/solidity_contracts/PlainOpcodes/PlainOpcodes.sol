@@ -137,6 +137,11 @@ contract PlainOpcodes {
         Parent parent = new Parent();
         parent.triggerRevert();
 
+    }
+
+    function testCallingContextShouldPropogateRevertFromSubContextOnCreate() public {
+        ContractRevertsOnConstruction doomedContract = new ContractRevertsOnConstruction();
+
     }    
     
     function testShouldRevertViaCall() external returns (address address_, bool triggerRevert ) {
