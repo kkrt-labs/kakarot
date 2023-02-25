@@ -520,7 +520,8 @@ namespace CallHelper {
         }
 
         let ctx = ExecutionContext.update_sub_context(ctx.calling_context, ctx);
-        // TODO need to reason about gas in the reverting case
+        // Gas in the reverting case means we increment the gas used in the reverted context
+        // and 'return' the remaining unspent gas by only incrementing the gas used
         let ctx = ExecutionContext.increment_gas_used(ctx, ctx.sub_context.gas_used);
 
         // Append contracts selfdestruct to the calling_context
@@ -864,8 +865,7 @@ namespace CreateHelper {
 
         if (is_reverted != 0) {
             local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(self=ctx.calling_context, sub_context=ctx);
-            // TODO: reason about gas in reverting case
-            // let ctx = ExecutionContext.increment_gas_used(ctx, ctx.sub_context.gas_used);
+            //  In the case of a reverted create context, the gas of the reverted context should be rolled back and not consumed
 
             // Append contracts to selfdestruct to the calling_context
             let ctx = ExecutionContext.push_to_destroy_contracts(
@@ -874,6 +874,7 @@ namespace CreateHelper {
                 destroy_contracts=ctx.sub_context.destroy_contracts,
             );
 
+            // We also put a zero on the calling context's stack to indicate the operation failed
             let status = Uint256(0, 0);
             let stack = Stack.push(ctx.stack, status);
             let ctx = ExecutionContext.update_stack(ctx, stack);
