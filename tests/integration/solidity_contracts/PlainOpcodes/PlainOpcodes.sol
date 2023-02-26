@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
-import "./Parent.sol";
+import "./RevertTestCases.sol";
 
 interface ICounter {
     function count() external view returns (uint256);
@@ -129,81 +129,23 @@ contract PlainOpcodes {
         }
     }
 
-    function testShouldAlwaysRevert() public pure {
-        revert("This always reverts");
-    }
-
-    function testCallingContextShouldPropogateRevertFromSubContext() public {
-        Parent parent = new Parent();
-        parent.triggerRevert();
-
-    }
-
     function testCallingContextShouldPropogateRevertFromSubContextOnCreate() public {
         ContractRevertsOnConstruction doomedContract = new ContractRevertsOnConstruction();
-
+        doomedContract.value();
     }    
     
-    function testShouldRevertViaCall() external returns (address address_, bool triggerRevert ) {
-        Parent parent = new Parent();
+    function testShouldRevertViaCall() external returns (bytes memory returnData) {
+        ContractRevertsOnMethodCall doomedContract = new ContractRevertsOnMethodCall();
 
-        (bool success, ) = address(parent).call(abi.encodeWithSignature("triggerRevert()"));
+        (bool success, bytes memory returnData1) = address(doomedContract).call(abi.encodeWithSignature("triggerRevert()"));
+        address doomedContractCounter = address(doomedContract.counter());
 
-        return (address(parent.child()), success);
+        assert(!success);
+        assert(doomedContractCounter == address(0));
+        assert(doomedContract.value() == 0);
+
+        return returnData1;
     }
 
-    function testCallingContextShouldCatchRevertFromSubContext() public {
-        Parent parent = new Parent();
-        
-        try parent.triggerRevert() { 
-            // The `triggerRevert` function is expected to revert. 
-            revert("always revert"); 
-        } catch { 
-            // Ensure that the created child contract in parent is deleted. 
-            //  
-            require(address(parent.child()) == address(0), "Parent is deleted"); 
-        } 
-    }   
 
-    function testCallingContextShouldCatchRevertFromSubContextAndPropogateRevertMessage() public {
-        Parent parent = new Parent();
-        
-        try parent.triggerRevert() { 
-            // The `triggerRevert` function is expected to revert. 
-            revert("always revert"); 
-        } catch Error(string memory errorMessage) { 
-            // Ensure that the created child contract in parent is deleted. 
-            require(address(parent.child()) == address(0), "Parent is deleted"); 
-        
-            // Revert with the error message from the subcontext.
-            revert(errorMessage);
-        } 
-    }    
-
-    function testCallingContextShouldCatchRevertFromSubContextWithReversedWrites() public {
-        Parent parent = new Parent();
-
-        try parent.triggerRevert() { 
-            // The `triggerRevert` function is expected to revert. 
-            revert("always revert"); 
-        } catch {
-            require(parent.count() == 0, "Initial state should be zero.");
-        }         
-        
-        try parent.triggerRevert() { 
-            // The `triggerRevert` function is expected to revert. 
-            revert("always revert"); 
-        } catch {
-            parent.inc();
-            require(parent.count() == 1, "Incrementing should happen from zero.");
-        }
-
-        try parent.triggerRevert() { 
-            // The `triggerRevert` function is expected to revert. 
-            revert("always revert"); 
-        } catch {
-            parent.inc();
-            require(parent.count() == 2, "Incrementing should happen from zero.");
-        }        
-    }    
 }

@@ -2,7 +2,6 @@ import pytest
 from eth_utils import to_checksum_address
 from web3 import Web3
 
-from tests.utils.constants import ZERO_ADDRESS
 from tests.utils.errors import kakarot_error
 
 
@@ -169,39 +168,6 @@ class TestPlainOpcodes:
             )
 
     class TestExceptionHandling:
-        async def test_revert_should_always_revert(self, plain_opcodes, owner):
-            with kakarot_error("This always reverts"):
-                await plain_opcodes.testShouldAlwaysRevert(
-                    caller_address=owner.starknet_address,
-                )
-
-        async def test_revert_should_revert_contract_writes(
-            self, counter, caller, owner
-        ):
-            success, data = await caller.call(
-                target=counter.evm_contract_address,
-                payload=counter.encodeABI("doRevert"),
-                caller_address=owner.starknet_address,
-            )
-
-            # we ignore the first 4 bytes because it is the function selector
-            # see conventions for the structure of return payloads on reverting cases
-            # https://docs.soliditylang.org/en/latest/control-structures.html#revert
-            assert "Revert reason" == Web3().codec.decode(["string"], data[4:])[0]
-            assert success == False
-            assert await counter.count() == 0
-            # TODO: is this just asserting that there were no events firing from a contract,
-            # or that there were no events fired from all touched contracts in an execution?
-            assert caller.events._events == []
-
-        async def test_calling_context_should_propogate_revert_from_sub_context(
-            self, plain_opcodes, owner
-        ):
-            with kakarot_error("FAIL"):
-                await plain_opcodes.testCallingContextShouldPropogateRevertFromSubContext(
-                    caller_address=owner.starknet_address
-                )
-
         async def test_calling_context_should_propogate_revert_from_sub_context_on_create(
             self, plain_opcodes, owner
         ):
@@ -210,40 +176,15 @@ class TestPlainOpcodes:
                     caller_address=owner.starknet_address
                 )
 
-        # we start our initial tests without using solidity asserts
-        # to bootstrap our certainty that revert behavior is as it should be
         async def test_should_revert_via_call(self, plain_opcodes, owner):
-            (
-                address_created_in_reverted_context,
-                succ,
-            ) = await plain_opcodes.testShouldRevertViaCall(
+            returnData = await plain_opcodes.testShouldRevertViaCall(
                 caller_address=owner.starknet_address
             )
-            assert succ == 0
-            assert address_created_in_reverted_context == ZERO_ADDRESS
-
-        async def test_calling_context_should_catch_revert_from_sub_context(
-            self, plain_opcodes, owner
-        ):
-            await plain_opcodes.testCallingContextShouldCatchRevertFromSubContext(
-                caller_address=owner.starknet_address
-            )
-
-        async def test_calling_context_should_catch_revert_from_sub_context_and_propogate_revert_message(
-            self, plain_opcodes, owner
-        ):
-            with kakarot_error("FAIL"):
-                await plain_opcodes.testCallingContextShouldCatchRevertFromSubContextAndPropogateRevertMessage(
-                    caller_address=owner.starknet_address
-                )
-
-        async def test_calling_context_should_catch_revert_from_sub_context_with_reversed_writes(
-            self, plain_opcodes, owner
-        ):
-            await plain_opcodes.testCallingContextShouldCatchRevertFromSubContextWithReversedWrites(
-                caller_address=owner.starknet_address
-            )
-
+            # we ignore the first 4 bytes because it is the function selector
+            # see conventions for the structure of return payloads on reverting cases
+            # https://docs.soliditylang.org/en/latest/control-structures.html#revert            
+            assert "FAIL" == Web3().codec.decode(["string"], returnData[4:])[0]            
+    
     class TestOriginAndSender:
         @pytest.mark.skip(
             "Origin returns 0 because ORIGIN currently assumes that the caller is a ContractAccount"

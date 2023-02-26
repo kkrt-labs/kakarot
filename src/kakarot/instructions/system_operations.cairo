@@ -209,8 +209,8 @@ namespace SystemOperations {
         let memory = ctx.memory;
 
         // Stack input:
-        // 0 - size: byte size to copy
-        // 1 - offset: byte offset in the memory in bytes
+        // 0 - offset: byte offset in the memory in bytes
+        // 1 - size: byte size to copy
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
 
         let offset = popped[0];
@@ -533,7 +533,6 @@ namespace CallHelper {
 
         let stack = Stack.push(ctx.stack, status);
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        let ret_offset = [ctx.sub_context.return_data - 1];
 
         // ret_offset, see prepare_args
         let memory = Memory.store_n(
@@ -865,7 +864,7 @@ namespace CreateHelper {
 
         if (is_reverted != 0) {
             local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(self=ctx.calling_context, sub_context=ctx);
-            //  In the case of a reverted create context, the gas of the reverted context should be rolled back and not consumed
+            // In the case of a reverted create context, the gas of the reverted context should be rolled back and not consumed
 
             // Append contracts to selfdestruct to the calling_context
             let ctx = ExecutionContext.push_to_destroy_contracts(

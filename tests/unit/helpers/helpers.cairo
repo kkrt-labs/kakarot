@@ -41,7 +41,7 @@ namespace TestHelpers {
         return ctx;
     }
 
-    func init_context_at_stark_address{
+    func init_context_at_starknet_address{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
