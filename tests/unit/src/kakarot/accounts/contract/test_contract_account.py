@@ -96,7 +96,7 @@ class TestContractAccount:
             self, contract_account: StarknetContract, kakarot
         ):
             # Get current contract account nonce
-            initial_nonce = await contract_account.get_nonce.call()
+            initial_nonce = (await contract_account.get_nonce().call()).result.nonce
 
             # Increment nonce
             await contract_account.increment_nonce().execute(
@@ -104,7 +104,7 @@ class TestContractAccount:
             )
 
             # Get new nonce
-            assert initial_nonce == await contract_account.get_nonce().call()
+            assert initial_nonce + 1 == (await contract_account.get_nonce().call()).result.nonce
 
             # Only kakarot should be able to increment
             with kakarot_error():
