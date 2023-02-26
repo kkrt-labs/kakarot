@@ -68,8 +68,6 @@ namespace SystemOperations {
         let (stack, popped) = Stack.pop_n(self=ctx.stack, n=3);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        let value = popped[0];
-        let offset = popped[1];
         let size = popped[2];
 
         // create dynamic gas:
