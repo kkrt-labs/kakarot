@@ -43,8 +43,8 @@ namespace ExternallyOwnedAccount {
     }
 
     // @notice This function is used to initialize the externally owned account.
-    // @param kakarot_address takes in a kakarot address. 
-    // @param evm_address takes in EVM address.
+    // @param kakarot_address The kakarot smart contract address. 
+    // @param evm_address The EVM address version of the kakarot address.
     func initialize{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -72,12 +72,11 @@ namespace ExternallyOwnedAccount {
         return (evm_address=address);
     }
 
-    // @notice Check if tx is signed and valid for each call.
+    // @notice Check if tx is signed and valid for each call and validate the transaction.
     // @param call_array_len The length of the call array.
     // @param call_array The call array.
     // @param calldata_len The length of the calldata.
     // @param calldata The calldata.
-    // This function is to validate a transaction in 
     func validate{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -101,9 +100,7 @@ namespace ExternallyOwnedAccount {
         );
     }
 
-    // @notice This function is to execute a function
-    // where if destination is 0 then its a new contract to be deployed 
-    // else execute existing contract.
+    // @notice Execute the transaction.
     // @param call_array_len The length of the call array.
     // @param call_array The call array.
     // @param calldata_len The length of the calldata.
