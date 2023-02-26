@@ -91,7 +91,6 @@ class TestContractAccount:
                 == "Uint256(low=340282366920938463463374607431768211455, high=340282366920938463463374607431768211455)"
             )
 
-    """
     class TestNonce:
         async def test_should_increment_nonce(
             self, contract_account: StarknetContract, kakarot
@@ -99,20 +98,14 @@ class TestContractAccount:
             # Get current contract account nonce
             initial_nonce = await contract_account.get_nonce.call()
 
-            # Store bytecode that includes CREATE opcode
-            contract_account.write_bytecode([0]).execute(
+            # Increment nonce
+            await contract_account.increment_nonce().execute(
                 caller_address=kakarot.contract_address
             )
-
-            # Run bytecode
-            kakarot.execute_at_address(nonce: felt, bytecode_len: felt, bytecode: felt*)
 
             # Get new nonce
             assert initial_nonce == await contract_account.get_nonce().call()
 
-
-        async def test_should_influence_address_generation(
-            self, contract_account: StarknetContract, kakarot
-        ):
-            x = 1
-    """
+            # Only kakarot should be able to increment
+            with kakarot_error():
+                await contract_account.increment_nonce().execute(caller_address=1)

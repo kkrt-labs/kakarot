@@ -131,9 +131,7 @@ namespace ExternallyOwnedAccount {
             // deploy_contract_account signature is
             // nonce: felt, calldata_len: felt, calldata: felt*
             IKakarot.deploy_contract_account(
-                contract_address=_kakarot_address,
-                bytecode_len=payload_len,
-                bytecode=payload,
+                contract_address=_kakarot_address, bytecode_len=payload_len, bytecode=payload
             );
             // Else run the bytecode of the destination contract
         } else {

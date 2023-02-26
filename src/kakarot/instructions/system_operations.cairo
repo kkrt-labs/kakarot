@@ -791,7 +791,7 @@ namespace CreateHelper {
                 sender_address=ctx.evm_contract_address,
                 bytecode_len=size.low,
                 bytecode=bytecode,
-                nonce=_nonce,
+                salt=_nonce,
             );
 
             let (contract_account_class_hash_) = contract_account_class_hash.read();
