@@ -108,7 +108,7 @@ namespace SystemOperations {
         // 0 - value: value in wei to send to the new account
         // 1 - offset: byte offset in the memory in bytes (initialization code)
         // 2 - size: byte size to copy (size of initialization code)
-        // 3 - nonce: nonce for address generation
+        // 3 - salt: salt for address generation
         let (stack, popped) = Stack.pop_n(self=ctx.stack, n=4);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
@@ -620,7 +620,7 @@ namespace CreateHelper {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(sender_address: felt, bytecode_len: felt, bytecode: felt*, nonce: Uint256) -> (
+    }(sender_address: felt, bytecode_len: felt, bytecode: felt*, salt: Uint256) -> (
         evm_contract_address: felt
     ) {
         alloc_locals;
@@ -644,7 +644,7 @@ namespace CreateHelper {
                 inputs=bytecode_bytes8, n_bytes=bytecode_len
             );
             // get keccak hash of
-            // marker + caller_address + nonce + bytecode_hash
+            // marker + caller_address + salt + bytecode_hash
             let (local packed_bytes: felt*) = alloc();
 
             // 0xff is by convention the marker involved in deterministic address creation for create2
@@ -662,9 +662,9 @@ namespace CreateHelper {
                 dest=packed_bytes,
             );
 
-            // pack nonce, padded 32 bytes
+            // pack salt, padded 32 bytes
             let (packed_bytes_len) = Helpers.uint256_to_dest_bytes_array(
-                value=nonce,
+                value=salt,
                 byte_array_offset=0,
                 byte_array_len=32,
                 dest_offset=packed_bytes_len,

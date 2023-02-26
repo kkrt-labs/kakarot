@@ -7,7 +7,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import FALSE
 from starkware.starknet.common.syscalls import deploy as deploy_syscall
-from starkware.starknet.common.syscalls import get_caller_address
+from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 // OpenZeppelin dependencies
 from openzeppelin.access.ownable.library import Ownable
 
@@ -175,7 +175,6 @@ namespace Kakarot {
     // @notice Deploy contract account.
     // @dev First deploy a contract_account with no bytecode, then run the calldata as bytecode with the new address,
     //      then set the bytecode with the result of the initial run.
-    // @param nonce The nonce used to determine the deployed contracts evm address
     // @param bytecode_len The deploy bytecode length.
     // @param bytecode The deploy bytecode.
     // @return evm_contract_address The evm address that is mapped to the newly deployed starknet contract address.
@@ -185,13 +184,14 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(nonce: felt, bytecode_len: felt, bytecode: felt*) -> (
+    }(bytecode_len: felt, bytecode: felt*) -> (
         evm_contract_address: felt, starknet_contract_address: felt
     ) {
         alloc_locals;
         let (current_address) = get_caller_address();
         let (sender_evm_address) = IAccount.get_evm_address(current_address);
-        let (evm_contract_address) = CreateHelper.get_create_address(sender_evm_address, nonce);
+        let (tx_info) = get_tx_info();
+        let (evm_contract_address) = CreateHelper.get_create_address(sender_evm_address, tx_info.nonce);
         let (class_hash) = contract_account_class_hash.read();
         let (starknet_contract_address) = Accounts.create(class_hash, evm_contract_address);
 

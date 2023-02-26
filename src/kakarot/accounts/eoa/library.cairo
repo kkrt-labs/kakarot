@@ -3,7 +3,7 @@
 from utils.utils import Helpers
 from kakarot.interfaces.interfaces import IEth, IKakarot
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.starknet.common.syscalls import CallContract, get_tx_info
+from starkware.starknet.common.syscalls import CallContract
 from starkware.cairo.common.uint256 import Uint256, uint256_not
 from starkware.cairo.common.alloc import alloc
 from utils.eth_transaction import EthTransaction
@@ -128,12 +128,10 @@ namespace ExternallyOwnedAccount {
 
         // If destination is 0, we are deploying a contract
         if (destination == 0) {
-            let (tx_info) = get_tx_info();
             // deploy_contract_account signature is
             // nonce: felt, calldata_len: felt, calldata: felt*
             IKakarot.deploy_contract_account(
                 contract_address=_kakarot_address,
-                nonce=tx_info.nonce,
                 bytecode_len=payload_len,
                 bytecode=payload,
             );
