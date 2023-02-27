@@ -148,6 +148,16 @@ Here is the execution trace of the program on Kakarot:
 To contribute, please check out
 [the contribution guide](./docs/CONTRIBUTING.md).
 
+The easiest way to get started is to use
+[`devcontainers`](https://containers.dev/):
+
+- either directly from GitHub to have an online VSCode with everything ready
+  ![Codespaces](./docs/img/codespaces.png)
+- or from VSCode, open the project and use "Dev Containers: Rebuild container"
+  (requires Docker on your host machine)
+
+Otherwise, you can proceed with a regular installation on your host:
+
 ```bash
 # install poetry if you don't have it already
 # curl -sSL https://install.python-poetry.org | python3 -
