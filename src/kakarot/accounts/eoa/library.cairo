@@ -129,7 +129,7 @@ namespace ExternallyOwnedAccount {
         // If destination is 0, we are deploying a contract
         if (destination == 0) {
             // deploy_contract_account signature is
-            // nonce: felt, calldata_len: felt, calldata: felt*
+            // calldata_len: felt, calldata: felt*
             IKakarot.deploy_contract_account(
                 contract_address=_kakarot_address, bytecode_len=payload_len, bytecode=payload
             );

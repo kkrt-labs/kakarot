@@ -49,7 +49,7 @@ func constructor{
 
 // ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                          MOCK FUNCTIONS                                                      //
-// The Kakarot, EOA, Account Contract and ETH contracts often times require communication between each other.   //
+// The Kakarot, EOA, Contract Account and ETH contracts often times require communication between each other.   //
 // Instead of deploying each contract for every test-case we mock the required functions in this contract.      //
 // ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -104,8 +104,13 @@ class TestContractAccount:
             )
 
             # Get new nonce
-            assert initial_nonce + 1 == (await contract_account.get_nonce().call()).result.nonce
+            assert (
+                initial_nonce + 1
+                == (await contract_account.get_nonce().call()).result.nonce
+            )
 
-            # Only kakarot should be able to increment
+        async def test_should_raise_when_caller_is_not_kakarot(
+            self, contract_account: StarknetContract
+        ):
             with kakarot_error():
                 await contract_account.increment_nonce().execute(caller_address=1)
