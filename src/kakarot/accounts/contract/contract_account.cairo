@@ -55,7 +55,7 @@ func bytecode{
 func bytecode_len{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> (len: felt) {
-    let len = ContractAccount.bytecode_len();
+    let (len) = ContractAccount.bytecode_len();
     return (len=len);
 }
 

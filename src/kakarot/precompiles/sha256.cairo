@@ -12,6 +12,7 @@ from starkware.cairo.common.math_cmp import is_le_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.memset import memset
 from starkware.cairo.common.pow import pow
+from starkware.cairo.common.bool import FALSE
 
 // Internal dependencies
 from utils.sha_256.packed_sha256 import (
@@ -173,51 +174,51 @@ namespace SHA256 {
         let zero_chunk = zero_bytes - zero_total_bytes - missing_bit_one;
 
         let is_last_block = is_le_felt(n_bytes, 55);
-        if (is_last_block == 1) {
-            _sha256_input(data, n_bytes, SHA256_INPUT_CHUNK_SIZE_FELTS - 2, zero_chunk);
-            // Append the original message length at the end of the message block as a 64-bit big-endian integer.
-            assert sha256_ptr[0] = 0;
-            assert sha256_ptr[1] = total_bytes * 8;
-            let sha256_ptr = sha256_ptr + 2;
-            _sha256_chunk{sha256_start=message, state=state, output=output}();
-            let sha256_ptr = sha256_ptr + SHA256_STATE_SIZE_FELTS;
+        if (is_last_block == FALSE) {
+            let (q, r) = unsigned_div_rem(n_bytes, SHA256_INPUT_CHUNK_SIZE_BYTES);
+            let is_remainder_block = is_le_felt(q, 0);
+            if (is_remainder_block == FALSE) {
+                _sha256_input(data, SHA256_INPUT_CHUNK_SIZE_BYTES, SHA256_INPUT_CHUNK_SIZE_FELTS, 0);
+                _sha256_chunk{sha256_start=message, state=state, output=output}();
 
-            return ();
+                let sha256_ptr = sha256_ptr + SHA256_STATE_SIZE_FELTS;
+                memcpy(
+                    output + SHA256_STATE_SIZE_FELTS + SHA256_INPUT_CHUNK_SIZE_FELTS,
+                    output,
+                    SHA256_STATE_SIZE_FELTS,
+                );
+                let sha256_ptr = sha256_ptr + SHA256_STATE_SIZE_FELTS;
+
+                return sha256_inner(
+                    data=data + SHA256_INPUT_CHUNK_SIZE_FELTS,
+                    n_bytes=n_bytes - SHA256_INPUT_CHUNK_SIZE_BYTES,
+                    total_bytes=total_bytes,
+                );
+            } else {
+                _sha256_input(data, r, SHA256_INPUT_CHUNK_SIZE_FELTS, 0);
+                _sha256_chunk{sha256_start=message, state=state, output=output}();
+
+                let sha256_ptr = sha256_ptr + SHA256_STATE_SIZE_FELTS;
+                memcpy(
+                    output + SHA256_STATE_SIZE_FELTS + SHA256_INPUT_CHUNK_SIZE_FELTS,
+                    output,
+                    SHA256_STATE_SIZE_FELTS,
+                );
+                let sha256_ptr = sha256_ptr + SHA256_STATE_SIZE_FELTS;
+
+                return sha256_inner(data=data, n_bytes=n_bytes - r, total_bytes=total_bytes);
+            }
         }
 
-        let (q, r) = unsigned_div_rem(n_bytes, SHA256_INPUT_CHUNK_SIZE_BYTES);
-        let is_remainder_block = is_le_felt(q, 0);
-        if (is_remainder_block == 1) {
-            _sha256_input(data, r, SHA256_INPUT_CHUNK_SIZE_FELTS, 0);
-            _sha256_chunk{sha256_start=message, state=state, output=output}();
+        _sha256_input(data, n_bytes, SHA256_INPUT_CHUNK_SIZE_FELTS - 2, zero_chunk);
+        // Append the original message length at the end of the message block as a 64-bit big-endian integer.
+        assert sha256_ptr[0] = 0;
+        assert sha256_ptr[1] = total_bytes * 8;
+        let sha256_ptr = sha256_ptr + 2;
+        _sha256_chunk{sha256_start=message, state=state, output=output}();
+        let sha256_ptr = sha256_ptr + SHA256_STATE_SIZE_FELTS;
 
-            let sha256_ptr = sha256_ptr + SHA256_STATE_SIZE_FELTS;
-            memcpy(
-                output + SHA256_STATE_SIZE_FELTS + SHA256_INPUT_CHUNK_SIZE_FELTS,
-                output,
-                SHA256_STATE_SIZE_FELTS,
-            );
-            let sha256_ptr = sha256_ptr + SHA256_STATE_SIZE_FELTS;
-
-            return sha256_inner(data=data, n_bytes=n_bytes - r, total_bytes=total_bytes);
-        } else {
-            _sha256_input(data, SHA256_INPUT_CHUNK_SIZE_BYTES, SHA256_INPUT_CHUNK_SIZE_FELTS, 0);
-            _sha256_chunk{sha256_start=message, state=state, output=output}();
-
-            let sha256_ptr = sha256_ptr + SHA256_STATE_SIZE_FELTS;
-            memcpy(
-                output + SHA256_STATE_SIZE_FELTS + SHA256_INPUT_CHUNK_SIZE_FELTS,
-                output,
-                SHA256_STATE_SIZE_FELTS,
-            );
-            let sha256_ptr = sha256_ptr + SHA256_STATE_SIZE_FELTS;
-
-            return sha256_inner(
-                data=data + SHA256_INPUT_CHUNK_SIZE_FELTS,
-                n_bytes=n_bytes - SHA256_INPUT_CHUNK_SIZE_BYTES,
-                total_bytes=total_bytes,
-            );
-        }
+        return ();
     }
 
     // 1. Encode the input to binary using UTF-8 and append a single '1' to it.
@@ -316,8 +317,9 @@ namespace SHA256 {
         tempvar x6 = sha256_ptr[6 * SHA256_INSTANCE_SIZE];
         assert [range_check_ptr + 12] = x6;
         assert [range_check_ptr + 13] = MAX_VALUE - x6;
-        assert message[0] = x0 + 2 ** 35 * x1 + 2 ** (35 * 2) * x2 + 2 ** (35 * 3) * x3 +
-            2 ** (35 * 4) * x4 + 2 ** (35 * 5) * x5 + 2 ** (35 * 6) * x6;
+        assert message[0] = x0 + 2 ** 35 * x1 + 2 ** (35 * 2) * x2 + 2 ** (35 * 3) * x3 + 2 ** (
+            35 * 4
+        ) * x4 + 2 ** (35 * 5) * x5 + 2 ** (35 * 6) * x6;
 
         tempvar message = message + 1;
         tempvar sha256_ptr = sha256_ptr + 1;
@@ -354,8 +356,9 @@ namespace SHA256 {
         tempvar x6 = sha256_ptr[6 * SHA256_INSTANCE_SIZE];
         assert [range_check_ptr + 12] = x6;
         assert [range_check_ptr + 13] = MAX_VALUE - x6;
-        assert input_state[0] = x0 + 2 ** 35 * x1 + 2 ** (35 * 2) * x2 + 2 ** (35 * 3) * x3 +
-            2 ** (35 * 4) * x4 + 2 ** (35 * 5) * x5 + 2 ** (35 * 6) * x6;
+        assert input_state[0] = x0 + 2 ** 35 * x1 + 2 ** (35 * 2) * x2 + 2 ** (35 * 3) * x3 + 2 ** (
+            35 * 4
+        ) * x4 + 2 ** (35 * 5) * x5 + 2 ** (35 * 6) * x6;
 
         tempvar input_state = input_state + 1;
         tempvar sha256_ptr = sha256_ptr + 1;
@@ -401,8 +404,9 @@ namespace SHA256 {
         assert [range_check_ptr + 12] = x6;
         assert [range_check_ptr + 13] = MAX_VALUE - x6;
 
-        assert outputs[0] = x0 + 2 ** 35 * x1 + 2 ** (35 * 2) * x2 + 2 ** (35 * 3) * x3 +
-            2 ** (35 * 4) * x4 + 2 ** (35 * 5) * x5 + 2 ** (35 * 6) * x6;
+        assert outputs[0] = x0 + 2 ** 35 * x1 + 2 ** (35 * 2) * x2 + 2 ** (35 * 3) * x3 + 2 ** (
+            35 * 4
+        ) * x4 + 2 ** (35 * 5) * x5 + 2 ** (35 * 6) * x6;
 
         tempvar outputs = outputs + 1;
         tempvar sha256_ptr = sha256_ptr + 1;

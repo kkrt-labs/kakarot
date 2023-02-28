@@ -18,6 +18,9 @@ build-mac: check
 	starknet-compile ./src/kakarot/accounts/eoa/externally_owned_account.cairo --account_contract --output build/externally_owned_account.json --cairo_path ./src --abi build/externally_owned_account_abi.json
 	starknet-compile ./src/kakarot/accounts/proxy/proxy.cairo --output build/proxy_account.json --cairo_path ./src --abi build/proxy_account_abi.json
 
+build-devnet:
+	docker build . --tag sayajin-labs/kakarot -f ./docker/devnet/Dockerfile
+
 check:
 	poetry lock --check
 
@@ -85,4 +88,4 @@ build-sol:
 	forge build --names --force
 
 run:
-	poetry run starknet-devnet --lite-mode  --seed 0
+	poetry run starknet-devnet --lite-mode --seed 0 --dump-on exit --dump-path devnet.pkl

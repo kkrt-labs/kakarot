@@ -675,7 +675,7 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     assert [calldata] = '';
     local call_context: model.CallContext* = new model.CallContext(
         bytecode=bytecode, bytecode_len=0, calldata=calldata, calldata_len=1, value=0
-        );
+    );
     let stack = Stack.push(stack, Uint256(10, 0));
     let (sub_ctx: felt*) = alloc();
     assert [sub_ctx] = cast(call_context, felt);  // call_context

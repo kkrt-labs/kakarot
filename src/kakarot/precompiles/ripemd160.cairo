@@ -13,6 +13,7 @@ from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
 from starkware.cairo.common.dict import dict_new, dict_read, dict_write, dict_squash
 from starkware.cairo.common.registers import get_label_location
+from starkware.cairo.common.bool import FALSE
 
 // Internal dependencies
 from kakarot.model import model
@@ -127,20 +128,19 @@ func compress_data{dict_ptr: DictAccess*, range_check_ptr, bitwise_ptr: BitwiseB
 ) -> (res: felt*, rsize: felt, new_msg: felt*) {
     alloc_locals;
     let len_lt_63 = is_le(input_len, 63);
-    if (len_lt_63 == 1) {
-        return (buf, bufsize, input);
+    if (len_lt_63 == FALSE) {
+        parse_msg{dict_ptr=dict_ptr}(input, 0);
+        let (local arr_x: felt*) = alloc();
+        dict_to_array{dict_ptr=dict_ptr}(arr_x, 16);
+        local dict_ptr: DictAccess* = dict_ptr;
+        let (res, rsize) = compress(buf, bufsize, arr_x, 16);
+        let new_msg = input + 64;
+        let (res, rsize, new_msg) = compress_data{dict_ptr=dict_ptr, bitwise_ptr=bitwise_ptr}(
+            res, rsize, input_len - 64, new_msg
+        );
+        return (res=res, rsize=rsize, new_msg=new_msg);
     }
-
-    parse_msg{dict_ptr=dict_ptr}(input, 0);
-    let (local arr_x: felt*) = alloc();
-    dict_to_array{dict_ptr=dict_ptr}(arr_x, 16);
-    local dict_ptr: DictAccess* = dict_ptr;
-    let (res, rsize) = compress(buf, bufsize, arr_x, 16);
-    let new_msg = input + 64;
-    let (res, rsize, new_msg) = compress_data{dict_ptr=dict_ptr, bitwise_ptr=bitwise_ptr}(
-        res, rsize, input_len - 64, new_msg
-    );
-    return (res=res, rsize=rsize, new_msg=new_msg);
+    return (buf, bufsize, input);
 }
 
 func absorb_data{range_check_ptr, bitwise_ptr: BitwiseBuiltin*, dict_ptr: DictAccess*}(
@@ -451,13 +451,7 @@ func finish{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
     let (val_15) = uint32_or(factor, len_8);
 
     let next_block = is_nn_le(55, len);
-    if (next_block == 1) {
-        let (local arr_x: felt*) = alloc();
-        dict_to_array{dict_ptr=x}(arr_x, 16);
-        let (buf, bufsize) = compress(buf, bufsize, arr_x, 16);
-        // reset dict to all 0.
-        let (x) = default_dict_new(0);
-
+    if (next_block == FALSE) {
         dict_write{dict_ptr=x}(14, val);
         dict_write{dict_ptr=x}(15, val_15);
 
@@ -466,7 +460,14 @@ func finish{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
         let (_, _) = dict_squash{range_check_ptr=range_check_ptr}(start, x);
         let (res, rsize) = compress(buf, bufsize, arr_x, 16);
         return (res=res, rsize=rsize);
+
     } else {
+        let (local arr_x: felt*) = alloc();
+        dict_to_array{dict_ptr=x}(arr_x, 16);
+        let (buf, bufsize) = compress(buf, bufsize, arr_x, 16);
+        // reset dict to all 0.
+        let (x) = default_dict_new(0);
+
         dict_write{dict_ptr=x}(14, val);
         dict_write{dict_ptr=x}(15, val_15);
 

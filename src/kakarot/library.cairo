@@ -210,7 +210,7 @@ namespace Kakarot {
             calldata=empty_array,
             calldata_len=0,
             value=0,
-            );
+        );
         let (local contract_bytecode: felt*) = alloc();
         let (empty_destroy_contracts: felt*) = alloc();
         let stack: model.Stack* = Stack.init();
@@ -235,7 +235,7 @@ namespace Kakarot {
             destroy_contracts_len=0,
             destroy_contracts=empty_destroy_contracts,
             read_only=FALSE,
-            );
+        );
 
         // Compute intrinsic gas cost and update gas used
         let cost = ExecutionContext.compute_intrinsic_gas_cost(ctx);

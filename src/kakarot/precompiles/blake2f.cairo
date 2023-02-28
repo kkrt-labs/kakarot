@@ -9,6 +9,7 @@ from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.registers import get_fp_and_pc, get_label_location
 from starkware.cairo.common.math_cmp import is_nn, is_le
+from starkware.cairo.common.bool import FALSE
 
 // Internal dependencies
 from utils.utils import Helpers
@@ -121,11 +122,11 @@ namespace Blake2 {
 
         // Compute state[14].
         local state14;
-        if (f == 1) {
+        if (f == FALSE) {
             // 0x1f83d9abfb41bd6b ^ 0xffffffffffffffff
-            state14 = 0xe07c265404be4294;
-        } else {
             state14 = 0x1f83d9abfb41bd6b;
+        } else {
+            state14 = 0xe07c265404be4294;
         }
 
         let (local initial_state: felt*) = alloc();
@@ -475,7 +476,8 @@ namespace Blake2 {
         assert bitwise_ptr[1].x = a_xor_d;
         assert bitwise_ptr[1].y = (2 ** 64 - 2 ** 32);
         tempvar d = (
-            (2 ** (64 - 32)) * a_xor_d + (1 / 2 ** 32 - 2 ** (64 - 32)) * bitwise_ptr[1].x_and_y);
+            (2 ** (64 - 32)) * a_xor_d + (1 / 2 ** 32 - 2 ** (64 - 32)) * bitwise_ptr[1].x_and_y
+        );
         let bitwise_ptr = bitwise_ptr + 2 * BitwiseBuiltin.SIZE;
 
         // c = (c + d) % 2**64
@@ -488,7 +490,8 @@ namespace Blake2 {
         assert bitwise_ptr[1].x = b_xor_c;
         assert bitwise_ptr[1].y = (2 ** 64 - 2 ** 24);
         tempvar b = (
-            (2 ** (64 - 24)) * b_xor_c + (1 / 2 ** 24 - 2 ** (64 - 24)) * bitwise_ptr[1].x_and_y);
+            (2 ** (64 - 24)) * b_xor_c + (1 / 2 ** 24 - 2 ** (64 - 24)) * bitwise_ptr[1].x_and_y
+        );
         let bitwise_ptr = bitwise_ptr + 2 * BitwiseBuiltin.SIZE;
 
         return (a, b, c, d);
@@ -521,7 +524,9 @@ namespace Blake2 {
         tempvar d_xor_a = bitwise_ptr[0].x_xor_y;
         assert bitwise_ptr[1].x = d_xor_a;
         assert bitwise_ptr[1].y = (2 ** 64 - 2 ** 16);
-        tempvar d = (2 ** (64 - 16)) * d_xor_a + (1 / 2 ** 16 - 2 ** (64 - 16)) * bitwise_ptr[1].x_and_y;
+        tempvar d = (2 ** (64 - 16)) * d_xor_a + (1 / 2 ** 16 - 2 ** (64 - 16)) * bitwise_ptr[
+            1
+        ].x_and_y;
         let bitwise_ptr = bitwise_ptr + 2 * BitwiseBuiltin.SIZE;
 
         // c = (c + d) % 2**64
@@ -533,7 +538,9 @@ namespace Blake2 {
         tempvar b_xor_c = bitwise_ptr[0].x_xor_y;
         assert bitwise_ptr[1].x = b_xor_c;
         assert bitwise_ptr[1].y = (2 ** 64 - 2 ** 63);
-        tempvar b = (2 ** (64 - 63)) * b_xor_c + (1 / 2 ** 63 - 2 ** (64 - 63)) * bitwise_ptr[1].x_and_y;
+        tempvar b = (2 ** (64 - 63)) * b_xor_c + (1 / 2 ** 63 - 2 ** (64 - 63)) * bitwise_ptr[
+            1
+        ].x_and_y;
         let bitwise_ptr = bitwise_ptr + 2 * BitwiseBuiltin.SIZE;
 
         return (a, b, c, d);
