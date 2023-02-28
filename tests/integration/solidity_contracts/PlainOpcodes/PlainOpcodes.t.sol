@@ -1,7 +1,9 @@
 pragma solidity >=0.8.0;
 
 import "forge-std/Test.sol";
+
 import {PlainOpcodes} from "./PlainOpcodes.sol";
+import {ContractRevertsOnMethodCall, ContractRevertsOnConstruction} from "./RevertTestCases.sol";
 import {Counter} from "./Counter.sol";
 
 contract PlainOpcodesTest is Test {
@@ -48,4 +50,27 @@ contract PlainOpcodesTest is Test {
         bytes memory bytecode = plainOpcodes.opcodeExtCodeCopy(0, counterSize);
         assertEq0(bytecode, expectedResult);
     }
+
+   
+    function testShouldRevertViaCall() public {
+        ContractRevertsOnMethodCall doomedContract = new ContractRevertsOnMethodCall();
+
+        (bool success, bytes memory returnData) = address(doomedContract).call(abi.encodeWithSignature("triggerRevert()"));
+
+        assert(!success);                
+        assert(doomedContract.value() == 0);
+        
+        // slice the return data to remove the function selector and decode the revert reason
+        bytes memory returnDataSlice = new bytes(returnData.length - 4);
+        for (uint i = 4; i < returnData.length; i++) {
+            returnDataSlice[i - 4] = returnData[i];
+        }
+        
+        // decode the return data and check for the expected revert message
+        (string memory errorMessage) = abi.decode(returnDataSlice, (string));
+        assert(keccak256(bytes(errorMessage)) == keccak256("FAIL"));        
+        
+    }
+
+
 }
