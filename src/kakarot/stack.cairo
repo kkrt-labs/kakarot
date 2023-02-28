@@ -35,9 +35,8 @@ namespace Stack {
         alloc_locals;
         let (word_dict_start: DictAccess*) = default_dict_new(0);
         return new model.Stack(
-            word_dict_start=word_dict_start,
-            word_dict=word_dict_start,
-            len_16bytes=0);
+            word_dict_start=word_dict_start, word_dict=word_dict_start, len_16bytes=0
+        );
     }
 
     // @notice Finalizes the stack.
@@ -49,7 +48,7 @@ namespace Stack {
         );
         return new Summary(
             len_16bytes=self.len_16bytes, squashed_start=squashed_start, squashed_end=squashed_end
-            );
+        );
     }
 
     // @notice Store an element into the stack.
@@ -72,11 +71,13 @@ namespace Stack {
         dict_write{dict_ptr=word_dict}(position_zero + 1, element.low);
 
         // Return new Stack
-        return (new model.Stack(
-            word_dict_start=self.word_dict_start,
-            word_dict=word_dict,
-            len_16bytes=self.len_16bytes + 2,
-            ));
+        return (
+            new model.Stack(
+                word_dict_start=self.word_dict_start,
+                word_dict=word_dict,
+                len_16bytes=self.len_16bytes + 2,
+            )
+        );
     }
 
     // @notice Pop N elements from the stack.
@@ -107,9 +108,9 @@ namespace Stack {
         let popped_len = 2 * n;
         return (
             new model.Stack(
-            word_dict_start=self.word_dict_start,
-            word_dict=word_dict,
-            len_16bytes=self.len_16bytes - popped_len,
+                word_dict_start=self.word_dict_start,
+                word_dict=word_dict,
+                len_16bytes=self.len_16bytes - popped_len,
             ),
             new_elements,
         );
@@ -155,9 +156,9 @@ namespace Stack {
         // Update and return Stack
         return (
             new model.Stack(
-            word_dict_start=self.word_dict_start,
-            word_dict=word_dict,
-            len_16bytes=self.len_16bytes - 2,
+                word_dict_start=self.word_dict_start,
+                word_dict=word_dict,
+                len_16bytes=self.len_16bytes - 2,
             ),
             Uint256(low=el_low, high=el_high),
         );
@@ -184,9 +185,9 @@ namespace Stack {
         // Return element
         return (
             new model.Stack(
-            word_dict_start=self.word_dict_start,
-            word_dict=word_dict,
-            len_16bytes=self.len_16bytes,
+                word_dict_start=self.word_dict_start,
+                word_dict=word_dict,
+                len_16bytes=self.len_16bytes,
             ),
             Uint256(low=el_low, high=el_high),
         );
@@ -222,9 +223,10 @@ namespace Stack {
         // Return Stack
         return (
             new model.Stack(
-            word_dict_start=self.word_dict_start,
-            word_dict=word_dict,
-            len_16bytes=self.len_16bytes,
-            ));
+                word_dict_start=self.word_dict_start,
+                word_dict=word_dict,
+                len_16bytes=self.len_16bytes,
+            )
+        );
     }
 }

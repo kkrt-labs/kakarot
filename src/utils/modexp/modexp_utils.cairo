@@ -11,7 +11,7 @@ from starkware.cairo.common.uint256 import (
 )
 from starkware.cairo.common.bitwise import bitwise_and
 from starkware.cairo.common.registers import get_label_location
-from starkware.cairo.common.bool import TRUE, FALSE
+from starkware.cairo.common.bool import FALSE
 
 // @title ModExpHelpersUint256 Functions
 // @notice This file contains a selection of helper functions for modular exponentiation and gas cost calculation.
@@ -83,23 +83,7 @@ namespace ModExpHelpersUint256 {
         assert carry = Uint256(0, 0);
 
         let (is_less_than_33) = uint256_lt(e_size, Uint256(low=33, high=0));
-        if (is_less_than_33 == TRUE) {
-            let (is_zero) = uint256_eq(e, Uint256(low=0, high=0));
-            if (is_zero == FALSE) {
-                let u256_l = get_u256_bitlength(e);
-                let inner_step = u256_l - 1;
-                tempvar iteration_count = Uint256(low=inner_step, high=0);
-                tempvar range_check_ptr = range_check_ptr;
-                tempvar bitwise_ptr = bitwise_ptr;
-            } else {
-                tempvar iteration_count = Uint256(low=0, high=0);
-                tempvar range_check_ptr = range_check_ptr;
-                tempvar bitwise_ptr = bitwise_ptr;
-            }
-            tempvar iteration_count_res = iteration_count;
-            tempvar range_check_ptr = range_check_ptr;
-            tempvar bitwise_ptr = bitwise_ptr;
-        } else {
+        if (is_less_than_33 == FALSE) {
             let sub_step: Uint256 = uint256_sub(e_size, Uint256(low=32, high=0));
 
             let (local result, local carry) = uint256_mul(Uint256(low=8, high=0), sub_step);
@@ -117,6 +101,23 @@ namespace ModExpHelpersUint256 {
             let (addition, _) = uint256_add(result, subtracted_e_bit_length);
 
             tempvar iteration_count_res = addition;
+            tempvar range_check_ptr = range_check_ptr;
+            tempvar bitwise_ptr = bitwise_ptr;
+
+        } else {
+            let (is_zero) = uint256_eq(e, Uint256(low=0, high=0));
+            if (is_zero == FALSE) {
+                let u256_l = get_u256_bitlength(e);
+                let inner_step = u256_l - 1;
+                tempvar iteration_count = Uint256(low=inner_step, high=0);
+                tempvar range_check_ptr = range_check_ptr;
+                tempvar bitwise_ptr = bitwise_ptr;
+            } else {
+                tempvar iteration_count = Uint256(low=0, high=0);
+                tempvar range_check_ptr = range_check_ptr;
+                tempvar bitwise_ptr = bitwise_ptr;
+            }
+            tempvar iteration_count_res = iteration_count;
             tempvar range_check_ptr = range_check_ptr;
             tempvar bitwise_ptr = bitwise_ptr;
         }

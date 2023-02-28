@@ -2,10 +2,11 @@ import logging
 from asyncio import run
 from math import ceil, log
 
-from scripts.constants import CHAIN_ID, GATEWAY_CLIENT
+from scripts.constants import CHAIN_ID, EVM_ADDRESS, GATEWAY_CLIENT
 from scripts.utils import (
     declare,
     deploy,
+    deploy_and_fund_evm_address,
     dump_declarations,
     dump_deployments,
     get_account,
@@ -63,6 +64,10 @@ async def main():
         deployments["blockhash_registry"]["address"],
     )
     logging.info("✅ Configuration Complete")
+
+    if EVM_ADDRESS:
+        logging.info(f"ℹ️ Found default EVM address {EVM_ADDRESS} to deploy an EOA for")
+        await deploy_and_fund_evm_address(EVM_ADDRESS, 0.1)
 
 
 if __name__ == "__main__":

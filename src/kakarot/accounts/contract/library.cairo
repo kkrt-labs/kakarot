@@ -104,11 +104,8 @@ namespace ContractAccount {
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }() -> felt {
-        alloc_locals;
-        let (_bytecode_len) = bytecode_len_.read();
-        return _bytecode_len;
+    }() -> (res: felt) {
+        return bytecode_len_.read();
     }
 
     // @notice This function is used to get the bytecode of the smart contract.

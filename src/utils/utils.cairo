@@ -60,8 +60,21 @@ namespace Helpers {
     // @return res: Uint256 representation of the given input in bytes32.
     func bytes32_to_uint256(val: felt*) -> Uint256 {
         let res = Uint256(
-            low=[val + 16] * 256 ** 15 + [val + 17] * 256 ** 14 + [val + 18] * 256 ** 13 + [val + 19] * 256 ** 12 + [val + 20] * 256 ** 11 + [val + 21] * 256 ** 10 + [val + 22] * 256 ** 9 + [val + 23] * 256 ** 8 + [val + 24] * 256 ** 7 + [val + 25] * 256 ** 6 + [val + 26] * 256 ** 5 + [val + 27] * 256 ** 4 + [val + 28] * 256 ** 3 + [val + 29] * 256 ** 2 + [val + 30] * 256 + [val + 31],
-            high=[val] * 256 ** 15 + [val + 1] * 256 ** 14 + [val + 2] * 256 ** 13 + [val + 3] * 256 ** 12 + [val + 4] * 256 ** 11 + [val + 5] * 256 ** 10 + [val + 6] * 256 ** 9 + [val + 7] * 256 ** 8 + [val + 8] * 256 ** 7 + [val + 9] * 256 ** 6 + [val + 10] * 256 ** 5 + [val + 11] * 256 ** 4 + [val + 12] * 256 ** 3 + [val + 13] * 256 ** 2 + [val + 14] * 256 + [val + 15],
+            low=[val + 16] * 256 ** 15 + [val + 17] * 256 ** 14 + [val + 18] * 256 ** 13 + [
+                val + 19
+            ] * 256 ** 12 + [val + 20] * 256 ** 11 + [val + 21] * 256 ** 10 + [val + 22] * 256 **
+            9 + [val + 23] * 256 ** 8 + [val + 24] * 256 ** 7 + [val + 25] * 256 ** 6 + [val + 26] *
+            256 ** 5 + [val + 27] * 256 ** 4 + [val + 28] * 256 ** 3 + [val + 29] * 256 ** 2 + [
+                val + 30
+            ] * 256 + [val + 31],
+            high=[val] * 256 ** 15 + [val + 1] * 256 ** 14 + [val + 2] * 256 ** 13 + [val + 3] *
+            256 ** 12 + [val + 4] * 256 ** 11 + [val + 5] * 256 ** 10 + [val + 6] * 256 ** 9 + [
+                val + 7
+            ] * 256 ** 8 + [val + 8] * 256 ** 7 + [val + 9] * 256 ** 6 + [val + 10] * 256 ** 5 + [
+                val + 11
+            ] * 256 ** 4 + [val + 12] * 256 ** 3 + [val + 13] * 256 ** 2 + [val + 14] * 256 + [
+                val + 15
+            ],
         );
         return res;
     }
@@ -162,7 +175,11 @@ namespace Helpers {
     // @param val: pointer to the first byte.
     // @return: felt representation of the input.
     func bytes_to_64_bits_little_felt(bytes: felt*) -> felt {
-        return [bytes + 7] * 256 ** 7 + [bytes + 6] * 256 ** 6 + [bytes + 5] * 256 ** 5 + [bytes + 4] * 256 ** 4 + [bytes + 3] * 256 ** 3 + [bytes + 2] * 256 ** 2 + [bytes + 1] * 256 + [bytes];
+        return [bytes + 7] * 256 ** 7 + [bytes + 6] * 256 ** 6 + [bytes + 5] * 256 ** 5 + [
+            bytes + 4
+        ] * 256 ** 4 + [bytes + 3] * 256 ** 3 + [bytes + 2] * 256 ** 2 + [bytes + 1] * 256 + [
+            bytes
+        ];
     }
 
     // @notice This function is used to make an arbitrary length array of same elements.
@@ -254,16 +271,16 @@ namespace Helpers {
     ) -> (bytes_len: felt) {
         alloc_locals;
         let (is_zero) = uint256_eq(value, Uint256(0, 0));
-        if (is_zero == 1) {
-            reverse(old_arr_len=idx, old_arr=res - idx, new_arr_len=idx, new_arr=dest);
-            return (bytes_len=idx);
+        if (is_zero == FALSE) {
+            let (byte_uint256) = uint256_and(value, Uint256(low=255, high=0));
+            let byte = uint256_to_felt(byte_uint256);
+            assert [res] = byte;  // get the last 8 bits of the value
+            let (val_shifted_one_byte) = uint256_shr(value, Uint256(low=8, high=0));
+            let (bytes_len) = uint256_to_bytes_no_padding(val_shifted_one_byte, idx + 1, res + 1, dest);  // recursively call function with value shifted right by 8 bits
+            return (bytes_len=bytes_len);
         }
-        let (byte_uint256) = uint256_and(value, Uint256(low=255, high=0));
-        let byte = uint256_to_felt(byte_uint256);
-        assert [res] = byte;  // get the last 8 bits of the value
-        let (val_shifted_one_byte) = uint256_shr(value, Uint256(low=8, high=0));
-        let (bytes_len) = uint256_to_bytes_no_padding(val_shifted_one_byte, idx + 1, res + 1, dest);  // recursively call function with value shifted right by 8 bits
-        return (bytes_len=bytes_len);
+        reverse(old_arr_len=idx, old_arr=res - idx, new_arr_len=idx, new_arr=dest);
+        return (bytes_len=idx);
     }
 
     // @notice This function is like `uint256_to_bytes_array` except it writes the byte array to a given destination with the given offset and length
@@ -637,7 +654,7 @@ namespace Helpers {
 
     // @notice Returns the min value between a and b
     func min{range_check_ptr}(a: felt, b: felt) -> felt {
-        if (is_le(a, b) == 0) {
+        if (is_le(a, b) == FALSE) {
             return b;
         } else {
             return a;
