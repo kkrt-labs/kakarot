@@ -21,26 +21,26 @@ async def token_a(
 @pytest_asyncio.fixture(scope="module")
 async def token_b(
     deploy_solidity_contract: Callable,
-    owner,
+    others,
 ):
     return await deploy_solidity_contract(
         "UniswapV2",
         "ERC20",
         TOTAL_SUPPLY,
-        caller_address=owner.starknet_address,
+        caller_address=others[0].starknet_address,
     )
 
 
 @pytest_asyncio.fixture(scope="module")
 async def factory(
     deploy_solidity_contract: Callable,
-    owner,
+    others,
 ):
     return await deploy_solidity_contract(
         "UniswapV2",
         "UniswapV2Factory",
-        owner.address,
-        caller_address=owner.starknet_address,
+        others[1].address,
+        caller_address=others[1].starknet_address,
     )
 
 
