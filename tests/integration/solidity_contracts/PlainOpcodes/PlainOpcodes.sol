@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
+import "./RevertTestCases.sol";
 
 interface ICounter {
     function count() external view returns (uint256);
@@ -127,4 +128,24 @@ contract PlainOpcodes {
             extcodecopy(target, add(extcode, 0x20), offset, size)
         }
     }
+
+    function testCallingContextShouldPropogateRevertFromSubContextOnCreate() public {
+        ContractRevertsOnConstruction doomedContract = new ContractRevertsOnConstruction();
+        doomedContract.value();
+    }    
+    
+    function testShouldRevertViaCall() external returns (bytes memory returnData) {
+        ContractRevertsOnMethodCall doomedContract = new ContractRevertsOnMethodCall();
+
+        (bool success, bytes memory returnData1) = address(doomedContract).call(abi.encodeWithSignature("triggerRevert()"));
+        address doomedContractCounter = address(doomedContract.counter());
+
+        assert(!success);
+        assert(doomedContractCounter == address(0));
+        assert(doomedContract.value() == 0);
+
+        return returnData1;
+    }
+
+
 }

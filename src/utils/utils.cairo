@@ -24,7 +24,10 @@ from starkware.cairo.common.uint256 import (
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
 from starkware.cairo.common.bool import FALSE
-from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+
+// Internal dependencies
+from kakarot.interfaces.interfaces import IAccount, IContractAccount
 
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
@@ -180,6 +183,29 @@ namespace Helpers {
         ] * 256 ** 4 + [bytes + 3] * 256 ** 3 + [bytes + 2] * 256 ** 2 + [bytes + 1] * 256 + [
             bytes
         ];
+    }
+
+    func erase_contracts{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(contracts_len: felt, contracts_arr: felt*) -> felt* {
+        alloc_locals;
+
+        if (contracts_len == 0) {
+            return (contracts_arr);
+        }
+
+        let starknet_contract_address = [contracts_arr];
+        let (bytecode_len) = IAccount.bytecode_len(contract_address=starknet_contract_address);
+        let (erase_data) = alloc();
+        fill(bytecode_len, erase_data, 0);
+        IContractAccount.write_bytecode(
+            contract_address=starknet_contract_address, bytecode_len=0, bytecode=erase_data
+        );
+
+        return erase_contracts(contracts_len - 1, contracts_arr + 1);
     }
 
     // @notice This function is used to make an arbitrary length array of same elements.

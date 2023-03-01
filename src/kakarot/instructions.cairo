@@ -616,6 +616,7 @@ namespace EVMInstructions {
 
         // Terminate execution
         if (stopped != FALSE) {
+            let ctx = ExecutionContext.finalize_state(ctx);
             if (is_root != FALSE) {
                 if (ctx.destroy_contracts_len != 0) {
                     let ctx = SelfDestructHelper.finalize(ctx);

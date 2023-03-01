@@ -5,6 +5,7 @@
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.bool import FALSE
 from starkware.starknet.common.syscalls import deploy as deploy_syscall
 from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
@@ -124,7 +125,7 @@ namespace Kakarot {
 
         // Start execution
         let ctx = EVMInstructions.run(ctx);
-
+        ExecutionContext.maybe_throw_revert(ctx);
         // Finalize
         // TODO: Consider finalizing on `ret` instruction, to get the memory efficiently.
         let summary = ExecutionContext.finalize(self=ctx);
@@ -208,6 +209,10 @@ namespace Kakarot {
         );
         let (local contract_bytecode: felt*) = alloc();
         let (empty_destroy_contracts: felt*) = alloc();
+        let (empty_events: model.Event*) = alloc();
+        let (empty_create_addresses: felt*) = alloc();
+        let (local revert_contract_state_dict_start) = default_dict_new(0);
+        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(revert_contract_state_dict_start, revert_contract_state_dict_start);
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();
         let calling_context = ExecutionContext.init_empty();
@@ -229,6 +234,12 @@ namespace Kakarot {
             sub_context=sub_context,
             destroy_contracts_len=0,
             destroy_contracts=empty_destroy_contracts,
+            events_len=0,
+            events=empty_events,
+            create_addresses_len=0,
+            create_addresses=empty_create_addresses,
+            revert_contract_state=revert_contract_state,
+            reverted=FALSE,
             read_only=FALSE,
         );
 

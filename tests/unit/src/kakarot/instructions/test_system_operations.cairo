@@ -5,6 +5,7 @@
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import deploy, get_contract_address
 from starkware.cairo.common.math import split_felt, assert_not_zero, assert_le
@@ -150,16 +151,18 @@ func test__exec_revert{
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
     let ctx: model.ExecutionContext* = MemoryOperations.exec_mstore(ctx);
 
-    let stack: model.Stack* = Stack.push(ctx.stack, Uint256(0, 0));  // offset is 0 to have the reason at 0x20
-    let stack: model.Stack* = Stack.push(stack, Uint256(size, 0));  // size
+    let stack: model.Stack* = Stack.push(ctx.stack, Uint256(size, 0));  // size
+    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));  // offset is 0 to have the reason at 0x20
+
     let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
 
     // When
-    SystemOperations.exec_revert(ctx);
+    let ctx = SystemOperations.exec_revert(ctx);
+    let is_reverted = ExecutionContext.is_reverted(ctx);
 
     // Then
-    // TODO: update test when revert does not break the execution
-
+    assert is_reverted = 1;
+    ExecutionContext.maybe_throw_revert(ctx);
     return ();
 }
 
@@ -678,6 +681,9 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     );
     let stack = Stack.push(stack, Uint256(10, 0));
     let (sub_ctx: felt*) = alloc();
+    let (local revert_contract_state_dict_start) = default_dict_new(0);
+    tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(revert_contract_state_dict_start, revert_contract_state_dict_start);
+
     assert [sub_ctx] = cast(call_context, felt);  // call_context
     assert [sub_ctx + 1] = 0;  // program_counter
     assert [sub_ctx + 2] = 0;  // stopped
@@ -691,7 +697,12 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     assert [sub_ctx + 13] = 0;  // sub_context
     assert [sub_ctx + 14] = 0;  // destroy_contracts_len
     assert [sub_ctx + 15] = cast(destroy_contracts, felt);  // destroy_contracts
-    assert [sub_ctx + 16] = 0;  // read only
+    assert [sub_ctx + 16] = 0;  // events_len
+    assert [sub_ctx + 17] = cast(0, felt);  // events
+    assert [sub_ctx + 18] = 0;  // create_addresses_len
+    assert [sub_ctx + 19] = cast(0, felt);  // create_addresses
+    assert [sub_ctx + 20] = cast(revert_contract_state, felt);  // revert_contract_state
+    assert [sub_ctx + 21] = 0;  // read only
 
     // Simulate contract creation
     let (contract_account_class_hash_) = contract_account_class_hash.read();
