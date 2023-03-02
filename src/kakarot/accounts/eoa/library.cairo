@@ -1,21 +1,19 @@
 %lang starknet
 
-from utils.utils import Helpers
-from kakarot.interfaces.interfaces import IEth, IKakarot
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import CallContract
 from starkware.cairo.common.uint256 import Uint256, uint256_not
 from starkware.cairo.common.alloc import alloc
-from utils.eth_transaction import EthTransaction
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.memcpy import memcpy
 
-@storage_var
-func evm_address() -> (evm_address: felt) {
-}
+from kakarot.interfaces.interfaces import IEth, IKakarot
+from openzeppelin.access.ownable.library import Ownable
+from utils.eth_transaction import EthTransaction
+from utils.utils import Helpers
 
 @storage_var
-func kakarot_address() -> (kakarot_address: felt) {
+func evm_address() -> (evm_address: felt) {
 }
 
 @storage_var
@@ -52,7 +50,7 @@ namespace ExternallyOwnedAccount {
         let (is_initialized) = is_initialized_.read();
         assert is_initialized = 0;
         evm_address.write(_evm_address);
-        kakarot_address.write(_kakarot_address);
+        Ownable.initializer(_kakarot_address);
         // Give infinite ETH transfer allowance to Kakarot
         let (native_token_address) = IKakarot.get_native_token(_kakarot_address);
         let (infinite) = uint256_not(Uint256(0, 0));
@@ -119,7 +117,7 @@ namespace ExternallyOwnedAccount {
             gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s
         ) = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
 
-        let (_kakarot_address) = kakarot_address.read();
+        let (_kakarot_address) = Ownable.owner();
         local retdata_size;
 
         // If destination is 0, we are deploying a contract
