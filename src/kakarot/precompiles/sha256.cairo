@@ -178,7 +178,9 @@ namespace SHA256 {
             let (q, r) = unsigned_div_rem(n_bytes, SHA256_INPUT_CHUNK_SIZE_BYTES);
             let is_remainder_block = is_le_felt(q, 0);
             if (is_remainder_block == FALSE) {
-                _sha256_input(data, SHA256_INPUT_CHUNK_SIZE_BYTES, SHA256_INPUT_CHUNK_SIZE_FELTS, 0);
+                _sha256_input(
+                    data, SHA256_INPUT_CHUNK_SIZE_BYTES, SHA256_INPUT_CHUNK_SIZE_FELTS, 0
+                );
                 _sha256_chunk{sha256_start=message, state=state, output=output}();
 
                 let sha256_ptr = sha256_ptr + SHA256_STATE_SIZE_FELTS;

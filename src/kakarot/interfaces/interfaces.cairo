@@ -32,9 +32,17 @@ namespace IAccount {
 
     func initialize(implementation: felt, calldata_len: felt, calldata: felt*) {
     }
+
     func bytecode_len() -> (len: felt) {
     }
+
     func bytecode() -> (bytecode_len: felt, bytecode: felt*) {
+    }
+
+    func get_nonce() -> (nonce: felt) {
+    }
+
+    func increment_nonce() -> (nonce: felt) {
     }
 }
 
@@ -42,15 +50,17 @@ namespace IAccount {
 namespace IContractAccount {
     func write_bytecode(bytecode_len: felt, bytecode: felt*) {
     }
+
     func storage(key: Uint256) -> (value: Uint256) {
     }
+
     func write_storage(key: Uint256, value: Uint256) {
     }
 
     func get_nonce() -> (nonce: felt) {
     }
 
-    func increment_nonce() {
+    func increment_nonce() -> (nonce: felt) {
     }
 }
 

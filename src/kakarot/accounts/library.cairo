@@ -2,6 +2,8 @@
 
 %lang starknet
 
+from openzeppelin.access.ownable.library import Ownable
+
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import FALSE
@@ -25,6 +27,10 @@ from kakarot.constants import (
     account_proxy_class_hash,
 )
 from kakarot.interfaces.interfaces import IAccount
+
+@storage_var
+func nonce() -> (nonce: felt) {
+}
 
 @event
 func evm_contract_deployed(evm_contract_address: felt, starknet_contract_address: felt) {
@@ -95,5 +101,20 @@ namespace Accounts {
         IAccount.initialize(account_address, class_hash, 2, constructor_calldata);
         evm_contract_deployed.emit(evm_address, account_address);
         return (account_address=account_address);
+    }
+
+    // @notice This function is used to read the nonce from storage
+    // @return nonce: The current nonce of the contract account
+    func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        nonce: felt
+    ) {
+        return nonce.read();
+    }
+
+    // @notice This function increases the accounts nonce by 1
+    func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> () {
+        Ownable.assert_only_owner();
+        let (current_nonce: felt) = nonce.read();
+        return nonce.write(current_nonce + 1);
     }
 }

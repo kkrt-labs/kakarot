@@ -276,7 +276,9 @@ namespace Helpers {
             let byte = uint256_to_felt(byte_uint256);
             assert [res] = byte;  // get the last 8 bits of the value
             let (val_shifted_one_byte) = uint256_shr(value, Uint256(low=8, high=0));
-            let (bytes_len) = uint256_to_bytes_no_padding(val_shifted_one_byte, idx + 1, res + 1, dest);  // recursively call function with value shifted right by 8 bits
+            let (bytes_len) = uint256_to_bytes_no_padding(
+                val_shifted_one_byte, idx + 1, res + 1, dest
+            );  // recursively call function with value shifted right by 8 bits
             return (bytes_len=bytes_len);
         }
         reverse(old_arr_len=idx, old_arr=res - idx, new_arr_len=idx, new_arr=dest);

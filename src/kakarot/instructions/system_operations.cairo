@@ -496,9 +496,8 @@ namespace CallHelper {
             return_data_len=call_args.ret_size,
             return_data=call_args.return_data,
         );
-        
-        return sub_ctx;
 
+        return sub_ctx;
     }
     // @notice At the end of a sub-context call, the calling context's stack and memory are updated.
     // @return ExecutionContext The pointer to the updated calling context.
@@ -754,8 +753,7 @@ namespace CreateHelper {
         if (popped_len != 4) {
             // Increment happens before we fetch nonce
             // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-161.md
-            IContractAccount.increment_nonce(ctx.starknet_contract_address);
-            let (nonce: felt) = IContractAccount.get_nonce(ctx.starknet_contract_address);
+            let (nonce) = IContractAccount.increment_nonce(ctx.starknet_contract_address);
             let (evm_contract_address) = CreateHelper.get_create_address(
                 ctx.evm_contract_address, nonce
             );
