@@ -167,6 +167,24 @@ class TestPlainOpcodes:
                 caller_address=addresses[0].starknet_address,
             )
 
+    class TestExceptionHandling:
+        async def test_calling_context_should_propogate_revert_from_sub_context_on_create(
+            self, plain_opcodes, owner
+        ):
+            with kakarot_error("FAIL"):
+                await plain_opcodes.testCallingContextShouldPropogateRevertFromSubContextOnCreate(
+                    caller_address=owner.starknet_address
+                )
+
+        async def test_should_revert_via_call(self, plain_opcodes, owner):
+            returnData = await plain_opcodes.testShouldRevertViaCall(
+                caller_address=owner.starknet_address
+            )
+            # we ignore the first 4 bytes because it is the function selector
+            # see conventions for the structure of return payloads on reverting cases
+            # https://docs.soliditylang.org/en/latest/control-structures.html#revert            
+            assert "FAIL" == Web3().codec.decode(["string"], returnData[4:])[0]            
+    
     class TestOriginAndSender:
         @pytest.mark.skip(
             "Origin returns 0 because ORIGIN currently assumes that the caller is a ContractAccount"

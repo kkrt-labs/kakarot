@@ -5,6 +5,7 @@
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.uint256 import (
     Uint256,
@@ -40,6 +41,48 @@ namespace TestHelpers {
         return ctx;
     }
 
+    func init_context_at_starknet_address{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(bytecode_len: felt, bytecode: felt*, stark_address: felt) -> model.ExecutionContext* {
+        alloc_locals;
+
+        let (calldata) = alloc();
+        assert [calldata] = '';
+        local call_context: model.CallContext* = new model.CallContext(
+            bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
+            );
+        let self: model.ExecutionContext* = ExecutionContext.init(call_context);
+
+        return new model.ExecutionContext(
+            call_context=self.call_context,
+            program_counter=self.program_counter,
+            stopped=self.stopped,
+            return_data=self.return_data,
+            return_data_len=self.return_data_len,
+            stack=self.stack,
+            memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit,
+            gas_price=self.gas_price,
+            starknet_contract_address=stark_address,
+            evm_contract_address=self.address,
+            calling_context=self.calling_context,
+            sub_context=self.sub_context,
+            destroy_contracts_len=self.destroy_contracts_len,
+            destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
+            read_only=self.read_only,
+            );
+    }
+
     func init_context_with_stack{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -67,6 +110,9 @@ namespace TestHelpers {
 
         let self: model.ExecutionContext* = init_context_with_stack(bytecode_len, bytecode, stack);
 
+        let (local revert_contract_state_dict_start) = default_dict_new(0);
+        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(revert_contract_state_dict_start, revert_contract_state_dict_start);
+
         return new model.ExecutionContext(
             call_context=self.call_context,
             program_counter=self.program_counter,
@@ -84,6 +130,12 @@ namespace TestHelpers {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }
