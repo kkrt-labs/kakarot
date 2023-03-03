@@ -51,4 +51,3 @@ func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
     Accounts.increment_nonce();
     return Accounts.get_nonce();
 }
-

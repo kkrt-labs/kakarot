@@ -143,13 +143,3 @@ func bytecode_len{
 func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (nonce: felt) {
     return Accounts.get_nonce();
 }
-
-// @notice This function increases the EOAs nonce by 1
-// @return nonce: The new nonce of the EOA
-@external
-func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
-    nonce: felt
-) {
-    Accounts.increment_nonce();
-    return Accounts.get_nonce();
-}

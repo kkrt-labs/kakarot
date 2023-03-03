@@ -130,6 +130,9 @@ namespace Kakarot {
         // TODO: Consider finalizing on `ret` instruction, to get the memory efficiently.
         let summary = ExecutionContext.finalize(self=ctx);
 
+        let (caller_address) = get_caller_address();
+        IAccount.increment_nonce(caller_address);
+
         return summary;
     }
 
@@ -189,10 +192,9 @@ namespace Kakarot {
         evm_contract_address: felt, starknet_contract_address: felt
     ) {
         alloc_locals;
-        let (current_address) = get_caller_address();
-        let (sender_evm_address) = IAccount.get_evm_address(current_address);
-        let (nonce) = IAccount.get_nonce(current_address);
-        IAccount.increment_nonce(current_address);
+        let (caller_address) = get_caller_address();
+        let (sender_evm_address) = IAccount.get_evm_address(caller_address);
+        let (nonce) = IAccount.increment_nonce(caller_address);
         let (evm_contract_address) = CreateHelper.get_create_address(sender_evm_address, nonce);
         let (class_hash) = contract_account_class_hash.read();
         let (starknet_contract_address) = Accounts.create(class_hash, evm_contract_address);
@@ -211,7 +213,9 @@ namespace Kakarot {
         let (empty_events: model.Event*) = alloc();
         let (empty_create_addresses: felt*) = alloc();
         let (local revert_contract_state_dict_start) = default_dict_new(0);
-        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(revert_contract_state_dict_start, revert_contract_state_dict_start);
+        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
+            revert_contract_state_dict_start, revert_contract_state_dict_start
+        );
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();
         let calling_context = ExecutionContext.init_empty();
