@@ -116,6 +116,6 @@ namespace Accounts {
         Ownable.assert_only_owner();
         let (current_nonce: felt) = nonce.read();
         nonce.write(current_nonce + 1);
-        return current_nonce + 1;
+        return (nonce=current_nonce + 1);
     }
 }
