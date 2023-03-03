@@ -95,12 +95,13 @@ func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     return mock_nonce.read();
 }
 
-// @notice increases the current nonce by 1
+// @notice This function increases the accounts nonce by 1
+// @return nonce: The incremented nonce of the contract account
 @external
-func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> () {
+func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (nonce: felt) {
     let (current_nonce: felt) = mock_nonce.read();
     mock_nonce.write(current_nonce + 1);
-    return ();
+    return (nonce=current_nonce + 1);
 }
 
 // ///////////////////
@@ -682,7 +683,9 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     let stack = Stack.push(stack, Uint256(10, 0));
     let (sub_ctx: felt*) = alloc();
     let (local revert_contract_state_dict_start) = default_dict_new(0);
-    tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(revert_contract_state_dict_start, revert_contract_state_dict_start);
+    tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
+        revert_contract_state_dict_start, revert_contract_state_dict_start
+    );
 
     assert [sub_ctx] = cast(call_context, felt);  // call_context
     assert [sub_ctx + 1] = 0;  // program_counter
