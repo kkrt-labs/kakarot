@@ -112,9 +112,10 @@ namespace Accounts {
     }
 
     // @notice This function increases the accounts nonce by 1
-    func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> () {
+    func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (nonce: felt) {
         Ownable.assert_only_owner();
         let (current_nonce: felt) = nonce.read();
-        return nonce.write(current_nonce + 1);
+        nonce.write(current_nonce + 1);
+        return current_nonce + 1;
     }
 }
