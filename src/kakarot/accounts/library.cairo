@@ -112,6 +112,7 @@ namespace Accounts {
     }
 
     // @notice This function increases the accounts nonce by 1
+    // @return nonce: The incremented nonce of the contract account
     func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (nonce: felt) {
         Ownable.assert_only_owner();
         let (current_nonce: felt) = nonce.read();
