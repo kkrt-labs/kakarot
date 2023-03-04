@@ -191,7 +191,7 @@ namespace Kakarot {
         alloc_locals;
         let (caller_address) = get_caller_address();
         let (sender_evm_address) = IAccount.get_evm_address(caller_address);
-        let (nonce) = IAccount.increment_nonce(caller_address);
+        let (nonce) = IAccount.get_nonce(caller_address);
         let (evm_contract_address) = CreateHelper.get_create_address(sender_evm_address, nonce);
         let (class_hash) = contract_account_class_hash.read();
         let (starknet_contract_address) = Accounts.create(class_hash, evm_contract_address);
