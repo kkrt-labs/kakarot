@@ -143,3 +143,18 @@ func bytecode_len{
 func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (nonce: felt) {
     return Accounts.get_nonce();
 }
+
+// @notice This function increases the contract accounts nonce by 1
+// @dev Currently external for testing purposes. Otherwise would not be needed.
+// @return nonce: The new nonce of the contract account
+@external
+func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    nonce: felt
+) {
+    let (caller) = get_caller_address();
+    with_attr error_message("ExternallyOwnedAccount: nonce can only be incremented by self") {
+        assert caller = 0;
+    }
+    Accounts.increment_nonce();
+    return Accounts.get_nonce();
+}

@@ -36,7 +36,7 @@ def get_starknet_address(account_proxy_class, kakarot):
 
 
 @pytest.fixture(scope="package")
-def get_solidity_contract(starknet, contract_account_class, kakarot):
+def get_solidity_contract(starknet, contract_account_class,  kakarot):
     """
     Fixture to attach a modified web3.contract instance to an already deployed contract_account in kakarot.
     """
@@ -68,7 +68,7 @@ def get_solidity_contract(starknet, contract_account_class, kakarot):
 
 
 @pytest.fixture(scope="package")
-def deploy_solidity_contract(kakarot, get_solidity_contract):
+def deploy_solidity_contract(kakarot, get_solidity_contract, owner):
     """
     Fixture to deploy a solidity contract in kakarot. The returned contract is a modified
     web3.contract instance with an added `contract_account` attribute that return the actual
@@ -97,6 +97,7 @@ def deploy_solidity_contract(kakarot, get_solidity_contract):
             contract.constructor(*args, **kwargs).data_in_transaction
         )
         with traceit.context(contract_name):
+            await owner.starknet_contract.increment_nonce().execute()
             tx = await kakarot.deploy_contract_account(
                 bytecode=deploy_bytecode
             ).execute(caller_address=caller_address)
@@ -121,7 +122,7 @@ Wallet = namedtuple(
 )
 
 
-@pytest_asyncio.fixture(scope="package")
+@pytest_asyncio.fixture(scope="session")
 async def addresses(kakarot, starknet, externally_owned_account_class) -> List[Wallet]:
     """
     Returns a list of addresses to be used in tests.
@@ -156,16 +157,16 @@ async def addresses(kakarot, starknet, externally_owned_account_class) -> List[W
     return wallets
 
 
-@pytest_asyncio.fixture(scope="package")
+@pytest_asyncio.fixture(scope="session")
 async def owner(addresses):
     return addresses[0]
 
 
-@pytest_asyncio.fixture(scope="package")
+@pytest_asyncio.fixture(scope="session")
 async def others(addresses):
     return addresses[1:]
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 async def other(others):
     return others[0]
