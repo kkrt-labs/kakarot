@@ -36,7 +36,7 @@ def get_starknet_address(account_proxy_class, kakarot):
 
 
 @pytest.fixture(scope="package")
-def get_solidity_contract(starknet, contract_account_class,  kakarot):
+def get_solidity_contract(starknet, contract_account_class, kakarot):
     """
     Fixture to attach a modified web3.contract instance to an already deployed contract_account in kakarot.
     """
@@ -122,7 +122,7 @@ Wallet = namedtuple(
 )
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="package")
 async def addresses(kakarot, starknet, externally_owned_account_class) -> List[Wallet]:
     """
     Returns a list of addresses to be used in tests.
@@ -157,16 +157,16 @@ async def addresses(kakarot, starknet, externally_owned_account_class) -> List[W
     return wallets
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="package")
 async def owner(addresses):
     return addresses[0]
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="package")
 async def others(addresses):
     return addresses[1:]
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 async def other(others):
     return others[0]
