@@ -124,7 +124,7 @@ namespace ExternallyOwnedAccount {
         let (_kakarot_address) = kakarot_address.read();
         local retdata_size;
 
-        // Increament EOA nonce
+        // Increment EOA nonce
         Accounts.increment_nonce();
 
         // If destination is 0, we are deploying a contract

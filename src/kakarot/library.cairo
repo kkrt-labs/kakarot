@@ -130,9 +130,6 @@ namespace Kakarot {
         // TODO: Consider finalizing on `ret` instruction, to get the memory efficiently.
         let summary = ExecutionContext.finalize(self=ctx);
 
-        let (caller_address) = get_caller_address();
-        IAccount.increment_nonce(caller_address);
-
         return summary;
     }
 
