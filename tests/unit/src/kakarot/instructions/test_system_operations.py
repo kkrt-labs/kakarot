@@ -10,20 +10,33 @@ from tests.utils.errors import kakarot_error
 from tests.utils.helpers import get_create2_address, get_create_address
 from tests.utils.uint256 import int_to_uint256
 
+ZERO_ACCOUNT = "0x0000000000000000000000000000000000000000"
+
 
 @pytest_asyncio.fixture(scope="module")
 async def system_operations(
-    starknet: Starknet, contract_account_class, account_proxy_class
+    starknet: Starknet, eth, contract_account_class, account_proxy_class
 ):
     return await starknet.deploy(
         source="./tests/unit/src/kakarot/instructions/test_system_operations.cairo",
         cairo_path=["src"],
         constructor_calldata=[
+            eth.contract_address,
             contract_account_class.class_hash,
             account_proxy_class.class_hash,
         ],
         disable_hint_validation=True,
     )
+
+
+@pytest_asyncio.fixture(scope="module")
+async def mint(system_operations, eth):
+    # mint tokens to the 0x0 evm contract address
+    sender = int(get_create_address(ZERO_ACCOUNT, 0), 16)
+    starket_contract_address = (
+        await system_operations.compute_starknet_address(sender).call()
+    ).result.contract_address
+    await eth.mint(starket_contract_address, (2, 0)).execute()
 
 
 @pytest.mark.asyncio
@@ -44,14 +57,23 @@ class TestSystemOperations:
             1000
         ).call()
 
+    @pytest.mark.usefixtures("mint")
     async def test_call(self, system_operations):
-        await system_operations.test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack().call()
+        await system_operations.test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack().call(
+            system_operations.contract_address
+        )
 
         await system_operations.test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack().call()
 
         await system_operations.test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_stack().call()
 
         await system_operations.test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_stack().call()
+
+    @pytest.mark.usefixtures("mint")
+    async def test_call__should_transfer_value(self, system_operations):
+        await system_operations.test__exec_call__should_transfer_value().call(
+            system_operations.contract_address
+        )
 
     @pytest.mark.parametrize("salt", [127, 256, 2**55 - 1])
     async def test_create(self, system_operations, salt):
