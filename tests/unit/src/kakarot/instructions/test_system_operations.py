@@ -116,7 +116,7 @@ class TestSystemOperations:
             from_bytes(decode_hex(expected_create2_addr)),
         ).call()
 
-    async def test_selfdestruct(self, system_operations, eth):
-        await system_operations.test__exec_selfdestruct__should_delete_account_bytecode(
-            eth.contract_address,
-        ).call()
+    async def test_selfdestruct(self, system_operations):
+        await system_operations.test__exec_selfdestruct__should_delete_account_bytecode().call(
+            system_operations.contract_address
+        )

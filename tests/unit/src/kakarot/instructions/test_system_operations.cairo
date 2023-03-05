@@ -678,9 +678,8 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
 @external
 func test__exec_selfdestruct__should_delete_account_bytecode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(evm_address: felt) {
+}() {
     alloc_locals;
-    native_token_address.write(evm_address);
 
     // Create sub_ctx writing directly in memory because need to update calling_context
     let (bytecode) = alloc();
