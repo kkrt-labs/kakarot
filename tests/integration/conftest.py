@@ -68,7 +68,7 @@ def get_solidity_contract(starknet, contract_account_class, kakarot):
 
 
 @pytest.fixture(scope="package")
-def deploy_solidity_contract(kakarot, get_solidity_contract, owner):
+def deploy_solidity_contract(kakarot, get_solidity_contract):
     """
     Fixture to deploy a solidity contract in kakarot. The returned contract is a modified
     web3.contract instance with an added `contract_account` attribute that return the actual
@@ -87,20 +87,20 @@ def deploy_solidity_contract(kakarot, get_solidity_contract, owner):
         is required and filtered out before calling the constructor.
         """
         contract = get_contract(contract_app, contract_name)
-        if "caller_address" not in kwargs:
+        if "caller_eoa" not in kwargs:
             raise ValueError(
-                "caller_address needs to be given in kwargs for deploying the contract"
+                "caller_eoa needs to be given in kwargs for deploying the contract"
             )
-        caller_address = kwargs["caller_address"]
-        del kwargs["caller_address"]
+        caller_eoa = kwargs["caller_eoa"]
+        del kwargs["caller_eoa"]
         deploy_bytecode = hex_string_to_bytes_array(
             contract.constructor(*args, **kwargs).data_in_transaction
         )
         with traceit.context(contract_name):
-            await owner.starknet_contract.increment_nonce().execute()
+            await caller_eoa.starknet_contract.increment_nonce().execute()
             tx = await kakarot.deploy_contract_account(
                 bytecode=deploy_bytecode
-            ).execute(caller_address=caller_address)
+            ).execute(caller_eoa=caller_eoa.starknet_address)
 
         starknet_contract_address = tx.result.starknet_contract_address
         evm_contract_address = Web3.toChecksumAddress(

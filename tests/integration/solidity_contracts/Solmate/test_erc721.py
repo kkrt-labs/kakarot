@@ -13,7 +13,7 @@ async def erc_721(deploy_solidity_contract, owner):
         "MockERC721",
         "Kakarot NFT",
         "KKNFT",
-        caller_address=owner.starknet_address,
+        caller_eoa=owner,
     )
 
 
@@ -22,7 +22,7 @@ async def erc_721_recipient(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
         "Solmate",
         "ERC721Recipient",
-        caller_address=owner.starknet_address,
+        caller_eoa=owner,
     )
 
 
@@ -31,7 +31,7 @@ async def erc_721_reverting_recipient(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
         "Solmate",
         "RevertingERC721Recipient",
-        caller_address=owner.starknet_address,
+        caller_eoa=owner,
     )
 
 
@@ -40,7 +40,7 @@ async def erc_721_recipient_with_wrong_return_data(deploy_solidity_contract, own
     return await deploy_solidity_contract(
         "Solmate",
         "WrongReturnDataERC721Recipient",
-        caller_address=owner.starknet_address,
+        caller_eoa=owner,
     )
 
 
@@ -49,7 +49,7 @@ async def erc_721_non_recipient(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
         "Solmate",
         "NonERC721Recipient",
-        caller_address=owner.starknet_address,
+        caller_eoa=owner,
     )
 
 

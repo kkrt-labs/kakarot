@@ -14,7 +14,7 @@ async def token_a(
         "UniswapV2",
         "ERC20",
         TOTAL_SUPPLY,
-        caller_address=owner.starknet_address,
+        caller_eoa=owner,
     )
 
 
@@ -27,7 +27,7 @@ async def token_b(
         "UniswapV2",
         "ERC20",
         TOTAL_SUPPLY,
-        caller_address=owner.starknet_address,
+        caller_eoa=owner,
     )
 
 
@@ -40,7 +40,7 @@ async def factory(
         "UniswapV2",
         "UniswapV2Factory",
         owner.address,
-        caller_address=owner.starknet_address,
+        caller_eoa=owner,
     )
 
 
@@ -50,14 +50,15 @@ async def pair(
     token_a,
     token_b,
     factory,
+    owner,
 ):
     # TODO: the fixture should use factory.createPair but this currently fails
-    # TODO: with OUT_OF_RESOURCES so we do it "manually" for the sake of running
+    # TODO: with OUT_OF_RESOURCES so we do it via an EOA for the sake of running
     # TODO: the UniswapV2Pair tests
     _pair = await deploy_solidity_contract(
         "UniswapV2",
         "UniswapV2Pair",
-        caller_address=factory.contract_account.contract_address,
+        caller_eoa=owner,
     )
     token_0, token_1 = (
         (token_a, token_b)
