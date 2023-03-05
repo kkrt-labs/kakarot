@@ -377,10 +377,15 @@ namespace SystemOperations {
         let (balance: Uint256) = IEth.balanceOf(
             contract_address=native_token_address_, account=ctx.starknet_contract_address
         );
-        let (success) = IEth.transfer(
-            contract_address=native_token_address_, recipient=address_felt, amount=balance
+        let sender = ctx.starknet_contract_address;
+        let (success) = IEth.transferFrom(
+            contract_address=native_token_address_, 
+            sender=sender,
+            recipient=address_felt, 
+            amount=balance
         );
-        with_attr error_message("Kakarot: Transfer failed") {
+        with_attr error_message(
+                "Kakarot: 0xFF: failed to transfer token from {sender} to {address_felt}") {
             assert success = TRUE;
         }
 
