@@ -4,7 +4,7 @@ import pytest_asyncio
 @pytest_asyncio.fixture(scope="module")
 async def counter(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
-        "PlainOpcodes", "Counter", caller_address=owner.starknet_address
+        "PlainOpcodes", "Counter", caller_eoa=owner
     )
 
 
@@ -13,7 +13,7 @@ async def caller(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
         "PlainOpcodes",
         "Caller",
-        caller_address=owner.starknet_address,
+        caller_eoa=owner,
     )
 
 
@@ -23,5 +23,5 @@ async def plain_opcodes(deploy_solidity_contract, owner, counter):
         "PlainOpcodes",
         "PlainOpcodes",
         counter.evm_contract_address,
-        caller_address=owner.starknet_address,
+        caller_eoa=owner,
     )

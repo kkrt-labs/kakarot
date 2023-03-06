@@ -26,7 +26,6 @@ from starkware.starknet.common.syscalls import deploy as deploy_syscall, get_con
 from kakarot.constants import (
     account_proxy_class_hash,
     contract_account_class_hash,
-    salt,
     native_token_address,
     Constants,
 )
@@ -77,8 +76,6 @@ namespace SystemOperations {
         let (stack, popped) = Stack.pop_n(self=ctx.stack, n=3);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        let value = popped[0];
-        let offset = popped[1];
         let size = popped[2];
 
         // create dynamic gas:
@@ -517,9 +514,8 @@ namespace CallHelper {
             return_data_len=call_args.ret_size,
             return_data=call_args.return_data,
         );
-        
-        return sub_ctx;
 
+        return sub_ctx;
     }
 
     // @notice At the end of a sub-context call, the calling context's stack and memory are updated.
@@ -585,7 +581,7 @@ namespace CreateHelper {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(sender_address: felt, salt: felt) -> (evm_contract_address: felt) {
+    }(sender_address: felt, nonce: felt) -> (evm_contract_address: felt) {
         alloc_locals;
         let (keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
@@ -611,8 +607,8 @@ namespace CreateHelper {
             address_packed_bytes_len, address_packed_bytes, 0, packed_bytes
         );
 
-        // encode salt rlp
-        let (packed_bytes_len) = RLP.encode_felt(salt, packed_bytes_len, packed_bytes);
+        // encode nonce rlp
+        let (packed_bytes_len) = RLP.encode_felt(nonce, packed_bytes_len, packed_bytes);
 
         let (local rlp_list: felt*) = alloc();
         let (rlp_list_len: felt) = RLP.encode_list(packed_bytes_len, packed_bytes, rlp_list);
@@ -787,12 +783,13 @@ namespace CreateHelper {
         // so we use popped_len to derive the way we should handle
         // the creation of evm addresses
         if (popped_len != 4) {
-            let (nonce) = salt.read();
+            // Increment happens before we fetch nonce
+            // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-161.md
+            let (nonce) = IContractAccount.increment_nonce(ctx.starknet_contract_address);
             let (evm_contract_address) = CreateHelper.get_create_address(
                 ctx.evm_contract_address, nonce
             );
 
-            salt.write(nonce + 1);
             let (contract_account_class_hash_) = contract_account_class_hash.read();
             let (starknet_contract_address) = Accounts.create(
                 contract_account_class_hash_, evm_contract_address
@@ -828,12 +825,12 @@ namespace CreateHelper {
 
             return sub_ctx;
         } else {
-            let _salt = popped[3];
+            let _nonce = popped[3];
             let (evm_contract_address) = CreateHelper.get_create2_address(
                 sender_address=ctx.evm_contract_address,
                 bytecode_len=size.low,
                 bytecode=bytecode,
-                salt=_salt,
+                salt=_nonce,
             );
 
             let (contract_account_class_hash_) = contract_account_class_hash.read();

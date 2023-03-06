@@ -59,6 +59,11 @@ class TestLibrary:
         evm_to_starknet_address = dict()
         expected_balances = Counter()
 
+        # Storing initial balance, as eth storage persists across tests.
+        initial_balance = (
+            await eth.balanceOf(mock_externally_owned_account.contract_address).call()
+        ).result.balance.low
+
         # Mint tokens to the EOA
         await eth.mint(
             mock_externally_owned_account.contract_address, (total_transferred_value, 0)
@@ -84,3 +89,8 @@ class TestLibrary:
             assert (
                 await eth.balanceOf(evm_to_starknet_address[evm_address]).call()
             ).result.balance.low == amount
+
+        # verify EOA has used all its recently minted balance
+        assert (
+            await eth.balanceOf(mock_externally_owned_account.contract_address).call()
+        ).result.balance.low == initial_balance

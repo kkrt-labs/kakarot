@@ -84,7 +84,8 @@ class TestSystemOperations:
 
         await system_operations.test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at_expected_address(
             evm_caller_address_int,
-            salt,
+            # Nonce will be incremented before exec_create is executed, therefore we subtract 1
+            salt - 1,
             from_bytes(decode_hex(expected_create_addr)),
         ).call()
 

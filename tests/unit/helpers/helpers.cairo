@@ -95,13 +95,17 @@ namespace TestHelpers {
         return ctx;
     }
 
-    func init_context_at_address_with_stack{
+    func init_context_at_address_with_stack_and_caller_address{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(
-        address: felt, bytecode_len: felt, bytecode: felt*, stack: model.Stack*
+        address: felt,
+        bytecode_len: felt,
+        bytecode: felt*,
+        stack: model.Stack*,
+        starknet_address: felt,
     ) -> model.ExecutionContext* {
         alloc_locals;
 
@@ -123,7 +127,7 @@ namespace TestHelpers {
             gas_used=self.gas_used,
             gas_limit=self.gas_limit,
             gas_price=self.gas_price,
-            starknet_contract_address=starknet_contract_address,
+            starknet_contract_address=starknet_address,
             evm_contract_address=address,
             calling_context=self.calling_context,
             sub_context=self.sub_context,

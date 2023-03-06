@@ -1,14 +1,16 @@
 %lang starknet
 
-from utils.utils import Helpers
-from kakarot.interfaces.interfaces import IEth, IKakarot
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import CallContract
 from starkware.cairo.common.uint256 import Uint256, uint256_not
 from starkware.cairo.common.alloc import alloc
-from utils.eth_transaction import EthTransaction
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.memcpy import memcpy
+
+from kakarot.accounts.library import Accounts
+from kakarot.interfaces.interfaces import IEth, IKakarot
+from utils.eth_transaction import EthTransaction
+from utils.utils import Helpers
 
 @storage_var
 func evm_address() -> (evm_address: felt) {
@@ -121,6 +123,9 @@ namespace ExternallyOwnedAccount {
 
         let (_kakarot_address) = kakarot_address.read();
         local retdata_size;
+
+        // Increment EOA nonce
+        Accounts.increment_nonce();
 
         // If destination is 0, we are deploying a contract
         if (destination == 0) {
