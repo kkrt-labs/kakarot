@@ -8,6 +8,8 @@ from starkware.cairo.common.uint256 import Uint256
 
 // Local dependencies
 from kakarot.accounts.contract.library import ContractAccount
+from kakarot.accounts.library import Accounts
+from openzeppelin.access.ownable.library import Ownable
 
 // @title EVM smart contract account representation.
 // @author @abdelhamidbakhta
@@ -86,4 +88,22 @@ func is_initialized{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> (is_initialized: felt) {
     return ContractAccount.is_initialized();
+}
+
+// @notice This function is used to read the nonce from storage
+// @return nonce: The current nonce of the contract account
+@view
+func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (nonce: felt) {
+    return Accounts.get_nonce();
+}
+
+// @notice This function increases the contract accounts nonce by 1
+// @return nonce: The new nonce of the contract account
+@external
+func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    nonce: felt
+) {
+    Ownable.assert_only_owner();
+    Accounts.increment_nonce();
+    return Accounts.get_nonce();
 }

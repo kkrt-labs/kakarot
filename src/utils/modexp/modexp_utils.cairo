@@ -103,7 +103,6 @@ namespace ModExpHelpersUint256 {
             tempvar iteration_count_res = addition;
             tempvar range_check_ptr = range_check_ptr;
             tempvar bitwise_ptr = bitwise_ptr;
-
         } else {
             let (is_zero) = uint256_eq(e, Uint256(low=0, high=0));
             if (is_zero == FALSE) {

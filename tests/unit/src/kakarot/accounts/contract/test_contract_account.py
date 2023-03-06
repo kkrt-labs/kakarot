@@ -90,3 +90,27 @@ class TestContractAccount:
                 )
                 == "Uint256(low=340282366920938463463374607431768211455, high=340282366920938463463374607431768211455)"
             )
+
+    class TestNonce:
+        async def test_should_increment_nonce(
+            self, contract_account: StarknetContract, kakarot
+        ):
+            # Get current contract account nonce
+            initial_nonce = (await contract_account.get_nonce().call()).result.nonce
+
+            # Increment nonce
+            await contract_account.increment_nonce().execute(
+                caller_address=kakarot.contract_address
+            )
+
+            # Get new nonce
+            assert (
+                initial_nonce + 1
+                == (await contract_account.get_nonce().call()).result.nonce
+            )
+
+        async def test_should_raise_when_caller_is_not_kakarot(
+            self, contract_account: StarknetContract
+        ):
+            with kakarot_error():
+                await contract_account.increment_nonce().execute(caller_address=1)

@@ -19,7 +19,6 @@ from kakarot.constants import (
     native_token_address,
     contract_account_class_hash,
     account_proxy_class_hash,
-    salt,
 )
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.memory_operations import MemoryOperations
@@ -49,6 +48,16 @@ func constructor{
     return ();
 }
 
+// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                          MOCK FUNCTIONS                                                      //
+// The Kakarot, EOA, Contract Account and ETH contracts often times require communication between each other.   //
+// Instead of deploying each contract for every test-case we mock the required functions in this contract.      //
+// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//
+// Kakarot
+//
+
 // @dev The contract account initialization includes a call to the Kakarot contract
 // in order to get the native token address. As the Kakarot contract is not deployed within this test, we make a call to this contract instead.
 @view
@@ -58,6 +67,10 @@ func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     return Kakarot.get_native_token();
 }
 
+//
+// ETH ERC20
+//
+
 // @dev The contract account initialization includes a call to an ERC20 contract to set an infitite transfer allowance to Kakarot.
 // As the ERC20 contract is not deployed within this test, we make a call to this contract instead.
 @external
@@ -66,6 +79,36 @@ func approve{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 ) -> (success: felt) {
     return ERC20.approve(spender, amount);
 }
+
+//
+// Contract Account
+//
+
+// @dev We are using a storage var, so that we can set custom nonces whilst still being able to increment them during the create execution.
+@storage_var
+func mock_nonce() -> (nonce: felt) {
+}
+
+// @notice the current nonce of the mocked contract account
+@view
+func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (nonce: felt) {
+    return mock_nonce.read();
+}
+
+// @notice This function increases the accounts nonce by 1
+// @return nonce: The incremented nonce of the contract account
+@external
+func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    nonce: felt
+) {
+    let (current_nonce: felt) = mock_nonce.read();
+    mock_nonce.write(current_nonce + 1);
+    return (nonce=current_nonce + 1);
+}
+
+// ///////////////////
+//    Test Cases    //
+// ///////////////////
 
 @external
 func test__exec_return_should_return_context_with_updated_return_data{
@@ -444,10 +487,8 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
 @external
 func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at_expected_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(evm_caller_address: felt, salt_: felt, expected_create_address: felt) {
+}(evm_caller_address: felt, nonce_: felt, expected_create_address: felt) {
     alloc_locals;
-
-    salt.write(salt_);
 
     // Fill the stack with exec_create args
     let stack: model.Stack* = Stack.init();
@@ -467,11 +508,16 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
     let stack = Stack.push(stack, memory_offset);
     let bytecode_len = 0;
     let (bytecode: felt*) = alloc();
-    let ctx = TestHelpers.init_context_at_address_with_stack(
-        evm_caller_address, bytecode_len, bytecode, stack
+    // As this test contract is mocking the contract account we have to set this contract address as the starknet_contract_address.
+    let (contract_address: felt) = get_contract_address();
+    let ctx = TestHelpers.init_context_at_address_with_stack_and_caller_address(
+        evm_caller_address, bytecode_len, bytecode, stack, contract_address
     );
 
     let ctx = MemoryOperations.exec_mstore(ctx);
+
+    // We set the nonce of the mocked contract account
+    mock_nonce.write(nonce_);
 
     // When
     let sub_ctx = SystemOperations.exec_create(ctx);
@@ -532,7 +578,7 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     evm_caller_address: felt,
     bytecode_offset: Uint256,
     bytecode_size: Uint256,
-    salt: Uint256,
+    nonce: Uint256,
     memory_word: Uint256,
     expected_create2_address: felt,
 ) {
@@ -543,8 +589,8 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     tempvar value = Uint256(1, 0);
     let offset = bytecode_offset;
     let size = bytecode_size;
-    let salt = salt;
-    let stack = Stack.push(stack, salt);
+    let nonce = nonce;
+    let stack = Stack.push(stack, nonce);
     let stack = Stack.push(stack, size);
     let stack = Stack.push(stack, offset);
     let stack = Stack.push(stack, value);
@@ -555,8 +601,9 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     let stack = Stack.push(stack, memory_offset);
     let bytecode_len = 0;
     let (bytecode: felt*) = alloc();
-    let ctx = TestHelpers.init_context_at_address_with_stack(
-        evm_caller_address, bytecode_len, bytecode, stack
+    let (contract_address: felt) = get_contract_address();
+    let ctx = TestHelpers.init_context_at_address_with_stack_and_caller_address(
+        evm_caller_address, bytecode_len, bytecode, stack, contract_address
     );
 
     assert ctx.evm_contract_address = evm_caller_address;
@@ -638,7 +685,9 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     let stack = Stack.push(stack, Uint256(10, 0));
     let (sub_ctx: felt*) = alloc();
     let (local revert_contract_state_dict_start) = default_dict_new(0);
-    tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(revert_contract_state_dict_start, revert_contract_state_dict_start);
+    tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
+        revert_contract_state_dict_start, revert_contract_state_dict_start
+    );
 
     assert [sub_ctx] = cast(call_context, felt);  // call_context
     assert [sub_ctx + 1] = 0;  // program_counter

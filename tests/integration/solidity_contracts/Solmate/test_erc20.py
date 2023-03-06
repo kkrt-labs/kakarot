@@ -17,7 +17,7 @@ async def erc_20(deploy_solidity_contract, owner):
         "Kakarot Token",
         "KKT",
         18,
-        caller_address=owner.starknet_address,
+        caller_eoa=owner,
     )
 
 

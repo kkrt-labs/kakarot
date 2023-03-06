@@ -460,7 +460,6 @@ func finish{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
         let (_, _) = dict_squash{range_check_ptr=range_check_ptr}(start, x);
         let (res, rsize) = compress(buf, bufsize, arr_x, 16);
         return (res=res, rsize=rsize);
-
     } else {
         let (local arr_x: felt*) = alloc();
         dict_to_array{dict_ptr=x}(arr_x, 16);

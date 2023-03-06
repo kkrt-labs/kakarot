@@ -8,6 +8,7 @@ from starkware.starknet.common.syscalls import get_tx_info, get_caller_address
 from starkware.cairo.common.math import assert_le
 
 from kakarot.accounts.eoa.library import ExternallyOwnedAccount
+from kakarot.accounts.library import Accounts
 
 // Externally Owned Account initializer
 @external
@@ -134,4 +135,26 @@ func bytecode_len{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> (len: felt) {
     return (len=0);
+}
+
+// @notice This function is used to read the nonce from storage
+// @return nonce: The current nonce of the contract account
+@view
+func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (nonce: felt) {
+    return Accounts.get_nonce();
+}
+
+// @notice This function increases the contract accounts nonce by 1
+// @dev Currently external for testing purposes. Otherwise would not be needed.
+// @return nonce: The new nonce of the contract account
+@external
+func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    nonce: felt
+) {
+    let (caller) = get_caller_address();
+    with_attr error_message("ExternallyOwnedAccount: nonce can only be incremented by self") {
+        assert caller = 0;
+    }
+    Accounts.increment_nonce();
+    return Accounts.get_nonce();
 }
