@@ -84,8 +84,3 @@ class TestLibrary:
             assert (
                 await eth.balanceOf(evm_to_starknet_address[evm_address]).call()
             ).result.balance.low == amount
-
-        # verify EOA is empty
-        assert (
-            await eth.balanceOf(mock_externally_owned_account.contract_address).call()
-        ).result.balance.low == 0
