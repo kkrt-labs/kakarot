@@ -173,7 +173,7 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (caller_evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (_) = Accounts.create(
+    let (caller_starknet_contract_address) = Accounts.create(
         contract_account_class_hash_, caller_evm_contract_address
     );
     let (callee_evm_contract_address) = CreateHelper.get_create_address(1, 0);
@@ -207,8 +207,8 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     let stack = Stack.push(stack, memory_offset);
     let (bytecode) = alloc();
     local bytecode_len = 0;
-    let ctx = TestHelpers.init_context_at_address_with_stack(
-        caller_evm_contract_address, bytecode_len, bytecode, stack
+    let ctx = TestHelpers.init_context_at_address_with_stack_and_caller_address(
+        caller_evm_contract_address, bytecode_len, bytecode, stack, caller_starknet_contract_address
     );
     let ctx = MemoryOperations.exec_mstore(ctx);
 
@@ -259,7 +259,7 @@ func test__exec_call__should_transfer_value{
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (caller_evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (_) = Accounts.create(
+    let (caller_starknet_contract_address) = Accounts.create(
         contract_account_class_hash_, caller_evm_contract_address
     );
     let (callee_evm_contract_address) = CreateHelper.get_create_address(1, 0);
@@ -290,8 +290,8 @@ func test__exec_call__should_transfer_value{
     let stack = Stack.push(stack, memory_offset);
     let (bytecode) = alloc();
     local bytecode_len = 0;
-    let ctx = TestHelpers.init_context_at_address_with_stack(
-        caller_evm_contract_address, bytecode_len, bytecode, stack
+    let ctx = TestHelpers.init_context_at_address_with_stack_and_caller_address(
+        caller_evm_contract_address, bytecode_len, bytecode, stack, caller_starknet_contract_address
     );
     let ctx = MemoryOperations.exec_mstore(ctx);
 

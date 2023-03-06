@@ -18,7 +18,6 @@ from starkware.cairo.common.math import split_felt
 
 // Internal dependencies
 from kakarot.execution_context import ExecutionContext
-from kakarot.accounts.library import Accounts
 from kakarot.stack import Stack
 from kakarot.memory import Memory
 from kakarot.model import model
@@ -113,8 +112,6 @@ namespace TestHelpers {
 
         let (local revert_contract_state_dict_start) = default_dict_new(0);
         tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(revert_contract_state_dict_start, revert_contract_state_dict_start);
-
-        let (starknet_contract_address) = Accounts.compute_starknet_address(address);
 
         return new model.ExecutionContext(
             call_context=self.call_context,
