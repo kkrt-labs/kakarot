@@ -53,7 +53,7 @@ namespace TestHelpers {
         assert [calldata] = '';
         local call_context: model.CallContext* = new model.CallContext(
             bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
-            );
+        );
         let self: model.ExecutionContext* = ExecutionContext.init(call_context);
 
         return new model.ExecutionContext(
@@ -80,7 +80,7 @@ namespace TestHelpers {
             revert_contract_state=self.revert_contract_state,
             reverted=self.reverted,
             read_only=self.read_only,
-            );
+        );
     }
 
     func init_context_with_stack{
@@ -111,7 +111,9 @@ namespace TestHelpers {
         let self: model.ExecutionContext* = init_context_with_stack(bytecode_len, bytecode, stack);
 
         let (local revert_contract_state_dict_start) = default_dict_new(0);
-        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(revert_contract_state_dict_start, revert_contract_state_dict_start);
+        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
+            revert_contract_state_dict_start, revert_contract_state_dict_start
+        );
 
         return new model.ExecutionContext(
             call_context=self.call_context,

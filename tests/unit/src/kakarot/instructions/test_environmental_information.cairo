@@ -89,7 +89,9 @@ func init_context{
     let sub_context = ExecutionContext.init_empty();
 
     let (local revert_contract_state_dict_start) = default_dict_new(0);
-    tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(revert_contract_state_dict_start, revert_contract_state_dict_start);
+    tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
+        revert_contract_state_dict_start, revert_contract_state_dict_start
+    );
 
     local ctx: model.ExecutionContext* = new model.ExecutionContext(
         call_context=call_context,

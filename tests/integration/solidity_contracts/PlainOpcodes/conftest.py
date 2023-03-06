@@ -3,9 +3,7 @@ import pytest_asyncio
 
 @pytest_asyncio.fixture(scope="module")
 async def counter(deploy_solidity_contract, owner):
-    return await deploy_solidity_contract(
-        "PlainOpcodes", "Counter", caller_eoa=owner
-    )
+    return await deploy_solidity_contract("PlainOpcodes", "Counter", caller_eoa=owner)
 
 
 @pytest_asyncio.fixture(scope="module")

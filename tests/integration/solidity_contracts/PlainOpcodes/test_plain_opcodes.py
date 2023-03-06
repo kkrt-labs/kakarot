@@ -2,6 +2,7 @@ import pytest
 from eth_utils import to_checksum_address
 from web3 import Web3
 
+from tests.integration.helpers.wrap_kakarot import get_contract
 from tests.utils.errors import kakarot_error
 
 
@@ -177,14 +178,23 @@ class TestPlainOpcodes:
                 )
 
         async def test_should_revert_via_call(self, plain_opcodes, owner):
-            returnData = await plain_opcodes.testShouldRevertViaCall(
+            return_data = await plain_opcodes.testShouldRevertViaCall(
                 caller_address=owner.starknet_address
+            )
+
+            reverting_contract = get_contract(
+                "PlainOpcodes", "RevertTestCases", "ContractRevertsOnMethodCall"
+            )
+            # we query transaction logs for the particular event that is emitted in a reverting method
+            reverting_contract_event = plain_opcodes.query_logs(
+                contract=reverting_contract, event_name="PartyTime"
             )
             # we ignore the first 4 bytes because it is the function selector
             # see conventions for the structure of return payloads on reverting cases
-            # https://docs.soliditylang.org/en/latest/control-structures.html#revert            
-            assert "FAIL" == Web3().codec.decode(["string"], returnData[4:])[0]            
-    
+            # https://docs.soliditylang.org/en/latest/control-structures.html#revert
+            assert "FAIL" == Web3().codec.decode(["string"], return_data[4:])[0]
+            assert reverting_contract_event == []
+
     class TestOriginAndSender:
         @pytest.mark.skip(
             "Origin returns 0 because ORIGIN currently assumes that the caller is a ContractAccount"
