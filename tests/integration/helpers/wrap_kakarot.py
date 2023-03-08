@@ -50,7 +50,6 @@ def wrap_for_kakarot(
 
         # Case 2: Contract key supplied, no event name
         # user gets all the events associated with a contract
-        set(event_abi["name"] for event_abi in contract.events._events)
         if event_name is None:
             for event_abi in contract.events._events:
                 logs += get_matching_logs_for_event(codec, event_abi, log_receipts)
@@ -172,13 +171,13 @@ def wrap_for_kakarot(
 # Example: get_contract("StarkEx", "StarkExchange") will load the StarkExchange.sol file in the tests/integration/solidity_contracts/StarkEx/starkex folder
 #
 def get_contract(
-    contract_app: str, contract_name: str, subcontract_name: Optional[str] = None
+    contract_app: str, contract_name: str, contract_alias: Optional[str] = None
 ) -> Contract:
     """
     Return a web3.contract instance based on the corresponding solidity files
     defined in tests/integration/solidity_files.
 
-    If subcontract_name is provided, use it instead of contract_name for the result of compilation_outputs.
+    If contract_alias is provided, use it instead of contract_name for the result of compilation_outputs.
     """
     solidity_contracts_dir = Path("tests") / "integration" / "solidity_contracts"
     target_solidity_file_path = list(
@@ -187,8 +186,8 @@ def get_contract(
     if len(target_solidity_file_path) != 1:
         raise ValueError(f"Cannot locate a unique {contract_name} in {contract_app}")
 
-    if subcontract_name:
-        contract_name = subcontract_name
+    if contract_alias:
+        contract_name = contract_alias
 
     compilation_outputs = [
         json.load(open(file))
