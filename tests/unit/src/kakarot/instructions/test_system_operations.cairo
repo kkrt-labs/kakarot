@@ -6,7 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.default_dict import default_dict_new
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, uint256_sub
 from starkware.starknet.common.syscalls import deploy, get_contract_address
 from starkware.cairo.common.math import split_felt, assert_not_zero, assert_le
 
@@ -266,6 +266,10 @@ func test__exec_call__should_transfer_value{
     let (callee_starknet_contract_address) = Accounts.create(
         contract_account_class_hash_, callee_evm_contract_address
     );
+    
+    // Get the balance of caller pre-call
+    let (native_token_address_) = native_token_address.read();
+    let (caller_pre_balance) = IEth.balanceOf(contract_address=native_token_address_, account=caller_starknet_contract_address);
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
@@ -299,10 +303,13 @@ func test__exec_call__should_transfer_value{
     let sub_ctx = SystemOperations.exec_call(ctx);
 
     // Then
-    let (native_token_address_) = native_token_address.read();
-    let (balance) = IEth.balanceOf(contract_address=native_token_address_, account=callee_starknet_contract_address);
-    assert balance.low = 2;
-    assert balance.high = 0;
+    // get balances of caller and callee post-call
+    let (callee_balance) = IEth.balanceOf(contract_address=native_token_address_, account=callee_starknet_contract_address);
+    let (caller_post_balance) = IEth.balanceOf(contract_address=native_token_address_, account=caller_starknet_contract_address);
+    let (caller_diff_balance) = uint256_sub(caller_pre_balance, caller_post_balance);
+
+    assert callee_balance = Uint256(2, 0);
+    assert caller_diff_balance = Uint256(2, 0);
     return();
 }
 

@@ -31,12 +31,15 @@ async def system_operations(
 
 @pytest_asyncio.fixture(scope="module")
 async def mint(system_operations, eth):
-    # mint tokens to the 0x0 evm contract address
-    sender = int(get_create_address(ZERO_ACCOUNT, 0), 16)
-    starket_contract_address = (
-        await system_operations.compute_starknet_address(sender).call()
-    ).result.contract_address
-    await eth.mint(starket_contract_address, (2, 0)).execute()
+    async def _factory(evm_address: str, value: int):
+        # mint tokens to the provided evm address
+        sender = int(get_create_address(evm_address, 0), 16)
+        starket_contract_address = (
+            await system_operations.compute_starknet_address(sender).call()
+        ).result.contract_address
+        await eth.mint(starket_contract_address, int_to_uint256(value)).execute()
+
+    return _factory
 
 
 @pytest.mark.asyncio
@@ -57,8 +60,8 @@ class TestSystemOperations:
             1000
         ).call()
 
-    @pytest.mark.usefixtures("mint")
-    async def test_call(self, system_operations):
+    async def test_call(self, system_operations, mint):
+        await mint(ZERO_ACCOUNT, 2)
         await system_operations.test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack().call(
             system_operations.contract_address
         )
@@ -69,8 +72,8 @@ class TestSystemOperations:
 
         await system_operations.test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_stack().call()
 
-    @pytest.mark.usefixtures("mint")
-    async def test_call__should_transfer_value(self, system_operations):
+    async def test_call__should_transfer_value(self, system_operations, mint):
+        await mint(ZERO_ACCOUNT, 2)
         await system_operations.test__exec_call__should_transfer_value().call(
             system_operations.contract_address
         )
