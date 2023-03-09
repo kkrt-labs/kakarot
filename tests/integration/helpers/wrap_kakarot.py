@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import cast
+from typing import List, Optional, cast
 
 from starkware.starknet.testing.starknet import StarknetContract
 from web3 import Web3
@@ -14,12 +14,62 @@ from tests.utils.helpers import hex_string_to_bytes_array
 from tests.utils.reporting import traceit
 
 
+def get_matching_logs_for_event(codec, event_abi, log_receipts) -> List[dict]:
+    logs = []
+    for log_receipt in log_receipts:
+        try:
+            event_data = get_event_data(codec, event_abi, log_receipt)
+            logs += [event_data.args]
+        except:
+            pass
+    return logs
+
+
 def wrap_for_kakarot(
     contract: Contract, kakarot: StarknetContract, evm_contract_address: int
 ):
     """
     Wrap a web3.contract to use kakarot as backend.
     """
+
+    # query_logs enables three cases
+    # no kwargs means you get all of the log_receipts
+    # when a contract is supplied, you get all the log entries that correspond to the contract's event abi
+    # when a contract is supplied with an event name, you get the log entries that match that event name
+    def query_logs(self_contract, *args, **kwargs):
+        logs = []
+        codec = Web3().codec
+        contract = kwargs.pop("contract", None)
+        event_name = kwargs.pop("event_name", None)
+        log_receipts = self_contract.raw_log_receipts
+
+        # Case 1: No contract key supplied
+        # return all raw logs
+        if contract is None:
+            return log_receipts
+
+        # Case 2: Contract key supplied, no event name
+        # user gets all the events associated with a contract
+        if event_name is None:
+            for event_abi in contract.events._events:
+                logs += get_matching_logs_for_event(codec, event_abi, log_receipts)
+            return logs
+
+        # Case 3: Contract key and event name supplied
+        event_abi = next(
+            (
+                event_abi
+                for event_abi in contract.events._events
+                if event_abi["name"] == event_name
+            ),
+            None,
+        )
+        if event_abi is None:
+            raise ValueError(
+                f"Cannot find event ABI for {event_name} in contract {contract._contract_name}"
+            )
+        logs += get_matching_logs_for_event(codec, event_abi, log_receipts)
+        return logs
 
     def wrap_zk_evm(fun: str, evm_contract_address: int):
         """
@@ -93,14 +143,10 @@ def wrap_for_kakarot(
                     continue
 
             for event_abi in contract.events._events:
-                logs = []
-                for log_receipt in log_receipts:
-                    try:
-                        logs += [get_event_data(codec, event_abi, log_receipt).args]
-                    except:
-                        pass
+                logs = get_matching_logs_for_event(codec, event_abi, log_receipts)
                 setattr(contract.events, event_abi["name"], logs)
 
+            setattr(contract, "raw_log_receipts", log_receipts)
             setattr(contract, "tx", res)
 
             return result
@@ -113,6 +159,7 @@ def wrap_for_kakarot(
             fun,
             classmethod(wrap_zk_evm(fun, evm_contract_address)),
         )
+    setattr(contract, "query_logs", classmethod(query_logs))
     return contract
 
 
@@ -123,10 +170,14 @@ def wrap_for_kakarot(
 # Example: get_contract("Solmate", "ERC721") will load the ERC721.sol file in the tests/integration/solidity_contracts/Solmate folder
 # Example: get_contract("StarkEx", "StarkExchange") will load the StarkExchange.sol file in the tests/integration/solidity_contracts/StarkEx/starkex folder
 #
-def get_contract(contract_app: str, contract_name: str) -> Contract:
+def get_contract(
+    contract_app: str, contract_name: str, contract_alias: Optional[str] = None
+) -> Contract:
     """
     Return a web3.contract instance based on the corresponding solidity files
     defined in tests/integration/solidity_files.
+
+    If contract_alias is provided, use it instead of contract_name for the result of compilation_outputs.
     """
     solidity_contracts_dir = Path("tests") / "integration" / "solidity_contracts"
     target_solidity_file_path = list(
@@ -134,6 +185,9 @@ def get_contract(contract_app: str, contract_name: str) -> Contract:
     )
     if len(target_solidity_file_path) != 1:
         raise ValueError(f"Cannot locate a unique {contract_name} in {contract_app}")
+
+    if contract_alias:
+        contract_name = contract_alias
 
     compilation_outputs = [
         json.load(open(file))

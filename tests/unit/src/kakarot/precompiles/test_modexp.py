@@ -16,7 +16,7 @@ async def modexp(starknet: Starknet):
 
 
 @pytest.mark.asyncio
-@pytest.mark.MODEXP
+@pytest.mark.MOD_EXP
 class TestModExp:
     async def test_modexp(self, modexp):
 

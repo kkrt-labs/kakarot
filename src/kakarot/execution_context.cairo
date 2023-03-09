@@ -86,7 +86,9 @@ namespace ExecutionContext {
         let (empty_create_addresses: felt*) = alloc();
 
         let (local revert_contract_state_dict_start) = default_dict_new(0);
-        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(revert_contract_state_dict_start, revert_contract_state_dict_start);
+        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
+            revert_contract_state_dict_start, revert_contract_state_dict_start
+        );
 
         // Define initial program counter
         let initial_pc = 0;
@@ -125,7 +127,7 @@ namespace ExecutionContext {
             revert_contract_state=revert_contract_state,
             reverted=FALSE,
             read_only=FALSE,
-            );
+        );
         return self;
     }
 
@@ -181,7 +183,9 @@ namespace ExecutionContext {
         let (empty_events: model.Event*) = alloc();
         let (empty_create_contracts: felt*) = alloc();
         let (local revert_contract_state_dict_start) = default_dict_new(0);
-        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(revert_contract_state_dict_start, revert_contract_state_dict_start);
+        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
+            revert_contract_state_dict_start, revert_contract_state_dict_start
+        );
 
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();
@@ -303,7 +307,7 @@ namespace ExecutionContext {
             revert_contract_state=self.revert_contract_state,
             reverted=self.reverted,
             read_only=self.read_only,
-            );
+        );
     }
 
     // @notice Return whether the current execution context is reverted.
@@ -785,7 +789,7 @@ namespace ExecutionContext {
             revert_contract_state=self.revert_contract_state,
             reverted=self.reverted,
             read_only=self.read_only,
-            );
+        );
     }
 
     // @notice Update the array of events to emit in the case of a execution context successfully running to completion (see `LoggingHelper.finalize`).
@@ -827,7 +831,7 @@ namespace ExecutionContext {
             revert_contract_state=self.revert_contract_state,
             reverted=self.reverted,
             read_only=self.read_only,
-            );
+        );
     }
 
     // @notice Add one contract to the array of create contracts to destroy in the case of the execution context reverting.
@@ -896,7 +900,7 @@ namespace ExecutionContext {
             revert_contract_state=self.revert_contract_state,
             reverted=self.reverted,
             read_only=self.read_only,
-            );
+        );
     }
 
     // @notice Updates the dictionary that keeps track of the prior-to-first-write value of a contract storage key so it can be reverted to if the writing execution context reverts.
@@ -905,7 +909,9 @@ namespace ExecutionContext {
     func update_revert_contract_state(
         self: model.ExecutionContext*, dict_end: DictAccess*
     ) -> model.ExecutionContext* {
-        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(self.revert_contract_state.dict_start, dict_end);
+        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
+            self.revert_contract_state.dict_start, dict_end
+        );
         return new model.ExecutionContext(
             call_context=self.call_context,
             program_counter=self.program_counter,
