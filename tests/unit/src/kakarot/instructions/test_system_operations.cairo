@@ -6,7 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.default_dict import default_dict_new
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, uint256_sub
 from starkware.starknet.common.syscalls import deploy, get_contract_address
 from starkware.cairo.common.math import split_felt, assert_not_zero, assert_le
 
@@ -28,7 +28,7 @@ from kakarot.instructions.system_operations import (
     CreateHelper,
     SelfDestructHelper,
 )
-from kakarot.interfaces.interfaces import IContractAccount, IKakarot, IAccount
+from kakarot.interfaces.interfaces import IContractAccount, IKakarot, IAccount, IEth
 from kakarot.library import Kakarot
 from kakarot.accounts.library import Accounts
 from kakarot.model import model
@@ -40,11 +40,10 @@ from utils.utils import Helpers
 @constructor
 func constructor{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(contract_account_class_hash_: felt, account_proxy_class_hash_) {
+}(native_token_address_: felt, contract_account_class_hash_: felt, account_proxy_class_hash_) {
+    native_token_address.write(native_token_address_);
     account_proxy_class_hash.write(account_proxy_class_hash_);
     contract_account_class_hash.write(contract_account_class_hash_);
-    let (contract_address: felt) = get_contract_address();
-    native_token_address.write(contract_address);
     return ();
 }
 
@@ -67,17 +66,13 @@ func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     return Kakarot.get_native_token();
 }
 
-//
-// ETH ERC20
-//
-
-// @dev The contract account initialization includes a call to an ERC20 contract to set an infitite transfer allowance to Kakarot.
-// As the ERC20 contract is not deployed within this test, we make a call to this contract instead.
+// @dev mock function that returns the computed starknet address from an evm address
 @external
-func approve{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    spender: felt, amount: Uint256
-) -> (success: felt) {
-    return ERC20.approve(spender, amount);
+func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    evm_address: felt
+) -> (contract_address: felt) {
+    let (contract_address_) = Accounts.compute_starknet_address(evm_address);
+    return (contract_address=contract_address_);
 }
 
 //
@@ -173,19 +168,23 @@ func test__exec_revert{
 func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
-    // Deploy an empty contract
+    // Deploy two empty contract
     alloc_locals;
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
-    let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (local starknet_contract_address) = Accounts.create(
-        contract_account_class_hash_, evm_contract_address
+    let (caller_evm_contract_address) = CreateHelper.get_create_address(0, 0);
+    let (caller_starknet_contract_address) = Accounts.create(
+        contract_account_class_hash_, caller_evm_contract_address
+    );
+    let (callee_evm_contract_address) = CreateHelper.get_create_address(1, 0);
+    let (callee_starknet_contract_address) = Accounts.create(
+        contract_account_class_hash_, callee_evm_contract_address
     );
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
     let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
-    let (address_high, address_low) = split_felt(evm_contract_address);
+    let (address_high, address_low) = split_felt(callee_evm_contract_address);
     let address = Uint256(address_low, address_high);
     tempvar value = Uint256(2, 0);
     let args_offset = Uint256(3, 0);
@@ -208,7 +207,9 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     let stack = Stack.push(stack, memory_offset);
     let (bytecode) = alloc();
     local bytecode_len = 0;
-    let ctx = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
+    let ctx = TestHelpers.init_context_at_address_with_stack_and_caller_address(
+        caller_evm_contract_address, bytecode_len, bytecode, stack, caller_starknet_contract_address
+    );
     let ctx = MemoryOperations.exec_mstore(ctx);
 
     // When
@@ -230,8 +231,8 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
     assert_le(sub_ctx.gas_limit, gas_felt);
     assert sub_ctx.gas_price = 0;
-    assert sub_ctx.starknet_contract_address = starknet_contract_address;
-    assert sub_ctx.evm_contract_address = evm_contract_address;
+    assert sub_ctx.starknet_contract_address = callee_starknet_contract_address;
+    assert sub_ctx.evm_contract_address = callee_evm_contract_address;
     TestHelpers.assert_execution_context_equal(sub_ctx.calling_context, ctx);
 
     // Fake a RETURN in sub_ctx then teardow, see note in evm.codes:
@@ -247,6 +248,69 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     TestHelpers.assert_execution_context_equal(ctx.sub_context, sub_ctx);
 
     return ();
+}
+
+@external
+func test__exec_call__should_transfer_value{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    // Deploy two empty contract
+    alloc_locals;
+
+    let (contract_account_class_hash_) = contract_account_class_hash.read();
+    let (caller_evm_contract_address) = CreateHelper.get_create_address(0, 0);
+    let (caller_starknet_contract_address) = Accounts.create(
+        contract_account_class_hash_, caller_evm_contract_address
+    );
+    let (callee_evm_contract_address) = CreateHelper.get_create_address(1, 0);
+    let (callee_starknet_contract_address) = Accounts.create(
+        contract_account_class_hash_, callee_evm_contract_address
+    );
+    
+    // Get the balance of caller pre-call
+    let (native_token_address_) = native_token_address.read();
+    let (caller_pre_balance) = IEth.balanceOf(contract_address=native_token_address_, account=caller_starknet_contract_address);
+
+    // Fill the stack with input data
+    let stack: model.Stack* = Stack.init();
+    let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
+    let (address_high, address_low) = split_felt(callee_evm_contract_address);
+    let address = Uint256(address_low, address_high);
+    tempvar value = Uint256(2, 0);
+    let args_offset = Uint256(3, 0);
+    let args_size = Uint256(4, 0);
+    tempvar ret_offset = Uint256(5, 0);
+    tempvar ret_size = Uint256(6, 0);
+    let stack = Stack.push(stack, ret_size);
+    let stack = Stack.push(stack, ret_offset);
+    let stack = Stack.push(stack, args_size);
+    let stack = Stack.push(stack, args_offset);
+    let stack = Stack.push(stack, value);
+    let stack = Stack.push(stack, address);
+    let stack = Stack.push(stack, gas);
+    let memory_word = Uint256(low=0, high=22774453838368691922685013100469420032);
+    let memory_offset = Uint256(0, 0);
+    let stack = Stack.push(stack, memory_word);
+    let stack = Stack.push(stack, memory_offset);
+    let (bytecode) = alloc();
+    local bytecode_len = 0;
+    let ctx = TestHelpers.init_context_at_address_with_stack_and_caller_address(
+        caller_evm_contract_address, bytecode_len, bytecode, stack, caller_starknet_contract_address
+    );
+    let ctx = MemoryOperations.exec_mstore(ctx);
+
+    // When
+    let sub_ctx = SystemOperations.exec_call(ctx);
+
+    // Then
+    // get balances of caller and callee post-call
+    let (callee_balance) = IEth.balanceOf(contract_address=native_token_address_, account=callee_starknet_contract_address);
+    let (caller_post_balance) = IEth.balanceOf(contract_address=native_token_address_, account=caller_starknet_contract_address);
+    let (caller_diff_balance) = uint256_sub(caller_pre_balance, caller_post_balance);
+
+    assert callee_balance = Uint256(2, 0);
+    assert caller_diff_balance = Uint256(2, 0);
+    return();
 }
 
 @external
@@ -664,9 +728,8 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
 @external
 func test__exec_selfdestruct__should_delete_account_bytecode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(evm_address: felt) {
+}() {
     alloc_locals;
-    native_token_address.write(evm_address);
 
     // Create sub_ctx writing directly in memory because need to update calling_context
     let (bytecode) = alloc();

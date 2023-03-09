@@ -21,6 +21,9 @@ namespace IEth {
     func transfer(recipient: felt, amount: Uint256) -> (success: felt) {
     }
 
+    func transferFrom(sender: felt, recipient: felt, amount: Uint256) -> (success: felt) {
+    }
+
     func approve(spender: felt, amount: Uint256) -> (success: felt) {
     }
 }

@@ -60,7 +60,9 @@ class TestLibrary:
         expected_balances = Counter()
 
         # Storing initial balance, as eth storage persists across tests.
-        initial_balance = (await eth.balanceOf(mock_externally_owned_account.contract_address).call()).result.balance.low
+        initial_balance = (
+            await eth.balanceOf(mock_externally_owned_account.contract_address).call()
+        ).result.balance.low
 
         # Mint tokens to the EOA
         await eth.mint(
