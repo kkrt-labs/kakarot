@@ -412,7 +412,7 @@ func test__exec_callcode__should_transfer_value{
         contract_account_class_hash_, caller_evm_contract_address
     );
     let (callee_evm_contract_address) = CreateHelper.get_create_address(1, 0);
-    let (_) = Accounts.create(
+    let (callee_starknet_contract_address) = Accounts.create(
         contract_account_class_hash_, callee_evm_contract_address
     );
     
