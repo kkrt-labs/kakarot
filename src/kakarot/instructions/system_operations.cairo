@@ -316,7 +316,6 @@ namespace SystemOperations {
             return sub_ctx;
         }
 
-        let (caller) = get_caller_address();
         let (native_token_address_) = native_token_address.read();
         let amount_u256 = Helpers.to_uint256(sub_ctx.call_context.value);
         let sender = ctx.starknet_contract_address;
