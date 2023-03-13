@@ -66,7 +66,9 @@ class TestSystemOperations:
             system_operations.contract_address
         )
 
-        await system_operations.test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack().call()
+        await system_operations.test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack().call(
+            system_operations.contract_address
+        )
 
         await system_operations.test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_stack().call()
 
@@ -75,6 +77,10 @@ class TestSystemOperations:
     async def test_call__should_transfer_value(self, system_operations, mint):
         await mint(ZERO_ACCOUNT, 2)
         await system_operations.test__exec_call__should_transfer_value().call(
+            system_operations.contract_address
+        )
+
+        await system_operations.test__exec_callcode__should_transfer_value().call(
             system_operations.contract_address
         )
 
