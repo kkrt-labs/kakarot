@@ -21,19 +21,32 @@ NETWORK = (
     else "mainnet"
 )
 ADDRESSES = {
+    "mainnet": "alpha-mainnet",
     "testnet": "https://alpha4.starknet.io",
-    "mainnet": "https://alpha-mainnet.starknet.io",
-    "devnet": "http://127.0.0.1:5050",
     "testnet2": "https://alpha4-2.starknet.io",
+    "devnet": "http://127.0.0.1:5050",
 }
 GATEWAY_CLIENT = GatewayClient(net=ADDRESSES[NETWORK])
-STARKNET_NETWORK = "alpha-mainnet" if NETWORK == "mainnet" else "alpha-goerli"
+STARKNET_NETWORKS = {
+    "mainnet": "alpha-mainnet",
+    "testnet": "alpha-goerli",
+    "testnet2": "alpha-goerli2",
+    "devnet": "alpha-goerli",
+}
+STARKNET_NETWORK = STARKNET_NETWORKS[NETWORK]
+STARKSCAN_URLS = {
+    "mainnet": "https://starkscan.co",
+    "testnet": "https://testnet.starkscan.co",
+    "testnet2": "https://testnet-2.starkscan.co",
+    "devnet": "https://devnet.starkscan.co",
+}
+STARKSCAN_URL = STARKSCAN_URLS[NETWORK]
 
 
 class ChainId(Enum):
     mainnet = int.from_bytes(b"SN_MAIN", "big")
     testnet = int.from_bytes(b"SN_GOERLI", "big")
-    testnet2 = int.from_bytes(b"SN_GOERLI", "big")
+    testnet2 = int.from_bytes(b"SN_GOERLI2", "big")
     devnet = int.from_bytes(b"SN_GOERLI", "big")
 
 

@@ -40,7 +40,7 @@ async def main():
     class_hash = get_declarations()
 
     eth = await get_eth_contract()
-    account = get_account()
+    account = await get_account()
 
     deployments = {}
     deployments["kakarot"] = await deploy(
@@ -57,16 +57,16 @@ async def main():
     )
     dump_deployments(deployments)
 
-    logging.info("⏳ Configuring Contracts...")
+    logger.info("⏳ Configuring Contracts...")
     await invoke(
         "kakarot",
         "set_blockhash_registry",
         deployments["blockhash_registry"]["address"],
     )
-    logging.info("✅ Configuration Complete")
+    logger.info("✅ Configuration Complete")
 
     if EVM_ADDRESS:
-        logging.info(f"ℹ️ Found default EVM address {EVM_ADDRESS} to deploy an EOA for")
+        logger.info(f"ℹ️ Found default EVM address {EVM_ADDRESS} to deploy an EOA for")
         await deploy_and_fund_evm_address(EVM_ADDRESS, 0.1)
 
 
