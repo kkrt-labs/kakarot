@@ -20,13 +20,13 @@ NETWORK = (
     if re.match(r".*(devnet|local).*", NETWORK, flags=re.I)
     else "mainnet"
 )
-ADDRESSES = {
+GATEWAY_URLS = {
     "mainnet": "alpha-mainnet",
     "testnet": "https://alpha4.starknet.io",
     "testnet2": "https://alpha4-2.starknet.io",
     "devnet": "http://127.0.0.1:5050",
 }
-GATEWAY_CLIENT = GatewayClient(net=ADDRESSES[NETWORK])
+GATEWAY_CLIENT = GatewayClient(net=GATEWAY_URLS[NETWORK])
 STARKNET_NETWORKS = {
     "mainnet": "alpha-mainnet",
     "testnet": "alpha-goerli",
@@ -56,3 +56,11 @@ DEPLOYMENTS_DIR = Path("deployments") / NETWORK
 BUILD_DIR = Path("build")
 SOURCE_DIR = Path("src")
 CONTRACTS = {p.stem: p for p in list(SOURCE_DIR.glob("**/*.cairo"))}
+
+ACCOUNT_ADDRESS = (
+    os.environ.get(f"{NETWORK.upper()}_ACCOUNT_ADDRESS")
+    or os.environ["ACCOUNT_ADDRESS"]
+)
+PRIVATE_KEY = (
+    os.environ.get(f"{NETWORK.upper()}_PRIVATE_KEY") or os.environ["PRIVATE_KEY"]
+)

@@ -21,6 +21,7 @@ from starkware.starknet.public.abi import get_selector_from_name
 from starkware.starknet.wallets.account import DEFAULT_ACCOUNT_DIR
 
 from scripts.constants import (
+    ACCOUNT_ADDRESS,
     BUILD_DIR,
     CHAIN_ID,
     CONTRACTS,
@@ -28,6 +29,7 @@ from scripts.constants import (
     ETH_TOKEN_ADDRESS,
     GATEWAY_CLIENT,
     NETWORK,
+    PRIVATE_KEY,
     SOURCE_DIR,
     STARKNET_NETWORK,
     STARKSCAN_URL,
@@ -133,10 +135,8 @@ async def get_account(
             ),
         )
 
-    address = int(address or os.environ[f"{NETWORK}_ACCOUNT_ADDRESS".upper()], 16)
-    key_pair = KeyPair.from_private_key(
-        private_key or int(os.environ[f"{NETWORK}_PRIVATE_KEY".upper()], 16)
-    )
+    address = int(address or ACCOUNT_ADDRESS, 16)
+    key_pair = KeyPair.from_private_key(int(private_key or PRIVATE_KEY, 16))
     call = Call(
         to_addr=address,
         selector=get_selector_from_name("get_public_key"),
@@ -145,7 +145,7 @@ async def get_account(
     public_key = await GATEWAY_CLIENT.call_contract(call=call, block_hash="pending")
     if key_pair.public_key != public_key[0]:
         raise ValueError(
-            f"Public key of account {address:x} is not consistent with provided private key (env variable {NETWORK.upper()}_PRIVATE_KEY)"
+            f"Public key of account 0x{address:064x} is not consistent with provided private key"
         )
 
     return AccountClient(
@@ -325,7 +325,7 @@ async def declare(contract_name):
     )
     resp = await account.declare(transaction=declare_transaction)
     logger.info(f"⏳ Waiting for tx {get_tx_url(resp.transaction_hash)}")
-    await account.wait_for_tx(resp.transaction_hash)
+    await account.wait_for_tx(resp.transaction_hash, check_interval=15)
     logger.info(f"✅ {contract_name} class hash: {hex(resp.class_hash)}")
     return resp.class_hash
 
@@ -342,7 +342,7 @@ async def deploy(contract_name, *args):
         max_fee=int(1e16),
     )
     logger.info(f"⏳ Waiting for tx {get_tx_url(deploy_result.hash)}")
-    await deploy_result.wait_for_acceptance()
+    await deploy_result.wait_for_acceptance(check_interval=15)
     logger.info(
         f"✅ {contract_name} deployed at: {hex(deploy_result.deployed_contract.address)}"
     )
@@ -365,7 +365,7 @@ async def invoke(contract_name, function_name, *inputs, address=None):
     logger.info(f"⏳ Invoking {contract_name}.{function_name}({json.dumps(inputs)})")
     response = await account.execute(call, max_fee=int(1e16))
     logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
-    await account.wait_for_tx(response.transaction_hash)
+    await account.wait_for_tx(response.transaction_hash, check_interval=15)
     logger.info(
         f"✅ {contract_name}.{function_name} invoked at tx: %s",
         hex(response.transaction_hash),

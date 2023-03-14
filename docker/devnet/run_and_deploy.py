@@ -1,7 +1,6 @@
 import logging
 import subprocess
 import time
-from pathlib import Path
 
 import requests
 
@@ -31,5 +30,3 @@ deploy.check_returncode()
 
 devnet.terminate()
 devnet.wait()
-logger.info(f"ℹ️  Kakarot cache size: {Path('devnet.pkl').stat().st_size}")
-logger.info(f"ℹ️  Kakarot cache dir: {Path('devnet.pkl').absolute()}")

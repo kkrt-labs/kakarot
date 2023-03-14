@@ -8,8 +8,7 @@ venv
 
 # starknet
 node.json
-deployments/devnet/
-devnet.pkl
+deployments
 artifacts
 build
 

@@ -1,7 +1,0 @@
-{
-  "contract_account": "0xf04ebc8fb80044b5ee7bfb72e43c6adef7ffce157c448f1bf00b8508e313a7",
-  "externally_owned_account": "0x6f325e38945bbdf7041a80a20ba1b29c17a21e4b34b0a393e8fd96c85bef61e",
-  "proxy_account": "0x36d5b360513c298a225d1622acbcac808f12b18f0b4055dcc50537f19fa6e8f",
-  "kakarot": "0x5741bff2a34c75bbca8f2969834b87cdb3ea6086423e3d37b7567c0b91f602b",
-  "blockhash_registry": "0x6970d2e3c2e2e1d9375eb7dae68009356bc85fa9ff9415328811f1d418cfd57"
-}

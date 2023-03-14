@@ -88,4 +88,5 @@ build-sol:
 	forge build --names --force
 
 run:
-	poetry run starknet-devnet --lite-mode --seed 0 --dump-on exit --dump-path devnet.pkl --disable-rpc-request-validation
+	mkdir -p deployments/devnet
+	poetry run starknet-devnet --lite-mode --seed 0 --dump-on exit --dump-path deployments/devnet/devnet.pkl --disable-rpc-request-validation
