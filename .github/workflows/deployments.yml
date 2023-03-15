@@ -17,11 +17,13 @@ jobs:
         with:
           python-version: "3.9.13"
       - name: Load cached Poetry installation
+        id: cached-poetry
         uses: actions/cache@v3
         with:
           path: ~/.local # the path depends on the OS.
-          key: poetry-03022023 # use new date to reset poetry cache
+          key: poetry # use new date to reset poetry cache
       - name: Install Poetry
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
         with:
           virtualenvs-create: true
@@ -33,8 +35,7 @@ jobs:
         with:
           path: .venv
           key:
-            self-hosted-venv-${{ runner.os }}-${{
-            hashFiles('**/poetry.lock')}}-1
+            self-hosted-venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
