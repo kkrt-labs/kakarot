@@ -307,9 +307,28 @@ namespace SystemOperations {
         let sub_ctx = CallHelper.init_sub_context(
             calling_ctx=ctx, with_value=TRUE, read_only=ctx.read_only
         );
+        let recipient = sub_ctx.starknet_contract_address;
         let sub_ctx = ExecutionContext.update_addresses(
             sub_ctx, ctx.starknet_contract_address, ctx.evm_contract_address
         );
+
+        if (sub_ctx.call_context.value == 0) {
+            return sub_ctx;
+        }
+
+        let (native_token_address_) = native_token_address.read();
+        let amount_u256 = Helpers.to_uint256(sub_ctx.call_context.value);
+        let sender = ctx.starknet_contract_address;
+        let (success) = IEth.transferFrom(
+            contract_address=native_token_address_,
+            sender=sender,
+            recipient=recipient,
+            amount=amount_u256,
+        );
+        with_attr error_message(
+                "Kakarot: 0xF2: failed to transfer token from {sender} to {recipient}") {
+            assert success = TRUE;
+        }
 
         return sub_ctx;
     }
