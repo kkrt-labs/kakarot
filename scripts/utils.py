@@ -119,22 +119,6 @@ async def get_account(
     address=None,
     private_key=None,
 ) -> AccountClient:
-    if NETWORK == "devnet":
-        # Hard-coded values when running starknet-devnet with seed = 0
-        return AccountClient(
-            address="0x7e00d496e324876bbc8531f2d9a82bf154d1a04a50218ee74cdd372f75a551a",
-            client=GATEWAY_CLIENT,
-            supported_tx_version=1,
-            chain=CHAIN_ID,
-            key_pair=KeyPair(
-                private_key=int("0xe3e70682c2094cac629f6fbed82c07cd", 16),
-                public_key=int(
-                    "0x7e52885445756b313ea16849145363ccb73fb4ab0440dbac333cf9d13de82b9",
-                    16,
-                ),
-            ),
-        )
-
     address = int(address or ACCOUNT_ADDRESS, 16)
     key_pair = KeyPair.from_private_key(int(private_key or PRIVATE_KEY, 16))
     call = Call(
