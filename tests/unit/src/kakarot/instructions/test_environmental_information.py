@@ -88,20 +88,9 @@ class TestEnvironmentalInformation:
 
         assert memory_result == expected
 
-    @pytest.mark.parametrize(
-        "zeroes,nonzeroes",
-        [(4, 0), (0, 4), (4, 4)],
-        ids=["only_zeroes", "only_nonzeroes", "both_zeroes_and_nonzeroes"],
-    )
-    async def test_gasprice(self, environmental_information, zeroes, nonzeroes):
-        random.seed(0)
-        random_nonzeroes = [random.randint(1, 255) for _ in range(nonzeroes)]
-        calldata = [0] * zeroes + random_nonzeroes
-        random.shuffle(calldata)
+    async def test_gasprice(self, environmental_information):
 
-        await environmental_information.test__exec_gasprice(
-            zeroes=zeroes, nonzeroes=nonzeroes, calldata=calldata
-        ).call()
+        await environmental_information.test__exec_gasprice().call()
 
     @pytest.mark.skip("skipped because not handled currently")
     async def test_extcodehash__should_handle_invalid_address(

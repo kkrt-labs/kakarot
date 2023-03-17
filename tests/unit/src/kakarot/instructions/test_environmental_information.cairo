@@ -284,26 +284,19 @@ func test__exec_extcodecopy__should_handle_address_with_no_code{
 @external
 func test__exec_gasprice{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(zeroes: felt, nonzeroes: felt, calldata_len: felt, calldata: felt*) {
+}() {
     // Given
     alloc_locals;
     let (bytecode) = alloc();
     assert [bytecode] = 00;
     tempvar bytecode_len = 1;
-
-    let dynamic_gas_price_felt = zeroes * 4 + nonzeroes * 16;
-    let expected_gas_price_felt = dynamic_gas_price_felt + Constants.TRANSACTION_INTRINSIC_GAS_COST;
-    let expected_gas_price_uint256 = Helpers.to_uint256(expected_gas_price_felt);
-
-    // When
-    local call_context: model.CallContext* = new model.CallContext(
-        bytecode=bytecode,
-        bytecode_len=bytecode_len,
-        calldata=calldata,
-        calldata_len=calldata_len,
-        value=0,
+    let stack = Stack.init();
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(
+        bytecode_len, bytecode, stack
     );
-    let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
+
+    let expected_gas_price_uint256 = Helpers.to_uint256(ctx.gas_price);
+
     let result = EnvironmentalInformation.exec_gasprice(ctx);
     let (stack, gasprice) = Stack.peek(result.stack, 0);
 

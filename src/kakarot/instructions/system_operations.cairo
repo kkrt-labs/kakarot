@@ -395,10 +395,10 @@ namespace SystemOperations {
         );
         let sender = ctx.starknet_contract_address;
         let (success) = IEth.transferFrom(
-            contract_address=native_token_address_, 
+            contract_address=native_token_address_,
             sender=sender,
-            recipient=address_felt, 
-            amount=balance
+            recipient=address_felt,
+            amount=balance,
         );
         with_attr error_message(
                 "Kakarot: 0xFF: failed to transfer token from {sender} to {address_felt}") {
