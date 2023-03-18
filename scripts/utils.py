@@ -430,7 +430,7 @@ async def execute_at_address(
     evm_contract_address: int,
     value: int,
 ):
-    """Execute the provided bytecode at the provided EVM contract address on Kakarot."""
+    """Execute the bytecode at the EVM contract address on Kakarot."""
     account = AccountClient(
         address=starknet_account_address,
         client=GATEWAY_CLIENT,
