@@ -6,6 +6,7 @@ import re
 import subprocess
 from pathlib import Path
 from typing import Optional, Union
+from rlp import encode
 
 import requests
 from caseconverter import snakecase
@@ -19,6 +20,9 @@ from starknet_py.proxy.contract_abi_resolver import ProxyConfig
 from starknet_py.proxy.proxy_check import ProxyCheck
 from starkware.starknet.public.abi import get_selector_from_name
 from starkware.starknet.wallets.account import DEFAULT_ACCOUNT_DIR
+from eth_keys import keys
+from eth_keys.datatypes import Signature
+from eth_utils import keccak
 
 from scripts.constants import (
     ACCOUNT_ADDRESS,
@@ -380,6 +384,136 @@ async def call(contract_name, function_name, *inputs, address=None):
         account,
     )
     return await contract.functions[function_name].call(*inputs)
+
+
+async def deploy_contract_account(
+    kakarot_contract_address: str,
+    starknet_account_address: str,
+    evm_private_key: int,
+    bytecode: bytes,
+):
+    """Deploy a contract account with the provided bytecode."""
+    account = AccountClient(
+        address=starknet_account_address,
+        client=GATEWAY_CLIENT,
+        supported_tx_version=1,
+        chain=CHAIN_ID,
+        key_pair=KeyPair.from_private_key(0xDEAD),
+    )
+    private_key = keys.PrivateKey(
+        int.to_bytes(
+            evm_private_key,
+            32,
+            "big",
+        )
+    )
+    tx_payload = get_payload(data=bytecode, private_key=private_key)
+
+    logger.info(f"⏳ Deploying contract account")
+    response = await account.execute(
+        calls=Call(
+            to_addr=int(kakarot_contract_address, 16),
+            selector=get_selector_from_name("deploy_contract_account"),
+            calldata=tx_payload,
+        ),
+        max_fee=int(1e16),
+    )
+    logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
+    await account.wait_for_tx(tx_hash=response.transaction_hash, check_interval=15)
+
+
+async def execute_at_address(
+    kakarot_contract_address: str,
+    starknet_account_address: str,
+    bytecode: bytes,
+    evm_private_key: int,
+    evm_contract_address: int,
+    value: int,
+):
+    """Execute the provided bytecode at the provided EVM contract address on Kakarot."""
+    account = AccountClient(
+        address=starknet_account_address,
+        client=GATEWAY_CLIENT,
+        supported_tx_version=1,
+        chain=CHAIN_ID,
+        key_pair=KeyPair.from_private_key(0xDEAD),
+    )
+    private_key = keys.PrivateKey(
+        int.to_bytes(
+            evm_private_key,
+            32,
+            "big",
+        )
+    )
+    tx_payload = get_payload(
+        data=bytecode,
+        private_key=private_key,
+        value=value,
+        destination=evm_contract_address,
+    )
+
+    logger.info(
+        f"⏳ Executing the provided bytecode for the contract at {hex(evm_contract_address)}"
+    )
+    response = await account.execute(
+        calls=Call(
+            to_addr=int(kakarot_contract_address, 16),
+            selector=get_selector_from_name("execute_at_address"),
+            calldata=tx_payload,
+        ),
+        max_fee=int(1e16),
+    )
+    logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
+    await account.wait_for_tx(tx_hash=response.transaction_hash, check_interval=15)
+
+
+def get_payload(
+    data: list,
+    private_key: keys.PrivateKey,
+    tx_type: int = 0x02,
+    destination: int = 0x0,
+    value: int = 0x0,
+):
+    tx_payload_hash = keccak(
+        get_encoded_payload(
+            data=data, tx_type=tx_type, destination=destination, value=value
+        )
+    )
+    signature = private_key.sign_msg_hash(message_hash=tx_payload_hash)
+    return list(
+        get_encoded_payload(
+            data=data,
+            tx_type=tx_type,
+            destination=destination,
+            value=value,
+            signature=signature,
+        )
+    )
+
+
+def get_encoded_payload(
+    data: list,
+    tx_type: int = 0x02,
+    destination: int = 0x0,
+    value: int = 0x0,
+    signature: Signature = None,
+):
+    """RLP Encode the payload for a transaction."""
+    """Based on https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1559.md#specification"""
+    payload = [
+        CHAIN_ID,
+        0xDEAD,  # nonce
+        0xDEAD,  # max_priority_fee_per_gas
+        0xDEAD,  # max_fee_per_gas
+        0xDEAD,  # gas_limit
+        destination,
+        value,
+        data,
+        [],  # access_list
+    ]
+    if signature != None:
+        payload += [bool(signature.v), signature.r, signature.s]
+    return tx_type.to_bytes(1, "big") + encode(payload)
 
 
 @functools.wraps(GATEWAY_CLIENT.wait_for_tx)
