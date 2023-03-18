@@ -266,10 +266,12 @@ func test__exec_call__should_transfer_value{
     let (callee_starknet_contract_address) = Accounts.create(
         contract_account_class_hash_, callee_evm_contract_address
     );
-    
+
     // Get the balance of caller pre-call
     let (native_token_address_) = native_token_address.read();
-    let (caller_pre_balance) = IEth.balanceOf(contract_address=native_token_address_, account=caller_starknet_contract_address);
+    let (caller_pre_balance) = IEth.balanceOf(
+        contract_address=native_token_address_, account=caller_starknet_contract_address
+    );
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
@@ -304,13 +306,17 @@ func test__exec_call__should_transfer_value{
 
     // Then
     // get balances of caller and callee post-call
-    let (callee_balance) = IEth.balanceOf(contract_address=native_token_address_, account=callee_starknet_contract_address);
-    let (caller_post_balance) = IEth.balanceOf(contract_address=native_token_address_, account=caller_starknet_contract_address);
+    let (callee_balance) = IEth.balanceOf(
+        contract_address=native_token_address_, account=callee_starknet_contract_address
+    );
+    let (caller_post_balance) = IEth.balanceOf(
+        contract_address=native_token_address_, account=caller_starknet_contract_address
+    );
     let (caller_diff_balance) = uint256_sub(caller_pre_balance, caller_post_balance);
 
     assert callee_balance = Uint256(2, 0);
     assert caller_diff_balance = Uint256(2, 0);
-    return();
+    return ();
 }
 
 @external
@@ -326,9 +332,7 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
         contract_account_class_hash_, caller_evm_contract_address
     );
     let (callee_evm_contract_address) = CreateHelper.get_create_address(1, 0);
-    let (_) = Accounts.create(
-        contract_account_class_hash_, callee_evm_contract_address
-    );
+    let (_) = Accounts.create(contract_account_class_hash_, callee_evm_contract_address);
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
@@ -415,10 +419,12 @@ func test__exec_callcode__should_transfer_value{
     let (callee_starknet_contract_address) = Accounts.create(
         contract_account_class_hash_, callee_evm_contract_address
     );
-    
+
     // Get the balance of caller pre-call
     let (native_token_address_) = native_token_address.read();
-    let (caller_pre_balance) = IEth.balanceOf(contract_address=native_token_address_, account=caller_starknet_contract_address);
+    let (caller_pre_balance) = IEth.balanceOf(
+        contract_address=native_token_address_, account=caller_starknet_contract_address
+    );
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
@@ -453,13 +459,17 @@ func test__exec_callcode__should_transfer_value{
 
     // Then
     // get balances of caller and callee post-call
-    let (callee_balance) = IEth.balanceOf(contract_address=native_token_address_, account=callee_starknet_contract_address);
-    let (caller_post_balance) = IEth.balanceOf(contract_address=native_token_address_, account=caller_starknet_contract_address);
+    let (callee_balance) = IEth.balanceOf(
+        contract_address=native_token_address_, account=callee_starknet_contract_address
+    );
+    let (caller_post_balance) = IEth.balanceOf(
+        contract_address=native_token_address_, account=caller_starknet_contract_address
+    );
     let (caller_diff_balance) = uint256_sub(caller_pre_balance, caller_post_balance);
 
     assert callee_balance = Uint256(2, 0);
     assert caller_diff_balance = Uint256(2, 0);
-    return();
+    return ();
 }
 
 @external
