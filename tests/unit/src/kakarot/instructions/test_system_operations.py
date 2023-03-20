@@ -10,20 +10,36 @@ from tests.utils.errors import kakarot_error
 from tests.utils.helpers import get_create2_address, get_create_address
 from tests.utils.uint256 import int_to_uint256
 
+ZERO_ACCOUNT = "0x0000000000000000000000000000000000000000"
+
 
 @pytest_asyncio.fixture(scope="module")
 async def system_operations(
-    starknet: Starknet, contract_account_class, account_proxy_class
+    starknet: Starknet, eth, contract_account_class, account_proxy_class
 ):
     return await starknet.deploy(
         source="./tests/unit/src/kakarot/instructions/test_system_operations.cairo",
         cairo_path=["src"],
         constructor_calldata=[
+            eth.contract_address,
             contract_account_class.class_hash,
             account_proxy_class.class_hash,
         ],
         disable_hint_validation=True,
     )
+
+
+@pytest_asyncio.fixture(scope="module")
+async def mint(system_operations, eth):
+    async def _factory(evm_address: str, value: int):
+        # mint tokens to the provided evm address
+        sender = int(get_create_address(evm_address, 0), 16)
+        starket_contract_address = (
+            await system_operations.compute_starknet_address(sender).call()
+        ).result.contract_address
+        await eth.mint(starket_contract_address, int_to_uint256(value)).execute()
+
+    return _factory
 
 
 @pytest.mark.asyncio
@@ -44,14 +60,29 @@ class TestSystemOperations:
             1000
         ).call()
 
-    async def test_call(self, system_operations):
-        await system_operations.test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack().call()
+    async def test_call(self, system_operations, mint):
+        await mint(ZERO_ACCOUNT, 2)
+        await system_operations.test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack().call(
+            system_operations.contract_address
+        )
 
-        await system_operations.test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack().call()
+        await system_operations.test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack().call(
+            system_operations.contract_address
+        )
 
         await system_operations.test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_stack().call()
 
         await system_operations.test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_stack().call()
+
+    async def test_call__should_transfer_value(self, system_operations, mint):
+        await mint(ZERO_ACCOUNT, 2)
+        await system_operations.test__exec_call__should_transfer_value().call(
+            system_operations.contract_address
+        )
+
+        await system_operations.test__exec_callcode__should_transfer_value().call(
+            system_operations.contract_address
+        )
 
     @pytest.mark.parametrize("salt", [127, 256, 2**55 - 1])
     async def test_create(self, system_operations, salt):
@@ -62,7 +93,8 @@ class TestSystemOperations:
 
         await system_operations.test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at_expected_address(
             evm_caller_address_int,
-            salt,
+            # Nonce will be incremented before exec_create is executed, therefore we subtract 1
+            salt - 1,
             from_bytes(decode_hex(expected_create_addr)),
         ).call()
 
@@ -94,7 +126,7 @@ class TestSystemOperations:
             from_bytes(decode_hex(expected_create2_addr)),
         ).call()
 
-    async def test_selfdestruct(self, system_operations, eth):
-        await system_operations.test__exec_selfdestruct__should_delete_account_bytecode(
-            eth.contract_address,
-        ).call()
+    async def test_selfdestruct(self, system_operations):
+        await system_operations.test__exec_selfdestruct__should_delete_account_bytecode().call(
+            system_operations.contract_address
+        )

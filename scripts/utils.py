@@ -5,16 +5,23 @@ import os
 import re
 import subprocess
 from pathlib import Path
-from typing import Union
+from typing import Optional, Union
 
 import requests
 from caseconverter import snakecase
 from starknet_py.contract import Contract
 from starknet_py.net import AccountClient
+from starknet_py.net.client import Client
+from starknet_py.net.client_models import Call
+from starknet_py.net.models import Address
 from starknet_py.net.signer.stark_curve_signer import KeyPair
+from starknet_py.proxy.contract_abi_resolver import ProxyConfig
+from starknet_py.proxy.proxy_check import ProxyCheck
+from starkware.starknet.public.abi import get_selector_from_name
 from starkware.starknet.wallets.account import DEFAULT_ACCOUNT_DIR
 
 from scripts.constants import (
+    ACCOUNT_ADDRESS,
     BUILD_DIR,
     CHAIN_ID,
     CONTRACTS,
@@ -22,8 +29,10 @@ from scripts.constants import (
     ETH_TOKEN_ADDRESS,
     GATEWAY_CLIENT,
     NETWORK,
+    PRIVATE_KEY,
     SOURCE_DIR,
     STARKNET_NETWORK,
+    STARKSCAN_URL,
 )
 
 logging.basicConfig()
@@ -47,7 +56,9 @@ async def create_account():
         "STARKNET_WALLET"
     ] = "starkware.starknet.wallets.open_zeppelin.OpenZeppelinAccount"
     env["STARKNET_NETWORK"] = STARKNET_NETWORK
-    logger.info("⏳ Creating account")
+    logger.info(
+        f"⏳ Creating account on network {STARKNET_NETWORK} with {GATEWAY_CLIENT.net}"
+    )
     output = subprocess.run(
         ["starknet", "new_account", "--account", "kakarot"],
         env=env,
@@ -58,6 +69,7 @@ async def create_account():
     account_address = re.search(
         r"account address: (.*)", (output.stdout.decode() + output.stderr.decode()).lower()  # type: ignore
     )[1]
+    logger.info(f"✅ Starknet account created locally with address {account_address}")
     input(f"Send ETH to {account_address} and press enter to continue")
     output = subprocess.run(
         [
@@ -81,15 +93,15 @@ async def create_account():
     await GATEWAY_CLIENT.wait_for_tx(transaction_hash)
 
 
-def get_default_account() -> AccountClient:
+async def get_default_account() -> AccountClient:
     accounts = json.load(
         open(list(Path(DEFAULT_ACCOUNT_DIR).expanduser().glob("*.json"))[0])
     )
     account = accounts.get(STARKNET_NETWORK, {}).get("kakarot")
     if account is None:
-        raise ValueError(
-            f"No account found for NETWORK {NETWORK} (KeyError: {STARKNET_NETWORK})"
-        )
+        await create_account()
+
+    logger.info(f"ℹ️  Using account {account['address']:x}")
 
     return AccountClient(
         address=account["address"],
@@ -103,49 +115,72 @@ def get_default_account() -> AccountClient:
     )
 
 
-def get_account(
+async def get_account(
     address=None,
     private_key=None,
 ) -> AccountClient:
-    if NETWORK == "devnet":
-        # Hard-coded values when running starknet-devnet with seed = 0
-        return AccountClient(
-            address="0x7e00d496e324876bbc8531f2d9a82bf154d1a04a50218ee74cdd372f75a551a",
-            client=GATEWAY_CLIENT,
-            supported_tx_version=1,
-            chain=CHAIN_ID,
-            key_pair=KeyPair(
-                private_key=int("0xe3e70682c2094cac629f6fbed82c07cd", 16),
-                public_key=int(
-                    "0x7e52885445756b313ea16849145363ccb73fb4ab0440dbac333cf9d13de82b9",
-                    16,
-                ),
-            ),
+    address = int(address or ACCOUNT_ADDRESS, 16)
+    key_pair = KeyPair.from_private_key(int(private_key or PRIVATE_KEY, 16))
+    call = Call(
+        to_addr=address,
+        selector=get_selector_from_name("get_public_key"),
+        calldata=[],
+    )
+    public_key = await GATEWAY_CLIENT.call_contract(call=call, block_hash="pending")
+    if key_pair.public_key != public_key[0]:
+        raise ValueError(
+            f"Public key of account 0x{address:064x} is not consistent with provided private key"
         )
 
     return AccountClient(
-        address=address or os.environ["ACCOUNT_ADDRESS"],
+        address=address,
         client=GATEWAY_CLIENT,
         supported_tx_version=1,
         chain=CHAIN_ID,
-        key_pair=KeyPair.from_private_key(
-            private_key or int(os.environ["PRIVATE_KEY"])
-        ),
+        key_pair=key_pair,
     )
 
 
 async def get_eth_contract() -> Contract:
-    account = get_account()
+    account = await get_account()
+
+    class EthProxyCheck(ProxyCheck):
+        """
+        See https://github.com/software-mansion/starknet.py/issues/856
+        """
+
+        async def implementation_address(
+            self, address: Address, client: Client
+        ) -> Optional[int]:
+            return await self.get_implementation(address, client)
+
+        async def implementation_hash(
+            self, address: Address, client: Client
+        ) -> Optional[int]:
+            return await self.get_implementation(address, client)
+
+        @staticmethod
+        async def get_implementation(address: Address, client: Client) -> Optional[int]:
+            call = Call(
+                to_addr=address,
+                selector=get_selector_from_name("implementation"),
+                calldata=[],
+            )
+            (implementation,) = await client.call_contract(call=call)
+            return implementation
+
+    proxy_config = (
+        ProxyConfig(proxy_checks=[EthProxyCheck()]) if NETWORK != "devnet" else False
+    )
     return await Contract.from_address(
-        ETH_TOKEN_ADDRESS,
-        account,
+        ETH_TOKEN_ADDRESS, account, proxy_config=proxy_config
     )
 
 
 async def get_contract(contract_name) -> Contract:
     return await Contract.from_address(
         get_deployments()[contract_name]["address"],
-        get_account(),
+        await get_account(),
     )
 
 
@@ -163,7 +198,7 @@ async def fund_address(address: Union[int, str], amount: float):
             logger.error(f"Cannot mint token to {address}: {response.text}")
         logger.info(f"{amount / 1e18} ETH minted to {address}")
     else:
-        account = get_account()
+        account = await get_account()
         eth_contract = await get_eth_contract()
         balance = (await eth_contract.functions["balanceOf"].call(account.address)).balance  # type: ignore
         if balance < amount:
@@ -239,6 +274,10 @@ def get_alias(contract_name):
     return snakecase(contract_name)
 
 
+def get_tx_url(tx_hash: int) -> str:
+    return f"{STARKSCAN_URL}/tx/0x{tx_hash:064x}"
+
+
 def compile_contract(contract_name):
     contract_file = CONTRACTS.get(contract_name)
     if contract_file is None:
@@ -263,13 +302,14 @@ def compile_contract(contract_name):
 
 async def declare(contract_name):
     logger.info(f"⏳ Declaring {contract_name}")
-    account = get_account()
+    account = await get_account()
     artifact = get_artifact(contract_name)
     declare_transaction = await account.sign_declare_transaction(
         compiled_contract=Path(artifact).read_text(), max_fee=int(1e16)
     )
     resp = await account.declare(transaction=declare_transaction)
-    await account.wait_for_tx(resp.transaction_hash)
+    logger.info(f"⏳ Waiting for tx {get_tx_url(resp.transaction_hash)}")
+    await account.wait_for_tx(resp.transaction_hash, check_interval=15)
     logger.info(f"✅ {contract_name} class hash: {hex(resp.class_hash)}")
     return resp.class_hash
 
@@ -277,7 +317,7 @@ async def declare(contract_name):
 async def deploy(contract_name, *args):
     logger.info(f"⏳ Deploying {contract_name}")
     abi = json.loads(Path(get_abi(contract_name)).read_text())
-    account = get_account()
+    account = await get_account()
     deploy_result = await Contract.deploy_contract(
         account=account,
         class_hash=get_declarations()[contract_name],
@@ -285,7 +325,8 @@ async def deploy(contract_name, *args):
         constructor_args=list(args),
         max_fee=int(1e16),
     )
-    await deploy_result.wait_for_acceptance()
+    logger.info(f"⏳ Waiting for tx {get_tx_url(deploy_result.hash)}")
+    await deploy_result.wait_for_acceptance(check_interval=15)
     logger.info(
         f"✅ {contract_name} deployed at: {hex(deploy_result.deployed_contract.address)}"
     )
@@ -297,7 +338,7 @@ async def deploy(contract_name, *args):
 
 
 async def invoke(contract_name, function_name, *inputs, address=None):
-    account = get_account()
+    account = await get_account()
     deployments = get_deployments()
     contract = Contract(
         deployments[contract_name]["address"] if address is None else address,
@@ -307,7 +348,8 @@ async def invoke(contract_name, function_name, *inputs, address=None):
     call = contract.functions[function_name].prepare(*inputs, max_fee=int(1e16))
     logger.info(f"⏳ Invoking {contract_name}.{function_name}({json.dumps(inputs)})")
     response = await account.execute(call, max_fee=int(1e16))
-    await account.wait_for_tx(response.transaction_hash)
+    logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
+    await account.wait_for_tx(response.transaction_hash, check_interval=15)
     logger.info(
         f"✅ {contract_name}.{function_name} invoked at tx: %s",
         hex(response.transaction_hash),
@@ -317,7 +359,7 @@ async def invoke(contract_name, function_name, *inputs, address=None):
 
 async def call(contract_name, function_name, *inputs, address=None):
     deployments = get_deployments()
-    account = get_account()
+    account = await get_account()
     contract = Contract(
         deployments[contract_name]["address"] if address is None else address,
         json.load(open(get_artifact(contract_name)))["abi"],

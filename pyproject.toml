@@ -41,7 +41,8 @@ codespell = "^2.2.2"
 filterwarnings = [
     "ignore:Using or importing the ABCs:DeprecationWarning",                                # from frozendict
     "ignore:lexer_state will be removed in subsequent releases. Use lexer_thread instead.", # from lark
-    'ignore:abi:DeprecationWarning',                                                        # from web3
+    "ignore:abi:DeprecationWarning",                                                        # from web3
+    "ignore::marshmallow.warnings.RemovedInMarshmallow4Warning",                            # from marshmallow
 ]
 asyncio_mode = "auto"
 markers = [

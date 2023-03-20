@@ -26,7 +26,6 @@ from starkware.starknet.common.syscalls import deploy as deploy_syscall, get_con
 from kakarot.constants import (
     account_proxy_class_hash,
     contract_account_class_hash,
-    salt,
     native_token_address,
     Constants,
 )
@@ -77,8 +76,6 @@ namespace SystemOperations {
         let (stack, popped) = Stack.pop_n(self=ctx.stack, n=3);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        let value = popped[0];
-        let offset = popped[1];
         let size = popped[2];
 
         // create dynamic gas:
@@ -251,6 +248,25 @@ namespace SystemOperations {
             assert ctx.read_only * sub_ctx.call_context.value = FALSE;
         }
 
+        if (sub_ctx.call_context.value == 0) {
+            return sub_ctx;
+        }
+
+        let (native_token_address_) = native_token_address.read();
+        let amount_u256 = Helpers.to_uint256(sub_ctx.call_context.value);
+        let sender = ctx.starknet_contract_address;
+        let recipient = sub_ctx.starknet_contract_address;
+        let (success) = IEth.transferFrom(
+            contract_address=native_token_address_,
+            sender=sender,
+            recipient=recipient,
+            amount=amount_u256,
+        );
+        with_attr error_message(
+                "Kakarot: 0xF1: failed to transfer token from {sender} to {recipient}") {
+            assert success = TRUE;
+        }
+
         return sub_ctx;
     }
 
@@ -291,9 +307,28 @@ namespace SystemOperations {
         let sub_ctx = CallHelper.init_sub_context(
             calling_ctx=ctx, with_value=TRUE, read_only=ctx.read_only
         );
+        let recipient = sub_ctx.starknet_contract_address;
         let sub_ctx = ExecutionContext.update_addresses(
             sub_ctx, ctx.starknet_contract_address, ctx.evm_contract_address
         );
+
+        if (sub_ctx.call_context.value == 0) {
+            return sub_ctx;
+        }
+
+        let (native_token_address_) = native_token_address.read();
+        let amount_u256 = Helpers.to_uint256(sub_ctx.call_context.value);
+        let sender = ctx.starknet_contract_address;
+        let (success) = IEth.transferFrom(
+            contract_address=native_token_address_,
+            sender=sender,
+            recipient=recipient,
+            amount=amount_u256,
+        );
+        with_attr error_message(
+                "Kakarot: 0xF2: failed to transfer token from {sender} to {recipient}") {
+            assert success = TRUE;
+        }
 
         return sub_ctx;
     }
@@ -358,10 +393,15 @@ namespace SystemOperations {
         let (balance: Uint256) = IEth.balanceOf(
             contract_address=native_token_address_, account=ctx.starknet_contract_address
         );
-        let (success) = IEth.transfer(
-            contract_address=native_token_address_, recipient=address_felt, amount=balance
+        let sender = ctx.starknet_contract_address;
+        let (success) = IEth.transferFrom(
+            contract_address=native_token_address_,
+            sender=sender,
+            recipient=address_felt,
+            amount=balance,
         );
-        with_attr error_message("Kakarot: Transfer failed") {
+        with_attr error_message(
+                "Kakarot: 0xFF: failed to transfer token from {sender} to {address_felt}") {
             assert success = TRUE;
         }
 
@@ -493,9 +533,8 @@ namespace CallHelper {
             return_data_len=call_args.ret_size,
             return_data=call_args.return_data,
         );
-        
-        return sub_ctx;
 
+        return sub_ctx;
     }
 
     // @notice At the end of a sub-context call, the calling context's stack and memory are updated.
@@ -561,7 +600,7 @@ namespace CreateHelper {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(sender_address: felt, salt: felt) -> (evm_contract_address: felt) {
+    }(sender_address: felt, nonce: felt) -> (evm_contract_address: felt) {
         alloc_locals;
         let (keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
@@ -587,8 +626,8 @@ namespace CreateHelper {
             address_packed_bytes_len, address_packed_bytes, 0, packed_bytes
         );
 
-        // encode salt rlp
-        let (packed_bytes_len) = RLP.encode_felt(salt, packed_bytes_len, packed_bytes);
+        // encode nonce rlp
+        let (packed_bytes_len) = RLP.encode_felt(nonce, packed_bytes_len, packed_bytes);
 
         let (local rlp_list: felt*) = alloc();
         let (rlp_list_len: felt) = RLP.encode_list(packed_bytes_len, packed_bytes, rlp_list);
@@ -763,19 +802,21 @@ namespace CreateHelper {
         // so we use popped_len to derive the way we should handle
         // the creation of evm addresses
         if (popped_len != 4) {
-            let (nonce) = salt.read();
+            // Increment happens before we fetch nonce
+            // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-161.md
+            let (nonce) = IContractAccount.increment_nonce(ctx.starknet_contract_address);
             let (evm_contract_address) = CreateHelper.get_create_address(
                 ctx.evm_contract_address, nonce
             );
 
-            salt.write(nonce + 1);
             let (contract_account_class_hash_) = contract_account_class_hash.read();
             let (starknet_contract_address) = Accounts.create(
                 contract_account_class_hash_, evm_contract_address
             );
             let ctx = ExecutionContext.push_create_address(ctx, starknet_contract_address);
             let (local revert_contract_state_dict_start) = default_dict_new(0);
-            tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(revert_contract_state_dict_start, revert_contract_state_dict_start);
+            tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
+                revert_contract_state_dict_start, revert_contract_state_dict_start);
             tempvar sub_ctx = new model.ExecutionContext(
                 call_context=call_context,
                 program_counter=0,
@@ -804,12 +845,12 @@ namespace CreateHelper {
 
             return sub_ctx;
         } else {
-            let _salt = popped[3];
+            let _nonce = popped[3];
             let (evm_contract_address) = CreateHelper.get_create2_address(
                 sender_address=ctx.evm_contract_address,
                 bytecode_len=size.low,
                 bytecode=bytecode,
-                salt=_salt,
+                salt=_nonce,
             );
 
             let (contract_account_class_hash_) = contract_account_class_hash.read();
@@ -818,7 +859,8 @@ namespace CreateHelper {
             );
             let ctx = ExecutionContext.push_create_address(ctx, starknet_contract_address);
             let (local revert_contract_state_dict_start) = default_dict_new(0);
-            tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(revert_contract_state_dict_start, revert_contract_state_dict_start);
+            tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
+                revert_contract_state_dict_start, revert_contract_state_dict_start);
             tempvar sub_ctx = new model.ExecutionContext(
                 call_context=call_context,
                 program_counter=0,
@@ -863,7 +905,9 @@ namespace CreateHelper {
         let is_reverted = ExecutionContext.is_reverted(ctx);
 
         if (is_reverted != 0) {
-            local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(self=ctx.calling_context, sub_context=ctx);
+            local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(
+                self=ctx.calling_context, sub_context=ctx
+            );
             // In the case of a reverted create context, the gas of the reverted context should be rolled back and not consumed
 
             // Append contracts to selfdestruct to the calling_context
@@ -891,7 +935,9 @@ namespace CreateHelper {
             let dynamic_gas = ctx.gas_used + 200 * ctx.return_data_len * Constants.BYTES_PER_FELT;
             let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=dynamic_gas);
 
-            local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(self=ctx.calling_context, sub_context=ctx);
+            local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(
+                self=ctx.calling_context, sub_context=ctx
+            );
             let ctx = ExecutionContext.increment_gas_used(ctx, ctx.sub_context.gas_used);
 
             // Append contracts to selfdestruct to the calling_context
@@ -930,7 +976,9 @@ namespace SelfDestructHelper {
         let (empty_create_addresses: felt*) = alloc();
         let (empty_events: model.Event*) = alloc();
         let (revert_contract_state_dict_start) = default_dict_new(0);
-        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(revert_contract_state_dict_start, revert_contract_state_dict_start);
+        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
+            revert_contract_state_dict_start, revert_contract_state_dict_start
+        );
 
         return new model.ExecutionContext(
             call_context=ctx.call_context,

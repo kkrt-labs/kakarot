@@ -59,7 +59,9 @@ namespace Precompiles {
         memcpy(return_data, output, output_len);
 
         let (local revert_contract_state_dict_start) = default_dict_new(0);
-        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(revert_contract_state_dict_start, revert_contract_state_dict_start);
+        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
+            revert_contract_state_dict_start, revert_contract_state_dict_start
+        );
         // Build returned execution context
         local sub_ctx: model.ExecutionContext* = new model.ExecutionContext(
             call_context=cast(0, model.CallContext*),

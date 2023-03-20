@@ -8,7 +8,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.bool import FALSE
 from starkware.starknet.common.syscalls import deploy as deploy_syscall
-from starkware.starknet.common.syscalls import get_caller_address
+from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 // OpenZeppelin dependencies
 from openzeppelin.access.ownable.library import Ownable
 
@@ -24,7 +24,6 @@ from kakarot.constants import (
     native_token_address,
     contract_account_class_hash,
     externally_owned_account_class_hash,
-    salt,
     blockhash_registry_address,
     Constants,
     account_proxy_class_hash,
@@ -190,16 +189,12 @@ namespace Kakarot {
         evm_contract_address: felt, starknet_contract_address: felt
     ) {
         alloc_locals;
-        let (current_salt) = salt.read();
-        let (current_address) = get_caller_address();
-        let (sender_evm_address) = IAccount.get_evm_address(current_address);
-        let (evm_contract_address) = CreateHelper.get_create_address(
-            sender_evm_address, current_salt
-        );
+        let (caller_address) = get_caller_address();
+        let (sender_evm_address) = IAccount.get_evm_address(caller_address);
+        let (nonce) = IAccount.get_nonce(caller_address);
+        let (evm_contract_address) = CreateHelper.get_create_address(sender_evm_address, nonce);
         let (class_hash) = contract_account_class_hash.read();
         let (starknet_contract_address) = Accounts.create(class_hash, evm_contract_address);
-
-        salt.write(value=current_salt + 1);
 
         // Prepare execution context
         let (empty_array: felt*) = alloc();
@@ -215,7 +210,9 @@ namespace Kakarot {
         let (empty_events: model.Event*) = alloc();
         let (empty_create_addresses: felt*) = alloc();
         let (local revert_contract_state_dict_start) = default_dict_new(0);
-        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(revert_contract_state_dict_start, revert_contract_state_dict_start);
+        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
+            revert_contract_state_dict_start, revert_contract_state_dict_start
+        );
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();
         let calling_context = ExecutionContext.init_empty();

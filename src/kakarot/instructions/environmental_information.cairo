@@ -420,10 +420,10 @@ namespace EnvironmentalInformation {
         alloc_locals;
 
         // Get the gasprice.
-        let cost_felt = ExecutionContext.compute_intrinsic_gas_cost(ctx);
-        let cost_uint256 = Helpers.to_uint256(cost_felt);
+        let gas_price_felt = ctx.gas_price;
+        let gas_price_uint256 = Helpers.to_uint256(gas_price_felt);
 
-        let stack: model.Stack* = Stack.push(self=ctx.stack, element=cost_uint256);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=gas_price_uint256);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
