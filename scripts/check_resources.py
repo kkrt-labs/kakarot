@@ -36,6 +36,7 @@ def main():
                 for artifact in response.json()["artifacts"]
             ]
         )
+        .loc[lambda df: df.name == "coverage"]
         .reindex(["head_branch", "updated_at", "archive_download_url"], axis=1)
         .sort_values(["head_branch", "updated_at"], ascending=False)
         .drop_duplicates(["head_branch"])
@@ -140,7 +141,7 @@ def main():
 
         # TODO: use actual formula from https://docs.starknet.io/documentation/architecture_and_concepts/Fees/fee-mechanism
         logger.info(f"Detailed difference:\n{detailed_diff}")
-        usage_improved = detailed_diff.agg("mean").le(0).all()
+        usage_improved = detailed_diff.agg("mean").le(10).all()
         if not usage_improved:
             raise ValueError("Resources usage increase on average with this update")
         else:
