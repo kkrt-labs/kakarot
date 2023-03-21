@@ -2,6 +2,11 @@ import os
 import re
 from enum import Enum
 from pathlib import Path
+import requests
+import io
+import zipfile
+import json
+import pandas as pd
 
 from dotenv import load_dotenv
 from starknet_py.net.gateway_client import GatewayClient
@@ -10,6 +15,7 @@ load_dotenv()
 
 ETH_TOKEN_ADDRESS = 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7
 EVM_ADDRESS = os.getenv("EVM_ADDRESS")
+EVM_PRIVATE_KEY = os.getenv("EVM_PRIVATE_KEY")
 NETWORK = os.getenv("STARKNET_NETWORK", "starknet-devnet")
 NETWORK = (
     "testnet"
@@ -51,8 +57,10 @@ class ChainId(Enum):
 
 
 CHAIN_ID = getattr(ChainId, NETWORK)
+KAKAROT_CHAIN_ID = 1263227476  # KKRT (0x4b4b5254) in ASCII
 
-DEPLOYMENTS_DIR = Path("deployments") / NETWORK
+DEPLOYMENTS_DIR = Path("deployments")
+DEPLOYMENTS_NETWORK_DIR = Path("deployments") / NETWORK
 BUILD_DIR = Path("build")
 SOURCE_DIR = Path("src")
 CONTRACTS = {p.stem: p for p in list(SOURCE_DIR.glob("**/*.cairo"))}
@@ -64,3 +72,38 @@ ACCOUNT_ADDRESS = (
 PRIVATE_KEY = (
     os.environ.get(f"{NETWORK.upper()}_PRIVATE_KEY") or os.environ["PRIVATE_KEY"]
 )
+
+
+def pull_deployments():
+    response = requests.get(
+        "https://api.github.com/repos/sayajin-labs/kakarot/actions/artifacts"
+    )
+    artifacts = (
+        pd.DataFrame(
+            [
+                {**artifact["workflow_run"], **artifact}
+                for artifact in response.json()["artifacts"]
+            ]
+        )
+        .reindex(["head_branch", "updated_at", "archive_download_url", "name"], axis=1)
+        .sort_values(["head_branch", "updated_at"], ascending=False)
+    )
+
+    main_artifacts = artifacts[artifacts["head_branch"] == "main"]
+    deployement_artifacts = main_artifacts[main_artifacts["name"] == "deployments"]
+
+    if "main" not in deployement_artifacts.head_branch.tolist():
+        raise Exception(f"No deployment artifacts found for base branch main")
+
+    response = requests.get(
+        deployement_artifacts.archive_download_url.tolist()[0],
+        headers={"Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}"},
+    )
+    z = zipfile.ZipFile(io.BytesIO(response.content))
+    z.extractall(DEPLOYMENTS_DIR)
+
+
+pull_deployments()
+deployments = json.load(open(DEPLOYMENTS_NETWORK_DIR / "deployments.json", "r"))
+
+KAKAROT_ADDRESS = deployments["kakarot"]["address"]
