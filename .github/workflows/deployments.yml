@@ -20,8 +20,8 @@ jobs:
         id: cached-poetry
         uses: actions/cache@v3
         with:
-          path: ~/.local # the path depends on the OS.
-          key: poetry # use new date to reset poetry cache
+          path: ~/.local
+          key: ubuntu-latest-poetry
       - name: Install Poetry
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
@@ -35,7 +35,8 @@ jobs:
         with:
           path: .venv
           key:
-            self-hosted-venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+            ubuntu-latest-venv-${{ runner.os }}-${{
+            hashFiles('**/poetry.lock')}}
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup

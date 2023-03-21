@@ -15,8 +15,8 @@ jobs:
         id: cached-poetry
         uses: actions/cache@v3
         with:
-          path: ~/.local # the path depends on the OS.
-          key: poetry # use new date to reset poetry cache
+          path: ~/.local
+          key: self-hosted-poetry
       - name: Install Poetry
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
@@ -62,8 +62,8 @@ jobs:
         id: cached-poetry
         uses: actions/cache@v3
         with:
-          path: ~/.local # the path depends on the OS.
-          key: poetry # use new date to reset poetry cache
+          path: ~/.local
+          key: self-hosted-poetry
       - name: Install Poetry
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
@@ -107,8 +107,8 @@ jobs:
         id: cached-poetry
         uses: actions/cache@v3
         with:
-          path: ~/.local # the path depends on the OS.
-          key: poetry # use new date to reset poetry cache
+          path: ~/.local
+          key: self-hosted-poetry
       - name: Install Poetry
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
