@@ -4,11 +4,10 @@ import logging
 import os
 import re
 import subprocess
+import requests
 from pathlib import Path
 from typing import Optional, Union
-from rlp import encode
 
-import requests
 from caseconverter import snakecase
 from starknet_py.contract import Contract
 from starknet_py.net.account.account import Account
@@ -21,8 +20,12 @@ from starknet_py.proxy.contract_abi_resolver import ProxyConfig
 from starknet_py.proxy.proxy_check import ProxyCheck
 from starkware.starknet.public.abi import get_selector_from_name
 from starkware.starknet.wallets.account import DEFAULT_ACCOUNT_DIR
+
 from eth_account import Account
 from eth_utils.address import to_checksum_address
+from web3.contract import Contract as Web3Contract
+from web3 import Web3
+
 
 from scripts.constants import (
     ACCOUNT_ADDRESS,
@@ -428,6 +431,32 @@ async def call(contract_name, function_name, *inputs, address=None):
         account,
     )
     return await contract.functions[function_name].call(*inputs)
+
+
+def get_contract(contract_path: str) -> Web3Contract:
+    path = os.path.splitext(contract_path)[0]
+    folder, contract_name = os.path.split(path)
+    compilation_output = json.load(
+        open(
+            Path(folder) / "build" / f"{contract_name}.sol" / f"{contract_name}.json",
+            "r",
+        )
+    )
+    return Web3().eth.contract(
+        abi=compilation_output["abi"], bytecode=compilation_output["bytecode"]["object"]
+    )
+
+
+def get_contract_deployment_bytecode(contract: Web3Contract):
+    return contract.bytecode
+
+
+def get_contract_method_calldata(
+    contract: Web3Contract, method_name: str, *args, **kwargs
+):
+    return contract.get_function_by_name(method_name)(
+        *args, **kwargs
+    )._encode_transaction_data()
 
 
 async def deploy_contract_account(
