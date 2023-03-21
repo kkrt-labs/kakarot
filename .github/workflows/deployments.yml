@@ -11,6 +11,8 @@ jobs:
     env:
       ACCOUNT_ADDRESS: ${{ secrets.ACCOUNT_ADDRESS }}
       PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+      DEVNET_ACCOUNT_ADDRESS: ${{ secrets.DEVNET_ACCOUNT_ADDRESS }}
+      DEVNET_PRIVATE_KEY: ${{ secrets.DEVNET_PRIVATE_KEY }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
