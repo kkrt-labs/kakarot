@@ -84,15 +84,11 @@ namespace ExecutionContext {
         let (empty_destroy_contracts: felt*) = alloc();
         let (empty_events: model.Event*) = alloc();
         let (empty_create_addresses: felt*) = alloc();
-
         let (local revert_contract_state_dict_start) = default_dict_new(0);
         tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
             revert_contract_state_dict_start, revert_contract_state_dict_start
         );
 
-        // Define initial program counter
-        let initial_pc = 0;
-        let gas_used = 0;
         // TODO: Add support for gas limit
         let gas_limit = Constants.TRANSACTION_GAS_LIMIT;
 
@@ -105,13 +101,13 @@ namespace ExecutionContext {
 
         local self: model.ExecutionContext* = new model.ExecutionContext(
             call_context=call_context,
-            program_counter=initial_pc,
+            program_counter=0,
             stopped=FALSE,
             return_data=empty_return_data,
             return_data_len=0,
             stack=stack,
             memory=memory,
-            gas_used=gas_used,
+            gas_used=0,
             gas_limit=gas_limit,
             gas_price=0,
             starknet_contract_address=0,
@@ -178,7 +174,6 @@ namespace ExecutionContext {
         read_only: felt,
     ) -> model.ExecutionContext* {
         alloc_locals;
-
         let (empty_destroy_contracts: felt*) = alloc();
         let (empty_events: model.Event*) = alloc();
         let (empty_create_contracts: felt*) = alloc();

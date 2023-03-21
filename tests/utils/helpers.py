@@ -8,6 +8,7 @@ from eth_account import Account
 from eth_keys import keys
 from eth_keys.datatypes import PrivateKey
 from eth_utils import decode_hex, keccak, to_bytes, to_checksum_address
+from hexbytes import HexBytes
 
 from tests.utils.constants import CHAIN_ID
 
@@ -167,28 +168,19 @@ def get_multicall_from_evm_txs(
             )
         ]
         calldata += tx
-        # Execute contract bytecode
-        if transaction["to"]:
-            expected_result += [
-                int(transaction["to"], 16),
-                transaction["value"],
-                transaction["gas"],
-                len(
-                    bytes.fromhex(transaction.get("data", "").replace("0x", ""))
-                ),  # calldata_len
-                *list(
-                    bytes.fromhex(transaction.get("data", "").replace("0x", ""))
-                ),  # calldata
-            ]
-        # Deploy Contract
-        else:
-            expected_result += [
-                len(
-                    bytes.fromhex(transaction.get("data", "").replace("0x", ""))
-                ),  # calldata_len
-                *list(
-                    bytes.fromhex(transaction.get("data", "").replace("0x", ""))
-                ),  # calldata
-            ]
+
+        # See ./tests/unit/src/kakarot/accounts/eoa/mock_kakarot.cairo
+        expected_result += [
+            int.from_bytes(HexBytes(transaction["to"]), "big"),
+            transaction["gas"],
+            transaction.get("gasPrice", transaction.get("maxFeePerGas")),
+            transaction["value"],
+            len(
+                bytes.fromhex(transaction.get("data", "").replace("0x", ""))
+            ),  # calldata_len
+            *list(
+                bytes.fromhex(transaction.get("data", "").replace("0x", ""))
+            ),  # calldata
+        ]
 
     return (calls, calldata, expected_result)

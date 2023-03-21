@@ -5,15 +5,15 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
 
-from kakarot.accounts.eoa.library import ExternallyOwnedAccount, kakarot_address
+from kakarot.accounts.eoa.library import ExternallyOwnedAccount
 from kakarot.accounts.library import Accounts
 
 // Constructor
 @constructor
-func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    _kakarot_address: felt
-) {
-    kakarot_address.write(_kakarot_address);
+func constructor{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(kakarot_address: felt, evm_address: felt) {
+    ExternallyOwnedAccount.initialize(kakarot_address, evm_address);
     return ();
 }
 

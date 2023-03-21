@@ -2,9 +2,10 @@ from collections import Counter
 
 import pytest
 import pytest_asyncio
+from eth_keys import keys
 
 from tests.utils.constants import TRANSACTIONS
-from tests.utils.helpers import generate_random_private_key, get_multicall_from_evm_txs
+from tests.utils.helpers import get_multicall_from_evm_txs
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -19,11 +20,15 @@ async def mock_kakarot(starknet, eth, account_proxy):
 
 @pytest_asyncio.fixture(scope="module")
 async def mock_externally_owned_account(starknet, mock_kakarot):
+    private_key = keys.PrivateKey(int.to_bytes(0xDEAD, 32, "big"))
     return await starknet.deploy(
         source="./tests/unit/src/kakarot/accounts/eoa/mock_externally_owned_account.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
-        constructor_calldata=[mock_kakarot.contract_address],
+        constructor_calldata=[
+            mock_kakarot.contract_address,
+            int(private_key.public_key.to_address(), 16),
+        ],
     )
 
 
@@ -32,9 +37,10 @@ class TestLibrary:
     async def test_execute_should_make_all_calls_and_return_concat_results(
         self, mock_externally_owned_account, eth
     ):
-        private_key = generate_random_private_key()
+        private_key = keys.PrivateKey(int.to_bytes(0xDEAD, 32, "big"))
         (calls, calldata, expected_result) = get_multicall_from_evm_txs(
-            TRANSACTIONS, private_key
+            evm_txs=TRANSACTIONS,
+            private_key=private_key,
         )
         total_transferred_value = sum([x["value"] for x in TRANSACTIONS])
 
@@ -50,7 +56,7 @@ class TestLibrary:
     async def test_should_transfer_value_to_destination_address(
         self, mock_kakarot, mock_externally_owned_account, eth
     ):
-        private_key = generate_random_private_key()
+        private_key = keys.PrivateKey(int.to_bytes(0xDEAD, 32, "big"))
 
         txs = [t for t in TRANSACTIONS if t["to"]]
         (calls, calldata, _) = get_multicall_from_evm_txs(txs, private_key)

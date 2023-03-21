@@ -117,76 +117,31 @@ namespace ExternallyOwnedAccount {
             return (response_len=0);
         }
 
+        Accounts.increment_nonce();
+
         let (
-            gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s
+            gas_price, gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s
         ) = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
 
         let (_kakarot_address) = kakarot_address.read();
-        local retdata_size;
-
-        // Increment EOA nonce
-        Accounts.increment_nonce();
-
-        // If destination is 0, we are deploying a contract
-        if (destination == 0) {
-            // deploy_contract_account signature is
-            // calldata_len: felt, calldata: felt*
-            IKakarot.deploy_contract_account(
-                contract_address=_kakarot_address, bytecode_len=payload_len, bytecode=payload
-            );
-            // Else run the bytecode of the destination contract
-        } else {
-            // execute_at_address signature
-            IKakarot.execute_at_address(
-                contract_address=_kakarot_address,
-                address=destination,
-                value=amount,
-                gas_limit=gas_limit,
-                calldata_len=payload_len,
-                calldata=payload,
-            );
-        }
-
-        // copy retdata into response using the syscall_ptr
-        tempvar syscall_ptr = syscall_ptr;
-        tempvar range_check_ptr = range_check_ptr;
-        let res = [cast(syscall_ptr - CallContract.SIZE, CallContract*)];
-        memcpy(response, res.response.retdata, res.response.retdata_size);
-        assert retdata_size = res.response.retdata_size;
-
-        if (amount == 0) {
-            let (response_len) = execute(
-                call_array_len - 1,
-                call_array + CallArray.SIZE,
-                calldata_len,
-                calldata,
-                response + retdata_size,
-            );
-            return (response_len=retdata_size + response_len);
-        }
-
-        // transfer the amount from the EOA to the destination
-        // get kakarot native token address,
-        // compute starknet address from evm address,
-        let (native_token_address_) = IKakarot.get_native_token(contract_address=_kakarot_address);
-        let (starknet_address_) = IKakarot.compute_starknet_address(
-            contract_address=_kakarot_address, evm_address=destination
+        let (return_data_len, return_data) = IKakarot.eth_call(
+            contract_address=_kakarot_address,
+            to=destination,
+            gas_limit=gas_limit,
+            gas_price=gas_price,
+            value=amount,
+            data_len=payload_len,
+            data=payload,
         );
-        let amount_u256 = Helpers.to_uint256(amount);
-        let (success) = IEth.transfer(
-            contract_address=native_token_address_, recipient=starknet_address_, amount=amount_u256
-        );
-        with_attr error_message("Kakarot: EOA: failed to transfer token to {destination}") {
-            assert success = TRUE;
-        }
+        memcpy(response, return_data, return_data_len);
 
         let (response_len) = execute(
             call_array_len - 1,
             call_array + CallArray.SIZE,
             calldata_len,
             calldata,
-            response + retdata_size,
+            response + return_data_len,
         );
-        return (response_len=retdata_size + response_len);
+        return (response_len=return_data_len + response_len);
     }
 }

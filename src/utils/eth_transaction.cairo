@@ -24,6 +24,7 @@ namespace EthTransaction {
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
     }(tx_data_len: felt, tx_data: felt*) -> (
+        gas_price: felt,
         gas_limit: felt,
         destination: felt,
         amount: felt,
@@ -100,19 +101,22 @@ namespace EthTransaction {
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
 
-        let gas_limit_idx = 2;
+        let gas_price_idx = 1;
+        let (gas_price) = Helpers.bytes_to_felt(
+            sub_items[gas_price_idx].data_len, sub_items[gas_price_idx].data, 0
+        );
         let (gas_limit) = Helpers.bytes_to_felt(
-            sub_items[gas_limit_idx].data_len, sub_items[gas_limit_idx].data, 0
+            sub_items[gas_price_idx + 1].data_len, sub_items[gas_price_idx + 1].data, 0
         );
         let (destination) = Helpers.bytes_to_felt(
-            sub_items[gas_limit_idx + 1].data_len, sub_items[gas_limit_idx + 1].data, 0
+            sub_items[gas_price_idx + 2].data_len, sub_items[gas_price_idx + 2].data, 0
         );
         let (amount) = Helpers.bytes_to_felt(
-            sub_items[gas_limit_idx + 2].data_len, sub_items[gas_limit_idx + 2].data, 0
+            sub_items[gas_price_idx + 3].data_len, sub_items[gas_price_idx + 3].data, 0
         );
-        let payload_len = sub_items[gas_limit_idx + 3].data_len;
-        let payload: felt* = sub_items[gas_limit_idx + 3].data;
-        return (gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s);
+        let payload_len = sub_items[gas_price_idx + 4].data_len;
+        let payload: felt* = sub_items[gas_price_idx + 4].data;
+        return (gas_price, gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s);
     }
 
     func decode_tx{
@@ -121,6 +125,7 @@ namespace EthTransaction {
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
     }(tx_data_len: felt, tx_data: felt*) -> (
+        gas_price: felt,
         gas_limit: felt,
         destination: felt,
         amount: felt,
@@ -196,24 +201,27 @@ namespace EthTransaction {
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
 
-        let gas_limit_idx = tx_type + 2;
+        let gas_price_idx = tx_type + 1;
+        let (gas_price) = Helpers.bytes_to_felt(
+            sub_items[gas_price_idx].data_len, sub_items[gas_price_idx].data, 0
+        );
         let (gas_limit) = Helpers.bytes_to_felt(
-            sub_items[gas_limit_idx].data_len, sub_items[gas_limit_idx].data, 0
+            sub_items[gas_price_idx + 1].data_len, sub_items[gas_price_idx + 1].data, 0
         );
         let (destination) = Helpers.bytes_to_felt(
-            sub_items[gas_limit_idx + 1].data_len, sub_items[gas_limit_idx + 1].data, 0
+            sub_items[gas_price_idx + 2].data_len, sub_items[gas_price_idx + 2].data, 0
         );
         let (amount) = Helpers.bytes_to_felt(
-            sub_items[gas_limit_idx + 2].data_len, sub_items[gas_limit_idx + 2].data, 0
+            sub_items[gas_price_idx + 3].data_len, sub_items[gas_price_idx + 3].data, 0
         );
-        let payload_len = sub_items[gas_limit_idx + 3].data_len;
-        let payload: felt* = sub_items[gas_limit_idx + 3].data;
-        return (gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s);
+        let payload_len = sub_items[gas_price_idx + 4].data_len;
+        let payload: felt* = sub_items[gas_price_idx + 4].data;
+        return (gas_price, gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s);
     }
 
     func is_legacy_tx{range_check_ptr}(tx_data: felt*) -> felt {
-        tempvar type = [tx_data];
         // See https://eips.ethereum.org/EIPS/eip-2718#transactiontype-only-goes-up-to-0x7f
+        tempvar type = [tx_data];
         return is_le(0xc0, type);
     }
 
@@ -223,6 +231,7 @@ namespace EthTransaction {
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
     }(tx_data_len: felt, tx_data: felt*) -> (
+        gas_price: felt,
         gas_limit: felt,
         destination: felt,
         amount: felt,
@@ -248,7 +257,7 @@ namespace EthTransaction {
         range_check_ptr,
     }(address: felt, tx_data_len: felt, tx_data: felt*) {
         alloc_locals;
-        let (gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s) = decode(
+        let (gas_price, gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s) = decode(
             tx_data_len, tx_data
         );
         let (local keccak_ptr: felt*) = alloc();

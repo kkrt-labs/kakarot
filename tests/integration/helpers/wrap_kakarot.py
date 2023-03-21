@@ -86,6 +86,7 @@ def wrap_for_kakarot(
                 address=evm_contract_address,
                 value=value,
                 gas_limit=gas_limit,
+                gas_price=0,
                 calldata=hex_string_to_bytes_array(
                     contract.encodeABI(fun, args, kwargs)
                 ),

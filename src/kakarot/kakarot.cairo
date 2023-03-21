@@ -13,6 +13,7 @@ from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.memory import Memory
 from kakarot.accounts.library import Accounts
+
 // Constructor
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -56,29 +57,11 @@ func execute{
     memory_accesses_len: felt,
     memory_accesses: felt*,
     memory_bytes_len: felt,
+    return_data_len: felt,
+    return_data: felt*,
     gas_used: felt,
 ) {
-    alloc_locals;
-    local call_context: model.CallContext* = new model.CallContext(
-        bytecode=bytecode,
-        bytecode_len=bytecode_len,
-        calldata=calldata,
-        calldata_len=calldata_len,
-        value=value,
-    );
-    let summary = Kakarot.execute(call_context);
-    let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
-    let stack_accesses_len = summary.stack.squashed_end - summary.stack.squashed_start;
-
-    return (
-        stack_accesses_len=stack_accesses_len,
-        stack_accesses=summary.stack.squashed_start,
-        stack_len=summary.stack.len_16bytes,
-        memory_accesses_len=memory_accesses_len,
-        memory_accesses=summary.memory.squashed_start,
-        memory_bytes_len=summary.memory.bytes_len,
-        gas_used=summary.gas_used,
-    );
+    return Kakarot.execute(value, bytecode_len, bytecode, calldata_len, calldata);
 }
 
 // @notice Execute bytecode of a given contract account.
@@ -86,6 +69,7 @@ func execute{
 // @param address The address of the contract whose bytecode will be executed.
 // @param value The deposited value by the instruction/transaction responsible for this execution.
 // @param gas_limit Max gas the transaction can use.
+// @param gas_price Integer of the gas price used for each paid gas
 // @param calldata_len The calldata length.
 // @param calldata The calldata which contains the entry point and method parameters.
 // @return stack_accesses_len The size of the accesses array of the stack delta.
@@ -102,7 +86,14 @@ func execute{
 @external
 func execute_at_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(address: felt, value: felt, gas_limit: felt, calldata_len: felt, calldata: felt*) -> (
+}(
+    address: felt,
+    value: felt,
+    gas_limit: felt,
+    gas_price: felt,
+    calldata_len: felt,
+    calldata: felt*,
+) -> (
     stack_accesses_len: felt,
     stack_accesses: felt*,
     stack_len: felt,
@@ -122,6 +113,7 @@ func execute_at_address{
         calldata=calldata,
         value=value,
         gas_limit=gas_limit,
+        gas_price=gas_price,
     );
     let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
     let stack_accesses_len = summary.stack.squashed_end - summary.stack.squashed_start;
@@ -212,4 +204,24 @@ func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
     evm_address: felt
 ) -> (contract_address: felt) {
     return Accounts.compute_starknet_address(evm_address);
+}
+
+// @notice The eth_call function as described in the spec, see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_call
+// @dev "from" parameter is taken from get_caller_address syscall
+// @param to The address the transaction is directed to.
+// @param gas Integer of the gas provided for the transaction execution
+// @param gas_price Integer of the gasPrice used for each paid gas
+// @param value Integer of the value sent with this transaction
+// @param data_len The length of the data
+// @param data Hash of the method signature and encoded parameters. For details see Ethereum Contract ABI in the Solidity documentation
+// @return return_data_len The length of the return_data
+// @return return_data An array of returned felts
+@external
+func eth_call{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
+    return_data_len: felt, return_data: felt*
+) {
+    Kakarot.assert_caller_is_kakarot_account();
+    return Kakarot.eth_call(to, gas_limit, gas_price, value, data_len, data);
 }
