@@ -25,6 +25,8 @@ async def main():
         f"ℹ️ Connected to CHAIN_ID {CHAIN_ID.value.to_bytes(ceil(log(CHAIN_ID.value, 256)), 'big')} "
         f"with GATEWAY {GATEWAY_CLIENT.net}"
     )
+    account = await get_account()
+    logger.info(f"ℹ️ Using account {hex(account.address)} as deployer")
 
     class_hash = {
         contract_name: await declare(contract_name)
@@ -40,7 +42,6 @@ async def main():
     class_hash = get_declarations()
 
     eth = await get_eth_contract()
-    account = await get_account()
 
     deployments = {}
     deployments["kakarot"] = await deploy(
