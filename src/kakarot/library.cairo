@@ -25,7 +25,6 @@ from kakarot.constants import (
     contract_account_class_hash,
     externally_owned_account_class_hash,
     blockhash_registry_address,
-    Constants,
     account_proxy_class_hash,
 )
 from kakarot.accounts.library import Accounts

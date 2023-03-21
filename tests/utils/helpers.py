@@ -152,7 +152,7 @@ def ec_sign(
 
 def get_multicall_from_evm_txs(
     evm_txs: list, private_key: PrivateKey
-) -> Tuple[list, str, list]:
+) -> Tuple[list, bytes, list]:
     calls = []
     calldata = b""
     expected_result = []
