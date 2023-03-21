@@ -14,22 +14,24 @@ from starknet_py.contract import Contract
 from starknet_py.net.account.account import Account
 from starknet_py.net.client import Client
 from starknet_py.net.client_models import Call
+from starknet_py.net.client_errors import ContractNotFoundError
 from starknet_py.net.models import Address
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starknet_py.proxy.contract_abi_resolver import ProxyConfig
 from starknet_py.proxy.proxy_check import ProxyCheck
 from starkware.starknet.public.abi import get_selector_from_name
 from starkware.starknet.wallets.account import DEFAULT_ACCOUNT_DIR
-from eth_keys import keys
-from eth_keys.datatypes import Signature
-from eth_utils import keccak
+from eth_account import Account
+from eth_utils.address import to_checksum_address
 
 from scripts.constants import (
     ACCOUNT_ADDRESS,
     BUILD_DIR,
     CHAIN_ID,
+    KAKAROT_CHAIN_ID,
+    KAKAROT_ADDRESS,
     CONTRACTS,
-    DEPLOYMENTS_DIR,
+    DEPLOYMENTS_NETWORK_DIR,
     ETH_TOKEN_ADDRESS,
     GATEWAY_CLIENT,
     NETWORK,
@@ -37,13 +39,15 @@ from scripts.constants import (
     SOURCE_DIR,
     STARKNET_NETWORK,
     STARKSCAN_URL,
+    EVM_ADDRESS,
+    EVM_PRIVATE_KEY,
 )
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
+DEPLOYMENTS_NETWORK_DIR.mkdir(exist_ok=True, parents=True)
 BUILD_DIR.mkdir(exist_ok=True, parents=True)
 
 
@@ -118,7 +122,7 @@ async def get_default_account() -> Account:
     )
 
 
-async def get_account(
+async def get_starknet_account(
     address=None,
     private_key=None,
 ) -> Account:
@@ -159,8 +163,48 @@ async def get_account(
     )
 
 
+async def contract_exists(address: int) -> bool:
+    try:
+        await GATEWAY_CLIENT.get_code(address)
+        return True
+    except ContractNotFoundError:
+        return False
+
+
+async def get_evm_account() -> AccountClient:
+    starknet_account = await get_starknet_account()
+    kakarot_contract = await Contract.from_address(KAKAROT_ADDRESS, GATEWAY_CLIENT)
+    starknet_address = (
+        await kakarot_contract.functions["compute_starknet_address"].call(
+            int(EVM_ADDRESS, 16)
+        )
+    ).contract_address
+
+    if not await contract_exists(starknet_address):
+        call = Call(
+            to_addr=int(KAKAROT_ADDRESS, 16),
+            selector=get_selector_from_name("deploy_externally_owned_account"),
+            calldata=[int(EVM_ADDRESS, 16)],
+        )
+        logger.info(f"⏳ Deploying EOA account")
+        tx_hash = (
+            await starknet_account.execute(call, max_fee=int(10e16))
+        ).transaction_hash
+        logger.info(f"⏳ Waiting for tx {get_tx_url(tx_hash)}")
+        await starknet_account.wait_for_tx(tx_hash)
+        await fund_address(starknet_address, 0.005)
+
+    return AccountClient(
+        address=starknet_address,
+        client=GATEWAY_CLIENT,
+        supported_tx_version=1,
+        chain=CHAIN_ID,
+        key_pair=KeyPair(int(EVM_PRIVATE_KEY, 16), int(EVM_ADDRESS, 16)),
+    )
+
+
 async def get_eth_contract() -> Contract:
-    account = await get_account()
+    account = await get_starknet_account()
 
     class EthProxyCheck(ProxyCheck):
         """
@@ -198,7 +242,7 @@ async def get_eth_contract() -> Contract:
 async def get_contract(contract_name) -> Contract:
     return await Contract.from_address(
         get_deployments()[contract_name]["address"],
-        await get_account(),
+        await get_starknet_account(),
     )
 
 
@@ -206,7 +250,7 @@ async def fund_address(address: Union[int, str], amount: float):
     """
     Fund a given starknet address with {amount} ETH
     """
-    address = hex(address) if isinstance(address, int) else address
+    address = int(address, 16) if isinstance(address, str) else address
     amount = amount * 1e18
     if NETWORK == "devnet":
         response = requests.post(
@@ -216,7 +260,7 @@ async def fund_address(address: Union[int, str], amount: float):
             logger.error(f"Cannot mint token to {address}: {response.text}")
         logger.info(f"{amount / 1e18} ETH minted to {address}")
     else:
-        account = await get_account()
+        account = await get_starknet_account()
         eth_contract = await get_eth_contract()
         balance = (await eth_contract.functions["balanceOf"].call(account.address)).balance  # type: ignore
         if balance < amount:
@@ -224,11 +268,11 @@ async def fund_address(address: Union[int, str], amount: float):
                 f"Cannot send {amount / 1e18} ETH from default account with current balance {balance / 1e18} ETH"
             )
         tx = await eth_contract.functions["transfer"].invoke(
-            address, int_to_uint256(amount), max_fee=int(1e16)
+            address, int_to_uint256(amount), max_fee=int(10e16)
         )
         await tx.wait_for_acceptance()
         logger.info(
-            f"{amount / 1e18} ETH sent from {hex(account.address)} to {address}"
+            f"{amount / 1e18} ETH sent from {hex(account.address)} to {hex(address)}"
         )
 
 
@@ -246,7 +290,7 @@ async def deploy_and_fund_evm_address(evm_address: str, amount: float):
 def dump_declarations(declarations):
     json.dump(
         {name: hex(class_hash) for name, class_hash in declarations.items()},
-        open(DEPLOYMENTS_DIR / "declarations.json", "w"),
+        open(DEPLOYMENTS_NETWORK_DIR / "declarations.json", "w"),
         indent=2,
     )
 
@@ -255,7 +299,7 @@ def get_declarations():
     return {
         name: int(class_hash, 16)
         for name, class_hash in json.load(
-            open(DEPLOYMENTS_DIR / "declarations.json")
+            open(DEPLOYMENTS_NETWORK_DIR / "declarations.json")
         ).items()
     }
 
@@ -271,13 +315,13 @@ def dump_deployments(deployments):
             }
             for name, deployment in deployments.items()
         },
-        open(DEPLOYMENTS_DIR / "deployments.json", "w"),
+        open(DEPLOYMENTS_NETWORK_DIR / "deployments.json", "w"),
         indent=2,
     )
 
 
 def get_deployments():
-    return json.load(open(DEPLOYMENTS_DIR / "deployments.json", "r"))
+    return json.load(open(DEPLOYMENTS_NETWORK_DIR / "deployments.json", "r"))
 
 
 def get_artifact(contract_name):
@@ -320,10 +364,10 @@ def compile_contract(contract_name):
 
 async def declare(contract_name):
     logger.info(f"⏳ Declaring {contract_name}")
-    account = await get_account()
+    account = await get_starknet_account()
     artifact = get_artifact(contract_name)
     declare_transaction = await account.sign_declare_transaction(
-        compiled_contract=Path(artifact).read_text(), max_fee=int(1e16)
+        compiled_contract=Path(artifact).read_text(), max_fee=int(10e16)
     )
     resp = await account.client.declare(transaction=declare_transaction)
     logger.info(f"⏳ Waiting for tx {get_tx_url(resp.transaction_hash)}")
@@ -335,13 +379,13 @@ async def declare(contract_name):
 async def deploy(contract_name, *args):
     logger.info(f"⏳ Deploying {contract_name}")
     abi = json.loads(Path(get_abi(contract_name)).read_text())
-    account = await get_account()
+    account = await get_starknet_account()
     deploy_result = await Contract.deploy_contract(
         account=account,
         class_hash=get_declarations()[contract_name],
         abi=abi,
         constructor_args=list(args),
-        max_fee=int(1e16),
+        max_fee=int(10e16),
     )
     logger.info(f"⏳ Waiting for tx {get_tx_url(deploy_result.hash)}")
     await deploy_result.wait_for_acceptance(check_interval=15)
@@ -356,16 +400,16 @@ async def deploy(contract_name, *args):
 
 
 async def invoke(contract_name, function_name, *inputs, address=None):
-    account = await get_account()
+    account = await get_starknet_account()
     deployments = get_deployments()
     contract = Contract(
         deployments[contract_name]["address"] if address is None else address,
         json.load(open(get_artifact(contract_name)))["abi"],
         account,
     )
-    call = contract.functions[function_name].prepare(*inputs, max_fee=int(1e16))
+    call = contract.functions[function_name].prepare(*inputs, max_fee=int(10e16))
     logger.info(f"⏳ Invoking {contract_name}.{function_name}({json.dumps(inputs)})")
-    response = await account.execute(call, max_fee=int(1e16))
+    response = await account.execute(call, max_fee=int(10e16))
     logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
     await account.client.wait_for_tx(response.transaction_hash, check_interval=15)
     logger.info(
@@ -377,7 +421,7 @@ async def invoke(contract_name, function_name, *inputs, address=None):
 
 async def call(contract_name, function_name, *inputs, address=None):
     deployments = get_deployments()
-    account = await get_account()
+    account = await get_starknet_account()
     contract = Contract(
         deployments[contract_name]["address"] if address is None else address,
         json.load(open(get_artifact(contract_name)))["abi"],
@@ -387,133 +431,78 @@ async def call(contract_name, function_name, *inputs, address=None):
 
 
 async def deploy_contract_account(
-    kakarot_contract_address: str,
-    starknet_account_address: str,
-    evm_private_key: int,
     bytecode: bytes,
 ):
     """Deploy a contract account with the provided bytecode."""
-    account = AccountClient(
-        address=starknet_account_address,
-        client=GATEWAY_CLIENT,
-        supported_tx_version=1,
-        chain=CHAIN_ID,
-        key_pair=KeyPair.from_private_key(0xDEAD),
+    evm_account = await get_evm_account()
+    tx_payload = get_payload(
+        data=bytecode, private_key=hex(evm_account.signer.private_key)
     )
-    private_key = keys.PrivateKey(
-        int.to_bytes(
-            evm_private_key,
-            32,
-            "big",
-        )
-    )
-    tx_payload = get_payload(data=bytecode, private_key=private_key)
 
     logger.info(f"⏳ Deploying contract account")
-    response = await account.execute(
+    response = await evm_account.execute(
         calls=Call(
-            to_addr=int(kakarot_contract_address, 16),
+            to_addr=int(KAKAROT_ADDRESS, 16),
             selector=get_selector_from_name("deploy_contract_account"),
             calldata=tx_payload,
         ),
-        max_fee=int(1e16),
+        max_fee=int(10e16),
     )
     logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
-    await account.wait_for_tx(tx_hash=response.transaction_hash, check_interval=15)
+    await evm_account.wait_for_tx(tx_hash=response.transaction_hash, check_interval=15)
 
 
 async def execute_at_address(
-    kakarot_contract_address: str,
-    starknet_account_address: str,
-    bytecode: bytes,
-    evm_private_key: int,
-    evm_contract_address: int,
-    value: int,
+    address: Union[int, str], value: Union[int, str], gas_limit: int, calldata: bytes
 ):
-    """Execute the bytecode at the EVM contract address on Kakarot."""
-    account = AccountClient(
-        address=starknet_account_address,
-        client=GATEWAY_CLIENT,
-        supported_tx_version=1,
-        chain=CHAIN_ID,
-        key_pair=KeyPair.from_private_key(0xDEAD),
-    )
-    private_key = keys.PrivateKey(
-        int.to_bytes(
-            evm_private_key,
-            32,
-            "big",
-        )
-    )
+    """Execute the calldata at the EVM contract address on Kakarot."""
+
+    address = hex(address) if isinstance(address, int) else address
+    value = hex(value) if isinstance(value, int) else value
+    evm_account = await get_evm_account()
     tx_payload = get_payload(
-        data=bytecode,
-        private_key=private_key,
+        data=calldata,
+        private_key=hex(evm_account.signer.private_key),
+        gas_limit=gas_limit,
+        destination=address,
         value=value,
-        destination=evm_contract_address,
     )
 
-    logger.info(
-        f"⏳ Executing the provided bytecode for the contract at {hex(evm_contract_address)}"
-    )
-    response = await account.execute(
+    logger.info(f"⏳ Executing the provided bytecode for the contract at {address}")
+    response = await evm_account.execute(
         calls=Call(
-            to_addr=int(kakarot_contract_address, 16),
+            to_addr=int(KAKAROT_ADDRESS, 16),
             selector=get_selector_from_name("execute_at_address"),
             calldata=tx_payload,
         ),
-        max_fee=int(1e16),
+        max_fee=int(10e16),
     )
     logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
-    await account.wait_for_tx(tx_hash=response.transaction_hash, check_interval=15)
+    await evm_account.wait_for_tx(tx_hash=response.transaction_hash, check_interval=15)
 
 
 def get_payload(
-    data: list,
-    private_key: keys.PrivateKey,
+    data: bytes,
+    private_key: str,
+    gas_limit: int = 0xDEAD,
     tx_type: int = 0x02,
-    destination: int = 0x0,
-    value: int = 0x0,
+    destination: Optional[str] = None,
+    value: str = "0x0",
 ):
-    tx_payload_hash = keccak(
-        get_encoded_payload(
-            data=data, tx_type=tx_type, destination=destination, value=value
-        )
-    )
-    signature = private_key.sign_msg_hash(message_hash=tx_payload_hash)
-    return list(
-        get_encoded_payload(
-            data=data,
-            tx_type=tx_type,
-            destination=destination,
-            value=value,
-            signature=signature,
-        )
-    )
-
-
-def get_encoded_payload(
-    data: list,
-    tx_type: int = 0x02,
-    destination: int = 0x0,
-    value: int = 0x0,
-    signature: Signature = None,
-):
-    """RLP Encode the payload for a transaction."""
-    """Based on https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1559.md#specification"""
-    payload = [
-        CHAIN_ID,
-        0xDEAD,  # nonce
-        0xDEAD,  # max_priority_fee_per_gas
-        0xDEAD,  # max_fee_per_gas
-        0xDEAD,  # gas_limit
-        destination,
-        value,
-        data,
-        [],  # access_list
-    ]
-    if signature != None:
-        payload += [bool(signature.v), signature.r, signature.s]
-    return tx_type.to_bytes(1, "big") + encode(payload)
+    return Account.sign_transaction(
+        {
+            "type": tx_type,
+            "chainId": KAKAROT_CHAIN_ID,
+            "nonce": 0xDEAD,
+            "gas": gas_limit,
+            "maxPriorityFeePerGas": 0xDEAD,
+            "maxFeePerGas": 0xDEAD,
+            "to": destination and to_checksum_address(destination),
+            "value": value,
+            "data": data,
+        },
+        private_key,
+    ).rawTransaction
 
 
 @functools.wraps(GATEWAY_CLIENT.wait_for_tx)
