@@ -4,8 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: self-hosted
-    container: ptisserand/kakarot-builder:latest
+    runs-on: ubuntu-latest-16-cores
     env:
       CI_COMMIT_MESSAGE: CI Formatting Auto Commit
       CI_COMMIT_AUTHOR: ${{ github.event.repository.name }} CI
@@ -14,9 +13,6 @@ jobs:
       - name: Load cached Poetry installation
         id: cached-poetry
         uses: actions/cache@v3
-        with:
-          path: ~/.local
-          key: self-hosted-poetry
       - name: Install Poetry
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
@@ -29,8 +25,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: .venv
-          key:
-            self-hosted-venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          key: hosted-venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
@@ -54,16 +49,12 @@ jobs:
           make build
 
   tests:
-    runs-on: self-hosted
-    container: ptisserand/kakarot-builder:latest
+    runs-on: ubuntu-latest-16-cores
     steps:
       - uses: actions/checkout@v3
       - name: Load cached Poetry installation
         id: cached-poetry
         uses: actions/cache@v3
-        with:
-          path: ~/.local
-          key: self-hosted-poetry
       - name: Install Poetry
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
@@ -76,8 +67,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: .venv
-          key:
-            self-hosted-venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          key: hosted-venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
@@ -98,17 +88,13 @@ jobs:
           name: coverage
 
   resources:
-    runs-on: self-hosted
-    container: ptisserand/kakarot-builder:latest
+    runs-on: ubuntu-latest-16-cores
     needs: tests
     steps:
       - uses: actions/checkout@v3
       - name: Load cached Poetry installation
         id: cached-poetry
         uses: actions/cache@v3
-        with:
-          path: ~/.local
-          key: self-hosted-poetry
       - name: Install Poetry
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
@@ -121,8 +107,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: .venv
-          key:
-            self-hosted-venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          key: hosted-venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
