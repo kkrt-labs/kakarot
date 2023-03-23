@@ -12,8 +12,6 @@ from kakarot.stack import Stack
 
 // @title Exchange operations opcodes.
 // @notice This file contains the functions to execute for exchange operations opcodes.
-// @author @abdelhamidbakhta
-// @custom:namespace ExchangeOperations
 namespace ExchangeOperations {
     // Define constants.
     const GAS_COST_SWAP = 3;

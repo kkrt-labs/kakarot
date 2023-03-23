@@ -17,8 +17,6 @@ from kakarot.memory import Memory
 
 // @title Logging operations opcodes.
 // @notice This file contains the functions to execute for logging operations opcodes.
-// @author @abdelhamidbakhta
-// @custom:namespace LoggingOperations
 namespace LoggingOperations {
     // Define constants.
     const GAS_LOG_STATIC = 350;

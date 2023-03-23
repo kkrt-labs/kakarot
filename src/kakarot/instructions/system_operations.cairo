@@ -41,8 +41,6 @@ from kakarot.accounts.library import Accounts
 
 // @title System operations opcodes.
 // @notice This file contains the functions to execute for system operations opcodes.
-// @author @abdelhamidbakhta
-// @custom:namespace SystemOperations
 namespace SystemOperations {
     // Gas cost generated from using a CALL opcode (CALL, STATICCALL, etc.) with positive value parameter
     const GAS_COST_POSITIVE_VALUE = 9000;
@@ -502,19 +500,33 @@ namespace CallHelper {
     }(
         calling_ctx: model.ExecutionContext*, with_value: felt, read_only: felt
     ) -> model.ExecutionContext* {
-        let (calling_ctx, call_args) = CallHelper.prepare_args(
+        alloc_locals;
+        let (calling_ctx, local call_args) = CallHelper.prepare_args(
             ctx=calling_ctx, with_value=with_value
         );
 
         // Check if the called address is a precompiled contract
         let is_precompile = Precompiles.is_precompile(address=call_args.address);
         if (is_precompile == FALSE) {
-            let sub_ctx = ExecutionContext.init_at_address(
-                address=call_args.address,
-                gas_limit=call_args.gas,
-                calldata_len=call_args.args_size,
+            let (starknet_contract_address) = Accounts.compute_starknet_address(
+                evm_address=call_args.address
+            );
+            let (bytecode_len, bytecode) = IAccount.bytecode(
+                contract_address=starknet_contract_address
+            );
+            tempvar call_context = new model.CallContext(
+                bytecode=bytecode,
+                bytecode_len=bytecode_len,
                 calldata=call_args.calldata,
+                calldata_len=call_args.args_size,
                 value=call_args.value,
+            );
+            let sub_ctx = ExecutionContext.init(
+                call_context=call_context,
+                starknet_contract_address=starknet_contract_address,
+                evm_contract_address=call_args.address,
+                gas_limit=call_args.gas,
+                gas_price=calling_ctx.gas_price,
                 calling_context=calling_ctx,
                 return_data_len=call_args.ret_size,
                 return_data=call_args.return_data,

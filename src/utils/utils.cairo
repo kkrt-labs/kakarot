@@ -31,8 +31,6 @@ from kakarot.interfaces.interfaces import IAccount, IContractAccount
 
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
-// @author @abdelhamidbakhta
-// @custom:namespace Helpers
 namespace Helpers {
     func to_uint256{range_check_ptr}(val: felt) -> Uint256 {
         let (high, low) = split_felt(val);

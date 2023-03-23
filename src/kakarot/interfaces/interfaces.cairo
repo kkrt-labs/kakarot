@@ -69,21 +69,6 @@ namespace IContractAccount {
 
 @contract_interface
 namespace IKakarot {
-    func execute(
-        value: felt, bytecode_len: felt, bytecode: felt*, calldata_len: felt, calldata: felt*
-    ) {
-    }
-
-    func execute_at_address(
-        address: felt,
-        value: felt,
-        gas_limit: felt,
-        gas_price: felt,
-        calldata_len: felt,
-        calldata: felt*,
-    ) {
-    }
-
     func set_blockhash_registry(blockhash_registry_address_: felt) -> () {
     }
 
@@ -94,9 +79,6 @@ namespace IKakarot {
     }
 
     func get_native_token() -> (native_token_address: felt) {
-    }
-
-    func deploy_contract_account(bytecode_len: felt, bytecode: felt*) {
     }
 
     func deploy_externally_owned_account(evm_address: felt) {

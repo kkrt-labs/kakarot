@@ -98,8 +98,8 @@ def deploy_solidity_contract(kakarot, get_solidity_contract):
         )
         with traceit.context(contract_name):
             await caller_eoa.starknet_contract.increment_nonce().execute()
-            tx = await kakarot.deploy_contract_account(
-                bytecode=deploy_bytecode
+            tx = await kakarot.eth_call(
+                to=0, gas_limit=0, gas_price=0, value=0, data=deploy_bytecode
             ).execute(caller_address=caller_eoa.starknet_address)
 
         starknet_contract_address = tx.result.starknet_contract_address

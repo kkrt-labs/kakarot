@@ -15,8 +15,6 @@ from kakarot.execution_context import ExecutionContext
 // @custom:precompile
 // @custom:address 0x04
 // @notice This precompile serves as a cheaper way to copy data in memory
-// @author @abdelhamidbakhta
-// @custom:namespace PrecompileDataCopy
 namespace PrecompileDataCopy {
     const PRECOMPILE_ADDRESS = 0x04;
     const GAS_COST_DATACOPY = 15;

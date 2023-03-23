@@ -24,8 +24,6 @@ func account_proxy_class_hash() -> (res: felt) {
 
 // @title Constants file.
 // @notice This file contains global constants.
-// @author @abdelhamidbakhta
-// @custom:namespace Constants
 namespace Constants {
     // Define constants
 

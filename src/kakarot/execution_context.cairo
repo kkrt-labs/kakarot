@@ -26,9 +26,6 @@ from kakarot.accounts.library import Accounts
 
 // @title ExecutionContext related functions.
 // @notice This file contains functions related to the execution context.
-// @author @abdelhamidbakhta
-// @custom:namespace ExecutionContext
-// @custom:model model.ExecutionContext
 namespace ExecutionContext {
     // Summary of the execution. Created upon finalization of the execution.
     struct Summary {
@@ -75,43 +72,58 @@ namespace ExecutionContext {
     }
 
     // @notice Initialize the execution context.
-    // @dev Set the initial values before executing a piece of code.
-    // @param call_context The call context.
+    // @dev Initialize the execution context of a specific contract.
+    // @param address The evm address from which the code will be executed.
+    // @param calldata_len The calldata length.
+    // @param calldata The calldata.
+    // @param value The value in wei to be sent to address.
+    // @param calling_context A reference to the context of the calling contract. This context stores the return data produced by the called contract in its memory.
+    // @param return_data_len The return_data length.
+    // @param return_data The region where returned data of the contract or precompile is written.
+    // @param read_only The boolean that determines whether state modifications can be executed from the sub-execution context.
     // @return ExecutionContext The initialized execution context.
-    func init(call_context: model.CallContext*) -> model.ExecutionContext* {
+    func init{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(
+        call_context: model.CallContext*,
+        starknet_contract_address: felt,
+        evm_contract_address: felt,
+        gas_limit: felt,
+        gas_price: felt,
+        calling_context: model.ExecutionContext*,
+        return_data_len: felt,
+        return_data: felt*,
+        read_only: felt,
+    ) -> model.ExecutionContext* {
         alloc_locals;
-        let (empty_return_data: felt*) = alloc();
         let (empty_destroy_contracts: felt*) = alloc();
         let (empty_events: model.Event*) = alloc();
-        let (empty_create_addresses: felt*) = alloc();
+        let (empty_create_contracts: felt*) = alloc();
         let (local revert_contract_state_dict_start) = default_dict_new(0);
         tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
             revert_contract_state_dict_start, revert_contract_state_dict_start
         );
 
-        // TODO: Add support for gas limit
-        let gas_limit = Constants.TRANSACTION_GAS_LIMIT;
-
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();
-        // Note: calling_context should theoretically take this context as sub_context but this not does really matter
-        // so we keep it easier like that.
-        let calling_context = init_empty();
         let sub_context = init_empty();
 
-        local self: model.ExecutionContext* = new model.ExecutionContext(
+        return new model.ExecutionContext(
             call_context=call_context,
             program_counter=0,
             stopped=FALSE,
-            return_data=empty_return_data,
-            return_data_len=0,
+            return_data=return_data,
+            return_data_len=return_data_len,
             stack=stack,
             memory=memory,
             gas_used=0,
             gas_limit=gas_limit,
-            gas_price=0,
-            starknet_contract_address=0,
-            evm_contract_address=0,
+            gas_price=gas_price,
+            starknet_contract_address=starknet_contract_address,
+            evm_contract_address=evm_contract_address,
             calling_context=calling_context,
             sub_context=sub_context,
             destroy_contracts_len=0,
@@ -119,12 +131,11 @@ namespace ExecutionContext {
             events_len=0,
             events=empty_events,
             create_addresses_len=0,
-            create_addresses=empty_create_addresses,
+            create_addresses=empty_create_contracts,
             revert_contract_state=revert_contract_state,
             reverted=FALSE,
-            read_only=FALSE,
+            read_only=read_only,
         );
-        return self;
     }
 
     // @notice Finalizes the execution context.
@@ -143,89 +154,6 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
-        );
-    }
-
-    // @notice Initialize the execution context.
-    // @dev Initialize the execution context of a specific contract.
-    // @param address The evm address from which the code will be executed.
-    // @param calldata_len The calldata length.
-    // @param calldata The calldata.
-    // @param value The value in wei to be sent to address.
-    // @param calling_context A reference to the context of the calling contract. This context stores the return data produced by the called contract in its memory.
-    // @param return_data_len The return_data length.
-    // @param return_data The region where returned data of the contract or precompile is written.
-    // @param read_only The boolean that determines whether state modifications can be executed from the sub-execution context.
-    // @return ExecutionContext The initialized execution context.
-    func init_at_address{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(
-        address: felt,
-        gas_limit: felt,
-        calldata_len: felt,
-        calldata: felt*,
-        value: felt,
-        calling_context: model.ExecutionContext*,
-        return_data_len: felt,
-        return_data: felt*,
-        read_only: felt,
-    ) -> model.ExecutionContext* {
-        alloc_locals;
-        let (empty_destroy_contracts: felt*) = alloc();
-        let (empty_events: model.Event*) = alloc();
-        let (empty_create_contracts: felt*) = alloc();
-        let (local revert_contract_state_dict_start) = default_dict_new(0);
-        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
-            revert_contract_state_dict_start, revert_contract_state_dict_start
-        );
-
-        let stack: model.Stack* = Stack.init();
-        let memory: model.Memory* = Memory.init();
-
-        // Get the starknet address from the given evm address
-        let (starknet_contract_address) = Accounts.compute_starknet_address(evm_address=address);
-
-        // Get the bytecode from the Starknet_contract
-        let (bytecode_len, bytecode) = IAccount.bytecode(
-            contract_address=starknet_contract_address
-        );
-        local call_context: model.CallContext* = new model.CallContext(
-            bytecode=bytecode,
-            bytecode_len=bytecode_len,
-            calldata=calldata,
-            calldata_len=calldata_len,
-            value=value,
-        );
-
-        let sub_context = init_empty();
-
-        return new model.ExecutionContext(
-            call_context=call_context,
-            program_counter=0,
-            stopped=FALSE,
-            return_data=return_data,
-            return_data_len=return_data_len,
-            stack=stack,
-            memory=memory,
-            gas_used=0,
-            gas_limit=gas_limit,
-            gas_price=0,
-            starknet_contract_address=starknet_contract_address,
-            evm_contract_address=address,
-            calling_context=calling_context,
-            sub_context=sub_context,
-            destroy_contracts_len=0,
-            destroy_contracts=empty_destroy_contracts,
-            events_len=0,
-            events=empty_events,
-            create_addresses_len=0,
-            create_addresses=empty_create_contracts,
-            revert_contract_state=revert_contract_state,
-            reverted=FALSE,
-            read_only=read_only,
         );
     }
 
