@@ -151,52 +151,6 @@ namespace Kakarot {
         );
     }
 
-    // @notice Similar to execute but loads the bytecode from the given evm_contract_address instead.
-    // @dev The target starknet_contract containing the bytecode is computed with compute_starknet_address(evm_address)
-    func execute_at_address{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(
-        evm_contract_address: felt,
-        calldata_len: felt,
-        calldata: felt*,
-        value: felt,
-        gas_limit: felt,
-        gas_price: felt,
-    ) -> (
-        stack_accesses_len: felt,
-        stack_accesses: felt*,
-        stack_len: felt,
-        memory_accesses_len: felt,
-        memory_accesses: felt*,
-        memory_bytes_len: felt,
-        starknet_contract_address: felt,
-        evm_contract_address: felt,
-        return_data_len: felt,
-        return_data: felt*,
-        gas_used: felt,
-    ) {
-        let (starknet_contract_address) = Accounts.compute_starknet_address(
-            evm_address=evm_contract_address
-        );
-        let (bytecode_len, bytecode) = IAccount.bytecode(
-            contract_address=starknet_contract_address
-        );
-        return execute(
-            starknet_contract_address,
-            evm_contract_address,
-            bytecode_len,
-            bytecode,
-            calldata_len,
-            calldata,
-            value,
-            gas_limit,
-            gas_price,
-        );
-    }
-
     // @notice The Blockhash registry is used by the BLOCKHASH opcode
     // @dev Set the Blockhash registry contract address
     // @param blockhash_registry_address_ The address of the new blockhash registry contract.
@@ -247,6 +201,9 @@ namespace Kakarot {
         to_: felt, value: felt
     ) -> (success: felt) {
         alloc_locals;
+        if (value == 0) {
+            return (success=TRUE);
+        }
         let (local native_token_address) = get_native_token();
         let (from_) = get_caller_address();
         let (recipient) = Accounts.compute_starknet_address(to_);
@@ -339,7 +296,7 @@ namespace Kakarot {
     // @param value Integer of the value sent with this transaction
     // @param data_len The length of the data
     // @param data Hash of the method signature and encoded parameters. For details see Ethereum Contract ABI in the Solidity documentation
-    // @return return_data_len The length of the returnes bytes
+    // @return return_data_len The length of the returned bytes
     // @return return_data The returned bytes array
     func eth_call{
         syscall_ptr: felt*,
@@ -364,7 +321,7 @@ namespace Kakarot {
             with_attr error_message("Kakarot: value should be 0 when deploying a contract") {
                 assert value = 0;
             }
-            let (evm_contract_address, starknet_contract_address) = deploy_contract_account(
+            let (starknet_contract_address, evm_contract_address) = deploy_contract_account(
                 bytecode_len=data_len, bytecode=data
             );
             let (return_data) = alloc();
@@ -372,13 +329,20 @@ namespace Kakarot {
             assert [return_data + 1] = starknet_contract_address;
             return (2, return_data);
         } else {
-            let summary = execute_at_address(
-                evm_contract_address=to,
-                calldata_len=data_len,
-                calldata=data,
-                value=value,
-                gas_limit=gas_limit,
-                gas_price=gas_price,
+            let (starknet_contract_address) = Accounts.compute_starknet_address(to);
+            let (bytecode_len, bytecode) = IAccount.bytecode(
+                contract_address=starknet_contract_address
+            );
+            let summary = execute(
+                starknet_contract_address,
+                to,
+                bytecode_len,
+                bytecode,
+                data_len,
+                data,
+                value,
+                gas_limit,
+                gas_price,
             );
             return (summary.return_data_len, summary.return_data);
         }
@@ -407,5 +371,29 @@ namespace Kakarot {
         }
 
         return ();
+    }
+
+    // @notice The eth_send_transaction function as described in the RPC spec,
+    //         see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_sendtransaction
+    // @dev "from" parameter is taken from the get_caller_address syscall
+    // @dev "nonce" parameter is taken from the caller account
+    // @param to The address the transaction is directed to.
+    // @param gas_limit Integer of the gas provided for the transaction execution
+    // @param gas_price Integer of the gas price used for each paid gas
+    // @param value Integer of the value sent with this transaction
+    // @param data_len The length of the data
+    // @param data Hash of the method signature and encoded parameters. For details see Ethereum Contract ABI in the Solidity documentation
+    // @return return_data_len The length of the returned bytes
+    // @return return_data The returned bytes array
+    func eth_send_transaction{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
+        return_data_len: felt, return_data: felt*
+    ) {
+        assert_caller_is_kakarot_account();
+        return eth_call(to, gas_limit, gas_price, value, data_len, data);
     }
 }

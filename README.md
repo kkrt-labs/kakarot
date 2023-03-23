@@ -210,7 +210,7 @@ Test architecture is the following:
   function with forged bytecode
 - tests/integration/solidity_contracts contains python tests for solidity
   contracts that are compiled, deployed on kakarot local node and interacted
-  with kakarot eth_call()
+  with kakarot eth_call() and invoke()
 - the project also contains some forge tests (e.g. `PlainOpcodes.t.sol`) whose
   purpose is to test easily the solidity functions meant to be tested with
   kakarot, i.e. quickly making sure that they return the expected output so that

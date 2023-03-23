@@ -23,12 +23,7 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import deploy as deploy_syscall, get_contract_address
 
 // Internal dependencies
-from kakarot.constants import (
-    account_proxy_class_hash,
-    contract_account_class_hash,
-    native_token_address,
-    Constants,
-)
+from kakarot.constants import contract_account_class_hash, native_token_address, Constants
 from kakarot.precompiles.precompiles import Precompiles
 from kakarot.execution_context import ExecutionContext
 from kakarot.interfaces.interfaces import IContractAccount, IEth, IAccount

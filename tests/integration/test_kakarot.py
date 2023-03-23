@@ -1,34 +1,75 @@
 import pytest
-from starkware.starknet.testing.contract import StarknetContract
+import pytest_asyncio
+from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
+from starkware.starknet.testing.starknet import Starknet
 
-from tests.integration.bytecode.test_cases import test_cases
+from tests.integration.bytecodes import test_cases
 from tests.utils.helpers import (
     extract_memory_from_execute,
     extract_stack_from_execute,
-    generate_random_private_key,
+    generate_random_evm_address,
     hex_string_to_bytes_array,
 )
 from tests.utils.reporting import traceit
+
+
+@pytest_asyncio.fixture(scope="session")
+async def evm(
+    starknet: Starknet,
+    eth: StarknetContract,
+    contract_account_class: DeclaredClass,
+    account_proxy_class: DeclaredClass,
+    blockhash_registry: StarknetContract,
+) -> StarknetContract:
+    return await starknet.deploy(
+        source="./tests/fixtures/EVM.cairo",
+        cairo_path=["src"],
+        disable_hint_validation=True,
+        constructor_calldata=[
+            eth.contract_address,  # native_token_address_
+            contract_account_class.class_hash,  # contract_account_class_hash_
+            account_proxy_class.class_hash,  # account_proxy_class_hash
+            blockhash_registry.contract_address,  # blockhash_registry_address_
+        ],
+    )
+
 
 params_execute = [pytest.param(case.pop("params"), **case) for case in test_cases]
 
 
 @pytest.mark.asyncio
 class TestKakarot:
+    class TestComputeStarknetAddress:
+        async def test_should_return_same_as_deployed_address(
+            self, kakarot: StarknetContract
+        ):
+            evm_address = int(generate_random_evm_address(), 16)
+            deployed_starknet_address = (
+                (await kakarot.deploy_externally_owned_account(evm_address).execute())
+                .call_info.internal_calls[0]
+                .contract_address
+            )
+
+            computed_starknet_address = (
+                await kakarot.compute_starknet_address(evm_address).call()
+            ).result[0]
+
+            assert deployed_starknet_address == computed_starknet_address
+
     @pytest.mark.parametrize(
         "params",
         params_execute,
     )
     async def test_execute(
         self,
-        kakarot: StarknetContract,
+        evm: StarknetContract,
         owner,
         params: dict,
         request,
     ):
         # TODO Call with MockSigner for TxInfo to be set with the right caller
         with traceit.context(request.node.callspec.id):
-            res = await kakarot.execute(
+            res = await evm.execute(
                 value=int(params["value"]),
                 bytecode=hex_string_to_bytes_array(params["code"]),
                 calldata=hex_string_to_bytes_array(params["calldata"]),
@@ -51,25 +92,3 @@ class TestKakarot:
                 ]
                 for event in sorted(res.call_info.events, key=lambda x: x.order)
             ] == events
-
-    class TestComputeStarknetAddress:
-        async def test_should_return_same_as_deployed_address(
-            self, kakarot: StarknetContract
-        ):
-            private_key = generate_random_private_key()
-            evm_address = private_key.public_key.to_checksum_address()
-            eoa_deploy_tx = await kakarot.deploy_externally_owned_account(
-                int(evm_address, 16)
-            ).execute()
-
-            kakarot_starknet_address = eoa_deploy_tx.call_info.internal_calls[
-                0
-            ].contract_address
-
-            computed_starknet_address = (
-                await kakarot.compute_starknet_address(
-                    evm_address=int(evm_address, 16)
-                ).call()
-            ).result[0]
-
-            assert kakarot_starknet_address == computed_starknet_address

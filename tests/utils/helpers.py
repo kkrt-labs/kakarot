@@ -1,6 +1,6 @@
 import random
 from textwrap import wrap
-from typing import Tuple
+from typing import List, Tuple
 
 import rlp
 from eth_abi import encode_abi
@@ -136,8 +136,14 @@ def encode_price(reserve_0: int, reserve_1: int) -> list:
     ]
 
 
-def generate_random_private_key():
+def generate_random_private_key(seed=0):
+    random.seed(seed)
     return keys.PrivateKey(int.to_bytes(random.getrandbits(256), 32, "big"))
+
+
+def generate_random_evm_address(seed=0):
+    random.seed(seed)
+    return to_checksum_address(hex(random.getrandbits(160)))
 
 
 def ec_sign(
@@ -169,7 +175,7 @@ def get_multicall_from_evm_txs(
         ]
         calldata += tx
 
-        # See ./tests/unit/src/kakarot/accounts/eoa/mock_kakarot.cairo
+        # See ./tests/src/kakarot/accounts/eoa/mock_kakarot.cairo
         expected_result += [
             int.from_bytes(HexBytes(transaction["to"]), "big"),
             transaction["gas"],
@@ -184,3 +190,7 @@ def get_multicall_from_evm_txs(
         ]
 
     return (calls, calldata, expected_result)
+
+
+def pack_64_bits_little(input: List[int]):
+    return sum([x * 256**i for (i, x) in enumerate(input)])

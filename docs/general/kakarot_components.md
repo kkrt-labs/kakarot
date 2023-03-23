@@ -13,7 +13,7 @@ The main Kakarot contract is located at:
 [`./src/kakarot/kakarot.cairo`](../../src/kakarot/kakarot.cairo).
 
 This is the core contract which is capable of executing decoded ethereum
-transactions thanks to its `eth_call` entrypoint.
+transactions thanks to its `invoke` entrypoint.
 
 Currently, Argent or Braavos accounts contracts don't work with Kakarot.
 Consequently, the `deploy_externally_owned_account` entrypoint has been added to
@@ -46,9 +46,11 @@ by the mean of a specific account contract deployed by Kakarot.
 
 This contract is a regular account contract in the Starknet sense with
 `__validate__` and `__execute__` entrypoint. However, it does decode and
-validate an EVM signed transaction to redirect it only to Kakarot. Further
+validate an EVM signed transaction and redirect it only to Kakarot. Further
 development will allow the user to have one single Starknet account for both
-Starknet native and Kakarot deployed dApp.
+Starknet native and Kakarot deployed dApp. For a general introduction to EVM
+transactions, see
+[the official doc](https://ethereum.org/en/developers/docs/transactions/).
 
 ## Blockhash Registry
 

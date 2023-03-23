@@ -91,7 +91,31 @@ func deploy_externally_owned_account{
     return Kakarot.deploy_externally_owned_account(evm_address);
 }
 
-// @notice The eth_call function as described in the spec, see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_call
+// @notice The eth_call function as described in the spec,
+//         see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_call
+//         This is a view only function, meaning that it doesn't make any state change.
+// @dev "from" parameter is taken from get_caller_address syscall
+// @param to The address the transaction is directed to.
+// @param gas_limit Integer of the gas provided for the transaction execution
+// @param gas_price Integer of the gas price used for each paid gas
+// @param value Integer of the value sent with this transaction
+// @param data_len The length of the data
+// @param data Hash of the method signature and encoded parameters. For details see Ethereum Contract ABI in the Solidity documentation
+// @return return_data_len The length of the return_data
+// @return return_data An array of returned felts
+@view
+func eth_call{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
+    return_data_len: felt, return_data: felt*
+) {
+    return Kakarot.eth_call(to, gas_limit, gas_price, value, data_len, data);
+}
+
+// @notice The eth_send_transaction function as described in the spec,
+//         see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_sendtransaction
+// @dev "from" parameter is taken from get_caller_address syscall
+// @dev "nonce" parameter is taken from the corresponding account contract
 // @dev "from" parameter is taken from get_caller_address syscall
 // @param to The address the transaction is directed to.
 // @param gas_limit Integer of the gas provided for the transaction execution
@@ -102,11 +126,10 @@ func deploy_externally_owned_account{
 // @return return_data_len The length of the return_data
 // @return return_data An array of returned felts
 @external
-func eth_call{
+func eth_send_transaction{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
     return_data_len: felt, return_data: felt*
 ) {
-    Kakarot.assert_caller_is_kakarot_account();
-    return Kakarot.eth_call(to, gas_limit, gas_price, value, data_len, data);
+    return Kakarot.eth_send_transaction(to, gas_limit, gas_price, value, data_len, data);
 }
