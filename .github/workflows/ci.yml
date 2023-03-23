@@ -10,11 +10,19 @@ jobs:
       CI_COMMIT_AUTHOR: ${{ github.event.repository.name }} CI
     steps:
       - uses: actions/checkout@v3
+      # Python setup
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
       - name: Load cached Poetry installation
         id: cached-poetry
         uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: self-hosted-poetry
       - name: Install Poetry
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
         with:
           virtualenvs-create: true
@@ -52,11 +60,18 @@ jobs:
     runs-on: ubuntu-latest-16-cores
     steps:
       - uses: actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
       - name: Load cached Poetry installation
         id: cached-poetry
         uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: self-hosted-poetry
       - name: Install Poetry
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
         with:
           virtualenvs-create: true
@@ -92,11 +107,18 @@ jobs:
     needs: tests
     steps:
       - uses: actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
       - name: Load cached Poetry installation
         id: cached-poetry
         uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: self-hosted-poetry
       - name: Install Poetry
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
         with:
           virtualenvs-create: true
