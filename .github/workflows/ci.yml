@@ -20,7 +20,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.local
-          key: hosted-poetry-0
+          key: poetry-${{ runner.os }}
       - name: Install Poetry
         if: steps.cached-poetry.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
@@ -34,7 +34,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: .venv
-          key: hosted-venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-0
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
@@ -70,7 +70,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.local
-          key: hosted-poetry-0
+          key: poetry-${{ runner.os }}
       - name: Install Poetry
         if: steps.cached-poetry.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
@@ -84,7 +84,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: .venv
-          key: hosted-venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-0
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
@@ -118,7 +118,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.local
-          key: hosted-poetry-0
+          key: poetry-${{ runner.os }}
       - name: Install Poetry
         if: steps.cached-poetry.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
@@ -132,7 +132,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: .venv
-          key: hosted-venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-0
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
