@@ -1,0 +1,282 @@
+import json
+import logging
+import os
+from pathlib import Path
+from typing import Optional, Union
+
+from eth_account import Account as EvmAccount
+from eth_utils.address import to_checksum_address
+from starknet_py.abi import AbiParser
+from starknet_py.contract import Contract
+from starknet_py.net.account.account import Account
+from starknet_py.net.client_errors import ContractNotFoundError
+from starknet_py.net.client_models import Call
+from starknet_py.net.signer.stark_curve_signer import KeyPair
+from starknet_py.serialization import serializer_for_function
+from starkware.starknet.public.abi import get_selector_from_name
+from web3 import Web3
+from web3.contract import Contract as Web3Contract
+
+from scripts.constants import (
+    CHAIN_ID,
+    EVM_ADDRESS,
+    EVM_PRIVATE_KEY,
+    GATEWAY_CLIENT,
+    KAKAROT_ADDRESS,
+    KAKAROT_CHAIN_ID,
+)
+from scripts.utils.starknet import fund_address, get_starknet_account, get_tx_url
+from scripts.utils.utils import hex_string_to_bytes_array
+
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+
+def get_contract(contract_path: str):
+    path = os.path.splitext(contract_path)[0]
+    folder, contract_name = os.path.split(path)
+    solidity_file_path = list(Path(folder).glob(f"**/{contract_name}.json"))
+    if len(solidity_file_path) != 1:
+        raise ValueError(f"Cannot locate a unique {contract_name} in {folder}")
+
+    compilation_output = json.load(
+        open(
+            solidity_file_path[0],
+            "r",
+        )
+    )
+    return Web3().eth.contract(
+        abi=compilation_output["abi"], bytecode=compilation_output["bytecode"]["object"]
+    )
+
+
+async def get_contract_at_address(
+    contract_path: str, evm_address: Union[str, int]
+) -> Web3Contract:
+    evm_address = evm_address if isinstance(evm_address, str) else hex(evm_address)
+    evm_address = Web3.to_checksum_address(evm_address)
+
+    kakarot_contract = await Contract.from_address(KAKAROT_ADDRESS, GATEWAY_CLIENT)
+    starknet_address = (
+        await kakarot_contract.functions["compute_starknet_address"].call(
+            int(evm_address, 16)
+        )
+    ).contract_address
+    if not await contract_exists(starknet_address):
+        raise ValueError("Provided EVM address does not have a deployed contract")
+
+    contract = get_contract(contract_path)
+    for fun in contract.functions:
+        setattr(contract, fun, classmethod(wrap_kakarot(contract, fun, evm_address)))
+
+    return contract
+
+
+async def deploy_solidity_contract(contract_path: str) -> Web3Contract:
+    contract = get_contract(contract_path)
+
+    deploy_bytecode = contract.bytecode
+    tx_hash = await deploy_contract_account(deploy_bytecode)
+    receipt = await GATEWAY_CLIENT.get_transaction_receipt(tx_hash=tx_hash)
+
+    if len(receipt.events) != 4:
+        raise ValueError(
+            f"Contract deployment failed, got {len(receipt.events)} events, expected 4"
+        )
+
+    evm_address = Web3.to_checksum_address(hex(receipt.events[2].data[0]))
+
+    for fun in contract.functions:
+        setattr(contract, fun, classmethod(wrap_kakarot(contract, fun, evm_address)))
+
+    return contract
+
+
+def wrap_kakarot(contract: Web3Contract, fun: str, evm_address: str):
+    """Wrap a contract function call with the Kakarot contract."""
+
+    async def _wrapper(self, *args, **kwargs):
+        abi = contract.get_function_by_name(fun).abi
+        gas_limit = kwargs.pop("gas_limit", 1_000_000_000)
+        value = kwargs.pop("value", 0)
+        calldata = get_contract_method_calldata(contract, fun, *args, **kwargs)
+
+        if abi["stateMutability"] == "view":
+            evm_calldata = hex_string_to_bytes_array(calldata)
+            calldata = [
+                int(evm_address, 16),
+                value,
+                gas_limit,
+                len(evm_calldata),
+                *evm_calldata,
+            ]
+            result = await GATEWAY_CLIENT.call_contract(
+                Call(
+                    to_addr=int(KAKAROT_ADDRESS, 16),
+                    selector=get_selector_from_name("execute_at_address"),
+                    calldata=calldata,
+                )
+            )
+            return await deserialize_kakarot_execute_output(result).return_data
+
+        await execute_at_address(
+            address=evm_address,
+            value=value,
+            gas_limit=gas_limit,
+            calldata=calldata,
+        )
+
+    return _wrapper
+
+
+async def deserialize_kakarot_execute_output(output: list[int]):
+    """Deserialize the output of the Kakarot contract's execute_at_address method."""
+    if len(output) == 0:
+        raise ValueError(f"No ouput provided for deserialization")
+
+    kakarot_contract = await Contract.from_address(KAKAROT_ADDRESS, GATEWAY_CLIENT)
+    kakarot_abi = AbiParser(
+        [kakarot_contract.functions["execute_at_address"].abi]
+    ).parse()
+    function_parser = serializer_for_function(
+        kakarot_abi.functions["execute_at_address"]
+    )
+    return function_parser.deserialize(output)
+
+
+def get_contract_method_calldata(
+    contract: Web3Contract, method_name: str, *args, **kwargs
+):
+    return contract.get_function_by_name(method_name)(
+        *args, **kwargs
+    )._encode_transaction_data()
+
+
+async def contract_exists(address: int) -> bool:
+    try:
+        await GATEWAY_CLIENT.get_code(address)
+        return True
+    except ContractNotFoundError:
+        return False
+
+
+async def get_evm_account(
+    address=None,
+    private_key=None,
+) -> Account:
+    address = int(address or EVM_ADDRESS, 16)
+    private_key = int(private_key or EVM_PRIVATE_KEY, 16)
+
+    kakarot_contract = await Contract.from_address(KAKAROT_ADDRESS, GATEWAY_CLIENT)
+    starknet_address = (
+        await kakarot_contract.functions["compute_starknet_address"].call(address)
+    ).contract_address
+
+    if not await contract_exists(starknet_address):
+        starknet_account = await get_starknet_account()
+        call = Call(
+            to_addr=int(KAKAROT_ADDRESS, 16),
+            selector=get_selector_from_name("deploy_externally_owned_account"),
+            calldata=[int(EVM_ADDRESS, 16)],
+        )
+        logger.info(f"⏳ Deploying EOA account")
+        tx_hash = (
+            await starknet_account.execute(call, max_fee=int(1e17))
+        ).transaction_hash
+        logger.info(f"⏳ Waiting for tx {get_tx_url(tx_hash)}")
+        await starknet_account.client.wait_for_tx(tx_hash)
+        await fund_address(starknet_address, 0.005)
+
+    return Account(
+        address=starknet_address,
+        client=GATEWAY_CLIENT,
+        chain=CHAIN_ID,
+        key_pair=KeyPair(private_key, address),
+    )
+
+
+async def deploy_contract_account(
+    bytecode: Union[str, bytes],
+):
+    """Deploy a contract account with the provided bytecode."""
+    evm_account = await get_evm_account()
+    bytecode = bytecode.hex() if isinstance(bytecode, bytes) else bytecode
+
+    tx_payload = get_payload(
+        data=bytecode, private_key=hex(evm_account.signer.private_key)
+    )
+
+    logger.info(f"⏳ Deploying contract account")
+    response = await evm_account.execute(
+        calls=Call(
+            to_addr=int(KAKAROT_ADDRESS, 16),
+            selector=get_selector_from_name("deploy_contract_account"),
+            calldata=tx_payload,
+        ),
+        max_fee=int(1e17),
+    )
+    logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
+    await evm_account.client.wait_for_tx(
+        tx_hash=response.transaction_hash, check_interval=15
+    )
+    return response.transaction_hash
+
+
+async def execute_at_address(
+    address: Union[int, str],
+    value: Union[int, str],
+    gas_limit: int,
+    calldata: Union[str, bytes],
+):
+    """Execute the calldata at the EVM contract address on Kakarot."""
+
+    evm_account = await get_evm_account()
+    address = hex(address) if isinstance(address, int) else address
+    value = hex(value) if isinstance(value, int) else value
+    calldata = calldata.hex() if isinstance(calldata, bytes) else calldata
+
+    tx_payload = get_payload(
+        data=calldata,
+        private_key=hex(evm_account.signer.private_key),
+        gas_limit=gas_limit,
+        destination=address,
+        value=value,
+    )
+    logger.info(f"⏳ Executing the provided bytecode for the contract at {address}")
+    response = await evm_account.execute(
+        calls=Call(
+            to_addr=int(KAKAROT_ADDRESS, 16),
+            selector=get_selector_from_name("execute_at_address"),
+            calldata=tx_payload,
+        ),
+        max_fee=int(1e17),
+    )
+    logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
+    await evm_account.client.wait_for_tx(
+        tx_hash=response.transaction_hash, check_interval=15
+    )
+
+
+def get_payload(
+    data: str,
+    private_key: str,
+    gas_limit: int = 0xDEAD,
+    tx_type: int = 0x02,
+    destination: Optional[str] = None,
+    value: str = "0x0",
+):
+    return EvmAccount.sign_transaction(
+        {
+            "type": tx_type,
+            "chainId": KAKAROT_CHAIN_ID,
+            "nonce": 0xDEAD,
+            "gas": gas_limit,
+            "maxPriorityFeePerGas": 0xDEAD,
+            "maxFeePerGas": 0xDEAD,
+            "to": destination and to_checksum_address(destination),
+            "value": value,
+            "data": data,
+        },
+        private_key,
+    ).rawTransaction
