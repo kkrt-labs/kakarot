@@ -168,7 +168,7 @@ def get_multicall_from_evm_txs(
         ]
         calldata += tx
         # Execute contract bytecode
-        if transaction["to"] != "":
+        if transaction["to"]:
             expected_result += [
                 int(transaction["to"], 16),
                 transaction["value"],

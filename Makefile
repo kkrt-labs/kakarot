@@ -89,4 +89,4 @@ build-sol:
 
 run:
 	mkdir -p deployments/devnet
-	poetry run starknet-devnet --lite-mode --seed 0 --dump-on exit --dump-path deployments/devnet/devnet.pkl --disable-rpc-request-validation
+	poetry run starknet-devnet --lite-mode --seed 0 --dump-on exit --dump-path deployments/devnet/devnet.pkl --disable-rpc-request-validation --timeout 600

@@ -52,7 +52,7 @@ class TestLibrary:
     ):
         private_key = generate_random_private_key()
 
-        txs = [t for t in TRANSACTIONS if t["to"] != ""]
+        txs = [t for t in TRANSACTIONS if t["to"]]
         (calls, calldata, _) = get_multicall_from_evm_txs(txs, private_key)
         total_transferred_value = sum([x["value"] for x in txs])
 

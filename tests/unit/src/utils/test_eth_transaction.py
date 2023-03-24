@@ -9,7 +9,7 @@ from tests.utils.errors import kakarot_error
 from tests.utils.helpers import generate_random_private_key
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="module")
 async def eth_transaction(starknet):
     return await starknet.deploy(
         source="./tests/unit/src/utils/test_eth_transaction.cairo",
