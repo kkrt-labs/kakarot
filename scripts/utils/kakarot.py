@@ -1,11 +1,11 @@
 import json
 import logging
-import os
 from pathlib import Path
 from typing import Optional, Union
 
 from eth_account import Account as EvmAccount
 from eth_utils.address import to_checksum_address
+from hexbytes import HexBytes
 from starknet_py.abi import AbiParser
 from starknet_py.contract import Contract
 from starknet_py.net.account.account import Account
@@ -26,7 +26,6 @@ from scripts.constants import (
     KAKAROT_CHAIN_ID,
 )
 from scripts.utils.starknet import fund_address, get_starknet_account, get_tx_url
-from scripts.utils.utils import hex_string_to_bytes_array
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -34,11 +33,10 @@ logger.setLevel(logging.INFO)
 
 
 def get_contract(contract_path: str):
-    path = os.path.splitext(contract_path)[0]
-    folder, contract_name = os.path.split(path)
-    solidity_file_path = list(Path(folder).glob(f"**/{contract_name}.json"))
+    path = Path(contract_path)
+    solidity_file_path = list(path.parent.glob("**/" + path.stem + ".json"))
     if len(solidity_file_path) != 1:
-        raise ValueError(f"Cannot locate a unique {contract_name} in {folder}")
+        raise ValueError(f"Cannot locate a unique {path.stem} in {path.name}")
 
     compilation_output = json.load(
         open(
@@ -103,7 +101,7 @@ def wrap_kakarot(contract: Web3Contract, fun: str, evm_address: str):
         calldata = get_contract_method_calldata(contract, fun, *args, **kwargs)
 
         if abi["stateMutability"] == "view":
-            evm_calldata = hex_string_to_bytes_array(calldata)
+            evm_calldata = list(HexBytes(calldata))
             calldata = [
                 int(evm_address, 16),
                 value,
@@ -118,7 +116,7 @@ def wrap_kakarot(contract: Web3Contract, fun: str, evm_address: str):
                     calldata=calldata,
                 )
             )
-            return await deserialize_kakarot_execute_output(result).return_data
+            return (await deserialize_kakarot_execute_output(result)).return_data
 
         await execute_at_address(
             address=evm_address,
@@ -133,7 +131,7 @@ def wrap_kakarot(contract: Web3Contract, fun: str, evm_address: str):
 async def deserialize_kakarot_execute_output(output: list[int]):
     """Deserialize the output of the Kakarot contract's execute_at_address method."""
     if len(output) == 0:
-        raise ValueError(f"No ouput provided for deserialization")
+        raise ValueError(f"No output provided for deserialization")
 
     kakarot_contract = await Contract.from_address(KAKAROT_ADDRESS, GATEWAY_CLIENT)
     kakarot_abi = AbiParser(
@@ -186,7 +184,7 @@ async def get_evm_account(
         ).transaction_hash
         logger.info(f"⏳ Waiting for tx {get_tx_url(tx_hash)}")
         await starknet_account.client.wait_for_tx(tx_hash)
-        await fund_address(starknet_address, 0.005)
+        await fund_address(starknet_address, 0.01)
 
     return Account(
         address=starknet_address,
