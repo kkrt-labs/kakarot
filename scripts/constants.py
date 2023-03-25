@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from eth_keys import keys
 from starknet_py.net.gateway_client import GatewayClient
 
-from scripts.artifacts import pull_deployments
+from scripts.artifacts import get_deployments
 
 load_dotenv()
 
@@ -77,7 +77,7 @@ PRIVATE_KEY = (
     os.environ.get(f"{NETWORK.upper()}_PRIVATE_KEY") or os.environ["PRIVATE_KEY"]
 )
 
-pull_deployments(Path("deployments"))
+get_deployments(Path("deployments"))
 deployments = json.load(open(DEPLOYMENTS_DIR / "deployments.json", "r"))
 
 KAKAROT_ADDRESS = deployments["kakarot"]["address"]
