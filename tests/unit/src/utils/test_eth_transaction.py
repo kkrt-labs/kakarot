@@ -1,3 +1,5 @@
+import random
+
 import pytest
 import pytest_asyncio
 from eth_account.account import Account
@@ -7,7 +9,7 @@ from tests.utils.errors import kakarot_error
 from tests.utils.helpers import generate_random_private_key
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="module")
 async def eth_transaction(starknet):
     return await starknet.deploy(
         source="./tests/unit/src/utils/test_eth_transaction.cairo",
@@ -19,10 +21,17 @@ async def eth_transaction(starknet):
 @pytest.mark.asyncio
 class TestEthTransaction:
     class TestValidate:
+        @pytest.mark.parametrize("seed", (41, 42))
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         async def test_should_pass_all_transactions_types(
-            self, eth_transaction, transaction
+            self, eth_transaction, seed, transaction
         ):
+            """
+            Note: the seeds 41 and 42 have been manually selected after observing that some private keys
+            were making the Counter deploy transaction failing because their signature parameters length (s and v)
+            were not 32 bytes
+            """
+            random.seed(seed)
             private_key = generate_random_private_key()
             address = private_key.public_key.to_checksum_address()
             signed = Account.sign_transaction(transaction, private_key)
