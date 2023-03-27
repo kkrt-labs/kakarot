@@ -8,32 +8,32 @@ packages = [{ include = "scripts" }]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.10"
-cairo-lang = "^0.10.1"
+cairo-lang = "^0.11.0.1"
 openzeppelin-cairo-contracts = "0.5.0"
 amarna = "^0.1.5"
-starknet-py = "^0.14.0a0"
+starknet-py = "^0.15.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"
 isort = "^5.10.1"
-cairo-coverage = "^0.1.4"
+cairo-coverage = { git = "https://github.com/starknet-edu/cairo-coverage.git", branch="master" }
 pandas = "^1.5.1"
 pytest-xdist = { version = "^3.0.2", extras = ["psutil"] }
 setproctitle = "^1.3.2"
 pysha3 = "^1.0.2"
-web3 = "6.0.0b2"
+web3 = "<6.0.0"
 python-dotenv = "^0.21.0"
 eth-account = "<0.8.0"
 autoflake = "^2.0.0"
 pycryptodome = "^3.16.0"
 rlp = "<=3"
-py-evm = "0.6.1a2"
-eth-keys = "^0.4.0"
-eth-abi = "^3.0.1"
-eth-utils = "^2.1.0"
+blake2b-py = { git = "https://github.com/ethereum/blake2b-py.git", tag="v0.2.0" }
+eth-keys = "<0.4.0"
+eth-abi = "<4.0.0"
+eth-utils = "<2.0.0"
 hypothesis = "^6.65.0"
 case-converter = "^1.1.0"
-starknet-devnet = "^0.4.6"
+starknet-devnet = "0.5.0a0"
 requests = "^2.28.2"
 codespell = "^2.2.2"
 
