@@ -148,7 +148,6 @@ namespace EthTransaction {
         // 1 byte for v
         // 33 bytes for r = 1 byte for len (=32) + 32 bytes for r word
         // 33 bytes for s = 1 byte for len (=32) + 32 bytes for s word
-        local signature_len = 1 + 1 + 32 + 1 + 32;
         local signature_start_index = tx_type + 7;
         local chain_id_idx = 0;
         // 1. extract v, r, s
@@ -159,8 +158,15 @@ namespace EthTransaction {
         let (v) = Helpers.bytes_to_felt(
             sub_items[signature_start_index].data_len, sub_items[signature_start_index].data, 0
         );
-        let r = Helpers.bytes32_to_uint256(sub_items[signature_start_index + 1].data);
-        let s = Helpers.bytes32_to_uint256(sub_items[signature_start_index + 2].data);
+        let r = Helpers.bytes_i_to_uint256(
+            sub_items[signature_start_index + 1].data, sub_items[signature_start_index + 1].data_len
+        );
+        let s = Helpers.bytes_i_to_uint256(
+            sub_items[signature_start_index + 2].data, sub_items[signature_start_index + 2].data_len
+        );
+        local signature_len = 1 + 1 + sub_items[signature_start_index + 1].data_len + 1 + sub_items[
+            signature_start_index + 2
+        ].data_len;
 
         let (local signed_data: felt*) = alloc();
         assert [signed_data] = tx_type;
