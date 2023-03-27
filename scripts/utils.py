@@ -10,7 +10,7 @@ from typing import Optional, Union
 import requests
 from caseconverter import snakecase
 from starknet_py.contract import Contract
-from starknet_py.net import AccountClient
+from starknet_py.net.account.account import Account
 from starknet_py.net.client import Client
 from starknet_py.net.client_models import Call
 from starknet_py.net.models import Address
@@ -93,7 +93,7 @@ async def create_account():
     await GATEWAY_CLIENT.wait_for_tx(transaction_hash)
 
 
-async def get_default_account() -> AccountClient:
+async def get_default_account() -> Account:
     accounts = json.load(
         open(list(Path(DEFAULT_ACCOUNT_DIR).expanduser().glob("*.json"))[0])
     )
@@ -103,10 +103,9 @@ async def get_default_account() -> AccountClient:
 
     logger.info(f"ℹ️  Using account {account['address']:x}")
 
-    return AccountClient(
+    return Account(
         address=account["address"],
         client=GATEWAY_CLIENT,
-        supported_tx_version=1,
         chain=CHAIN_ID,
         key_pair=KeyPair(
             private_key=int(account["private_key"], 16),
@@ -118,7 +117,7 @@ async def get_default_account() -> AccountClient:
 async def get_account(
     address=None,
     private_key=None,
-) -> AccountClient:
+) -> Account:
     address = int(address or ACCOUNT_ADDRESS, 16)
     key_pair = KeyPair.from_private_key(int(private_key or PRIVATE_KEY, 16))
     try:
@@ -148,10 +147,9 @@ async def get_account(
             f"Public key of account 0x{address:064x} is not consistent with provided private key"
         )
 
-    return AccountClient(
+    return Account(
         address=address,
         client=GATEWAY_CLIENT,
-        supported_tx_version=1,
         chain=CHAIN_ID,
         key_pair=key_pair,
     )
@@ -323,9 +321,9 @@ async def declare(contract_name):
     declare_transaction = await account.sign_declare_transaction(
         compiled_contract=Path(artifact).read_text(), max_fee=int(1e16)
     )
-    resp = await account.declare(transaction=declare_transaction)
+    resp = await account.client.declare(transaction=declare_transaction)
     logger.info(f"⏳ Waiting for tx {get_tx_url(resp.transaction_hash)}")
-    await account.wait_for_tx(resp.transaction_hash, check_interval=15)
+    await account.client.wait_for_tx(resp.transaction_hash, check_interval=15)
     logger.info(f"✅ {contract_name} class hash: {hex(resp.class_hash)}")
     return resp.class_hash
 
@@ -365,7 +363,7 @@ async def invoke(contract_name, function_name, *inputs, address=None):
     logger.info(f"⏳ Invoking {contract_name}.{function_name}({json.dumps(inputs)})")
     response = await account.execute(call, max_fee=int(1e16))
     logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
-    await account.wait_for_tx(response.transaction_hash, check_interval=15)
+    await account.client.wait_for_tx(response.transaction_hash, check_interval=15)
     logger.info(
         f"✅ {contract_name}.{function_name} invoked at tx: %s",
         hex(response.transaction_hash),
