@@ -6,7 +6,7 @@ from kakarot.constants import Constants
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin, HashBuiltin
-from starkware.cairo.common.cairo_keccak.keccak import keccak, finalize_keccak, keccak_bigend
+from starkware.cairo.common.cairo_keccak.keccak import finalize_keccak, cairo_keccak_bigend
 from starkware.cairo.common.cairo_secp.signature import verify_eth_signature_uint256
 from starkware.cairo.common.math_cmp import is_not_zero, is_le
 from starkware.cairo.common.memcpy import memcpy
@@ -82,7 +82,7 @@ namespace EthTransaction {
         let (keccak_ptr: felt*) = alloc();
         let keccak_ptr_start = keccak_ptr;
         with keccak_ptr {
-            // From keccak/keccak_bigend doc:
+            // From keccak/cairo_keccak_bigend doc:
             // > To use this function, split the input into words of 64 bits (little endian).
             // > Same as keccak, but outputs the hash in big endian representation.
             // > Note that the input is still treated as little endian.
@@ -96,7 +96,7 @@ namespace EthTransaction {
                 dest=words,
                 dest_index=0,
             );
-            let (tx_hash) = keccak_bigend(inputs=words, n_bytes=rlp_data_len);
+            let (tx_hash) = cairo_keccak_bigend(inputs=words, n_bytes=rlp_data_len);
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
 
@@ -172,7 +172,7 @@ namespace EthTransaction {
         let (keccak_ptr: felt*) = alloc();
         let keccak_ptr_start = keccak_ptr;
         with keccak_ptr {
-            // From keccak/keccak_bigend doc:
+            // From keccak/cairo_keccak_bigend doc:
             // > To use this function, split the input into words of 64 bits (little endian).
             // > Same as keccak, but outputs the hash in big endian representation.
             // > Note that the input is still treated as little endian.
@@ -186,7 +186,7 @@ namespace EthTransaction {
                 dest=words,
                 dest_index=0,
             );
-            let (tx_hash) = keccak_bigend(inputs=words, n_bytes=rlp_len + 1);
+            let (tx_hash) = cairo_keccak_bigend(inputs=words, n_bytes=rlp_len + 1);
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
 
