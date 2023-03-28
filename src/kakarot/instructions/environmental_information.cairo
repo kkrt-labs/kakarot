@@ -6,7 +6,7 @@
 
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.cairo_keccak.keccak import keccak_bigend, finalize_keccak
+from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 from starkware.cairo.common.uint256 import Uint256
 
@@ -691,7 +691,7 @@ namespace EnvironmentalInformation {
         local keccak_ptr_start: felt* = keccak_ptr;
 
         with keccak_ptr {
-            let (result) = keccak_bigend(inputs=dest, n_bytes=bytecode_len);
+            let (result) = cairo_keccak_bigend(inputs=dest, n_bytes=bytecode_len);
 
             finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
         }

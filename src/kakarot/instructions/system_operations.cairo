@@ -6,7 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.cairo_keccak.keccak import keccak_bigend, finalize_keccak
+from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.cairo.common.dict import (
     DictAccess,
     dict_new,
@@ -645,7 +645,7 @@ namespace CreateHelper {
         );
 
         with keccak_ptr {
-            let (create_hash) = keccak_bigend(inputs=packed_bytes8, n_bytes=rlp_list_len);
+            let (create_hash) = cairo_keccak_bigend(inputs=packed_bytes8, n_bytes=rlp_list_len);
 
             finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
         }
@@ -689,7 +689,7 @@ namespace CreateHelper {
         );
         with keccak_ptr {
             // get keccak hash of bytecode
-            let (bytecode_hash_bigend) = keccak_bigend(
+            let (bytecode_hash_bigend) = cairo_keccak_bigend(
                 inputs=bytecode_bytes8, n_bytes=bytecode_len
             );
             // get keccak hash of
@@ -743,7 +743,9 @@ namespace CreateHelper {
                 dest_index=0,
             );
 
-            let (create2_hash) = keccak_bigend(inputs=packed_bytes8, n_bytes=packed_bytes_len);
+            let (create2_hash) = cairo_keccak_bigend(
+                inputs=packed_bytes8, n_bytes=packed_bytes_len
+            );
 
             finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
         }

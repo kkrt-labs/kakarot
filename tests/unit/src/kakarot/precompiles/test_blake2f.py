@@ -3,7 +3,7 @@ from typing import List
 
 import pytest
 import pytest_asyncio
-from eth._utils.blake2.compression import blake2b_compress
+from blake2b import compress
 from starkware.starknet.testing.starknet import Starknet
 
 from tests.utils.errors import kakarot_error
@@ -58,6 +58,7 @@ class TestBlake2f:
         ).call()
 
         # Then
-        compress = blake2b_compress(rounds, h_starting_state, m, [t0, t1], bool(f))
-        expected = [int(x) for x in compress]
+        m_64 = [pack_64_bits_little(m[i * 8 : (i + 1) * 8]) for i in range(16)]
+        c = compress(rounds, h_starting_state, m_64, [t0, t1], bool(f))
+        expected = [int(x) for x in c]
         assert got.result.output == expected
