@@ -257,9 +257,9 @@ namespace EthTransaction {
         range_check_ptr,
     }(address: felt, tx_data_len: felt, tx_data: felt*) {
         alloc_locals;
-        let (gas_price, gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s) = decode(
-            tx_data_len, tx_data
-        );
+        let (
+            gas_price, gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s
+        ) = decode(tx_data_len, tx_data);
         let (local keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
         with keccak_ptr {

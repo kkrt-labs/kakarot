@@ -6,9 +6,7 @@ from starkware.starknet.testing.starknet import Starknet
 
 
 @pytest_asyncio.fixture(scope="module")
-async def ec_add(
-    starknet: Starknet
-):
+async def ec_add(starknet: Starknet):
     return await starknet.deploy(
         source="./tests/src/kakarot/precompiles/test_ec_add.cairo",
         cairo_path=["src"],
