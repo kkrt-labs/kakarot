@@ -73,10 +73,11 @@ namespace ExecutionContext {
 
     // @notice Initialize the execution context.
     // @dev Initialize the execution context of a specific contract.
-    // @param address The evm address from which the code will be executed.
-    // @param calldata_len The calldata length.
-    // @param calldata The calldata.
-    // @param value The value in wei to be sent to address.
+    // @param call_context The call_context (see model.CallContext) to be executed.
+    // @param starknet_contract_address The context starknet address.
+    // @param evm_contract_address The context corresponding evm address.
+    // @param gas_limit The available gas for the ExecutionContext.
+    // @param gas_price The price per unit of gas.
     // @param calling_context A reference to the context of the calling contract. This context stores the return data produced by the called contract in its memory.
     // @param return_data_len The return_data length.
     // @param return_data The region where returned data of the contract or precompile is written.
