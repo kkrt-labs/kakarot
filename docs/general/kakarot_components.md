@@ -71,18 +71,18 @@ configured on StarkNet with the following steps:
 1. Declare the account proxy, the contract account and the externally owner
    account contracts.
 
-This generates a class hash which will be used by the core Kakarot contract to
-deploy _accounts_.
+   - This generates class hashes which will be used by the core Kakarot contract
+     to deploy _accounts_.
 
 1. Deploy Kakarot (core), with the following constructor arguments:
 
-- StarkNet address of the owner/admin account that controls the Kakarot core
-  contract.
-- Address of the ETH token contract (Which is also used as ether within the
-  Kakarot EVM)
-- _Contract Account_ class hash.
-- _Externally Owned Account_ class hash.
-- _Account Proxy_ class hash.
+   - StarkNet address of the owner/admin account that controls the Kakarot core
+     contract.
+   - Address of the ETH token contract (Which is also used as ether within the
+     Kakarot EVM)
+   - _Contract Account_ class hash.
+   - _Externally Owned Account_ class hash.
+   - _Account Proxy_ class hash.
 
 1. Deploy Blockhash Registry
 
