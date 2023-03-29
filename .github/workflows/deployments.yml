@@ -13,6 +13,8 @@ jobs:
       PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
       DEVNET_ACCOUNT_ADDRESS: ${{ secrets.DEVNET_ACCOUNT_ADDRESS }}
       DEVNET_PRIVATE_KEY: ${{ secrets.DEVNET_PRIVATE_KEY }}
+    outputs:
+      devnet-version: ${{ steps.devnet-version.outputs.DEVNET_VERSION }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -41,11 +43,14 @@ jobs:
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
+      - name: Project devnet version
+        id: devnet-version
+        run:
+          echo "DEVNET_VERSION=`poetry run starknet-devnet --version`" >>
+          $GITHUB_OUTPUT
       - name: Deploy
         run: |
           poetry run python ./docker/devnet/run_and_deploy.py
-          STARKNET_NETWORK=testnet poetry run python ./scripts/deploy_kakarot.py
-          STARKNET_NETWORK=testnet2 poetry run python ./scripts/deploy_kakarot.py
       - name: Store deployment artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -72,9 +77,6 @@ jobs:
         with:
           name: deployments
           path: deployments
-      - name: Project devnet version
-        run: poetry run starknet-devnet --version
-        id: devnet-version
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
@@ -82,5 +84,5 @@ jobs:
           tags: ghcr.io/sayajin-labs/kakarot/devnet:latest
           context: .
           build-args: |
-            DEVNET_VERSION=${{ steps.devnet-version.outputs.stdout }}
+            DEVNET_VERSION=${{ needs.deploy.outputs.devnet-version }}
           file: ./docker/devnet/Dockerfile
