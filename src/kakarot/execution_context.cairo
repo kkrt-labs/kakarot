@@ -140,6 +140,8 @@ namespace ExecutionContext {
     }
 
     // @notice Finalizes the execution context.
+    // @dev See https://www.cairo-lang.org/docs/reference/common_library.html#dictaccess
+    //      TL;DR: ensure that the prover used values that are consistent with the dictionary.
     // @param self The pointer to the execution context.
     // @return Summary The pointer to the execution Summary.
     func finalize{range_check_ptr}(self: model.ExecutionContext*) -> Summary* {
