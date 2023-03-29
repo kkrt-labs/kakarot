@@ -6,6 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import (
     assert_le,
+    assert_lt,
     split_felt,
     assert_nn_le,
     split_int,
@@ -61,26 +62,15 @@ namespace Helpers {
     // @notice This function is used to convert a sequence of 32 bytes to Uint256.
     // @param val: pointer to the first byte of the 32.
     // @return res: Uint256 representation of the given input in bytes32.
-    func bytes32_to_uint256(val: felt*) -> Uint256 {
-        let res = Uint256(
-            low=[val + 16] * 256 ** 15 + [val + 17] * 256 ** 14 + [val + 18] * 256 ** 13 + [
-                val + 19
-            ] * 256 ** 12 + [val + 20] * 256 ** 11 + [val + 21] * 256 ** 10 + [val + 22] * 256 **
-            9 + [val + 23] * 256 ** 8 + [val + 24] * 256 ** 7 + [val + 25] * 256 ** 6 + [val + 26] *
-            256 ** 5 + [val + 27] * 256 ** 4 + [val + 28] * 256 ** 3 + [val + 29] * 256 ** 2 + [
-                val + 30
-            ] * 256 + [val + 31],
-            high=[val] * 256 ** 15 + [val + 1] * 256 ** 14 + [val + 2] * 256 ** 13 + [val + 3] *
-            256 ** 12 + [val + 4] * 256 ** 11 + [val + 5] * 256 ** 10 + [val + 6] * 256 ** 9 + [
-                val + 7
-            ] * 256 ** 8 + [val + 8] * 256 ** 7 + [val + 9] * 256 ** 6 + [val + 10] * 256 ** 5 + [
-                val + 11
-            ] * 256 ** 4 + [val + 12] * 256 ** 3 + [val + 13] * 256 ** 2 + [val + 14] * 256 + [
-                val + 15
-            ],
-        );
+    func bytes32_to_uint256{range_check_ptr}(val: felt*) -> Uint256 {
+        alloc_locals;
+
+        let (high) = compute_half_uint256(bytes=val, bytes_len=16);
+        let (low) = compute_half_uint256(bytes=val + 16, bytes_len=16);
+        let res = Uint256(low=low, high=high);
         return res;
     }
+
     // @notice This function is used to convert a sequence of i bytes to Uint256.
     // @param val: pointer to the first byte.
     // @param i: sequence size.
@@ -102,15 +92,15 @@ namespace Helpers {
 
         // 1 - 16 bytes
         if (is_sequence_16_bytes_or_less != FALSE) {
-            let (low) = compute_half_uint256(val=val, i=i, res=0);
+            let (low) = compute_half_uint256(bytes=val, bytes_len=i);
             let res = Uint256(low=low, high=0);
 
             return res;
         }
 
         // 17 - 32 bytes
-        let (low) = compute_half_uint256(val=val + i - 16, i=16, res=0);
-        let (high) = compute_half_uint256(val=val, i=i - 16, res=0);
+        let (low) = compute_half_uint256(bytes=val + i - 16, bytes_len=16);
+        let (high) = compute_half_uint256(bytes=val, bytes_len=i - 16);
         let res = Uint256(low=low, high=high);
 
         return res;
@@ -165,13 +155,28 @@ namespace Helpers {
         return (res=quotient);
     }
 
-    func compute_half_uint256{range_check_ptr}(val: felt*, i: felt, res: felt) -> (res: felt) {
-        if (i == 1) {
-            return (res=res + [val]);
+    // @notice: This function returns a numbers in the base b system
+    // @param digits: array of digets
+    // @param digits_len: length od digets
+    // @return res: decimal representation of digits
+    func compose_felt{range_check_ptr}(digits: felt*, digits_len: felt, base: felt) -> (
+        res: felt, weight: felt
+    ) {
+        if (digits_len == 0) {
+            return (0, 1);
         }
-        let (temp_pow) = pow(256, i - 1);
-        let (res) = compute_half_uint256(val + 1, i - 1, res + [val] * temp_pow);
-        return (res=res);
+
+        with_attr error_message("digit has to be less than base") {
+            assert_lt([digits], base);
+        }
+
+        let (res, weight) = compose_felt(digits + 1, digits_len - 1, base);
+        return ([digits] * weight + res, weight * base);
+    }
+
+    func compute_half_uint256{range_check_ptr}(bytes: felt*, bytes_len: felt) -> (res: felt) {
+        let (res, _) = compose_felt(bytes, bytes_len, 256);
+        return (res,);
     }
 
     // @notice This function is used to convert a sequence of 8 bytes to a felt.
