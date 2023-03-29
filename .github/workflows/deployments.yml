@@ -72,10 +72,15 @@ jobs:
         with:
           name: deployments
           path: deployments
+      - name: Project devnet version
+        run: poetry run starknet-devnet --version
+        id: devnet-version
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
           push: true
           tags: ghcr.io/sayajin-labs/kakarot/devnet:latest
           context: .
+          build-args: |
+            DEVNET_VERSION=${{ steps.devnet-version.outputs.stdout }}
           file: ./docker/devnet/Dockerfile
