@@ -8,7 +8,7 @@
   </h3>
 </div>
 
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/sayajin-labs/kakarot/test.yml?branch=main)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/sayajin-labs/kakarot/ci.yml?branch=main)
 ![GitHub](https://img.shields.io/github/license/abdelhamidbakhta/kakarot?style=flat-square&logo=github)
 ![GitHub contributors](https://img.shields.io/github/contributors/abdelhamidbakhta/kakarot?logo=github&style=flat-square)
 ![GitHub top language](https://img.shields.io/github/languages/top/abdelhamidbakhta/kakarot?style=flat-square)
@@ -37,19 +37,9 @@ It is a work in progress, and it is not ready for production.
 
 </div>
 
-![](docs/img/kakarot.gif)
-
 ## Supported opcodes
 
-```mermaid
-%%{init: {'theme': 'forest', 'themeVariables': { 'darkMode': 'false'}}}%%
-
-pie title Kakarot EMV opcodes support (142 / 142)
-    "Supported" : 142
-    "Not supported" : 0
-```
-
-Here is the list of supported opcodes: [opcodes](docs/supported_opcodes.md)
+We support 100% of EVM [opcodes](docs/supported_opcodes.md).
 
 ## Documentation
 
