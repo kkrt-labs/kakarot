@@ -360,14 +360,14 @@ namespace Kakarot {
         bitwise_ptr: BitwiseBuiltin*,
     }() {
         alloc_locals;
-        let (local actual_starknet_address) = get_caller_address();
-        let (local declared_evm_address) = IAccount.get_evm_address(actual_starknet_address);
+        let (local starknet_caller_address) = get_caller_address();
+        let (local evm_caller_address) = IAccount.get_evm_address(starknet_caller_address);
         let (local computed_starknet_address) = Accounts.compute_starknet_address(
-            declared_evm_address
+            evm_caller_address
         );
 
         with_attr error_message("Kakarot: caller contract is not a Kakarot Account") {
-            assert computed_starknet_address = actual_starknet_address;
+            assert computed_starknet_address = starknet_caller_address;
         }
 
         return ();

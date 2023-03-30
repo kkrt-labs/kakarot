@@ -86,9 +86,8 @@ configured on StarkNet with the following steps:
 
 1. Deploy Blockhash Registry
 
-1. Store the addresses of the account and blockhash registry contracts in
-   Kakarot core using `set_account_registry` and `set_blockhash_registry`
-   respectively. This is required for Kakarot to access the functionality of the
-   registries.
+1. Store the addresses of the blockhash registry contracts in Kakarot core using
+   `set_blockhash_registry`. This is required for Kakarot to access the last 256
+   bock hashes.
 
 This flow can be seen in the [deploy script](../../scripts/deploy_kakarot.py).
