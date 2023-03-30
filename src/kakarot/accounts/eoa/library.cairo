@@ -42,6 +42,7 @@ namespace ExternallyOwnedAccount {
         selector: felt,
         data_offset: felt,
         data_len: felt,
+        nonce: felt,
     }
 
     // @notice This function is used to initialize the externally owned account.
