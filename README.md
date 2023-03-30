@@ -3,7 +3,7 @@
 </p>
 <div align="center">
   <h3 align="center">
-  EVM interpreter written in Cairo, a sort of ZK-EVM emulator, leveraging STARK
+  zkEVM written in Cairo.
   proof system.
   </h3>
 </div>
@@ -20,11 +20,16 @@
 
 <div align="center">
 
-**Kakarot** is an Ethereum Virtual Machine written in Cairo. It means it can be
-deployed on StarkNet, a layer 2 scaling solution for Ethereum, and run any EVM
-bytecode program. Hence, Kakarot can be used to run Ethereum smart contracts on
-StarkNet. Kakarot is the super sayajin zkEVM! Why? Because:
-`It's over 9000!!!!!`.
+Kakarot is a zkEVM written in Cairo. It aims to allow users to leverage the
+scaling benefits of validity rollups while maintaining compatibility with the
+Ethereum ecosystem. Therefore, Kakarot can be used to run Ethereum smart
+contracts on Starknet.
+
+We strongly believe the CairoVM will provide the best zero-knowledge toolbox in
+the coming years and that the Ethereum network effect will remain dominant in
+the meantime. We present to developers an abstraction layer they're familiar
+with: the EVM. Build and deploy as if you were working on Ethereum, be forward
+compatible with the future of zero-knowledge.
 
 It is a work in progress, and it is not ready for production.
 
