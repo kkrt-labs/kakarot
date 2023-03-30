@@ -25,7 +25,7 @@ from scripts.constants import (
     KAKAROT_ADDRESS,
     KAKAROT_CHAIN_ID,
 )
-from scripts.utils.starknet import fund_address, get_starknet_account, get_tx_url
+from scripts.utils.starknet import deploy_and_fund_evm_address, get_tx_url
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -172,19 +172,7 @@ async def get_evm_account(
     ).contract_address
 
     if not await contract_exists(starknet_address):
-        starknet_account = await get_starknet_account()
-        call = Call(
-            to_addr=int(KAKAROT_ADDRESS, 16),
-            selector=get_selector_from_name("deploy_externally_owned_account"),
-            calldata=[int(EVM_ADDRESS, 16)],
-        )
-        logger.info(f"⏳ Deploying EOA account")
-        tx_hash = (
-            await starknet_account.execute(call, max_fee=int(1e17))
-        ).transaction_hash
-        logger.info(f"⏳ Waiting for tx {get_tx_url(tx_hash)}")
-        await starknet_account.client.wait_for_tx(tx_hash)
-        await fund_address(starknet_address, 0.01)
+        await deploy_and_fund_evm_address(hex(address), 0.01)
 
     return Account(
         address=starknet_address,
