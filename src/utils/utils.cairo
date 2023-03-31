@@ -155,11 +155,13 @@ namespace Helpers {
         return (res=quotient);
     }
 
-    // @notice: This function returns a numbers in the base b system
+    // @notice: This function takes a number in base b and returns felt
     // @param digits: array of digets
     // @param digits_len: length od digets
+    // @param base: base of the number system
     // @return res: decimal representation of digits
-    func compose_felt{range_check_ptr}(digits: felt*, digits_len: felt, base: felt) -> (
+    // @return res: base in pover of digits_len
+    func compose_felt{range_check_ptr}(digits_len: felt, digits: felt*, base: felt) -> (
         res: felt, weight: felt
     ) {
         if (digits_len == 0) {
