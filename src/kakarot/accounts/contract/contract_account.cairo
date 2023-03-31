@@ -12,7 +12,6 @@ from kakarot.accounts.library import Accounts
 from openzeppelin.access.ownable.library import Ownable
 
 // @title EVM smart contract account representation.
-// @author @abdelhamidbakhta
 
 // Contract initializer
 @external

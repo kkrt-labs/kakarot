@@ -17,9 +17,6 @@ from utils.utils import Helpers
 
 // @title Stack related functions.
 // @notice This file contains functions related to the stack.
-// @author @abdelhamidbakhta
-// @custom:namespace Stack
-// @custom:model model.Stack
 namespace Stack {
     // Summary of stack. Created upon finalization of the stack.
     struct Summary {

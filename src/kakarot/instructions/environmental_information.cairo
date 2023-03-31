@@ -22,8 +22,6 @@ from kakarot.accounts.library import Accounts
 
 // @title Environmental information opcodes.
 // @notice This file contains the functions to execute for environmental information opcodes.
-// @author @abdelhamidbakhta
-// @custom:namespace EnvironmentalInformation
 namespace EnvironmentalInformation {
     // Define constants.
     const GAS_COST_ADDRESS = 2;

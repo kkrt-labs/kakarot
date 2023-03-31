@@ -17,15 +17,8 @@ from starkware.cairo.common.hash_state import (
     hash_update_single,
     hash_update_with_hashchain,
 )
-// Kakarot dependencies
-from kakarot.constants import (
-    native_token_address,
-    contract_account_class_hash,
-    externally_owned_account_class_hash,
-    blockhash_registry_address,
-    Constants,
-    account_proxy_class_hash,
-)
+
+from kakarot.constants import Constants, account_proxy_class_hash
 from kakarot.interfaces.interfaces import IAccount
 
 @storage_var

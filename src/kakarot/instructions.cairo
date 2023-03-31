@@ -40,8 +40,6 @@ from kakarot.stack import Stack
 
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.
-// @author @abdelhamidbakhta
-// @custom:namespace EVMInstructions
 namespace EVMInstructions {
     // @notice Decode the current opcode and execute associated function.
     // @dev The function uses an internal jump table to execute the corresponding opcode

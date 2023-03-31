@@ -36,8 +36,8 @@ test-no-log: build-sol
 test-integration: build-sol
 	poetry run pytest tests/integration --log-cli-level=INFO -n logical
 
-test-unit: build-sol
-	poetry run pytest tests/unit --log-cli-level=INFO
+test-unit:
+	poetry run pytest tests/src --log-cli-level=INFO
 
 run-test-log: build-sol
 	poetry run pytest -k $(test) --log-cli-level=INFO -vvv

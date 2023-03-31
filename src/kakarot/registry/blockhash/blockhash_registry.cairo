@@ -6,17 +6,13 @@ from openzeppelin.access.ownable.library import Ownable
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.uint256 import Uint256
 
-// @title Blockhash registry contract.
-
-// Local dependencies
 from kakarot.registry.blockhash.library import BlockhashRegistry
 
+// @title Blockhash registry contract.
 // Constructor
 @constructor
-func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    kakarot_address: felt
-) {
-    return BlockhashRegistry.constructor(kakarot_address);
+func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(owner: felt) {
+    return BlockhashRegistry.constructor(owner);
 }
 
 // @notice Transfer ownership of the registry to a new starknet address

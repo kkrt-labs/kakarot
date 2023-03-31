@@ -2,7 +2,7 @@ import pytest
 from eth_utils import to_checksum_address
 from web3 import Web3
 
-from tests.integration.helpers.wrap_kakarot import get_contract
+from tests.utils.contracts import get_contract
 from tests.utils.errors import kakarot_error
 
 
@@ -169,7 +169,7 @@ class TestPlainOpcodes:
             )
 
     class TestExceptionHandling:
-        async def test_calling_context_should_propogate_revert_from_sub_context_on_create(
+        async def test_calling_context_should_propagate_revert_from_sub_context_on_create(
             self, plain_opcodes, owner
         ):
             with kakarot_error("FAIL"):

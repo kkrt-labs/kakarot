@@ -24,8 +24,6 @@ from kakarot.stack import Stack
 
 // @title Arithmetic operations opcodes.
 // @notice This contract contains the functions to execute for arithmetic operations opcodes.
-// @author @abdelhamidbakhta
-// @custom:namespace StopAndArithmeticOperations
 namespace StopAndArithmeticOperations {
     // Define constants.
     const GAS_COST_ADD = 3;
