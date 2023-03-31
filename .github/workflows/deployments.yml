@@ -51,6 +51,8 @@ jobs:
       - name: Deploy
         run: |
           poetry run python ./docker/devnet/run_and_deploy.py
+          STARKNET_NETWORK=testnet poetry run python ./scripts/deploy_kakarot.py
+          STARKNET_NETWORK=testnet2 poetry run python ./scripts/deploy_kakarot.py
       - name: Store deployment artifacts
         uses: actions/upload-artifact@v3
         with:
