@@ -156,8 +156,8 @@ namespace Helpers {
     }
 
     // @notice: This function takes a number in base b and returns felt
-    // @param digits: array of digets
     // @param digits_len: length od digets
+    // @param digits: array of digets
     // @param base: base of the number system
     // @return res: decimal representation of digits
     // @return res: base in pover of digits_len
@@ -172,12 +172,12 @@ namespace Helpers {
             assert_lt([digits], base);
         }
 
-        let (res, weight) = compose_felt(digits + 1, digits_len - 1, base);
+        let (res, weight) = compose_felt(digits_len - 1, digits + 1, base);
         return ([digits] * weight + res, weight * base);
     }
 
     func compute_half_uint256{range_check_ptr}(bytes: felt*, bytes_len: felt) -> (res: felt) {
-        let (res, _) = compose_felt(bytes, bytes_len, 256);
+        let (res, _) = compose_felt(bytes_len, bytes, 256);
         return (res,);
     }
 
