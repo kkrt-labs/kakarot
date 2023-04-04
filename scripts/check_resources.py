@@ -69,10 +69,7 @@ def main():
     logger.info(f"Resources summary:\n{resources_summary}")
 
     # Compare local test run with base branch
-    if (
-        current_name in resources_summary.index
-        and base_branch_name in resources_summary.index
-    ):
+    if ({current_name, base_branch_name}).issubset(set(all_resources.head_branch)):
         tests_with_diff = (
             all_resources.loc[
                 lambda df: df.head_branch.isin([current_name, base_branch_name])
