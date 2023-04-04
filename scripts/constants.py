@@ -14,9 +14,9 @@ load_dotenv()
 
 ETH_TOKEN_ADDRESS = 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7
 EVM_PRIVATE_KEY = os.getenv("EVM_PRIVATE_KEY")
-EVM_ADDRESS = keys.private_key_to_public_key(
-    keys.PrivateKey(bytes.fromhex(EVM_PRIVATE_KEY[2:]))
-).to_checksum_address()
+EVM_ADDRESS = keys.PrivateKey(
+    bytes.fromhex(EVM_PRIVATE_KEY[2:])
+).public_key.to_checksum_address()
 NETWORK = os.getenv("STARKNET_NETWORK", "starknet-devnet")
 NETWORK = (
     "testnet"
@@ -57,17 +57,11 @@ class ChainId(Enum):
     devnet = int.from_bytes(b"SN_GOERLI", "big")
 
 
-CHAIN_ID = getattr(ChainId, NETWORK)
-KAKAROT_CHAIN_ID = 1263227476  # KKRT (0x4b4b5254) in ASCII
-
-DEPLOYMENTS_DIR = Path("deployments") / NETWORK
-
 BUILD_DIR = Path("build")
+BUILD_DIR.mkdir(exist_ok=True, parents=True)
 SOURCE_DIR = Path("src")
 CONTRACTS = {p.stem: p for p in list(SOURCE_DIR.glob("**/*.cairo"))}
 
-DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
-BUILD_DIR.mkdir(exist_ok=True, parents=True)
 
 ACCOUNT_ADDRESS = (
     os.environ.get(f"{NETWORK.upper()}_ACCOUNT_ADDRESS")
@@ -78,6 +72,10 @@ PRIVATE_KEY = (
 )
 
 get_deployments(Path("deployments"))
+DEPLOYMENTS_DIR = Path("deployments") / NETWORK
+DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
 deployments = json.load(open(DEPLOYMENTS_DIR / "deployments.json", "r"))
 
+CHAIN_ID = getattr(ChainId, NETWORK)
+KAKAROT_CHAIN_ID = 1263227476  # KKRT (0x4b4b5254) in ASCII
 KAKAROT_ADDRESS = deployments["kakarot"]["address"]
