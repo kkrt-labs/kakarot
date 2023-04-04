@@ -32,25 +32,44 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def get_contract(contract_path: str):
-    path = Path(contract_path)
-    solidity_file_path = list(path.parent.glob("**/" + path.stem + ".json"))
-    if len(solidity_file_path) != 1:
-        raise ValueError(f"Cannot locate a unique {path.stem} in {path.name}")
-
-    compilation_output = json.load(
-        open(
-            solidity_file_path[0],
-            "r",
-        )
+def get_contract(solidity_contracts_dir: str, contract_app: str, contract_name: str):
+    solidity_contracts_dir: Path = Path(solidity_contracts_dir)
+    target_solidity_file_path = list(
+        (solidity_contracts_dir / contract_app).glob(f"**/{contract_name}.sol")
     )
+    if len(target_solidity_file_path) != 1:
+        raise ValueError(f"Cannot locate a unique {contract_name} in {contract_app}")
+
+    all_compilation_outputs = [
+        json.load(open(file))
+        for file in (solidity_contracts_dir / "build").glob(f"**/{contract_name}.json")
+    ]
+
+    target_compilation_output = [
+        compilation
+        for compilation in all_compilation_outputs
+        if compilation["metadata"]["settings"]["compilationTarget"].get(
+            str(target_solidity_file_path[0])
+        )
+    ]
+
+    if len(target_compilation_output) != 1:
+        raise ValueError(
+            f"Cannot locate a unique compilation output for target {target_solidity_file_path[0]}: "
+            f"found {len(target_compilation_output)} outputs:\n{target_compilation_output}"
+        )
+
     return Web3().eth.contract(
-        abi=compilation_output["abi"], bytecode=compilation_output["bytecode"]["object"]
+        abi=target_compilation_output[0]["abi"],
+        bytecode=target_compilation_output[0]["bytecode"]["object"],
     )
 
 
 async def get_contract_at_address(
-    contract_path: str, evm_address: Union[str, int]
+    solidity_contracts_dir: str,
+    contract_app: str,
+    contract_name: str,
+    evm_address: Union[str, int],
 ) -> Web3Contract:
     evm_address = evm_address if isinstance(evm_address, str) else hex(evm_address)
     evm_address = Web3.to_checksum_address(evm_address)
@@ -64,15 +83,17 @@ async def get_contract_at_address(
     if not await contract_exists(starknet_address):
         raise ValueError("Provided EVM address does not have a deployed contract")
 
-    contract = get_contract(contract_path)
+    contract = get_contract(solidity_contracts_dir, contract_app, contract_name)
     for fun in contract.functions:
         setattr(contract, fun, classmethod(wrap_kakarot(contract, fun, evm_address)))
 
     return contract
 
 
-async def deploy_solidity_contract(contract_path: str) -> Web3Contract:
-    contract = get_contract(contract_path)
+async def deploy_solidity_contract(
+    solidity_contracts_dir: str, contract_app: str, contract_name: str
+) -> Web3Contract:
+    contract = get_contract(solidity_contracts_dir, contract_app, contract_name)
 
     deploy_bytecode = contract.bytecode
     tx_hash = await deploy_contract_account(deploy_bytecode)
