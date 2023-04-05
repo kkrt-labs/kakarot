@@ -56,8 +56,8 @@ deploy: build
 
 format:
 	poetry run cairo-format -i ${cairo_files}
-	poetry run black tests/.
-	poetry run isort tests/.
+	poetry run black tests/. scripts/.
+	poetry run isort tests/. scripts/.
 	poetry run autoflake . -r
 
 format-check:

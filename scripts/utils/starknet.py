@@ -39,9 +39,6 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
-BUILD_DIR.mkdir(exist_ok=True, parents=True)
-
 
 def int_to_uint256(value):
     value = int(value)
@@ -114,7 +111,7 @@ async def get_default_account() -> Account:
     )
 
 
-async def get_account(
+async def get_starknet_account(
     address=None,
     private_key=None,
 ) -> Account:
@@ -156,7 +153,7 @@ async def get_account(
 
 
 async def get_eth_contract() -> Contract:
-    account = await get_account()
+    account = await get_starknet_account()
 
     class EthProxyCheck(ProxyCheck):
         """
@@ -194,7 +191,7 @@ async def get_eth_contract() -> Contract:
 async def get_contract(contract_name) -> Contract:
     return await Contract.from_address(
         get_deployments()[contract_name]["address"],
-        await get_account(),
+        await get_starknet_account(),
     )
 
 
@@ -202,7 +199,7 @@ async def fund_address(address: Union[int, str], amount: float):
     """
     Fund a given starknet address with {amount} ETH
     """
-    address = hex(address) if isinstance(address, int) else address
+    address = int(address, 16) if isinstance(address, str) else address
     amount = amount * 1e18
     if NETWORK == "devnet":
         response = requests.post(
@@ -212,7 +209,7 @@ async def fund_address(address: Union[int, str], amount: float):
             logger.error(f"Cannot mint token to {address}: {response.text}")
         logger.info(f"{amount / 1e18} ETH minted to {address}")
     else:
-        account = await get_account()
+        account = await get_starknet_account()
         eth_contract = await get_eth_contract()
         balance = (await eth_contract.functions["balanceOf"].call(account.address)).balance  # type: ignore
         if balance < amount:
@@ -220,11 +217,11 @@ async def fund_address(address: Union[int, str], amount: float):
                 f"Cannot send {amount / 1e18} ETH from default account with current balance {balance / 1e18} ETH"
             )
         tx = await eth_contract.functions["transfer"].invoke(
-            address, int_to_uint256(amount), max_fee=int(1e16)
+            address, int_to_uint256(amount), max_fee=int(1e17)
         )
         await tx.wait_for_acceptance()
         logger.info(
-            f"{amount / 1e18} ETH sent from {hex(account.address)} to {address}"
+            f"{amount / 1e18} ETH sent from {hex(account.address)} to {hex(address)}"
         )
 
 
@@ -316,10 +313,10 @@ def compile_contract(contract_name):
 
 async def declare(contract_name):
     logger.info(f"⏳ Declaring {contract_name}")
-    account = await get_account()
+    account = await get_starknet_account()
     artifact = get_artifact(contract_name)
     declare_transaction = await account.sign_declare_transaction(
-        compiled_contract=Path(artifact).read_text(), max_fee=int(1e16)
+        compiled_contract=Path(artifact).read_text(), max_fee=int(1e17)
     )
     resp = await account.client.declare(transaction=declare_transaction)
     logger.info(f"⏳ Waiting for tx {get_tx_url(resp.transaction_hash)}")
@@ -331,13 +328,13 @@ async def declare(contract_name):
 async def deploy(contract_name, *args):
     logger.info(f"⏳ Deploying {contract_name}")
     abi = json.loads(Path(get_abi(contract_name)).read_text())
-    account = await get_account()
+    account = await get_starknet_account()
     deploy_result = await Contract.deploy_contract(
         account=account,
         class_hash=get_declarations()[contract_name],
         abi=abi,
         constructor_args=list(args),
-        max_fee=int(1e16),
+        max_fee=int(1e17),
     )
     logger.info(f"⏳ Waiting for tx {get_tx_url(deploy_result.hash)}")
     await deploy_result.wait_for_acceptance(check_interval=15)
@@ -352,16 +349,16 @@ async def deploy(contract_name, *args):
 
 
 async def invoke(contract_name, function_name, *inputs, address=None):
-    account = await get_account()
+    account = await get_starknet_account()
     deployments = get_deployments()
     contract = Contract(
         deployments[contract_name]["address"] if address is None else address,
         json.load(open(get_artifact(contract_name)))["abi"],
         account,
     )
-    call = contract.functions[function_name].prepare(*inputs, max_fee=int(1e16))
+    call = contract.functions[function_name].prepare(*inputs, max_fee=int(1e17))
     logger.info(f"⏳ Invoking {contract_name}.{function_name}({json.dumps(inputs)})")
-    response = await account.execute(call, max_fee=int(1e16))
+    response = await account.execute(call, max_fee=int(1e17))
     logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
     await account.client.wait_for_tx(response.transaction_hash, check_interval=15)
     logger.info(
@@ -373,7 +370,7 @@ async def invoke(contract_name, function_name, *inputs, address=None):
 
 async def call(contract_name, function_name, *inputs, address=None):
     deployments = get_deployments()
-    account = await get_account()
+    account = await get_starknet_account()
     contract = Contract(
         deployments[contract_name]["address"] if address is None else address,
         json.load(open(get_artifact(contract_name)))["abi"],

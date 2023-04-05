@@ -1,15 +1,22 @@
+import json
 import os
 import re
 from enum import Enum
 from pathlib import Path
 
 from dotenv import load_dotenv
+from eth_keys import keys
 from starknet_py.net.gateway_client import GatewayClient
+
+from scripts.artifacts import get_deployments
 
 load_dotenv()
 
 ETH_TOKEN_ADDRESS = 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7
-EVM_ADDRESS = os.getenv("EVM_ADDRESS")
+EVM_PRIVATE_KEY = os.getenv("EVM_PRIVATE_KEY")
+EVM_ADDRESS = keys.PrivateKey(
+    bytes.fromhex(EVM_PRIVATE_KEY[2:])
+).public_key.to_checksum_address()
 NETWORK = os.getenv("STARKNET_NETWORK", "starknet-devnet")
 NETWORK = (
     "testnet"
@@ -21,7 +28,7 @@ NETWORK = (
     else "mainnet"
 )
 GATEWAY_URLS = {
-    "mainnet": "alpha-mainnet",
+    "mainnet": "https://alpha-mainnet.starknet.io",
     "testnet": "https://alpha4.starknet.io",
     "testnet2": "https://alpha4-2.starknet.io",
     "devnet": "http://127.0.0.1:5050",
@@ -50,12 +57,11 @@ class ChainId(Enum):
     devnet = int.from_bytes(b"SN_GOERLI", "big")
 
 
-CHAIN_ID = getattr(ChainId, NETWORK)
-
-DEPLOYMENTS_DIR = Path("deployments") / NETWORK
 BUILD_DIR = Path("build")
+BUILD_DIR.mkdir(exist_ok=True, parents=True)
 SOURCE_DIR = Path("src")
 CONTRACTS = {p.stem: p for p in list(SOURCE_DIR.glob("**/*.cairo"))}
+
 
 ACCOUNT_ADDRESS = (
     os.environ.get(f"{NETWORK.upper()}_ACCOUNT_ADDRESS")
@@ -64,3 +70,12 @@ ACCOUNT_ADDRESS = (
 PRIVATE_KEY = (
     os.environ.get(f"{NETWORK.upper()}_PRIVATE_KEY") or os.environ["PRIVATE_KEY"]
 )
+
+get_deployments(Path("deployments"))
+DEPLOYMENTS_DIR = Path("deployments") / NETWORK
+DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
+deployments = json.load(open(DEPLOYMENTS_DIR / "deployments.json", "r"))
+
+CHAIN_ID = getattr(ChainId, NETWORK)
+KAKAROT_CHAIN_ID = 1263227476  # KKRT (0x4b4b5254) in ASCII
+KAKAROT_ADDRESS = deployments["kakarot"]["address"]
