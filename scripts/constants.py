@@ -14,9 +14,12 @@ load_dotenv()
 
 ETH_TOKEN_ADDRESS = 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7
 EVM_PRIVATE_KEY = os.getenv("EVM_PRIVATE_KEY")
-EVM_ADDRESS = keys.PrivateKey(
-    bytes.fromhex(EVM_PRIVATE_KEY[2:])
-).public_key.to_checksum_address()
+EVM_ADDRESS = (
+    EVM_PRIVATE_KEY
+    and keys.PrivateKey(
+        bytes.fromhex(EVM_PRIVATE_KEY[2:])
+    ).public_key.to_checksum_address()
+)
 NETWORK = os.getenv("STARKNET_NETWORK", "starknet-devnet")
 NETWORK = (
     "testnet"
