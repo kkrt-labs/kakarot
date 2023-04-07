@@ -3,15 +3,15 @@ from asyncio import run
 from math import ceil, log
 
 from scripts.constants import CHAIN_ID, EVM_ADDRESS, GATEWAY_CLIENT
-from scripts.utils import (
+from scripts.utils.starknet import (
     declare,
     deploy,
     deploy_and_fund_evm_address,
     dump_declarations,
     dump_deployments,
-    get_account,
     get_declarations,
     get_eth_contract,
+    get_starknet_account,
     invoke,
 )
 
@@ -25,7 +25,7 @@ async def main():
         f"ℹ️ Connected to CHAIN_ID {CHAIN_ID.value.to_bytes(ceil(log(CHAIN_ID.value, 256)), 'big')} "
         f"with GATEWAY {GATEWAY_CLIENT.net}"
     )
-    account = await get_account()
+    account = await get_starknet_account()
     logger.info(f"ℹ️ Using account {hex(account.address)} as deployer")
 
     class_hash = {
