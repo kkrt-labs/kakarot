@@ -45,6 +45,9 @@ namespace ExternallyOwnedAccount {
     }
 
     // @notice This function is used to initialize the externally owned account.
+    // @dev This function initializes the EOA and approves kakarot's address infinite amount of tokens
+    // @param _kakarot_address Address of kakarot to store
+    // @param _evm_address Address of the EVM to store
     func initialize{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -73,6 +76,7 @@ namespace ExternallyOwnedAccount {
     }
 
     // @notice Check if tx is signed and valid for each call.
+    // @dev Recursively validates if tx is signed and valid for each call -> see utils/eth_transaction.cairo
     // @param call_array_len The length of the call array.
     // @param call_array The call array.
     // @param calldata_len The length of the calldata.
@@ -100,6 +104,14 @@ namespace ExternallyOwnedAccount {
         );
     }
 
+    // @notice Executes the tx for each call.
+    // @dev Recursively executes each call.
+    // @param call_array_len The length of the call_array
+    // @param call_array An array containing all the calls of the transaction see: https://docs.openzeppelin.com/contracts-cairo/0.6.0/accounts#call_and_accountcallarray_format
+    // @param calldata_len The length of the Calldata array
+    // @param calldata The calldata
+    // @param response The returned bytes array see /kakaort/library.cairo
+    // @return response_len The length of the returned bytes
     func execute{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
