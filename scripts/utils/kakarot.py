@@ -17,12 +17,13 @@ from starkware.starknet.public.abi import get_selector_from_name
 from web3 import Web3
 from web3.contract import Contract as Web3Contract
 
+from scripts.artifacts import get_deployments
 from scripts.constants import (
     CHAIN_ID,
+    DEPLOYMENTS_DIR,
     EVM_ADDRESS,
     EVM_PRIVATE_KEY,
     GATEWAY_CLIENT,
-    KAKAROT_ADDRESS,
     KAKAROT_CHAIN_ID,
 )
 from scripts.utils.starknet import deploy_and_fund_evm_address, get_tx_url
@@ -30,6 +31,10 @@ from scripts.utils.starknet import deploy_and_fund_evm_address, get_tx_url
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+get_deployments(Path("deployments"))
+deployments = json.load(open(DEPLOYMENTS_DIR / "deployments.json", "r"))
+KAKAROT_ADDRESS = deployments["kakarot"]["address"]
 
 
 def get_contract(solidity_contracts_dir: str, contract_app: str, contract_name: str):

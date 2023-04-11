@@ -1,4 +1,3 @@
-import json
 import os
 import re
 from enum import Enum
@@ -7,8 +6,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 from eth_keys import keys
 from starknet_py.net.gateway_client import GatewayClient
-
-from scripts.artifacts import get_deployments
 
 load_dotenv()
 
@@ -74,11 +71,8 @@ PRIVATE_KEY = (
     os.environ.get(f"{NETWORK.upper()}_PRIVATE_KEY") or os.environ["PRIVATE_KEY"]
 )
 
-get_deployments(Path("deployments"))
 DEPLOYMENTS_DIR = Path("deployments") / NETWORK
 DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
-deployments = json.load(open(DEPLOYMENTS_DIR / "deployments.json", "r"))
 
 CHAIN_ID = getattr(ChainId, NETWORK)
 KAKAROT_CHAIN_ID = 1263227476  # KKRT (0x4b4b5254) in ASCII
-KAKAROT_ADDRESS = deployments["kakarot"]["address"]

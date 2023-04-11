@@ -70,9 +70,13 @@ def get_deployments(path: str = "deployments"):
     if artifacts.empty:
         raise ValueError(f"No deployment artifacts found for base branch main")
 
+    github_token = os.getenv("GITHUB_TOKEN")
+    if not github_token:
+        raise ValueError("github token not found in environment variables")
+
     response = requests.get(
         artifacts.tolist()[0],
-        headers={"Authorization": f"Bearer {os.getenv('GITHUB_TOKEN')}"},
+        headers={"Authorization": f"Bearer {github_token}"},
     )
     z = zipfile.ZipFile(io.BytesIO(response.content))
     z.extractall(path)
