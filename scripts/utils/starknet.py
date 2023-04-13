@@ -113,8 +113,14 @@ async def get_starknet_account(
     address=None,
     private_key=None,
 ) -> Account:
-    address = int(address or ACCOUNT_ADDRESS, 16)
-    key_pair = KeyPair.from_private_key(int(private_key or PRIVATE_KEY, 16))
+    address = address or ACCOUNT_ADDRESS
+    if address is None:
+        raise ValueError("address was not given in arg nor in env variable")
+    address = int(address, 16)
+    private_key = private_key or PRIVATE_KEY
+    if private_key is None:
+        raise ValueError("private_key was not given in arg nor in env variable")
+    key_pair = KeyPair.from_private_key(int(private_key, 16))
 
     public_key = None
     for selector in ["get_public_key", "getPublicKey", "getSigner"]:

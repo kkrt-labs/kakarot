@@ -63,12 +63,11 @@ SOURCE_DIR = Path("src")
 CONTRACTS = {p.stem: p for p in list(SOURCE_DIR.glob("**/*.cairo"))}
 
 
-ACCOUNT_ADDRESS = (
-    os.environ.get(f"{NETWORK.upper()}_ACCOUNT_ADDRESS")
-    or os.environ["ACCOUNT_ADDRESS"]
-)
-PRIVATE_KEY = (
-    os.environ.get(f"{NETWORK.upper()}_PRIVATE_KEY") or os.environ["PRIVATE_KEY"]
+ACCOUNT_ADDRESS = os.environ.get(
+    f"{NETWORK.upper()}_ACCOUNT_ADDRESS"
+) or os.environ.get("ACCOUNT_ADDRESS")
+PRIVATE_KEY = os.environ.get(f"{NETWORK.upper()}_PRIVATE_KEY") or os.environ.get(
+    "PRIVATE_KEY"
 )
 
 DEPLOYMENTS_DIR = Path("deployments") / NETWORK
