@@ -1,5 +1,8 @@
 .PHONY: build test coverage
 cairo_files = $(shell find ./src ./tests -type f -name "*.cairo")
+# TODO: Remove when starware fixes:
+# TODO: from starkware.cairo.lang.tracer.profile import profile_from_tracer_data
+export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 
 build: check
 	$(MAKE) clean
