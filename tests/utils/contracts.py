@@ -120,7 +120,7 @@ def use_kakarot_backend(
                 try:
                     log_receipts.append(
                         LogReceipt(
-                            address=Web3.toChecksumAddress(
+                            address=Web3.to_checksum_address(
                                 f"{evm_contract_address:040x}"
                             ),
                             blockHash=bytes(),
