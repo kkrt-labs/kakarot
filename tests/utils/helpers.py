@@ -3,7 +3,7 @@ from textwrap import wrap
 from typing import List, Tuple
 
 import rlp
-from eth_abi import encode_abi
+from eth_abi import encode
 from eth_account import Account
 from eth_keys import keys
 from eth_keys.datatypes import PrivateKey
@@ -61,7 +61,7 @@ def expand_to_18_decimals(n: int) -> int:
 
 def get_domain_separator(name: str, token_address: str) -> bytes:
     return keccak(
-        encode_abi(
+        encode(
             ["bytes32", "bytes32", "bytes32", "uint256", "address"],
             [
                 keccak(
@@ -107,7 +107,7 @@ def get_approval_digest(
         + b"\x01"
         + domain_separator
         + keccak(
-            encode_abi(
+            encode(
                 [
                     "bytes32",
                     "address",
