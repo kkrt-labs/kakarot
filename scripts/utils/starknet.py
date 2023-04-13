@@ -24,13 +24,11 @@ from scripts.constants import (
     ACCOUNT_ADDRESS,
     BUILD_DIR,
     CHAIN_ID,
-    CONTRACTS,
     DEPLOYMENTS_DIR,
     ETH_TOKEN_ADDRESS,
     GATEWAY_CLIENT,
     NETWORK,
     PRIVATE_KEY,
-    SOURCE_DIR,
     STARKNET_NETWORK,
     STARKSCAN_URL,
 )
@@ -272,12 +270,13 @@ def get_deployments():
     return json.load(open(DEPLOYMENTS_DIR / "deployments.json", "r"))
 
 
+def dump_artifacts(artifacts):
+    for contract_name, artifact in artifacts.items():
+        (BUILD_DIR / f"{contract_name}.json").write_text(artifact)
+
+
 def get_artifact(contract_name):
     return BUILD_DIR / f"{contract_name}.json"
-
-
-def get_abi(contract_name):
-    return BUILD_DIR / f"{contract_name}_abi.json"
 
 
 def get_alias(contract_name):
@@ -286,28 +285,6 @@ def get_alias(contract_name):
 
 def get_tx_url(tx_hash: int) -> str:
     return f"{STARKSCAN_URL}/tx/0x{tx_hash:064x}"
-
-
-def compile_contract(contract_name):
-    contract_file = CONTRACTS.get(contract_name)
-    if contract_file is None:
-        raise ValueError(
-            f"Cannot find {SOURCE_DIR}/**/{contract_name}.cairo in {os.getcwd()}"
-        )
-    output = subprocess.run(
-        [
-            "starknet-compile",
-            contract_file,
-            "--output",
-            BUILD_DIR / f"{contract_name}.json",
-            "--abi",
-            BUILD_DIR / f"{contract_name}_abi.json",
-            *(["--disable_hint_validation"] if NETWORK == "devnet" else []),
-        ],
-        capture_output=True,
-    )
-    if output.returncode != 0:
-        raise RuntimeError(output.stderr)
 
 
 async def declare(contract_name):
@@ -326,7 +303,7 @@ async def declare(contract_name):
 
 async def deploy(contract_name, *args):
     logger.info(f"⏳ Deploying {contract_name}")
-    abi = json.loads(Path(get_abi(contract_name)).read_text())
+    abi = json.loads(Path(get_artifact(contract_name)).read_text())["abi"]
     account = await get_starknet_account()
     deploy_result = await Contract.deploy_contract(
         account=account,
