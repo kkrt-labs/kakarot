@@ -202,7 +202,7 @@ async def fund_address(address: Union[int, str], amount: float):
     amount = amount * 1e18
     if NETWORK == "devnet":
         response = requests.post(
-            f"{GATEWAY_CLIENT.net}/mint", json={"address": address, "amount": amount}
+            f"{GATEWAY_CLIENT.net}/mint", json={"address": hex(address), "amount": amount}
         )
         if response.status_code != 200:
             logger.error(f"Cannot mint token to {address}: {response.text}")
