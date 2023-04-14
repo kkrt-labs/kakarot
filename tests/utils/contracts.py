@@ -20,8 +20,8 @@ def get_matching_logs_for_event(codec, event_abi, log_receipts) -> List[dict]:
     for log_receipt in log_receipts:
         try:
             event_data = get_event_data(codec, event_abi, log_receipt)
-            logs += [event_data.args]
-        except:
+            logs += [event_data["args"]]
+        except web3.exceptions.MismatchedABI:
             pass
     return logs
 
