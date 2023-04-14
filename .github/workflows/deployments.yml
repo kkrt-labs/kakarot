@@ -88,3 +88,4 @@ jobs:
           build-args: |
             DEVNET_VERSION=${{ needs.deploy.outputs.devnet-version }}
           file: ./docker/devnet/Dockerfile
+          platforms: linux/amd64,linux/arm64
