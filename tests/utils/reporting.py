@@ -9,7 +9,6 @@ from typing import Any, Callable, Iterable, List, TypeVar, Union, cast
 
 import pandas as pd
 from cairo_coverage.cairo_coverage import CoverageFile
-from starkware.cairo.lang.tracer.profile import profile_from_tracer_data
 from starkware.cairo.lang.tracer.tracer_data import TracerData
 from starkware.starknet.testing.objects import StarknetCallInfo
 from starkware.starknet.testing.starknet import StarknetContract
@@ -243,6 +242,11 @@ def reports():
 
 
 def dump_reports(path: Union[str, Path]):
+    if not _profile_data:
+        return
+
+    from starkware.cairo.lang.tracer.profile import profile_from_tracer_data
+
     p = Path(path)
     p.mkdir(exist_ok=True, parents=True)
     times, traces = reports()
