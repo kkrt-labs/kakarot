@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 from typing import List, Optional, cast
 
+import web3
 from starkware.starknet.testing.starknet import StarknetContract
 from web3 import Web3
 from web3._utils.abi import map_abi_data
@@ -156,12 +157,15 @@ def use_kakarot_backend(
 
         return _wrapped
 
-    for fun in contract.functions:
-        setattr(
-            contract,
-            fun,
-            classmethod(wrap_zk_evm(fun, evm_contract_address)),
-        )
+    try:
+        for fun in contract.functions:
+            setattr(
+                contract,
+                fun,
+                classmethod(wrap_zk_evm(fun, evm_contract_address)),
+            )
+    except web3.exceptions.NoABIFunctionsFound:
+        pass
     setattr(contract, "query_logs", classmethod(query_logs))
     return contract
 
