@@ -115,11 +115,15 @@ async def get_starknet_account(
 ) -> Account:
     address = address or ACCOUNT_ADDRESS
     if address is None:
-        raise ValueError("address was not given in arg nor in env variable")
+        raise ValueError(
+            "address was not given in arg nor in env variable, see README.md#Deploy"
+        )
     address = int(address, 16)
     private_key = private_key or PRIVATE_KEY
     if private_key is None:
-        raise ValueError("private_key was not given in arg nor in env variable")
+        raise ValueError(
+            "private_key was not given in arg nor in env variable, see README.md#Deploy"
+        )
     key_pair = KeyPair.from_private_key(int(private_key, 16))
 
     public_key = None
@@ -206,7 +210,8 @@ async def fund_address(address: Union[int, str], amount: float):
     amount = amount * 1e18
     if NETWORK == "devnet":
         response = requests.post(
-            f"{GATEWAY_CLIENT.net}/mint", json={"address": hex(address), "amount": amount}
+            f"{GATEWAY_CLIENT.net}/mint",
+            json={"address": hex(address), "amount": amount},
         )
         if response.status_code != 200:
             logger.error(f"Cannot mint token to {address}: {response.text}")

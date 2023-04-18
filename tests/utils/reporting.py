@@ -268,6 +268,8 @@ def dump_reports(path: Union[str, Path]):
 
 
 def dump_coverage(path: Union[str, Path], files: List[CoverageFile]):
+    p = Path(path)
+    p.mkdir(exist_ok=True, parents=True)
     json.dump(
         {
             "coverage": {
@@ -278,6 +280,6 @@ def dump_coverage(path: Union[str, Path], files: List[CoverageFile]):
                 for file in files
             }
         },
-        open(Path(path) / "coverage.json", "w"),
+        open(p / "coverage.json", "w"),
         indent=2,
     )

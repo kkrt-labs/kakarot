@@ -75,3 +75,10 @@ DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
 
 CHAIN_ID = getattr(ChainId, NETWORK)
 KAKAROT_CHAIN_ID = 1263227476  # KKRT (0x4b4b5254) in ASCII
+COMPILED_CONTRACTS = [
+    {"contract_name": "kakarot", "is_account_contract": False},
+    {"contract_name": "blockhash_registry", "is_account_contract": False},
+    {"contract_name": "contract_account", "is_account_contract": False},
+    {"contract_name": "externally_owned_account", "is_account_contract": True},
+    {"contract_name": "proxy", "is_account_contract": False},
+]

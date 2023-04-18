@@ -4,7 +4,7 @@ from datetime import datetime
 
 from starknet_py.compile.compiler import Compiler
 
-from scripts.constants import CONTRACTS, SOURCE_DIR
+from scripts.constants import COMPILED_CONTRACTS, CONTRACTS, SOURCE_DIR
 from scripts.utils.starknet import dump_artifacts
 
 logging.basicConfig()
@@ -16,18 +16,12 @@ async def main():
     logger.info(f"ℹ️  Compiling contracts")
 
     artifacts = {}
-    for contract, is_contract_account in [
-        ("kakarot", False),
-        ("blockhash_registry", False),
-        ("contract_account", False),
-        ("externally_owned_account", True),
-        ("proxy", False),
-    ]:
+    for contract in COMPILED_CONTRACTS:
         logger.info(f"⏳ Compiling {contract}")
         start = datetime.now()
         artifacts[contract] = Compiler(
-            contract_source=CONTRACTS[contract].read_text(),
-            is_account_contract=is_contract_account,
+            contract_source=CONTRACTS[contract["contract_name"]].read_text(),
+            is_account_contract=contract["is_account_contract"],
             cairo_path=[str(SOURCE_DIR)],
         ).compile_contract()
         elapsed = datetime.now() - start
