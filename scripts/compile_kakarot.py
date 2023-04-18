@@ -14,19 +14,22 @@ logger.setLevel(logging.INFO)
 
 async def main():
     logger.info(f"ℹ️  Compiling contracts")
-
+    initial_time = datetime.now()
     artifacts = {}
     for contract in COMPILED_CONTRACTS:
         logger.info(f"⏳ Compiling {contract}")
         start = datetime.now()
-        artifacts[contract] = Compiler(
+        artifacts[contract["contract_name"]] = Compiler(
             contract_source=CONTRACTS[contract["contract_name"]].read_text(),
             is_account_contract=contract["is_account_contract"],
             cairo_path=[str(SOURCE_DIR)],
         ).compile_contract()
         elapsed = datetime.now() - start
-        logger.info(f"✅ Compiled in {elapsed.total_seconds()}s")
+        logger.info(f"✅ Compiled in {elapsed.total_seconds():.2f}s")
 
+    logger.info(
+        f"✅ Compiled all in {(datetime.now() - initial_time).total_seconds():.2f}s"
+    )
     dump_artifacts(artifacts)
 
 

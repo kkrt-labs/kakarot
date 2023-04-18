@@ -242,6 +242,14 @@ def reports():
 
 
 def dump_reports(path: Union[str, Path]):
+    p = Path(path)
+    p.mkdir(exist_ok=True, parents=True)
+    times, traces = reports()
+    times.to_csv(p / "times.csv", index=False)
+    traces.to_csv(p / "resources.csv", index=False)
+
+
+def dump_tracing(path: Union[str, Path]):
     if not _profile_data:
         return
 
@@ -249,9 +257,6 @@ def dump_reports(path: Union[str, Path]):
 
     p = Path(path)
     p.mkdir(exist_ok=True, parents=True)
-    times, traces = reports()
-    times.to_csv(p / "times.csv", index=False)
-    traces.to_csv(p / "resources.csv", index=False)
     for label, runner in _profile_data.items():
         logger.info(f"Dumping TracerData for runner {label}")
         runner.relocate()
