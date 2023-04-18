@@ -234,6 +234,14 @@ Rename the copied file to `.env`.
 The file holds the following content:
 
 ```text
+GITHUB_TOKEN=your_github_token
+```
+
+You will need to provide a Github access token to be able to build and deploy Kakarot. 
+
+You can learn how to create this token from [here](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token), we would suggest using a fine-grained token with only read access.
+
+```text
 PRIVATE_KEY=your_private_key
 ACCOUNT_ADDRESS=your_account_address
 ```
@@ -241,7 +249,7 @@ ACCOUNT_ADDRESS=your_account_address
 Now replace the placeholder values with your account and network details.
 
 `PRIVATE_KEY` is the private key of the account contract that will pay for the
-deployment. **This should be a decimal number**
+deployment. **This should be a hexadecimal number**
 
 `ACCOUNT_ADDRESS` is the address of the account contract that will pay for the
 deployment (not the public key). **This should be a hexadecimal number**
@@ -249,8 +257,8 @@ deployment (not the public key). **This should be a hexadecimal number**
 Here is a concrete example:
 
 ```text
-PRIVATE_KEY=72893439023848923y4138741073892473874203487234872208352937239047293428374088
-ACCOUNT_ADDRESS=0x06e5d623aBe979c3DEFf52bE6DF5116352C12Ee21428D5b2CF91cA440c4edBD0
+ACCOUNT_ADDRESS=0x7e00d496e324876bbc8531f2d9a82bf154d1a04a50218ee74cdd372f75a551a
+PRIVATE_KEY=0xe3e70682c2094cac629f6fbed82c07cd
 ```
 
 By default, everything will run on a local starknet-devnet (started with
