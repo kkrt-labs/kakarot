@@ -2,12 +2,15 @@ import json
 from pathlib import Path
 from typing import List, Optional, cast
 
+import web3
+from eth_abi.exceptions import InsufficientDataBytes
 from starkware.starknet.testing.starknet import StarknetContract
 from web3 import Web3
 from web3._utils.abi import map_abi_data
 from web3._utils.events import get_event_data
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.contract import Contract
+from web3.exceptions import LogTopicError, MismatchedABI
 from web3.types import LogReceipt
 
 from tests.utils.helpers import hex_string_to_bytes_array
@@ -19,8 +22,8 @@ def get_matching_logs_for_event(codec, event_abi, log_receipts) -> List[dict]:
     for log_receipt in log_receipts:
         try:
             event_data = get_event_data(codec, event_abi, log_receipt)
-            logs += [event_data.args]
-        except:
+            logs += [event_data["args"]]
+        except (MismatchedABI, LogTopicError, InsufficientDataBytes):
             pass
     return logs
 
@@ -120,7 +123,7 @@ def use_kakarot_backend(
                 try:
                     log_receipts.append(
                         LogReceipt(
-                            address=Web3.toChecksumAddress(
+                            address=Web3.to_checksum_address(
                                 f"{evm_contract_address:040x}"
                             ),
                             blockHash=bytes(),
@@ -156,12 +159,15 @@ def use_kakarot_backend(
 
         return _wrapped
 
-    for fun in contract.functions:
-        setattr(
-            contract,
-            fun,
-            classmethod(wrap_zk_evm(fun, evm_contract_address)),
-        )
+    try:
+        for fun in contract.functions:
+            setattr(
+                contract,
+                fun,
+                classmethod(wrap_zk_evm(fun, evm_contract_address)),
+            )
+    except web3.exceptions.NoABIFunctionsFound:
+        pass
     setattr(contract, "query_logs", classmethod(query_logs))
     return contract
 

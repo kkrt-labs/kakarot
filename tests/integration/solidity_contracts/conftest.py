@@ -104,7 +104,7 @@ def deploy_solidity_contract(kakarot, get_solidity_contract):
             if type(e).__name__ == "evm_contract_deployed"
         ][0]
         starknet_contract_address = deploy_event.starknet_contract_address
-        evm_contract_address = Web3.toChecksumAddress(
+        evm_contract_address = Web3.to_checksum_address(
             f"{deploy_event.evm_contract_address:040x}"
         )
         return get_solidity_contract(

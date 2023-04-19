@@ -91,8 +91,8 @@ class TestPlainOpcodes:
         @pytest.fixture
         def event(self):
             return {
-                "owner": Web3.toChecksumAddress(f"{10:040x}"),
-                "spender": Web3.toChecksumAddress(f"{11:040x}"),
+                "owner": Web3.to_checksum_address(f"{10:040x}"),
+                "spender": Web3.to_checksum_address(f"{11:040x}"),
                 "value": 10,
             }
 
@@ -161,7 +161,7 @@ class TestPlainOpcodes:
             self, plain_opcodes, addresses, address
         ):
             address_bytes = address.to_bytes(20, byteorder="big")
-            address_hex = Web3.toChecksumAddress(address_bytes)
+            address_hex = Web3.to_checksum_address(address_bytes)
 
             await plain_opcodes.requireNotZero(
                 address_hex,

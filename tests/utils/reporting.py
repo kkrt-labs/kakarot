@@ -9,7 +9,6 @@ from typing import Any, Callable, Iterable, List, TypeVar, Union, cast
 
 import pandas as pd
 from cairo_coverage.cairo_coverage import CoverageFile
-from starkware.cairo.lang.tracer.profile import profile_from_tracer_data
 from starkware.cairo.lang.tracer.tracer_data import TracerData
 from starkware.starknet.testing.objects import StarknetCallInfo
 from starkware.starknet.testing.starknet import StarknetContract
@@ -248,6 +247,16 @@ def dump_reports(path: Union[str, Path]):
     times, traces = reports()
     times.to_csv(p / "times.csv", index=False)
     traces.to_csv(p / "resources.csv", index=False)
+
+
+def dump_tracing(path: Union[str, Path]):
+    if not _profile_data:
+        return
+
+    from starkware.cairo.lang.tracer.profile import profile_from_tracer_data
+
+    p = Path(path)
+    p.mkdir(exist_ok=True, parents=True)
     for label, runner in _profile_data.items():
         logger.info(f"Dumping TracerData for runner {label}")
         runner.relocate()
@@ -264,6 +273,8 @@ def dump_reports(path: Union[str, Path]):
 
 
 def dump_coverage(path: Union[str, Path], files: List[CoverageFile]):
+    p = Path(path)
+    p.mkdir(exist_ok=True, parents=True)
     json.dump(
         {
             "coverage": {
@@ -274,6 +285,6 @@ def dump_coverage(path: Union[str, Path], files: List[CoverageFile]):
                 for file in files
             }
         },
-        open(Path(path) / "coverage.json", "w"),
+        open(p / "coverage.json", "w"),
         indent=2,
     )

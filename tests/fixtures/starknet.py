@@ -15,7 +15,13 @@ from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 from starkware.starknet.definitions.general_config import StarknetGeneralConfig
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.reporting import dump_coverage, dump_reports, timeit, traceit
+from tests.utils.reporting import (
+    dump_coverage,
+    dump_reports,
+    dump_tracing,
+    timeit,
+    traceit,
+)
 
 pd.set_option("display.max_rows", 500)
 pd.set_option("display.max_columns", 500)
@@ -63,9 +69,11 @@ async def starknet(worker_id, request, blockhashes) -> AsyncGenerator[Starknet, 
 
     if worker_id == "master":
         dump_reports(output_dir)
+        dump_tracing(output_dir)
         dump_coverage(output_dir, files)
     else:
         dump_reports(output_dir / worker_id)
+        dump_tracing(output_dir / worker_id)
         dump_coverage(output_dir / worker_id, files)
         if len(os.listdir(output_dir)) == int(os.environ["PYTEST_XDIST_WORKER_COUNT"]):
             # This is the last teardown of the test suite, merge the files
