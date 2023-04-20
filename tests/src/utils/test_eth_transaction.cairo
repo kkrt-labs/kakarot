@@ -18,6 +18,7 @@ func test__decode{
     v: felt,
     r: Uint256,
     s: Uint256,
+    nonce : felt,
 ) {
     return EthTransaction.decode(tx_data_len, tx_data);
 }
@@ -25,6 +26,6 @@ func test__decode{
 @view
 func test__validate{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
-}(address: felt, tx_data_len: felt, tx_data: felt*) {
-    return EthTransaction.validate(address, tx_data_len, tx_data);
+}(address: felt, nonce : felt, tx_data_len: felt, tx_data: felt*) {
+    return EthTransaction.validate(address, nonce, tx_data_len, tx_data);
 }

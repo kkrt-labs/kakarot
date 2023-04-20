@@ -38,7 +38,7 @@ class TestEthTransaction:
             address = private_key.public_key.to_checksum_address()
             signed = Account.sign_transaction(transaction, private_key)
             await eth_transaction.test__validate(
-                int(address, 16), list(signed["rawTransaction"])
+                int(address, 16), transaction["nonce"], list(signed["rawTransaction"])
             ).call()
 
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
@@ -51,7 +51,7 @@ class TestEthTransaction:
             signed = Account.sign_transaction(t, private_key)
             with kakarot_error():
                 await eth_transaction.test__validate(
-                    int(address, 16), list(signed["rawTransaction"])
+                    int(address, 16), transaction["nonce"], list(signed["rawTransaction"])
                 ).call()
 
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
@@ -65,5 +65,5 @@ class TestEthTransaction:
             assert address != int(private_key.public_key.to_address(), 16)
             with kakarot_error():
                 await eth_transaction.test__validate(
-                    address, list(signed["rawTransaction"])
+                    address, transaction["nonce"], list(signed["rawTransaction"])
                 ).call()
