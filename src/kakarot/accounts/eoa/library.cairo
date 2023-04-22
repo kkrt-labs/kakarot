@@ -72,7 +72,7 @@ namespace ExternallyOwnedAccount {
         return (evm_address=address);
     }
 
-    // @notice Check if tx is signed and valid for each call and validate the callData which contain the signature, tx hash, payload, amount, destination and gas limit.
+    // @notice Validate the signature of every call in the call array.
     // @param call_array_len The length of the call array.
     // @param call_array The call array.
     // @param calldata_len The length of the calldata.
