@@ -43,8 +43,8 @@ namespace ExternallyOwnedAccount {
     }
 
     // @notice This function is used to initialize the externally owned account.
-    // @param kakarot_address The address of the kakarot contract
-    // @param evm_address The corresponding EVM address of this account
+    // @param _kakarot_address The address of the kakarot contract
+    // @param _evm_address The corresponding EVM address of this account
     func initialize{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -105,8 +105,8 @@ namespace ExternallyOwnedAccount {
     // @param call_array The call array.
     // @param calldata_len The length of the calldata.
     // @param calldata The calldata.
-    // @param response The response.
-    // @return response_len The length of the response.
+    // @param response The response data array to be updated.
+    // @return response_len TThe total length of the response data array.
     func execute{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
