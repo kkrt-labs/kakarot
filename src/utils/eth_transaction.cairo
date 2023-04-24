@@ -6,7 +6,7 @@ from kakarot.constants import Constants
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin, HashBuiltin
-from starkware.cairo.common.cairo_keccak.keccak import keccak, finalize_keccak, keccak_bigend
+from starkware.cairo.common.cairo_keccak.keccak import finalize_keccak, cairo_keccak_bigend
 from starkware.cairo.common.cairo_secp.signature import verify_eth_signature_uint256
 from starkware.cairo.common.math_cmp import is_not_zero, is_le
 from starkware.cairo.common.memcpy import memcpy
@@ -24,6 +24,7 @@ namespace EthTransaction {
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
     }(tx_data_len: felt, tx_data: felt*) -> (
+        gas_price: felt,
         gas_limit: felt,
         destination: felt,
         amount: felt,
@@ -82,7 +83,7 @@ namespace EthTransaction {
         let (keccak_ptr: felt*) = alloc();
         let keccak_ptr_start = keccak_ptr;
         with keccak_ptr {
-            // From keccak/keccak_bigend doc:
+            // From keccak/cairo_keccak_bigend doc:
             // > To use this function, split the input into words of 64 bits (little endian).
             // > Same as keccak, but outputs the hash in big endian representation.
             // > Note that the input is still treated as little endian.
@@ -96,23 +97,26 @@ namespace EthTransaction {
                 dest=words,
                 dest_index=0,
             );
-            let (tx_hash) = keccak_bigend(inputs=words, n_bytes=rlp_data_len);
+            let (tx_hash) = cairo_keccak_bigend(inputs=words, n_bytes=rlp_data_len);
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
 
-        let gas_limit_idx = 2;
+        let gas_price_idx = 1;
+        let (gas_price) = Helpers.bytes_to_felt(
+            sub_items[gas_price_idx].data_len, sub_items[gas_price_idx].data, 0
+        );
         let (gas_limit) = Helpers.bytes_to_felt(
-            sub_items[gas_limit_idx].data_len, sub_items[gas_limit_idx].data, 0
+            sub_items[gas_price_idx + 1].data_len, sub_items[gas_price_idx + 1].data, 0
         );
         let (destination) = Helpers.bytes_to_felt(
-            sub_items[gas_limit_idx + 1].data_len, sub_items[gas_limit_idx + 1].data, 0
+            sub_items[gas_price_idx + 2].data_len, sub_items[gas_price_idx + 2].data, 0
         );
         let (amount) = Helpers.bytes_to_felt(
-            sub_items[gas_limit_idx + 2].data_len, sub_items[gas_limit_idx + 2].data, 0
+            sub_items[gas_price_idx + 3].data_len, sub_items[gas_price_idx + 3].data, 0
         );
-        let payload_len = sub_items[gas_limit_idx + 3].data_len;
-        let payload: felt* = sub_items[gas_limit_idx + 3].data;
-        return (gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s);
+        let payload_len = sub_items[gas_price_idx + 4].data_len;
+        let payload: felt* = sub_items[gas_price_idx + 4].data;
+        return (gas_price, gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s);
     }
 
     func decode_tx{
@@ -121,6 +125,7 @@ namespace EthTransaction {
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
     }(tx_data_len: felt, tx_data: felt*) -> (
+        gas_price: felt,
         gas_limit: felt,
         destination: felt,
         amount: felt,
@@ -148,7 +153,6 @@ namespace EthTransaction {
         // 1 byte for v
         // 33 bytes for r = 1 byte for len (=32) + 32 bytes for r word
         // 33 bytes for s = 1 byte for len (=32) + 32 bytes for s word
-        local signature_len = 1 + 1 + 32 + 1 + 32;
         local signature_start_index = tx_type + 7;
         local chain_id_idx = 0;
         // 1. extract v, r, s
@@ -159,8 +163,15 @@ namespace EthTransaction {
         let (v) = Helpers.bytes_to_felt(
             sub_items[signature_start_index].data_len, sub_items[signature_start_index].data, 0
         );
-        let r = Helpers.bytes32_to_uint256(sub_items[signature_start_index + 1].data);
-        let s = Helpers.bytes32_to_uint256(sub_items[signature_start_index + 2].data);
+        let r = Helpers.bytes_i_to_uint256(
+            sub_items[signature_start_index + 1].data, sub_items[signature_start_index + 1].data_len
+        );
+        let s = Helpers.bytes_i_to_uint256(
+            sub_items[signature_start_index + 2].data, sub_items[signature_start_index + 2].data_len
+        );
+        local signature_len = 1 + 1 + sub_items[signature_start_index + 1].data_len + 1 + sub_items[
+            signature_start_index + 2
+        ].data_len;
 
         let (local signed_data: felt*) = alloc();
         assert [signed_data] = tx_type;
@@ -172,7 +183,7 @@ namespace EthTransaction {
         let (keccak_ptr: felt*) = alloc();
         let keccak_ptr_start = keccak_ptr;
         with keccak_ptr {
-            // From keccak/keccak_bigend doc:
+            // From keccak/cairo_keccak_bigend doc:
             // > To use this function, split the input into words of 64 bits (little endian).
             // > Same as keccak, but outputs the hash in big endian representation.
             // > Note that the input is still treated as little endian.
@@ -186,28 +197,31 @@ namespace EthTransaction {
                 dest=words,
                 dest_index=0,
             );
-            let (tx_hash) = keccak_bigend(inputs=words, n_bytes=rlp_len + 1);
+            let (tx_hash) = cairo_keccak_bigend(inputs=words, n_bytes=rlp_len + 1);
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
 
-        let gas_limit_idx = tx_type + 2;
+        let gas_price_idx = tx_type + 1;
+        let (gas_price) = Helpers.bytes_to_felt(
+            sub_items[gas_price_idx].data_len, sub_items[gas_price_idx].data, 0
+        );
         let (gas_limit) = Helpers.bytes_to_felt(
-            sub_items[gas_limit_idx].data_len, sub_items[gas_limit_idx].data, 0
+            sub_items[gas_price_idx + 1].data_len, sub_items[gas_price_idx + 1].data, 0
         );
         let (destination) = Helpers.bytes_to_felt(
-            sub_items[gas_limit_idx + 1].data_len, sub_items[gas_limit_idx + 1].data, 0
+            sub_items[gas_price_idx + 2].data_len, sub_items[gas_price_idx + 2].data, 0
         );
         let (amount) = Helpers.bytes_to_felt(
-            sub_items[gas_limit_idx + 2].data_len, sub_items[gas_limit_idx + 2].data, 0
+            sub_items[gas_price_idx + 3].data_len, sub_items[gas_price_idx + 3].data, 0
         );
-        let payload_len = sub_items[gas_limit_idx + 3].data_len;
-        let payload: felt* = sub_items[gas_limit_idx + 3].data;
-        return (gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s);
+        let payload_len = sub_items[gas_price_idx + 4].data_len;
+        let payload: felt* = sub_items[gas_price_idx + 4].data;
+        return (gas_price, gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s);
     }
 
     func is_legacy_tx{range_check_ptr}(tx_data: felt*) -> felt {
-        tempvar type = [tx_data];
         // See https://eips.ethereum.org/EIPS/eip-2718#transactiontype-only-goes-up-to-0x7f
+        tempvar type = [tx_data];
         return is_le(0xc0, type);
     }
 
@@ -217,6 +231,7 @@ namespace EthTransaction {
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
     }(tx_data_len: felt, tx_data: felt*) -> (
+        gas_price: felt,
         gas_limit: felt,
         destination: felt,
         amount: felt,
@@ -242,9 +257,9 @@ namespace EthTransaction {
         range_check_ptr,
     }(address: felt, tx_data_len: felt, tx_data: felt*) {
         alloc_locals;
-        let (gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s) = decode(
-            tx_data_len, tx_data
-        );
+        let (
+            gas_price, gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s
+        ) = decode(tx_data_len, tx_data);
         let (local keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
         with keccak_ptr {

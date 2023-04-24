@@ -20,8 +20,6 @@ from kakarot.interfaces.interfaces import IEth, IBlockhashRegistry
 
 // @title BlockInformation information opcodes.
 // @notice This file contains the functions to execute for block information opcodes.
-// @author @abdelhamidbakhta
-// @custom:namespace BlockInformation
 namespace BlockInformation {
     // Define constants.
     const GAS_COST_BLOCKHASH = 20;

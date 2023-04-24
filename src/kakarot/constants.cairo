@@ -22,14 +22,8 @@ func externally_owned_account_class_hash() -> (res: felt) {
 func account_proxy_class_hash() -> (res: felt) {
 }
 
-@storage_var
-func salt() -> (value: felt) {
-}
-
 // @title Constants file.
 // @notice This file contains global constants.
-// @author @abdelhamidbakhta
-// @custom:namespace Constants
 namespace Constants {
     // Define constants
 

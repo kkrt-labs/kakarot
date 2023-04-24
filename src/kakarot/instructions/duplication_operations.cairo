@@ -12,8 +12,6 @@ from kakarot.stack import Stack
 
 // @title Duplication operations opcodes.
 // @notice This file contains the functions to execute for duplication operations opcodes.
-// @author @abdelhamidbakhta
-// @custom:namespace DuplicationOperations
 namespace DuplicationOperations {
     // Define constants.
     const GAS_COST_DUP = 3;

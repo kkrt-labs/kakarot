@@ -4,32 +4,37 @@ on: [push, pull_request]
 
 jobs:
   build:
-    runs-on: self-hosted
-    container: ptisserand/kakarot-builder:latest
+    runs-on: ubuntu-latest-16-cores
     env:
       CI_COMMIT_MESSAGE: CI Formatting Auto Commit
       CI_COMMIT_AUTHOR: ${{ github.event.repository.name }} CI
     steps:
       - uses: actions/checkout@v3
+      # Python setup
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
       - name: Load cached Poetry installation
+        id: cached-poetry
         uses: actions/cache@v3
         with:
-          path: ~/.local # the path depends on the OS.
-          key: poetry-03022023 # use new date to reset poetry cache
+          path: ~/.local
+          key: poetry-${{ runner.os }}
       - name: Install Poetry
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
           installer-parallel: true
+      - run: poetry config installer.modern-installation false
       - name: Load cached venv
         id: cached-poetry-dependencies
         uses: actions/cache@v3
         with:
           path: .venv
-          key:
-            self-hosted-venv-${{ runner.os }}-${{
-            hashFiles('**/poetry.lock')}}-1
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
@@ -53,29 +58,33 @@ jobs:
           make build
 
   tests:
-    runs-on: self-hosted
-    container: ptisserand/kakarot-builder:latest
+    runs-on: ubuntu-latest-16-cores
     steps:
       - uses: actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
       - name: Load cached Poetry installation
+        id: cached-poetry
         uses: actions/cache@v3
         with:
-          path: ~/.local # the path depends on the OS
-          key: poetry-03022023 # increment to reset cache
+          path: ~/.local
+          key: poetry-${{ runner.os }}
       - name: Install Poetry
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
           installer-parallel: true
+      - run: poetry config installer.modern-installation false
       - name: Load cached venv
         id: cached-poetry-dependencies
         uses: actions/cache@v3
         with:
           path: .venv
-          key:
-            self-hosted-venv-${{ runner.os }}-${{
-            hashFiles('**/poetry.lock')}}-1
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup
@@ -96,30 +105,34 @@ jobs:
           name: coverage
 
   resources:
-    runs-on: self-hosted
-    container: ptisserand/kakarot-builder:latest
+    runs-on: ubuntu-latest-16-cores
     needs: tests
     steps:
       - uses: actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
       - name: Load cached Poetry installation
+        id: cached-poetry
         uses: actions/cache@v3
         with:
-          path: ~/.local # the path depends on the OS
-          key: poetry-03022023 # increment to reset cache
+          path: ~/.local
+          key: poetry-${{ runner.os }}
       - name: Install Poetry
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
           installer-parallel: true
+      - run: poetry config installer.modern-installation false
       - name: Load cached venv
         id: cached-poetry-dependencies
         uses: actions/cache@v3
         with:
           path: .venv
-          key:
-            self-hosted-venv-${{ runner.os }}-${{
-            hashFiles('**/poetry.lock')}}-1
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
       - name: Install dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: make setup

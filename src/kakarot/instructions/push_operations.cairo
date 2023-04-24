@@ -16,8 +16,6 @@ from kakarot.stack import Stack
 
 // @title Push operations opcodes.
 // @notice This file contains the functions to execute for push operations opcodes.
-// @author @abdelhamidbakhta
-// @custom:namespace PushOperations
 namespace PushOperations {
     // Define constants.
     const GAS_COST = 3;

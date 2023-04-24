@@ -21,6 +21,9 @@ namespace IEth {
     func transfer(recipient: felt, amount: Uint256) -> (success: felt) {
     }
 
+    func transferFrom(sender: felt, recipient: felt, amount: Uint256) -> (success: felt) {
+    }
+
     func approve(spender: felt, amount: Uint256) -> (success: felt) {
     }
 }
@@ -32,9 +35,17 @@ namespace IAccount {
 
     func initialize(implementation: felt, calldata_len: felt, calldata: felt*) {
     }
+
     func bytecode_len() -> (len: felt) {
     }
+
     func bytecode() -> (bytecode_len: felt, bytecode: felt*) {
+    }
+
+    func get_nonce() -> (nonce: felt) {
+    }
+
+    func increment_nonce() -> (nonce: felt) {
     }
 }
 
@@ -42,24 +53,22 @@ namespace IAccount {
 namespace IContractAccount {
     func write_bytecode(bytecode_len: felt, bytecode: felt*) {
     }
+
     func storage(key: Uint256) -> (value: Uint256) {
     }
+
     func write_storage(key: Uint256, value: Uint256) {
+    }
+
+    func get_nonce() -> (nonce: felt) {
+    }
+
+    func increment_nonce() -> (nonce: felt) {
     }
 }
 
 @contract_interface
 namespace IKakarot {
-    func execute(
-        value: felt, bytecode_len: felt, bytecode: felt*, calldata_len: felt, calldata: felt*
-    ) {
-    }
-
-    func execute_at_address(
-        address: felt, value: felt, gas_limit: felt, calldata_len: felt, calldata: felt*
-    ) {
-    }
-
     func set_blockhash_registry(blockhash_registry_address_: felt) -> () {
     }
 
@@ -72,12 +81,19 @@ namespace IKakarot {
     func get_native_token() -> (native_token_address: felt) {
     }
 
-    func deploy_contract_account(bytecode_len: felt, bytecode: felt*) {
-    }
-
     func deploy_externally_owned_account(evm_address: felt) {
     }
 
     func compute_starknet_address(evm_address: felt) -> (contract_address: felt) {
+    }
+
+    func eth_call(
+        to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*
+    ) -> (return_data_len: felt, return_data: felt*) {
+    }
+
+    func eth_send_transaction(
+        to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*
+    ) -> (return_data_len: felt, return_data: felt*) {
     }
 }

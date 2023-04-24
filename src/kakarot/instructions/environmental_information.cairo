@@ -6,7 +6,7 @@
 
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.cairo_keccak.keccak import keccak_bigend, finalize_keccak
+from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 from starkware.cairo.common.uint256 import Uint256
 
@@ -22,8 +22,6 @@ from kakarot.accounts.library import Accounts
 
 // @title Environmental information opcodes.
 // @notice This file contains the functions to execute for environmental information opcodes.
-// @author @abdelhamidbakhta
-// @custom:namespace EnvironmentalInformation
 namespace EnvironmentalInformation {
     // Define constants.
     const GAS_COST_ADDRESS = 2;
@@ -420,10 +418,10 @@ namespace EnvironmentalInformation {
         alloc_locals;
 
         // Get the gasprice.
-        let cost_felt = ExecutionContext.compute_intrinsic_gas_cost(ctx);
-        let cost_uint256 = Helpers.to_uint256(cost_felt);
+        let gas_price_felt = ctx.gas_price;
+        let gas_price_uint256 = Helpers.to_uint256(gas_price_felt);
 
-        let stack: model.Stack* = Stack.push(self=ctx.stack, element=cost_uint256);
+        let stack: model.Stack* = Stack.push(self=ctx.stack, element=gas_price_uint256);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -691,7 +689,7 @@ namespace EnvironmentalInformation {
         local keccak_ptr_start: felt* = keccak_ptr;
 
         with keccak_ptr {
-            let (result) = keccak_bigend(inputs=dest, n_bytes=bytecode_len);
+            let (result) = cairo_keccak_bigend(inputs=dest, n_bytes=bytecode_len);
 
             finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
         }

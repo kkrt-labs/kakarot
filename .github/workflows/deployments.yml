@@ -1,0 +1,90 @@
+name: Deployments
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      ACCOUNT_ADDRESS: ${{ secrets.ACCOUNT_ADDRESS }}
+      PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+      DEVNET_ACCOUNT_ADDRESS: ${{ secrets.DEVNET_ACCOUNT_ADDRESS }}
+      DEVNET_PRIVATE_KEY: ${{ secrets.DEVNET_PRIVATE_KEY }}
+    outputs:
+      devnet-version: ${{ steps.devnet-version.outputs.DEVNET_VERSION }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9.13"
+      - name: Load cached Poetry installation
+        id: cached-poetry
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}
+      - name: Install Poetry
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+      - run: poetry config installer.modern-installation false
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: make setup
+      - name: Project devnet version
+        id: devnet-version
+        run:
+          echo "DEVNET_VERSION=`poetry run starknet-devnet --version`" >>
+          $GITHUB_OUTPUT
+      - name: Deploy
+        run: |
+          poetry run python ./docker/devnet/run_and_deploy.py
+          STARKNET_NETWORK=testnet poetry run python ./scripts/deploy_kakarot.py
+          STARKNET_NETWORK=testnet2 poetry run python ./scripts/deploy_kakarot.py
+      - name: Store deployment artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          path: ./deployments/
+          name: deployments
+
+  build_and_push:
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Load deployment artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: deployments
+          path: deployments
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: ghcr.io/sayajin-labs/kakarot/devnet:latest
+          context: .
+          build-args: |
+            DEVNET_VERSION=${{ needs.deploy.outputs.devnet-version }}
+          file: ./docker/devnet/Dockerfile

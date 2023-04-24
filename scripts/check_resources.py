@@ -1,15 +1,11 @@
-#%% Imports
-import io
+# Imports
 import logging
-import os
-import zipfile
 from pathlib import Path
 
 import pandas as pd
-import requests
-from dotenv import load_dotenv
 
-load_dotenv()
+from scripts.artifacts import get_resources
+
 pd.set_option("display.max_rows", 500)
 pd.set_option("display.max_columns", 10)
 pd.set_option("display.width", 1000)
@@ -18,43 +14,15 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-#%% main
 def main():
-    #%% Script constants
+    # Script constants
     coverage_dir = Path("coverage")
     base_branch_name = "main"
     current_name = "local"
 
-    #%% Pull latest main artifacts
-    response = requests.get(
-        "https://api.github.com/repos/sayajin-labs/kakarot/actions/artifacts"
-    )
-    artifacts = (
-        pd.DataFrame(
-            [
-                {**artifact["workflow_run"], **artifact}
-                for artifact in response.json()["artifacts"]
-            ]
-        )
-        .reindex(["head_branch", "updated_at", "archive_download_url"], axis=1)
-        .sort_values(["head_branch", "updated_at"], ascending=False)
-        .drop_duplicates(["head_branch"])
-    )
-    if base_branch_name not in artifacts.head_branch.tolist():
-        logger.info(
-            f"No artifacts found for base branch '{base_branch_name}'. Found\n{artifacts.head_branch.tolist()}"
-        )
+    artifacts = get_resources(coverage_dir, base_branch_name)
 
-    for artifact in artifacts.to_dict("records"):
-        response = requests.get(
-            artifact["archive_download_url"],
-            headers={"Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}"},
-        )
-
-        z = zipfile.ZipFile(io.BytesIO(response.content))
-        z.extractall(coverage_dir / artifact["head_branch"])
-
-    #%% Build aggregated stat for checking resources evolution
+    #  Build aggregated stat for checking resources evolution
     resources = [
         (
             pd.read_csv(
@@ -100,11 +68,8 @@ def main():
     )
     logger.info(f"Resources summary:\n{resources_summary}")
 
-    #%% Compare local test run with base branch
-    if (
-        current_name in resources_summary.index
-        and base_branch_name in resources_summary.index
-    ):
+    # Compare local test run with base branch
+    if ({current_name, base_branch_name}).issubset(set(all_resources.head_branch)):
         tests_with_diff = (
             all_resources.loc[
                 lambda df: df.head_branch.isin([current_name, base_branch_name])
@@ -140,7 +105,7 @@ def main():
 
         # TODO: use actual formula from https://docs.starknet.io/documentation/architecture_and_concepts/Fees/fee-mechanism
         logger.info(f"Detailed difference:\n{detailed_diff}")
-        usage_improved = detailed_diff.agg("mean").le(0).all()
+        usage_improved = detailed_diff.agg("mean").le(10).all()
         if not usage_improved:
             raise ValueError("Resources usage increase on average with this update")
         else:

@@ -24,12 +24,13 @@ from starkware.cairo.common.uint256 import (
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
 from starkware.cairo.common.bool import FALSE
-from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+
+// Internal dependencies
+from kakarot.interfaces.interfaces import IAccount, IContractAccount
 
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
-// @author @abdelhamidbakhta
-// @custom:namespace Helpers
 namespace Helpers {
     func to_uint256{range_check_ptr}(val: felt) -> Uint256 {
         let (high, low) = split_felt(val);
@@ -182,6 +183,29 @@ namespace Helpers {
         ];
     }
 
+    func erase_contracts{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(contracts_len: felt, contracts_arr: felt*) -> felt* {
+        alloc_locals;
+
+        if (contracts_len == 0) {
+            return (contracts_arr);
+        }
+
+        let starknet_contract_address = [contracts_arr];
+        let (bytecode_len) = IAccount.bytecode_len(contract_address=starknet_contract_address);
+        let (erase_data) = alloc();
+        fill(bytecode_len, erase_data, 0);
+        IContractAccount.write_bytecode(
+            contract_address=starknet_contract_address, bytecode_len=0, bytecode=erase_data
+        );
+
+        return erase_contracts(contracts_len - 1, contracts_arr + 1);
+    }
+
     // @notice This function is used to make an arbitrary length array of same elements.
     // @param arr: pointer to the first element
     // @param value: value to place
@@ -276,7 +300,9 @@ namespace Helpers {
             let byte = uint256_to_felt(byte_uint256);
             assert [res] = byte;  // get the last 8 bits of the value
             let (val_shifted_one_byte) = uint256_shr(value, Uint256(low=8, high=0));
-            let (bytes_len) = uint256_to_bytes_no_padding(val_shifted_one_byte, idx + 1, res + 1, dest);  // recursively call function with value shifted right by 8 bits
+            let (bytes_len) = uint256_to_bytes_no_padding(
+                val_shifted_one_byte, idx + 1, res + 1, dest
+            );  // recursively call function with value shifted right by 8 bits
             return (bytes_len=bytes_len);
         }
         reverse(old_arr_len=idx, old_arr=res - idx, new_arr_len=idx, new_arr=dest);

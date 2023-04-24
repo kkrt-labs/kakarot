@@ -28,9 +28,6 @@ from utils.utils import Helpers
 // @dev The memory representation at model.Memory is a sequence of 128bit (16B) chunks,
 // @dev stored as a dictionary from chunk_index to chunk_value.
 // @dev Each chunk should be read as big endian representation of 16 bytes.
-// @author @abdelhamidbakhta
-// @custom:namespace Memory
-// @custom:model model.Memory
 namespace Memory {
     // Summary of memory. Created upon finalization of the memory.
     struct Summary {

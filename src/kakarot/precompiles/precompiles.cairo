@@ -6,6 +6,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.math_cmp import is_le, is_not_zero
 
 // Internal dependencies
@@ -56,6 +57,11 @@ namespace Precompiles {
 
         // Copy results of precompile to return data
         memcpy(return_data, output, output_len);
+
+        let (local revert_contract_state_dict_start) = default_dict_new(0);
+        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
+            revert_contract_state_dict_start, revert_contract_state_dict_start
+        );
         // Build returned execution context
         local sub_ctx: model.ExecutionContext* = new model.ExecutionContext(
             call_context=cast(0, model.CallContext*),
@@ -74,6 +80,12 @@ namespace Precompiles {
             sub_context=cast(0, model.ExecutionContext*),
             destroy_contracts_len=0,
             destroy_contracts=cast(0, felt*),
+            events_len=0,
+            events=cast(0, model.Event*),
+            create_addresses_len=0,
+            create_addresses=cast(0, felt*),
+            revert_contract_state=revert_contract_state,
+            reverted=FALSE,
             read_only=FALSE,
         );
 

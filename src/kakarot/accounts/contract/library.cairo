@@ -12,11 +12,6 @@ from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256, uint256_not
 
-// @title ContractAccount main library file.
-// @notice This file contains the EVM smart contract account representation logic.
-// @author @abdelhamidbakhta
-// @custom:namespace ContractAccount
-
 // Storage
 
 @storage_var
@@ -39,6 +34,8 @@ func is_initialized_() -> (res: felt) {
 func evm_address() -> (evm_address: felt) {
 }
 
+// @title ContractAccount main library file.
+// @notice This file contains the EVM smart contract account representation logic.
 namespace ContractAccount {
     // Define the number of bytes per felt. Above 16, the following code won't work as it uses unsigned_div_rem
     // which is bounded by RC_BOUND = 2 ** 128 ~ uint128 ~ bytes16
@@ -96,15 +93,10 @@ namespace ContractAccount {
 
     // @notice This function is used to get the bytecode_len of the smart contract.
     // @return bytecode_len The length of the bytecode.
-    func bytecode_len{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }() -> felt {
-        alloc_locals;
-        let (_bytecode_len) = bytecode_len_.read();
-        return _bytecode_len;
+    func bytecode_len{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        res: felt
+    ) {
+        return bytecode_len_.read();
     }
 
     // @notice This function is used to get the bytecode of the smart contract.

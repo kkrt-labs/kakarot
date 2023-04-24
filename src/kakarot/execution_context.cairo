@@ -6,9 +6,14 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
+from starkware.cairo.common.dict import DictAccess
 from starkware.cairo.common.math import assert_le, assert_nn
+from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_label_location
+from starkware.starknet.common.syscalls import emit_event
+from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
 from utils.utils import Helpers
@@ -21,9 +26,6 @@ from kakarot.accounts.library import Accounts
 
 // @title ExecutionContext related functions.
 // @notice This file contains functions related to the execution context.
-// @author @abdelhamidbakhta
-// @custom:namespace ExecutionContext
-// @custom:model model.ExecutionContext
 namespace ExecutionContext {
     // Summary of the execution. Created upon finalization of the execution.
     struct Summary {
@@ -40,8 +42,8 @@ namespace ExecutionContext {
     // @return ExecutionContext A stopped execution context.
     func init_empty() -> model.ExecutionContext* {
         let (root_context) = get_label_location(empty_context);
-        let ctx = cast(root_context, model.ExecutionContext*);
-        return ctx;
+        let self = cast(root_context, model.ExecutionContext*);
+        return self;
 
         empty_context:
         dw 0;  // call_context
@@ -60,54 +62,86 @@ namespace ExecutionContext {
         dw 0;  // sub_context
         dw 0;  // destroy_contracts_len
         dw 0;  // destroy_contracts
+        dw 0;  // events_len
+        dw 0;  // events
+        dw 0;  // create_contracts_len
+        dw 0;  // create_contracts
+        dw 0;  // revert_contract_state
+        dw 0;  // reverted
         dw 0;  // read only
     }
 
     // @notice Initialize the execution context.
-    // @dev Set the initial values before executing a piece of code.
-    // @param call_context The call context.
+    // @dev Initialize the execution context of a specific contract.
+    // @param call_context The call_context (see model.CallContext) to be executed.
+    // @param starknet_contract_address The context starknet address.
+    // @param evm_contract_address The context corresponding evm address.
+    // @param gas_limit The available gas for the ExecutionContext.
+    // @param gas_price The price per unit of gas.
+    // @param calling_context A reference to the context of the calling contract. This context stores the return data produced by the called contract in its memory.
+    // @param return_data_len The return_data length.
+    // @param return_data The region where returned data of the contract or precompile is written.
+    // @param read_only The boolean that determines whether state modifications can be executed from the sub-execution context.
     // @return ExecutionContext The initialized execution context.
-    func init(call_context: model.CallContext*) -> model.ExecutionContext* {
+    func init{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(
+        call_context: model.CallContext*,
+        starknet_contract_address: felt,
+        evm_contract_address: felt,
+        gas_limit: felt,
+        gas_price: felt,
+        calling_context: model.ExecutionContext*,
+        return_data_len: felt,
+        return_data: felt*,
+        read_only: felt,
+    ) -> model.ExecutionContext* {
         alloc_locals;
-        let (empty_return_data: felt*) = alloc();
         let (empty_destroy_contracts: felt*) = alloc();
-
-        // Define initial program counter
-        let initial_pc = 0;
-        let gas_used = 0;
-        // TODO: Add support for gas limit
-        let gas_limit = Constants.TRANSACTION_GAS_LIMIT;
+        let (empty_events: model.Event*) = alloc();
+        let (empty_create_contracts: felt*) = alloc();
+        let (local revert_contract_state_dict_start) = default_dict_new(0);
+        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
+            revert_contract_state_dict_start, revert_contract_state_dict_start
+        );
 
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();
-        // Note: calling_context should theoretically take this context as sub_context but this not does really matter
-        // so we keep it easier like that.
-        let calling_context = init_empty();
         let sub_context = init_empty();
 
-        local ctx: model.ExecutionContext* = new model.ExecutionContext(
+        return new model.ExecutionContext(
             call_context=call_context,
-            program_counter=initial_pc,
+            program_counter=0,
             stopped=FALSE,
-            return_data=empty_return_data,
-            return_data_len=0,
+            return_data=return_data,
+            return_data_len=return_data_len,
             stack=stack,
             memory=memory,
-            gas_used=gas_used,
+            gas_used=0,
             gas_limit=gas_limit,
-            gas_price=0,
-            starknet_contract_address=0,
-            evm_contract_address=0,
+            gas_price=gas_price,
+            starknet_contract_address=starknet_contract_address,
+            evm_contract_address=evm_contract_address,
             calling_context=calling_context,
             sub_context=sub_context,
             destroy_contracts_len=0,
             destroy_contracts=empty_destroy_contracts,
-            read_only=FALSE,
+            events_len=0,
+            events=empty_events,
+            create_addresses_len=0,
+            create_addresses=empty_create_contracts,
+            revert_contract_state=revert_contract_state,
+            reverted=FALSE,
+            read_only=read_only,
         );
-        return ctx;
     }
 
     // @notice Finalizes the execution context.
+    // @dev See https://www.cairo-lang.org/docs/reference/common_library.html#dictaccess
+    //      TL;DR: ensure that the prover used values that are consistent with the dictionary.
     // @param self The pointer to the execution context.
     // @return Summary The pointer to the execution Summary.
     func finalize{range_check_ptr}(self: model.ExecutionContext*) -> Summary* {
@@ -123,78 +157,6 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
-        );
-    }
-
-    // @notice Initialize the execution context.
-    // @dev Initialize the execution context of a specific contract.
-    // @param address The evm address from which the code will be executed.
-    // @param calldata_len The calldata length.
-    // @param calldata The calldata.
-    // @param value The value in wei to be sent to address.
-    // @param calling_context A reference to the context of the calling contract. This context stores the return data produced by the called contract in its memory.
-    // @param return_data_len The return_data length.
-    // @param return_data The region where returned data of the contract or precompile is written.
-    // @param read_only The boolean that determines whether state modifications can be executed from the sub-execution context.
-    // @return ExecutionContext The initialized execution context.
-    func init_at_address{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(
-        address: felt,
-        gas_limit: felt,
-        calldata_len: felt,
-        calldata: felt*,
-        value: felt,
-        calling_context: model.ExecutionContext*,
-        return_data_len: felt,
-        return_data: felt*,
-        read_only: felt,
-    ) -> model.ExecutionContext* {
-        alloc_locals;
-
-        let (empty_destroy_contracts: felt*) = alloc();
-
-        let stack: model.Stack* = Stack.init();
-        let memory: model.Memory* = Memory.init();
-
-        // Get the starknet address from the given evm address
-        let (starknet_contract_address) = Accounts.compute_starknet_address(evm_address=address);
-
-        // Get the bytecode from the Starknet_contract
-        let (bytecode_len, bytecode) = IAccount.bytecode(
-            contract_address=starknet_contract_address
-        );
-        local call_context: model.CallContext* = new model.CallContext(
-            bytecode=bytecode,
-            bytecode_len=bytecode_len,
-            calldata=calldata,
-            calldata_len=calldata_len,
-            value=value,
-        );
-
-        let sub_context = init_empty();
-
-        return new model.ExecutionContext(
-            call_context=call_context,
-            program_counter=0,
-            stopped=FALSE,
-            return_data=return_data,
-            return_data_len=return_data_len,
-            stack=stack,
-            memory=memory,
-            gas_used=0,
-            gas_limit=gas_limit,
-            gas_price=0,
-            starknet_contract_address=starknet_contract_address,
-            evm_contract_address=address,
-            calling_context=calling_context,
-            sub_context=sub_context,
-            destroy_contracts_len=0,
-            destroy_contracts=empty_destroy_contracts,
-            read_only=read_only,
         );
     }
 
@@ -264,8 +226,184 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
+    }
+
+    // @notice Return whether the current execution context is reverted.
+    // @dev When the execution context is reverted, no more instructions can be executed (it is stopped) and its contract creation and contract storage writes are reverted on its finalization.
+    // @param self The pointer to the execution context.
+    // @return is_reverted TRUE if the execution context is reverted, FALSE otherwise.
+    func is_reverted(self: model.ExecutionContext*) -> felt {
+        return self.reverted;
+    }
+
+    // @notice Revert the current execution context.
+    // @dev When the execution context is reverted, no more instructions can be executed (it is stopped) and its contract creation and contract storage writes are reverted on its finalization.
+    // @param self The pointer to the execution context.
+    // @param revert_reason The byte array of the revert reason.
+    // @param size The size of the byte array.
+    // @return ExecutionContext The pointer to the updated execution context.
+    func revert(
+        self: model.ExecutionContext*, revert_reason: felt*, size: felt
+    ) -> model.ExecutionContext* {
+        memcpy(self.return_data, revert_reason, size);
+        return new model.ExecutionContext(
+            call_context=self.call_context,
+            program_counter=self.program_counter,
+            stopped=TRUE,
+            return_data=self.return_data,
+            return_data_len=size,
+            stack=self.stack,
+            memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit,
+            gas_price=self.gas_price,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
+            calling_context=self.calling_context,
+            sub_context=self.sub_context,
+            destroy_contracts_len=self.destroy_contracts_len,
+            destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=TRUE,
+            read_only=self.read_only,
+        );
+    }
+
+    // @notice Iterates through the `revert_contract_state` dict and restores a contract state to what it was prior to the reverting execution context's writes.
+    // @param starknet_contract_address The contract address whose state is being restored to prior the execution contexts writes.
+    // @param dict_start The start of the `revert_contract_state` dict.
+    // @param dict_end The end of the `revert_contract_state` dict.
+    // @return ExecutionContext The pointer to the updated execution context.
+    func finalize_reverting_writes{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(starknet_contract_address: felt, dict_start: DictAccess*, dict_end: DictAccess*) {
+        alloc_locals;
+        if (dict_start == dict_end) {
+            return ();
+        }
+
+        let reverted_state = dict_start.new_value;
+        let casted_reverted_state = cast(reverted_state, model.KeyValue*);
+        IContractAccount.write_storage(
+            contract_address=starknet_contract_address,
+            key=casted_reverted_state.key,
+            value=casted_reverted_state.value,
+        );
+        return finalize_reverting_writes(
+            starknet_contract_address=starknet_contract_address,
+            dict_start=dict_start + DictAccess.SIZE,
+            dict_end=dict_end,
+        );
+    }
+
+    // @notice Iterates through a list of events and emits them on the case that a context ran successfully (stopped and not reverted).
+    // @param events_len The length of the events array.
+    // @param events The array of Event structs that are emitted via the `emit_event` syscall.
+    func emit_events{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(events_len: felt, events: model.Event*) -> felt* {
+        alloc_locals;
+
+        if (events_len == 0) {
+            return (events);
+        }
+
+        let event: model.Event = [events];
+
+        emit_event(
+            keys_len=event.keys_len, keys=event.keys, data_len=event.data_len, data=event.data
+        );
+        // we maintain the semantics of one event struct involves iterating a full event struct size recursively
+        return emit_events(events_len - 1, events + 1 * model.Event.SIZE);
+    }
+
+    // @notice Handles the necessary state upkeep of a context, depending on whether it is reverted or ran successfully.
+    // @param self The pointer to the execution context.
+    // @return ExecutionContext The pointer to the updated execution context.
+    func finalize_state{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.ExecutionContext*) -> model.ExecutionContext* {
+        alloc_locals;
+
+        let is_reverted = ExecutionContext.is_reverted(self);
+
+        if (is_reverted != 0) {
+            let revert_contract_state_dict_end = self.revert_contract_state.dict_end;
+            let revert_contract_state_dict_start = self.revert_contract_state.dict_start;
+            let (squashed_dict_start, squashed_dict_end) = default_dict_finalize(
+                revert_contract_state_dict_start, revert_contract_state_dict_end, 0
+            );
+            finalize_reverting_writes(
+                self.starknet_contract_address, squashed_dict_start, squashed_dict_end
+            );
+            Helpers.erase_contracts(self.create_addresses_len, self.create_addresses);
+            return self;
+        } else {
+            // this is called after a top level check that a given context is stopped
+            // so this is the case of a stopped, non reverted context
+            // meaning events should be fired off!
+            emit_events(self.events_len, self.events);
+            return self;
+        }
+    }
+
+    // @notice If execution context is reverted, we take its revert reason in bytes, encode it as a short string felt, and convey it as a thrown error message. Otherwise we do nothing.
+    // @dev Meant to be used at 'top level' entry points so we can be sure there is no calling context that handles a revert.
+    // @param self The pointer to the execution context.
+    func maybe_throw_revert{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.ExecutionContext*) {
+        alloc_locals;
+
+        let is_reverted = ExecutionContext.is_reverted(self);
+
+        if (is_reverted != 0) {
+            let revert_reason_bytes: felt* = self.return_data;
+            let size = self.return_data_len;
+            // revert with loaded revert reason short string: 31 bytes of the last word
+            let reason_is_single_word = is_le(size, 32);
+            if (reason_is_single_word != FALSE) {
+                tempvar initial_byte: felt* = revert_reason_bytes;
+                tempvar actual_size = size;
+            } else {
+                tempvar byte_shift = size - 32;
+                tempvar initial_byte: felt* = revert_reason_bytes + byte_shift;
+                tempvar actual_size = 31;
+            }
+            let revert_reason_uint256 = Helpers.bytes_i_to_uint256(initial_byte, actual_size);
+            local revert_reason = Helpers.uint256_to_felt(revert_reason_uint256);
+            with_attr error_message("Kakarot: Reverted with reason: {revert_reason}") {
+                assert is_reverted = 0;
+            }
+
+            return ();
+        } else {
+            return ();
+        }
     }
 
     // @notice Read and return data from bytecode.
@@ -313,6 +451,12 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }
@@ -342,6 +486,12 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }
@@ -377,6 +527,12 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }
@@ -406,6 +562,12 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }
@@ -435,6 +597,12 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }
@@ -464,6 +632,12 @@ namespace ExecutionContext {
             sub_context=sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }
@@ -494,6 +668,12 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }
@@ -528,6 +708,88 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len + destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
+            read_only=self.read_only,
+        );
+    }
+
+    // @notice Update the array of events to emit in the case of a execution context successfully running to completion (see `LoggingHelper.finalize`).
+    // @param self The pointer to the execution context.
+    // @param destroy_contracts_len Array length of events to add.
+    // @param destroy_contracts The pointer to the new array of contracts to destroy.
+    func push_event_to_emit(
+        self: model.ExecutionContext*,
+        event_keys_len: felt,
+        event_keys: Uint256*,
+        event_data_len: felt,
+        event_data: felt*,
+    ) -> model.ExecutionContext* {
+        let event: model.Event = model.Event(
+            keys_len=event_keys_len, keys=event_keys, data_len=event_data_len, data=event_data
+        );
+        assert [self.events + self.events_len * model.Event.SIZE] = event;
+        return new model.ExecutionContext(
+            call_context=self.call_context,
+            program_counter=self.program_counter,
+            stopped=self.stopped,
+            return_data=self.return_data,
+            return_data_len=self.return_data_len,
+            stack=self.stack,
+            memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit,
+            gas_price=self.gas_price,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
+            calling_context=self.calling_context,
+            sub_context=self.sub_context,
+            destroy_contracts_len=self.destroy_contracts_len,
+            destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len + 1,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
+            read_only=self.read_only,
+        );
+    }
+
+    // @notice Add one contract to the array of create contracts to destroy in the case of the execution context reverting.
+    // @param self The pointer to the execution context.
+    // @param create_contract_address The address of the contract from the create(2) opcode called from the execution context.
+    func push_create_address(
+        self: model.ExecutionContext*, create_contract_address: felt
+    ) -> model.ExecutionContext* {
+        assert [self.create_addresses + self.create_addresses_len] = create_contract_address;
+        return new model.ExecutionContext(
+            call_context=self.call_context,
+            program_counter=self.program_counter,
+            stopped=self.stopped,
+            return_data=self.return_data,
+            return_data_len=self.return_data_len,
+            stack=self.stack,
+            memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit,
+            gas_price=self.gas_price,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
+            calling_context=self.calling_context,
+            sub_context=self.sub_context,
+            destroy_contracts_len=self.destroy_contracts_len,
+            destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len + 1,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }
@@ -557,6 +819,48 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len + 1,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
+            read_only=self.read_only,
+        );
+    }
+
+    // @notice Updates the dictionary that keeps track of the prior-to-first-write value of a contract storage key so it can be reverted to if the writing execution context reverts.
+    // @param self The pointer to the execution context.
+    // @param dict_end   The pointer to the updated end of the DictAccess array.
+    func update_revert_contract_state(
+        self: model.ExecutionContext*, dict_end: DictAccess*
+    ) -> model.ExecutionContext* {
+        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
+            self.revert_contract_state.dict_start, dict_end
+        );
+        return new model.ExecutionContext(
+            call_context=self.call_context,
+            program_counter=self.program_counter,
+            stopped=FALSE,
+            return_data=self.return_data,
+            return_data_len=self.return_data_len,
+            stack=self.stack,
+            memory=self.memory,
+            gas_used=self.gas_used,
+            gas_limit=self.gas_limit,
+            gas_price=self.gas_price,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
+            calling_context=self.calling_context,
+            sub_context=self.sub_context,
+            destroy_contracts_len=self.destroy_contracts_len,
+            destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }
@@ -606,6 +910,12 @@ namespace ExecutionContext {
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
+            events_len=self.events_len,
+            events=self.events,
+            create_addresses_len=self.create_addresses_len,
+            create_addresses=self.create_addresses,
+            revert_contract_state=self.revert_contract_state,
+            reverted=self.reverted,
             read_only=self.read_only,
         );
     }
