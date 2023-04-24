@@ -206,7 +206,7 @@ namespace EthTransaction {
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
 
-        let signer_nonce_idx = tx_type;
+        let signer_nonce_idx = 1;
         let (signer_nonce) = Helpers.bytes_to_felt(
             sub_items[signer_nonce_idx].data_len, sub_items[signer_nonce_idx].data, 0
         );
