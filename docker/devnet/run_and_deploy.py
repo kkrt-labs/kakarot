@@ -9,7 +9,9 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 logger.info(f"⏳ Starting devnet in background")
-devnet = subprocess.Popen(["make", "run"])
+devnet = subprocess.Popen(
+    ["make", "run"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
+)
 
 alive = False
 attempts = 0

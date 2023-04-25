@@ -2,7 +2,7 @@ import logging
 from asyncio import run
 from math import ceil, log
 
-from scripts.constants import CHAIN_ID, EVM_ADDRESS, GATEWAY_CLIENT
+from scripts.constants import CHAIN_ID, COMPILED_CONTRACTS, EVM_ADDRESS, GATEWAY_CLIENT
 from scripts.utils.starknet import (
     declare,
     deploy,
@@ -22,21 +22,15 @@ logger.setLevel(logging.INFO)
 
 async def main():
     logger.info(
-        f"ℹ️ Connected to CHAIN_ID {CHAIN_ID.value.to_bytes(ceil(log(CHAIN_ID.value, 256)), 'big')} "
+        f"ℹ️  Connected to CHAIN_ID {CHAIN_ID.value.to_bytes(ceil(log(CHAIN_ID.value, 256)), 'big')} "
         f"with GATEWAY {GATEWAY_CLIENT.net}"
     )
     account = await get_starknet_account()
-    logger.info(f"ℹ️ Using account {hex(account.address)} as deployer")
+    logger.info(f"ℹ️  Using account {hex(account.address)} as deployer")
 
     class_hash = {
-        contract_name: await declare(contract_name)
-        for contract_name in [
-            "contract_account",
-            "externally_owned_account",
-            "proxy_account",
-            "kakarot",
-            "blockhash_registry",
-        ]
+        contract["contract_name"]: await declare(contract["contract_name"])
+        for contract in COMPILED_CONTRACTS
     }
     dump_declarations(class_hash)
     class_hash = get_declarations()
@@ -50,7 +44,7 @@ async def main():
         eth.address,  # native_token_address_
         class_hash["contract_account"],  # contract_account_class_hash_
         class_hash["externally_owned_account"],  # externally_owned_account_class_hash
-        class_hash["proxy_account"],  # account_proxy_class_hash
+        class_hash["proxy"],  # account_proxy_class_hash
     )
     deployments["blockhash_registry"] = await deploy(
         "blockhash_registry",

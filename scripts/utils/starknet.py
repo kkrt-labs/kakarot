@@ -299,7 +299,7 @@ def get_tx_url(tx_hash: int) -> str:
 
 
 async def declare(contract_name):
-    logger.info(f"⏳ Declaring {contract_name}")
+    logger.info(f"ℹ️  Declaring {contract_name}")
     account = await get_starknet_account()
     artifact = get_artifact(contract_name)
     declare_transaction = await account.sign_declare_transaction(
@@ -313,7 +313,7 @@ async def declare(contract_name):
 
 
 async def deploy(contract_name, *args):
-    logger.info(f"⏳ Deploying {contract_name}")
+    logger.info(f"ℹ️  Deploying {contract_name}")
     abi = json.loads(Path(get_artifact(contract_name)).read_text())["abi"]
     account = await get_starknet_account()
     deploy_result = await Contract.deploy_contract(
@@ -344,7 +344,7 @@ async def invoke(contract_name, function_name, *inputs, address=None):
         account,
     )
     call = contract.functions[function_name].prepare(*inputs, max_fee=int(1e17))
-    logger.info(f"⏳ Invoking {contract_name}.{function_name}({json.dumps(inputs)})")
+    logger.info(f"ℹ️  Invoking {contract_name}.{function_name}({json.dumps(inputs)})")
     response = await account.execute(call, max_fee=int(1e17))
     logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
     await account.client.wait_for_tx(response.transaction_hash, check_interval=15)
