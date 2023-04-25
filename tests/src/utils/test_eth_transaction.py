@@ -51,7 +51,9 @@ class TestEthTransaction:
             signed = Account.sign_transaction(t, private_key)
             with kakarot_error():
                 await eth_transaction.test__validate(
-                    int(address, 16), transaction["nonce"], list(signed["rawTransaction"])
+                    int(address, 16),
+                    transaction["nonce"],
+                    list(signed["rawTransaction"]),
                 ).call()
 
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
