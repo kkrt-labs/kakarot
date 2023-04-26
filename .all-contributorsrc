@@ -140,10 +140,10 @@
       ]
     },
     {
-      "login": "Riad15l",
-      "name": "Riad15l",
+      "login": "Riad-Quadratic",
+      "name": "Riad-Quadratic",
       "avatar_url": "https://avatars.githubusercontent.com/u/116729712?v=4",
-      "profile": "https://github.com/Riad15l",
+      "profile": "https://github.com/Riad-Quadratic",
       "contributions": [
         "code",
         "test"
@@ -312,10 +312,10 @@
       ]
     },
     {
-      "login": "mradolux",
-      "name": "mradolux",
+      "login": "sparqet",
+      "name": "sparqet",
       "avatar_url": "https://avatars.githubusercontent.com/u/37338401?v=4",
-      "profile": "https://github.com/mradolux",
+      "profile": "https://github.com/sparqet",
       "contributions": [
         "code",
         "test"
@@ -337,6 +337,144 @@
       "profile": "https://github.com/ArnaudBD",
       "contributions": [
         "doc"
+      ]
+    },
+    {
+      "login": "dragan2234",
+      "name": "Dragan Pilipovic",
+      "avatar_url": "https://avatars.githubusercontent.com/u/22306045?v=4",
+      "profile": "https://www.linkedin.com/in/dragan-pilipovic-78bb4712a/",
+      "contributions": [
+        "code",
+        "test"
+      ]
+    },
+    {
+      "login": "bajpai244",
+      "name": "Harsh Bajpai",
+      "avatar_url": "https://avatars.githubusercontent.com/u/41180869?v=4",
+      "profile": "https://github.com/bajpai244",
+      "contributions": [
+        "code",
+        "test",
+        "doc"
+      ]
+    },
+    {
+      "login": "SecurityQQ",
+      "name": "Alex",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6323507?v=4",
+      "profile": "https://www.newton.so/",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "0xEniotna",
+      "name": "Antoine",
+      "avatar_url": "https://avatars.githubusercontent.com/u/101047205?v=4",
+      "profile": "https://github.com/0xEniotna",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "Bal7hazar",
+      "name": "Bal7hazar @ Carbonable",
+      "avatar_url": "https://avatars.githubusercontent.com/u/97087040?v=4",
+      "profile": "https://github.com/Bal7hazar",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "dbejarano820",
+      "name": "Daniel Bejarano",
+      "avatar_url": "https://avatars.githubusercontent.com/u/58019353?v=4",
+      "profile": "https://github.com/dbejarano820",
+      "contributions": [
+        "test"
+      ]
+    },
+    {
+      "login": "JuMi231",
+      "name": "JuMi231",
+      "avatar_url": "https://avatars.githubusercontent.com/u/125477948?v=4",
+      "profile": "https://github.com/JuMi231",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "Jrigada",
+      "name": "Juan Rigada",
+      "avatar_url": "https://avatars.githubusercontent.com/u/62958725?v=4",
+      "profile": "https://github.com/Jrigada",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "karasakalmt",
+      "name": "Mete Karasakal",
+      "avatar_url": "https://avatars.githubusercontent.com/u/32202283?v=4",
+      "profile": "https://github.com/karasakalmt",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "weiihann",
+      "name": "Ng Wei Han",
+      "avatar_url": "https://avatars.githubusercontent.com/u/47109095?v=4",
+      "profile": "https://github.com/weiihann",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "etashhh",
+      "name": "etash",
+      "avatar_url": "https://avatars.githubusercontent.com/u/112415316?v=4",
+      "profile": "https://github.com/etashhh",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "kasteph",
+      "name": "kasteph",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3408478?v=4",
+      "profile": "https://github.com/kasteph",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "Kelvyne",
+      "name": "Lakhdar Slaim",
+      "avatar_url": "https://avatars.githubusercontent.com/u/8125532?v=4",
+      "profile": "https://github.com/Kelvyne",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "mmsc2",
+      "name": "mmsc2",
+      "avatar_url": "https://avatars.githubusercontent.com/u/88055861?v=4",
+      "profile": "https://github.com/mmsc2",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "sarantapodarousa",
+      "name": "sarantapodarousa",
+      "avatar_url": "https://avatars.githubusercontent.com/u/75222483?v=4",
+      "profile": "https://github.com/sarantapodarousa",
+      "contributions": [
+        "code"
       ]
     }
   ],
