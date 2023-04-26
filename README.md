@@ -67,10 +67,12 @@ We support 100% of EVM [opcodes](docs/supported_opcodes.md) and 8 out of 9 preco
   [Warp](https://github.com/NethermindEth/warp) for a Solidity -> Cairo
   transpiler
 
-### Main execution flow
+
 
 <!-- TODO: Add updated sequence diagram for different operations on Kakarot when it is up-to-date
-```mermaid
+### Main execution flow
+
+mermaid
 sequenceDiagram
     title Simple bytecode execution flow example: [PUSH1 0x01 PUSH1 0x02 ADD]
     actor User
@@ -104,7 +106,6 @@ sequenceDiagram
         EVMInstructions->>-Kakarot: ctx
     end
     Kakarot->>-User: ctx
-```
 -->
 
 ## Getting started
