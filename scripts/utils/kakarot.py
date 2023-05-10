@@ -122,6 +122,7 @@ def wrap_kakarot(contract: Web3Contract, fun: str, evm_address: str):
 
     async def _wrapper(self, *args, **kwargs):
         abi = contract.get_function_by_name(fun).abi
+        gas_price = kwargs.pop("gas_price", 1_000)
         gas_limit = kwargs.pop("gas_limit", 1_000_000_000)
         value = kwargs.pop("value", 0)
         calldata = get_contract_method_calldata(contract, fun, *args, **kwargs)
@@ -130,21 +131,22 @@ def wrap_kakarot(contract: Web3Contract, fun: str, evm_address: str):
             evm_calldata = list(HexBytes(calldata))
             calldata = [
                 int(evm_address, 16),
-                value,
                 gas_limit,
+                gas_price,
+                value,
                 len(evm_calldata),
                 *evm_calldata,
             ]
             result = await GATEWAY_CLIENT.call_contract(
                 Call(
                     to_addr=int(KAKAROT_ADDRESS, 16),
-                    selector=get_selector_from_name("execute_at_address"),
+                    selector=get_selector_from_name("eth_call"),
                     calldata=calldata,
                 )
             )
             return (await deserialize_kakarot_execute_output(result)).return_data
 
-        await execute_at_address(
+        await eth_send_transaction(
             address=evm_address,
             value=value,
             gas_limit=gas_limit,
@@ -160,12 +162,8 @@ async def deserialize_kakarot_execute_output(output: list[int]):
         raise ValueError(f"No output provided for deserialization")
 
     kakarot_contract = await Contract.from_address(KAKAROT_ADDRESS, GATEWAY_CLIENT)
-    kakarot_abi = AbiParser(
-        [kakarot_contract.functions["execute_at_address"].abi]
-    ).parse()
-    function_parser = serializer_for_function(
-        kakarot_abi.functions["execute_at_address"]
-    )
+    kakarot_abi = AbiParser([kakarot_contract.functions["eth_call"].abi]).parse()
+    function_parser = serializer_for_function(kakarot_abi.functions["eth_call"])
     return function_parser.deserialize(output)
 
 
@@ -235,7 +233,7 @@ async def deploy_contract_account(
     return response.transaction_hash
 
 
-async def execute_at_address(
+async def eth_send_transaction(
     address: Union[int, str],
     value: Union[int, str],
     gas_limit: int,
@@ -259,7 +257,7 @@ async def execute_at_address(
     response = await evm_account.execute(
         calls=Call(
             to_addr=int(KAKAROT_ADDRESS, 16),
-            selector=get_selector_from_name("execute_at_address"),
+            selector=get_selector_from_name("eth_send_transaction"),
             calldata=tx_payload,
         ),
         max_fee=int(1e17),
