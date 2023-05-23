@@ -26,7 +26,7 @@ from starkware.starknet.common.syscalls import deploy as deploy_syscall, get_con
 from kakarot.constants import contract_account_class_hash, native_token_address, Constants
 from kakarot.precompiles.precompiles import Precompiles
 from kakarot.execution_context import ExecutionContext
-from kakarot.interfaces.interfaces import IContractAccount, IEth, IAccount
+from kakarot.interfaces.interfaces import IContractAccount, IERC20, IAccount
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
@@ -249,7 +249,7 @@ namespace SystemOperations {
         let amount_u256 = Helpers.to_uint256(sub_ctx.call_context.value);
         let sender = ctx.starknet_contract_address;
         let recipient = sub_ctx.starknet_contract_address;
-        let (success) = IEth.transferFrom(
+        let (success) = IERC20.transferFrom(
             contract_address=native_token_address_,
             sender=sender,
             recipient=recipient,
@@ -312,7 +312,7 @@ namespace SystemOperations {
         let (native_token_address_) = native_token_address.read();
         let amount_u256 = Helpers.to_uint256(sub_ctx.call_context.value);
         let sender = ctx.starknet_contract_address;
-        let (success) = IEth.transferFrom(
+        let (success) = IERC20.transferFrom(
             contract_address=native_token_address_,
             sender=sender,
             recipient=recipient,
@@ -383,11 +383,11 @@ namespace SystemOperations {
         // Get the number of native tokens owned by the given starknet
         // account and transfer them to receiver
         let (native_token_address_) = native_token_address.read();
-        let (balance: Uint256) = IEth.balanceOf(
+        let (balance: Uint256) = IERC20.balanceOf(
             contract_address=native_token_address_, account=ctx.starknet_contract_address
         );
         let sender = ctx.starknet_contract_address;
-        let (success) = IEth.transferFrom(
+        let (success) = IERC20.transferFrom(
             contract_address=native_token_address_,
             sender=sender,
             recipient=address_felt,

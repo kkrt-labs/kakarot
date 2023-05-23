@@ -14,7 +14,7 @@ namespace IBlockhashRegistry {
 }
 
 @contract_interface
-namespace IEth {
+namespace IERC20 {
     func balanceOf(account: felt) -> (balance: Uint256) {
     }
 

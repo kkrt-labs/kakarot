@@ -8,7 +8,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.memcpy import memcpy
 
 from kakarot.accounts.library import Accounts
-from kakarot.interfaces.interfaces import IEth, IKakarot
+from kakarot.interfaces.interfaces import IERC20, IKakarot
 from utils.eth_transaction import EthTransaction
 from utils.utils import Helpers
 
@@ -60,7 +60,7 @@ namespace ExternallyOwnedAccount {
         // Give infinite ETH transfer allowance to Kakarot
         let (native_token_address) = IKakarot.get_native_token(_kakarot_address);
         let (infinite) = uint256_not(Uint256(0, 0));
-        IEth.approve(native_token_address, _kakarot_address, infinite);
+        IERC20.approve(native_token_address, _kakarot_address, infinite);
         is_initialized_.write(1);
         return ();
     }
