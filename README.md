@@ -44,7 +44,7 @@ It is a work in progress, and it is not ready for production.
 
 ## Supported opcodes
 
-We support 100% of EVM [opcodes](docs/supported_opcodes.md).
+We support 100% of EVM [opcodes](docs/supported_opcodes.md) and 8 out of 9 precompiles.
 
 ## Documentation
 
@@ -67,9 +67,12 @@ We support 100% of EVM [opcodes](docs/supported_opcodes.md).
   [Warp](https://github.com/NethermindEth/warp) for a Solidity -> Cairo
   transpiler
 
+
+
+<!-- TODO: Add updated sequence diagram for different operations on Kakarot when it is up-to-date
 ### Main execution flow
 
-```mermaid
+mermaid
 sequenceDiagram
     title Simple bytecode execution flow example: [PUSH1 0x01 PUSH1 0x02 ADD]
     actor User
@@ -103,40 +106,7 @@ sequenceDiagram
         EVMInstructions->>-Kakarot: ctx
     end
     Kakarot->>-User: ctx
-```
-
-### Execution sample
-
-Execution of a simple EVM bytecode program on Kakarot.
-
-The bytecode is the following:
-
-```console
-6001600503600301610166016002026105b40460020500
-```
-
-Which corresponds to the following EVM program:
-
-```console
-0x60 - PUSH1
-0x60 - PUSH1
-0x03 - SUB
-0x60 - PUSH1
-0x01 - ADD
-0x61 - PUSH2
-0x01 - ADD
-0x60 - PUSH1
-0x02 - MUL
-0x61 - PUSH2
-0x04 - DIV
-0x60 - PUSH1
-0x05 - SDIV
-0x00 - STOP
-```
-
-Here is the execution trace of the program on Kakarot:
-
-![Tutorial](docs/img/sample_execution.png)
+-->
 
 ## Getting started
 
