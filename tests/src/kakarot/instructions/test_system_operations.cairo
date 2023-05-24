@@ -28,7 +28,7 @@ from kakarot.instructions.system_operations import (
     CreateHelper,
     SelfDestructHelper,
 )
-from kakarot.interfaces.interfaces import IContractAccount, IKakarot, IAccount, IEth
+from kakarot.interfaces.interfaces import IContractAccount, IKakarot, IAccount, IERC20
 from kakarot.library import Kakarot
 from kakarot.accounts.library import Accounts
 from kakarot.model import model
@@ -269,7 +269,7 @@ func test__exec_call__should_transfer_value{
 
     // Get the balance of caller pre-call
     let (native_token_address_) = native_token_address.read();
-    let (caller_pre_balance) = IEth.balanceOf(
+    let (caller_pre_balance) = IERC20.balanceOf(
         contract_address=native_token_address_, account=caller_starknet_contract_address
     );
 
@@ -306,10 +306,10 @@ func test__exec_call__should_transfer_value{
 
     // Then
     // get balances of caller and callee post-call
-    let (callee_balance) = IEth.balanceOf(
+    let (callee_balance) = IERC20.balanceOf(
         contract_address=native_token_address_, account=callee_starknet_contract_address
     );
-    let (caller_post_balance) = IEth.balanceOf(
+    let (caller_post_balance) = IERC20.balanceOf(
         contract_address=native_token_address_, account=caller_starknet_contract_address
     );
     let (caller_diff_balance) = uint256_sub(caller_pre_balance, caller_post_balance);
@@ -422,7 +422,7 @@ func test__exec_callcode__should_transfer_value{
 
     // Get the balance of caller pre-call
     let (native_token_address_) = native_token_address.read();
-    let (caller_pre_balance) = IEth.balanceOf(
+    let (caller_pre_balance) = IERC20.balanceOf(
         contract_address=native_token_address_, account=caller_starknet_contract_address
     );
 
@@ -459,10 +459,10 @@ func test__exec_callcode__should_transfer_value{
 
     // Then
     // get balances of caller and callee post-call
-    let (callee_balance) = IEth.balanceOf(
+    let (callee_balance) = IERC20.balanceOf(
         contract_address=native_token_address_, account=callee_starknet_contract_address
     );
-    let (caller_post_balance) = IEth.balanceOf(
+    let (caller_post_balance) = IERC20.balanceOf(
         contract_address=native_token_address_, account=caller_starknet_contract_address
     );
     let (caller_diff_balance) = uint256_sub(caller_pre_balance, caller_post_balance);

@@ -16,7 +16,7 @@ from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 from kakarot.constants import Constants, native_token_address, blockhash_registry_address
-from kakarot.interfaces.interfaces import IEth, IBlockhashRegistry
+from kakarot.interfaces.interfaces import IERC20, IBlockhashRegistry
 
 // @title BlockInformation information opcodes.
 // @notice This file contains the functions to execute for block information opcodes.
@@ -278,7 +278,7 @@ namespace BlockInformation {
         alloc_locals;
         // Get balance of current executing contract address balance and push to stack.
         let (native_token_address_) = native_token_address.read();
-        let (balance: Uint256) = IEth.balanceOf(
+        let (balance: Uint256) = IERC20.balanceOf(
             contract_address=native_token_address_, account=ctx.starknet_contract_address
         );
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=balance);

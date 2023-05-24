@@ -3,7 +3,7 @@
 %lang starknet
 
 // Starkware dependencies
-from kakarot.interfaces.interfaces import IEth, IKakarot
+from kakarot.interfaces.interfaces import IERC20, IKakarot
 from openzeppelin.access.ownable.library import Ownable
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
@@ -56,7 +56,7 @@ namespace ContractAccount {
         // Give infinite ETH transfer allowance to Kakarot
         let (native_token_address) = IKakarot.get_native_token(kakarot_address);
         let (infinite) = uint256_not(Uint256(0, 0));
-        IEth.approve(native_token_address, kakarot_address, infinite);
+        IERC20.approve(native_token_address, kakarot_address, infinite);
         return ();
     }
 

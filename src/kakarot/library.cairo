@@ -21,7 +21,7 @@ from kakarot.constants import (
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions import EVMInstructions
 from kakarot.instructions.system_operations import CreateHelper
-from kakarot.interfaces.interfaces import IAccount, IContractAccount, IEth
+from kakarot.interfaces.interfaces import IAccount, IContractAccount, IERC20
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
@@ -208,7 +208,7 @@ namespace Kakarot {
         let (from_) = get_caller_address();
         let (recipient) = Accounts.compute_starknet_address(to_);
         let amount = Helpers.to_uint256(value);
-        let (success) = IEth.transferFrom(
+        let (success) = IERC20.transferFrom(
             contract_address=native_token_address, sender=from_, recipient=recipient, amount=amount
         );
         return (success=success);

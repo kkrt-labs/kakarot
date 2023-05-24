@@ -17,7 +17,7 @@ from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 from kakarot.memory import Memory
 from kakarot.constants import native_token_address
-from kakarot.interfaces.interfaces import IEth, IAccount
+from kakarot.interfaces.interfaces import IERC20, IAccount
 from kakarot.accounts.library import Accounts
 
 // @title Environmental information opcodes.
@@ -94,7 +94,7 @@ namespace EnvironmentalInformation {
         let (starknet_contract_address) = Accounts.compute_starknet_address(felt_address);
         // Get the number of native tokens owned by the given starknet account
         let (native_token_address_) = native_token_address.read();
-        let (balance: Uint256) = IEth.balanceOf(
+        let (balance: Uint256) = IERC20.balanceOf(
             contract_address=native_token_address_, account=starknet_contract_address
         );
 

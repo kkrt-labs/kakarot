@@ -14,7 +14,7 @@ namespace IBlockhashRegistry {
 }
 
 @contract_interface
-namespace IEth {
+namespace IERC20 {
     func balanceOf(account: felt) -> (balance: Uint256) {
     }
 
@@ -26,7 +26,23 @@ namespace IEth {
 
     func approve(spender: felt, amount: Uint256) -> (success: felt) {
     }
+
+    func name() -> (name: felt) {
+    }
+
+    func symbol() -> (symbol: felt) {
+    }
+
+    func decimals() -> (decimals: felt) {
+    }
+
+    func totalSupply() -> (total_supply: Uint256) {
+    }
+
+    func allowance(owner: felt, spender: felt) -> (remaining: Uint256) {
+    }
 }
+
 
 @contract_interface
 namespace IAccount {
