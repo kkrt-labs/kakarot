@@ -5,7 +5,6 @@
 // Starkware dependencies
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-
 from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
@@ -45,9 +44,31 @@ namespace PushOperations {
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST);
+        let i_is_zero = Helpers.is_zero(i);
+        // Gascost for push0 is 2; all else are 3
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST - i_is_zero);
         return ctx;
     }
+
+    // @notice PUSH0 operation.
+    // @dev Place 0 byte item on stack.
+    // @custom:since Frontier
+    // @custom:group Push Operations
+    // @custom:gas 2
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context
+    // @return ExecutionContext The pointer to the updated execution context.
+    func exec_push0{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
+        let ctx = exec_push_i(ctx_ptr, 0);
+        return ctx;
+    }
+
 
     // @notice PUSH1 operation.
     // @dev Place 1 byte item on stack.

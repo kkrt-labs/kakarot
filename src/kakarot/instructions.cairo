@@ -271,7 +271,7 @@ namespace EVMInstructions {
         ret;
         call unknown_opcode;  // 0x5e
         ret;
-        call unknown_opcode;  // 0x5f
+        call PushOperations.exec_push0;  // 0x5f
         ret;
         call PushOperations.exec_push1;  // 0x60
         ret;
