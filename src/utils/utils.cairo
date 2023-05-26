@@ -155,17 +155,6 @@ namespace Helpers {
         return res;
     }
 
-    // @notice: This helper returns 1 if value is zero. Returns 0 otherwise.
-    // @param value: value that is determined to be zero
-    // @return returns 1 if value is zero, 0 otherwise.
-    func is_zero(value) -> felt {
-        if (value == 0) {
-            return 1;
-        }
-
-        return 0;    
-    }
-
     // @notice: This helper returns the minimal number of EVM words for a given bytes length
     // @param length: a given bytes length
     // @return res: the minimal number of EVM words

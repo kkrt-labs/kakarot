@@ -23,6 +23,11 @@ class TestPushOperations:
         with kakarot_error():
             await push_operations.test__exec_push_should_raise(i).call()
 
+    # The `exec_push_i` is tested by initializing the bytecode with a fill value of 0xFF.
+    # As we push 'i' bytes onto the stack,
+    # this results in a stack value of 0xFF repeated 'i' times.
+    # In decimal notation, this is equivalent to 256**i - 1,
+    # which forms the basis of our assertion in this test.
     @pytest.mark.parametrize("i", range(0, 33))
     async def test__exec_push_should_push(self, push_operations, i):
         res = await push_operations.test__exec_push_should_push(i).call()
@@ -39,8 +44,8 @@ class TestPushOperations:
         stack = extract_stack_from_execute(res.result)
         assert stack == [0] * stack_len
 
-    # we can push0 1025 times, causing a stackoverlfow
-    # it seems that our logic throws at 1026
+    # we cannot push0 1025 times -> there should be a stackoverlfow
+    # our impl throws at 1026
     async def test__exec_push0_should_overflow(self, push_operations):
         stack_len = 1026
         with kakarot_error("Kakarot: StackOverflow"):

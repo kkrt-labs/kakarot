@@ -38,8 +38,8 @@ func test__exec_push_should_push_n_times{
 }(times: felt, value: felt) -> (stack_accesses_len: felt, stack_accesses: felt*, stack_len: felt) {
     alloc_locals;
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_bytecode(value + 1, 0xFF);
-    let res = exec_push_n_times(ctx, times, value);
-    let stack_summary = Stack.finalize(res.ctx.stack);
+    let (ctx) = exec_push_n_times(ctx, times, value);
+    let stack_summary = Stack.finalize(ctx.stack);
     let stack_accesses_len = stack_summary.squashed_end - stack_summary.squashed_start;
     return (
         stack_accesses_len=stack_accesses_len,
