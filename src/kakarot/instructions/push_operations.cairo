@@ -5,7 +5,7 @@
 // Starkware dependencies
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-
+from starkware.cairo.common.math_cmp import is_not_zero
 from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
@@ -18,7 +18,8 @@ from kakarot.stack import Stack
 // @notice This file contains the functions to execute for push operations opcodes.
 namespace PushOperations {
     // Define constants.
-    const GAS_COST = 3;
+    // Gascost for push0 is 2; all else are 3
+    const BASE_GAS_COST = 2;
 
     // @notice Generic PUSH operation
     // @dev Place i bytes items on stack
@@ -45,7 +46,28 @@ namespace PushOperations {
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST);
+        let i_is_not_zero = is_not_zero(i);
+        // Gascost for push0 is 2; all else are 3
+        let ctx = ExecutionContext.increment_gas_used(ctx, BASE_GAS_COST + i_is_not_zero);
+        return ctx;
+    }
+
+    // @notice PUSH0 operation.
+    // @dev Place 0 byte item on stack.
+    // @custom:since Shanghai
+    // @custom:group Push Operations
+    // @custom:gas 2
+    // @custom:stack_consumed_elements 0
+    // @custom:stack_produced_elements 1
+    // @param ctx The pointer to the execution context
+    // @return ExecutionContext The pointer to the updated execution context.
+    func exec_push0{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
+        let ctx = exec_push_i(ctx_ptr, 0);
         return ctx;
     }
 
