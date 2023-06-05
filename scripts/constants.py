@@ -5,7 +5,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from eth_keys import keys
-from starknet_py.net.gateway_client import GatewayClient
+from starknet_py.net.full_node_client import FullNodeClient
 
 load_dotenv()
 
@@ -23,22 +23,18 @@ NETWORK = (
     if re.match(r".*(testnet|goerli)$", NETWORK, flags=re.I)
     else "testnet2"
     if re.match(r".*(testnet|goerli)-?2$", NETWORK, flags=re.I)
-    else "devnet"
-    if re.match(r".*(devnet|local).*", NETWORK, flags=re.I)
     else "mainnet"
+    if re.match(r".*(mainnet).*", NETWORK, flags=re.I)
+    else "sharingan"
+    if re.match(r".*(sharingan).*", NETWORK, flags=re.I)
+    else "devnet"
 )
-GATEWAY_URLS = {
-    "mainnet": "https://alpha-mainnet.starknet.io",
-    "testnet": "https://alpha4.starknet.io",
-    "testnet2": "https://alpha4-2.starknet.io",
-    "devnet": "http://127.0.0.1:5050",
-}
-GATEWAY_CLIENT = GatewayClient(net=GATEWAY_URLS[NETWORK])
 STARKNET_NETWORKS = {
     "mainnet": "alpha-mainnet",
     "testnet": "alpha-goerli",
     "testnet2": "alpha-goerli2",
     "devnet": "alpha-goerli",
+    "sharingan": "alpha-goerli",
 }
 STARKNET_NETWORK = STARKNET_NETWORKS[NETWORK]
 STARKSCAN_URLS = {
@@ -46,8 +42,17 @@ STARKSCAN_URLS = {
     "testnet": "https://testnet.starkscan.co",
     "testnet2": "https://testnet-2.starkscan.co",
     "devnet": "https://devnet.starkscan.co",
+    "sharingan": "https://testnet.starkscan.co",
 }
 STARKSCAN_URL = STARKSCAN_URLS[NETWORK]
+RPC_URLS = {
+    "mainnet": f"https://starknet-mainnet.infura.io/v3/{os.environ['RPC_KEY']}",
+    "testnet": f"https://starknet-goerli.infura.io/v3/{os.environ['RPC_KEY']}",
+    "testnet2": f"https://starknet-goerli2.infura.io/v3/{os.environ['RPC_KEY']}",
+    "devnet": "http://127.0.0.1:5050/rpc",
+    "sharingan": "http://0.0.0.0:9933",
+}
+RPC_CLIENT = FullNodeClient(node_url=RPC_URLS[NETWORK])
 
 
 class ChainId(Enum):
@@ -55,6 +60,7 @@ class ChainId(Enum):
     testnet = int.from_bytes(b"SN_GOERLI", "big")
     testnet2 = int.from_bytes(b"SN_GOERLI2", "big")
     devnet = int.from_bytes(b"SN_GOERLI", "big")
+    sharingan = int.from_bytes(b"SN_GOERLI", "big")
 
 
 BUILD_DIR = Path("build")

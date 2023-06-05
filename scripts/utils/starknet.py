@@ -26,9 +26,9 @@ from scripts.constants import (
     CHAIN_ID,
     DEPLOYMENTS_DIR,
     ETH_TOKEN_ADDRESS,
-    GATEWAY_CLIENT,
     NETWORK,
     PRIVATE_KEY,
+    RPC_CLIENT,
     STARKNET_NETWORK,
     STARKSCAN_URL,
 )
@@ -52,7 +52,7 @@ async def create_account():
     ] = "starkware.starknet.wallets.open_zeppelin.OpenZeppelinAccount"
     env["STARKNET_NETWORK"] = STARKNET_NETWORK
     logger.info(
-        f"⏳ Creating account on network {STARKNET_NETWORK} with {GATEWAY_CLIENT.net}"
+        f"⏳ Creating account on network {STARKNET_NETWORK} with {RPC_CLIENT.net}"
     )
     output = subprocess.run(
         ["starknet", "new_account", "--account", "kakarot"],
@@ -73,9 +73,9 @@ async def create_account():
             "--account",
             "kakarot",
             "--gateway_url",
-            f"{GATEWAY_CLIENT.net}/gateway",
+            f"{RPC_CLIENT.net}/gateway",
             "--feeder_gateway_url",
-            f"{GATEWAY_CLIENT.net}/feeder_gateway",
+            f"{RPC_CLIENT.net}/feeder_gateway",
         ],
         env=env,
         capture_output=True,
@@ -85,7 +85,7 @@ async def create_account():
     transaction_hash = re.search(
         r"transaction hash: (.*)", (output.stdout.decode() + output.stderr.decode()).lower()  # type: ignore
     )[1]
-    await GATEWAY_CLIENT.wait_for_tx(transaction_hash)
+    await RPC_CLIENT.wait_for_tx(transaction_hash)
 
 
 async def get_default_account() -> Account:
@@ -100,7 +100,7 @@ async def get_default_account() -> Account:
 
     return Account(
         address=account["address"],
-        client=GATEWAY_CLIENT,
+        client=RPC_CLIENT,
         chain=CHAIN_ID,
         key_pair=KeyPair(
             private_key=int(account["private_key"], 16),
@@ -135,13 +135,10 @@ async def get_starknet_account(
                 calldata=[],
             )
             public_key = (
-                await GATEWAY_CLIENT.call_contract(call=call, block_hash="pending")
+                await RPC_CLIENT.call_contract(call=call, block_hash="latest")
             )[0]
         except Exception as err:
-            if (
-                json.loads(re.findall("{.*}", err.args[0], re.DOTALL)[0])["code"]
-                == "StarknetErrorCode.ENTRY_POINT_NOT_FOUND_IN_CONTRACT"
-            ):
+            if err.message == "Client failed with code 21: Invalid message selector.":
                 continue
             else:
                 raise err
@@ -153,7 +150,7 @@ async def get_starknet_account(
 
     return Account(
         address=address,
-        client=GATEWAY_CLIENT,
+        client=RPC_CLIENT,
         chain=CHAIN_ID,
         key_pair=key_pair,
     )
@@ -210,7 +207,7 @@ async def fund_address(address: Union[int, str], amount: float):
     amount = amount * 1e18
     if NETWORK == "devnet":
         response = requests.post(
-            f"{GATEWAY_CLIENT.net}/mint",
+            f"http://127.0.0.1:5050/mint",
             json={"address": hex(address), "amount": amount},
         )
         if response.status_code != 200:
@@ -366,6 +363,6 @@ async def call(contract_name, function_name, *inputs, address=None):
     return await contract.functions[function_name].call(*inputs)
 
 
-@functools.wraps(GATEWAY_CLIENT.wait_for_tx)
+@functools.wraps(RPC_CLIENT.wait_for_tx)
 async def wait_for_transaction(*args, **kwargs):
-    return await GATEWAY_CLIENT.wait_for_tx(*args, **kwargs)
+    return await RPC_CLIENT.wait_for_tx(*args, **kwargs)
