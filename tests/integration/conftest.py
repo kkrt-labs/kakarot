@@ -23,10 +23,13 @@ async def kakarot(
     blockhash_registry: StarknetContract,
 ) -> StarknetContract:
     owner = 1
-    kakarot = await starknet.deploy(
+    class_hash = await starknet.deprecated_declare(
         source="./src/kakarot/kakarot.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
+    )
+    kakarot = await starknet.deploy(
+        class_hash=class_hash.class_hash,
         constructor_calldata=[
             owner,  # owner
             eth.contract_address,  # native_token_address_
