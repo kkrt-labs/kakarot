@@ -43,7 +43,6 @@ namespace IERC20 {
     }
 }
 
-
 @contract_interface
 namespace IAccount {
     func get_evm_address() -> (evm_address: felt) {
