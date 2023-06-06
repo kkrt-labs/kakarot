@@ -10,18 +10,18 @@ from starkware.starknet.testing.starknet import Starknet
 async def ripemd160(
     starknet: Starknet,
 ):
-    return await starknet.deploy(
+    class_hash = await starknet.deprecated_declare(
         source="./tests/src/kakarot/precompiles/test_ripemd160.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
     )
+    return await starknet.deploy(class_hash=class_hash.class_hash)
 
 
 @pytest.mark.asyncio
 class TestRIPEMD160:
     @pytest.mark.parametrize("msg_len", [random.randint(1, 200) for _ in range(3)])
     async def test_ripemd160_should_return_correct_hash(self, ripemd160, msg_len):
-
         # Build message to be hashed
         message_bytes = bytearray([random.randint(0, 255) for _ in range(msg_len)])
 

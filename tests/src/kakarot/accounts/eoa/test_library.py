@@ -13,10 +13,13 @@ from tests.utils.helpers import generate_random_private_key, get_multicall_from_
 async def mock_kakarot(
     starknet: Starknet, eth: StarknetContract, account_proxy_class: DeclaredClass
 ):
-    return await starknet.deploy(
+    class_hash = await starknet.deprecated_declare(
         source="./tests/src/kakarot/accounts/eoa/mock_kakarot.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
+    )
+    return await starknet.deploy(
+        class_hash=class_hash.class_hash,
         constructor_calldata=[eth.contract_address, account_proxy_class.class_hash],
     )
 
@@ -26,10 +29,13 @@ async def mock_externally_owned_account(
     starknet: Starknet, mock_kakarot: StarknetContract
 ):
     private_key = generate_random_private_key()
-    return await starknet.deploy(
+    class_hash = await starknet.deprecated_declare(
         source="./tests/src/kakarot/accounts/eoa/mock_externally_owned_account.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
+    )
+    return await starknet.deploy(
+        class_hash=class_hash.class_hash,
         constructor_calldata=[
             mock_kakarot.contract_address,
             int(private_key.public_key.to_address(), 16),

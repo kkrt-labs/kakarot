@@ -8,18 +8,18 @@ from starkware.starknet.testing.starknet import Starknet
 
 @pytest_asyncio.fixture(scope="module")
 async def modexp(starknet: Starknet):
-    return await starknet.deploy(
+    class_hash = await starknet.deprecated_declare(
         source="./tests/src/kakarot/precompiles/test_modexp.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
     )
+    return await starknet.deploy(class_hash=class_hash.class_hash)
 
 
 @pytest.mark.asyncio
 @pytest.mark.MOD_EXP
 class TestModExp:
     async def test_modexp(self, modexp):
-
         random.seed(0)
         b = 3
         b_size = math.ceil(math.log(b, 256))

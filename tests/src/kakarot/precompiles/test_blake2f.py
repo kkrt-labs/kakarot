@@ -12,11 +12,12 @@ from tests.utils.helpers import pack_64_bits_little
 
 @pytest_asyncio.fixture(scope="module")
 async def blake2f(starknet: Starknet):
-    return await starknet.deploy(
+    class_hash = await starknet.deprecated_declare(
         source="./tests/src/kakarot/precompiles/test_blake2f.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
     )
+    return await starknet.deploy(class_hash=class_hash.class_hash)
 
 
 @pytest.mark.asyncio

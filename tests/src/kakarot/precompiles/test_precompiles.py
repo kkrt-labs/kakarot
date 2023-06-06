@@ -7,11 +7,12 @@ from tests.utils.errors import kakarot_error
 
 @pytest_asyncio.fixture(scope="module")
 async def precompiles(starknet: Starknet):
-    return await starknet.deploy(
+    class_hash = await starknet.deprecated_declare(
         source="./tests/src/kakarot/precompiles/test_precompiles.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
     )
+    return await starknet.deploy(class_hash=class_hash.class_hash)
 
 
 @pytest.mark.asyncio

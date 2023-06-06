@@ -4,7 +4,7 @@ from typing import Dict, Union
 
 import pytest
 import pytest_asyncio
-from starkware.starknet.testing.starknet import Starknet
+from starkware.starknet.testing.starknet import DeclaredClass, Starknet
 
 from tests.utils.uint256 import int_to_uint256
 
@@ -17,13 +17,21 @@ def blockhashes() -> Dict[str, Union[Dict[str, int], int]]:
     return blockhashes
 
 
-@pytest_asyncio.fixture(scope="session")
-async def blockhash_registry(starknet: Starknet, blockhashes: dict):
-    owner = 1
-    registry = await starknet.deploy(
+async def blockhash_registry_class(starknet: Starknet):
+    return await starknet.deprecated_declare(
         source="./src/kakarot/registry/blockhash/blockhash_registry.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
+    )
+
+
+@pytest_asyncio.fixture(scope="session")
+async def blockhash_registry(
+    starknet: Starknet, blockhash_registry_class: DeclaredClass, blockhashes: dict
+):
+    owner = 1
+    registry = await starknet.deploy(
+        class_hash=blockhash_registry_class.class_hash,
         constructor_calldata=[owner],
     )
     await registry.set_blockhashes(

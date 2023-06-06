@@ -155,7 +155,7 @@ async def get_starknet_account(
 
     return Account(
         address=address,
-        client=GATEWAY_CLIENT,  # TODO: use RPC_CLIENT when RPC wait_for_tx is fixed
+        client=GATEWAY_CLIENT,  # TODO: use RPC_CLIENT when RPC wait_for_tx is fixed, see https://github.com/kkrt-labs/kakarot/issues/586
         chain=CHAIN_ID,
         key_pair=key_pair,
     )

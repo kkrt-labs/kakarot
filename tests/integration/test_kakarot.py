@@ -21,10 +21,13 @@ async def evm(
     account_proxy_class: DeclaredClass,
     blockhash_registry: StarknetContract,
 ) -> StarknetContract:
-    return await starknet.deploy(
+    class_hash = await starknet.deprecated_declare(
         source="./tests/fixtures/EVM.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
+    )
+    return await starknet.deploy(
+        class_hash=class_hash.class_hash,
         constructor_calldata=[
             eth.contract_address,  # native_token_address_
             contract_account_class.class_hash,  # contract_account_class_hash_
