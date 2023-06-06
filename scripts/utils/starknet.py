@@ -24,12 +24,14 @@ from scripts.constants import (
     ACCOUNT_ADDRESS,
     BUILD_DIR,
     CHAIN_ID,
+    CONTRACTS,
     DEPLOYMENTS_DIR,
     ETH_TOKEN_ADDRESS,
     GATEWAY_CLIENT,
     NETWORK,
     PRIVATE_KEY,
     RPC_CLIENT,
+    SOURCE_DIR,
     STARKNET_NETWORK,
     STARKSCAN_URL,
 )
@@ -86,7 +88,7 @@ async def create_account():
     transaction_hash = re.search(
         r"transaction hash: (.*)", (output.stdout.decode() + output.stderr.decode()).lower()  # type: ignore
     )[1]
-    await RPC_CLIENT.wait_for_tx(transaction_hash)
+    await wait_for_transaction(transaction_hash)
 
 
 async def get_default_account() -> Account:
@@ -155,7 +157,7 @@ async def get_starknet_account(
 
     return Account(
         address=address,
-        client=GATEWAY_CLIENT,  # TODO: use RPC_CLIENT when RPC wait_for_tx is fixed, see https://github.com/kkrt-labs/kakarot/issues/586
+        client=RPC_CLIENT,
         chain=CHAIN_ID,
         key_pair=key_pair,
     )
@@ -229,7 +231,7 @@ async def fund_address(address: Union[int, str], amount: float):
         tx = await eth_contract.functions["transfer"].invoke(
             address, int_to_uint256(amount), max_fee=int(1e17)
         )
-        await tx.wait_for_acceptance()
+        await wait_for_transaction(tx.hash)
         logger.info(
             f"{amount / 1e18} ETH sent from {hex(account.address)} to {hex(address)}"
         )
@@ -295,6 +297,24 @@ def get_tx_url(tx_hash: int) -> str:
     return f"{STARKSCAN_URL}/tx/0x{tx_hash:064x}"
 
 
+def compile_contract(contract):
+    output = subprocess.run(
+        [
+            "starknet-compile-deprecated",
+            CONTRACTS[contract["contract_name"]],
+            "--output",
+            BUILD_DIR / f"{contract['contract_name']}.json",
+            "--cairo_path",
+            str(SOURCE_DIR),
+            *(["--account_contract"] if contract["is_account_contract"] else []),
+            *(["--disable_hint_validation"] if NETWORK == "devnet" else []),
+        ],
+        capture_output=True,
+    )
+    if output.returncode != 0:
+        raise RuntimeError(output.stderr)
+
+
 async def declare(contract_name):
     logger.info(f"ℹ️  Declaring {contract_name}")
     account = await get_starknet_account()
@@ -304,7 +324,7 @@ async def declare(contract_name):
     )
     resp = await account.client.declare(transaction=declare_transaction)
     logger.info(f"⏳ Waiting for tx {get_tx_url(resp.transaction_hash)}")
-    await account.client.wait_for_tx(resp.transaction_hash, check_interval=15)
+    await wait_for_transaction(resp.transaction_hash)
     logger.info(f"✅ {contract_name} class hash: {hex(resp.class_hash)}")
     return resp.class_hash
 
@@ -321,7 +341,7 @@ async def deploy(contract_name, *args):
         max_fee=int(1e17),
     )
     logger.info(f"⏳ Waiting for tx {get_tx_url(deploy_result.hash)}")
-    await deploy_result.wait_for_acceptance(check_interval=15)
+    await wait_for_transaction(deploy_result.hash)
     logger.info(
         f"✅ {contract_name} deployed at: {hex(deploy_result.deployed_contract.address)}"
     )
@@ -344,7 +364,7 @@ async def invoke(contract_name, function_name, *inputs, address=None):
     logger.info(f"ℹ️  Invoking {contract_name}.{function_name}({json.dumps(inputs)})")
     response = await account.execute(call, max_fee=int(1e17))
     logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
-    await account.client.wait_for_tx(response.transaction_hash, check_interval=15)
+    await wait_for_transaction(response.transaction_hash)
     logger.info(
         f"✅ {contract_name}.{function_name} invoked at tx: %s",
         hex(response.transaction_hash),
@@ -363,6 +383,8 @@ async def call(contract_name, function_name, *inputs, address=None):
     return await contract.functions[function_name].call(*inputs)
 
 
-@functools.wraps(RPC_CLIENT.wait_for_tx)
+# TODO: use RPC_CLIENT when RPC wait_for_tx is fixed, see https://github.com/kkrt-labs/kakarot/issues/586
+@functools.wraps(GATEWAY_CLIENT.wait_for_tx)
 async def wait_for_transaction(*args, **kwargs):
-    return await RPC_CLIENT.wait_for_tx(*args, **kwargs)
+    kwargs["check_interval"] = kwargs.get("check_interval", 15)
+    return await GATEWAY_CLIENT.wait_for_tx(*args, **kwargs)

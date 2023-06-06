@@ -1,38 +1,14 @@
 # %% Imports
 import logging
-import subprocess
 from asyncio import run
 from datetime import datetime
 
-from scripts.constants import (
-    BUILD_DIR,
-    COMPILED_CONTRACTS,
-    CONTRACTS,
-    NETWORK,
-    SOURCE_DIR,
-)
+from scripts.constants import COMPILED_CONTRACTS, NETWORK
+from scripts.utils.starknet import compile_contract
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
-
-def compile_contract(contract):
-    output = subprocess.run(
-        [
-            "starknet-compile-deprecated",
-            CONTRACTS[contract["contract_name"]],
-            "--output",
-            BUILD_DIR / f"{contract['contract_name']}.json",
-            "--cairo_path",
-            str(SOURCE_DIR),
-            *(["--account_contract"] if contract["is_account_contract"] else []),
-            *(["--disable_hint_validation"] if NETWORK == "devnet" else []),
-        ],
-        capture_output=True,
-    )
-    if output.returncode != 0:
-        raise RuntimeError(output.stderr)
 
 
 # %% Main

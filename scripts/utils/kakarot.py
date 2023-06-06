@@ -26,7 +26,11 @@ from scripts.constants import (
     KAKAROT_CHAIN_ID,
     RPC_CLIENT,
 )
-from scripts.utils.starknet import deploy_and_fund_evm_address, get_tx_url
+from scripts.utils.starknet import (
+    deploy_and_fund_evm_address,
+    get_tx_url,
+    wait_for_transaction,
+)
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -227,9 +231,7 @@ async def deploy_contract_account(
         max_fee=int(1e17),
     )
     logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
-    await evm_account.client.wait_for_tx(
-        tx_hash=response.transaction_hash, check_interval=15
-    )
+    await wait_for_transaction(tx_hash=response.transaction_hash)
     return response.transaction_hash
 
 
@@ -263,9 +265,7 @@ async def eth_send_transaction(
         max_fee=int(1e17),
     )
     logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
-    await evm_account.client.wait_for_tx(
-        tx_hash=response.transaction_hash, check_interval=15
-    )
+    await wait_for_transaction(tx_hash=response.transaction_hash)
 
 
 def get_payload(
