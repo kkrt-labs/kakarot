@@ -6,7 +6,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 from eth_keys import keys
 from starknet_py.net.full_node_client import FullNodeClient
-from starknet_py.net.gateway_client import GatewayClient
 
 load_dotenv()
 
@@ -54,13 +53,6 @@ RPC_URLS = {
     "sharingan": "http://0.0.0.0:9933",
 }
 RPC_CLIENT = FullNodeClient(node_url=RPC_URLS[NETWORK])
-GATEWAY_URLS = {
-    "mainnet": "https://alpha-mainnet.starknet.io",
-    "testnet": "https://alpha4.starknet.io",
-    "testnet2": "https://alpha4-2.starknet.io",
-    "devnet": "http://127.0.0.1:5050",
-}
-GATEWAY_CLIENT = GatewayClient(net=GATEWAY_URLS[NETWORK])
 
 
 class ChainId(Enum):
