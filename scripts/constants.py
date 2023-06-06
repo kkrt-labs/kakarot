@@ -25,26 +25,16 @@ NETWORK = (
     if re.match(r".*(testnet|goerli)-?2$", NETWORK, flags=re.I)
     else "mainnet"
     if re.match(r".*(mainnet).*", NETWORK, flags=re.I)
-    else "sharingan"
-    if re.match(r".*(sharingan).*", NETWORK, flags=re.I)
     else "devnet"
 )
-STARKNET_NETWORKS = {
-    "mainnet": "alpha-mainnet",
-    "testnet": "alpha-goerli",
-    "testnet2": "alpha-goerli2",
-    "devnet": "alpha-goerli",
-    "sharingan": "alpha-goerli",
-}
-STARKNET_NETWORK = STARKNET_NETWORKS[NETWORK]
 STARKSCAN_URLS = {
     "mainnet": "https://starkscan.co",
     "testnet": "https://testnet.starkscan.co",
     "testnet2": "https://testnet-2.starkscan.co",
     "devnet": "https://devnet.starkscan.co",
-    "sharingan": "https://testnet.starkscan.co",
 }
 STARKSCAN_URL = STARKSCAN_URLS[NETWORK]
+
 if not os.getenv("RPC_KEY") and NETWORK in ["mainnet", "testnet", "testnet2"]:
     raise ValueError(f"RPC_KEY env variable is required when targeting {NETWORK}")
 RPC_URLS = {
@@ -52,7 +42,6 @@ RPC_URLS = {
     "testnet": f"https://starknet-goerli.infura.io/v3/{os.getenv('RPC_KEY')}",
     "testnet2": f"https://starknet-goerli2.infura.io/v3/{os.getenv('RPC_KEY')}",
     "devnet": "http://127.0.0.1:5050/rpc",
-    "sharingan": "http://0.0.0.0:9933",
 }
 RPC_CLIENT = FullNodeClient(node_url=RPC_URLS[NETWORK])
 
@@ -62,7 +51,6 @@ class ChainId(Enum):
     testnet = int.from_bytes(b"SN_GOERLI", "big")
     testnet2 = int.from_bytes(b"SN_GOERLI2", "big")
     devnet = int.from_bytes(b"SN_GOERLI", "big")
-    sharingan = int.from_bytes(b"SN_GOERLI", "big")
 
 
 BUILD_DIR = Path("build")
