@@ -45,10 +45,12 @@ STARKSCAN_URLS = {
     "sharingan": "https://testnet.starkscan.co",
 }
 STARKSCAN_URL = STARKSCAN_URLS[NETWORK]
+if not os.getenv("RPC_KEY") and NETWORK in ["mainnet", "testnet", "testnet2"]:
+    raise ValueError(f"RPC_KEY env variable is required when targeting {NETWORK}")
 RPC_URLS = {
-    "mainnet": f"https://starknet-mainnet.infura.io/v3/{os.environ['RPC_KEY']}",
-    "testnet": f"https://starknet-goerli.infura.io/v3/{os.environ['RPC_KEY']}",
-    "testnet2": f"https://starknet-goerli2.infura.io/v3/{os.environ['RPC_KEY']}",
+    "mainnet": f"https://starknet-mainnet.infura.io/v3/{os.getenv('RPC_KEY')}",
+    "testnet": f"https://starknet-goerli.infura.io/v3/{os.getenv('RPC_KEY')}",
+    "testnet2": f"https://starknet-goerli2.infura.io/v3/{os.getenv('RPC_KEY')}",
     "devnet": "http://127.0.0.1:5050/rpc",
     "sharingan": "http://0.0.0.0:9933",
 }
