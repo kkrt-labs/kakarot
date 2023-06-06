@@ -26,6 +26,7 @@ from scripts.constants import (
     CHAIN_ID,
     DEPLOYMENTS_DIR,
     ETH_TOKEN_ADDRESS,
+    GATEWAY_CLIENT,
     NETWORK,
     PRIVATE_KEY,
     RPC_CLIENT,
@@ -138,7 +139,11 @@ async def get_starknet_account(
                 await RPC_CLIENT.call_contract(call=call, block_hash="latest")
             )[0]
         except Exception as err:
-            if err.message == "Client failed with code 21: Invalid message selector.":
+            if (
+                err.message == "Client failed with code 40: Contract error."
+                or err.message
+                == "Client failed with code 21: Invalid message selector."
+            ):
                 continue
             else:
                 raise err
@@ -150,7 +155,7 @@ async def get_starknet_account(
 
     return Account(
         address=address,
-        client=RPC_CLIENT,
+        client=GATEWAY_CLIENT,  # TODO: use RPC_CLIENT when RPC wait_for_tx is fixed
         chain=CHAIN_ID,
         key_pair=key_pair,
     )
@@ -276,11 +281,6 @@ def dump_deployments(deployments):
 
 def get_deployments():
     return json.load(open(DEPLOYMENTS_DIR / "deployments.json", "r"))
-
-
-def dump_artifacts(artifacts):
-    for contract_name, artifact in artifacts.items():
-        (BUILD_DIR / f"{contract_name}.json").write_text(artifact)
 
 
 def get_artifact(contract_name):
