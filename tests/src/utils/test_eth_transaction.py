@@ -3,6 +3,7 @@ import random
 import pytest
 import pytest_asyncio
 from eth_account.account import Account
+from starkware.starknet.testing.starknet import Starknet
 
 from tests.utils.constants import TRANSACTIONS
 from tests.utils.errors import kakarot_error
@@ -10,12 +11,13 @@ from tests.utils.helpers import generate_random_evm_address, generate_random_pri
 
 
 @pytest_asyncio.fixture(scope="module")
-async def eth_transaction(starknet):
-    return await starknet.deploy(
+async def eth_transaction(starknet: Starknet):
+    class_hash = await starknet.deprecated_declare(
         source="./tests/src/utils/test_eth_transaction.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
     )
+    return await starknet.deploy(class_hash=class_hash.class_hash)
 
 
 @pytest.mark.asyncio

@@ -1,9 +1,8 @@
 import functools
 import json
 import logging
-import os
-import re
 import subprocess
+import time
 from pathlib import Path
 from typing import Optional, Union
 
@@ -12,24 +11,24 @@ from caseconverter import snakecase
 from starknet_py.contract import Contract
 from starknet_py.net.account.account import Account
 from starknet_py.net.client import Client
-from starknet_py.net.client_models import Call
+from starknet_py.net.client_models import Call, TransactionStatus
 from starknet_py.net.models import Address
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starknet_py.proxy.contract_abi_resolver import ProxyConfig
 from starknet_py.proxy.proxy_check import ProxyCheck
 from starkware.starknet.public.abi import get_selector_from_name
-from starkware.starknet.wallets.account import DEFAULT_ACCOUNT_DIR
 
 from scripts.constants import (
     ACCOUNT_ADDRESS,
     BUILD_DIR,
     CHAIN_ID,
+    CONTRACTS,
     DEPLOYMENTS_DIR,
     ETH_TOKEN_ADDRESS,
-    GATEWAY_CLIENT,
     NETWORK,
     PRIVATE_KEY,
-    STARKNET_NETWORK,
+    RPC_CLIENT,
+    SOURCE_DIR,
     STARKSCAN_URL,
 )
 
@@ -43,70 +42,6 @@ def int_to_uint256(value):
     low = value & ((1 << 128) - 1)
     high = value >> 128
     return {"low": low, "high": high}
-
-
-async def create_account():
-    env = os.environ.copy()
-    env[
-        "STARKNET_WALLET"
-    ] = "starkware.starknet.wallets.open_zeppelin.OpenZeppelinAccount"
-    env["STARKNET_NETWORK"] = STARKNET_NETWORK
-    logger.info(
-        f"⏳ Creating account on network {STARKNET_NETWORK} with {GATEWAY_CLIENT.net}"
-    )
-    output = subprocess.run(
-        ["starknet", "new_account", "--account", "kakarot"],
-        env=env,
-        capture_output=True,
-    )
-    if output.returncode != 0:
-        raise Exception(output.stderr.decode())
-    account_address = re.search(
-        r"account address: (.*)", (output.stdout.decode() + output.stderr.decode()).lower()  # type: ignore
-    )[1]
-    logger.info(f"✅ Starknet account created locally with address {account_address}")
-    input(f"Send ETH to {account_address} and press enter to continue")
-    output = subprocess.run(
-        [
-            "starknet",
-            "deploy_account",
-            "--account",
-            "kakarot",
-            "--gateway_url",
-            f"{GATEWAY_CLIENT.net}/gateway",
-            "--feeder_gateway_url",
-            f"{GATEWAY_CLIENT.net}/feeder_gateway",
-        ],
-        env=env,
-        capture_output=True,
-    )
-    if output.returncode != 0:
-        raise Exception(output.stderr.decode())
-    transaction_hash = re.search(
-        r"transaction hash: (.*)", (output.stdout.decode() + output.stderr.decode()).lower()  # type: ignore
-    )[1]
-    await GATEWAY_CLIENT.wait_for_tx(transaction_hash)
-
-
-async def get_default_account() -> Account:
-    accounts = json.load(
-        open(list(Path(DEFAULT_ACCOUNT_DIR).expanduser().glob("*.json"))[0])
-    )
-    account = accounts.get(STARKNET_NETWORK, {}).get("kakarot")
-    if account is None:
-        await create_account()
-
-    logger.info(f"ℹ️  Using account {account['address']:x}")
-
-    return Account(
-        address=account["address"],
-        client=GATEWAY_CLIENT,
-        chain=CHAIN_ID,
-        key_pair=KeyPair(
-            private_key=int(account["private_key"], 16),
-            public_key=int(account["public_key"], 16),
-        ),
-    )
 
 
 async def get_starknet_account(
@@ -135,12 +70,13 @@ async def get_starknet_account(
                 calldata=[],
             )
             public_key = (
-                await GATEWAY_CLIENT.call_contract(call=call, block_hash="pending")
+                await RPC_CLIENT.call_contract(call=call, block_hash="latest")
             )[0]
         except Exception as err:
             if (
-                json.loads(re.findall("{.*}", err.args[0], re.DOTALL)[0])["code"]
-                == "StarknetErrorCode.ENTRY_POINT_NOT_FOUND_IN_CONTRACT"
+                err.message == "Client failed with code 40: Contract error."
+                or err.message
+                == "Client failed with code 21: Invalid message selector."
             ):
                 continue
             else:
@@ -153,7 +89,7 @@ async def get_starknet_account(
 
     return Account(
         address=address,
-        client=GATEWAY_CLIENT,
+        client=RPC_CLIENT,
         chain=CHAIN_ID,
         key_pair=key_pair,
     )
@@ -210,7 +146,7 @@ async def fund_address(address: Union[int, str], amount: float):
     amount = amount * 1e18
     if NETWORK == "devnet":
         response = requests.post(
-            f"{GATEWAY_CLIENT.net}/mint",
+            f"http://127.0.0.1:5050/mint",
             json={"address": hex(address), "amount": amount},
         )
         if response.status_code != 200:
@@ -227,7 +163,7 @@ async def fund_address(address: Union[int, str], amount: float):
         tx = await eth_contract.functions["transfer"].invoke(
             address, int_to_uint256(amount), max_fee=int(1e17)
         )
-        await tx.wait_for_acceptance()
+        await wait_for_transaction(tx.hash)
         logger.info(
             f"{amount / 1e18} ETH sent from {hex(account.address)} to {hex(address)}"
         )
@@ -281,11 +217,6 @@ def get_deployments():
     return json.load(open(DEPLOYMENTS_DIR / "deployments.json", "r"))
 
 
-def dump_artifacts(artifacts):
-    for contract_name, artifact in artifacts.items():
-        (BUILD_DIR / f"{contract_name}.json").write_text(artifact)
-
-
 def get_artifact(contract_name):
     return BUILD_DIR / f"{contract_name}.json"
 
@@ -298,6 +229,24 @@ def get_tx_url(tx_hash: int) -> str:
     return f"{STARKSCAN_URL}/tx/0x{tx_hash:064x}"
 
 
+def compile_contract(contract):
+    output = subprocess.run(
+        [
+            "starknet-compile-deprecated",
+            CONTRACTS[contract["contract_name"]],
+            "--output",
+            BUILD_DIR / f"{contract['contract_name']}.json",
+            "--cairo_path",
+            str(SOURCE_DIR),
+            *(["--account_contract"] if contract["is_account_contract"] else []),
+            *(["--disable_hint_validation"] if NETWORK == "devnet" else []),
+        ],
+        capture_output=True,
+    )
+    if output.returncode != 0:
+        raise RuntimeError(output.stderr)
+
+
 async def declare(contract_name):
     logger.info(f"ℹ️  Declaring {contract_name}")
     account = await get_starknet_account()
@@ -307,7 +256,7 @@ async def declare(contract_name):
     )
     resp = await account.client.declare(transaction=declare_transaction)
     logger.info(f"⏳ Waiting for tx {get_tx_url(resp.transaction_hash)}")
-    await account.client.wait_for_tx(resp.transaction_hash, check_interval=15)
+    await wait_for_transaction(resp.transaction_hash)
     logger.info(f"✅ {contract_name} class hash: {hex(resp.class_hash)}")
     return resp.class_hash
 
@@ -324,7 +273,7 @@ async def deploy(contract_name, *args):
         max_fee=int(1e17),
     )
     logger.info(f"⏳ Waiting for tx {get_tx_url(deploy_result.hash)}")
-    await deploy_result.wait_for_acceptance(check_interval=15)
+    await wait_for_transaction(deploy_result.hash)
     logger.info(
         f"✅ {contract_name} deployed at: {hex(deploy_result.deployed_contract.address)}"
     )
@@ -347,7 +296,7 @@ async def invoke(contract_name, function_name, *inputs, address=None):
     logger.info(f"ℹ️  Invoking {contract_name}.{function_name}({json.dumps(inputs)})")
     response = await account.execute(call, max_fee=int(1e17))
     logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
-    await account.client.wait_for_tx(response.transaction_hash, check_interval=15)
+    await wait_for_transaction(response.transaction_hash)
     logger.info(
         f"✅ {contract_name}.{function_name} invoked at tx: %s",
         hex(response.transaction_hash),
@@ -366,6 +315,25 @@ async def call(contract_name, function_name, *inputs, address=None):
     return await contract.functions[function_name].call(*inputs)
 
 
-@functools.wraps(GATEWAY_CLIENT.wait_for_tx)
+# TODO: use RPC_CLIENT when RPC wait_for_tx is fixed, see https://github.com/kkrt-labs/kakarot/issues/586
+@functools.wraps(RPC_CLIENT.wait_for_tx)
 async def wait_for_transaction(*args, **kwargs):
-    return await GATEWAY_CLIENT.wait_for_tx(*args, **kwargs)
+    check_interval = kwargs.get("check_interval", 15)
+    transaction_hash = args[0] if args else kwargs["tx_hash"]
+    status = TransactionStatus.NOT_RECEIVED
+    while status not in [TransactionStatus.ACCEPTED_ON_L2, TransactionStatus.REJECTED]:
+        logger.info(f"ℹ️  Sleeping for {check_interval}s")
+        time.sleep(check_interval)
+        response = requests.post(
+            RPC_CLIENT.url,
+            json={
+                "jsonrpc": "2.0",
+                "method": f"starknet_getTransactionReceipt",
+                "params": {"transaction_hash": hex(transaction_hash)},
+                "id": 0,
+            },
+        )
+        status = json.loads(response.text).get("result", {}).get("status")
+        if status is not None:
+            status = TransactionStatus(status)
+            logger.info(f"ℹ️  Current status: {status.value}")

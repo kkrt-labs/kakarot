@@ -44,7 +44,8 @@ It is a work in progress, and it is not ready for production.
 
 ## Supported opcodes
 
-We support 100% of EVM [opcodes](docs/supported_opcodes.md) and 8 out of 9 precompiles.
+We support 100% of EVM [opcodes](docs/supported_opcodes.md) and 8 out of 9
+precompiles.
 
 ## Documentation
 
@@ -66,8 +67,6 @@ We support 100% of EVM [opcodes](docs/supported_opcodes.md) and 8 out of 9 preco
 - ❌ Kakarot is not a compiler. Check out
   [Warp](https://github.com/NethermindEth/warp) for a Solidity -> Cairo
   transpiler
-
-
 
 <!-- TODO: Add updated sequence diagram for different operations on Kakarot when it is up-to-date
 ### Main execution flow
@@ -195,7 +194,7 @@ The Kakarot EVM can be deployed on StarkNet using a python script utilizing the
 First we need to declare some environment variables that are required for the
 deployment.
 
-Start by copying the `.env_example` file located in the root directory (`.files`
+Start by copying the `.env.example` file located in the root directory (`.files`
 are usually hidden by default in most explorers. You should be able to see the
 file in your IDE).
 

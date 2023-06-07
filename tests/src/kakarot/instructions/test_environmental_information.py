@@ -10,14 +10,17 @@ from starkware.starknet.testing.starknet import Starknet
 async def environmental_information(
     starknet: Starknet, contract_account_class, account_proxy_class
 ):
-    return await starknet.deploy(
+    class_hash = await starknet.deprecated_declare(
         source="./tests/src/kakarot/instructions/test_environmental_information.cairo",
         cairo_path=["src"],
+        disable_hint_validation=True,
+    )
+    return await starknet.deploy(
+        class_hash=class_hash.class_hash,
         constructor_calldata=[
             contract_account_class.class_hash,
             account_proxy_class.class_hash,
         ],
-        disable_hint_validation=True,
     )
 
 
@@ -89,7 +92,6 @@ class TestEnvironmentalInformation:
         assert memory_result == expected
 
     async def test_gasprice(self, environmental_information):
-
         await environmental_information.test__exec_gasprice().call()
 
     @pytest.mark.skip("skipped because not handled currently")

@@ -127,26 +127,43 @@ namespace Precompiles {
 
         // call precompile address
         jmp rel offset;
-        call not_implemented_precompile;  // 0x0
+        call unknown_precompile;  // 0x0
         ret;
         call PrecompileEcRecover.run;  // 0x1
         ret;
-        call PrecompileSHA256.run;  // 0x2
+        call not_whitelisted_precompile;  // 0x2
         ret;
         call PrecompileRIPEMD160.run;  // 0x3
         ret;
         call PrecompileDataCopy.run;  // 0x4
         ret;
-        call not_implemented_precompile;  // 0x5
+        call not_whitelisted_precompile;  // 0x5
         ret;
-        call not_implemented_precompile;  // 0x6
+        call not_whitelisted_precompile;  // 0x6
         ret;
-        call not_implemented_precompile;  // 0x7
+        call not_whitelisted_precompile;  // 0x7
         ret;
         call not_implemented_precompile;  // 0x8
         ret;
         call PrecompileBlake2f.run;  // 0x9
         ret;
+    }
+
+    // @notice A placeholder for precompile that are not implemented yet.
+    // @dev Halts execution.
+    // @param address The address.
+    // @param _input_len The length of the input array.
+    // @param _input The input array.
+    func unknown_precompile{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(address: felt, _input_len: felt, _input: felt*) {
+        with_attr error_message("Kakarot: UnknownPrecompile {address}") {
+            assert 0 = 1;
+        }
+        return ();
     }
 
     // @notice A placeholder for precompile that are not implemented yet.
@@ -161,6 +178,23 @@ namespace Precompiles {
         bitwise_ptr: BitwiseBuiltin*,
     }(address: felt, _input_len: felt, _input: felt*) {
         with_attr error_message("Kakarot: NotImplementedPrecompile {address}") {
+            assert 0 = 1;
+        }
+        return ();
+    }
+
+    // @notice A placeholder for precompile that are not implemented yet.
+    // @dev Halts execution.
+    // @param address The address.
+    // @param _input_len The length of the input array.
+    // @param _input The input array.
+    func not_whitelisted_precompile{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(address: felt, _input_len: felt, _input: felt*) {
+        with_attr error_message("Kakarot: NotWhitelistedPrecompile {address}") {
             assert 0 = 1;
         }
         return ();

@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 from contextlib import contextmanager
 from functools import wraps
 from pathlib import Path
@@ -168,8 +167,8 @@ class traceit:
             if args:
                 source = args[0]
             else:
-                source = kwargs["source"]
-            traceit.trace(contract, Path(source).stem)
+                source = kwargs["class_hash"]
+            traceit.trace(contract, hex(source))
             return contract
 
         return traced_deploy
@@ -205,16 +204,15 @@ def reports():
     return (
         (
             pd.DataFrame(_time_report)
-            .assign(
-                contract=lambda df: df.kwargs.map(lambda kw: Path(kw["source"]).stem)
-            )
+            .assign(contract=lambda df: df.kwargs.map(lambda kw: hex(kw["class_hash"])))
             .reindex(columns=["contract", "name", "duration", "args", "kwargs"])
         ),
-        (
+        pd.DataFrame(_resources_report)
+        if not _resources_report
+        else (
             pd.DataFrame(_resources_report)
             .assign(context=lambda df: df.get("context", ""))
             .fillna({"context": ""})
-            .sort_values(["n_steps"], ascending=False)
             .fillna(0)
             .pipe(
                 lambda df: df.reindex(
@@ -231,12 +229,14 @@ def reports():
                                 "kwargs",
                             ],
                             axis=1,
+                            errors="ignore",
                         ).columns,
                         "args",
                         "kwargs",
                     ]
                 )
             )
+            .sort_values(["n_steps"], ascending=False)
         ),
     )
 
@@ -278,7 +278,7 @@ def dump_coverage(path: Union[str, Path], files: List[CoverageFile]):
     json.dump(
         {
             "coverage": {
-                str(Path(file.name).absolute().relative_to(Path(os.getcwd()))): {
+                file.name.split("__main__/")[-1]: {
                     **{l: 0 for l in file.missed},
                     **{l: 1 for l in file.covered},
                 }

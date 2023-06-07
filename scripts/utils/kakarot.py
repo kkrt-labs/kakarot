@@ -23,10 +23,14 @@ from scripts.constants import (
     DEPLOYMENTS_DIR,
     EVM_ADDRESS,
     EVM_PRIVATE_KEY,
-    GATEWAY_CLIENT,
     KAKAROT_CHAIN_ID,
+    RPC_CLIENT,
 )
-from scripts.utils.starknet import deploy_and_fund_evm_address, get_tx_url
+from scripts.utils.starknet import (
+    deploy_and_fund_evm_address,
+    get_tx_url,
+    wait_for_transaction,
+)
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -79,7 +83,7 @@ async def get_contract_at_address(
     evm_address = evm_address if isinstance(evm_address, str) else hex(evm_address)
     evm_address = Web3.to_checksum_address(evm_address)
 
-    kakarot_contract = await Contract.from_address(KAKAROT_ADDRESS, GATEWAY_CLIENT)
+    kakarot_contract = await Contract.from_address(KAKAROT_ADDRESS, RPC_CLIENT)
     starknet_address = (
         await kakarot_contract.functions["compute_starknet_address"].call(
             int(evm_address, 16)
@@ -102,7 +106,7 @@ async def deploy_solidity_contract(
 
     deploy_bytecode = contract.bytecode
     tx_hash = await deploy_contract_account(deploy_bytecode)
-    receipt = await GATEWAY_CLIENT.get_transaction_receipt(tx_hash=tx_hash)
+    receipt = await RPC_CLIENT.get_transaction_receipt(tx_hash=tx_hash)
 
     if len(receipt.events) != 4:
         raise ValueError(
@@ -137,7 +141,7 @@ def wrap_kakarot(contract: Web3Contract, fun: str, evm_address: str):
                 len(evm_calldata),
                 *evm_calldata,
             ]
-            result = await GATEWAY_CLIENT.call_contract(
+            result = await RPC_CLIENT.call_contract(
                 Call(
                     to_addr=int(KAKAROT_ADDRESS, 16),
                     selector=get_selector_from_name("eth_call"),
@@ -161,7 +165,7 @@ async def deserialize_kakarot_execute_output(output: list[int]):
     if len(output) == 0:
         raise ValueError(f"No output provided for deserialization")
 
-    kakarot_contract = await Contract.from_address(KAKAROT_ADDRESS, GATEWAY_CLIENT)
+    kakarot_contract = await Contract.from_address(KAKAROT_ADDRESS, RPC_CLIENT)
     kakarot_abi = AbiParser([kakarot_contract.functions["eth_call"].abi]).parse()
     function_parser = serializer_for_function(kakarot_abi.functions["eth_call"])
     return function_parser.deserialize(output)
@@ -177,7 +181,7 @@ def get_contract_method_calldata(
 
 async def contract_exists(address: int) -> bool:
     try:
-        await GATEWAY_CLIENT.get_code(address)
+        await RPC_CLIENT.get_class_at(address)
         return True
     except ContractNotFoundError:
         return False
@@ -190,7 +194,7 @@ async def get_evm_account(
     address = int(address or EVM_ADDRESS, 16)
     private_key = int(private_key or EVM_PRIVATE_KEY, 16)
 
-    kakarot_contract = await Contract.from_address(KAKAROT_ADDRESS, GATEWAY_CLIENT)
+    kakarot_contract = await Contract.from_address(KAKAROT_ADDRESS, RPC_CLIENT)
     starknet_address = (
         await kakarot_contract.functions["compute_starknet_address"].call(address)
     ).contract_address
@@ -200,7 +204,7 @@ async def get_evm_account(
 
     return Account(
         address=starknet_address,
-        client=GATEWAY_CLIENT,
+        client=RPC_CLIENT,
         chain=CHAIN_ID,
         key_pair=KeyPair(private_key, address),
     )
@@ -227,9 +231,7 @@ async def deploy_contract_account(
         max_fee=int(1e17),
     )
     logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
-    await evm_account.client.wait_for_tx(
-        tx_hash=response.transaction_hash, check_interval=15
-    )
+    await wait_for_transaction(tx_hash=response.transaction_hash)
     return response.transaction_hash
 
 
@@ -263,9 +265,7 @@ async def eth_send_transaction(
         max_fee=int(1e17),
     )
     logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
-    await evm_account.client.wait_for_tx(
-        tx_hash=response.transaction_hash, check_interval=15
-    )
+    await wait_for_transaction(tx_hash=response.transaction_hash)
 
 
 def get_payload(

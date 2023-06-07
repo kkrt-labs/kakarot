@@ -20,10 +20,13 @@ def blockhashes() -> Dict[str, Union[Dict[str, int], int]]:
 @pytest_asyncio.fixture(scope="session")
 async def blockhash_registry(starknet: Starknet, blockhashes: dict):
     owner = 1
-    registry = await starknet.deploy(
+    class_hash = await starknet.deprecated_declare(
         source="./src/kakarot/registry/blockhash/blockhash_registry.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
+    )
+    registry = await starknet.deploy(
+        class_hash=class_hash.class_hash,
         constructor_calldata=[owner],
     )
     await registry.set_blockhashes(

@@ -13,11 +13,12 @@ random.seed(0)
 
 @pytest_asyncio.fixture(scope="module")
 async def contract_account(starknet: Starknet, kakarot: StarknetContract):
-    contract = await starknet.deploy(
+    class_hash = await starknet.deprecated_declare(
         source="./src/kakarot/accounts/contract/contract_account.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
     )
+    contract = await starknet.deploy(class_hash=class_hash.class_hash)
     await contract.initialize(kakarot.contract_address, 1).execute(
         caller_address=kakarot.contract_address
     )

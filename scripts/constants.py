@@ -5,7 +5,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from eth_keys import keys
-from starknet_py.net.gateway_client import GatewayClient
+from starknet_py.net.full_node_client import FullNodeClient
 
 load_dotenv()
 
@@ -23,31 +23,31 @@ NETWORK = (
     if re.match(r".*(testnet|goerli)$", NETWORK, flags=re.I)
     else "testnet2"
     if re.match(r".*(testnet|goerli)-?2$", NETWORK, flags=re.I)
-    else "devnet"
-    if re.match(r".*(devnet|local).*", NETWORK, flags=re.I)
     else "mainnet"
+    if re.match(r".*(mainnet).*", NETWORK, flags=re.I)
+    else "sharingan"
+    if re.match(r".*(sharingan).*", NETWORK, flags=re.I)
+    else "devnet"
 )
-GATEWAY_URLS = {
-    "mainnet": "https://alpha-mainnet.starknet.io",
-    "testnet": "https://alpha4.starknet.io",
-    "testnet2": "https://alpha4-2.starknet.io",
-    "devnet": "http://127.0.0.1:5050",
-}
-GATEWAY_CLIENT = GatewayClient(net=GATEWAY_URLS[NETWORK])
-STARKNET_NETWORKS = {
-    "mainnet": "alpha-mainnet",
-    "testnet": "alpha-goerli",
-    "testnet2": "alpha-goerli2",
-    "devnet": "alpha-goerli",
-}
-STARKNET_NETWORK = STARKNET_NETWORKS[NETWORK]
 STARKSCAN_URLS = {
     "mainnet": "https://starkscan.co",
     "testnet": "https://testnet.starkscan.co",
     "testnet2": "https://testnet-2.starkscan.co",
     "devnet": "https://devnet.starkscan.co",
+    "sharingan": "https://starknet-madara.netlify.app/#/explorer/query",
 }
 STARKSCAN_URL = STARKSCAN_URLS[NETWORK]
+
+if not os.getenv("RPC_KEY") and NETWORK in ["mainnet", "testnet", "testnet2"]:
+    raise ValueError(f"RPC_KEY env variable is required when targeting {NETWORK}")
+RPC_URLS = {
+    "mainnet": f"https://starknet-mainnet.infura.io/v3/{os.getenv('RPC_KEY')}",
+    "testnet": f"https://starknet-goerli.infura.io/v3/{os.getenv('RPC_KEY')}",
+    "testnet2": f"https://starknet-goerli2.infura.io/v3/{os.getenv('RPC_KEY')}",
+    "devnet": "http://127.0.0.1:5050/rpc",
+    "sharingan": os.getenv("SHARINGAN_RPC_URL"),
+}
+RPC_CLIENT = FullNodeClient(node_url=RPC_URLS[NETWORK])
 
 
 class ChainId(Enum):
@@ -55,6 +55,7 @@ class ChainId(Enum):
     testnet = int.from_bytes(b"SN_GOERLI", "big")
     testnet2 = int.from_bytes(b"SN_GOERLI2", "big")
     devnet = int.from_bytes(b"SN_GOERLI", "big")
+    sharingan = int.from_bytes(b"SN_GOERLI", "big")
 
 
 BUILD_DIR = Path("build")
@@ -73,6 +74,7 @@ PRIVATE_KEY = os.environ.get(f"{NETWORK.upper()}_PRIVATE_KEY") or os.environ.get
 DEPLOYMENTS_DIR = Path("deployments") / NETWORK
 DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
 
+# TODO: get CHAIN_ID from RPC endpoint when starknet-py doesn't expect an enum
 CHAIN_ID = getattr(ChainId, NETWORK)
 KAKAROT_CHAIN_ID = 1263227476  # KKRT (0x4b4b5254) in ASCII
 COMPILED_CONTRACTS = [

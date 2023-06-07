@@ -1,8 +1,9 @@
+# %% Imports
 import logging
 from asyncio import run
 from math import ceil, log
 
-from scripts.constants import CHAIN_ID, COMPILED_CONTRACTS, EVM_ADDRESS, GATEWAY_CLIENT
+from scripts.constants import CHAIN_ID, COMPILED_CONTRACTS, EVM_ADDRESS, RPC_CLIENT
 from scripts.utils.starknet import (
     declare,
     deploy,
@@ -20,10 +21,12 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
+# %% Main
 async def main():
+    # %% Declarations
     logger.info(
         f"ℹ️  Connected to CHAIN_ID {CHAIN_ID.value.to_bytes(ceil(log(CHAIN_ID.value, 256)), 'big')} "
-        f"with GATEWAY {GATEWAY_CLIENT.net}"
+        f"with RPC {RPC_CLIENT.url}"
     )
     account = await get_starknet_account()
     logger.info(f"ℹ️  Using account {hex(account.address)} as deployer")
@@ -33,8 +36,9 @@ async def main():
         for contract in COMPILED_CONTRACTS
     }
     dump_declarations(class_hash)
-    class_hash = get_declarations()
 
+    # %% Deployments
+    class_hash = get_declarations()
     eth = await get_eth_contract()
 
     deployments = {}

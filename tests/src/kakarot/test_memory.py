@@ -1,14 +1,16 @@
 import pytest
 import pytest_asyncio
+from starkware.starknet.testing.starknet import Starknet
 
 
 @pytest_asyncio.fixture(scope="module")
-async def memory(starknet):
-    return await starknet.deploy(
+async def memory(starknet: Starknet):
+    class_hash = await starknet.deprecated_declare(
         source="./tests/src/kakarot/test_memory.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
     )
+    return await starknet.deploy(class_hash=class_hash.class_hash)
 
 
 @pytest.mark.asyncio

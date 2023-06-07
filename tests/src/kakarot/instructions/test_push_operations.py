@@ -9,11 +9,12 @@ from tests.utils.uint256 import int_to_uint256
 
 @pytest_asyncio.fixture(scope="module")
 async def push_operations(starknet: Starknet):
-    return await starknet.deploy(
+    class_hash = await starknet.deprecated_declare(
         source="./tests/src/kakarot/instructions/test_push_operations.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
     )
+    return await starknet.deploy(class_hash=class_hash.class_hash)
 
 
 @pytest.mark.asyncio

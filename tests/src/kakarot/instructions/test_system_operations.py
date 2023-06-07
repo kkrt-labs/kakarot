@@ -17,15 +17,18 @@ ZERO_ACCOUNT = "0x0000000000000000000000000000000000000000"
 async def system_operations(
     starknet: Starknet, eth, contract_account_class, account_proxy_class
 ):
-    return await starknet.deploy(
+    class_hash = await starknet.deprecated_declare(
         source="./tests/src/kakarot/instructions/test_system_operations.cairo",
         cairo_path=["src"],
+        disable_hint_validation=True,
+    )
+    return await starknet.deploy(
+        class_hash=class_hash.class_hash,
         constructor_calldata=[
             eth.contract_address,
             contract_account_class.class_hash,
             account_proxy_class.class_hash,
         ],
-        disable_hint_validation=True,
     )
 
 

@@ -11,10 +11,13 @@ async def block_information(
     starknet: Starknet, blockhashes: dict, blockhash_registry: StarknetContract
 ):
     block_number = max(blockhashes["last_256_blocks"].keys())
-    return await starknet.deploy(
+    class_hash = await starknet.deprecated_declare(
         source="./tests/src/kakarot/instructions/test_block_information.cairo",
         cairo_path=["src"],
         disable_hint_validation=True,
+    )
+    return await starknet.deploy(
+        class_hash=class_hash.class_hash,
         constructor_calldata=[
             *int_to_uint256(int(block_number)),
             blockhashes["last_256_blocks"][block_number],
