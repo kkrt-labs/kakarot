@@ -3,7 +3,13 @@ import logging
 from asyncio import run
 from math import ceil, log
 
-from scripts.constants import CHAIN_ID, COMPILED_CONTRACTS, EVM_ADDRESS, RPC_CLIENT
+from scripts.constants import (
+    CHAIN_ID,
+    COMPILED_CONTRACTS,
+    ETH_TOKEN_ADDRESS,
+    EVM_ADDRESS,
+    RPC_CLIENT,
+)
 from scripts.utils.starknet import (
     declare,
     deploy,
@@ -11,7 +17,6 @@ from scripts.utils.starknet import (
     dump_declarations,
     dump_deployments,
     get_declarations,
-    get_eth_contract,
     get_starknet_account,
     invoke,
 )
@@ -39,13 +44,12 @@ async def main():
 
     # %% Deployments
     class_hash = get_declarations()
-    eth = await get_eth_contract()
 
     deployments = {}
     deployments["kakarot"] = await deploy(
         "kakarot",
         account.address,  # owner
-        eth.address,  # native_token_address_
+        ETH_TOKEN_ADDRESS,  # native_token_address_
         class_hash["contract_account"],  # contract_account_class_hash_
         class_hash["externally_owned_account"],  # externally_owned_account_class_hash
         class_hash["proxy"],  # account_proxy_class_hash

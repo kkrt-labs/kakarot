@@ -17,7 +17,8 @@ EVM_ADDRESS = (
         bytes.fromhex(EVM_PRIVATE_KEY[2:])
     ).public_key.to_checksum_address()
 )
-NETWORK = os.getenv("STARKNET_NETWORK", "starknet-devnet")
+
+NETWORK = os.getenv("STARKNET_NETWORK", "katana")
 NETWORK = (
     "testnet"
     if re.match(r".*(testnet|goerli)$", NETWORK, flags=re.I)
@@ -27,6 +28,10 @@ NETWORK = (
     if re.match(r".*(mainnet).*", NETWORK, flags=re.I)
     else "sharingan"
     if re.match(r".*(sharingan).*", NETWORK, flags=re.I)
+    else "katana"
+    if re.match(r".*(katana).*", NETWORK, flags=re.I)
+    else "madara"
+    if re.match(r".*(madara).*", NETWORK, flags=re.I)
     else "devnet"
 )
 STARKSCAN_URLS = {
@@ -35,6 +40,8 @@ STARKSCAN_URLS = {
     "testnet2": "https://testnet-2.starkscan.co",
     "devnet": "https://devnet.starkscan.co",
     "sharingan": "https://starknet-madara.netlify.app/#/explorer/query",
+    "katana": "",
+    "madara": "",
 }
 STARKSCAN_URL = STARKSCAN_URLS[NETWORK]
 
@@ -46,6 +53,8 @@ RPC_URLS = {
     "testnet2": f"https://starknet-goerli2.infura.io/v3/{os.getenv('RPC_KEY')}",
     "devnet": "http://127.0.0.1:5050/rpc",
     "sharingan": os.getenv("SHARINGAN_RPC_URL"),
+    "katana": "http://127.0.0.1:5050",
+    "madara": "http://127.0.0.1:9944",
 }
 RPC_CLIENT = FullNodeClient(node_url=RPC_URLS[NETWORK])
 
@@ -56,6 +65,8 @@ class ChainId(Enum):
     testnet2 = int.from_bytes(b"SN_GOERLI2", "big")
     devnet = int.from_bytes(b"SN_GOERLI", "big")
     sharingan = int.from_bytes(b"SN_GOERLI", "big")
+    katana = int.from_bytes(b"KATANA", "big")
+    madara = int.from_bytes(b"SN_GOERLI", "big")
 
 
 BUILD_DIR = Path("build")

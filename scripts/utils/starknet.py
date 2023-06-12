@@ -1,18 +1,32 @@
+import base64
 import functools
+import gzip
 import json
 import logging
 import subprocess
 import time
+from copy import deepcopy
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Union, cast
 
 import requests
 from caseconverter import snakecase
+from marshmallow import EXCLUDE
+from starknet_py.common import create_compiled_contract
 from starknet_py.contract import Contract
-from starknet_py.net.account.account import Account
+from starknet_py.hash.transaction import compute_declare_transaction_hash
+from starknet_py.hash.utils import message_signature
+from starknet_py.net.account.account import Account, _add_signature_to_transaction
 from starknet_py.net.client import Client
-from starknet_py.net.client_models import Call, TransactionStatus
+from starknet_py.net.client_models import (
+    Call,
+    DeclareTransactionResponse,
+    TransactionStatus,
+)
+from starknet_py.net.full_node_client import _create_broadcasted_txn
 from starknet_py.net.models import Address
+from starknet_py.net.models.transaction import Declare
+from starknet_py.net.schemas.rpc import DeclareTransactionResponseSchema
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starknet_py.proxy.contract_abi_resolver import ProxyConfig
 from starknet_py.proxy.proxy_check import ProxyCheck
@@ -82,9 +96,14 @@ async def get_starknet_account(
             else:
                 raise err
 
-    if key_pair.public_key != public_key:
-        raise ValueError(
-            f"Public key of account 0x{address:064x} is not consistent with provided private key"
+    if public_key is not None:
+        if key_pair.public_key != public_key:
+            raise ValueError(
+                f"Public key of account 0x{address:064x} is not consistent with provided private key"
+            )
+    else:
+        logger.warning(
+            f"⚠️ Unable to verify public key for account at address 0x{address:x}"
         )
 
     return Account(
@@ -238,6 +257,7 @@ def compile_contract(contract):
             BUILD_DIR / f"{contract['contract_name']}.json",
             "--cairo_path",
             str(SOURCE_DIR),
+            "--no_debug_info",
             *(["--account_contract"] if contract["is_account_contract"] else []),
             *(["--disable_hint_validation"] if NETWORK == "devnet" else []),
         ],
@@ -246,15 +266,78 @@ def compile_contract(contract):
     if output.returncode != 0:
         raise RuntimeError(output.stderr)
 
+    def _convert_offset_to_hex(obj):
+        if isinstance(obj, list):
+            for i in range(len(obj)):
+                obj[i] = _convert_offset_to_hex(obj[i])
+        elif isinstance(obj, dict):
+            for key in obj:
+                if obj.get(key) is not None:
+                    obj[key] = _convert_offset_to_hex(obj[key])
+        elif isinstance(obj, int) and obj >= 0:
+            obj = hex(obj)
+        return obj
+
+    compiled = json.loads((BUILD_DIR / f"{contract['contract_name']}.json").read_text())
+    compiled = {
+        **compiled,
+        "entry_points_by_type": _convert_offset_to_hex(
+            compiled["entry_points_by_type"]
+        ),
+    }
+    json.dump(
+        compiled, open(BUILD_DIR / f"{contract['contract_name']}.json", "w"), indent=2
+    )
+
+
+def compress_program(program):
+    compressed_program = json.dumps(program)
+    compressed_program = gzip.compress(data=compressed_program.encode("ascii"))
+    compressed_program = base64.b64encode(compressed_program)
+    return compressed_program.decode("ascii")
+
+
+def decompress_program(compressed_program):
+    program = base64.b64decode(compressed_program.encode("ascii"))
+    program = gzip.decompress(data=program)
+    return json.loads(program.decode("ascii"))
+
 
 async def declare(contract_name):
     logger.info(f"ℹ️  Declaring {contract_name}")
     account = await get_starknet_account()
     artifact = get_artifact(contract_name)
-    declare_transaction = await account.sign_declare_transaction(
-        compiled_contract=Path(artifact).read_text(), max_fee=int(1e17)
+    compiled_contract = Path(artifact).read_text()
+    contract_class = create_compiled_contract(compiled_contract=compiled_contract)
+    transaction = Declare(
+        contract_class=contract_class,
+        sender_address=account.address,
+        max_fee=int(1e17),
+        signature=[],
+        nonce=await account.get_nonce(),
+        version=1,
     )
-    resp = await account.client.declare(transaction=declare_transaction)
+    tx_hash = compute_declare_transaction_hash(
+        contract_class=deepcopy(transaction.contract_class),
+        chain_id=account.signer.chain_id.value,
+        sender_address=account.address,
+        max_fee=transaction.max_fee,
+        version=transaction.version,
+        nonce=transaction.nonce,
+    )
+    signature = message_signature(msg_hash=tx_hash, priv_key=account.signer.private_key)
+    transaction = _add_signature_to_transaction(transaction, signature)
+    params = _create_broadcasted_txn(transaction=transaction)
+
+    res = await RPC_CLIENT._client.call(
+        method_name="addDeclareTransaction",
+        params=[params],
+    )
+    resp = cast(
+        DeclareTransactionResponse,
+        DeclareTransactionResponseSchema().load(res, unknown=EXCLUDE),
+    )
+
     logger.info(f"⏳ Waiting for tx {get_tx_url(resp.transaction_hash)}")
     await wait_for_transaction(resp.transaction_hash)
     logger.info(f"✅ {contract_name} class hash: {hex(resp.class_hash)}")
@@ -318,7 +401,9 @@ async def call(contract_name, function_name, *inputs, address=None):
 # TODO: use RPC_CLIENT when RPC wait_for_tx is fixed, see https://github.com/kkrt-labs/kakarot/issues/586
 @functools.wraps(RPC_CLIENT.wait_for_tx)
 async def wait_for_transaction(*args, **kwargs):
-    check_interval = kwargs.get("check_interval", 15)
+    check_interval = kwargs.get(
+        "check_interval", 2 if NETWORK in ["devnet", "katana", "madara"] else 15
+    )
     transaction_hash = args[0] if args else kwargs["tx_hash"]
     status = TransactionStatus.NOT_RECEIVED
     while status not in [TransactionStatus.ACCEPTED_ON_L2, TransactionStatus.REJECTED]:
@@ -333,7 +418,12 @@ async def wait_for_transaction(*args, **kwargs):
                 "id": 0,
             },
         )
-        status = json.loads(response.text).get("result", {}).get("status")
+        payload = json.loads(response.text)
+        if payload.get("error"):
+            if payload["error"]["message"] != "Transaction hash not found":
+                logger.warn(json.dumps(payload["error"]))
+                break
+        status = payload.get("result", {}).get("status")
         if status is not None:
             status = TransactionStatus(status)
             logger.info(f"ℹ️  Current status: {status.value}")
