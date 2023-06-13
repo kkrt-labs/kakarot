@@ -10,10 +10,10 @@ from scripts.constants import (
     EVM_ADDRESS,
     RPC_CLIENT,
 )
+from scripts.utils.kakarot import deploy_and_fund_evm_address
 from scripts.utils.starknet import (
     declare,
     deploy,
-    deploy_and_fund_evm_address,
     dump_declarations,
     dump_deployments,
     get_declarations,
@@ -73,5 +73,6 @@ async def main():
         await deploy_and_fund_evm_address(EVM_ADDRESS, 0.1)
 
 
+# %% Run
 if __name__ == "__main__":
     run(main())

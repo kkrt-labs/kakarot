@@ -51,10 +51,10 @@ def get_solidity_contract(starknet, contract_account_class, kakarot):
             starknet_contract_address,
             tx,
         )
-        contract = get_contract(contract_app, contract_name)
-        kakarot_contract = use_kakarot_backend(
-            contract, kakarot, int(evm_contract_address, 16)
+        contract = get_contract(
+            contract_app, contract_name, address=evm_contract_address
         )
+        kakarot_contract = use_kakarot_backend(contract, kakarot)
         setattr(kakarot_contract, "contract_account", contract_account)
         setattr(kakarot_contract, "evm_contract_address", evm_contract_address)
 

@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from types import MethodType
 from typing import List, Optional, cast
 
 import web3
@@ -28,9 +29,7 @@ def get_matching_logs_for_event(codec, event_abi, log_receipts) -> List[dict]:
     return logs
 
 
-def use_kakarot_backend(
-    contract: Contract, kakarot: StarknetContract, evm_contract_address: int
-):
+def use_kakarot_backend(contract: Contract, kakarot: StarknetContract):
     """
     Wrap a web3.contract to use kakarot as backend.
     """
@@ -39,12 +38,12 @@ def use_kakarot_backend(
     # no kwargs means you get all of the log_receipts
     # when a contract is supplied, you get all the log entries that correspond to the contract's event abi
     # when a contract is supplied with an event name, you get the log entries that match that event name
-    def query_logs(self_contract, *args, **kwargs):
+    def query_logs(self, *args, **kwargs):
         logs = []
         codec = Web3().codec
         contract = kwargs.pop("contract", None)
         event_name = kwargs.pop("event_name", None)
-        log_receipts = self_contract.raw_log_receipts
+        log_receipts = self.raw_log_receipts
 
         # Case 1: No contract key supplied
         # return all raw logs
@@ -74,25 +73,23 @@ def use_kakarot_backend(
         logs += get_matching_logs_for_event(codec, event_abi, log_receipts)
         return logs
 
-    def wrap_zk_evm(fun: str, evm_contract_address: int):
+    def wrap_zk_evm(fun: str):
         """
         Decorator to update contract.fun to target kakarot instead.
         """
 
-        async def _wrapped(contract, *args, **kwargs):
-            abi = contract.get_function_by_name(fun).abi
+        async def _wrapped(self, *args, **kwargs):
+            abi = self.get_function_by_name(fun).abi
             gas_limit = kwargs.pop("gas_limit", 1_000_000_000)
             value = kwargs.pop("value", 0)
             # 0 is the default caller_address in both call and execute
             caller_address = kwargs.pop("caller_address", 0)
             call_kwargs = {
-                "to": evm_contract_address,
+                "to": int(self.address, 16),
                 "value": value,
                 "gas_limit": gas_limit,
                 "gas_price": 0,
-                "data": hex_string_to_bytes_array(
-                    contract.encodeABI(fun, args, kwargs)
-                ),
+                "data": hex_string_to_bytes_array(self.encodeABI(fun, args, kwargs)),
             }
 
             if abi["stateMutability"] == "view":
@@ -105,7 +102,7 @@ def use_kakarot_backend(
                 traceit.pop_record()
                 traceit.record_tx(
                     res,
-                    contract_name=contract._contract_name,
+                    contract_name=self._contract_name,
                     attr_name=fun,
                     args=args,
                     kwargs=kwargs,
@@ -123,9 +120,7 @@ def use_kakarot_backend(
                 try:
                     log_receipts.append(
                         LogReceipt(
-                            address=Web3.to_checksum_address(
-                                f"{evm_contract_address:040x}"
-                            ),
+                            address=self.address,
                             blockHash=bytes(),
                             blockNumber=bytes(),
                             data=bytes(event.data),
@@ -148,12 +143,12 @@ def use_kakarot_backend(
                 except:
                     continue
 
-            for event_abi in contract.events._events:
+            for event_abi in self.events._events:
                 logs = get_matching_logs_for_event(codec, event_abi, log_receipts)
-                setattr(contract.events, event_abi["name"], logs)
+                setattr(self.events, event_abi["name"], logs)
 
-            setattr(contract, "raw_log_receipts", log_receipts)
-            setattr(contract, "tx", res)
+            setattr(self, "raw_log_receipts", log_receipts)
+            setattr(self, "tx", res)
 
             return result
 
@@ -164,11 +159,11 @@ def use_kakarot_backend(
             setattr(
                 contract,
                 fun,
-                classmethod(wrap_zk_evm(fun, evm_contract_address)),
+                MethodType(wrap_zk_evm(fun), contract),
             )
     except web3.exceptions.NoABIFunctionsFound:
         pass
-    setattr(contract, "query_logs", classmethod(query_logs))
+    setattr(contract, "query_logs", MethodType(query_logs, contract))
     return contract
 
 
@@ -180,7 +175,10 @@ def use_kakarot_backend(
 # Example: get_contract("StarkEx", "StarkExchange") will load the StarkExchange.sol file in the tests/integration/solidity_contracts/StarkEx/starkex folder
 #
 def get_contract(
-    contract_app: str, contract_name: str, contract_alias: Optional[str] = None
+    contract_app: str,
+    contract_name: str,
+    contract_alias: Optional[str] = None,
+    address=None,
 ) -> Contract:
     """
     Return a web3.contract instance based on the corresponding solidity files
@@ -221,6 +219,7 @@ def get_contract(
     contract = Web3().eth.contract(
         abi=compilation_output[0]["abi"],
         bytecode=compilation_output[0]["bytecode"]["object"],
+        address=address,
     )
     setattr(contract, "_contract_name", contract_name)
     return cast(Contract, contract)

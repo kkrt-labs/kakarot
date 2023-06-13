@@ -5,7 +5,7 @@ import subprocess
 import time
 from copy import deepcopy
 from pathlib import Path
-from typing import Optional, Union, cast
+from typing import Union, cast
 
 import requests
 from caseconverter import snakecase
@@ -15,19 +15,15 @@ from starknet_py.contract import Contract
 from starknet_py.hash.transaction import compute_declare_transaction_hash
 from starknet_py.hash.utils import message_signature
 from starknet_py.net.account.account import Account, _add_signature_to_transaction
-from starknet_py.net.client import Client
 from starknet_py.net.client_models import (
     Call,
     DeclareTransactionResponse,
     TransactionStatus,
 )
 from starknet_py.net.full_node_client import _create_broadcasted_txn
-from starknet_py.net.models import Address
 from starknet_py.net.models.transaction import Declare
 from starknet_py.net.schemas.rpc import DeclareTransactionResponseSchema
 from starknet_py.net.signer.stark_curve_signer import KeyPair
-from starknet_py.proxy.contract_abi_resolver import ProxyConfig
-from starknet_py.proxy.proxy_check import ProxyCheck
 from starkware.starknet.public.abi import get_selector_from_name
 
 from scripts.constants import (
@@ -113,44 +109,19 @@ async def get_starknet_account(
 
 
 async def get_eth_contract() -> Contract:
-    account = await get_starknet_account()
-
-    class EthProxyCheck(ProxyCheck):
-        """
-        See https://github.com/software-mansion/starknet.py/issues/856
-        """
-
-        async def implementation_address(
-            self, address: Address, client: Client
-        ) -> Optional[int]:
-            return await self.get_implementation(address, client)
-
-        async def implementation_hash(
-            self, address: Address, client: Client
-        ) -> Optional[int]:
-            return await self.get_implementation(address, client)
-
-        @staticmethod
-        async def get_implementation(address: Address, client: Client) -> Optional[int]:
-            call = Call(
-                to_addr=address,
-                selector=get_selector_from_name("implementation"),
-                calldata=[],
-            )
-            (implementation,) = await client.call_contract(call=call)
-            return implementation
-
-    proxy_config = (
-        ProxyConfig(proxy_checks=[EthProxyCheck()]) if NETWORK != "devnet" else False
-    )
-    return await Contract.from_address(
-        ETH_TOKEN_ADDRESS, account, proxy_config=proxy_config
+    # TODO: use .from_address when katana implements getClass
+    return Contract(
+        ETH_TOKEN_ADDRESS,
+        json.loads(get_artifact("ERC20").read_text())["abi"],
+        await get_starknet_account(),
     )
 
 
 async def get_contract(contract_name) -> Contract:
-    return await Contract.from_address(
+    # TODO: use .from_address when katana implements getClass
+    return Contract(
         get_deployments()[contract_name]["address"],
+        json.loads(get_artifact(contract_name).read_text())["abi"],
         await get_starknet_account(),
     )
 
@@ -184,17 +155,6 @@ async def fund_address(address: Union[int, str], amount: float):
         logger.info(
             f"{amount / 1e18} ETH sent from {hex(account.address)} to {hex(address)}"
         )
-
-
-async def deploy_and_fund_evm_address(evm_address: str, amount: float):
-    """
-    Deploy an EOA linked to the given EVM address and fund it with amount ETH
-    """
-    await invoke("kakarot", "deploy_externally_owned_account", int(evm_address, 16))
-    starknet_address = await call(
-        "kakarot", "compute_starknet_address", int(evm_address, 16)
-    )
-    await fund_address(starknet_address[0], amount)
 
 
 def dump_declarations(declarations):
@@ -390,6 +350,7 @@ async def wait_for_transaction(*args, **kwargs):
     transaction_hash = args[0] if args else kwargs["tx_hash"]
     status = TransactionStatus.NOT_RECEIVED
     while status not in [TransactionStatus.ACCEPTED_ON_L2, TransactionStatus.REJECTED]:
+        logger.info(f"ℹ️  Current status: {status.value}")
         logger.info(f"ℹ️  Sleeping for {check_interval}s")
         time.sleep(check_interval)
         response = requests.post(
@@ -409,4 +370,3 @@ async def wait_for_transaction(*args, **kwargs):
         status = payload.get("result", {}).get("status")
         if status is not None:
             status = TransactionStatus(status)
-            logger.info(f"ℹ️  Current status: {status.value}")

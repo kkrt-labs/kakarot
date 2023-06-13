@@ -50,7 +50,7 @@ def get_resources(
     return artifacts
 
 
-def get_deployments(path: str = "deployments"):
+def fetch_deployments(path: str = "deployments"):
     response = requests.get(
         "https://api.github.com/repos/sayajin-labs/kakarot/actions/artifacts"
     )
