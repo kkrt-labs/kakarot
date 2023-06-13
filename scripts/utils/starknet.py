@@ -1,6 +1,4 @@
-import base64
 import functools
-import gzip
 import json
 import logging
 import subprocess
@@ -268,14 +266,11 @@ def compile_contract(contract):
 
     def _convert_offset_to_hex(obj):
         if isinstance(obj, list):
-            for i in range(len(obj)):
-                obj[i] = _convert_offset_to_hex(obj[i])
-        elif isinstance(obj, dict):
-            for key in obj:
-                if obj.get(key) is not None:
-                    obj[key] = _convert_offset_to_hex(obj[key])
-        elif isinstance(obj, int) and obj >= 0:
-            obj = hex(obj)
+            return [_convert_offset_to_hex(i) for i in obj]
+        if isinstance(obj, dict):
+            return {key: _convert_offset_to_hex(obj[key]) for key, value in obj.items()}
+        if isinstance(obj, int) and obj >= 0:
+            return hex(obj)
         return obj
 
     compiled = json.loads((BUILD_DIR / f"{contract['contract_name']}.json").read_text())
@@ -288,19 +283,6 @@ def compile_contract(contract):
     json.dump(
         compiled, open(BUILD_DIR / f"{contract['contract_name']}.json", "w"), indent=2
     )
-
-
-def compress_program(program):
-    compressed_program = json.dumps(program)
-    compressed_program = gzip.compress(data=compressed_program.encode("ascii"))
-    compressed_program = base64.b64encode(compressed_program)
-    return compressed_program.decode("ascii")
-
-
-def decompress_program(compressed_program):
-    program = base64.b64decode(compressed_program.encode("ascii"))
-    program = gzip.decompress(data=program)
-    return json.loads(program.decode("ascii"))
 
 
 async def declare(contract_name):
@@ -399,10 +381,11 @@ async def call(contract_name, function_name, *inputs, address=None):
 
 
 # TODO: use RPC_CLIENT when RPC wait_for_tx is fixed, see https://github.com/kkrt-labs/kakarot/issues/586
+# TODO: Currently, the first ping often throws "transaction not found"
 @functools.wraps(RPC_CLIENT.wait_for_tx)
 async def wait_for_transaction(*args, **kwargs):
     check_interval = kwargs.get(
-        "check_interval", 2 if NETWORK in ["devnet", "katana", "madara"] else 15
+        "check_interval", 0.1 if NETWORK in ["devnet", "katana"] else 15
     )
     transaction_hash = args[0] if args else kwargs["tx_hash"]
     status = TransactionStatus.NOT_RECEIVED
