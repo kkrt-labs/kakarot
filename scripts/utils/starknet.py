@@ -112,7 +112,7 @@ async def get_eth_contract() -> Contract:
     # TODO: use .from_address when katana implements getClass
     return Contract(
         ETH_TOKEN_ADDRESS,
-        json.loads(get_artifact("ERC20").read_text())["abi"],
+        json.loads((Path("scripts") / "utils" / "erc20.json").read_text())["abi"],
         await get_starknet_account(),
     )
 
