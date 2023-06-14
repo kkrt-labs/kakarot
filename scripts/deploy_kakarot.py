@@ -10,7 +10,6 @@ from scripts.constants import (
     EVM_ADDRESS,
     RPC_CLIENT,
 )
-from scripts.utils.kakarot import deploy_and_fund_evm_address
 from scripts.utils.starknet import (
     declare,
     deploy,
@@ -70,6 +69,8 @@ async def main():
 
     if EVM_ADDRESS:
         logger.info(f"ℹ️ Found default EVM address {EVM_ADDRESS} to deploy an EOA for")
+        from scripts.utils.kakarot import deploy_and_fund_evm_address
+
         await deploy_and_fund_evm_address(EVM_ADDRESS, 0.1)
 
 

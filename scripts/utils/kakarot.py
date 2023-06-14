@@ -72,13 +72,14 @@ def get_contract(contract_app: str, contract_name: str, address=None) -> Web3Con
     contract = cast(
         Web3Contract,
         Web3().eth.contract(
-            address=address,
+            address=to_checksum_address(address) if address is not None else address,
             abi=target_compilation_output[0]["abi"],
             bytecode=target_compilation_output[0]["bytecode"]["object"],
         ),
     )
+
     for fun in contract.functions:
-        setattr(contract, fun, _wrap_kakarot(fun))
+        setattr(contract, fun, MethodType(_wrap_kakarot(fun), contract))
 
     return contract
 
@@ -201,7 +202,7 @@ async def eth_send_transaction(
             selector=0xDEAD,  # unused in current EOA implementation
             calldata=tx_payload,
         ),
-        max_fee=int(1e17),
+        max_fee=int(5e17),
     )
     logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
     await wait_for_transaction(tx_hash=response.transaction_hash)

@@ -4,6 +4,7 @@ import logging
 import subprocess
 import time
 from copy import deepcopy
+from datetime import datetime
 from pathlib import Path
 from typing import Union, cast
 
@@ -344,13 +345,25 @@ async def call(contract_name, function_name, *inputs, address=None):
 # TODO: Currently, the first ping often throws "transaction not found"
 @functools.wraps(RPC_CLIENT.wait_for_tx)
 async def wait_for_transaction(*args, **kwargs):
+    """
+    We need to write this custom hacky wait_for_transaction instead of using the one from starknet-py
+    because the RPCs don't know RECEIVED, PENDING and REJECTED states currently
+    """
+    start = datetime.now()
+    elapsed = 0
     check_interval = kwargs.get(
         "check_interval", 0.1 if NETWORK in ["devnet", "katana"] else 15
     )
+    max_wait = kwargs.get(
+        "max_wait", 60 * 5 if NETWORK not in ["devnet", "katana"] else 20
+    )
     transaction_hash = args[0] if args else kwargs["tx_hash"]
-    status = TransactionStatus.NOT_RECEIVED
-    while status not in [TransactionStatus.ACCEPTED_ON_L2, TransactionStatus.REJECTED]:
-        logger.info(f"ℹ️  Current status: {status.value}")
+    status = None
+    while (
+        status not in [TransactionStatus.ACCEPTED_ON_L2, TransactionStatus.REJECTED]
+        and elapsed < max_wait
+    ):
+        logger.info(f"ℹ️  Current status: {status}")
         logger.info(f"ℹ️  Sleeping for {check_interval}s")
         time.sleep(check_interval)
         response = requests.post(
@@ -370,3 +383,4 @@ async def wait_for_transaction(*args, **kwargs):
         status = payload.get("result", {}).get("status")
         if status is not None:
             status = TransactionStatus(status)
+        elapsed = (datetime.now() - start).total_seconds()
