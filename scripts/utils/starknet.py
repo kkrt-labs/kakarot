@@ -283,10 +283,10 @@ def compile_contract(contract):
     )
 
 
-async def deploy_starknet_account(
-    private_key=None,
-) -> Account:
-    account = await get_starknet_account()
+async def deploy_starknet_account(private_key=None, amount=1) -> Account:
+    compile_contract(
+        {"contract_name": "OpenzeppelinAccount", "is_account_contract": True}
+    )
     class_hash = await declare("OpenzeppelinAccount")
     salt = random.randint(0, 2**251)
     global _private_key
@@ -304,14 +304,15 @@ async def deploy_starknet_account(
         constructor_calldata=constructor_calldata,
         deployer_address=0,
     )
-    await fund_address(address, amount=1)
+    logger.info(f"ℹ️  Funding account {hex(address)} with {amount} ETH")
+    await fund_address(address, amount=amount)
     logger.info(f"ℹ️  Deploying account")
     res = await Account.deploy_account(
         address=address,
         class_hash=class_hash,
         salt=salt,
         key_pair=key_pair,
-        client=account.client,
+        client=RPC_CLIENT,
         chain=CHAIN_ID,
         constructor_calldata=constructor_calldata,
         max_fee=int(1e17),
@@ -437,7 +438,7 @@ async def wait_for_transaction(*args, **kwargs):
     elapsed = 0
     check_interval = kwargs.get(
         "check_interval",
-        0.1 if NETWORK in ["devnet", "katana"] else 6 if NETWORK == "madara" else 15,
+        0.1 if NETWORK in ["devnet", "katana"] else 1 if NETWORK == "madara" else 15,
     )
     max_wait = kwargs.get(
         "max_wait", 60 * 5 if NETWORK not in ["devnet", "katana", "madara"] else 30

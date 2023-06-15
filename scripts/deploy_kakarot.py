@@ -6,7 +6,6 @@ from math import ceil, log
 from scripts.constants import (
     CHAIN_ID,
     COMPILED_CONTRACTS,
-    DEBUG_MODE,
     ETH_TOKEN_ADDRESS,
     EVM_ADDRESS,
     NETWORK,
@@ -36,14 +35,13 @@ async def main():
         f"with RPC {RPC_CLIENT.url}"
     )
     if NETWORK == "madara":
-        await deploy_starknet_account()
+        await deploy_starknet_account(amount=100)
     account = await get_starknet_account()
     logger.info(f"ℹ️  Using account {hex(account.address)} as deployer")
 
     class_hash = {
         contract["contract_name"]: await declare(contract["contract_name"])
         for contract in COMPILED_CONTRACTS
-        if not contract["devnet_only"] or DEBUG_MODE
     }
     dump_declarations(class_hash)
 
@@ -77,7 +75,7 @@ async def main():
         logger.info(f"ℹ️  Found default EVM address {EVM_ADDRESS} to deploy an EOA for")
         from scripts.utils.kakarot import deploy_and_fund_evm_address
 
-        await deploy_and_fund_evm_address(EVM_ADDRESS, 0.1)
+        await deploy_and_fund_evm_address(EVM_ADDRESS, amount=1)
 
 
 # %% Run

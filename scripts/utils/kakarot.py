@@ -26,9 +26,10 @@ from scripts.constants import (
     NETWORK,
     RPC_CLIENT,
 )
+from scripts.utils.starknet import call as _call_starknet
 from scripts.utils.starknet import fund_address as _fund_starknet_address
 from scripts.utils.starknet import get_contract as _get_starknet_contract
-from scripts.utils.starknet import get_deployments, get_tx_url
+from scripts.utils.starknet import get_deployments
 from scripts.utils.starknet import invoke as _invoke_starknet
 from scripts.utils.starknet import wait_for_transaction
 
@@ -96,11 +97,19 @@ async def deploy(
         data=contract.constructor(*args, **kwargs).data_in_transaction,
     )
     if len(receipt.events) != 4:
-        raise ValueError(
-            f"Contract deployment failed, got {len(receipt.events)} events, expected 4"
-        )
+        # TODO: Remove when events are emitted in Madara and Katana
+        deployed_addresses_len = (
+            await _call_starknet("kakarot", "get_deployed_addresses_len")
+        )[0]
+        deployed_address = (
+            await _call_starknet(
+                "kakarot", "get_deployed_address", deployed_addresses_len - 1
+            )
+        )[0]
+    else:
+        deployed_address = hex(receipt.events[2].data[0])
 
-    contract.address = Web3.to_checksum_address(hex(receipt.events[2].data[0]))
+    contract.address = Web3.to_checksum_address(deployed_address)
 
     for fun in contract.functions:
         setattr(contract, fun, MethodType(_wrap_kakarot(fun), contract))
@@ -204,7 +213,6 @@ async def eth_send_transaction(
         ),
         max_fee=int(5e17),
     )
-    logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
     await wait_for_transaction(tx_hash=response.transaction_hash)
     return await RPC_CLIENT.get_transaction_receipt(response.transaction_hash)
 
