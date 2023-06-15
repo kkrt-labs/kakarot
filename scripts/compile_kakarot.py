@@ -3,7 +3,7 @@ import logging
 from asyncio import run
 from datetime import datetime
 
-from scripts.constants import COMPILED_CONTRACTS, NETWORK
+from scripts.constants import COMPILED_CONTRACTS, DEBUG_MODE, NETWORK
 from scripts.utils.starknet import compile_contract
 
 logging.basicConfig()
@@ -17,6 +17,8 @@ async def main():
     logger.info(f"ℹ️  Compiling contracts for network {NETWORK}")
     initial_time = datetime.now()
     for contract in COMPILED_CONTRACTS:
+        if contract["devnet_only"] and not DEBUG_MODE:
+            continue
         logger.info(f"⏳ Compiling {contract}")
         start = datetime.now()
         compile_contract(contract)

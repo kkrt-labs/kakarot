@@ -18,7 +18,7 @@ EVM_ADDRESS = (
     ).public_key.to_checksum_address()
 )
 
-NETWORK = os.getenv("STARKNET_NETWORK", "katana")
+NETWORK = os.getenv("STARKNET_NETWORK", "devnet")
 NETWORK = (
     "testnet"
     if re.match(r".*(testnet|goerli)$", NETWORK, flags=re.I)
@@ -89,9 +89,28 @@ DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
 CHAIN_ID = getattr(ChainId, NETWORK)
 KAKAROT_CHAIN_ID = 1263227476  # KKRT (0x4b4b5254) in ASCII
 COMPILED_CONTRACTS = [
-    {"contract_name": "kakarot", "is_account_contract": False},
-    {"contract_name": "blockhash_registry", "is_account_contract": False},
-    {"contract_name": "contract_account", "is_account_contract": False},
-    {"contract_name": "externally_owned_account", "is_account_contract": True},
-    {"contract_name": "proxy", "is_account_contract": False},
+    {"contract_name": "kakarot", "is_account_contract": False, "devnet_only": False},
+    {
+        "contract_name": "blockhash_registry",
+        "is_account_contract": False,
+        "devnet_only": False,
+    },
+    {
+        "contract_name": "contract_account",
+        "is_account_contract": False,
+        "devnet_only": False,
+    },
+    {
+        "contract_name": "externally_owned_account",
+        "is_account_contract": True,
+        "devnet_only": False,
+    },
+    {"contract_name": "proxy", "is_account_contract": False, "devnet_only": False},
+    {
+        "contract_name": "OpenzeppelinAccount",
+        "is_account_contract": True,
+        "devnet_only": True,
+    },
 ]
+
+DEBUG_MODE = NETWORK in ["madara", "katana", "devnet"]
