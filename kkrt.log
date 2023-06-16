@@ -1,0 +1,7 @@
+poetry lock --check
+poetry.lock is consistent with pyproject.toml.
+/Applications/Xcode.app/Contents/Developer/usr/bin/make clean
+rm -rf build
+mkdir build
+poetry run python ./scripts/compile_kakarot.py
+value is -----> katana

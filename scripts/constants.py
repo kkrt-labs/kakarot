@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 load_dotenv()
 
-
 class ChainId(Enum):
     mainnet = int.from_bytes(b"SN_MAIN", "big")
     testnet = int.from_bytes(b"SN_GOERLI", "big")
