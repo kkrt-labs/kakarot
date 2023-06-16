@@ -18,7 +18,7 @@ EVM_ADDRESS = (
     ).public_key.to_checksum_address()
 )
 
-NETWORK = os.getenv("STARKNET_NETWORK", "katana")
+NETWORK = os.getenv("STARKNET_NETWORK", "devnet")
 NETWORK = (
     "testnet"
     if re.match(r".*(testnet|goerli)$", NETWORK, flags=re.I)

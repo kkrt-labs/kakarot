@@ -1,4 +1,4 @@
-# Imports
+# %% Imports
 import logging
 from pathlib import Path
 
@@ -14,15 +14,16 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+# %% Main
 def main():
-    # Script constants
+    # %% Script constants
     coverage_dir = Path("coverage")
     base_branch_name = "main"
     current_name = "local"
 
     artifacts = get_resources(coverage_dir, base_branch_name)
 
-    #  Build aggregated stat for checking resources evolution
+    # %% Build aggregated stat for checking resources evolution
     resources = [
         (
             pd.read_csv(
@@ -68,7 +69,7 @@ def main():
     )
     logger.info(f"Resources summary:\n{resources_summary}")
 
-    # Compare local test run with base branch
+    # %% Compare local test run with base branch
     if ({current_name, base_branch_name}).issubset(set(all_resources.head_branch)):
         tests_with_diff = (
             all_resources.loc[
@@ -112,5 +113,6 @@ def main():
             logger.info("Resources usage improved!")
 
 
+# %% Run
 if __name__ == "__main__":
     main()

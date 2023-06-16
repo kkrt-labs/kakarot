@@ -8,11 +8,13 @@ from scripts.constants import (
     COMPILED_CONTRACTS,
     ETH_TOKEN_ADDRESS,
     EVM_ADDRESS,
+    NETWORK,
     RPC_CLIENT,
 )
 from scripts.utils.starknet import (
     declare,
     deploy,
+    deploy_starknet_account,
     dump_declarations,
     dump_deployments,
     get_declarations,
@@ -32,6 +34,8 @@ async def main():
         f"ℹ️  Connected to CHAIN_ID {CHAIN_ID.value.to_bytes(ceil(log(CHAIN_ID.value, 256)), 'big')} "
         f"with RPC {RPC_CLIENT.url}"
     )
+    if NETWORK == "madara":
+        await deploy_starknet_account(amount=100)
     account = await get_starknet_account()
     logger.info(f"ℹ️  Using account {hex(account.address)} as deployer")
 
@@ -68,10 +72,10 @@ async def main():
     logger.info("✅ Configuration Complete")
 
     if EVM_ADDRESS:
-        logger.info(f"ℹ️ Found default EVM address {EVM_ADDRESS} to deploy an EOA for")
+        logger.info(f"ℹ️  Found default EVM address {EVM_ADDRESS} to deploy an EOA for")
         from scripts.utils.kakarot import deploy_and_fund_evm_address
 
-        await deploy_and_fund_evm_address(EVM_ADDRESS, 0.1)
+        await deploy_and_fund_evm_address(EVM_ADDRESS, amount=1)
 
 
 # %% Run

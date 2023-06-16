@@ -1,6 +1,7 @@
 import functools
 import json
 import logging
+import random
 import subprocess
 import time
 from copy import deepcopy
@@ -12,7 +13,9 @@ import requests
 from caseconverter import snakecase
 from marshmallow import EXCLUDE
 from starknet_py.common import create_compiled_contract
-from starknet_py.contract import Contract
+from starknet_py.contract import Contract, InvokeResult
+from starknet_py.hash.address import compute_address
+from starknet_py.hash.class_hash import compute_class_hash
 from starknet_py.hash.transaction import compute_declare_transaction_hash
 from starknet_py.hash.utils import message_signature
 from starknet_py.net.account.account import Account, _add_signature_to_transaction
@@ -22,7 +25,7 @@ from starknet_py.net.client_models import (
     TransactionStatus,
 )
 from starknet_py.net.full_node_client import _create_broadcasted_txn
-from starknet_py.net.models.transaction import Declare
+from starknet_py.net.models.transaction import Declare, Invoke
 from starknet_py.net.schemas.rpc import DeclareTransactionResponseSchema
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starkware.starknet.public.abi import get_selector_from_name
@@ -45,6 +48,9 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+_account_address = ACCOUNT_ADDRESS
+_private_key = PRIVATE_KEY
+
 
 def int_to_uint256(value):
     value = int(value)
@@ -57,13 +63,15 @@ async def get_starknet_account(
     address=None,
     private_key=None,
 ) -> Account:
-    address = address or ACCOUNT_ADDRESS
+    global _account_address
+    global _private_key
+    address = address or _account_address
     if address is None:
         raise ValueError(
             "address was not given in arg nor in env variable, see README.md#Deploy"
         )
     address = int(address, 16)
-    private_key = private_key or PRIVATE_KEY
+    private_key = private_key or _private_key
     if private_key is None:
         raise ValueError(
             "private_key was not given in arg nor in env variable, see README.md#Deploy"
@@ -89,6 +97,7 @@ async def get_starknet_account(
             ):
                 continue
             else:
+                logger.error(f"Raising for account at address {hex(address)}")
                 raise err
 
     if public_key is not None:
@@ -140,7 +149,7 @@ async def fund_address(address: Union[int, str], amount: float):
         )
         if response.status_code != 200:
             logger.error(f"Cannot mint token to {address}: {response.text}")
-        logger.info(f"{amount / 1e18} ETH minted to {address}")
+        logger.info(f"{amount / 1e18} ETH minted to {hex(address)}")
     else:
         account = await get_starknet_account()
         eth_contract = await get_eth_contract()
@@ -149,12 +158,41 @@ async def fund_address(address: Union[int, str], amount: float):
             raise ValueError(
                 f"Cannot send {amount / 1e18} ETH from default account with current balance {balance / 1e18} ETH"
             )
-        tx = await eth_contract.functions["transfer"].invoke(
-            address, int_to_uint256(amount), max_fee=int(1e17)
+        prepared = eth_contract.functions["transfer"].prepare(
+            address, int_to_uint256(amount)
         )
+        # TODO: remove when madara has a regular default account
+        if NETWORK == "madara" and account.address == 1:
+            transaction = Invoke(
+                calldata=[
+                    prepared.to_addr,
+                    prepared.selector,
+                    len(prepared.calldata),
+                    *prepared.calldata,
+                ],
+                signature=[],
+                max_fee=0,
+                version=1,
+                nonce=await account.get_nonce(),
+                sender_address=account.address,
+            )
+            _add_signature_to_transaction(
+                transaction, account.signer.sign_transaction(transaction)
+            )
+            response = await RPC_CLIENT.send_transaction(transaction)
+            tx = InvokeResult(
+                hash=response.transaction_hash,  # noinspection PyTypeChecker
+                _client=prepared._client,
+                contract=prepared._contract_data,
+                invoke_transaction=transaction,
+            )
+        else:
+            tx = await prepared.invoke(max_fee=int(1e17))
+
         await wait_for_transaction(tx.hash)
+        balance = (await eth_contract.functions["balanceOf"].call(address)).balance  # type: ignore
         logger.info(
-            f"{amount / 1e18} ETH sent from {hex(account.address)} to {hex(address)}"
+            f"{amount / 1e18} ETH sent from {hex(account.address)} to {hex(address)}; new balance {balance / 1e18}"
         )
 
 
@@ -246,12 +284,63 @@ def compile_contract(contract):
     )
 
 
+async def deploy_starknet_account(private_key=None, amount=1) -> Account:
+    compile_contract(
+        {"contract_name": "OpenzeppelinAccount", "is_account_contract": True}
+    )
+    class_hash = await declare("OpenzeppelinAccount")
+    salt = random.randint(0, 2**251)
+    global _private_key
+    global _account_address
+    private_key = private_key or _private_key
+    if private_key is None:
+        raise ValueError(
+            "private_key was not given in arg nor in env variable, see README.md#Deploy"
+        )
+    key_pair = KeyPair.from_private_key(int(private_key, 16))
+    constructor_calldata = [key_pair.public_key]
+    address = compute_address(
+        salt=salt,
+        class_hash=class_hash,
+        constructor_calldata=constructor_calldata,
+        deployer_address=0,
+    )
+    logger.info(f"ℹ️  Funding account {hex(address)} with {amount} ETH")
+    await fund_address(address, amount=amount)
+    logger.info(f"ℹ️  Deploying account")
+    res = await Account.deploy_account(
+        address=address,
+        class_hash=class_hash,
+        salt=salt,
+        key_pair=key_pair,
+        client=RPC_CLIENT,
+        chain=CHAIN_ID,
+        constructor_calldata=constructor_calldata,
+        max_fee=int(1e17),
+    )
+    status = await wait_for_transaction(res.hash)
+    if status == TransactionStatus.REJECTED:
+        logger.warning("⚠️  Transaction REJECTED")
+
+    logger.info(f"✅ Account deployed at address {hex(res.account.address)}")
+    _account_address = hex(res.account.address)
+    _private_key = hex(key_pair.private_key)
+    return res.account
+
+
 async def declare(contract_name):
     logger.info(f"ℹ️  Declaring {contract_name}")
-    account = await get_starknet_account()
     artifact = get_artifact(contract_name)
     compiled_contract = Path(artifact).read_text()
     contract_class = create_compiled_contract(compiled_contract=compiled_contract)
+    class_hash = compute_class_hash(contract_class=deepcopy(contract_class))
+    try:
+        await RPC_CLIENT.get_class_by_hash(class_hash)
+        logger.info(f"✅ Class already declared, skipping")
+        return class_hash
+    except Exception:
+        pass
+    account = await get_starknet_account()
     transaction = Declare(
         contract_class=contract_class,
         sender_address=account.address,
@@ -281,7 +370,6 @@ async def declare(contract_name):
         DeclareTransactionResponseSchema().load(res, unknown=EXCLUDE),
     )
 
-    logger.info(f"⏳ Waiting for tx {get_tx_url(resp.transaction_hash)}")
     await wait_for_transaction(resp.transaction_hash)
     logger.info(f"✅ {contract_name} class hash: {hex(resp.class_hash)}")
     return resp.class_hash
@@ -298,7 +386,6 @@ async def deploy(contract_name, *args):
         constructor_args=list(args),
         max_fee=int(1e17),
     )
-    logger.info(f"⏳ Waiting for tx {get_tx_url(deploy_result.hash)}")
     await wait_for_transaction(deploy_result.hash)
     logger.info(
         f"✅ {contract_name} deployed at: {hex(deploy_result.deployed_contract.address)}"
@@ -321,7 +408,6 @@ async def invoke(contract_name, function_name, *inputs, address=None):
     call = contract.functions[function_name].prepare(*inputs, max_fee=int(1e17))
     logger.info(f"ℹ️  Invoking {contract_name}.{function_name}({json.dumps(inputs)})")
     response = await account.execute(call, max_fee=int(1e17))
-    logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
     await wait_for_transaction(response.transaction_hash)
     logger.info(
         f"✅ {contract_name}.{function_name} invoked at tx: %s",
@@ -352,13 +438,15 @@ async def wait_for_transaction(*args, **kwargs):
     start = datetime.now()
     elapsed = 0
     check_interval = kwargs.get(
-        "check_interval", 0.1 if NETWORK in ["devnet", "katana"] else 15
+        "check_interval",
+        0.1 if NETWORK in ["devnet", "katana"] else 1 if NETWORK == "madara" else 15,
     )
     max_wait = kwargs.get(
-        "max_wait", 60 * 5 if NETWORK not in ["devnet", "katana"] else 20
+        "max_wait", 60 * 5 if NETWORK not in ["devnet", "katana", "madara"] else 30
     )
     transaction_hash = args[0] if args else kwargs["tx_hash"]
     status = None
+    logger.info(f"⏳ Waiting for tx {get_tx_url(transaction_hash)}")
     while (
         status not in [TransactionStatus.ACCEPTED_ON_L2, TransactionStatus.REJECTED]
         and elapsed < max_wait
@@ -384,3 +472,4 @@ async def wait_for_transaction(*args, **kwargs):
         if status is not None:
             status = TransactionStatus(status)
         elapsed = (datetime.now() - start).total_seconds()
+    return status
