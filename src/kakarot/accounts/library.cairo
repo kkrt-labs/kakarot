@@ -25,10 +25,12 @@ from kakarot.interfaces.interfaces import IAccount
 func nonce() -> (nonce: felt) {
 }
 
+// TODO: Remove when events are visible in madara/katana
 @storage_var
 func deployed_addresses_len() -> (len: felt) {
 }
 
+// TODO: Remove when events are visible in madara/katana
 @storage_var
 func deployed_addresses(index: felt) -> (address: felt) {
 }
@@ -101,6 +103,7 @@ namespace Accounts {
         assert constructor_calldata[1] = evm_address;
         IAccount.initialize(account_address, class_hash, 2, constructor_calldata);
         evm_contract_deployed.emit(evm_address, account_address);
+        // TODO: Remove when events are visible in madara/katana
         let (len) = deployed_addresses_len.read();
         deployed_addresses.write(len, evm_address);
         deployed_addresses_len.write(len + 1);

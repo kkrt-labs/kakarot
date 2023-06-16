@@ -97,7 +97,7 @@ async def get_starknet_account(
             ):
                 continue
             else:
-                logger.error(f"Raisin for account at address {hex(address)}")
+                logger.error(f"Raising for account at address {hex(address)}")
                 raise err
 
     if public_key is not None:
@@ -161,6 +161,7 @@ async def fund_address(address: Union[int, str], amount: float):
         prepared = eth_contract.functions["transfer"].prepare(
             address, int_to_uint256(amount)
         )
+        # TODO: remove when madara has a regular default account
         if NETWORK == "madara" and account.address == 1:
             transaction = Invoke(
                 calldata=[

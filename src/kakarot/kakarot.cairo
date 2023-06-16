@@ -134,6 +134,7 @@ func eth_send_transaction{
     return Kakarot.eth_send_transaction(to, gas_limit, gas_price, value, data_len, data);
 }
 
+// TODO: Remove when events are visible in madara/katana
 @view
 func get_deployed_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -142,6 +143,7 @@ func get_deployed_address{
     return (evm_address=evm_address);
 }
 
+// TODO: Remove when events are visible in madara/katana
 @view
 func get_deployed_addresses_len{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
