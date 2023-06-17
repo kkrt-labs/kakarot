@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM rust:1.70 as katana
+FROM --platform=$BUILDPLATFORM rust:1.70 as katana-builder
 
 RUN apt-get update && apt-get install -y git
 
@@ -8,14 +8,26 @@ RUN git clone https://github.com/dojoengine/dojo.git
 
 WORKDIR /app/dojo
 
-RUN cargo build --package katana --release
+# add targets
+RUN rustup target add x86_64-unknown-linux-gnu
+RUN rustup target add aarch64-unknown-linux-gnu
+
+# install compilers
+RUN apt-get -y install gcc-x86-64-linux-gnu
+RUN apt-get -y install gcc-aarch64-linux-gnu
+
+# build for both targets
+RUN cargo build --package katana --release --target=x86_64-unknown-linux-gnu --config target.x86_64-unknown-linux-gnu.linker=\"x86_64-linux-gnu-gcc\"
+RUN cargo build --package katana --release --target=aarch64-unknown-linux-gnu --config target.aarch64-unknown-linux-gnu.linker=\"aarch64-linux-gnu-gcc\"
 
 FROM python:3.9.13-slim-bullseye 
 
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD if [ "$(cat /root/.kakarot_deploy_status)" -eq 0 ]; then exit 0; else exit 1; fi
 
-COPY --from=katana /app/dojo/target/release/katana /app/katana
+
+COPY --from=katana-builder /app/dojo/target/x86_64-unknown-linux-gnu/release/katana  /app/katana/x86_64-unknown-linux-gnu/release/katana 
+COPY --from=katana-builder /app/dojo/target/aarch64-unknown-linux-gnu/release/katana /app/katana/aarch64-unknown-linux-gnu/release/katana 
 COPY ./docker/katana/scripts /app/scripts
 
 WORKDIR /app
