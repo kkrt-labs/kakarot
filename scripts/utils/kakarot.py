@@ -96,20 +96,11 @@ async def deploy(
         gas=int(1e18),
         data=contract.constructor(*args, **kwargs).data_in_transaction,
     )
-    if len(receipt.events) != 4:
-        # TODO: Remove when events are emitted in Madara and Katana
-        deployed_addresses_len = (
-            await _call_starknet("kakarot", "get_deployed_addresses_len")
-        )[0]
-        deployed_address = (
-            await _call_starknet(
-                "kakarot", "get_deployed_address", deployed_addresses_len - 1
-            )
-        )[0]
-    else:
-        deployed_address = hex(receipt.events[2].data[0])
-
-    contract.address = Web3.to_checksum_address(deployed_address)
+    deploy_event = [event for event in receipt.events if event.from_address == int(get_deployments()['kakarot']['address'], 16)]
+    if len(deploy_event) != 1:
+        raise ValueError()
+    evm_address, _ = deploy_event[0].data
+    contract.address = Web3.to_checksum_address(evm_address)
 
     for fun in contract.functions:
         setattr(contract, fun, MethodType(_wrap_kakarot(fun), contract))
