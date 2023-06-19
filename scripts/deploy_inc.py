@@ -1,8 +1,11 @@
-from scripts.utils.kakarot import (deploy)
 import asyncio
 
+from scripts.utils.kakarot import deploy
+
+
 async def main():
-    counter = await deploy("PlainOpcodes", 'Counter')
+    await deploy("PlainOpcodes", "Counter")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

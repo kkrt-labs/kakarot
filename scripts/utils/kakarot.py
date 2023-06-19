@@ -26,7 +26,6 @@ from scripts.constants import (
     NETWORK,
     RPC_CLIENT,
 )
-from scripts.utils.starknet import call as _call_starknet
 from scripts.utils.starknet import fund_address as _fund_starknet_address
 from scripts.utils.starknet import get_contract as _get_starknet_contract
 from scripts.utils.starknet import get_deployments
@@ -96,7 +95,11 @@ async def deploy(
         gas=int(1e18),
         data=contract.constructor(*args, **kwargs).data_in_transaction,
     )
-    deploy_event = [event for event in receipt.events if event.from_address == int(get_deployments()['kakarot']['address'], 16)]
+    deploy_event = [
+        event
+        for event in receipt.events
+        if event.from_address == int(get_deployments()["kakarot"]["address"], 16)
+    ]
     if len(deploy_event) != 1:
         raise ValueError()
     evm_address, _ = deploy_event[0].data

@@ -146,35 +146,9 @@ warnings.simplefilter("ignore", DependencyWarning)
 import logging
 from logging import NullHandler
 
-from . import packages, utils
-from .__version__ import (
-    __author__,
-    __author_email__,
-    __build__,
-    __cake__,
-    __copyright__,
-    __description__,
-    __license__,
-    __title__,
-    __url__,
-    __version__,
-)
-from .api import delete, get, head, options, patch, post, put, request
 from .exceptions import (
-    ConnectionError,
-    ConnectTimeout,
     FileModeWarning,
-    HTTPError,
-    JSONDecodeError,
-    ReadTimeout,
-    RequestException,
-    Timeout,
-    TooManyRedirects,
-    URLRequired,
 )
-from .models import PreparedRequest, Request, Response
-from .sessions import Session, session
-from .status_codes import codes
 
 logging.getLogger(__name__).addHandler(NullHandler())
 
