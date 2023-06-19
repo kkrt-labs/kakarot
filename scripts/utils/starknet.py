@@ -254,7 +254,7 @@ def compile_contract(contract):
             BUILD_DIR / f"{contract['contract_name']}.json",
             "--cairo_path",
             str(SOURCE_DIR),
-            "--no_debug_info",
+            *(["--no_debug_info"] if NETWORK != "devnet" else []),
             *(["--account_contract"] if contract["is_account_contract"] else []),
             *(["--disable_hint_validation"] if NETWORK == "devnet" else []),
         ],

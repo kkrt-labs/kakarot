@@ -46,7 +46,7 @@ async def starknet(worker_id, request, blockhashes) -> AsyncGenerator[Starknet, 
     )
 
     starknet.deploy = traceit.trace_all(timeit(starknet.deploy))
-    starknet.declare = timeit(starknet.declare)
+    starknet.deprecated_declare = timeit(starknet.deprecated_declare)
     if request.config.getoption("trace_run"):
         logger.info("trace-run option enabled")
         ExecuteEntryPoint._run = traceit.trace_run(ExecuteEntryPoint._run)
