@@ -12,9 +12,6 @@ build-mac: check
 build-devnet:
 	docker build . --tag sayajin-labs/kakarot -f ./docker/devnet/Dockerfile
 
-build-katana:
-	docker buildx build --platform=linux/amd64,linux/arm64 -t sayajin-lab/kakarot_on_katana:latest -f ./docker/katana/Dockerfile . --push  
-
 check:
 	poetry lock --check
 

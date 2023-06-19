@@ -75,18 +75,11 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Load deployment artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: deployments
-          path: deployments
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: ghcr.io/sayajin-labs/kakarot/devnet:latest
+          tags: ghcr.io/sayajin-labs/kakarot/katana:latest
           context: .
-          build-args: |
-            DEVNET_VERSION=${{ needs.deploy.outputs.devnet-version }}
-          file: ./docker/devnet/Dockerfile
+          file: ./docker/katana/Dockerfile
           platforms: linux/amd64,linux/arm64
