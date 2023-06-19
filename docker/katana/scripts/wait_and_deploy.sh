@@ -26,7 +26,6 @@ function check_katana_status() {
 check_katana_status || exit 1
 
 cd ../kakarot
-poetry shell
 poetry run python scripts/deploy_kakarot.py
 
 if [ $? -eq 0 ]; then
