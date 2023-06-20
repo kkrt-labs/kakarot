@@ -28,7 +28,6 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 COPY --from=katana-builder /app/dojo/target/x86_64-unknown-linux-gnu/release/katana  /app/katana/x86_64-unknown-linux-gnu/release/katana 
 COPY --from=katana-builder /app/dojo/target/aarch64-unknown-linux-gnu/release/katana /app/katana/aarch64-unknown-linux-gnu/release/katana 
 COPY ./docker/katana/scripts /app/scripts
-COPY . /app/kakarot
 
 WORKDIR /app
 
@@ -37,18 +36,21 @@ RUN apt-get update && apt-get install -y build-essential coreutils curl libgmp3-
 RUN chmod +x scripts/run.sh
 RUN chmod +x scripts/wait_and_deploy.sh
 
-COPY ./docker/katana/cairo/requirements.txt ./requirements.txt
-
-RUN pip3 install -r requirements.txt
-
 # install poetry
 RUN curl -sSL https://install.python-poetry.org | python3 -
 
 ENV PATH="$PATH:/root/.local/bin"
 
-WORKDIR /app/kakarot
+COPY ./pyproject.toml /app/kakarot/pyproject.toml
+COPY ./poetry.lock /app/kakarot/poetry.lock
+COPY ./scripts  /app/kakarot/scripts
+COPY ./README.md  /app/kakarot/README.md
 
+WORKDIR /app/kakarot
 RUN poetry install
+
+COPY . /app/kakarot
+
 RUN make build
 
 EXPOSE 5050
