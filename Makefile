@@ -5,13 +5,6 @@ build: check
 	$(MAKE) clean
 	poetry run python ./scripts/compile_kakarot.py
 
-build-mac: check
-	$(MAKE) clean
-	python ./scripts/compile_kakarot.py
-
-build-devnet:
-	docker build . --tag sayajin-labs/kakarot -f ./docker/devnet/Dockerfile
-
 check:
 	poetry lock --check
 
