@@ -12,7 +12,7 @@ from kakarot.library import Kakarot
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.memory import Memory
-from kakarot.accounts.library import Accounts, deployed_addresses, deployed_addresses_len
+from kakarot.accounts.library import Accounts
 
 // Constructor
 @constructor
@@ -132,22 +132,4 @@ func eth_send_transaction{
     return_data_len: felt, return_data: felt*
 ) {
     return Kakarot.eth_send_transaction(to, gas_limit, gas_price, value, data_len, data);
-}
-
-// TODO: Remove when events are visible in madara/katana
-@view
-func get_deployed_address{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(index: felt) -> (evm_address: felt) {
-    let (evm_address) = deployed_addresses.read(index);
-    return (evm_address=evm_address);
-}
-
-// TODO: Remove when events are visible in madara/katana
-@view
-func get_deployed_addresses_len{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() -> (len: felt) {
-    let (len) = deployed_addresses_len.read();
-    return (len=len);
 }
