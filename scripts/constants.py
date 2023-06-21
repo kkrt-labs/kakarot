@@ -69,10 +69,19 @@ NETWORKS = {
 NETWORK = NETWORKS[os.getenv("STARKNET_NETWORK", "devnet")]
 NETWORK["account_address"] = os.environ.get(
     f"{NETWORK['name'].upper()}_ACCOUNT_ADDRESS"
-) or os.environ.get("ACCOUNT_ADDRESS")
-NETWORK["private_key"] = os.environ.get(
-    f"{NETWORK['name'].upper()}_PRIVATE_KEY"
-) or os.environ.get("PRIVATE_KEY")
+)
+if NETWORK["account_address"] is None:
+    logger.warning(
+        f"⚠️ {NETWORK['name'].upper()}_ACCOUNT_ADDRESS not set, defaulting to ACCOUNT_ADDRESS"
+    )
+    NETWORK["account_address"] = os.getenv("ACCOUNT_ADDRESS")
+NETWORK["private_key"] = os.environ.get(f"{NETWORK['name'].upper()}_PRIVATE_KEY")
+if NETWORK["private_key"] is None:
+    logger.warning(
+        f"⚠️  {NETWORK['name'].upper()}_PRIVATE_KEY not set, defaulting to PRIVATE_KEY"
+    )
+    NETWORK["private_key"] = os.getenv("PRIVATE_KEY")
+
 RPC_CLIENT = FullNodeClient(node_url=NETWORK["rpc_url"])
 
 ETH_TOKEN_ADDRESS = 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7
