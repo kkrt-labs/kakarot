@@ -153,7 +153,7 @@ async def fund_address(address: Union[int, str], amount: float):
             address, int_to_uint256(amount)
         )
         # TODO: remove when madara has a regular default account
-        if NETWORK["name"] == "madara" and account.address == 1:
+        if NETWORK["name"] in ["madara", "sharingan"] and account.address == 1:
             transaction = Invoke(
                 calldata=[
                     prepared.to_addr,
@@ -312,6 +312,7 @@ async def deploy_starknet_account(private_key=None, amount=1) -> Account:
         logger.warning("⚠️  Transaction REJECTED")
 
     logger.info(f"✅ Account deployed at address {hex(res.account.address)}")
+
     NETWORK["account_address"] = hex(res.account.address)
     NETWORK["private_key"] = hex(key_pair.private_key)
     return res.account
@@ -445,7 +446,9 @@ async def wait_for_transaction(*args, **kwargs):
         status not in [TransactionStatus.ACCEPTED_ON_L2, TransactionStatus.REJECTED]
         and elapsed < max_wait
     ):
-        logger.info(f"ℹ️  Current status: {status}")
+        if elapsed > 0:
+            # don't log at the first iteration
+            logger.info(f"ℹ️  Current status: {status}")
         logger.info(f"ℹ️  Sleeping for {check_interval}s")
         time.sleep(check_interval)
         response = requests.post(

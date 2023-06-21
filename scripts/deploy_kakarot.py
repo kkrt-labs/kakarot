@@ -27,7 +27,7 @@ logger.setLevel(logging.INFO)
 # %% Main
 async def main():
     # %% Declarations
-    if NETWORK["name"] == "madara":
+    if NETWORK["name"] in ["madara", "sharingan"]:
         await deploy_starknet_account(amount=100)
     account = await get_starknet_account()
     logger.info(f"ℹ️  Using account {hex(account.address)} as deployer")
