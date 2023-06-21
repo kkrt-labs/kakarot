@@ -14,7 +14,7 @@ logger.setLevel(logging.INFO)
 # %% Main
 async def main():
     # %% Compile
-    logger.info(f"ℹ️  Compiling contracts for network {NETWORK}")
+    logger.info(f"ℹ️  Compiling contracts for network {NETWORK['name']}")
     initial_time = datetime.now()
     for contract in COMPILED_CONTRACTS:
         logger.info(f"⏳ Compiling {contract}")

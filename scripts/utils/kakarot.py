@@ -19,7 +19,6 @@ from web3.contract import Contract as Web3Contract
 
 from scripts.artifacts import fetch_deployments
 from scripts.constants import (
-    CHAIN_ID,
     EVM_ADDRESS,
     EVM_PRIVATE_KEY,
     KAKAROT_CHAIN_ID,
@@ -36,7 +35,7 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-if NETWORK not in ["devnet", "madara", "katana"]:
+if NETWORK["name"] not in ["devnet", "madara", "katana"]:
     fetch_deployments()
 KAKAROT_ADDRESS = get_deployments()["kakarot"]["address"]
 FOUNDRY_FILE = toml.loads((Path(__file__).parents[2] / "foundry.toml").read_text())
@@ -172,7 +171,7 @@ async def get_eoa(
     return Account(
         address=starknet_address,
         client=RPC_CLIENT,
-        chain=CHAIN_ID,
+        chain=NETWORK["chain_id"],
         key_pair=KeyPair(private_key, address),
     )
 

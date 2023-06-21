@@ -31,25 +31,18 @@ from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starkware.starknet.public.abi import get_selector_from_name
 
 from scripts.constants import (
-    ACCOUNT_ADDRESS,
     BUILD_DIR,
-    CHAIN_ID,
     CONTRACTS,
     DEPLOYMENTS_DIR,
     ETH_TOKEN_ADDRESS,
     NETWORK,
-    PRIVATE_KEY,
     RPC_CLIENT,
     SOURCE_DIR,
-    STARKSCAN_URL,
 )
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
-_account_address = ACCOUNT_ADDRESS
-_private_key = PRIVATE_KEY
 
 
 def int_to_uint256(value):
@@ -63,15 +56,13 @@ async def get_starknet_account(
     address=None,
     private_key=None,
 ) -> Account:
-    global _account_address
-    global _private_key
-    address = address or _account_address
+    address = address or NETWORK["account_address"]
     if address is None:
         raise ValueError(
             "address was not given in arg nor in env variable, see README.md#Deploy"
         )
     address = int(address, 16)
-    private_key = private_key or _private_key
+    private_key = private_key or NETWORK["private_key"]
     if private_key is None:
         raise ValueError(
             "private_key was not given in arg nor in env variable, see README.md#Deploy"
@@ -113,7 +104,7 @@ async def get_starknet_account(
     return Account(
         address=address,
         client=RPC_CLIENT,
-        chain=CHAIN_ID,
+        chain=NETWORK["chain_id"],
         key_pair=key_pair,
     )
 
@@ -142,7 +133,7 @@ async def fund_address(address: Union[int, str], amount: float):
     """
     address = int(address, 16) if isinstance(address, str) else address
     amount = amount * 1e18
-    if NETWORK == "devnet":
+    if NETWORK["name"] == "devnet":
         response = requests.post(
             f"http://127.0.0.1:5050/mint",
             json={"address": hex(address), "amount": amount},
@@ -162,7 +153,7 @@ async def fund_address(address: Union[int, str], amount: float):
             address, int_to_uint256(amount)
         )
         # TODO: remove when madara has a regular default account
-        if NETWORK == "madara" and account.address == 1:
+        if NETWORK["name"] == "madara" and account.address == 1:
             transaction = Invoke(
                 calldata=[
                     prepared.to_addr,
@@ -242,7 +233,7 @@ def get_alias(contract_name):
 
 
 def get_tx_url(tx_hash: int) -> str:
-    return f"{STARKSCAN_URL}/tx/0x{tx_hash:064x}"
+    return f"{NETWORK['explorer_url']}/tx/0x{tx_hash:064x}"
 
 
 def compile_contract(contract):
@@ -256,7 +247,7 @@ def compile_contract(contract):
             str(SOURCE_DIR),
             "--no_debug_info",
             *(["--account_contract"] if contract["is_account_contract"] else []),
-            *(["--disable_hint_validation"] if NETWORK == "devnet" else []),
+            *(["--disable_hint_validation"] if NETWORK["name"] == "devnet" else []),
         ],
         capture_output=True,
     )
@@ -290,9 +281,7 @@ async def deploy_starknet_account(private_key=None, amount=1) -> Account:
     )
     class_hash = await declare("OpenzeppelinAccount")
     salt = random.randint(0, 2**251)
-    global _private_key
-    global _account_address
-    private_key = private_key or _private_key
+    private_key = private_key or NETWORK["private_key"]
     if private_key is None:
         raise ValueError(
             "private_key was not given in arg nor in env variable, see README.md#Deploy"
@@ -314,7 +303,7 @@ async def deploy_starknet_account(private_key=None, amount=1) -> Account:
         salt=salt,
         key_pair=key_pair,
         client=RPC_CLIENT,
-        chain=CHAIN_ID,
+        chain=NETWORK["chain_id"],
         constructor_calldata=constructor_calldata,
         max_fee=int(1e17),
     )
@@ -323,8 +312,8 @@ async def deploy_starknet_account(private_key=None, amount=1) -> Account:
         logger.warning("⚠️  Transaction REJECTED")
 
     logger.info(f"✅ Account deployed at address {hex(res.account.address)}")
-    _account_address = hex(res.account.address)
-    _private_key = hex(key_pair.private_key)
+    NETWORK["account_address"] = hex(res.account.address)
+    NETWORK["private_key"] = hex(key_pair.private_key)
     return res.account
 
 
@@ -439,10 +428,15 @@ async def wait_for_transaction(*args, **kwargs):
     elapsed = 0
     check_interval = kwargs.get(
         "check_interval",
-        0.1 if NETWORK in ["devnet", "katana"] else 1 if NETWORK == "madara" else 15,
+        0.1
+        if NETWORK["name"] in ["devnet", "katana"]
+        else 6
+        if NETWORK["name"] in ["madara", "sharingan"]
+        else 15,
     )
     max_wait = kwargs.get(
-        "max_wait", 60 * 5 if NETWORK not in ["devnet", "katana", "madara"] else 30
+        "max_wait",
+        60 * 5 if NETWORK["name"] not in ["devnet", "katana", "madara"] else 30,
     )
     transaction_hash = args[0] if args else kwargs["tx_hash"]
     status = None
