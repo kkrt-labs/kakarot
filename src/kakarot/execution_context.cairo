@@ -319,11 +319,11 @@ namespace ExecutionContext {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(events_len: felt, events: model.Event*) -> felt* {
+    }(events_len: felt, events: model.Event*) {
         alloc_locals;
 
         if (events_len == 0) {
-            return (events);
+            return ();
         }
 
         let event: model.Event = [events];
@@ -332,7 +332,8 @@ namespace ExecutionContext {
             keys_len=event.keys_len, keys=event.keys, data_len=event.data_len, data=event.data
         );
         // we maintain the semantics of one event struct involves iterating a full event struct size recursively
-        return emit_events(events_len - 1, events + 1 * model.Event.SIZE);
+        emit_events(events_len - 1, events + 1 * model.Event.SIZE);
+        return ();
     }
 
     // @notice Handles the necessary state upkeep of a context, depending on whether it is reverted or ran successfully.

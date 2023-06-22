@@ -204,7 +204,11 @@ def reports():
     return (
         (
             pd.DataFrame(_time_report)
-            .assign(contract=lambda df: df.kwargs.map(lambda kw: hex(kw["class_hash"])))
+            .assign(
+                contract=lambda df: df.kwargs.map(
+                    lambda kw: kw.get("source") or hex(kw.get("class_hash"))
+                )
+            )
             .reindex(columns=["contract", "name", "duration", "args", "kwargs"])
         ),
         pd.DataFrame(_resources_report)
