@@ -1,9 +1,11 @@
+import json
 import logging
 import os
 from enum import Enum
 from math import ceil, log
 from pathlib import Path
 
+import requests
 from dotenv import load_dotenv
 from eth_keys import keys
 from starknet_py.net.full_node_client import FullNodeClient
@@ -14,55 +16,41 @@ logger.setLevel(logging.INFO)
 load_dotenv()
 
 
-class ChainId(Enum):
-    mainnet = int.from_bytes(b"SN_MAIN", "big")
-    testnet = int.from_bytes(b"SN_GOERLI", "big")
-    testnet2 = int.from_bytes(b"SN_GOERLI2", "big")
-    katana = int.from_bytes(b"KATANA", "big")
-
-
 NETWORKS = {
     "mainnet": {
         "name": "mainnet",
         "explorer_url": "https://starkscan.co",
         "rpc_url": f"https://starknet-mainnet.infura.io/v3/{os.getenv('INFURA_KEY')}",
-        "chain_id": ChainId.mainnet,
     },
     "testnet": {
         "name": "testnet",
         "explorer_url": "https://testnet.starkscan.co",
         "rpc_url": f"https://starknet-goerli.infura.io/v3/{os.getenv('INFURA_KEY')}",
-        "chain_id": ChainId.testnet,
     },
     "testnet2": {
         "name": "testnet2",
         "explorer_url": "https://testnet-2.starkscan.co",
         "rpc_url": f"https://starknet-goerli2.infura.io/v3/{os.getenv('INFURA_KEY')}",
-        "chain_id": ChainId.testnet2,
     },
     "devnet": {
         "name": "devnet",
         "explorer_url": "",
         "rpc_url": "http://127.0.0.1:5050/rpc",
-        "chain_id": ChainId.testnet,
     },
     "katana": {
         "name": "katana",
         "explorer_url": "",
         "rpc_url": "http://127.0.0.1:5050",
-        "chain_id": ChainId.katana,
     },
     "madara": {
         "name": "madara",
         "explorer_url": "",
         "rpc_url": "http://127.0.0.1:9944",
-        "chain_id": ChainId.testnet,
     },
     "sharingan": {
         "name": "sharingan",
         "explorer_url": "",
         "rpc_url": os.getenv("SHARINGAN_RPC_URL"),
-        "chain_id": ChainId.testnet,
     },
 }
 
@@ -83,6 +71,24 @@ if NETWORK["private_key"] is None:
     NETWORK["private_key"] = os.getenv("PRIVATE_KEY")
 
 RPC_CLIENT = FullNodeClient(node_url=NETWORK["rpc_url"])
+try:
+    response = requests.post(
+        RPC_CLIENT.url,
+        json={
+            "jsonrpc": "2.0",
+            "method": f"starknet_chainId",
+            "params": [],
+            "id": 0,
+        },
+    )
+    payload = json.loads(response.text)
+
+    class ChainId(Enum):
+        chain_id = int(payload["result"], 16)
+
+    NETWORK["chain_id"] = ChainId.chain_id
+except:
+    pass
 
 ETH_TOKEN_ADDRESS = 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7
 SOURCE_DIR = Path("src")
@@ -109,7 +115,8 @@ EVM_ADDRESS = (
     ).public_key.to_checksum_address()
 )
 
-logger.info(
-    f"ℹ️  Connected to CHAIN_ID {NETWORK['chain_id'].value.to_bytes(ceil(log(NETWORK['chain_id'].value, 256)), 'big')} "
-    f"with RPC {RPC_CLIENT.url}"
-)
+if NETWORK.get("chain_id"):
+    logger.info(
+        f"ℹ️  Connected to CHAIN_ID {NETWORK['chain_id'].value.to_bytes(ceil(log(NETWORK['chain_id'].value, 256)), 'big')} "
+        f"with RPC {RPC_CLIENT.url}"
+    )
