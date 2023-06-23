@@ -5,6 +5,7 @@ from typing import List, Optional, cast
 
 import web3
 from eth_abi.exceptions import InsufficientDataBytes
+from eth_utils.address import to_checksum_address
 from starkware.starknet.testing.starknet import StarknetContract
 from web3 import Web3
 from web3._utils.abi import map_abi_data
@@ -118,9 +119,11 @@ def use_kakarot_backend(contract: Contract, kakarot: StarknetContract):
             for log_index, event in enumerate(res.raw_events):
                 # Using try/except as some events are emitted by cairo code and not LOG opcode
                 try:
+                    # every kkrt evm event emission appends the emitting contract as the final value of the event key (as felt)
+                    address = hex(event.keys[-1])
                     log_receipts.append(
                         LogReceipt(
-                            address=self.address,
+                            address=to_checksum_address(address),
                             blockHash=bytes(),
                             blockNumber=bytes(),
                             data=bytes(event.data),
@@ -134,7 +137,8 @@ def use_kakarot_backend(contract: Contract, kakarot: StarknetContract):
                                     # of the bytes32 topics. This recomputes the original topic
                                     f"{(event.keys[i] + 2**128 * event.keys[i + 1]):064x}"
                                 )
-                                for i in range(0, len(event.keys), 2)
+                                # every kkrt evm event emission appends the emitting contract as the final value of the event key (as felt), we skip those here
+                                for i in range(0, len(event.keys) - 1, 2)
                             ],
                             transactionHash=bytes(),
                             transactionIndex=0,
