@@ -2,11 +2,7 @@
 import logging
 from asyncio import run
 
-from scripts.constants import (
-    COMPILED_CONTRACTS,
-    ETH_TOKEN_ADDRESS,
-    EVM_ADDRESS,
-)
+from scripts.constants import COMPILED_CONTRACTS, ETH_TOKEN_ADDRESS, EVM_ADDRESS
 from scripts.utils.starknet import (
     declare,
     deploy,
