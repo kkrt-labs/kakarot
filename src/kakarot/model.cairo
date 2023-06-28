@@ -96,7 +96,7 @@ namespace model {
     // @param events_len The events length.
     // @param events The events to be emitted upon a non-reverted stopped execution context.
     // @param create_addresses_len The create_addresses length.
-    // @param events The addresses of contracts initialized by the create(2) opcodes that are deleted if the creating context is reverted.
+    // @param create_addresses The addresses of contracts initialized by the create(2) opcodes that are deleted if the creating context is reverted.
     // @param revert_contract_state A dictionary that keeps track of the prior-to-first-write value of a contract storage key so it can be reverted to if the writing execution context reverts.
     // @param read_only if set to true, context cannot do any state modifying instructions or send ETH in the sub context.
     struct ExecutionContext {

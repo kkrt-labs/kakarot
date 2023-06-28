@@ -98,6 +98,11 @@ class TestPlainOpcodes:
 
         async def test_should_emit_log0_with_no_data(self, plain_opcodes, addresses):
             await plain_opcodes.opcodeLog0(caller_address=addresses[0].starknet_address)
+            # the contract address is set at deploy time, we verify that event address is
+            # getting correctly set by asserting equality
+            expected_address = plain_opcodes.address
+            for log_receipt in plain_opcodes.raw_log_receipts:
+                assert log_receipt["address"] == expected_address
             assert plain_opcodes.events.Log0 == [{}]
 
         async def test_should_emit_log0_with_data(
@@ -106,23 +111,48 @@ class TestPlainOpcodes:
             await plain_opcodes.opcodeLog0Value(
                 caller_address=addresses[0].starknet_address
             )
+            # the contract address is set at deploy time, we verify that event address is
+            # getting correctly set by asserting equality
+            expected_address = plain_opcodes.address
+            for log_receipt in plain_opcodes.raw_log_receipts:
+                assert log_receipt["address"] == expected_address
             assert plain_opcodes.events.Log0Value == [{"value": event["value"]}]
 
         async def test_should_emit_log1(self, plain_opcodes, addresses, event):
             await plain_opcodes.opcodeLog1(caller_address=addresses[0].starknet_address)
+            # the contract address is set at deploy time, we verify that event address is
+            # getting correctly set by asserting equality
+            expected_address = plain_opcodes.address
+            for log_receipt in plain_opcodes.raw_log_receipts:
+                assert log_receipt["address"] == expected_address
             assert plain_opcodes.events.Log1 == [{"value": event["value"]}]
 
         async def test_should_emit_log2(self, plain_opcodes, addresses, event):
             await plain_opcodes.opcodeLog2(caller_address=addresses[0].starknet_address)
             del event["spender"]
+            # the contract address is set at deploy time, we verify that event address is
+            # getting correctly set by asserting equality
+            expected_address = plain_opcodes.address
+            for log_receipt in plain_opcodes.raw_log_receipts:
+                assert log_receipt["address"] == expected_address
             assert plain_opcodes.events.Log2 == [event]
 
         async def test_should_emit_log3(self, plain_opcodes, addresses, event):
             await plain_opcodes.opcodeLog3(caller_address=addresses[0].starknet_address)
+            # the contract address is set at deploy time, we verify that event address is
+            # getting correctly set by asserting equality
+            expected_address = plain_opcodes.address
+            for log_receipt in plain_opcodes.raw_log_receipts:
+                assert log_receipt["address"] == expected_address
             assert plain_opcodes.events.Log3 == [event]
 
         async def test_should_emit_log4(self, plain_opcodes, addresses, event):
             await plain_opcodes.opcodeLog4(caller_address=addresses[0].starknet_address)
+            # the contract address is set at deploy time, we verify that event address is
+            # getting correctly set by asserting equality
+            expected_address = plain_opcodes.address
+            for log_receipt in plain_opcodes.raw_log_receipts:
+                assert log_receipt["address"] == expected_address
             assert plain_opcodes.events.Log4 == [event]
 
     class TestCreate2:

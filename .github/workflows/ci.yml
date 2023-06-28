@@ -49,7 +49,7 @@ jobs:
         if: github.event_name == 'push'
         run: |
           git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
-          git config --global user.email "sayajin-labs@users.noreply.github.com"
+          git config --global user.email "kkrt-labs@users.noreply.github.com"
           git add -A
           git diff-index --quiet HEAD || (git commit -m "${{ env.CI_COMMIT_MESSAGE }}" && git push)
       - name: Compile all the cairo files

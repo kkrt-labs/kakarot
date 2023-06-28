@@ -312,6 +312,7 @@ namespace ExecutionContext {
     }
 
     // @notice Iterates through a list of events and emits them on the case that a context ran successfully (stopped and not reverted).
+    // @param evm_contract_address The execution context's evm contract address.
     // @param events_len The length of the events array.
     // @param events The array of Event structs that are emitted via the `emit_event` syscall.
     func emit_events{
@@ -319,7 +320,7 @@ namespace ExecutionContext {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(events_len: felt, events: model.Event*) {
+    }(evm_contract_address: felt, events_len: felt, events: model.Event*) {
         alloc_locals;
 
         if (events_len == 0) {
@@ -327,12 +328,22 @@ namespace ExecutionContext {
         }
 
         let event: model.Event = [events];
+        let event_keys_felt = cast(event.keys, felt*);
+        // we add the operating evm_contract_address of an execution context
+        // as the final key of an event
+        // we track kakarot events as those emitted from the kkrt contract
+        // and map it to the kkrt contract via this convention
+        assert [event_keys_felt + events.keys_len] = evm_contract_address;
+        let updated_event_len = event.keys_len + 1;
 
         emit_event(
-            keys_len=event.keys_len, keys=event.keys, data_len=event.data_len, data=event.data
+            keys_len=updated_event_len,
+            keys=event_keys_felt,
+            data_len=event.data_len,
+            data=event.data,
         );
         // we maintain the semantics of one event struct involves iterating a full event struct size recursively
-        emit_events(events_len - 1, events + 1 * model.Event.SIZE);
+        emit_events(evm_contract_address, events_len - 1, events + 1 * model.Event.SIZE);
         return ();
     }
 
@@ -364,7 +375,7 @@ namespace ExecutionContext {
             // this is called after a top level check that a given context is stopped
             // so this is the case of a stopped, non reverted context
             // meaning events should be fired off!
-            emit_events(self.events_len, self.events);
+            emit_events(self.evm_contract_address, self.events_len, self.events);
             return self;
         }
     }
