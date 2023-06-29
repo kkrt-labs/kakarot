@@ -14,6 +14,7 @@ jobs:
       DEVNET_ACCOUNT_ADDRESS: ${{ secrets.DEVNET_ACCOUNT_ADDRESS }}
       DEVNET_PRIVATE_KEY: ${{ secrets.DEVNET_PRIVATE_KEY }}
       RPC_KEY: ${{ secrets.RPC_KEY }}
+      INFURA_KEY: ${{ secrets.INFURA_KEY }}
     outputs:
       devnet-version: ${{ steps.devnet-version.outputs.DEVNET_VERSION }}
     steps:
