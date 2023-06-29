@@ -53,7 +53,7 @@ RUN poetry install
 
 COPY . /app/kakarot
 
-# copy example env to env so deploy script has access to neccessary envrionment variables
+# copy example env to env so deploy script has access to necessary environment variables
 RUN cp .env.example .env
 
 RUN make build
