@@ -125,11 +125,66 @@ func eth_call{
 // @param data Hash of the method signature and encoded parameters. For details see Ethereum Contract ABI in the Solidity documentation
 // @return return_data_len The length of the return_data
 // @return return_data An array of returned felts
-@external
+@view
 func eth_send_transaction{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
     return_data_len: felt, return_data: felt*
 ) {
     return Kakarot.eth_send_transaction(to, gas_limit, gas_price, value, data_len, data);
+}
+
+// @notice Run the given bytecode with the given calldata and parameters
+// @dev starknet_contract_address and evm_contract_address can be set to 0 if
+//      there is no notion of deployed contract in the bytecode. Otherwise,
+//      they should match (ie. that
+//      compute_starknet_address(IAccount.get_evm_address(starknet_contract_address))
+//      shou equal starknet_contract_address. In a future version, either one or the
+//      other will be removed
+// @param starknet_contract_address The starknet contract address of the called contract
+// @param evm_contract_address The corresponding EVM contract address of the called contract
+// @param bytecode_len The length of the bytecode
+// @param bytecode The bytecode run
+// @param calldata_len The length of the calldata
+// @param calldata The calldata of the execution
+// @param value The value of the execution
+// @param gas_limit The gas limit of the execution
+// @param gas_price The gas price for the execution
+@external
+func execute{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(
+    starknet_contract_address: felt,
+    evm_contract_address: felt,
+    bytecode_len: felt,
+    bytecode: felt*,
+    calldata_len: felt,
+    calldata: felt*,
+    value: felt,
+    gas_limit: felt,
+    gas_price: felt,
+) -> (
+    stack_accesses_len: felt,
+    stack_accesses: felt*,
+    stack_len: felt,
+    memory_accesses_len: felt,
+    memory_accesses: felt*,
+    memory_bytes_len: felt,
+    starknet_contract_address: felt,
+    evm_contract_address: felt,
+    return_data_len: felt,
+    return_data: felt*,
+    gas_used: felt,
+) {
+    return Kakarot.execute(
+        starknet_contract_address,
+        evm_contract_address,
+        bytecode_len,
+        bytecode,
+        calldata_len,
+        calldata,
+        value,
+        gas_limit,
+        gas_price,
+    );
 }
