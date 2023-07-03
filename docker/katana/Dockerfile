@@ -1,5 +1,7 @@
 FROM --platform=$BUILDPLATFORM rust:1.70 as katana-builder
 
+ENV STARKNET_NETWORK=KATANA
+
 RUN apt-get update && apt-get install -y git
 
 WORKDIR /app
@@ -50,6 +52,9 @@ WORKDIR /app/kakarot
 RUN poetry install
 
 COPY . /app/kakarot
+
+# copy example env to env so deploy script has access to necessary environment variables
+RUN cp .env.example .env
 
 RUN make build
 
