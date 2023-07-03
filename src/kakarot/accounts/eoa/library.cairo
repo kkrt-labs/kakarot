@@ -111,7 +111,6 @@ namespace ExternallyOwnedAccount {
     // @param calldata The calldata.
     // @param response The response data array to be updated.
     // @return response_len The total length of the response data array.
-
     func execute{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

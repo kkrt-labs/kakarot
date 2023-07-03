@@ -69,3 +69,17 @@ class TestEthTransaction:
                 await eth_transaction.test__validate(
                     address, transaction["nonce"], list(signed["rawTransaction"])
                 ).call()
+
+        @pytest.mark.parametrize("transaction", TRANSACTIONS)
+        async def test_should_raise_with_wrong_nonce(
+            self, eth_transaction, transaction
+        ):
+            private_key = generate_random_private_key()
+            address = int(generate_random_evm_address(), 16)
+            signed = Account.sign_transaction(transaction, private_key)
+
+            assert address != int(private_key.public_key.to_address(), 16)
+            with kakarot_error():
+                await eth_transaction.test__validate(
+                    address, transaction["nonce"] + 1, list(signed["rawTransaction"])
+                ).call()

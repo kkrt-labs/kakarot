@@ -219,24 +219,24 @@ namespace EthTransaction {
         finalize_keccak(keccak_ptr_start, keccak_ptr);
 
         let signer_nonce_idx = 1;
-        let gas_price_idx = tx_type + signer_nonce_idx;
         let (signer_nonce) = Helpers.bytes_to_felt(
             sub_items[signer_nonce_idx].data_len, sub_items[signer_nonce_idx].data, 0
         );
+        let gas_price_idx = tx_type + signer_nonce_idx;
         let (gas_price) = Helpers.bytes_to_felt(
-            sub_items[signer_nonce_idx + 1].data_len, sub_items[signer_nonce_idx + 1].data, 0
+            sub_items[gas_price_idx].data_len, sub_items[gas_price_idx].data, 0
         );
         let (gas_limit) = Helpers.bytes_to_felt(
-            sub_items[signer_nonce_idx + 2].data_len, sub_items[signer_nonce_idx + 2].data, 0
+            sub_items[gas_price_idx + 1].data_len, sub_items[gas_price_idx + 1].data, 0
         );
         let (destination) = Helpers.bytes_to_felt(
-            sub_items[signer_nonce_idx + 3].data_len, sub_items[signer_nonce_idx + 3].data, 0
+            sub_items[gas_price_idx + 2].data_len, sub_items[gas_price_idx + 2].data, 0
         );
         let (amount) = Helpers.bytes_to_felt(
-            sub_items[signer_nonce_idx + 4].data_len, sub_items[signer_nonce_idx + 4].data, 0
+            sub_items[gas_price_idx + 3].data_len, sub_items[gas_price_idx + 3].data, 0
         );
-        let payload_len = sub_items[signer_nonce_idx + 5].data_len;
-        let payload: felt* = sub_items[signer_nonce_idx + 5].data;
+        let payload_len = sub_items[gas_price_idx + 4].data_len;
+        let payload: felt* = sub_items[gas_price_idx + 4].data;
         return (
             signer_nonce,
             gas_price,
