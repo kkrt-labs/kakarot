@@ -91,9 +91,9 @@ namespace ExternallyOwnedAccount {
         }
 
         let (address) = evm_address.read();
-        let (signer_nonce) = Accounts.get_nonce();
+        let (nonce) = Accounts.get_nonce();
         EthTransaction.validate(
-            address, signer_nonce, [call_array].data_len, calldata + [call_array].data_offset
+            address, nonce, [call_array].data_len, calldata + [call_array].data_offset
         );
 
         return validate(
@@ -131,17 +131,7 @@ namespace ExternallyOwnedAccount {
         Accounts.increment_nonce();
 
         let (
-            signer_nonce,
-            gas_price,
-            gas_limit,
-            destination,
-            amount,
-            payload_len,
-            payload,
-            tx_hash,
-            v,
-            r,
-            s,
+            nonce, gas_price, gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s
         ) = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
 
         let (_kakarot_address) = kakarot_address.read();
