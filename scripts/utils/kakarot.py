@@ -100,7 +100,9 @@ async def deploy(
         if event.from_address == int(get_deployments()["kakarot"]["address"], 16)
     ]
     if len(deploy_event) != 1:
-        raise ValueError("Cannot locate evm contract address event")
+        raise ValueError(
+            f"Cannot locate evm contract address event, receipt events:\n{receipt.events}"
+        )
     evm_address, _ = deploy_event[0].data
     contract.address = Web3.to_checksum_address(evm_address)
 
