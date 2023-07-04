@@ -8,6 +8,7 @@ from starkware.cairo.common.uint256 import Uint256
 func test__decode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
 }(tx_data_len: felt, tx_data: felt*) -> (
+    nonce: felt,
     gas_price: felt,
     gas_limit: felt,
     destination: felt,
@@ -25,6 +26,6 @@ func test__decode{
 @view
 func test__validate{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
-}(address: felt, tx_data_len: felt, tx_data: felt*) {
-    return EthTransaction.validate(address, tx_data_len, tx_data);
+}(address: felt, nonce: felt, tx_data_len: felt, tx_data: felt*) {
+    return EthTransaction.validate(address, nonce, tx_data_len, tx_data);
 }

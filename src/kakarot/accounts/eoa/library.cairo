@@ -91,8 +91,9 @@ namespace ExternallyOwnedAccount {
         }
 
         let (address) = evm_address.read();
+        let (nonce) = Accounts.get_nonce();
         EthTransaction.validate(
-            address, [call_array].data_len, calldata + [call_array].data_offset
+            address, nonce, [call_array].data_len, calldata + [call_array].data_offset
         );
 
         return validate(
@@ -110,7 +111,6 @@ namespace ExternallyOwnedAccount {
     // @param calldata The calldata.
     // @param response The response data array to be updated.
     // @return response_len The total length of the response data array.
-
     func execute{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -131,7 +131,7 @@ namespace ExternallyOwnedAccount {
         Accounts.increment_nonce();
 
         let (
-            gas_price, gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s
+            nonce, gas_price, gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s
         ) = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
 
         let (_kakarot_address) = kakarot_address.read();
