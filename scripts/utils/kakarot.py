@@ -232,4 +232,7 @@ async def deploy_and_fund_evm_address(evm_address: str, amount: float):
 
 async def fund_address(address: Union[str, int], amount: float):
     starknet_address = await _get_starknet_address(address)
+    logger.info(
+        f"ℹ️  Funding EVM address {address} at Starknet address {hex(starknet_address)}"
+    )
     await _fund_starknet_address(starknet_address, amount)
