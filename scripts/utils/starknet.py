@@ -180,11 +180,13 @@ async def fund_address(address: Union[int, str], amount: float):
         else:
             tx = await prepared.invoke(max_fee=int(1e17))
 
-        await wait_for_transaction(tx.hash)
-        balance = (await eth_contract.functions["balanceOf"].call(address)).balance  # type: ignore
+        status = await wait_for_transaction(tx.hash)
+        status = "✅" if status == TransactionStatus.ACCEPTED_ON_L2 else "❌"
         logger.info(
-            f"{amount / 1e18} ETH sent from {hex(account.address)} to {hex(address)}; new balance {balance / 1e18}"
+            f"{status} {amount / 1e18} ETH sent from {hex(account.address)} to {hex(address)}"
         )
+        balance = (await eth_contract.functions["balanceOf"].call(address)).balance  # type: ignore
+        logger.info(f"💰 Balance of {hex(address)}: {balance / 1e18}")
 
 
 def dump_declarations(declarations):
@@ -308,10 +310,8 @@ async def deploy_starknet_account(private_key=None, amount=1) -> Account:
         max_fee=int(1e17),
     )
     status = await wait_for_transaction(res.hash)
-    if status == TransactionStatus.REJECTED:
-        logger.warning("⚠️  Transaction REJECTED")
-
-    logger.info(f"✅ Account deployed at address {hex(res.account.address)}")
+    status = "✅" if status == TransactionStatus.ACCEPTED_ON_L2 else "❌"
+    logger.info(f"{status} Account deployed at address {hex(res.account.address)}")
 
     NETWORK["account_address"] = hex(res.account.address)
     NETWORK["private_key"] = hex(key_pair.private_key)
@@ -360,8 +360,9 @@ async def declare(contract_name):
         DeclareTransactionResponseSchema().load(res, unknown=EXCLUDE),
     )
 
-    await wait_for_transaction(resp.transaction_hash)
-    logger.info(f"✅ {contract_name} class hash: {hex(resp.class_hash)}")
+    status = await wait_for_transaction(resp.transaction_hash)
+    status = "✅" if status == TransactionStatus.ACCEPTED_ON_L2 else "❌"
+    logger.info(f"{status} {contract_name} class hash: {hex(resp.class_hash)}")
     return resp.class_hash
 
 
@@ -376,9 +377,10 @@ async def deploy(contract_name, *args):
         constructor_args=list(args),
         max_fee=int(1e17),
     )
-    await wait_for_transaction(deploy_result.hash)
+    status = await wait_for_transaction(deploy_result.hash)
+    status = "✅" if status == TransactionStatus.ACCEPTED_ON_L2 else "❌"
     logger.info(
-        f"✅ {contract_name} deployed at: {hex(deploy_result.deployed_contract.address)}"
+        f"{status} {contract_name} deployed at: {hex(deploy_result.deployed_contract.address)}"
     )
     return {
         "address": deploy_result.deployed_contract.address,
@@ -398,9 +400,10 @@ async def invoke(contract_name, function_name, *inputs, address=None):
     call = contract.functions[function_name].prepare(*inputs, max_fee=int(1e17))
     logger.info(f"ℹ️  Invoking {contract_name}.{function_name}({json.dumps(inputs)})")
     response = await account.execute(call, max_fee=int(1e17))
-    await wait_for_transaction(response.transaction_hash)
+    status = await wait_for_transaction(response.transaction_hash)
+    status = "✅" if status == TransactionStatus.ACCEPTED_ON_L2 else "❌"
     logger.info(
-        f"✅ {contract_name}.{function_name} invoked at tx: %s",
+        f"{status} {contract_name}.{function_name} invoked at tx: %s",
         hex(response.transaction_hash),
     )
     return response.transaction_hash
