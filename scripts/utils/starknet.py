@@ -226,11 +226,7 @@ def is_fixture_contract(contract_name):
 
 def compile_contract(contract):
     is_fixture = is_fixture_contract(contract["contract_name"])
-    contract_build_path = (
-        BUILD_DIR / f"{contract['contract_name']}.json"
-        if not is_fixture
-        else BUILD_DIR_FIXTURES / f"{contract['contract_name']}.json"
-    )
+    contract_build_path = get_artifact(contract["contract_name"])
 
     output = subprocess.run(
         [

@@ -46,7 +46,6 @@ async def main():
         "blockhash_registry",
         deployments["kakarot"]["address"],  # kakarot address
     )
-    dump_deployments(deployments)
 
     deployments["EVM"] = await deploy(
         "EVM",
@@ -55,6 +54,7 @@ async def main():
         class_hash["proxy"],  # account_proxy_class_hash
         deployments["blockhash_registry"]["address"],  # blockhash_registry address
     )
+
     dump_deployments(deployments)
 
     logger.info("⏳ Configuring Contracts...")
