@@ -9,6 +9,7 @@ import requests
 from dotenv import load_dotenv
 from eth_keys import keys
 from starknet_py.net.full_node_client import FullNodeClient
+from starknet_py.net.gateway_client import GatewayClient
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -21,16 +22,19 @@ NETWORKS = {
         "name": "mainnet",
         "explorer_url": "https://starkscan.co",
         "rpc_url": f"https://starknet-mainnet.infura.io/v3/{os.getenv('INFURA_KEY')}",
+        "gateway": "mainnet",
     },
     "testnet": {
         "name": "testnet",
         "explorer_url": "https://testnet.starkscan.co",
         "rpc_url": f"https://starknet-goerli.infura.io/v3/{os.getenv('INFURA_KEY')}",
+        "gateway": "testnet",
     },
     "testnet2": {
         "name": "testnet2",
         "explorer_url": "https://testnet-2.starkscan.co",
         "rpc_url": f"https://starknet-goerli2.infura.io/v3/{os.getenv('INFURA_KEY')}",
+        "gateway": "testnet2",
     },
     "devnet": {
         "name": "devnet",
@@ -71,6 +75,9 @@ if NETWORK["private_key"] is None:
     NETWORK["private_key"] = os.getenv("PRIVATE_KEY")
 
 RPC_CLIENT = FullNodeClient(node_url=NETWORK["rpc_url"])
+GATEWAY_CLIENT = GatewayClient(NETWORK["gateway"]) if NETWORK.get("gateway") else None
+CLIENT = GATEWAY_CLIENT if GATEWAY_CLIENT else RPC_CLIENT
+
 try:
     response = requests.post(
         RPC_CLIENT.url,
@@ -118,5 +125,5 @@ EVM_ADDRESS = (
 if NETWORK.get("chain_id"):
     logger.info(
         f"ℹ️  Connected to CHAIN_ID {NETWORK['chain_id'].value.to_bytes(ceil(log(NETWORK['chain_id'].value, 256)), 'big')} "
-        f"with RPC {RPC_CLIENT.url}"
+        f"with {f'Gateway {GATEWAY_CLIENT.net}' if GATEWAY_CLIENT is not None else f'RPC {RPC_CLIENT.url}'}"
     )

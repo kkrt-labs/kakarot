@@ -13,7 +13,7 @@ import requests
 from caseconverter import snakecase
 from marshmallow import EXCLUDE
 from starknet_py.common import create_compiled_contract
-from starknet_py.contract import Contract, InvokeResult
+from starknet_py.contract import Contract
 from starknet_py.hash.address import compute_address
 from starknet_py.hash.class_hash import compute_class_hash
 from starknet_py.hash.transaction import compute_declare_transaction_hash
@@ -25,18 +25,18 @@ from starknet_py.net.client_models import (
     TransactionStatus,
 )
 from starknet_py.net.full_node_client import _create_broadcasted_txn
-from starknet_py.net.models.transaction import Declare, Invoke
+from starknet_py.net.models.transaction import Declare
 from starknet_py.net.schemas.rpc import DeclareTransactionResponseSchema
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starkware.starknet.public.abi import get_selector_from_name
 
 from scripts.constants import (
     BUILD_DIR,
+    CLIENT,
     CONTRACTS,
     DEPLOYMENTS_DIR,
     ETH_TOKEN_ADDRESS,
     NETWORK,
-    RPC_CLIENT,
     SOURCE_DIR,
 )
 
@@ -77,14 +77,14 @@ async def get_starknet_account(
                 selector=get_selector_from_name(selector),
                 calldata=[],
             )
-            public_key = (
-                await RPC_CLIENT.call_contract(call=call, block_hash="latest")
-            )[0]
+            public_key = (await CLIENT.call_contract(call=call, block_hash="latest"))[0]
+            break
         except Exception as err:
             if (
                 err.message == "Client failed with code 40: Contract error."
                 or err.message
                 == "Client failed with code 21: Invalid message selector."
+                or "StarknetErrorCode.ENTRY_POINT_NOT_FOUND_IN_CONTRACT" in err.message
             ):
                 continue
             else:
@@ -103,7 +103,7 @@ async def get_starknet_account(
 
     return Account(
         address=address,
-        client=RPC_CLIENT,
+        client=CLIENT,
         chain=NETWORK["chain_id"],
         key_pair=key_pair,
     )
@@ -152,33 +152,7 @@ async def fund_address(address: Union[int, str], amount: float):
         prepared = eth_contract.functions["transfer"].prepare(
             address, int_to_uint256(amount)
         )
-        # TODO: remove when madara has a regular default account
-        if NETWORK["name"] in ["madara", "sharingan"] and account.address == 1:
-            transaction = Invoke(
-                calldata=[
-                    prepared.to_addr,
-                    prepared.selector,
-                    len(prepared.calldata),
-                    *prepared.calldata,
-                ],
-                signature=[],
-                max_fee=0,
-                version=1,
-                nonce=await account.get_nonce(),
-                sender_address=account.address,
-            )
-            _add_signature_to_transaction(
-                transaction, account.signer.sign_transaction(transaction)
-            )
-            response = await RPC_CLIENT.send_transaction(transaction)
-            tx = InvokeResult(
-                hash=response.transaction_hash,  # noinspection PyTypeChecker
-                _client=prepared._client,
-                contract=prepared._contract_data,
-                invoke_transaction=transaction,
-            )
-        else:
-            tx = await prepared.invoke(max_fee=int(1e17))
+        tx = await prepared.invoke(max_fee=int(1e17))
 
         status = await wait_for_transaction(tx.hash)
         status = "✅" if status == TransactionStatus.ACCEPTED_ON_L2 else "❌"
@@ -304,7 +278,7 @@ async def deploy_starknet_account(private_key=None, amount=1) -> Account:
         class_hash=class_hash,
         salt=salt,
         key_pair=key_pair,
-        client=RPC_CLIENT,
+        client=CLIENT,
         chain=NETWORK["chain_id"],
         constructor_calldata=constructor_calldata,
         max_fee=int(1e17),
@@ -325,7 +299,7 @@ async def declare(contract_name):
     contract_class = create_compiled_contract(compiled_contract=compiled_contract)
     class_hash = compute_class_hash(contract_class=deepcopy(contract_class))
     try:
-        await RPC_CLIENT.get_class_by_hash(class_hash)
+        await CLIENT.get_class_by_hash(class_hash)
         logger.info(f"✅ Class already declared, skipping")
         return class_hash
     except Exception:
@@ -351,7 +325,7 @@ async def declare(contract_name):
     transaction = _add_signature_to_transaction(transaction, signature)
     params = _create_broadcasted_txn(transaction=transaction)
 
-    res = await RPC_CLIENT._client.call(
+    res = await CLIENT._client.call(
         method_name="addDeclareTransaction",
         params=[params],
     )
@@ -420,14 +394,19 @@ async def call(contract_name, function_name, *inputs, address=None):
     return await contract.functions[function_name].call(*inputs)
 
 
-# TODO: use RPC_CLIENT when RPC wait_for_tx is fixed, see https://github.com/kkrt-labs/kakarot/issues/586
+# TODO: use CLIENT when RPC wait_for_tx is fixed, see https://github.com/kkrt-labs/kakarot/issues/586
 # TODO: Currently, the first ping often throws "transaction not found"
-@functools.wraps(RPC_CLIENT.wait_for_tx)
+@functools.wraps(CLIENT.wait_for_tx)
 async def wait_for_transaction(*args, **kwargs):
     """
     We need to write this custom hacky wait_for_transaction instead of using the one from starknet-py
     because the RPCs don't know RECEIVED, PENDING and REJECTED states currently
     """
+    if not hasattr(CLIENT, "url"):
+        # Gateway case, just use it
+        _, status = await CLIENT.wait_for_tx(*args, **kwargs)
+        return status
+
     start = datetime.now()
     elapsed = 0
     check_interval = kwargs.get(
@@ -435,7 +414,7 @@ async def wait_for_transaction(*args, **kwargs):
         0.1
         if NETWORK["name"] in ["devnet", "katana"]
         else 6
-        if NETWORK["name"] in ["madara", "sharingan"]
+        if NETWORK["name"] in ["madara", "sharingan", "testnet"]
         else 15,
     )
     max_wait = kwargs.get(
@@ -455,7 +434,7 @@ async def wait_for_transaction(*args, **kwargs):
         logger.info(f"ℹ️  Sleeping for {check_interval}s")
         time.sleep(check_interval)
         response = requests.post(
-            RPC_CLIENT.url,
+            CLIENT.url,
             json={
                 "jsonrpc": "2.0",
                 "method": f"starknet_getTransactionReceipt",
@@ -471,5 +450,10 @@ async def wait_for_transaction(*args, **kwargs):
         status = payload.get("result", {}).get("status")
         if status is not None:
             status = TransactionStatus(status)
+        else:
+            # no status, but RPC currently doesn't return status for ACCEPTED_ON_L2 still PENDING
+            # we take actual_fee as a proxy for ACCEPTED_ON_L2
+            if payload.get("result", {}).get("actual_fee"):
+                status = TransactionStatus.ACCEPTED_ON_L2
         elapsed = (datetime.now() - start).total_seconds()
     return status
