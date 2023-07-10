@@ -41,6 +41,20 @@ pub mod test {
     };
 
     for (index, test_case) in test_cases.iter().enumerate() {
+        
+        let mut should_skip = false;
+        let skip_mark = String::from("pytest.mark.skip");
+        for mark in &test_case.marks {
+            if mark.contains(&skip_mark) {
+               should_skip = true;
+               break;
+            }
+        }
+        if should_skip {
+            println!("Skipping test case {}: {}", index + 1, test_case.id);
+            continue;
+        }
+
         println!("Running test case {}: {}", index + 1, test_case.id);
 
         let value = FieldElement::from(test_case.params.value);

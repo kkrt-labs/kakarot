@@ -1,0 +1,245 @@
+
+running 1 test
+Running test case 1: return
+Test case return finished ✅
+Running test case 2: return2
+Test case return2 finished ✅
+Running test case 3: codecopy
+Test case codecopy finished ✅
+Running test case 4: codecopy2
+Test case codecopy2 finished ✅
+Running test case 5: Arithmetic operations
+Test case Arithmetic operations finished ✅
+Running test case 6: Duplication operations
+Test case Duplication operations finished ✅
+Running test case 7: Comparison & bitwise logic operations - SAR
+Test case Comparison & bitwise logic operations - SAR finished ✅
+Running test case 8: Comparison & bitwise logic operations - SAR
+Test case Comparison & bitwise logic operations - SAR finished ✅
+Running test case 9: Comparison & bitwise logic operations - SAR
+Test case Comparison & bitwise logic operations - SAR finished ✅
+Running test case 10: Comparison & bitwise logic operations - SAR
+Test case Comparison & bitwise logic operations - SAR finished ✅
+Running test case 11: Comparison & bitwise logic operations - SAR
+Test case Comparison & bitwise logic operations - SAR finished ✅
+Running test case 12: Comparison & bitwise logic operations - SAR
+Test case Comparison & bitwise logic operations - SAR finished ✅
+Running test case 13: Comparison & bitwise logic operations - SAR
+Test case Comparison & bitwise logic operations - SAR finished ✅
+Running test case 14: Comparison & bitwise logic operations - SAR
+Test case Comparison & bitwise logic operations - SAR finished ✅
+Running test case 15: Comparison & bitwise logic operations - SAR
+Test case Comparison & bitwise logic operations - SAR finished ✅
+Running test case 16: Comparison & bitwise logic operations - SHR
+Test case Comparison & bitwise logic operations - SHR finished ✅
+Running test case 17: Comparison & bitwise logic operations - SAR
+Test case Comparison & bitwise logic operations - SAR finished ✅
+Running test case 18: Comparison & bitwise logic operations - SAR
+Test case Comparison & bitwise logic operations - SAR finished ✅
+Running test case 19: Comparison & bitwise logic operations - SAR
+Test case Comparison & bitwise logic operations - SAR finished ✅
+Running test case 20: Comparison & bitwise logic operations - SAR
+Test case Comparison & bitwise logic operations - SAR finished ✅
+Running test case 21: Comparison & bitwise logic operations - SAR
+Test case Comparison & bitwise logic operations - SAR finished ✅
+Running test case 22: Comparison & bitwise logic operations - SAR
+Test case Comparison & bitwise logic operations - SAR finished ✅
+Running test case 23: Comparison & bitwise logic operations - SHL
+Test case Comparison & bitwise logic operations - SHL finished ✅
+Running test case 24: Comparison & bitwise logic operations - SHL
+Test case Comparison & bitwise logic operations - SHL finished ✅
+Running test case 25: Comparison & bitwise logic operations - SHL
+Test case Comparison & bitwise logic operations - SHL finished ✅
+Running test case 26: Comparison & bitwise logic operations - SHL
+Test case Comparison & bitwise logic operations - SHL finished ✅
+Running test case 27: Comparison & bitwise logic operations - SHL
+Test case Comparison & bitwise logic operations - SHL finished ✅
+Running test case 28: Comparison & bitwise logic operations - SHL
+Test case Comparison & bitwise logic operations - SHL finished ✅
+Running test case 29: Comparison & bitwise logic operations - SHL
+Test case Comparison & bitwise logic operations - SHL finished ✅
+Running test case 30: Comparison & bitwise logic operations - SHL
+Test case Comparison & bitwise logic operations - SHL finished ✅
+Running test case 31: Comparison & bitwise logic operations - SHL
+Test case Comparison & bitwise logic operations - SHL finished ✅
+Running test case 32: Comparison & bitwise logic operations - SHL
+Test case Comparison & bitwise logic operations - SHL finished ✅
+Running test case 33: Comparison & bitwise logic operations - SHL
+Test case Comparison & bitwise logic operations - SHL finished ✅
+Running test case 34: Comparison & bitwise logic operations - SHR
+Test case Comparison & bitwise logic operations - SHR finished ✅
+Running test case 35: Comparison & bitwise logic operations - SHR
+Test case Comparison & bitwise logic operations - SHR finished ✅
+Running test case 36: Comparison & bitwise logic operations - SHR
+Test case Comparison & bitwise logic operations - SHR finished ✅
+Running test case 37: Comparison & bitwise logic operations - SHR
+Test case Comparison & bitwise logic operations - SHR finished ✅
+Running test case 38: Comparison & bitwise logic operations - SHR
+Test case Comparison & bitwise logic operations - SHR finished ✅
+Running test case 39: Comparison & bitwise logic operations - SHR
+Test case Comparison & bitwise logic operations - SHR finished ✅
+Running test case 40: Comparison & bitwise logic operations - SHR
+Test case Comparison & bitwise logic operations - SHR finished ✅
+Running test case 41: Comparison & bitwise logic operations - SHR
+Test case Comparison & bitwise logic operations - SHR finished ✅
+Running test case 42: Comparison & bitwise logic operations - SHR
+Test case Comparison & bitwise logic operations - SHR finished ✅
+Running test case 43: Comparison & bitwise logic operations - SHR
+Test case Comparison & bitwise logic operations - SHR finished ✅
+Running test case 44: Comparison & bitwise logic operations - SHR
+Test case Comparison & bitwise logic operations - SHR finished ✅
+Running test case 45: Comparison & bitwise logic operations - AND
+Test case Comparison & bitwise logic operations - AND finished ✅
+Running test case 46: Comparison & bitwise logic operations - EQ
+Test case Comparison & bitwise logic operations - EQ finished ✅
+Running test case 47: Comparison & bitwise logic operations - GT
+Test case Comparison & bitwise logic operations - GT finished ✅
+Running test case 48: Comparison & bitwise logic operations - ISZERO
+Test case Comparison & bitwise logic operations - ISZERO finished ✅
+Running test case 49: Comparison & bitwise logic operations - LT
+Test case Comparison & bitwise logic operations - LT finished ✅
+Running test case 50: Comparison & bitwise logic operations - NOT
+Test case Comparison & bitwise logic operations - NOT finished ✅
+Running test case 51: Comparison & bitwise logic operations - OR
+Test case Comparison & bitwise logic operations - OR finished ✅
+Running test case 52: Comparison & bitwise logic operations - SGT
+Test case Comparison & bitwise logic operations - SGT finished ✅
+Running test case 53: Comparison & bitwise logic operations - SLT
+Test case Comparison & bitwise logic operations - SLT finished ✅
+Running test case 54: Exchange operations
+Test case Exchange operations finished ✅
+Running test case 55: Environmental information
+Test case Environmental information finished ✅
+Running test case 56: Block information CHAINID
+Test case Block information CHAINID finished ✅
+Running test case 57: Block information COINBASE
+Test case Block information COINBASE finished ✅
+Running test case 58: System operations INVALID
+Test case System operations INVALID failed: JSON-RPC error: code=-32603, message="Internal error: StarknetErrorCode.TRANSACTION_FAILED: Error message: Kakarot: 0xFE: Invalid Opcode
+Error at pc=0:15801:
+An ASSERT_EQ instruction failed: 0 != 1.
+Cairo traceback (most recent call last):
+Unknown location (pc=0:18168)
+Unknown location (p..." ❌
+Running test case 59: Get balance of currently executing contract - 0x47 SELFBALANCE
+test test::test_block_information has been running for over 60 seconds
+Test case Get balance of currently executing contract - 0x47 SELFBALANCE finished ✅
+Skipping test case 60: Origin Address
+Running test case 61: Caller Address
+Test case Caller Address failed: Contract not found ❌
+Running test case 62: Hash 32 bytes
+Test case Hash 32 bytes finished ✅
+Running test case 63: Hash 1 byte with offset 1f
+Test case Hash 1 byte with offset 1f finished ✅
+Running test case 64: Hash 1 byte no offset
+Test case Hash 1 byte no offset finished ✅
+Running test case 65: Hash 7 bytes
+Test case Hash 7 bytes finished ✅
+Running test case 66: Hash 8 bytes
+Test case Hash 8 bytes finished ✅
+Running test case 67: Hash 9 bytes
+Test case Hash 9 bytes finished ✅
+Running test case 68: Hash 17 bytes
+Test case Hash 17 bytes finished ✅
+Running test case 69: Gas Limit
+Test case Gas Limit finished ✅
+Running test case 70: Get the size of return data - 0x3d RETURNDATASIZE
+Test case Get the size of return data - 0x3d RETURNDATASIZE finished ✅
+Running test case 71: Load Word from Memory
+Test case Load Word from Memory finished ✅
+Running test case 72: Get baseFee
+Test case Get baseFee finished ✅
+Running test case 73: Get deposited value by the instruction/transaction responsible for this execution - 0x34 CALLVALUE
+Test case Get deposited value by the instruction/transaction responsible for this execution - 0x34 CALLVALUE finished ✅
+Running test case 74: Load CallData onto the Stack - 0x35 CALLDATALOAD
+Test case Load CallData onto the Stack - 0x35 CALLDATALOAD finished ✅
+Running test case 75: Get the size of calldata when empty calldata - 0x36 CALLDATASIZE
+Test case Get the size of calldata when empty calldata - 0x36 CALLDATASIZE finished ✅
+Running test case 76: Get the size of calldata when non empty calldata - 0x36 CALLDATASIZE
+Test case Get the size of calldata when non empty calldata - 0x36 CALLDATASIZE finished ✅
+Running test case 77: Balance
+Test case Balance finished ✅
+Running test case 78: Memory operations
+Test case Memory operations finished ✅
+Running test case 79: Memory operations
+Test case Memory operations finished ✅
+Running test case 80: Memory operations
+Test case Memory operations finished ✅
+Running test case 81: Memory operation - PC
+Test case Memory operation - PC finished ✅
+Running test case 82: Get Memory Size
+Test case Get Memory Size finished ✅
+Running test case 83: Load Word from Memory
+Test case Load Word from Memory finished ✅
+Running test case 84: Jumpdest opcode
+Test case Jumpdest opcode finished ✅
+Running test case 85: JUMP opcode
+Test case JUMP opcode finished ✅
+Running test case 86: JUMP if condition is met
+Test case JUMP if condition is met finished ✅
+Running test case 87: Memory operations - Check very large offsets
+Test case Memory operations - Check very large offsets finished ✅
+Running test case 88: Memory operations - Check Colliding offsets
+Test case Memory operations - Check Colliding offsets finished ✅
+Running test case 89: Memory operations - Check saving memory with 30 bytes
+Test case Memory operations - Check saving memory with 30 bytes finished ✅
+Running test case 90: Memory operations - Check saving memory in between an already saved memory location
+Test case Memory operations - Check saving memory in between an already saved memory location finished ✅
+Running test case 91: Memory operations - Check saving memory in between an already saved memory location
+Test case Memory operations - Check saving memory in between an already saved memory location finished ✅
+Running test case 92: Memory operations - Check saving memory in between an already saved memory location
+Test case Memory operations - Check saving memory in between an already saved memory location finished ✅
+Running test case 93: calldatacopy
+Test case calldatacopy finished ✅
+Running test case 94: calldatacopy1
+Test case calldatacopy1 finished ✅
+Running test case 95: calldatacopy2
+Test case calldatacopy2 finished ✅
+Running test case 96: calldatacopy3
+Test case calldatacopy3 finished ✅
+Running test case 97: calldatacopy4
+Test case calldatacopy4 finished ✅
+Running test case 98: calldatacopy5
+Test case calldatacopy5 finished ✅
+Running test case 99: Environment Information - CODECOPY (0x39) - code slice within bounds, memory offset > len with tail padding
+Test case Environment Information - CODECOPY (0x39) - code slice within bounds, memory offset > len with tail padding finished ✅
+Running test case 100: Environmental Information - CODECOPY (0x39) - code slice within bounds, memory copy within bounds
+Test case Environmental Information - CODECOPY (0x39) - code slice within bounds, memory copy within bounds finished ✅
+Running test case 101: Environmental Information - CODECOPY (0x39) - code slice within bounds, memory offset < len < offset + size
+Test case Environmental Information - CODECOPY (0x39) - code slice within bounds, memory offset < len < offset + size finished ✅
+Running test case 102: Environmental Information - CODECOPY (0x39) - code with padding + memory offset > len 
+Test case Environmental Information - CODECOPY (0x39) - code with padding + memory offset > len  finished ✅
+Running test case 103: Environmental Information - CODECOPY (0x39) - code offset > len, memory offset + size < len
+Test case Environmental Information - CODECOPY (0x39) - code offset > len, memory offset + size < len finished ✅
+Running test case 104: Environment Information - CODECOPY (0x39) - evmcode example 1
+Test case Environment Information - CODECOPY (0x39) - evmcode example 1 finished ✅
+Running test case 105: Environment Information - CODECOPY (0x39) - evmcode example 1+2
+Test case Environment Information - CODECOPY (0x39) - evmcode example 1+2 finished ✅
+Running test case 106: Get address of currently executing account - 0x30 ADDRESS
+Test case Get address of currently executing account - 0x30 ADDRESS finished ✅
+Running test case 107: Block information NUMBER
+Test case Block information NUMBER finished ✅
+Running test case 108: Block information TIMESTAMP
+Test case Block information TIMESTAMP finished ✅
+Running test case 109: PRElog0
+Test case PRElog0 finished ✅
+Running test case 110: PRElog0-1
+Test case PRElog0-1 finished ✅
+Running test case 111: PRElog1
+Test case PRElog1 finished ✅
+Running test case 112: PRElog1-1
+Test case PRElog1-1 finished ✅
+Running test case 113: Precompiles - EC_RECOVER - playground test case
+Test case Precompiles - EC_RECOVER - playground test case finished ✅
+Running test case 114: Precompiles - RIPEMD160 - playground test case
+Test case Precompiles - RIPEMD160 - playground test case finished ✅
+Skipping test case 115: Precompiles - EC_ADD - playground test case
+Skipping test case 116: Precompiles - ModExp - playground test case
+Skipping test case 117: Precompiles - EC_MUL - playground test case
+Running test case 118: Precompiles - BLAKE2F - playground test case
+Test case Precompiles - BLAKE2F - playground test case finished ✅
+Skipping test case 119: Precompiles - SHA2-256 - playground test case
+test test::test_block_information ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 157.01s
+

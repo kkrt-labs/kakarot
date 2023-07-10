@@ -6,6 +6,7 @@ use starknet::core::types::FieldElement;
 pub struct TestCase {
     pub params: Params,
     pub id: String,
+    pub marks: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
