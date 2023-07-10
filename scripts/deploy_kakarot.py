@@ -44,7 +44,16 @@ async def main():
     )
     deployments["blockhash_registry"] = await deploy(
         "blockhash_registry",
-        deployments["kakarot"]["address"],
+        deployments["kakarot"]["address"],  # kakarot address
+    )
+    dump_deployments(deployments)
+
+    deployments["EVM"] = await deploy(
+        "EVM",
+        ETH_TOKEN_ADDRESS,  # native_token_address_
+        class_hash["contract_account"],  # contract_account_class_hash_
+        class_hash["proxy"],  # account_proxy_class_hash
+        deployments["blockhash_registry"]["address"],  # blockhash_registry address
     )
     dump_deployments(deployments)
 
