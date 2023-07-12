@@ -23,42 +23,57 @@ NETWORKS = {
         "explorer_url": "https://starkscan.co",
         "rpc_url": f"https://starknet-mainnet.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "gateway": "mainnet",
+        "devnet": False,
     },
     "testnet": {
         "name": "testnet",
         "explorer_url": "https://testnet.starkscan.co",
         "rpc_url": f"https://starknet-goerli.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "gateway": "testnet",
+        "devnet": False,
     },
     "testnet2": {
         "name": "testnet2",
         "explorer_url": "https://testnet-2.starkscan.co",
         "rpc_url": f"https://starknet-goerli2.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "gateway": "testnet2",
+        "devnet": False,
     },
-    "devnet": {
-        "name": "devnet",
+    "starknet-devnet": {
+        "name": "starknet-devnet",
         "explorer_url": "",
         "rpc_url": "http://127.0.0.1:5050/rpc",
+        "devnet": True,
+        "check_interval": 0.1,
+        "max_wait": 1,
     },
     "katana": {
         "name": "katana",
         "explorer_url": "",
         "rpc_url": "http://127.0.0.1:5050",
+        "devnet": True,
+        "check_interval": 0.1,
+        "max_wait": 1,
     },
     "madara": {
         "name": "madara",
         "explorer_url": "",
         "rpc_url": "http://127.0.0.1:9944",
+        "devnet": True,
+        "check_interval": 6,
+        "max_wait": 30,
     },
     "sharingan": {
         "name": "sharingan",
         "explorer_url": "",
         "rpc_url": os.getenv("SHARINGAN_RPC_URL"),
+        "devnet": False,
+        "check_interval": 6,
+        "max_wait": 30,
     },
 }
 
-NETWORK = NETWORKS[os.getenv("STARKNET_NETWORK", "devnet")]
+NETWORK = NETWORKS[os.getenv("STARKNET_NETWORK", "starknet-devnet")]
 NETWORK["account_address"] = os.environ.get(
     f"{NETWORK['name'].upper()}_ACCOUNT_ADDRESS"
 )

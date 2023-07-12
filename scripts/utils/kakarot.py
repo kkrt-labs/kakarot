@@ -36,7 +36,7 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-if NETWORK["name"] not in ["devnet", "madara", "katana"]:
+if not NETWORK["devnet"]:
     fetch_deployments()
 KAKAROT_ADDRESS = get_deployments()["kakarot"]["address"]
 FOUNDRY_FILE = toml.loads((Path(__file__).parents[2] / "foundry.toml").read_text())

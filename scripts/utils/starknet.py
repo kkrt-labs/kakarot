@@ -133,7 +133,7 @@ async def fund_address(address: Union[int, str], amount: float):
     """
     address = int(address, 16) if isinstance(address, str) else address
     amount = amount * 1e18
-    if NETWORK["name"] == "devnet":
+    if NETWORK["name"] == "starknet-devnet":
         response = requests.post(
             f"http://127.0.0.1:5050/mint",
             json={"address": hex(address), "amount": amount},
@@ -221,9 +221,13 @@ def compile_contract(contract):
             BUILD_DIR / f"{contract['contract_name']}.json",
             "--cairo_path",
             str(SOURCE_DIR),
-            *(["--no_debug_info"] if NETWORK["name"] != "devnet" else []),
+            *(["--no_debug_info"] if not NETWORK["devnet"] else []),
             *(["--account_contract"] if contract["is_account_contract"] else []),
-            *(["--disable_hint_validation"] if NETWORK["name"] == "devnet" else []),
+            *(
+                ["--disable_hint_validation"]
+                if NETWORK["name"] == "starknet-devnet"
+                else []
+            ),
         ],
         capture_output=True,
     )
@@ -409,18 +413,8 @@ async def wait_for_transaction(*args, **kwargs):
 
     start = datetime.now()
     elapsed = 0
-    check_interval = kwargs.get(
-        "check_interval",
-        0.1
-        if NETWORK["name"] in ["devnet", "katana"]
-        else 6
-        if NETWORK["name"] in ["madara", "sharingan", "testnet"]
-        else 15,
-    )
-    max_wait = kwargs.get(
-        "max_wait",
-        60 * 5 if NETWORK["name"] not in ["devnet", "katana", "madara"] else 30,
-    )
+    check_interval = kwargs.get("check_interval", NETWORK.get("check_interval", 15))
+    max_wait = kwargs.get("max_wait", NETWORK.get("max_wait", 30))
     transaction_hash = args[0] if args else kwargs["tx_hash"]
     status = None
     logger.info(f"⏳ Waiting for tx {get_tx_url(transaction_hash)}")
