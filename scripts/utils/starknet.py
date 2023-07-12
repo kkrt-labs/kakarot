@@ -33,11 +33,14 @@ from starkware.starknet.public.abi import get_selector_from_name
 from scripts.constants import (
     BUILD_DIR,
     CLIENT,
+    BUILD_DIR_FIXTURES,
     CONTRACTS,
+    CONTRACTS_FIXTURES,
     DEPLOYMENTS_DIR,
     ETH_TOKEN_ADDRESS,
     NETWORK,
     SOURCE_DIR,
+    SOURCE_DIR_FIXTURES,
 )
 
 logging.basicConfig()
@@ -201,7 +204,12 @@ def get_deployments():
 
 
 def get_artifact(contract_name):
-    return BUILD_DIR / f"{contract_name}.json"
+    is_fixture = is_fixture_contract(contract_name)
+    return (
+        BUILD_DIR / f"{contract_name}.json"
+        if not is_fixture
+        else BUILD_DIR_FIXTURES / f"{contract_name}.json"
+    )
 
 
 def get_alias(contract_name):
@@ -212,13 +220,22 @@ def get_tx_url(tx_hash: int) -> str:
     return f"{NETWORK['explorer_url']}/tx/0x{tx_hash:064x}"
 
 
+def is_fixture_contract(contract_name):
+    return CONTRACTS_FIXTURES.get(contract_name) is not None
+
+
 def compile_contract(contract):
+    is_fixture = is_fixture_contract(contract["contract_name"])
+    contract_build_path = get_artifact(contract["contract_name"])
+
     output = subprocess.run(
         [
             "starknet-compile-deprecated",
-            CONTRACTS[contract["contract_name"]],
+            CONTRACTS[contract["contract_name"]]
+            if not is_fixture
+            else CONTRACTS_FIXTURES[contract["contract_name"]],
             "--output",
-            BUILD_DIR / f"{contract['contract_name']}.json",
+            contract_build_path,
             "--cairo_path",
             str(SOURCE_DIR),
             *(["--no_debug_info"] if NETWORK["name"] != "devnet" else []),
@@ -239,7 +256,7 @@ def compile_contract(contract):
             return hex(obj)
         return obj
 
-    compiled = json.loads((BUILD_DIR / f"{contract['contract_name']}.json").read_text())
+    compiled = json.loads(contract_build_path.read_text())
     compiled = {
         **compiled,
         "entry_points_by_type": _convert_offset_to_hex(
@@ -247,7 +264,12 @@ def compile_contract(contract):
         ),
     }
     json.dump(
-        compiled, open(BUILD_DIR / f"{contract['contract_name']}.json", "w"), indent=2
+        compiled,
+        open(
+            contract_build_path,
+            "w",
+        ),
+        indent=2,
     )
 
 

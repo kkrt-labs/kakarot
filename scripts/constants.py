@@ -99,18 +99,24 @@ except:
 
 ETH_TOKEN_ADDRESS = 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7
 SOURCE_DIR = Path("src")
+SOURCE_DIR_FIXTURES = Path("tests/fixtures")
 CONTRACTS = {p.stem: p for p in list(SOURCE_DIR.glob("**/*.cairo"))}
+CONTRACTS_FIXTURES = {p.stem: p for p in list(SOURCE_DIR_FIXTURES.glob("**/*.cairo"))}
 
 BUILD_DIR = Path("build")
+BUILD_DIR_FIXTURES = BUILD_DIR / "fixtures"
 BUILD_DIR.mkdir(exist_ok=True, parents=True)
+BUILD_DIR_FIXTURES.mkdir(exist_ok=True, parents=True)
 DEPLOYMENTS_DIR = Path("deployments") / NETWORK["name"]
 DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
+
 COMPILED_CONTRACTS = [
     {"contract_name": "kakarot", "is_account_contract": False},
     {"contract_name": "blockhash_registry", "is_account_contract": False},
     {"contract_name": "contract_account", "is_account_contract": False},
     {"contract_name": "externally_owned_account", "is_account_contract": True},
     {"contract_name": "proxy", "is_account_contract": False},
+    {"contract_name": "EVM", "is_account_contract": False},
 ]
 
 KAKAROT_CHAIN_ID = 1263227476  # KKRT (0x4b4b5254) in ASCII
