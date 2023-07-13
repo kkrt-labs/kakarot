@@ -72,5 +72,5 @@ build-sol:
 	forge build --names --force
 
 run:
-	mkdir -p deployments/devnet
-	poetry run starknet-devnet --lite-mode --seed 0 --dump-on exit --dump-path deployments/devnet/devnet.pkl --disable-rpc-request-validation --timeout 600
+	mkdir -p deployments/starknet-devnet
+	poetry run starknet-devnet --lite-mode --seed 0 --dump-on exit --dump-path deployments/starknet-devnet/devnet.pkl --disable-rpc-request-validation --timeout 600
