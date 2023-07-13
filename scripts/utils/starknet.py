@@ -33,11 +33,14 @@ from starkware.starknet.public.abi import get_selector_from_name
 from scripts.constants import (
     BUILD_DIR,
     CLIENT,
+    BUILD_DIR_FIXTURES,
     CONTRACTS,
+    CONTRACTS_FIXTURES,
     DEPLOYMENTS_DIR,
     ETH_TOKEN_ADDRESS,
     NETWORK,
     SOURCE_DIR,
+    SOURCE_DIR_FIXTURES,
 )
 
 logging.basicConfig()
@@ -133,7 +136,7 @@ async def fund_address(address: Union[int, str], amount: float):
     """
     address = int(address, 16) if isinstance(address, str) else address
     amount = amount * 1e18
-    if NETWORK["name"] == "devnet":
+    if NETWORK["name"] == "starknet-devnet":
         response = requests.post(
             f"http://127.0.0.1:5050/mint",
             json={"address": hex(address), "amount": amount},
@@ -201,7 +204,12 @@ def get_deployments():
 
 
 def get_artifact(contract_name):
-    return BUILD_DIR / f"{contract_name}.json"
+    is_fixture = is_fixture_contract(contract_name)
+    return (
+        BUILD_DIR / f"{contract_name}.json"
+        if not is_fixture
+        else BUILD_DIR_FIXTURES / f"{contract_name}.json"
+    )
 
 
 def get_alias(contract_name):
@@ -212,18 +220,31 @@ def get_tx_url(tx_hash: int) -> str:
     return f"{NETWORK['explorer_url']}/tx/0x{tx_hash:064x}"
 
 
+def is_fixture_contract(contract_name):
+    return CONTRACTS_FIXTURES.get(contract_name) is not None
+
+
 def compile_contract(contract):
+    is_fixture = is_fixture_contract(contract["contract_name"])
+    contract_build_path = get_artifact(contract["contract_name"])
+
     output = subprocess.run(
         [
             "starknet-compile-deprecated",
-            CONTRACTS[contract["contract_name"]],
+            CONTRACTS[contract["contract_name"]]
+            if not is_fixture
+            else CONTRACTS_FIXTURES[contract["contract_name"]],
             "--output",
-            BUILD_DIR / f"{contract['contract_name']}.json",
+            contract_build_path,
             "--cairo_path",
             str(SOURCE_DIR),
-            *(["--no_debug_info"] if NETWORK != "devnet" else []),
+            *(["--no_debug_info"] if not NETWORK["devnet"] else []),
             *(["--account_contract"] if contract["is_account_contract"] else []),
-            *(["--disable_hint_validation"] if NETWORK["name"] == "devnet" else []),
+            *(
+                ["--disable_hint_validation"]
+                if NETWORK["name"] == "starknet-devnet"
+                else []
+            ),
         ],
         capture_output=True,
     )
@@ -239,7 +260,7 @@ def compile_contract(contract):
             return hex(obj)
         return obj
 
-    compiled = json.loads((BUILD_DIR / f"{contract['contract_name']}.json").read_text())
+    compiled = json.loads(contract_build_path.read_text())
     compiled = {
         **compiled,
         "entry_points_by_type": _convert_offset_to_hex(
@@ -247,7 +268,12 @@ def compile_contract(contract):
         ),
     }
     json.dump(
-        compiled, open(BUILD_DIR / f"{contract['contract_name']}.json", "w"), indent=2
+        compiled,
+        open(
+            contract_build_path,
+            "w",
+        ),
+        indent=2,
     )
 
 
@@ -409,18 +435,8 @@ async def wait_for_transaction(*args, **kwargs):
 
     start = datetime.now()
     elapsed = 0
-    check_interval = kwargs.get(
-        "check_interval",
-        0.1
-        if NETWORK["name"] in ["devnet", "katana"]
-        else 6
-        if NETWORK["name"] in ["madara", "sharingan", "testnet"]
-        else 15,
-    )
-    max_wait = kwargs.get(
-        "max_wait",
-        60 * 5 if NETWORK["name"] not in ["devnet", "katana", "madara"] else 30,
-    )
+    check_interval = kwargs.get("check_interval", NETWORK.get("check_interval", 15))
+    max_wait = kwargs.get("max_wait", NETWORK.get("max_wait", 30))
     transaction_hash = args[0] if args else kwargs["tx_hash"]
     status = None
     logger.info(f"⏳ Waiting for tx {get_tx_url(transaction_hash)}")

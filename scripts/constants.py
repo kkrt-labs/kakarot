@@ -23,42 +23,57 @@ NETWORKS = {
         "explorer_url": "https://starkscan.co",
         "rpc_url": f"https://starknet-mainnet.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "gateway": "mainnet",
+        "devnet": False,
     },
     "testnet": {
         "name": "testnet",
         "explorer_url": "https://testnet.starkscan.co",
         "rpc_url": f"https://starknet-goerli.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "gateway": "testnet",
+        "devnet": False,
     },
     "testnet2": {
         "name": "testnet2",
         "explorer_url": "https://testnet-2.starkscan.co",
         "rpc_url": f"https://starknet-goerli2.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "gateway": "testnet2",
+        "devnet": False,
     },
-    "devnet": {
-        "name": "devnet",
+    "starknet-devnet": {
+        "name": "starknet-devnet",
         "explorer_url": "",
         "rpc_url": "http://127.0.0.1:5050/rpc",
+        "devnet": True,
+        "check_interval": 0.1,
+        "max_wait": 1,
     },
     "katana": {
         "name": "katana",
         "explorer_url": "",
         "rpc_url": "http://127.0.0.1:5050",
+        "devnet": True,
+        "check_interval": 0.1,
+        "max_wait": 1,
     },
     "madara": {
         "name": "madara",
         "explorer_url": "",
         "rpc_url": "http://127.0.0.1:9944",
+        "devnet": True,
+        "check_interval": 6,
+        "max_wait": 30,
     },
     "sharingan": {
         "name": "sharingan",
         "explorer_url": "",
         "rpc_url": os.getenv("SHARINGAN_RPC_URL"),
+        "devnet": False,
+        "check_interval": 6,
+        "max_wait": 30,
     },
 }
 
-NETWORK = NETWORKS[os.getenv("STARKNET_NETWORK", "devnet")]
+NETWORK = NETWORKS[os.getenv("STARKNET_NETWORK", "starknet-devnet")]
 NETWORK["account_address"] = os.environ.get(
     f"{NETWORK['name'].upper()}_ACCOUNT_ADDRESS"
 )
@@ -99,18 +114,24 @@ except:
 
 ETH_TOKEN_ADDRESS = 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7
 SOURCE_DIR = Path("src")
+SOURCE_DIR_FIXTURES = Path("tests/fixtures")
 CONTRACTS = {p.stem: p for p in list(SOURCE_DIR.glob("**/*.cairo"))}
+CONTRACTS_FIXTURES = {p.stem: p for p in list(SOURCE_DIR_FIXTURES.glob("**/*.cairo"))}
 
 BUILD_DIR = Path("build")
+BUILD_DIR_FIXTURES = BUILD_DIR / "fixtures"
 BUILD_DIR.mkdir(exist_ok=True, parents=True)
+BUILD_DIR_FIXTURES.mkdir(exist_ok=True, parents=True)
 DEPLOYMENTS_DIR = Path("deployments") / NETWORK["name"]
 DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
+
 COMPILED_CONTRACTS = [
     {"contract_name": "kakarot", "is_account_contract": False},
     {"contract_name": "blockhash_registry", "is_account_contract": False},
     {"contract_name": "contract_account", "is_account_contract": False},
     {"contract_name": "externally_owned_account", "is_account_contract": True},
     {"contract_name": "proxy", "is_account_contract": False},
+    {"contract_name": "EVM", "is_account_contract": False},
 ]
 
 KAKAROT_CHAIN_ID = 1263227476  # KKRT (0x4b4b5254) in ASCII
