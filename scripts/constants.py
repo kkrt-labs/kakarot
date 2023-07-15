@@ -24,6 +24,7 @@ NETWORKS = {
         "rpc_url": f"https://starknet-mainnet.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "gateway": "mainnet",
         "devnet": False,
+        "chain_id": 0x534E5F4D41494E,
     },
     "testnet": {
         "name": "testnet",
@@ -31,6 +32,7 @@ NETWORKS = {
         "rpc_url": f"https://starknet-goerli.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "gateway": "testnet",
         "devnet": False,
+        "chain_id": 0x534E5F474F45524C49,
     },
     "testnet2": {
         "name": "testnet2",
@@ -38,6 +40,7 @@ NETWORKS = {
         "rpc_url": f"https://starknet-goerli2.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "gateway": "testnet2",
         "devnet": False,
+        "chain_id": 0x534E5F474F45524C4932,
     },
     "starknet-devnet": {
         "name": "starknet-devnet",
