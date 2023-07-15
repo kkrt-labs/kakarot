@@ -1,0 +1,24 @@
+FROM python:3.9.13
+
+# install poetry
+RUN curl -sSL https://install.python-poetry.org | python3 -
+ENV PATH="$PATH:/root/.local/bin"
+RUN poetry config virtualenvs.create false
+
+# install madara swap
+WORKDIR /app/kakarot
+COPY poetry.lock .
+COPY pyproject.toml .
+COPY scripts ./scripts
+COPY README.md .
+RUN poetry install
+# split install in two steps to leverage docker cache
+COPY . .
+RUN poetry install
+
+# Build contracts
+ENV STARKNET_NETWORK=sharingan
+RUN python scripts/compile_kakarot.py
+
+# Deploy kakarot
+CMD ["python", "scripts/deploy_kakarot.py"]
