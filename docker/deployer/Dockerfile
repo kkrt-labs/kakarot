@@ -17,7 +17,6 @@ COPY . .
 RUN poetry install
 
 # Build contracts
-ENV STARKNET_NETWORK=sharingan
 RUN python scripts/compile_kakarot.py
 
 # Deploy kakarot
