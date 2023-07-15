@@ -37,7 +37,10 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 if not NETWORK["devnet"]:
-    fetch_deployments()
+    try:
+        fetch_deployments()
+    except Exception as e:
+        logger.warn(f"Using network {NETWORK}, couldn't fetch deployment, error:\n{e}")
 KAKAROT_ADDRESS = get_deployments()["kakarot"]["address"]
 FOUNDRY_FILE = toml.loads((Path(__file__).parents[2] / "foundry.toml").read_text())
 SOLIDITY_CONTRACTS_DIR = Path(FOUNDRY_FILE["profile"]["default"]["src"])
