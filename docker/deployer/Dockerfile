@@ -5,7 +5,7 @@ RUN curl -sSL https://install.python-poetry.org | python3 -
 ENV PATH="$PATH:/root/.local/bin"
 RUN poetry config virtualenvs.create false
 
-# install madara swap
+# install dependencies
 WORKDIR /app/kakarot
 COPY poetry.lock .
 COPY pyproject.toml .

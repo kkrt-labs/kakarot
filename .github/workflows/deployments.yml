@@ -138,3 +138,4 @@ jobs:
           tags: ghcr.io/kkrt-labs/kakarot/deployer:latest
           context: .
           file: ./docker/deployer/Dockerfile
+          platforms: linux/amd64,linux/arm64
