@@ -128,8 +128,6 @@ namespace ExternallyOwnedAccount {
             return (response_len=0);
         }
 
-        Accounts.increment_nonce();
-
         let (
             nonce, gas_price, gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s
         ) = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
@@ -153,6 +151,8 @@ namespace ExternallyOwnedAccount {
             calldata,
             response + return_data_len,
         );
+
+        Accounts.increment_nonce();
         return (response_len=return_data_len + response_len);
     }
 }

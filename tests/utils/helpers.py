@@ -7,7 +7,7 @@ from eth_abi import encode
 from eth_account import Account
 from eth_keys import keys
 from eth_keys.datatypes import PrivateKey
-from eth_utils import decode_hex, keccak, to_bytes, to_checksum_address
+from eth_utils import decode_hex, keccak, to_checksum_address
 from hexbytes import HexBytes
 
 from tests.utils.constants import CHAIN_ID
@@ -76,12 +76,12 @@ def get_domain_separator(name: str, token_address: str) -> bytes:
     )
 
 
-def get_create_address(sender_address: str, salt: int) -> str:
+def get_create_address(sender_address: str, nonce: int) -> str:
     """
     See [CREATE](https://www.evm.codes/#f0)
     """
     return to_checksum_address(
-        keccak(rlp.encode([decode_hex(sender_address), to_bytes(salt)]))[-20:]
+        keccak(rlp.encode([decode_hex(sender_address), nonce]))[-20:]
     )
 
 
@@ -134,6 +134,10 @@ def encode_price(reserve_0: int, reserve_1: int) -> list:
         reserve_1 * 2**112 // reserve_0,
         reserve_0 * 2**112 // reserve_1,
     ]
+
+
+def private_key_from_hex(hex_key: str):
+    return keys.PrivateKey(bytes.fromhex(hex_key))
 
 
 def generate_random_private_key(seed=0):

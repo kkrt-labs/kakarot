@@ -6,7 +6,7 @@ import pytest_asyncio
 from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.helpers import generate_random_private_key
+from tests.utils.helpers import generate_random_private_key, private_key_from_hex
 
 Wallet = namedtuple(
     "Wallet", ["address", "private_key", "starknet_contract", "starknet_address"]
@@ -52,7 +52,17 @@ async def addresses(starknet, kakarot, externally_owned_account_class) -> List[W
     - address: the hex string of the EVM address (20 bytes)
     - starknet_address: the corresponding address for starknet (same value but as int)
     """
-    private_keys = [generate_random_private_key(seed=i) for i in range(4)]
+    # Predefined private key shared with anvil,
+    # so we can more easily compare results for validity
+    predefined_private_key = private_key_from_hex(
+        "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+    )
+
+    # Randomly generated private keys
+    private_keys = [predefined_private_key] + [
+        generate_random_private_key(seed=i) for i in range(3)
+    ]
+
     wallets = []
     for private_key in private_keys:
         evm_address = private_key.public_key.to_checksum_address()

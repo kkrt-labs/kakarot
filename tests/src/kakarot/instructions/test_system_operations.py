@@ -87,17 +87,17 @@ class TestSystemOperations:
             system_operations.contract_address
         )
 
-    @pytest.mark.parametrize("salt", [127, 256, 2**55 - 1])
+    @pytest.mark.parametrize("salt", [0, 127, 256, 2**55 - 1])
     async def test_create(self, system_operations, salt):
-        evm_caller_address_int = 15
+        # given we start with the first anvil test account
+        evm_caller_address_int = 0xF39FD6E51AAD88F6F4CE6AB8827279CFFFB92266
         evm_caller_address_bytes = evm_caller_address_int.to_bytes(20, byteorder="big")
         evm_caller_address = to_checksum_address(evm_caller_address_bytes)
         expected_create_addr = get_create_address(evm_caller_address, salt)
 
         await system_operations.test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at_expected_address(
             evm_caller_address_int,
-            # Nonce will be incremented before exec_create is executed, therefore we subtract 1
-            salt - 1,
+            salt,
             from_bytes(decode_hex(expected_create_addr)),
         ).call()
 

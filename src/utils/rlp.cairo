@@ -131,6 +131,13 @@ namespace RLP {
         range_check_ptr,
     }(item: felt, rlp_len: felt, rlp: felt*) -> (rlp_len: felt) {
         alloc_locals;
+        if (item == 0) {
+            // a single byte of value zero is encoded as '0x80',
+            // which is a special prefix denoting an empty byte array.
+            assert [rlp + rlp_len] = 0x80;
+            return (rlp_len + 1,);
+        }
+
         // 127 is the largest value that can be represented by one byte
         let item_is_single_byte = is_le(item, 127);
 

@@ -464,7 +464,7 @@ namespace Helpers {
         return split_word_little((value - low_part) / 256, len - 1, dst + 1);
     }
 
-    // @notice Splits a felt into 16 bytes, big-endien, and outputs to `dst`.
+    // @notice Splits a felt into 16 bytes, big-endian, and outputs to `dst`.
     func split_word_128{range_check_ptr}(start_value: felt, dst: felt*) {
         // Fill dst using only hints with no opcodes.
         let value = start_value;

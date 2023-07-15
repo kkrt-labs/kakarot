@@ -32,15 +32,14 @@ from starkware.starknet.public.abi import get_selector_from_name
 
 from scripts.constants import (
     BUILD_DIR,
-    CLIENT,
     BUILD_DIR_FIXTURES,
+    CLIENT,
     CONTRACTS,
     CONTRACTS_FIXTURES,
     DEPLOYMENTS_DIR,
     ETH_TOKEN_ADDRESS,
     NETWORK,
     SOURCE_DIR,
-    SOURCE_DIR_FIXTURES,
 )
 
 logging.basicConfig()
