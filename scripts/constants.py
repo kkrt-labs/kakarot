@@ -63,7 +63,7 @@ NETWORKS = {
         "name": "madara",
         "explorer_url": "",
         "rpc_url": os.getenv("MADARA_RPC_URL"),
-        "devnet": True,
+        "devnet": False,
         "check_interval": 6,
         "max_wait": 30,
     },
