@@ -77,7 +77,23 @@ NETWORKS = {
     },
 }
 
-NETWORK = NETWORKS[os.getenv("STARKNET_NETWORK", "starknet-devnet")]
+if os.getenv("STARKNET_NETWORK") is not None:
+    if NETWORKS.get(os.environ["STARKNET_NETWORK"]) is not None:
+        NETWORK = NETWORKS[os.environ["STARKNET_NETWORK"]]
+    else:
+        raise ValueError(
+            f"STARKNET_NETWORK {os.environ['STARKNET_NETWORK']} given in env variable unknown"
+        )
+else:
+    NETWORK = {
+        "name": "",
+        "rpc_url": os.getenv("RPC_URL"),
+        "explorer_url": "",
+        "devnet": False,
+        "check_interval": 6,
+        "max_wait": 30,
+    }
+
 NETWORK["account_address"] = os.environ.get(
     f"{NETWORK['name'].upper()}_ACCOUNT_ADDRESS"
 )
