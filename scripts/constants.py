@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from eth_keys import keys
 from starknet_py.net.full_node_client import FullNodeClient
 from starknet_py.net.gateway_client import GatewayClient
+from starknet_py.net.models.chains import StarknetChainId
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -24,7 +25,7 @@ NETWORKS = {
         "rpc_url": f"https://starknet-mainnet.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "gateway": "mainnet",
         "devnet": False,
-        "chain_id": 0x534E5F4D41494E,
+        "chain_id": StarknetChainId.MAINNET,
     },
     "testnet": {
         "name": "testnet",
@@ -32,7 +33,7 @@ NETWORKS = {
         "rpc_url": f"https://starknet-goerli.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "gateway": "testnet",
         "devnet": False,
-        "chain_id": 0x534E5F474F45524C49,
+        "chain_id": StarknetChainId.TESTNET,
     },
     "testnet2": {
         "name": "testnet2",
@@ -40,7 +41,7 @@ NETWORKS = {
         "rpc_url": f"https://starknet-goerli2.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "gateway": "testnet2",
         "devnet": False,
-        "chain_id": 0x534E5F474F45524C4932,
+        "chain_id": StarknetChainId.TESTNET2,
     },
     "starknet-devnet": {
         "name": "starknet-devnet",
@@ -82,7 +83,7 @@ NETWORK["account_address"] = os.environ.get(
 )
 if NETWORK["account_address"] is None:
     logger.warning(
-        f"⚠️ {NETWORK['name'].upper()}_ACCOUNT_ADDRESS not set, defaulting to ACCOUNT_ADDRESS"
+        f"⚠️  {NETWORK['name'].upper()}_ACCOUNT_ADDRESS not set, defaulting to ACCOUNT_ADDRESS"
     )
     NETWORK["account_address"] = os.getenv("ACCOUNT_ADDRESS")
 NETWORK["private_key"] = os.environ.get(f"{NETWORK['name'].upper()}_PRIVATE_KEY")
@@ -94,7 +95,7 @@ if NETWORK["private_key"] is None:
 
 RPC_CLIENT = FullNodeClient(node_url=NETWORK["rpc_url"])
 GATEWAY_CLIENT = GatewayClient(NETWORK["gateway"]) if NETWORK.get("gateway") else None
-CLIENT = GATEWAY_CLIENT if GATEWAY_CLIENT else RPC_CLIENT
+CLIENT = GATEWAY_CLIENT if GATEWAY_CLIENT is not None else RPC_CLIENT
 
 try:
     response = requests.post(

@@ -38,7 +38,9 @@ from scripts.constants import (
     CONTRACTS_FIXTURES,
     DEPLOYMENTS_DIR,
     ETH_TOKEN_ADDRESS,
+    GATEWAY_CLIENT,
     NETWORK,
+    RPC_CLIENT,
     SOURCE_DIR,
 )
 
@@ -348,16 +350,19 @@ async def declare(contract_name):
     )
     signature = message_signature(msg_hash=tx_hash, priv_key=account.signer.private_key)
     transaction = _add_signature_to_transaction(transaction, signature)
-    params = _create_broadcasted_txn(transaction=transaction)
+    if GATEWAY_CLIENT is not None:
+        resp = await GATEWAY_CLIENT.declare(transaction)
+    else:
+        params = _create_broadcasted_txn(transaction=transaction)
 
-    res = await CLIENT._client.call(
-        method_name="addDeclareTransaction",
-        params=[params],
-    )
-    resp = cast(
-        DeclareTransactionResponse,
-        DeclareTransactionResponseSchema().load(res, unknown=EXCLUDE),
-    )
+        res = await RPC_CLIENT._client.call(
+            method_name="addDeclareTransaction",
+            params=[params],
+        )
+        resp = cast(
+            DeclareTransactionResponse,
+            DeclareTransactionResponseSchema().load(res, unknown=EXCLUDE),
+        )
 
     status = await wait_for_transaction(resp.transaction_hash)
     status = "✅" if status == TransactionStatus.ACCEPTED_ON_L2 else "❌"
@@ -419,17 +424,17 @@ async def call(contract_name, function_name, *inputs, address=None):
     return await contract.functions[function_name].call(*inputs)
 
 
-# TODO: use CLIENT when RPC wait_for_tx is fixed, see https://github.com/kkrt-labs/kakarot/issues/586
+# TODO: use RPC_CLIENT when RPC wait_for_tx is fixed, see https://github.com/kkrt-labs/kakarot/issues/586
 # TODO: Currently, the first ping often throws "transaction not found"
-@functools.wraps(CLIENT.wait_for_tx)
+@functools.wraps(RPC_CLIENT.wait_for_tx)
 async def wait_for_transaction(*args, **kwargs):
     """
     We need to write this custom hacky wait_for_transaction instead of using the one from starknet-py
     because the RPCs don't know RECEIVED, PENDING and REJECTED states currently
     """
-    if not hasattr(CLIENT, "url"):
+    if GATEWAY_CLIENT is not None:
         # Gateway case, just use it
-        _, status = await CLIENT.wait_for_tx(*args, **kwargs)
+        _, status = await GATEWAY_CLIENT.wait_for_tx(*args, **kwargs)
         return status
 
     start = datetime.now()
@@ -449,7 +454,7 @@ async def wait_for_transaction(*args, **kwargs):
         logger.info(f"ℹ️  Sleeping for {check_interval}s")
         time.sleep(check_interval)
         response = requests.post(
-            CLIENT.url,
+            RPC_CLIENT.url,
             json={
                 "jsonrpc": "2.0",
                 "method": f"starknet_getTransactionReceipt",
