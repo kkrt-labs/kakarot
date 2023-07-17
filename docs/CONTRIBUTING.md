@@ -13,7 +13,7 @@ To get started on Kakarot, you'll need python3.9, as well as Starknet-related
 libraries, e.g. `cairo-lang`.
 
 - Follow
-  [Starknet's install tutorial](https://www.cairo-lang.org/docs/quickstart.html).
+  [Starknet's install tutorial](https://www.cairo-lang.org/docs/quickstart.html). this link is not working!
 - Install [poetry](https://python-poetry.org/docs/).
 
 #### Install foundry
