@@ -12,8 +12,8 @@ from starkware.cairo.common.math import assert_le, assert_nn
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_label_location
-from starkware.starknet.common.syscalls import emit_event
 from starkware.cairo.common.uint256 import Uint256
+from starkware.starknet.common.syscalls import emit_event, get_caller_address
 
 // Internal dependencies
 from utils.utils import Helpers
@@ -949,5 +949,23 @@ namespace ExecutionContext {
         }
 
         return ();
+    }
+
+    // @notice Check if starknet contract address is an EOA
+    // @dev use syscall to get caller address and compare it to the starknet contract address
+    // @param self The pointer to the execution context
+    // @return felt 1 if starknet contract address is an EOA, 0 otherwise
+    func is_caller_eoa{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.ExecutionContext*) -> felt {
+        let (address) = get_caller_address();
+        if (address == self.starknet_contract_address) {
+            return TRUE;
+        } else {
+            return FALSE;
+        }
     }
 }
