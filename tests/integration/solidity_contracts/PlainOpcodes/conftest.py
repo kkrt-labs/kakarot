@@ -23,3 +23,12 @@ async def plain_opcodes(deploy_solidity_contract, owner, counter):
         counter.evm_contract_address,
         caller_eoa=owner,
     )
+
+
+@pytest_asyncio.fixture(scope="module")
+async def safe(deploy_solidity_contract, owner):
+    return await deploy_solidity_contract(
+        "PlainOpcodes",
+        "Safe",
+        caller_eoa=owner,
+    )
