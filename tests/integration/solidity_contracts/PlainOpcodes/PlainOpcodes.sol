@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 pragma solidity >=0.8.0;
+
 import "./RevertTestCases.sol";
 
 interface ICounter {
@@ -20,16 +21,15 @@ contract PlainOpcodes {
                             METADATA STORAGE
     //////////////////////////////////////////////////////////////*/
     ICounter counter;
+
     event Log0() anonymous;
     event Log0Value(uint256 value) anonymous;
     event Log1(uint256 value);
     event Log2(address indexed owner, uint256 value);
     event Log3(address indexed owner, address indexed spender, uint256 value);
-    event Log4(
-        address indexed owner,
-        address indexed spender,
-        uint256 indexed value
-    );
+    event Log4(address indexed owner, address indexed spender, uint256 indexed value);
+
+    uint256 public loopValue;
 
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
@@ -41,9 +41,7 @@ contract PlainOpcodes {
     /*//////////////////////////////////////////////////////////////
                             FUNCTIONS FOR OPCODES
     //////////////////////////////////////////////////////////////*/
-    function opcodeBlockHash(
-        uint256 blockNumber
-    ) public view returns (bytes32 _blockhash) {
+    function opcodeBlockHash(uint256 blockNumber) public view returns (bytes32 _blockhash) {
         return (blockhash(blockNumber));
     }
 
@@ -88,10 +86,7 @@ contract PlainOpcodes {
         emit Log4(address(0xa), address(0xb), 10);
     }
 
-    function create2(
-        bytes memory bytecode,
-        uint256 salt
-    ) public returns (address _address) {
+    function create2(bytes memory bytecode, uint256 salt) public returns (address _address) {
         assembly {
             _address := create2(0, add(bytecode, 32), mload(bytecode), salt)
         }
@@ -101,28 +96,18 @@ contract PlainOpcodes {
         require(_address != address(0), "ZERO_ADDRESS");
     }
 
-    function originAndSender()
-        external
-        view
-        returns (address origin, address sender)
-    {
+    function originAndSender() external view returns (address origin, address sender) {
         return (tx.origin, msg.sender);
     }
 
-    function opcodeExtCodeCopy(
-        uint256 offset,
-        uint256 size
-    ) external view returns (bytes memory extcode) {
+    function opcodeExtCodeCopy(uint256 offset, uint256 size) external view returns (bytes memory extcode) {
         // see https://docs.soliditylang.org/en/v0.8.17/assembly.html#example
         address target = address(counter);
         assembly {
             // Get a free memory location
             extcode := mload(0x40)
             // Update free memory pointer (pointer += size including padding)
-            mstore(
-                0x40,
-                add(extcode, and(add(add(size, 0x20), 0x1f), not(0x1f)))
-            )
+            mstore(0x40, add(extcode, and(add(add(size, 0x20), 0x1f), not(0x1f))))
             // Copy counter code to this location + size
             mstore(extcode, size)
             extcodecopy(target, add(extcode, 0x20), offset, size)
@@ -132,12 +117,13 @@ contract PlainOpcodes {
     function testCallingContextShouldPropogateRevertFromSubContextOnCreate() public {
         ContractRevertsOnConstruction doomedContract = new ContractRevertsOnConstruction();
         doomedContract.value();
-    }    
-    
+    }
+
     function testShouldRevertViaCall() external returns (bytes memory returnData) {
         ContractRevertsOnMethodCall doomedContract = new ContractRevertsOnMethodCall();
 
-        (bool success, bytes memory returnData1) = address(doomedContract).call(abi.encodeWithSignature("triggerRevert()"));
+        (bool success, bytes memory returnData1) =
+            address(doomedContract).call(abi.encodeWithSignature("triggerRevert()"));
         address doomedContractCounter = address(doomedContract.counter());
 
         assert(!success);
@@ -147,5 +133,10 @@ contract PlainOpcodes {
         return returnData1;
     }
 
-
+    function testLoop(uint256 steps) public {
+        loopValue = 0;
+        for (uint256 i = 0; i < steps; i++) {
+            loopValue += 1;
+        }
+    }
 }

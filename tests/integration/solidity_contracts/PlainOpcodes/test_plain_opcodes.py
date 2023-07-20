@@ -256,3 +256,9 @@ class TestPlainOpcodes:
             assert caller.evm_contract_address == to_checksum_address(
                 decoded[1]
             )  # msg.sender
+
+    class TestLoop:
+        @pytest.mark.parametrize("steps", [0, 1, 2, 10])
+        async def test_loop_should_write_to_storage(self, plain_opcodes, owner, steps):
+            await plain_opcodes.testLoop(steps, caller_address=owner.starknet_address)
+            assert await plain_opcodes.loopValue() == steps

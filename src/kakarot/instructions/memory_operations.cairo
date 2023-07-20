@@ -407,6 +407,9 @@ namespace MemoryOperations {
 
             // Increment gas used.
             let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SSTORE);
+            let ctx = ExecutionContext.update_revert_contract_state(
+                ctx, revert_contract_state_dict_end
+            );
             return ctx;
         } else {
             // otherwise, there has been no write yet for this given context,
