@@ -14,6 +14,7 @@ from starkware.cairo.common.registers import get_ap
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256
 
+
 // Internal dependencies
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.block_information import BlockInformation
@@ -630,7 +631,10 @@ namespace EVMInstructions {
                 let (bytecode_len) = IAccount.bytecode_len(
                     contract_address=ctx.starknet_contract_address
                 );
-                if (bytecode_len == 0) {
+                let is_eao = ExecutionContext.is_caller_eoa(self=ctx);
+                // If the starknet contract of the execution context has no bytecode and is not an EOA,
+                // then it means we are at the end of a CREATE/CREATE2 opcode.
+                if (bytecode_len + is_eao == 0) {
                     let ctx = CreateHelper.finalize_calling_context(ctx);
                     return run(ctx=ctx);
                 } else {
@@ -673,4 +677,5 @@ namespace EVMInstructions {
         }
         return ();
     }
+
 }
