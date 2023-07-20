@@ -20,7 +20,7 @@ from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
-from starkware.starknet.common.syscalls import deploy as deploy_syscall, get_contract_address
+from starkware.starknet.common.syscalls import deploy as deploy_syscall, get_contract_address, get_tx_info
 
 // Internal dependencies
 from kakarot.constants import contract_account_class_hash, native_token_address, Constants
@@ -811,13 +811,11 @@ namespace CreateHelper {
         // so we use popped_len to derive the way we should handle
         // the creation of evm addresses
         if (popped_len != 4) {
-            let (nonce) = IContractAccount.get_nonce(ctx.starknet_contract_address);
+            let (tx_info) = get_tx_info();
 
             let (evm_contract_address) = CreateHelper.get_create_address(
-                ctx.evm_contract_address, nonce
+                ctx.evm_contract_address, tx_info.nonce
             );
-
-            let (nonce) = IContractAccount.increment_nonce(ctx.starknet_contract_address);
 
             let (contract_account_class_hash_) = contract_account_class_hash.read();
             let (starknet_contract_address) = Accounts.create(

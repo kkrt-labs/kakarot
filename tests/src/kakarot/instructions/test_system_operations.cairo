@@ -84,12 +84,6 @@ func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
 func mock_nonce() -> (nonce: felt) {
 }
 
-// @notice the current nonce of the mocked contract account
-@view
-func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (nonce: felt) {
-    return mock_nonce.read();
-}
-
 // @notice This function increases the accounts nonce by 1
 // @return nonce: The incremented nonce of the contract account
 @external
