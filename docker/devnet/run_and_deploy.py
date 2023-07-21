@@ -25,7 +25,7 @@ while not alive and attempts < max_retries:
     finally:
         attempts += 1
 
-logger.info(f"✅ Devnet live")
+logger.info(f"✅ starknet-devnet live")
 
 deploy = subprocess.run(["make", "deploy"])
 deploy.check_returncode()
