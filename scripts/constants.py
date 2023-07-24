@@ -46,7 +46,7 @@ NETWORKS = {
     "starknet-devnet": {
         "name": "starknet-devnet",
         "explorer_url": "",
-        "rpc_url": os.getenv("STARKNET_DEVNET_RPC_URL"),
+        "rpc_url": "http://127.0.0.1:5050/rpc",
         "devnet": True,
         "check_interval": 0.1,
         "max_wait": 1,
@@ -54,7 +54,7 @@ NETWORKS = {
     "katana": {
         "name": "katana",
         "explorer_url": "",
-        "rpc_url": os.getenv("KATANA_RPC_URL"),
+        "rpc_url": "http://127.0.0.1:5050",
         "devnet": True,
         "check_interval": 0.1,
         "max_wait": 1,
@@ -62,7 +62,7 @@ NETWORKS = {
     "madara": {
         "name": "madara",
         "explorer_url": "",
-        "rpc_url": os.getenv("MADARA_RPC_URL"),
+        "rpc_url": "http://127.0.0.1:9944",
         "devnet": False,
         "check_interval": 6,
         "max_wait": 30,
@@ -165,3 +165,5 @@ if NETWORK.get("chain_id"):
         f"ℹ️  Connected to CHAIN_ID {NETWORK['chain_id'].value.to_bytes(ceil(log(NETWORK['chain_id'].value, 256)), 'big')} "
         f"with {f'Gateway {GATEWAY_CLIENT.net}' if GATEWAY_CLIENT is not None else f'RPC {RPC_CLIENT.url}'}"
     )
+else:
+    raise ValueError("Network has no chain_id")
