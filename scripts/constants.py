@@ -46,7 +46,7 @@ NETWORKS = {
     "starknet-devnet": {
         "name": "starknet-devnet",
         "explorer_url": "",
-        "rpc_url": os.getenv("DEVNET_RPC_URL"),
+        "rpc_url": os.getenv("STARKNET_DEVNET_RPC_URL"),
         "devnet": True,
         "check_interval": 0.1,
         "max_wait": 1,
@@ -94,19 +94,16 @@ else:
         "max_wait": 30,
     }
 
-NETWORK["account_address"] = os.environ.get(
-    f"{NETWORK['name'].upper()}_ACCOUNT_ADDRESS"
-)
+prefix = NETWORK["name"].upper().replace("-", "_")
+NETWORK["account_address"] = os.environ.get(f"{prefix}_ACCOUNT_ADDRESS")
 if NETWORK["account_address"] is None:
     logger.warning(
-        f"⚠️  {NETWORK['name'].upper()}_ACCOUNT_ADDRESS not set, defaulting to ACCOUNT_ADDRESS"
+        f"⚠️  {prefix}_ACCOUNT_ADDRESS not set, defaulting to ACCOUNT_ADDRESS"
     )
     NETWORK["account_address"] = os.getenv("ACCOUNT_ADDRESS")
-NETWORK["private_key"] = os.environ.get(f"{NETWORK['name'].upper()}_PRIVATE_KEY")
+NETWORK["private_key"] = os.environ.get(f"{prefix}_PRIVATE_KEY")
 if NETWORK["private_key"] is None:
-    logger.warning(
-        f"⚠️  {NETWORK['name'].upper()}_PRIVATE_KEY not set, defaulting to PRIVATE_KEY"
-    )
+    logger.warning(f"⚠️  {prefix}_PRIVATE_KEY not set, defaulting to PRIVATE_KEY")
     NETWORK["private_key"] = os.getenv("PRIVATE_KEY")
 
 RPC_CLIENT = FullNodeClient(node_url=NETWORK["rpc_url"])
