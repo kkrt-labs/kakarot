@@ -18,20 +18,21 @@ TEST_AMOUNT = 10 * 10**18
 @pytest.mark.usefixtures("starknet_snapshot")
 class TestUniswapV2ERC20:
     class TestDeploy:
-        async def test_should_set_constants(self, token_a, owner):
+        async def test_should_set_constants(self, token_a, token_a_deployer):
             name = await token_a.name()
             assert name == "Uniswap V2"
             assert await token_a.symbol() == "UNI-V2"
             assert await token_a.decimals() == 18
             assert await token_a.totalSupply() == TOTAL_SUPPLY
-            assert await token_a.balanceOf(owner.address) == TOTAL_SUPPLY
+            assert await token_a.balanceOf(token_a_deployer.address) == TOTAL_SUPPLY
             assert await token_a.DOMAIN_SEPARATOR() == get_domain_separator(
                 name, token_a.evm_contract_address
             )
             assert await token_a.PERMIT_TYPEHASH() == PERMIT_TYPEHASH
 
     class TestApprove:
-        async def test_should_set_allowance(self, token_a, owner, other):
+        async def test_should_set_allowance(self, token_a, token_a_deployer, other):
+            owner = token_a_deployer
             await token_a.approve(
                 other.address,
                 TEST_AMOUNT,
@@ -49,8 +50,9 @@ class TestUniswapV2ERC20:
 
     class TestTransfer:
         async def test_should_transfer_token_when_signer_is_owner(
-            self, token_a, owner, other
+            self, token_a, token_a_deployer, other
         ):
+            owner = token_a_deployer
             await token_a.transfer(
                 other.address,
                 TEST_AMOUNT,
@@ -67,13 +69,13 @@ class TestUniswapV2ERC20:
             assert await token_a.balanceOf(other.address) == TEST_AMOUNT
 
         async def test_should_fail_when_amount_is_greater_than_balance_and_balance_not_zero(
-            self, token_a, owner, other
+            self, token_a, token_a_deployer, other
         ):
             with kakarot_error():
                 await token_a.transfer(
                     other.address,
                     TOTAL_SUPPLY + 1,
-                    caller_address=owner.starknet_address,
+                    caller_address=token_a_deployer.starknet_address,
                 )
 
         async def test_should_fail_when_amount_is_greater_than_balance_and_balance_zero(
@@ -88,8 +90,9 @@ class TestUniswapV2ERC20:
 
     class TestTransferFrom:
         async def test_should_transfer_token_when_signer_is_approved(
-            self, token_a, owner, other
+            self, token_a, token_a_deployer, other
         ):
+            owner = token_a_deployer
             await token_a.approve(
                 other.address,
                 TEST_AMOUNT,
@@ -110,8 +113,9 @@ class TestUniswapV2ERC20:
             assert await token_a.balanceOf(other.address) == TEST_AMOUNT
 
         async def test_should_transfer_token_when_signer_is_approved_max_uint(
-            self, token_a, owner, other
+            self, token_a, token_a_deployer, other
         ):
+            owner = token_a_deployer
             await token_a.approve(
                 other.address,
                 MAX_INT,

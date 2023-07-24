@@ -5,42 +5,58 @@ import pytest_asyncio
 TOTAL_SUPPLY = 10000 * 10**18
 
 
+@pytest_asyncio.fixture(scope="session")
+async def token_a_deployer(addresses):
+    return addresses[11]
+
+@pytest_asyncio.fixture(scope="session")
+async def token_b_deployer(addresses):
+    return addresses[12]
+
+@pytest_asyncio.fixture(scope="session")
+async def uniswap_factory_deployer(addresses):
+    return addresses[13]
+
+@pytest_asyncio.fixture(scope="session")
+async def uniswap_pair_deployer(addresses):
+    return addresses[14]
+
 @pytest_asyncio.fixture(scope="module")
 async def token_a(
     deploy_solidity_contract: Callable,
-    owner,
+    token_a_deployer,
 ):
     return await deploy_solidity_contract(
         "UniswapV2",
         "ERC20",
         TOTAL_SUPPLY,
-        caller_eoa=owner,
+        caller_eoa=token_a_deployer,
     )
 
 
 @pytest_asyncio.fixture(scope="module")
 async def token_b(
     deploy_solidity_contract: Callable,
-    owner,
+    token_b_deployer,
 ):
     return await deploy_solidity_contract(
         "UniswapV2",
         "ERC20",
         TOTAL_SUPPLY,
-        caller_eoa=owner,
+        caller_eoa=token_b_deployer,
     )
 
 
 @pytest_asyncio.fixture(scope="module")
 async def factory(
     deploy_solidity_contract: Callable,
-    owner,
+    uniswap_factory_deployer,
 ):
     return await deploy_solidity_contract(
         "UniswapV2",
         "UniswapV2Factory",
-        owner.address,
-        caller_eoa=owner,
+        uniswap_factory_deployer.address,
+        caller_eoa=uniswap_factory_deployer,
     )
 
 
@@ -50,7 +66,7 @@ async def pair(
     token_a,
     token_b,
     factory,
-    owner,
+    uniswap_pair_deployer,
 ):
     # TODO: the fixture should use factory.createPair but this currently fails
     # TODO: with OUT_OF_RESOURCES so we do it via an EOA for the sake of running
@@ -58,7 +74,7 @@ async def pair(
     _pair = await deploy_solidity_contract(
         "UniswapV2",
         "UniswapV2Pair",
-        caller_eoa=owner,
+        caller_eoa=uniswap_pair_deployer,
     )
     token_0, token_1 = (
         (token_a, token_b)

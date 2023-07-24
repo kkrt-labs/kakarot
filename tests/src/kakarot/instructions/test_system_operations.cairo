@@ -79,12 +79,6 @@ func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
 // Contract Account
 //
 
-// @dev We are using a storage var, so that we can set custom nonces whilst still being able to increment them during the create execution.
-@storage_var
-func mock_nonce() -> (nonce: felt) {
-}
-
-
 // ///////////////////
 //    Test Cases    //
 // ///////////////////
@@ -642,9 +636,6 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
     );
 
     let ctx = MemoryOperations.exec_mstore(ctx);
-
-    // We set the nonce of the mocked contract account
-    mock_nonce.write(nonce_);
 
     // When
     let sub_ctx = SystemOperations.exec_create(ctx);
