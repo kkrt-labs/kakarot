@@ -15,6 +15,8 @@ jobs:
       DEVNET_PRIVATE_KEY: ${{ secrets.DEVNET_PRIVATE_KEY }}
       RPC_KEY: ${{ secrets.RPC_KEY }}
       INFURA_KEY: ${{ secrets.INFURA_KEY }}
+      STARKNET_DEVNET_ACCOUNT_ADDRESS: "0x7e00d496e324876bbc8531f2d9a82bf154d1a04a50218ee74cdd372f75a551a"
+      STARKNET_DEVNET_PRIVATE_KEY: "0xe3e70682c2094cac629f6fbed82c07cd"
     outputs:
       devnet-version: ${{ steps.devnet-version.outputs.DEVNET_VERSION }}
     steps:
@@ -52,7 +54,6 @@ jobs:
           $GITHUB_OUTPUT
       - name: Deploy
         run: |
-          cp .env.example .env
           STARKNET_NETWORK=starknet-devnet poetry run python ./docker/devnet/run_and_deploy.py
           STARKNET_NETWORK=testnet poetry run python ./scripts/deploy_kakarot.py
           STARKNET_NETWORK=testnet2 poetry run python ./scripts/deploy_kakarot.py
