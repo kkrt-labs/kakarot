@@ -165,5 +165,3 @@ if NETWORK.get("chain_id"):
         f"ℹ️  Connected to CHAIN_ID {NETWORK['chain_id'].value.to_bytes(ceil(log(NETWORK['chain_id'].value, 256)), 'big')} "
         f"with {f'Gateway {GATEWAY_CLIENT.net}' if GATEWAY_CLIENT is not None else f'RPC {RPC_CLIENT.url}'}"
     )
-else:
-    raise ValueError("Network has no chain_id")
