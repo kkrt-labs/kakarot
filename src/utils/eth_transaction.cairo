@@ -134,7 +134,7 @@ namespace EthTransaction {
     }
 
     // @notice Decode a modern Ethereum transaction
-    // @dev This function decodes a modern Ethereum transaction in accordance with EIP-1559.
+    // @dev This function decodes a modern Ethereum transaction in accordance with EIP-2718.
     // It returns transaction details including nonce, gas price, gas limit, destination address, amount, payload,
     // transaction hash, and signature (v, r, s). The transaction hash is computed by keccak hashing the signed
     // transaction data, which includes the chain ID as part of the transaction data itself.
@@ -158,7 +158,7 @@ namespace EthTransaction {
         r: Uint256,
         s: Uint256,
     ) {
-        // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1559.md#specification
+        // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-2718.md#specification
         alloc_locals;
         tempvar tx_type = [tx_data];
 
