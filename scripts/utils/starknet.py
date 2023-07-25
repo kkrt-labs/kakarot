@@ -7,7 +7,7 @@ import time
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-from typing import Union, cast
+from typing import List, Union, cast
 
 import requests
 from caseconverter import snakecase
@@ -47,6 +47,11 @@ from scripts.constants import (
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+# Due to some fee estimation issues, we skip it in all the calls and set instead
+# this hardcoded value. This has no impact apart from enforcing the signing wallet
+# to have at least 0.1 ETH
+_max_fee = int(1e17)
 
 
 def int_to_uint256(value):
@@ -156,7 +161,7 @@ async def fund_address(address: Union[int, str], amount: float):
         prepared = eth_contract.functions["transfer"].prepare(
             address, int_to_uint256(amount)
         )
-        tx = await prepared.invoke(max_fee=int(1e17))
+        tx = await prepared.invoke(max_fee=_max_fee)
 
         status = await wait_for_transaction(tx.hash)
         status = "✅" if status == TransactionStatus.ACCEPTED_ON_L2 else "❌"
@@ -201,7 +206,10 @@ def dump_deployments(deployments):
 
 
 def get_deployments():
-    return json.load(open(DEPLOYMENTS_DIR / "deployments.json", "r"))
+    try:
+        return json.load(open(DEPLOYMENTS_DIR / "deployments.json", "r"))
+    except FileNotFoundError:
+        return {}
 
 
 def get_artifact(contract_name):
@@ -308,7 +316,7 @@ async def deploy_starknet_account(private_key=None, amount=1) -> Account:
         client=CLIENT,
         chain=NETWORK["chain_id"],
         constructor_calldata=constructor_calldata,
-        max_fee=int(1e17),
+        max_fee=_max_fee,
     )
     status = await wait_for_transaction(res.hash)
     status = "✅" if status == TransactionStatus.ACCEPTED_ON_L2 else "❌"
@@ -335,7 +343,7 @@ async def declare(contract_name):
     transaction = Declare(
         contract_class=contract_class,
         sender_address=account.address,
-        max_fee=int(1e17),
+        max_fee=_max_fee,
         signature=[],
         nonce=await account.get_nonce(),
         version=1,
@@ -379,7 +387,7 @@ async def deploy(contract_name, *args):
         class_hash=get_declarations()[contract_name],
         abi=abi,
         constructor_args=list(args),
-        max_fee=int(1e17),
+        max_fee=_max_fee,
     )
     status = await wait_for_transaction(deploy_result.hash)
     status = "✅" if status == TransactionStatus.ACCEPTED_ON_L2 else "❌"
@@ -393,27 +401,67 @@ async def deploy(contract_name, *args):
     }
 
 
-async def invoke(contract_name, function_name, *inputs, address=None):
-    account = await get_starknet_account()
+async def invoke_address(contract_address, function_name, *calldata, account=None):
+    account = account or (await get_starknet_account())
+    logger.info(
+        f"ℹ️  Invoking {function_name}({json.dumps(calldata) if calldata else ''}) "
+        f"at address {hex(contract_address)[:10]}"
+    )
+    return await account.execute(
+        Call(
+            to_addr=contract_address,
+            selector=get_selector_from_name(function_name),
+            calldata=cast(List[int], calldata),
+        ),
+        max_fee=_max_fee,
+    )
+
+
+async def invoke_contract(
+    contract_name, function_name, *inputs, address=None, account=None
+):
+    account = account or (await get_starknet_account())
     deployments = get_deployments()
     contract = Contract(
         deployments[contract_name]["address"] if address is None else address,
         json.load(open(get_artifact(contract_name)))["abi"],
         account,
     )
-    call = contract.functions[function_name].prepare(*inputs, max_fee=int(1e17))
-    logger.info(f"ℹ️  Invoking {contract_name}.{function_name}({json.dumps(inputs)})")
-    response = await account.execute(call, max_fee=int(1e17))
+    call = contract.functions[function_name].prepare(*inputs, max_fee=_max_fee)
+    logger.info(
+        f"ℹ️  Invoking {contract_name}.{function_name}({json.dumps(inputs) if inputs else ''})"
+    )
+    return await account.execute(call, max_fee=_max_fee)
+
+
+async def invoke(contract, *args, **kwargs):
+    response = await (
+        invoke_address(contract, *args, **kwargs)
+        if isinstance(contract, int)
+        else invoke_contract(contract, *args, **kwargs)
+    )
+    logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
     status = await wait_for_transaction(response.transaction_hash)
     status = "✅" if status == TransactionStatus.ACCEPTED_ON_L2 else "❌"
     logger.info(
-        f"{status} {contract_name}.{function_name} invoked at tx: %s",
+        f"{status} {contract}.{args[0]} invoked at tx: %s",
         hex(response.transaction_hash),
     )
     return response.transaction_hash
 
 
-async def call(contract_name, function_name, *inputs, address=None):
+async def call_address(contract_address, function_name, *calldata):
+    account = await get_starknet_account()
+    return await account.client.call_contract(
+        Call(
+            to_addr=contract_address,
+            selector=get_selector_from_name(function_name),
+            calldata=cast(List[int], calldata),
+        )
+    )
+
+
+async def call_contract(contract_name, function_name, *inputs, address=None):
     deployments = get_deployments()
     account = await get_starknet_account()
     contract = Contract(
@@ -422,6 +470,14 @@ async def call(contract_name, function_name, *inputs, address=None):
         account,
     )
     return await contract.functions[function_name].call(*inputs)
+
+
+async def call(contract, *args, **kwargs):
+    return await (
+        call_address(contract, *args, **kwargs)
+        if isinstance(contract, int)
+        else call_contract(contract, *args, **kwargs)
+    )
 
 
 # TODO: use RPC_CLIENT when RPC wait_for_tx is fixed, see https://github.com/kkrt-labs/kakarot/issues/586
