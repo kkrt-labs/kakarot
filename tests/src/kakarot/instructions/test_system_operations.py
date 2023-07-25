@@ -136,7 +136,7 @@ class TestSystemOperations:
             (size, 0),
             (salt, 0),
             (0, memory_word),
-            int(expected_create_addr, 16),
+            int(expected_create2_addr, 16),
         ).call()
 
     async def test_selfdestruct(self, system_operations):
