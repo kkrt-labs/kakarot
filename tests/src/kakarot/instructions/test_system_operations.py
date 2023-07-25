@@ -96,9 +96,19 @@ class TestSystemOperations:
         expected_create_addr = get_create_address(evm_caller_address, salt)
 
         await system_operations.test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at_expected_address(
-            evm_caller_address_int,
-            salt,
-            from_bytes(decode_hex(expected_create_addr)),
+            evm_caller_address_int, salt, from_bytes(decode_hex(expected_create_addr))
+        ).call()
+
+    @pytest.mark.parametrize("nonce", [0, 127, 256, 2**55 - 1])
+    async def test_create_has_deterministic_address(self, system_operations, nonce):
+        # given we start with the first anvil test account
+        evm_caller_address = to_checksum_address(
+            0xF39FD6E51AAD88F6F4CE6AB8827279CFFFB92266
+        )
+        expected_create_addr = get_create_address(evm_caller_address, nonce)
+
+        await system_operations.test__get_create_address_should_construct_address_deterministically(
+            int(evm_caller_address, 16), nonce, int(expected_create_addr, 16)
         ).call()
 
     async def test_create2(self, system_operations):
@@ -126,7 +136,7 @@ class TestSystemOperations:
             (size, 0),
             (salt, 0),
             (0, memory_word),
-            from_bytes(decode_hex(expected_create2_addr)),
+            int(expected_create2_addr, 16),
         ).call()
 
     async def test_selfdestruct(self, system_operations):
