@@ -46,6 +46,7 @@ jobs:
         run: make setup
       - name: Deploy
         run: |
+          STARKNET_NETWORK=${{ matrix.network }} poetry run python ./scripts/compile_kakarot.py
           STARKNET_NETWORK=${{ matrix.network }} poetry run python ./scripts/deploy_kakarot.py
       - name: Store deployment artifacts
         uses: actions/upload-artifact@v3
