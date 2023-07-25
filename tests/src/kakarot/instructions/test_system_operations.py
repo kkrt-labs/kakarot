@@ -87,7 +87,7 @@ class TestSystemOperations:
             system_operations.contract_address
         )
 
-    @pytest.mark.parametrize("salt", [0])
+    @pytest.mark.parametrize("salt", [0, 127, 256, 2**55 - 1])
     async def test_create(self, system_operations, salt):
         # given we start with the first anvil test account
         evm_caller_address_int = 0xF39FD6E51AAD88F6F4CE6AB8827279CFFFB92266
