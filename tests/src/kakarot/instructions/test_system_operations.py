@@ -108,9 +108,9 @@ class TestSystemOperations:
         expected_create_addr = get_create_address(evm_caller_address, nonce)
 
         await system_operations.test__get_create_address_should_construct_address_deterministically(
-            int(evm_caller_address[2:], 16),
+            int(evm_caller_address, 16),
             nonce,
-            from_bytes(decode_hex(expected_create_addr)),
+            int(expected_create_addr, 16)
         ).call()
 
     async def test_create2(self, system_operations):
@@ -138,7 +138,7 @@ class TestSystemOperations:
             (size, 0),
             (salt, 0),
             (0, memory_word),
-            from_bytes(decode_hex(expected_create2_addr)),
+            int(expected_create_addr, 16)
         ).call()
 
     async def test_selfdestruct(self, system_operations):
