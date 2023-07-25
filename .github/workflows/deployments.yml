@@ -9,6 +9,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         network: [testnet, testnet2]
     env:
