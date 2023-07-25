@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from eth_keys import keys
 from starknet_py.net.full_node_client import FullNodeClient
 from starknet_py.net.gateway_client import GatewayClient
+from starknet_py.net.models.chains import StarknetChainId
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -24,6 +25,7 @@ NETWORKS = {
         "rpc_url": f"https://starknet-mainnet.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "gateway": "mainnet",
         "devnet": False,
+        "chain_id": StarknetChainId.MAINNET,
     },
     "testnet": {
         "name": "testnet",
@@ -31,6 +33,7 @@ NETWORKS = {
         "rpc_url": f"https://starknet-goerli.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "gateway": "testnet",
         "devnet": False,
+        "chain_id": StarknetChainId.TESTNET,
     },
     "testnet2": {
         "name": "testnet2",
@@ -38,6 +41,7 @@ NETWORKS = {
         "rpc_url": f"https://starknet-goerli2.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "gateway": "testnet2",
         "devnet": False,
+        "chain_id": StarknetChainId.TESTNET2,
     },
     "starknet-devnet": {
         "name": "starknet-devnet",
@@ -59,7 +63,7 @@ NETWORKS = {
         "name": "madara",
         "explorer_url": "",
         "rpc_url": "http://127.0.0.1:9944",
-        "devnet": True,
+        "devnet": False,
         "check_interval": 6,
         "max_wait": 30,
     },
@@ -73,25 +77,38 @@ NETWORKS = {
     },
 }
 
-NETWORK = NETWORKS[os.getenv("STARKNET_NETWORK", "starknet-devnet")]
-NETWORK["account_address"] = os.environ.get(
-    f"{NETWORK['name'].upper()}_ACCOUNT_ADDRESS"
-)
+if os.getenv("STARKNET_NETWORK") is not None:
+    if NETWORKS.get(os.environ["STARKNET_NETWORK"]) is not None:
+        NETWORK = NETWORKS[os.environ["STARKNET_NETWORK"]]
+    else:
+        raise ValueError(
+            f"STARKNET_NETWORK {os.environ['STARKNET_NETWORK']} given in env variable unknown"
+        )
+else:
+    NETWORK = {
+        "name": "",
+        "rpc_url": os.getenv("RPC_URL"),
+        "explorer_url": "",
+        "devnet": False,
+        "check_interval": 6,
+        "max_wait": 30,
+    }
+
+prefix = NETWORK["name"].upper().replace("-", "_")
+NETWORK["account_address"] = os.environ.get(f"{prefix}_ACCOUNT_ADDRESS")
 if NETWORK["account_address"] is None:
     logger.warning(
-        f"⚠️ {NETWORK['name'].upper()}_ACCOUNT_ADDRESS not set, defaulting to ACCOUNT_ADDRESS"
+        f"⚠️  {prefix}_ACCOUNT_ADDRESS not set, defaulting to ACCOUNT_ADDRESS"
     )
     NETWORK["account_address"] = os.getenv("ACCOUNT_ADDRESS")
-NETWORK["private_key"] = os.environ.get(f"{NETWORK['name'].upper()}_PRIVATE_KEY")
+NETWORK["private_key"] = os.environ.get(f"{prefix}_PRIVATE_KEY")
 if NETWORK["private_key"] is None:
-    logger.warning(
-        f"⚠️  {NETWORK['name'].upper()}_PRIVATE_KEY not set, defaulting to PRIVATE_KEY"
-    )
+    logger.warning(f"⚠️  {prefix}_PRIVATE_KEY not set, defaulting to PRIVATE_KEY")
     NETWORK["private_key"] = os.getenv("PRIVATE_KEY")
 
 RPC_CLIENT = FullNodeClient(node_url=NETWORK["rpc_url"])
 GATEWAY_CLIENT = GatewayClient(NETWORK["gateway"]) if NETWORK.get("gateway") else None
-CLIENT = GATEWAY_CLIENT if GATEWAY_CLIENT else RPC_CLIENT
+CLIENT = GATEWAY_CLIENT if GATEWAY_CLIENT is not None else RPC_CLIENT
 
 try:
     response = requests.post(
