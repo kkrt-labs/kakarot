@@ -1,7 +1,7 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.starknet.common.syscalls import CallContract
+from starkware.starknet.common.syscalls import CallContract, get_tx_info
 from starkware.cairo.common.uint256 import Uint256, uint256_not
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
@@ -91,9 +91,10 @@ namespace ExternallyOwnedAccount {
         }
 
         let (address) = evm_address.read();
-        let (nonce) = Accounts.get_nonce();
+        let (tx_info) = get_tx_info();
+
         EthTransaction.validate(
-            address, nonce, [call_array].data_len, calldata + [call_array].data_offset
+            address, tx_info.nonce, [call_array].data_len, calldata + [call_array].data_offset
         );
 
         return validate(
@@ -152,7 +153,6 @@ namespace ExternallyOwnedAccount {
             response + return_data_len,
         );
 
-        Accounts.increment_nonce();
         return (response_len=return_data_len + response_len);
     }
 }

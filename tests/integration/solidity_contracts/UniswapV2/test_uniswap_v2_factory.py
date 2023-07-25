@@ -13,7 +13,8 @@ TEST_ADDRESSES = [
 @pytest.mark.usefixtures("starknet_snapshot")
 class TestUniswapV2Factory:
     class TestDeploy:
-        async def test_should_set_constants(self, factory, owner):
+        async def test_should_set_constants(self, factory, uniswap_factory_deployer):
+            owner = uniswap_factory_deployer
             assert await factory.feeTo() == f"0x{0:040x}"
             assert await factory.feeToSetter() == owner.address
             assert await factory.allPairsLength() == 0
@@ -84,7 +85,8 @@ class TestUniswapV2Factory:
                     other.address, caller_address=other.starknet_address
                 )
 
-        async def test_should_set_fee_to_owner(self, factory, owner):
+        async def test_should_set_fee_to_owner(self, factory, uniswap_factory_deployer):
+            owner = uniswap_factory_deployer
             await factory.setFeeTo(owner.address, caller_address=owner.starknet_address)
             assert await factory.feeTo() == owner.address
 
@@ -96,8 +98,9 @@ class TestUniswapV2Factory:
                 )
 
         async def test_should_set_fee_setter_to_other_and_transfer_permission(
-            self, factory, owner, other
+            self, factory, uniswap_factory_deployer, other
         ):
+            owner = uniswap_factory_deployer
             await factory.setFeeToSetter(
                 other.address, caller_address=owner.starknet_address
             )

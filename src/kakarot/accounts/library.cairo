@@ -97,21 +97,4 @@ namespace Accounts {
         return (account_address=account_address);
     }
 
-    // @notice This function is used to read the nonce from storage
-    // @return nonce: The current nonce of the contract account
-    func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
-        nonce: felt
-    ) {
-        return nonce.read();
-    }
-
-    // @notice This function increases the accounts nonce by 1
-    // @return nonce: The incremented nonce of the contract account
-    func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
-        nonce: felt
-    ) {
-        let (current_nonce: felt) = nonce.read();
-        nonce.write(current_nonce + 1);
-        return (nonce=current_nonce + 1);
-    }
 }

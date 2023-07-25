@@ -60,7 +60,7 @@ async def addresses(starknet, kakarot, externally_owned_account_class) -> List[W
 
     # Randomly generated private keys
     private_keys = [predefined_private_key] + [
-        generate_random_private_key(seed=i) for i in range(3)
+        generate_random_private_key(seed=i) for i in range(15)
     ]
 
     wallets = []

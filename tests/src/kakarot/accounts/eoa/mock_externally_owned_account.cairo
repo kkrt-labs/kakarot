@@ -34,9 +34,3 @@ func execute{
     return (response_len, response);
 }
 
-// @notice This function is used to read the nonce from storage
-// @return nonce: The current nonce of the contract account
-@view
-func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (nonce: felt) {
-    return Accounts.get_nonce();
-}

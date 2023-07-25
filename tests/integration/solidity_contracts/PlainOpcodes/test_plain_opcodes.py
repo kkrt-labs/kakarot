@@ -26,9 +26,9 @@ class TestPlainOpcodes:
             self,
             counter,
             plain_opcodes,
-            addresses,
+            counter_deployer,
         ):
-            await plain_opcodes.opcodeCall(caller_address=addresses[1].starknet_address)
+            await plain_opcodes.opcodeCall(caller_address=counter_deployer.starknet_address)
             assert await counter.count() == 1
 
     class TestBlockhash:
@@ -146,8 +146,8 @@ class TestPlainOpcodes:
                 assert log_receipt["address"] == expected_address
             assert plain_opcodes.events.Log3 == [event]
 
-        async def test_should_emit_log4(self, plain_opcodes, addresses, event):
-            await plain_opcodes.opcodeLog4(caller_address=addresses[0].starknet_address)
+        async def test_should_emit_log4(self, plain_opcodes, plain_opcodes_deployer, event):
+            await plain_opcodes.opcodeLog4(caller_address=plain_opcodes_deployer.starknet_address)
             # the contract address is set at deploy time, we verify that event address is
             # getting correctly set by asserting equality
             expected_address = plain_opcodes.address
@@ -160,7 +160,7 @@ class TestPlainOpcodes:
             self,
             plain_opcodes,
             counter,
-            addresses,
+            plain_opcodes_deployer,
             get_starknet_address,
             get_solidity_contract,
         ):
@@ -168,7 +168,7 @@ class TestPlainOpcodes:
             evm_address = await plain_opcodes.create2(
                 bytecode=counter.constructor().data_in_transaction,
                 salt=salt,
-                caller_address=addresses[0].starknet_address,
+                caller_address=plain_opcodes_deployer.starknet_address,
             )
             starknet_address = get_starknet_address(salt)
             deployed_counter = get_solidity_contract(
@@ -259,6 +259,6 @@ class TestPlainOpcodes:
 
     class TestLoop:
         @pytest.mark.parametrize("steps", [0, 1, 2, 10])
-        async def test_loop_should_write_to_storage(self, plain_opcodes, owner, steps):
-            await plain_opcodes.testLoop(steps, caller_address=owner.starknet_address)
+        async def test_loop_should_write_to_storage(self, plain_opcodes, plain_opcodes_deployer, steps):
+            await plain_opcodes.testLoop(steps, caller_address=plain_opcodes_deployer.starknet_address)
             assert await plain_opcodes.loopValue() == steps
