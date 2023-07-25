@@ -18,6 +18,14 @@ from utils.utils import Helpers
 // @notice This file contains utils for decoding eth transactions
 // @custom:namespace EthTransaction
 namespace EthTransaction {
+
+    // @notice Decode a legacy Ethereum transaction
+    // @dev This function decodes a legacy Ethereum transaction in accordance with EIP-155.
+    // It returns transaction details including nonce, gas price, gas limit, destination address, amount, payload,
+    // transaction hash, and signature (v, r, s). The transaction hash is computed by keccak hashing the signed
+    // transaction data, which includes the chain ID in accordance with EIP-155.
+    // @param tx_data_len The length of the raw transaction data
+    // @param tx_data The raw transaction data
     func decode_legacy_tx{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -125,6 +133,13 @@ namespace EthTransaction {
         );
     }
 
+    // @notice Decode a modern Ethereum transaction
+    // @dev This function decodes a modern Ethereum transaction in accordance with EIP-2718.
+    // It returns transaction details including nonce, gas price, gas limit, destination address, amount, payload,
+    // transaction hash, and signature (v, r, s). The transaction hash is computed by keccak hashing the signed
+    // transaction data, which includes the chain ID as part of the transaction data itself.
+    // @param tx_data_len The length of the raw transaction data
+    // @param tx_data The raw transaction data
     func decode_tx{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -143,7 +158,7 @@ namespace EthTransaction {
         r: Uint256,
         s: Uint256,
     ) {
-        // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1559.md#specification
+        // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-2718.md#specification
         alloc_locals;
         tempvar tx_type = [tx_data];
 
@@ -232,12 +247,22 @@ namespace EthTransaction {
         );
     }
 
+    // @notice Check if a raw transaction is a legacy Ethereum transaction
+    // @dev This function checks if a raw transaction is a legacy Ethereum transaction by checking the transaction type
+    // according to EIP-2718. If the transaction type is less than or equal to 0xc0, it's a legacy transaction.
+    // @param tx_data The raw transaction data
     func is_legacy_tx{range_check_ptr}(tx_data: felt*) -> felt {
         // See https://eips.ethereum.org/EIPS/eip-2718#transactiontype-only-goes-up-to-0x7f
         tempvar type = [tx_data];
         return is_le(0xc0, type);
     }
 
+    // @notice Decode a raw Ethereum transaction
+    // @dev This function decodes a raw Ethereum transaction. It checks if the transaction
+    // is a legacy transaction or a modern transaction, and calls the appropriate decode function
+    // (decode_legacy_tx or decode_tx) based on the result.
+    // @param tx_data_len The length of the raw transaction data
+    // @param tx_data The raw transaction data
     func decode{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -264,6 +289,15 @@ namespace EthTransaction {
         }
     }
 
+    // @notice Validate an Ethereum transaction
+    // @dev This function validates an Ethereum transaction by checking if the transaction
+    // is correctly signed by the given address, and if the nonce in the transaction
+    // matches the nonce of the account. It decodes the transaction using the decode function,
+    // and then verifies the Ethereum signature on the transaction hash.
+    // @param address The address that is supposed to have signed the transaction
+    // @param account_nonce The nonce of the account
+    // @param tx_data_len The length of the raw transaction data
+    // @param tx_data The raw transaction data
     func validate{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
