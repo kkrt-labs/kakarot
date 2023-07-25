@@ -14,7 +14,6 @@ from starkware.cairo.common.registers import get_ap
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256
 
-
 // Internal dependencies
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.block_information import BlockInformation
@@ -677,5 +676,4 @@ namespace EVMInstructions {
         }
         return ();
     }
-
 }
