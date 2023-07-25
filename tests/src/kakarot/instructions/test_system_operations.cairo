@@ -715,6 +715,17 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
 }
 
 @external
+func test__get_create_address_should_construct_address_deterministically{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(evm_caller_address: felt, nonce: felt, expected_create_address: felt) {
+    let (evm_contract_address) = CreateHelper.get_create_address(evm_caller_address, nonce);
+
+    assert evm_contract_address = expected_create_address;
+
+    return ();
+}
+
+@external
 func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_at_expected_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
