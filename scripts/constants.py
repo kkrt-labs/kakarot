@@ -90,8 +90,8 @@ else:
         "rpc_url": os.getenv("RPC_URL"),
         "explorer_url": "",
         "devnet": False,
-        "check_interval": 6,
-        "max_wait": 30,
+        "check_interval": float(os.getenv("CHECK_INTERVAL", 6)),
+        "max_wait": float(os.getenv("MAX_WAIT", 30)),
     }
 
 prefix = NETWORK["name"].upper().replace("-", "_")
