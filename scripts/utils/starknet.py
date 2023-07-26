@@ -434,7 +434,14 @@ async def invoke_contract(
     return await account.execute(call, max_fee=_max_fee)
 
 
-async def invoke(contract, *args, **kwargs):
+async def invoke(contract: Union[str, int], *args, **kwargs):
+    """
+    Invoke a contract specified:
+     - either with a name (expect that a matching ABIs is to be found in the project artifacts)
+       `invoke("MyContract", "foo")`
+     - or with a plain address (in this later case, no parsing is done on the calldata)
+       `invoke(0x1234, "foo")`
+    """
     response = await (
         invoke_address(contract, *args, **kwargs)
         if isinstance(contract, int)
@@ -472,7 +479,14 @@ async def call_contract(contract_name, function_name, *inputs, address=None):
     return await contract.functions[function_name].call(*inputs)
 
 
-async def call(contract, *args, **kwargs):
+async def call(contract: Union[str, int], *args, **kwargs):
+    """
+    Call a contract specified:
+     - either with a name (expect that a matching ABIs is to be found in the project artifacts)
+     `call("MyContract", "foo")`
+     - or with a plain address (in this later case, no parsing is done on the calldata)
+     `call(0x1234, "foo")`
+    """
     return await (
         call_address(contract, *args, **kwargs)
         if isinstance(contract, int)
