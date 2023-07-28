@@ -5,25 +5,31 @@ from eth_utils import keccak
 from tests.utils.constants import ZERO_ADDRESS
 from tests.utils.errors import kakarot_error
 
+
 @pytest_asyncio.fixture(scope="session")
 def erc_721_deployer(addresses):
     return addresses[6]
+
 
 @pytest_asyncio.fixture(scope="session")
 def erc_721_recepient_deployer(addresses):
     return addresses[7]
 
+
 @pytest_asyncio.fixture(scope="session")
 def erc_721_reverting_recipient_deployer(addresses):
     return addresses[8]
+
 
 @pytest_asyncio.fixture(scope="session")
 def erc_721_recipient_with_wrong_return_data_deployer(addresses):
     return addresses[9]
 
+
 @pytest_asyncio.fixture(scope="session")
 def erc_721_non_recipient_deployer(addresses):
     return addresses[10]
+
 
 @pytest_asyncio.fixture(scope="module")
 async def erc_721(deploy_solidity_contract, erc_721_deployer):
@@ -46,7 +52,9 @@ async def erc_721_recipient(deploy_solidity_contract, erc_721_recepient_deployer
 
 
 @pytest_asyncio.fixture(scope="module")
-async def erc_721_reverting_recipient(deploy_solidity_contract, erc_721_reverting_recipient_deployer):
+async def erc_721_reverting_recipient(
+    deploy_solidity_contract, erc_721_reverting_recipient_deployer
+):
     return await deploy_solidity_contract(
         "Solmate",
         "RevertingERC721Recipient",
@@ -55,7 +63,9 @@ async def erc_721_reverting_recipient(deploy_solidity_contract, erc_721_revertin
 
 
 @pytest_asyncio.fixture(scope="module")
-async def erc_721_recipient_with_wrong_return_data(deploy_solidity_contract, erc_721_recipient_with_wrong_return_data_deployer):
+async def erc_721_recipient_with_wrong_return_data(
+    deploy_solidity_contract, erc_721_recipient_with_wrong_return_data_deployer
+):
     return await deploy_solidity_contract(
         "Solmate",
         "WrongReturnDataERC721Recipient",
@@ -64,7 +74,9 @@ async def erc_721_recipient_with_wrong_return_data(deploy_solidity_contract, erc
 
 
 @pytest_asyncio.fixture(scope="module")
-async def erc_721_non_recipient(deploy_solidity_contract, erc_721_non_recipient_deployer):
+async def erc_721_non_recipient(
+    deploy_solidity_contract, erc_721_non_recipient_deployer
+):
     return await deploy_solidity_contract(
         "Solmate",
         "NonERC721Recipient",

@@ -18,7 +18,6 @@ from utils.utils import Helpers
 // @notice This file contains utils for decoding eth transactions
 // @custom:namespace EthTransaction
 namespace EthTransaction {
-
     // @notice Decode a legacy Ethereum transaction
     // @dev This function decodes a legacy Ethereum transaction in accordance with EIP-155.
     // It returns transaction details including nonce, gas price, gas limit, destination address, amount, payload,

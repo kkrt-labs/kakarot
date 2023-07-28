@@ -96,5 +96,4 @@ namespace Accounts {
 
         return (account_address=account_address);
     }
-
 }

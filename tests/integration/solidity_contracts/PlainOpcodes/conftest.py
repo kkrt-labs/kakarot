@@ -5,13 +5,16 @@ import pytest_asyncio
 def counter_deployer(addresses):
     return addresses[1]
 
+
 @pytest_asyncio.fixture(scope="session")
 def caller_deployer(addresses):
     return addresses[2]
 
+
 @pytest_asyncio.fixture(scope="session")
 def plain_opcodes_deployer(addresses):
     return addresses[3]
+
 
 @pytest_asyncio.fixture(scope="session")
 def safe_deployer(addresses):
@@ -20,7 +23,9 @@ def safe_deployer(addresses):
 
 @pytest_asyncio.fixture(scope="package")
 async def counter(deploy_solidity_contract, counter_deployer):
-    return await deploy_solidity_contract("PlainOpcodes", "Counter", caller_eoa=counter_deployer)
+    return await deploy_solidity_contract(
+        "PlainOpcodes", "Counter", caller_eoa=counter_deployer
+    )
 
 
 @pytest_asyncio.fixture(scope="package")
@@ -45,7 +50,5 @@ async def plain_opcodes(deploy_solidity_contract, plain_opcodes_deployer, counte
 @pytest_asyncio.fixture(scope="package")
 async def safe(deploy_solidity_contract, safe_deployer):
     return await deploy_solidity_contract(
-        "PlainOpcodes",
-        "Safe",
-        caller_eoa=safe_deployer
+        "PlainOpcodes", "Safe", caller_eoa=safe_deployer
     )

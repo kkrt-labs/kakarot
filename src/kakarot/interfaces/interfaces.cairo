@@ -56,7 +56,6 @@ namespace IAccount {
 
     func bytecode() -> (bytecode_len: felt, bytecode: felt*) {
     }
-
 }
 
 @contract_interface
@@ -69,7 +68,6 @@ namespace IContractAccount {
 
     func write_storage(key: Uint256, value: Uint256) {
     }
-
 }
 
 @contract_interface

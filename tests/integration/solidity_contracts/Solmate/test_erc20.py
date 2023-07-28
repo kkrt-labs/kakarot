@@ -8,9 +8,11 @@ from tests.utils.helpers import ec_sign, get_approval_digest
 TEST_SUPPLY = 10**18
 TEST_AMOUNT = int(0.9 * 10**18)
 
+
 @pytest_asyncio.fixture(scope="session")
 def erc_20_deployer(addresses):
     return addresses[5]
+
 
 @pytest_asyncio.fixture(scope="module")
 async def erc_20(deploy_solidity_contract, erc_20_deployer):
