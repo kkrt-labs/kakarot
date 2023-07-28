@@ -156,8 +156,7 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         // Get caller address.
-        let (current_address) = get_caller_address();
-        let (current_evm_address) = IAccount.get_evm_address(current_address);
+        let current_evm_address = ctx.from_evm_address;
         let is_root = ExecutionContext.is_root(ctx);
         let evm_address = (1 - is_root) * ctx.calling_context.evm_contract_address + is_root *
             current_evm_address;

@@ -128,10 +128,10 @@ func deploy_externally_owned_account{
 @view
 func eth_call{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
+}(to: felt, from_evm_address: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
     return_data_len: felt, return_data: felt*
 ) {
-    return Kakarot.eth_call(to, gas_limit, gas_price, value, data_len, data);
+    return Kakarot.eth_call(to,from_evm_address, gas_limit, gas_price, value, data_len, data);
 }
 
 // @notice The eth_send_transaction function as described in the spec,
@@ -150,8 +150,8 @@ func eth_call{
 @external
 func eth_send_transaction{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
+}(to: felt,from_evm_address:felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
     return_data_len: felt, return_data: felt*
 ) {
-    return Kakarot.eth_send_transaction(to, gas_limit, gas_price, value, data_len, data);
+    return Kakarot.eth_send_transaction(to,from_evm_address, gas_limit, gas_price, value, data_len, data);
 }

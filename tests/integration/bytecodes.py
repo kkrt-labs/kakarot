@@ -7,7 +7,6 @@ import pytest
 with open(file=Path("sequencer") / "mock_blockhashes.json") as file:
     blockhashes = json.load(file)
 
-
 test_cases = [
     {
         "params": {
