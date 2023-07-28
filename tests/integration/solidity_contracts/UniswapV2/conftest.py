@@ -9,17 +9,21 @@ TOTAL_SUPPLY = 10000 * 10**18
 async def token_a_deployer(addresses):
     return addresses[11]
 
+
 @pytest_asyncio.fixture(scope="session")
 async def token_b_deployer(addresses):
     return addresses[12]
+
 
 @pytest_asyncio.fixture(scope="session")
 async def uniswap_factory_deployer(addresses):
     return addresses[13]
 
+
 @pytest_asyncio.fixture(scope="session")
 async def uniswap_pair_deployer(addresses):
     return addresses[14]
+
 
 @pytest_asyncio.fixture(scope="module")
 async def token_a(
