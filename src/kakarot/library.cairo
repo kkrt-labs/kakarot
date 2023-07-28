@@ -76,6 +76,7 @@ namespace Kakarot {
     }(
         starknet_contract_address: felt,
         evm_contract_address: felt,
+        from_evm_address: felt,
         bytecode_len: felt,
         bytecode: felt*,
         calldata_len: felt,
@@ -92,6 +93,7 @@ namespace Kakarot {
         memory_bytes_len: felt,
         starknet_contract_address: felt,
         evm_contract_address: felt,
+        from_evm_address: felt,
         return_data_len: felt,
         return_data: felt*,
         gas_used: felt,
@@ -114,6 +116,7 @@ namespace Kakarot {
             call_context=call_context,
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=evm_contract_address,
+            from_evm_address=from_evm_address,
             gas_limit=gas_limit,
             gas_price=gas_price,
             calling_context=root_context,
@@ -145,6 +148,7 @@ namespace Kakarot {
             memory_bytes_len=summary.memory.bytes_len,
             starknet_contract_address=summary.starknet_contract_address,
             evm_contract_address=summary.evm_contract_address,
+            from_evm_address=summary.from_evm_address,
             return_data_len=summary.return_data_len,
             return_data=summary.return_data,
             gas_used=summary.gas_used,
@@ -247,12 +251,14 @@ namespace Kakarot {
             memory_bytes_len,
             starknet_contract_address,
             evm_contract_address,
+            from_evm_address,
             return_data_len,
             return_data,
             gas_used,
         ) = execute(
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=evm_contract_address,
+            from_evm_address=sender_evm_address,
             bytecode_len=bytecode_len,
             bytecode=bytecode,
             calldata_len=0,
@@ -303,7 +309,7 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
+    }(to: felt, from_evm_address:felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
         return_data_len: felt, return_data: felt*
     ) {
         let (success) = transfer(to, value);
@@ -336,6 +342,7 @@ namespace Kakarot {
             let summary = execute(
                 starknet_contract_address,
                 to,
+                from_evm_address,
                 bytecode_len,
                 bytecode,
                 data_len,
@@ -390,10 +397,10 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
+    }(to: felt, from_evm_address: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
         return_data_len: felt, return_data: felt*
     ) {
         assert_caller_is_kakarot_account();
-        return eth_call(to, gas_limit, gas_price, value, data_len, data);
+        return eth_call(to,from_evm_address, gas_limit, gas_price, value, data_len, data);
     }
 }

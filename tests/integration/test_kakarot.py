@@ -12,6 +12,10 @@ from tests.utils.helpers import (
 )
 from tests.utils.reporting import traceit
 
+@pytest.fixture
+async def from_evm_address():
+        return 1000
+
 
 @pytest_asyncio.fixture(scope="session")
 async def evm(
@@ -63,9 +67,11 @@ class TestKakarot:
         "params",
         params_execute,
     )
+
     async def test_execute(
         self,
         evm: StarknetContract,
+        from_evm_address: int,
         owner,
         params: dict,
         request,
@@ -96,3 +102,5 @@ class TestKakarot:
                 ]
                 for event in sorted(res.call_info.events, key=lambda x: x.order)
             ] == events
+
+

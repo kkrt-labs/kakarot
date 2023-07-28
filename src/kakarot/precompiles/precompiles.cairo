@@ -76,6 +76,7 @@ namespace Precompiles {
             gas_price=0,
             starknet_contract_address=0,
             evm_contract_address=address,
+            from_evm_address=0,
             calling_context=calling_context,
             sub_context=cast(0, model.ExecutionContext*),
             destroy_contracts_len=0,

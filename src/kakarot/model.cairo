@@ -112,6 +112,7 @@ namespace model {
         gas_price: felt,
         starknet_contract_address: felt,
         evm_contract_address: felt,
+        from_evm_address: felt,
         calling_context: ExecutionContext*,
         sub_context: ExecutionContext*,
         destroy_contracts_len: felt,
