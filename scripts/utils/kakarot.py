@@ -24,6 +24,7 @@ from scripts.constants import (
     KAKAROT_CHAIN_ID,
     NETWORK,
     RPC_CLIENT,
+    GATEWAY_CLIENT
 )
 from scripts.utils.starknet import call as _call_starknet
 from scripts.utils.starknet import fund_address as _fund_starknet_address
@@ -157,7 +158,10 @@ def _wrap_kakarot(fun: str):
 
 async def _contract_exists(address: int) -> bool:
     try:
-        await RPC_CLIENT.get_class_hash_at(address)
+        if GATEWAY_CLIENT is not None:
+            await GATEWAY_CLIENT.get_class_hash_at(address)
+        else:
+            await RPC_CLIENT.get_class_hash_at(address)
         return True
     except ClientError:
         return False
@@ -173,10 +177,10 @@ async def get_eoa(
     starknet_address = await _get_starknet_address(address)
     if not await _contract_exists(starknet_address):
         await deploy_and_fund_evm_address(hex(address), 0.1)
-
+    
     return Account(
         address=starknet_address,
-        client=RPC_CLIENT,
+        client=GATEWAY_CLIENT if GATEWAY_CLIENT is not None else RPC_CLIENT,
         chain=NETWORK["chain_id"],
         key_pair=KeyPair(private_key, address),
     )
@@ -213,8 +217,10 @@ async def eth_send_transaction(
         max_fee=int(5e17),
     )
     await wait_for_transaction(tx_hash=response.transaction_hash)
-    return await RPC_CLIENT.get_transaction_receipt(response.transaction_hash)
-
+    if GATEWAY_CLIENT is not None:
+        return await GATEWAY_CLIENT.get_transaction_receipt(response.transaction_hash)
+    else:
+        return await RPC_CLIENT.get_transaction_receipt(response.transaction_hash)
 
 async def _get_starknet_address(address: Union[str, int]):
     evm_address = int(address, 16) if isinstance(address, str) else address
