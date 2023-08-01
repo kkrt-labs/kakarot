@@ -19,11 +19,11 @@ from web3.contract import Contract as Web3Contract
 
 from scripts.artifacts import fetch_deployments
 from scripts.constants import (
+    CLIENT,
     EVM_ADDRESS,
     EVM_PRIVATE_KEY,
     KAKAROT_CHAIN_ID,
     NETWORK,
-    CLIENT,
 )
 from scripts.utils.starknet import call as _call_starknet
 from scripts.utils.starknet import fund_address as _fund_starknet_address
