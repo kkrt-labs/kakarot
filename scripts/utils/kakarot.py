@@ -23,7 +23,7 @@ from scripts.constants import (
     EVM_PRIVATE_KEY,
     KAKAROT_CHAIN_ID,
     NETWORK,
-    RPC_CLIENT,
+    CLIENT,
 )
 from scripts.utils.starknet import call as _call_starknet
 from scripts.utils.starknet import fund_address as _fund_starknet_address
@@ -157,7 +157,7 @@ def _wrap_kakarot(fun: str):
 
 async def _contract_exists(address: int) -> bool:
     try:
-        await RPC_CLIENT.get_class_hash_at(address)
+        await CLIENT.get_class_hash_at(address)
         return True
     except ClientError:
         return False
@@ -176,7 +176,7 @@ async def get_eoa(
 
     return Account(
         address=starknet_address,
-        client=RPC_CLIENT,
+        client=CLIENT,
         chain=NETWORK["chain_id"],
         key_pair=KeyPair(private_key, address),
     )
@@ -213,7 +213,7 @@ async def eth_send_transaction(
         max_fee=int(5e17),
     )
     await wait_for_transaction(tx_hash=response.transaction_hash)
-    return await RPC_CLIENT.get_transaction_receipt(response.transaction_hash)
+    return await CLIENT.get_transaction_receipt(response.transaction_hash)
 
 
 async def _get_starknet_address(address: Union[str, int]):
