@@ -5,7 +5,7 @@ import pytest_asyncio
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.constants import ACCOUNT_BALANCE
+from tests.utils.constants import ACCOUNT_BALANCE, DEPLOY_FEE
 from tests.utils.errors import kakarot_error
 from tests.utils.helpers import generate_random_evm_address
 from tests.utils.reporting import traceit
@@ -113,5 +113,5 @@ class TestContractAccount:
                 await eth.balanceOf(computed_starknet_address).call()
             ).result.balance.low == ACCOUNT_BALANCE
 
-            # asserting that the balance of the account is the amount minus the deployment fee
-            assert (await eth.balanceOf(4).call()).result.balance.low == 10000
+            # asserting that the deployer gets the Deployment Fee back { initial balance of the deployer is 0 }
+            assert (await eth.balanceOf(4).call()).result.balance.low == DEPLOY_FEE

@@ -6,7 +6,7 @@ DEPLOY_FEE = 10000
 # Amount of funds to pre-fund the account with
 PRE_FUND_AMOUNT = int(1e9)
 
-# Account balance is the amount of funds that the account has after being pre-funded
+# Account balance is the amount of funds that the account has after being deployed
 ACCOUNT_BALANCE = PRE_FUND_AMOUNT - DEPLOY_FEE
 
 # Coinbase address is the address of the sequencer
