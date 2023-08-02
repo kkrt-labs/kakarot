@@ -4,13 +4,13 @@ from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
 from tests.integration.bytecodes import test_cases
+from tests.utils.accounts import fund_evm_address
 from tests.utils.helpers import (
     extract_memory_from_execute,
     extract_stack_from_execute,
     generate_random_evm_address,
     hex_string_to_bytes_array,
 )
-from tests.utils.accounts import fund_evm_address
 from tests.utils.reporting import traceit
 
 

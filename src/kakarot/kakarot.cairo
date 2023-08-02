@@ -22,7 +22,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     contract_account_class_hash_,
     externally_owned_account_class_hash,
     account_proxy_class_hash,
-    deploy_fee
+    deploy_fee,
 ) {
     return Kakarot.constructor(
         owner,
@@ -30,7 +30,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
         contract_account_class_hash_,
         externally_owned_account_class_hash,
         account_proxy_class_hash,
-        deploy_fee
+        deploy_fee,
     );
 }
 
@@ -73,25 +73,25 @@ func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     return Kakarot.get_native_token();
 }
 
-     // @notice Set the deploy fee for deploying EOA on Kakarot.
-    // @dev Set the deploy fee to be returned to a deployer for deploying accounts.
-    // @param deploy_fee_ The new deploy fee.
-    @external
-    func set_deploy_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        deploy_fee_: felt
-    ) {
-       return Kakarot.set_deploy_fee(deploy_fee_); 
-    }
+// @notice Set the deploy fee for deploying EOA on Kakarot.
+// @dev Set the deploy fee to be returned to a deployer for deploying accounts.
+// @param deploy_fee_ The new deploy fee.
+@external
+func set_deploy_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    deploy_fee_: felt
+) {
+    return Kakarot.set_deploy_fee(deploy_fee_);
+}
 
-     // @notice Get the deploy fee for deploying EOA on Kakarot.
-    // @dev Return the deploy fee which is returned to a deployer for deploying accounts.
-    // @return deploy_fee The deploy fee which is returned to a deployer for deploying accounts.
-    @view
-    func get_deploy_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
-        deploy_fee: felt
-    ) {
-        return Kakarot.get_deploy_fee();
-    }
+// @notice Get the deploy fee for deploying EOA on Kakarot.
+// @dev Return the deploy fee which is returned to a deployer for deploying accounts.
+// @return deploy_fee The deploy fee which is returned to a deployer for deploying accounts.
+@view
+func get_deploy_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    deploy_fee: felt
+) {
+    return Kakarot.get_deploy_fee();
+}
 
 // @notice Compute the starknet address of a contract given its EVM address
 // @param evm_address The EVM address of the contract

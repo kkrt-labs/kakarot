@@ -6,9 +6,9 @@ import pytest_asyncio
 from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
+from tests.utils.accounts import fund_evm_address
 from tests.utils.constants import DEPLOY_FEE
 from tests.utils.helpers import generate_random_private_key, private_key_from_hex
-from tests.utils.accounts import fund_evm_address
 
 Wallet = namedtuple(
     "Wallet", ["address", "private_key", "starknet_contract", "starknet_address"]
