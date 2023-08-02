@@ -4,7 +4,7 @@ from tests.utils.constants import ACCOUNT_BALANCE
 
 
 @pytest.mark.asyncio
-@pytest.mark.Counter
+@pytest.mark.Safe
 @pytest.mark.usefixtures("starknet_snapshot")
 class TestSafe:
     class TestReceive:
