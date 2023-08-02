@@ -10,7 +10,7 @@ packages = [{ include = "scripts" }]
 python = ">=3.9,<3.10"
 cairo-lang = "^0.11"
 amarna = "^0.1.5"
-starknet-py = "^0.16"
+starknet-py = "0.17.1"
 py-evm = "^0.7.0a1"
 openzeppelin-cairo-contracts = "^0.6.1"
 
