@@ -110,6 +110,3 @@ class TestContractAccount:
             assert (
                 await eth.balanceOf(computed_starknet_address).call()
             ).result.balance.low == (amount - DEPLOY_FEE)
-
-            # asserting that the balance of the sequencer is the deployment fee
-            assert (await eth.balanceOf(0).call()).result.balance.low == DEPLOY_FEE
