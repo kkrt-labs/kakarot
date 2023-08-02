@@ -1,4 +1,5 @@
 import pytest
+
 from tests.utils.constants import ACCOUNT_BALANCE
 
 
@@ -8,13 +9,17 @@ from tests.utils.constants import ACCOUNT_BALANCE
 class TestSafe:
     class TestReceive:
         async def test_should_receive_eth(self, safe, owner):
-            await safe.deposit(value= ACCOUNT_BALANCE, caller_address=owner.starknet_address)
+            await safe.deposit(
+                value=ACCOUNT_BALANCE, caller_address=owner.starknet_address
+            )
             assert await safe.balance() == ACCOUNT_BALANCE
 
     class TestWithdrawTransfer:
         async def test_should_withdraw_transfer_eth(self, safe, owner, eth):
 
-            await safe.deposit(value= ACCOUNT_BALANCE, caller_address=owner.starknet_address)
+            await safe.deposit(
+                value=ACCOUNT_BALANCE, caller_address=owner.starknet_address
+            )
             await safe.withdrawTransfer(caller_address=owner.starknet_address)
             assert await safe.balance() == 0
             assert (
@@ -24,7 +29,9 @@ class TestSafe:
     class TestWithdrawCall:
         async def test_should_withdraw_call_eth(self, safe, owner, eth):
 
-            await safe.deposit(value=ACCOUNT_BALANCE, caller_address=owner.starknet_address)
+            await safe.deposit(
+                value=ACCOUNT_BALANCE, caller_address=owner.starknet_address
+            )
             await safe.withdrawCall(caller_address=owner.starknet_address)
             assert await safe.balance() == 0
             assert (

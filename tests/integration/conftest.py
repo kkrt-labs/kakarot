@@ -6,8 +6,7 @@ import pytest_asyncio
 from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.accounts import fund_evm_address
-from tests.utils.constants import DEPLOY_FEE
+from tests.utils.constants import DEPLOY_FEE, PRE_FUND_AMOUNT
 from tests.utils.helpers import generate_random_private_key, private_key_from_hex
 
 Wallet = namedtuple(
@@ -49,7 +48,7 @@ async def kakarot(
 
 @pytest_asyncio.fixture(scope="session")
 async def addresses(
-    starknet, kakarot, externally_owned_account_class, eth
+    starknet, kakarot, externally_owned_account_class, fund_evm_address
 ) -> List[Wallet]:
     """
     Returns a list of addresses to be used in tests.
@@ -73,7 +72,7 @@ async def addresses(
         evm_address = private_key.public_key.to_checksum_address()
 
         # pre fund account so that fees can be paid back to deployer
-        await fund_evm_address(int(evm_address, 16), kakarot, eth)
+        await fund_evm_address(int(evm_address, 16))
 
         eoa_deploy_tx = await kakarot.deploy_externally_owned_account(
             int(evm_address, 16)
@@ -110,3 +109,17 @@ async def others(addresses):
 @pytest.fixture(scope="session")
 async def other(others):
     return others[0]
+
+
+@pytest_asyncio.fixture(scope="session")
+async def fund_evm_address(kakarot, eth):
+    async def _factory(evm_address: int, amount: int = PRE_FUND_AMOUNT):
+        # mint tokens to the provided evm address
+        computed_starknet_address = (
+            await kakarot.compute_starknet_address(evm_address).call()
+        ).result[0]
+
+        # pre fund account so that fees can be paid back to deployer
+        await eth.mint(computed_starknet_address, (amount, 0)).execute(caller_address=7)
+
+    return _factory

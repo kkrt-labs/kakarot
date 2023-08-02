@@ -4,7 +4,6 @@ from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
 from tests.integration.bytecodes import test_cases
-from tests.utils.accounts import fund_evm_address
 from tests.utils.helpers import (
     extract_memory_from_execute,
     extract_stack_from_execute,
@@ -45,13 +44,17 @@ params_execute = [pytest.param(case.pop("params"), **case) for case in test_case
 class TestKakarot:
     class TestComputeStarknetAddress:
         async def test_should_return_same_as_deployed_address(
-            self, kakarot: StarknetContract, eth: StarknetContract
+            self, kakarot: StarknetContract, fund_evm_address
         ):
             evm_address = int(generate_random_evm_address(), 16)
-            await fund_evm_address(evm_address, kakarot, eth)
+            await fund_evm_address(evm_address)
 
             deployed_starknet_address = (
-                (await kakarot.deploy_externally_owned_account(evm_address).execute(caller_address=6))
+                (
+                    await kakarot.deploy_externally_owned_account(evm_address).execute(
+                        caller_address=6
+                    )
+                )
                 .call_info.internal_calls[0]
                 .contract_address
             )
