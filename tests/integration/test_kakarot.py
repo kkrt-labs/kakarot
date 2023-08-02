@@ -51,7 +51,7 @@ class TestKakarot:
             await fund_evm_address(evm_address, kakarot, eth)
 
             deployed_starknet_address = (
-                (await kakarot.deploy_externally_owned_account(evm_address).execute())
+                (await kakarot.deploy_externally_owned_account(evm_address).execute(caller_address=6))
                 .call_info.internal_calls[0]
                 .contract_address
             )

@@ -6,7 +6,7 @@ from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
 from tests.utils.accounts import fund_evm_address
-from tests.utils.constants import DEPLOY_FEE
+from tests.utils.constants import ACCOUNT_BALANCE
 from tests.utils.errors import kakarot_error
 from tests.utils.helpers import generate_random_evm_address
 from tests.utils.reporting import traceit
@@ -101,12 +101,17 @@ class TestContractAccount:
                 await kakarot.compute_starknet_address(evm_address).call()
             ).result[0]
 
-            amount = 100000
-            await fund_evm_address(evm_address, kakarot, eth, amount)
+            await fund_evm_address(evm_address, kakarot, eth)
 
-            await kakarot.deploy_externally_owned_account(evm_address).execute()
+            await kakarot.deploy_externally_owned_account(evm_address).execute(caller_address=4)
 
             # asserting that the balance of the account is the amount minus the deployment fee
             assert (
                 await eth.balanceOf(computed_starknet_address).call()
-            ).result.balance.low == (amount - DEPLOY_FEE)
+            ).result.balance.low == ACCOUNT_BALANCE
+
+
+            # asserting that the balance of the account is the amount minus the deployment fee
+            assert (
+                await eth.balanceOf(4).call()
+            ).result.balance.low == 10000

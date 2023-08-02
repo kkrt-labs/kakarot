@@ -77,7 +77,7 @@ async def addresses(
 
         eoa_deploy_tx = await kakarot.deploy_externally_owned_account(
             int(evm_address, 16)
-        ).execute()
+        ).execute(caller_address=5)
 
         wallets.append(
             Wallet(
