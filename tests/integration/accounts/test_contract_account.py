@@ -5,8 +5,11 @@ import pytest_asyncio
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
+from tests.utils.helpers import generate_random_evm_address
+from tests.utils.accounts import fund_evm_address
 from tests.utils.errors import kakarot_error
 from tests.utils.reporting import traceit
+from tests.utils.constants import DEPLOY_FEE
 
 random.seed(0)
 
@@ -91,3 +94,22 @@ class TestContractAccount:
                 )
                 == "Uint256(low=340282366920938463463374607431768211455, high=340282366920938463463374607431768211455)"
             )
+
+        async def test_should_take_deployment_fees(self, kakarot, eth):
+            evm_address = int(generate_random_evm_address(), 16)
+            computed_starknet_address = (
+                await kakarot.compute_starknet_address(evm_address).call()
+            ).result[0]
+
+            amount = 100000
+            await fund_evm_address(evm_address, kakarot, eth, amount)
+
+            await kakarot.deploy_externally_owned_account(evm_address).execute()
+
+            # asserting that the balance of the account is the amount minus the deployment fee
+            assert (
+                await eth.balanceOf(computed_starknet_address).call()
+            ).result.balance.low == (amount - DEPLOY_FEE)
+
+            # asserting that the balance of the sequencer is the deployment fee
+            assert (await eth.balanceOf(0).call()).result.balance.low == DEPLOY_FEE

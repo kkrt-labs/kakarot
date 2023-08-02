@@ -10,6 +10,7 @@ from tests.utils.helpers import (
     generate_random_evm_address,
     hex_string_to_bytes_array,
 )
+from tests.utils.accounts import fund_evm_address
 from tests.utils.reporting import traceit
 
 
@@ -44,9 +45,11 @@ params_execute = [pytest.param(case.pop("params"), **case) for case in test_case
 class TestKakarot:
     class TestComputeStarknetAddress:
         async def test_should_return_same_as_deployed_address(
-            self, kakarot: StarknetContract
+            self, kakarot: StarknetContract, eth: StarknetContract
         ):
             evm_address = int(generate_random_evm_address(), 16)
+            await fund_evm_address(evm_address, kakarot, eth)
+
             deployed_starknet_address = (
                 (await kakarot.deploy_externally_owned_account(evm_address).execute())
                 .call_info.internal_calls[0]
