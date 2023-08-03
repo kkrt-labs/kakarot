@@ -4,6 +4,7 @@ from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
 from tests.integration.bytecodes import test_cases
+from tests.utils.constants import DEPLOY_FEE
 from tests.utils.helpers import (
     extract_memory_from_execute,
     extract_stack_from_execute,
@@ -44,7 +45,10 @@ params_execute = [pytest.param(case.pop("params"), **case) for case in test_case
 class TestKakarot:
     class TestComputeStarknetAddress:
         async def test_should_return_same_as_deployed_address(
-            self, kakarot: StarknetContract, fund_evm_address
+            self,
+            kakarot: StarknetContract,
+            fund_evm_address,
+            deployer_address,
         ):
             evm_address = int(generate_random_evm_address(), 16)
             await fund_evm_address(evm_address)
@@ -52,7 +56,7 @@ class TestKakarot:
             deployed_starknet_address = (
                 (
                     await kakarot.deploy_externally_owned_account(evm_address).execute(
-                        caller_address=6
+                        caller_address=deployer_address
                     )
                 )
                 .call_info.internal_calls[0]
@@ -102,3 +106,67 @@ class TestKakarot:
                 ]
                 for event in sorted(res.call_info.events, key=lambda x: x.order)
             ] == events
+
+    class TestDeployExternallyOwnedAccount:
+        async def test_should_deploy_starknet_contract_at_corresponding_address(
+            self,
+            kakarot,
+            fund_evm_address,
+            deployer_address,
+        ):
+            evm_address = int(generate_random_evm_address(), 16)
+            computed_starknet_address = (
+                await kakarot.compute_starknet_address(evm_address).call()
+            ).result[0]
+
+            await fund_evm_address(evm_address)
+
+            assert (
+                await kakarot.deploy_externally_owned_account(evm_address).execute(
+                    caller_address=deployer_address
+                )
+            ).result[0] == computed_starknet_address
+
+        async def test_should_send_fees_to_caller(
+            self,
+            kakarot,
+            eth,
+            fund_evm_address,
+            deployer_address,
+        ):
+            # using a different seed here so that the evm address is different from the one used in the previous test
+            evm_address = int(generate_random_evm_address(seed=1), 16)
+            computed_starknet_address = (
+                await kakarot.compute_starknet_address(evm_address).call()
+            ).result[0]
+
+            await fund_evm_address(evm_address)
+
+            account_deployer_balance_prev = (
+                await eth.balanceOf(deployer_address).call()
+            ).result.balance.low
+            account_deployed_balance_prev = (
+                await eth.balanceOf(computed_starknet_address).call()
+            ).result.balance.low
+
+            await kakarot.deploy_externally_owned_account(evm_address).execute(
+                caller_address=deployer_address
+            )
+
+            account_deployer_balance_after = (
+                await eth.balanceOf(deployer_address).call()
+            ).result.balance.low
+            account_deployed_balance_after = (
+                await eth.balanceOf(computed_starknet_address).call()
+            ).result.balance.low
+
+            # since there is 0 gas in testing, hence the deployer will get the deployment fee back
+            assert (
+                account_deployer_balance_after
+                == account_deployer_balance_prev + DEPLOY_FEE
+            )
+
+            assert (
+                account_deployed_balance_after
+                == account_deployed_balance_prev - DEPLOY_FEE
+            )

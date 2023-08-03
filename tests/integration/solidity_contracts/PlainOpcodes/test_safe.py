@@ -16,7 +16,6 @@ class TestSafe:
 
     class TestWithdrawTransfer:
         async def test_should_withdraw_transfer_eth(self, safe, owner, eth):
-
             await safe.deposit(
                 value=ACCOUNT_BALANCE, caller_address=owner.starknet_address
             )
@@ -28,7 +27,6 @@ class TestSafe:
 
     class TestWithdrawCall:
         async def test_should_withdraw_call_eth(self, safe, owner, eth):
-
             await safe.deposit(
                 value=ACCOUNT_BALANCE, caller_address=owner.starknet_address
             )

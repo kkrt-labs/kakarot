@@ -5,9 +5,7 @@ import pytest_asyncio
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.constants import ACCOUNT_BALANCE, DEPLOY_FEE
 from tests.utils.errors import kakarot_error
-from tests.utils.helpers import generate_random_evm_address
 from tests.utils.reporting import traceit
 
 random.seed(0)
@@ -61,7 +59,7 @@ class TestContractAccount:
             )
 
         async def test_should_give_infinite_allowance_to_kakarot(
-            self, contract_account: StarknetContract, kakarot, eth
+            self, contract_account: StarknetContract, kakarot, eth, deployer_address
         ):
             # Check that current allowance is MAX Uint256
             assert (
@@ -77,7 +75,7 @@ class TestContractAccount:
             )
             # Test whether this actually results in having infinite allowance
             await eth.mint(contract_account.contract_address, (1000, 0)).execute(
-                caller_address=2
+                caller_address=deployer_address
             )
             await eth.transferFrom(
                 contract_account.contract_address, 1, (1000, 0)
@@ -93,25 +91,3 @@ class TestContractAccount:
                 )
                 == "Uint256(low=340282366920938463463374607431768211455, high=340282366920938463463374607431768211455)"
             )
-
-        async def test_should_take_deployment_fees(
-            self, kakarot, eth, fund_evm_address
-        ):
-            evm_address = int(generate_random_evm_address(), 16)
-            computed_starknet_address = (
-                await kakarot.compute_starknet_address(evm_address).call()
-            ).result[0]
-
-            await fund_evm_address(evm_address)
-
-            await kakarot.deploy_externally_owned_account(evm_address).execute(
-                caller_address=4
-            )
-
-            # asserting that the balance of the account is the amount minus the deployment fee
-            assert (
-                await eth.balanceOf(computed_starknet_address).call()
-            ).result.balance.low == ACCOUNT_BALANCE
-
-            # asserting that the deployer gets the Deployment Fee back { initial balance of the deployer is 0 }
-            assert (await eth.balanceOf(4).call()).result.balance.low == DEPLOY_FEE
