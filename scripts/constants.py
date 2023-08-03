@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from enum import Enum
+from enum import IntEnum
 from math import ceil, log
 from pathlib import Path
 
@@ -122,7 +122,7 @@ try:
     )
     payload = json.loads(response.text)
 
-    class ChainId(Enum):
+    class ChainId(IntEnum):
         chain_id = int(payload["result"], 16)
 
     NETWORK["chain_id"] = ChainId.chain_id

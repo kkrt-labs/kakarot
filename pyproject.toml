@@ -10,14 +10,14 @@ packages = [{ include = "scripts" }]
 python = ">=3.9,<3.10"
 cairo-lang = "^0.11"
 amarna = "^0.1.5"
-starknet-py = "^0.16"
+starknet-py = "0.17.1"
 py-evm = "^0.7.0a1"
 openzeppelin-cairo-contracts = "^0.6.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"
 isort = "^5.10.1"
-cairo-coverage = "^0.1.5"
+cairo-coverage = "0.1.6"
 pandas = "^1.5.1"
 pytest-xdist = { version = "^3.0.2", extras = ["psutil"] }
 setproctitle = "^1.3.2"
