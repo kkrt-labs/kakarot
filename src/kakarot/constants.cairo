@@ -22,6 +22,10 @@ func externally_owned_account_class_hash() -> (res: felt) {
 func account_proxy_class_hash() -> (res: felt) {
 }
 
+@storage_var
+func deploy_fee() -> (deploy_fee: felt) {
+}
+
 // @title Constants file.
 // @notice This file contains global constants.
 namespace Constants {

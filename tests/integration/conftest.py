@@ -6,6 +6,7 @@ import pytest_asyncio
 from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
+from tests.utils.constants import DEPLOY_FEE, PRE_FUND_AMOUNT
 from tests.utils.helpers import generate_random_private_key, private_key_from_hex
 
 Wallet = namedtuple(
@@ -36,6 +37,7 @@ async def kakarot(
             contract_account_class.class_hash,  # contract_account_class_hash_
             externally_owned_account_class.class_hash,  # externally_owned_account_class_hash
             account_proxy_class.class_hash,  # account_proxy_class_hash
+            DEPLOY_FEE,
         ],
     )
     await kakarot.set_blockhash_registry(
@@ -45,7 +47,13 @@ async def kakarot(
 
 
 @pytest_asyncio.fixture(scope="session")
-async def addresses(starknet, kakarot, externally_owned_account_class) -> List[Wallet]:
+async def addresses(
+    starknet,
+    kakarot,
+    externally_owned_account_class,
+    fund_evm_address,
+    deployer_address,
+) -> List[Wallet]:
     """
     Returns a list of addresses to be used in tests.
     Addresses are returned as named tuples with
@@ -66,9 +74,13 @@ async def addresses(starknet, kakarot, externally_owned_account_class) -> List[W
     wallets = []
     for private_key in private_keys:
         evm_address = private_key.public_key.to_checksum_address()
+
+        # pre fund account so that fees can be paid back to deployer
+        await fund_evm_address(int(evm_address, 16))
+
         eoa_deploy_tx = await kakarot.deploy_externally_owned_account(
             int(evm_address, 16)
-        ).execute()
+        ).execute(caller_address=deployer_address)
 
         wallets.append(
             Wallet(
@@ -88,6 +100,12 @@ async def addresses(starknet, kakarot, externally_owned_account_class) -> List[W
     return wallets
 
 
+# an address to use as a replacement of hardcoded
+@pytest_asyncio.fixture(scope="session")
+async def deployer_address():
+    return 2
+
+
 @pytest_asyncio.fixture(scope="session")
 async def owner(addresses):
     return addresses[0]
@@ -101,3 +119,19 @@ async def others(addresses):
 @pytest.fixture(scope="session")
 async def other(others):
     return others[0]
+
+
+@pytest_asyncio.fixture(scope="session")
+async def fund_evm_address(kakarot, eth, deployer_address):
+    async def _factory(evm_address: int, amount: int = PRE_FUND_AMOUNT):
+        # mint tokens to the provided evm address
+        computed_starknet_address = (
+            await kakarot.compute_starknet_address(evm_address).call()
+        ).result[0]
+
+        # pre fund account so that fees can be paid back to deployer
+        await eth.mint(computed_starknet_address, (amount, 0)).execute(
+            caller_address=deployer_address
+        )
+
+    return _factory

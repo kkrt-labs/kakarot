@@ -1,5 +1,14 @@
 CHAIN_ID = 1263227476  # KKRT (0x4b4b5254) in ASCII
 
+# Deployment fee to be returned to the deployer of the account
+DEPLOY_FEE = 10000
+
+# Amount of funds to pre-fund the account with
+PRE_FUND_AMOUNT = int(1e9)
+
+# Account balance is the amount of funds that the account has after being deployed
+ACCOUNT_BALANCE = PRE_FUND_AMOUNT - DEPLOY_FEE
+
 # Coinbase address is the address of the sequencer
 MOCK_COINBASE_ADDRESS = (
     0x388CA486B82E20CC81965D056B4CDCAACDFFE0CF08E20ED8BA10EA97A487004

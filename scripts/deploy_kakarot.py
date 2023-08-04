@@ -2,7 +2,12 @@
 import logging
 from asyncio import run
 
-from scripts.constants import COMPILED_CONTRACTS, ETH_TOKEN_ADDRESS, EVM_ADDRESS
+from scripts.constants import (
+    COMPILED_CONTRACTS,
+    DEPLOY_FEE,
+    ETH_TOKEN_ADDRESS,
+    EVM_ADDRESS,
+)
 from scripts.utils.starknet import (
     declare,
     deploy,
@@ -41,6 +46,7 @@ async def main():
         class_hash["contract_account"],  # contract_account_class_hash_
         class_hash["externally_owned_account"],  # externally_owned_account_class_hash
         class_hash["proxy"],  # account_proxy_class_hash
+        DEPLOY_FEE,
     )
     deployments["blockhash_registry"] = await deploy(
         "blockhash_registry",

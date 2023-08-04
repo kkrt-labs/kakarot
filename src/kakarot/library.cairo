@@ -17,6 +17,7 @@ from kakarot.constants import (
     externally_owned_account_class_hash,
     blockhash_registry_address,
     account_proxy_class_hash,
+    deploy_fee,
 )
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions import EVMInstructions
@@ -43,12 +44,14 @@ namespace Kakarot {
         contract_account_class_hash_,
         externally_owned_account_class_hash_,
         account_proxy_class_hash_,
+        deploy_fee_,
     ) {
         Ownable.initializer(owner);
         native_token_address.write(native_token_address_);
         contract_account_class_hash.write(contract_account_class_hash_);
         externally_owned_account_class_hash.write(externally_owned_account_class_hash_);
         account_proxy_class_hash.write(account_proxy_class_hash_);
+        deploy_fee.write(deploy_fee_);
         return ();
     }
 
@@ -192,6 +195,27 @@ namespace Kakarot {
         return (native_token_address_,);
     }
 
+    // @notice Set the deploy fee for deploying EOA on Kakarot.
+    // @dev Set the deploy fee to be returned to a deployer for deploying accounts.
+    // @param deploy_fee_ The new deploy fee.
+    func set_deploy_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        deploy_fee_: felt
+    ) {
+        Ownable.assert_only_owner();
+        deploy_fee.write(deploy_fee_);
+        return ();
+    }
+
+    // @notice Get the deploy fee for deploying EOA on Kakarot.
+    // @dev Return the deploy fee which is returned to a deployer for deploying accounts.
+    // @return deploy_fee The deploy fee which is returned to a deployer for deploying accounts.
+    func get_deploy_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        deploy_fee: felt
+    ) {
+        let (deploy_fee_) = deploy_fee.read();
+        return (deploy_fee_,);
+    }
+
     // @notice Transfer "value" native tokens to "to"
     // @dev "from" parameter is taken from get_caller_address syscall
     // @param to_ The address the transaction is directed to.
@@ -285,8 +309,23 @@ namespace Kakarot {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(evm_contract_address: felt) -> (starknet_contract_address: felt) {
+        alloc_locals;
+
+        let (caller_address) = get_caller_address();
         let (class_hash) = externally_owned_account_class_hash.read();
         let (starknet_contract_address) = Accounts.create(class_hash, evm_contract_address);
+
+        let (local native_token_address) = get_native_token();
+        let (local deploy_fee) = get_deploy_fee();
+
+        let amount = Helpers.to_uint256(deploy_fee);
+        let (success) = IERC20.transferFrom(
+            contract_address=native_token_address,
+            sender=starknet_contract_address,
+            recipient=caller_address,
+            amount=amount,
+        );
+
         return (starknet_contract_address=starknet_contract_address);
     }
 

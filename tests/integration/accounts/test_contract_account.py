@@ -59,7 +59,7 @@ class TestContractAccount:
             )
 
         async def test_should_give_infinite_allowance_to_kakarot(
-            self, contract_account: StarknetContract, kakarot, eth
+            self, contract_account: StarknetContract, kakarot, eth, deployer_address
         ):
             # Check that current allowance is MAX Uint256
             assert (
@@ -75,7 +75,7 @@ class TestContractAccount:
             )
             # Test whether this actually results in having infinite allowance
             await eth.mint(contract_account.contract_address, (1000, 0)).execute(
-                caller_address=2
+                caller_address=deployer_address
             )
             await eth.transferFrom(
                 contract_account.contract_address, 1, (1000, 0)
