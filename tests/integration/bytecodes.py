@@ -758,15 +758,14 @@ test_cases = [
             "value": 0,
             "code": "3200",
             "calldata": "",
-            "stack": "0",
+            "stack": "1390849295786071768276380950238675083608645509734",
             "memory": "",
             "return_value": "",
         },
         "id": "Origin Address",
         "marks": [
             pytest.mark.ORIGIN,
-            pytest.mark.EnvironmentalInformation,
-            pytest.mark.skip,
+            pytest.mark.EnvironmentalInformation
         ],
     },
     {

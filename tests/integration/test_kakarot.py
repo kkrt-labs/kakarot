@@ -82,6 +82,7 @@ class TestKakarot:
     ):
         with traceit.context(request.node.callspec.id):
             res = await evm.execute(
+                origin=owner.address,
                 value=int(params["value"]),
                 bytecode=hex_string_to_bytes_array(params["code"]),
                 calldata=hex_string_to_bytes_array(params["calldata"]),
