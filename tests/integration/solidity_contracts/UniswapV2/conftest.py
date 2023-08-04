@@ -88,6 +88,6 @@ async def pair(
     await _pair.initialize(
         _token0=token_0.evm_contract_address,
         _token1=token_1.evm_contract_address,
-        caller_address=factory.contract_account.contract_address,
+        caller_address=factory.contract_account,
     )
     return _pair, token_0, token_1

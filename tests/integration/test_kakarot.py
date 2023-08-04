@@ -14,11 +14,6 @@ from tests.utils.helpers import (
 from tests.utils.reporting import traceit
 
 
-@pytest.fixture
-async def from_evm_address():
-    return 1000
-
-
 @pytest_asyncio.fixture(scope="session")
 async def evm(
     starknet: Starknet,
@@ -81,12 +76,10 @@ class TestKakarot:
     async def test_execute(
         self,
         evm: StarknetContract,
-        from_evm_address: int,
         owner,
         params: dict,
         request,
     ):
-        # TODO Call with MockSigner for TxInfo to be set with the right caller
         with traceit.context(request.node.callspec.id):
             res = await evm.execute(
                 value=int(params["value"]),

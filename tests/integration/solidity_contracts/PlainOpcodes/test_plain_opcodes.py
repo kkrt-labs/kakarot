@@ -28,9 +28,7 @@ class TestPlainOpcodes:
             plain_opcodes,
             counter_deployer,
         ):
-            await plain_opcodes.opcodeCall(
-                caller_address=counter_deployer.starknet_address
-            )
+            await plain_opcodes.opcodeCall(caller_address=counter_deployer)
             assert await counter.count() == 1
 
     class TestBlockhash:
@@ -98,8 +96,8 @@ class TestPlainOpcodes:
                 "value": 10,
             }
 
-        async def test_should_emit_log0_with_no_data(self, plain_opcodes, addresses):
-            await plain_opcodes.opcodeLog0(caller_address=addresses[0].starknet_address)
+        async def test_should_emit_log0_with_no_data(self, plain_opcodes, owner):
+            await plain_opcodes.opcodeLog0(caller_address=owner)
             # the contract address is set at deploy time, we verify that event address is
             # getting correctly set by asserting equality
             expected_address = plain_opcodes.address
@@ -107,12 +105,8 @@ class TestPlainOpcodes:
                 assert log_receipt["address"] == expected_address
             assert plain_opcodes.events.Log0 == [{}]
 
-        async def test_should_emit_log0_with_data(
-            self, plain_opcodes, addresses, event
-        ):
-            await plain_opcodes.opcodeLog0Value(
-                caller_address=addresses[0].starknet_address
-            )
+        async def test_should_emit_log0_with_data(self, plain_opcodes, owner, event):
+            await plain_opcodes.opcodeLog0Value(caller_address=owner)
             # the contract address is set at deploy time, we verify that event address is
             # getting correctly set by asserting equality
             expected_address = plain_opcodes.address
@@ -120,8 +114,8 @@ class TestPlainOpcodes:
                 assert log_receipt["address"] == expected_address
             assert plain_opcodes.events.Log0Value == [{"value": event["value"]}]
 
-        async def test_should_emit_log1(self, plain_opcodes, addresses, event):
-            await plain_opcodes.opcodeLog1(caller_address=addresses[0].starknet_address)
+        async def test_should_emit_log1(self, plain_opcodes, owner, event):
+            await plain_opcodes.opcodeLog1(caller_address=owner)
             # the contract address is set at deploy time, we verify that event address is
             # getting correctly set by asserting equality
             expected_address = plain_opcodes.address
@@ -129,8 +123,8 @@ class TestPlainOpcodes:
                 assert log_receipt["address"] == expected_address
             assert plain_opcodes.events.Log1 == [{"value": event["value"]}]
 
-        async def test_should_emit_log2(self, plain_opcodes, addresses, event):
-            await plain_opcodes.opcodeLog2(caller_address=addresses[0].starknet_address)
+        async def test_should_emit_log2(self, plain_opcodes, owner, event):
+            await plain_opcodes.opcodeLog2(caller_address=owner)
             del event["spender"]
             # the contract address is set at deploy time, we verify that event address is
             # getting correctly set by asserting equality
@@ -139,8 +133,8 @@ class TestPlainOpcodes:
                 assert log_receipt["address"] == expected_address
             assert plain_opcodes.events.Log2 == [event]
 
-        async def test_should_emit_log3(self, plain_opcodes, addresses, event):
-            await plain_opcodes.opcodeLog3(caller_address=addresses[0].starknet_address)
+        async def test_should_emit_log3(self, plain_opcodes, owner, event):
+            await plain_opcodes.opcodeLog3(caller_address=owner)
             # the contract address is set at deploy time, we verify that event address is
             # getting correctly set by asserting equality
             expected_address = plain_opcodes.address
@@ -151,9 +145,7 @@ class TestPlainOpcodes:
         async def test_should_emit_log4(
             self, plain_opcodes, plain_opcodes_deployer, event
         ):
-            await plain_opcodes.opcodeLog4(
-                caller_address=plain_opcodes_deployer.starknet_address
-            )
+            await plain_opcodes.opcodeLog4(caller_address=plain_opcodes_deployer)
             # the contract address is set at deploy time, we verify that event address is
             # getting correctly set by asserting equality
             expected_address = plain_opcodes.address
@@ -174,7 +166,7 @@ class TestPlainOpcodes:
             evm_address = await plain_opcodes.create2(
                 bytecode=counter.constructor().data_in_transaction,
                 salt=salt,
-                caller_address=plain_opcodes_deployer.starknet_address,
+                caller_address=plain_opcodes_deployer,
             )
             starknet_address = get_starknet_address(salt)
             deployed_counter = get_solidity_contract(
@@ -183,26 +175,18 @@ class TestPlainOpcodes:
             assert await deployed_counter.count() == 0
 
     class TestRequire:
-        async def test_should_revert_when_address_is_zero(
-            self, plain_opcodes, addresses
-        ):
+        async def test_should_revert_when_address_is_zero(self, plain_opcodes, owner):
             with kakarot_error("ZERO_ADDRESS"):
-                await plain_opcodes.requireNotZero(
-                    f"0x{0:040x}",
-                    caller_address=addresses[0].starknet_address,
-                )
+                await plain_opcodes.requireNotZero(f"0x{0:040x}", caller_address=owner)
 
         @pytest.mark.parametrize("address", [2**127, 2**128])
         async def test_should_not_revert_when_address_is_not_zero(
-            self, plain_opcodes, addresses, address
+            self, plain_opcodes, owner, address
         ):
             address_bytes = address.to_bytes(20, byteorder="big")
             address_hex = Web3.to_checksum_address(address_bytes)
 
-            await plain_opcodes.requireNotZero(
-                address_hex,
-                caller_address=addresses[0].starknet_address,
-            )
+            await plain_opcodes.requireNotZero(address_hex, caller_address=owner)
 
     class TestExceptionHandling:
         async def test_calling_context_should_propagate_revert_from_sub_context_on_create(
@@ -210,12 +194,12 @@ class TestPlainOpcodes:
         ):
             with kakarot_error("FAIL"):
                 await plain_opcodes.testCallingContextShouldPropogateRevertFromSubContextOnCreate(
-                    caller_address=owner.starknet_address
+                    caller_address=owner
                 )
 
         async def test_should_revert_via_call(self, plain_opcodes, owner):
             return_data = await plain_opcodes.testShouldRevertViaCall(
-                caller_address=owner.starknet_address
+                caller_address=owner
             )
 
             reverting_contract = get_contract(
@@ -239,9 +223,7 @@ class TestPlainOpcodes:
         async def test_should_return_owner_as_origin_and_sender(
             self, plain_opcodes, owner
         ):
-            origin, sender = await plain_opcodes.originAndSender(
-                caller_address=owner.starknet_address
-            )
+            origin, sender = await plain_opcodes.originAndSender(caller_address=owner)
             assert origin == sender == owner.address
 
         @pytest.mark.skip(
@@ -254,7 +236,7 @@ class TestPlainOpcodes:
             success, data = await caller.call(
                 target=plain_opcodes.evm_contract_address,
                 payload=plain_opcodes.encodeABI("originAndSender"),
-                caller_address=owner.starknet_address,
+                caller_address=owner,
             )
             assert success
             decoded = Web3().codec.decode(["address", "address"], data)
@@ -268,7 +250,5 @@ class TestPlainOpcodes:
         async def test_loop_should_write_to_storage(
             self, plain_opcodes, plain_opcodes_deployer, steps
         ):
-            await plain_opcodes.testLoop(
-                steps, caller_address=plain_opcodes_deployer.starknet_address
-            )
+            await plain_opcodes.testLoop(steps, caller_address=plain_opcodes_deployer)
             assert await plain_opcodes.loopValue() == steps

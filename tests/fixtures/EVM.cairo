@@ -48,7 +48,6 @@ func execute{
     memory_bytes_len: felt,
     starknet_contract_address: felt,
     evm_contract_address: felt,
-    from_evm_address:felt,
     return_data_len: felt,
     return_data: felt*,
     gas_used: felt,
@@ -56,8 +55,8 @@ func execute{
     return Kakarot.execute(
         starknet_contract_address=0,
         evm_contract_address=0,
-        from_evm_address=0,
-        bytecode_len=0,
+        origin=0,
+        bytecode_len=bytecode_len,
         bytecode=bytecode,
         calldata_len=calldata_len,
         calldata=calldata,

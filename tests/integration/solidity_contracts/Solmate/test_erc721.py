@@ -105,38 +105,32 @@ class TestERC721:
 
     class TestMint:
         async def test_should_mint(self, erc_721, other):
-            await erc_721.mint(
-                other.address, 1337, caller_address=other.starknet_address
-            )
+            await erc_721.mint(other.address, 1337, caller_address=other)
             assert await erc_721.balanceOf(other.address) == 1
             assert await erc_721.ownerOf(1337) == other.address
 
         async def test_should_fail_mint_to_zero_address(self, erc_721, other):
             with kakarot_error("INVALID_RECIPIENT"):
-                await erc_721.mint(
-                    ZERO_ADDRESS, 1337, caller_address=other.starknet_address
-                )
+                await erc_721.mint(ZERO_ADDRESS, 1337, caller_address=other)
 
         async def test_should_fail_to_double_mint(self, erc_721, other):
             await erc_721.mint(
                 other.address,
                 1337,
-                caller_address=other.starknet_address,
+                caller_address=other,
             )
 
             with kakarot_error("ALREADY_MINTED"):
                 await erc_721.mint(
                     other.address,
                     1337,
-                    caller_address=other.starknet_address,
+                    caller_address=other,
                 )
 
     class TestBurn:
         async def test_should_burn(self, erc_721, other):
-            await erc_721.mint(
-                other.address, 1337, caller_address=other.starknet_address
-            )
-            await erc_721.burn(1337, caller_address=other.starknet_address)
+            await erc_721.mint(other.address, 1337, caller_address=other)
+            await erc_721.burn(1337, caller_address=other)
 
             assert await erc_721.balanceOf(other.address) == 0
 
@@ -145,31 +139,25 @@ class TestERC721:
 
         async def test_should_fail_to_burn_unminted(self, erc_721, other):
             with kakarot_error("NOT_MINTED"):
-                await erc_721.burn(1337, caller_address=other.starknet_address)
+                await erc_721.burn(1337, caller_address=other)
 
         async def test_should_fail_to_double_burn(self, erc_721, other):
-            await erc_721.mint(
-                other.address, 1337, caller_address=other.starknet_address
-            )
+            await erc_721.mint(other.address, 1337, caller_address=other)
 
-            await erc_721.burn(1337, caller_address=other.starknet_address)
+            await erc_721.burn(1337, caller_address=other)
 
             with kakarot_error("NOT_MINTED"):
-                await erc_721.burn(1337, caller_address=other.starknet_address)
+                await erc_721.burn(1337, caller_address=other)
 
     class TestApprove:
         async def test_should_approve(self, erc_721, others):
-            await erc_721.mint(
-                others[0].address, 1337, caller_address=others[0].starknet_address
-            )
-            await erc_721.approve(
-                others[1].address, 1337, caller_address=others[0].starknet_address
-            )
+            await erc_721.mint(others[0].address, 1337, caller_address=others[0])
+            await erc_721.approve(others[1].address, 1337, caller_address=others[0])
             assert await erc_721.getApproved(1337) == others[1].address
 
         async def test_should_approve_all(self, erc_721, others):
             await erc_721.setApprovalForAll(
-                others[1].address, True, caller_address=others[0].starknet_address
+                others[1].address, True, caller_address=others[0]
             )
 
             assert (
@@ -182,33 +170,27 @@ class TestERC721:
                 await erc_721.approve(
                     others[1].address,
                     1337,
-                    caller_address=others[0].starknet_address,
+                    caller_address=others[0],
                 )
 
         async def test_should_fail_to_approve_unauthorized(self, erc_721, others):
-            await erc_721.mint(
-                others[0].address, 1337, caller_address=others[0].starknet_address
-            )
+            await erc_721.mint(others[0].address, 1337, caller_address=others[0])
             with kakarot_error("NOT_AUTHORIZED"):
                 await erc_721.approve(
                     others[1].address,
                     1337,
-                    caller_address=others[2].starknet_address,
+                    caller_address=others[2],
                 )
 
     class TestTransferFrom:
         async def test_should_transfer_from(self, erc_721, others):
-            await erc_721.mint(
-                others[1].address, 1337, caller_address=others[0].starknet_address
-            )
-            await erc_721.approve(
-                others[2].address, 1337, caller_address=others[1].starknet_address
-            )
+            await erc_721.mint(others[1].address, 1337, caller_address=others[0])
+            await erc_721.approve(others[2].address, 1337, caller_address=others[1])
             await erc_721.transferFrom(
                 others[1].address,
                 others[2].address,
                 1337,
-                caller_address=others[1].starknet_address,
+                caller_address=others[1],
             )
 
             approved = await erc_721.getApproved(1337)
@@ -222,14 +204,12 @@ class TestERC721:
             assert sender_balance == 0
 
         async def test_should_transfer_from_self(self, erc_721, other, owner):
-            await erc_721.mint(
-                owner.address, 1337, caller_address=owner.starknet_address
-            )
+            await erc_721.mint(owner.address, 1337, caller_address=owner)
             await erc_721.transferFrom(
                 owner.address,
                 other.address,
                 1337,
-                caller_address=owner.starknet_address,
+                caller_address=owner,
             )
 
             approved = await erc_721.getApproved(1337)
@@ -243,19 +223,17 @@ class TestERC721:
             assert sender_balance == 0
 
         async def test_transfer_from_approve_all(self, erc_721, others):
-            await erc_721.mint(
-                others[0].address, 1337, caller_address=others[0].starknet_address
-            )
+            await erc_721.mint(others[0].address, 1337, caller_address=others[0])
 
             await erc_721.setApprovalForAll(
-                others[1].address, True, caller_address=others[0].starknet_address
+                others[1].address, True, caller_address=others[0]
             )
 
             await erc_721.transferFrom(
                 others[0].address,
                 others[1].address,
                 1337,
-                caller_address=others[0].starknet_address,
+                caller_address=others[0],
             )
 
             approved = await erc_721.getApproved(1337)
@@ -274,60 +252,52 @@ class TestERC721:
                     others[0].address,
                     others[1].address,
                     1337,
-                    caller_address=others[0].starknet_address,
+                    caller_address=others[0],
                 )
 
         async def test_should_fail_to_transfer_from_wrong_from(self, erc_721, others):
-            await erc_721.mint(
-                others[1].address, 1337, caller_address=others[1].starknet_address
-            )
+            await erc_721.mint(others[1].address, 1337, caller_address=others[1])
             with kakarot_error():
                 await erc_721.transferFrom(
                     others[0].address,
                     others[2].address,
                     1337,
-                    caller_address=others[0].starknet_address,
+                    caller_address=others[0],
                 )
 
         async def test_should_fail_to_transfer_from_to_zero(self, erc_721, other):
-            await erc_721.mint(
-                other.address, 1337, caller_address=other.starknet_address
-            )
+            await erc_721.mint(other.address, 1337, caller_address=other)
             with kakarot_error("INVALID_RECIPIENT"):
                 await erc_721.transferFrom(
                     other.address,
                     ZERO_ADDRESS,
                     1337,
-                    caller_address=other.starknet_address,
+                    caller_address=other,
                 )
 
         async def test_should_fail_to_transfer_from_not_owner(self, erc_721, others):
-            await erc_721.mint(
-                others[0].address, 1337, caller_address=others[0].starknet_address
-            )
+            await erc_721.mint(others[0].address, 1337, caller_address=others[0])
             with kakarot_error("NOT_AUTHORIZED"):
                 await erc_721.transferFrom(
                     others[0].address,
                     others[2].address,
                     1337,
-                    caller_address=others[1].starknet_address,
+                    caller_address=others[1],
                 )
 
     class TestSafeTransferFrom:
         async def test_should_safe_transfer_from_to_EOA(self, erc_721, others):
-            await erc_721.mint(
-                others[0].address, 1337, caller_address=others[0].starknet_address
-            )
+            await erc_721.mint(others[0].address, 1337, caller_address=others[0])
 
             await erc_721.setApprovalForAll(
-                others[1].address, True, caller_address=others[0].starknet_address
+                others[1].address, True, caller_address=others[0]
             )
 
             await erc_721.safeTransferFrom(
                 others[0].address,
                 others[1].address,
                 1337,
-                caller_address=others[0].starknet_address,
+                caller_address=others[0],
             )
 
             approved = await erc_721.getApproved(1337)
@@ -345,19 +315,17 @@ class TestERC721:
         ):
             recipient_address = erc_721_recipient.evm_contract_address
 
-            await erc_721.mint(
-                others[0].address, 1337, caller_address=others[0].starknet_address
-            )
+            await erc_721.mint(others[0].address, 1337, caller_address=others[0])
 
             await erc_721.setApprovalForAll(
-                others[1].address, True, caller_address=others[0].starknet_address
+                others[1].address, True, caller_address=others[0]
             )
 
             await erc_721.safeTransferFrom(
                 others[0].address,
                 recipient_address,
                 1337,
-                caller_address=others[1].starknet_address,
+                caller_address=others[1],
             )
 
             approved = await erc_721.getApproved(1337)
@@ -385,12 +353,10 @@ class TestERC721:
         ):
             recipient_address = erc_721_recipient.evm_contract_address
 
-            await erc_721.mint(
-                others[0].address, 1337, caller_address=others[0].starknet_address
-            )
+            await erc_721.mint(others[0].address, 1337, caller_address=others[0])
 
             await erc_721.setApprovalForAll(
-                others[1].address, True, caller_address=others[0].starknet_address
+                others[1].address, True, caller_address=others[0]
             )
 
             data = b"testing 123"
@@ -400,7 +366,7 @@ class TestERC721:
                 recipient_address,
                 1337,
                 data,
-                caller_address=others[1].starknet_address,
+                caller_address=others[1],
             )
 
             approved = await erc_721.getApproved(1337)
@@ -428,16 +394,14 @@ class TestERC721:
         ):
             recipient_address = erc_721_non_recipient.evm_contract_address
 
-            await erc_721.mint(
-                other.address, 1337, caller_address=other.starknet_address
-            )
+            await erc_721.mint(other.address, 1337, caller_address=other)
 
             with kakarot_error():
                 await erc_721.safeTransferFrom(
                     other.address,
                     recipient_address,
                     1337,
-                    caller_address=other.starknet_address,
+                    caller_address=other,
                 )
 
         async def test_should_fail_to_safe_transfer_from_to_NonERC721Recipient_with_data(
@@ -445,9 +409,7 @@ class TestERC721:
         ):
             recipient_address = erc_721_non_recipient.evm_contract_address
 
-            await erc_721.mint(
-                other.address, 1337, caller_address=other.starknet_address
-            )
+            await erc_721.mint(other.address, 1337, caller_address=other)
 
             with kakarot_error():
                 await erc_721.safeTransferFrom2(
@@ -455,16 +417,14 @@ class TestERC721:
                     recipient_address,
                     1337,
                     b"testing 123",
-                    caller_address=other.starknet_address,
+                    caller_address=other,
                 )
 
         async def test_should_fail_to_safe_transfer_from_to_RevertingERC721Recipient(
             self, erc_721, erc_721_reverting_recipient, other
         ):
             recipient_address = erc_721_reverting_recipient.evm_contract_address
-            await erc_721.mint(
-                other.address, 1337, caller_address=other.starknet_address
-            )
+            await erc_721.mint(other.address, 1337, caller_address=other)
 
             selector = keccak(text="onERC721Received(address,address,uint256,bytes)")[
                 :4
@@ -474,7 +434,7 @@ class TestERC721:
                     other.address,
                     recipient_address,
                     1337,
-                    caller_address=other.starknet_address,
+                    caller_address=other,
                 )
 
         async def test_should_fail_to_safe_transfer_from_to_RevertingERC721Recipient_with_data(
@@ -482,9 +442,7 @@ class TestERC721:
         ):
             recipient_address = erc_721_reverting_recipient.evm_contract_address
 
-            await erc_721.mint(
-                other.address, 1337, caller_address=other.starknet_address
-            )
+            await erc_721.mint(other.address, 1337, caller_address=other)
             selector = keccak(text="onERC721Received(address,address,uint256,bytes)")[
                 :4
             ]
@@ -494,7 +452,7 @@ class TestERC721:
                     recipient_address,
                     1337,
                     b"testing 123",
-                    caller_address=other.starknet_address,
+                    caller_address=other,
                 )
 
         async def test_should_fail_to_safe_transfer_from_to_ERC721RecipientWithWrongReturnData(
@@ -504,15 +462,13 @@ class TestERC721:
                 erc_721_recipient_with_wrong_return_data.evm_contract_address
             )
 
-            await erc_721.mint(
-                other.address, 1337, caller_address=other.starknet_address
-            )
+            await erc_721.mint(other.address, 1337, caller_address=other)
             with kakarot_error("UNSAFE_RECIPIENT"):
                 await erc_721.safeTransferFrom(
                     other.address,
                     recipient_address,
                     1337,
-                    caller_address=other.starknet_address,
+                    caller_address=other,
                 )
 
         async def test_should_fail_to_safe_transfer_from_to_ERC721RecipientWithWrongReturnData_with_data(
@@ -522,9 +478,7 @@ class TestERC721:
                 erc_721_recipient_with_wrong_return_data.evm_contract_address
             )
 
-            await erc_721.mint(
-                other.address, 1337, caller_address=other.starknet_address
-            )
+            await erc_721.mint(other.address, 1337, caller_address=other)
 
             with kakarot_error("UNSAFE_RECIPIENT"):
                 await erc_721.safeTransferFrom2(
@@ -532,14 +486,12 @@ class TestERC721:
                     recipient_address,
                     1337,
                     b"testing 123",
-                    caller_address=other.starknet_address,
+                    caller_address=other,
                 )
 
     class TestSafeMint:
         async def test_should_safe_mint_to_EOA(self, erc_721, other):
-            await erc_721.safeMint(
-                other.address, 1337, caller_address=other.starknet_address
-            )
+            await erc_721.safeMint(other.address, 1337, caller_address=other)
 
             balance = await erc_721.balanceOf(other.address)
             nft_owner = await erc_721.ownerOf(1337)
@@ -552,9 +504,7 @@ class TestERC721:
         ):
             recipient_address = erc_721_recipient.evm_contract_address
 
-            await erc_721.safeMint(
-                recipient_address, 1337, caller_address=owner.starknet_address
-            )
+            await erc_721.safeMint(recipient_address, 1337, caller_address=owner)
 
             balance = await erc_721.balanceOf(recipient_address)
             nft_owner = await erc_721.ownerOf(1337)
@@ -582,7 +532,7 @@ class TestERC721:
                 recipient_address,
                 1337,
                 data,
-                caller_address=owner.starknet_address,
+                caller_address=owner,
             )
 
             balance = await erc_721.balanceOf(recipient_address)
@@ -610,7 +560,7 @@ class TestERC721:
                 await erc_721.safeMint(
                     recipient_address,
                     1337,
-                    caller_address=other.starknet_address,
+                    caller_address=other,
                 )
 
         async def test_should_fail_to_safe_mint_to_NonERC721Recipient_with_data(
@@ -623,7 +573,7 @@ class TestERC721:
                     recipient_address,
                     1337,
                     b"testing 123",
-                    caller_address=other.starknet_address,
+                    caller_address=other,
                 )
 
         async def test_should_fail_to_safe_mint_to_RevertingERC721Recipient(
@@ -635,7 +585,7 @@ class TestERC721:
                 await erc_721.safeMint(
                     recipient_address,
                     1337,
-                    caller_address=other.starknet_address,
+                    caller_address=other,
                 )
 
         async def test_should_fail_to_safe_mint_to_RevertingERC721Recipient_with_data(
@@ -648,7 +598,7 @@ class TestERC721:
                     recipient_address,
                     1337,
                     b"testing 123",
-                    caller_address=other.starknet_address,
+                    caller_address=other,
                 )
 
         async def test_should_fail_to_safe_mint_to_ERC721RecipientWithWrongReturnData(
@@ -662,7 +612,7 @@ class TestERC721:
                 await erc_721.safeMint(
                     recipient_address,
                     1337,
-                    caller_address=other.starknet_address,
+                    caller_address=other,
                 )
 
         async def test_should_fail_to_safe_mint_to_ERC721RecipientWithWrongReturnData_with_data(
@@ -677,5 +627,5 @@ class TestERC721:
                     recipient_address,
                     1337,
                     b"testing 123",
-                    caller_address=other.starknet_address,
+                    caller_address=other,
                 )

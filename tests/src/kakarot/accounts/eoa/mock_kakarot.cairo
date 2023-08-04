@@ -40,41 +40,42 @@ func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
 @view
 func eth_call{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
-    return_data_len: felt, return_data: felt*
-) {
+}(
+    origin: felt,
+    to: felt,
+    gas_limit: felt,
+    gas_price: felt,
+    value: felt,
+    data_len: felt,
+    data: felt*,
+) -> (return_data_len: felt, return_data: felt*) {
     alloc_locals;
     // Do the transfer
-    Kakarot.transfer(to, value);
+    Kakarot.transfer(origin, to, value);
 
     // Mock only the execution part
     let (local return_data) = alloc();
-    assert [return_data] = to;
-    assert [return_data + 1] = gas_limit;
-    assert [return_data + 2] = gas_price;
-    assert [return_data + 3] = value;
-    assert [return_data + 4] = data_len;
-    memcpy(return_data + 5, data, data_len);
-    return (data_len + 5, return_data);
+    assert [return_data] = origin;
+    assert [return_data + 1] = to;
+    assert [return_data + 2] = gas_limit;
+    assert [return_data + 3] = gas_price;
+    assert [return_data + 4] = value;
+    assert [return_data + 5] = data_len;
+    memcpy(return_data + 6, data, data_len);
+    return (data_len + 6, return_data);
 }
 
 @external
 func eth_send_transaction{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
-    return_data_len: felt, return_data: felt*
-) {
-    alloc_locals;
-    // Do the transfer
-    Kakarot.transfer(to, value);
-
-    // Mock only the execution part
-    let (local return_data) = alloc();
-    assert [return_data] = to;
-    assert [return_data + 1] = gas_limit;
-    assert [return_data + 2] = gas_price;
-    assert [return_data + 3] = value;
-    assert [return_data + 4] = data_len;
-    memcpy(return_data + 5, data, data_len);
-    return (data_len + 5, return_data);
+}(
+    origin: felt,
+    to: felt,
+    gas_limit: felt,
+    gas_price: felt,
+    value: felt,
+    data_len: felt,
+    data: felt*,
+) -> (return_data_len: felt, return_data: felt*) {
+    return eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
 }

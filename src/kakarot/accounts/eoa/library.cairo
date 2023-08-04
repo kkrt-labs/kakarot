@@ -134,8 +134,10 @@ namespace ExternallyOwnedAccount {
         ) = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
 
         let (_kakarot_address) = kakarot_address.read();
+        let (address) = evm_address.read();
         let (return_data_len, return_data) = IKakarot.eth_send_transaction(
             contract_address=_kakarot_address,
+            origin=address,
             to=destination,
             gas_limit=gas_limit,
             gas_price=gas_price,

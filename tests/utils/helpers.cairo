@@ -49,7 +49,7 @@ namespace TestHelpers {
             call_context,
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=evm_contract_address,
-            from_evm_address=0,
+            origin=0,
             gas_limit=Constants.TRANSACTION_GAS_LIMIT,
             gas_price=0,
             calling_context=root_context,

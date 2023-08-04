@@ -83,9 +83,15 @@ def use_kakarot_backend(contract: Contract, kakarot: StarknetContract):
             abi = self.get_function_by_name(fun).abi
             gas_limit = kwargs.pop("gas_limit", 1_000_000_000)
             value = kwargs.pop("value", 0)
-            # 0 is the default caller_address in both call and execute
-            caller_address = kwargs.pop("caller_address", 0)
+            caller_address = kwargs.pop("caller_address")
+            caller_evm_address = (
+                caller_address.address if caller_address is not None else 0
+            )
+            caller_starknet_address = (
+                caller_address.starknet_address if caller_address is not None else 0
+            )
             call_kwargs = {
+                "origin": caller_evm_address,
                 "to": int(self.address, 16),
                 "value": value,
                 "gas_limit": gas_limit,
@@ -95,10 +101,12 @@ def use_kakarot_backend(contract: Contract, kakarot: StarknetContract):
 
             if abi["stateMutability"] == "view":
                 prepared_call = kakarot.eth_call(**call_kwargs)
-                res = await prepared_call.call(caller_address=caller_address)
+                res = await prepared_call.call(caller_address=caller_starknet_address)
             else:
                 prepared_call = kakarot.eth_send_transaction(**call_kwargs)
-                res = await prepared_call.execute(caller_address=caller_address)
+                res = await prepared_call.execute(
+                    caller_address=caller_starknet_address
+                )
             if prepared_call._traced:
                 traceit.pop_record()
                 traceit.record_tx(
