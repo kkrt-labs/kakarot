@@ -330,15 +330,17 @@ namespace ExecutionContext {
         let event: model.Event = [events];
         let event_keys_felt = cast(event.keys, felt*);
         // we add the operating evm_contract_address of an execution context
-        // as the final key of an event
+        // as the first key of an event
         // we track kakarot events as those emitted from the kkrt contract
         // and map it to the kkrt contract via this convention
-        assert [event_keys_felt + events.keys_len] = evm_contract_address;
+        let (event_keys: felt*) = alloc();
+        memcpy(dst=event_keys + 1, src=event_keys_felt, len=event.keys_len);
+        assert [event_keys] = evm_contract_address;
         let updated_event_len = event.keys_len + 1;
 
         emit_event(
             keys_len=updated_event_len,
-            keys=event_keys_felt,
+            keys=event_keys,
             data_len=event.data_len,
             data=event.data,
         );
