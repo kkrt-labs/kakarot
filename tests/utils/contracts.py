@@ -119,8 +119,8 @@ def use_kakarot_backend(contract: Contract, kakarot: StarknetContract):
             for log_index, event in enumerate(res.raw_events):
                 # Using try/except as some events are emitted by cairo code and not LOG opcode
                 try:
-                    # every kkrt evm event emission appends the emitting contract as the final value of the event key (as felt)
-                    address = hex(event.keys[-1])
+                    # every kkrt evm event emission appends the emitting contract as the first value of the event key (as felt)
+                    address = hex(event.keys[0])
                     log_receipts.append(
                         LogReceipt(
                             address=to_checksum_address(address),
@@ -137,8 +137,8 @@ def use_kakarot_backend(contract: Contract, kakarot: StarknetContract):
                                     # of the bytes32 topics. This recomputes the original topic
                                     f"{(event.keys[i] + 2**128 * event.keys[i + 1]):064x}"
                                 )
-                                # every kkrt evm event emission appends the emitting contract as the final value of the event key (as felt), we skip those here
-                                for i in range(0, len(event.keys) - 1, 2)
+                                # every kkrt evm event emission appends the emitting contract as the first value of the event key (as felt), we skip those here
+                                for i in range(1, len(event.keys), 2)
                             ],
                             transactionHash=bytes(),
                             transactionIndex=0,

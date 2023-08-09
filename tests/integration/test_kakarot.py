@@ -101,7 +101,7 @@ class TestKakarot:
             assert [
                 [
                     # we remove the key that is used to convey the emitting kkrt evm contract
-                    event.keys[:-1],
+                    event.keys[1:],
                     event.data,
                 ]
                 for event in sorted(res.call_info.events, key=lambda x: x.order)
