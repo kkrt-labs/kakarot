@@ -1,0 +1,13 @@
+name: 'Changelog Workflow'
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+    branches: [main]
+
+jobs:
+  # Enforces the update of a changelog file on every pull request
+  # skipLabel default is "Skip-Changelog"
+  changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dangoslen/changelog-enforcer@v3
