@@ -150,6 +150,7 @@ COMPILED_CONTRACTS = [
     {"contract_name": "externally_owned_account", "is_account_contract": True},
     {"contract_name": "proxy", "is_account_contract": False},
     {"contract_name": "EVM", "is_account_contract": False},
+    {"contract_name": "OpenzeppelinAccount", "is_account_contract": True},
 ]
 
 KAKAROT_CHAIN_ID = 1263227476  # KKRT (0x4b4b5254) in ASCII
@@ -166,3 +167,9 @@ if NETWORK.get("chain_id"):
         f"ℹ️  Connected to CHAIN_ID {NETWORK['chain_id'].value.to_bytes(ceil(log(NETWORK['chain_id'].value, 256)), 'big')} "
         f"with {f'Gateway {GATEWAY_CLIENT.net}' if GATEWAY_CLIENT is not None else f'RPC {RPC_CLIENT.url}'}"
     )
+
+# private key for the deployer account for Madara and Katana, generated via starkli
+# the account will be used at RPC for deploying EOA and will be deployed and funded via ./scripts/deploy_kakarot.py
+DEPLOYER_ACCOUNT_PRIVATE_KEY = (
+    "0x0288a51c164874bb6a1ca7bd1cb71823c234a86d0f7b150d70fa8f06de645396"
+)

@@ -5,12 +5,15 @@ from asyncio import run
 from scripts.constants import (
     COMPILED_CONTRACTS,
     DEPLOY_FEE,
+    DEPLOYER_ACCOUNT_PRIVATE_KEY,
     ETH_TOKEN_ADDRESS,
     EVM_ADDRESS,
+    NETWORK,
 )
 from scripts.utils.starknet import (
     declare,
     deploy,
+    deploy_starknet_account,
     dump_declarations,
     dump_deployments,
     get_declarations,
@@ -60,6 +63,11 @@ async def main():
         class_hash["proxy"],  # account_proxy_class_hash
         deployments["blockhash_registry"]["address"],  # blockhash_registry address
     )
+
+    if NETWORK["name"] in ["madara", "katana"]:
+        deployments["deployer_account"] = await deploy_starknet_account(
+            class_hash["OpenzeppelinAccount"], private_key=DEPLOYER_ACCOUNT_PRIVATE_KEY
+        )
 
     dump_deployments(deployments)
 

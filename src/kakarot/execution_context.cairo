@@ -339,10 +339,7 @@ namespace ExecutionContext {
         let updated_event_len = event.keys_len + 1;
 
         emit_event(
-            keys_len=updated_event_len,
-            keys=event_keys,
-            data_len=event.data_len,
-            data=event.data,
+            keys_len=updated_event_len, keys=event_keys, data_len=event.data_len, data=event.data
         );
         // we maintain the semantics of one event struct involves iterating a full event struct size recursively
         emit_events(evm_contract_address, events_len - 1, events + 1 * model.Event.SIZE);
