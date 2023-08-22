@@ -19,7 +19,8 @@
 [![Twitter Follow](https://img.shields.io/twitter/follow/KakarotZkEvm?style=social)](https://twitter.com/KakarotZkEvm)
 
 <div align="center">
-
+Plop
+    
 Kakarot is a zkEVM written in Cairo. It aims to allow users to leverage the
 scaling benefits of validity rollups while maintaining compatibility with the
 Ethereum ecosystem. Therefore, Kakarot can be used to run Ethereum smart
