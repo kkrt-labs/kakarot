@@ -64,7 +64,7 @@ async def main():
         deployments["blockhash_registry"]["address"],  # blockhash_registry address
     )
 
-    if NETWORK["name"] in ["madara", "katana"]:
+    if NETWORK["name"] in ["madara", "katana", ""]:
         deployments["deployer_account"] = await deploy_starknet_account(
             class_hash["OpenzeppelinAccount"], private_key=DEPLOYER_ACCOUNT_PRIVATE_KEY
         )
