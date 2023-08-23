@@ -83,9 +83,9 @@ def use_kakarot_backend(contract: Contract, kakarot: StarknetContract):
             abi = self.get_function_by_name(fun).abi
             gas_limit = kwargs.pop("gas_limit", 1_000_000_000)
             value = kwargs.pop("value", 0)
-            caller_address = kwargs.pop("caller_address")
+            caller_address = kwargs.pop("caller_address", None)
             caller_evm_address = (
-                caller_address.address if caller_address is not None else 0
+                int(caller_address.address, 16) if caller_address is not None else 0
             )
             caller_starknet_address = (
                 caller_address.starknet_address if caller_address is not None else 0

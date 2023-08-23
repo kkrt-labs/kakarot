@@ -94,7 +94,7 @@ def deploy_solidity_contract(kakarot, get_solidity_contract):
         )
         with traceit.context(contract_name):
             tx = await kakarot.eth_send_transaction(
-                origin=caller_eoa.address,
+                origin=int(caller_eoa.address, 16),
                 to=0,
                 gas_limit=1_000_000,
                 gas_price=0,
