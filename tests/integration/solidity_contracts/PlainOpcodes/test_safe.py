@@ -18,7 +18,7 @@ class TestSafe:
             await safe.withdrawTransfer(caller_address=owner)
             assert await safe.balance() == 0
             assert (
-                await eth.balanceOf(owner).call()
+                await eth.balanceOf(owner.starknet_address).call()
             ).result.balance.low == ACCOUNT_BALANCE
 
     class TestWithdrawCall:
@@ -27,5 +27,5 @@ class TestSafe:
             await safe.withdrawCall(caller_address=owner)
             assert await safe.balance() == 0
             assert (
-                await eth.balanceOf(owner).call()
+                await eth.balanceOf(owner.starknet_address).call()
             ).result.balance.low == ACCOUNT_BALANCE
