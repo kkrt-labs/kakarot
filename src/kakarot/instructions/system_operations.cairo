@@ -842,7 +842,7 @@ namespace CreateHelper {
                 gas_limit=0,
                 gas_price=0,
                 starknet_contract_address=starknet_contract_address,
-                evm_contract_address=ctx.evm_contract_address,
+                evm_contract_address=evm_contract_address,
                 origin=ctx.origin,
                 calling_context=ctx,
                 sub_context=empty_context,

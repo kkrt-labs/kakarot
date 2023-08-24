@@ -605,6 +605,7 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
 
     return ();
 }
+
 @external
 func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at_expected_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -623,7 +624,7 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
     // Put some value in memory as it is used for bytecode with size and offset
     // Word is 0x 11 22 33 44 55 66 77 88 00 00 ... 00
     // bytecode should be 0x 44 55 66 77
-    let memory_word = Uint256(low=0, high=22774453838368691922685013100469420032);
+    let memory_word = Uint256(low=0, high=0x11223344556677880000000000000000);
     let memory_offset = Uint256(0, 0);
     let stack = Stack.push(stack, memory_word);
     let stack = Stack.push(stack, memory_offset);
