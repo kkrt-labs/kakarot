@@ -424,8 +424,8 @@ namespace Kakarot {
     }
 
     // @notice Assert that the calling starknet contract is consistent with the provided
-    //         origin (from field of eth_call)
-    // @dev Raise if the calling contracts tries to impersonate an EVM address
+    //         origin of eth_call, ie that it's corresponding evm address is actually the provided origin
+    // @dev Raise if the calling contract tries to impersonate an EVM address
     func assert_caller_is_origin{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -442,9 +442,9 @@ namespace Kakarot {
         return ();
     }
 
-    // @notice Since it's possible in starknet to send a transcation to a @view entrypoin, this
-    //         ensured that there is no ongoing transaction (so it's really a view call).
-    // @dev Raise if the calling contracts tries to impersonate an EVM address
+    // @notice Since it's possible in starknet to send a transcation to a @view entrypoint, this
+    //         ensures that there is no ongoing transaction (so it's really a view call).
+    // @dev Raise if tx_info.account_contract_address is not 0
     func assert_view{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
