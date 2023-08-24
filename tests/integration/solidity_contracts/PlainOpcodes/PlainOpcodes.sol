@@ -86,6 +86,18 @@ contract PlainOpcodes {
         emit Log4(address(0xa), address(0xb), 10);
     }
 
+    function create(bytes memory bytecode, uint256 count) public returns (address[] memory) {
+        address[] memory addresses = new address[](count);
+        address _address;
+        for (uint256 i = 0; i < count; i++) {
+            assembly {
+                _address := create(0, add(bytecode, 32), mload(bytecode))
+            }
+            addresses[i] = _address;
+        }
+        return addresses;
+    }
+
     function create2(bytes memory bytecode, uint256 salt) public returns (address _address) {
         assembly {
             _address := create2(0, add(bytecode, 32), mload(bytecode), salt)

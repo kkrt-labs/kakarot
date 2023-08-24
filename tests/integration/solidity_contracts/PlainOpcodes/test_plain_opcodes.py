@@ -161,6 +161,43 @@ class TestPlainOpcodes:
                 assert log_receipt["address"] == expected_address
             assert plain_opcodes.events.Log4 == [event]
 
+    class TestCreate:
+        @pytest.mark.parametrize(
+            "count",
+            (
+                pytest.param(1),
+                pytest.param(
+                    2,
+                    marks=pytest.mark.skip(
+                        "Fixme: CREATE cannot be called twice in the same tx"
+                    ),
+                ),
+            ),
+        )
+        async def test_should_create_counters(
+            self,
+            kakarot,
+            plain_opcodes,
+            counter,
+            plain_opcodes_deployer,
+            get_solidity_contract,
+            count,
+        ):
+            evm_addresses = await plain_opcodes.create(
+                bytecode=counter.constructor().data_in_transaction,
+                count=count,
+                caller_address=plain_opcodes_deployer.starknet_address,
+            )
+            assert len(evm_addresses) == count
+            for evm_address in evm_addresses:
+                starknet_address = (
+                    await kakarot.compute_starknet_address(int(evm_address, 16)).call()
+                ).result.contract_address
+                deployed_counter = get_solidity_contract(
+                    "PlainOpcodes", "Counter", starknet_address, evm_address, None
+                )
+                assert await deployed_counter.count() == 0
+
     class TestCreate2:
         async def test_should_deploy_bytecode_at_address(
             self,
