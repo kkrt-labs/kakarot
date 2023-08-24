@@ -7,15 +7,18 @@ from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.alloc import alloc
 
 from kakarot.accounts.library import Accounts
-from kakarot.constants import account_proxy_class_hash
+from kakarot.constants import account_proxy_class_hash, externally_owned_account_class_hash
 from kakarot.library import native_token_address, Kakarot
 
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    native_token_address_: felt, account_proxy_class_hash_: felt
+    native_token_address_: felt,
+    account_proxy_class_hash_: felt,
+    externally_owned_account_class_hash_: felt,
 ) {
     native_token_address.write(native_token_address_);
     account_proxy_class_hash.write(account_proxy_class_hash_);
+    externally_owned_account_class_hash.write(externally_owned_account_class_hash_);
     return ();
 }
 
@@ -35,6 +38,16 @@ func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
 ) -> (contract_address: felt) {
     let (contract_address_) = Accounts.compute_starknet_address(evm_address);
     return (contract_address=contract_address_);
+}
+
+// @notice Deploy a new externally owned account.
+// @param evm_address The evm address that is mapped to the newly deployed starknet contract address.
+// @return starknet_contract_address The newly deployed starknet contract address.
+@external
+func deploy_externally_owned_account{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(evm_address: felt) -> (starknet_contract_address: felt) {
+    return Kakarot.deploy_externally_owned_account(evm_address);
 }
 
 @view

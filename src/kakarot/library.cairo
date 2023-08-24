@@ -219,8 +219,8 @@ namespace Kakarot {
         return (deploy_fee_,);
     }
 
-    // @notice Transfer "value" native tokens to "to"
-    // @dev "from" parameter is taken from get_caller_address syscall
+    // @notice Transfer "value" native tokens from "origin" to "to"
+    // @param origin The sender address.
     // @param to_ The address the transaction is directed to.
     // @param value Integer of the value sent with this transaction
     // @return success Boolean to indicate success or failure of transfer
@@ -232,10 +232,11 @@ namespace Kakarot {
             return (success=TRUE);
         }
         let (local native_token_address) = get_native_token();
+        let (sender) = Accounts.compute_starknet_address(origin);
         let (recipient) = Accounts.compute_starknet_address(to_);
         let amount = Helpers.to_uint256(value);
         let (success) = IERC20.transferFrom(
-            contract_address=native_token_address, sender=origin, recipient=recipient, amount=amount
+            contract_address=native_token_address, sender=sender, recipient=recipient, amount=amount
         );
         return (success=success);
     }
