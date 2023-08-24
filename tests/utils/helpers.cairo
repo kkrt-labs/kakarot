@@ -127,6 +127,19 @@ namespace TestHelpers {
         return ctx;
     }
 
+    func init_context_with_sub_ctx{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(sub_ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        let (bytecode) = alloc();
+        let stack: model.Stack* = Stack.init();
+        let ctx: model.ExecutionContext* = init_context_with_stack(0, bytecode, stack);
+        let ctx = ExecutionContext.update_sub_context(ctx, sub_ctx);
+        return ctx;
+    }
+
     func init_context_with_return_data{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

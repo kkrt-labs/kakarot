@@ -811,11 +811,29 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
         bytecode=bytecode, bytecode_len=0, calldata=calldata, calldata_len=1, value=0
     );
     let stack = Stack.push(stack, Uint256(10, 0));
-    let (sub_ctx: felt*) = alloc();
     let (local revert_contract_state_dict_start) = default_dict_new(0);
     tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
         revert_contract_state_dict_start, revert_contract_state_dict_start
     );
+
+    // Simulate contract creation
+    let (contract_account_class_hash_) = contract_account_class_hash.read();
+    let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
+    let (local starknet_contract_address) = Accounts.create(
+        contract_account_class_hash_, evm_contract_address
+    );
+
+    // Fill contract bytecode
+    let (bytecode) = alloc();
+    assert [bytecode] = 1907;
+    IContractAccount.write_bytecode(
+        contract_address=starknet_contract_address, bytecode_len=1, bytecode=bytecode
+    );
+
+    // Create context
+    let (sub_ctx: felt*) = alloc();
+    let sub_ctx_object: model.ExecutionContext* = cast(sub_ctx, model.ExecutionContext*);
+    let ctx = TestHelpers.init_context_with_sub_ctx(sub_ctx_object);
 
     assert [sub_ctx] = cast(call_context, felt);  // call_context
     assert [sub_ctx + 1] = 0;  // program_counter
@@ -827,41 +845,19 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     assert [sub_ctx + 7] = 0;  // gas_used
     assert [sub_ctx + 8] = 0;  // gas_limit
     assert [sub_ctx + 9] = 0;  // intrinsic_gas_cost
-    assert [sub_ctx + 13] = 0;  // sub_context
-    assert [sub_ctx + 14] = 0;  // destroy_contracts_len
-    assert [sub_ctx + 15] = cast(destroy_contracts, felt);  // destroy_contracts
-    assert [sub_ctx + 16] = 0;  // events_len
-    assert [sub_ctx + 17] = cast(0, felt);  // events
-    assert [sub_ctx + 18] = 0;  // create_addresses_len
-    assert [sub_ctx + 19] = cast(0, felt);  // create_addresses
-    assert [sub_ctx + 20] = cast(revert_contract_state, felt);  // revert_contract_state
-    assert [sub_ctx + 21] = 0;  // read only
-
-    // Simulate contract creation
-    let (contract_account_class_hash_) = contract_account_class_hash.read();
-    let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (local starknet_contract_address) = Accounts.create(
-        contract_account_class_hash_, evm_contract_address
-    );
     assert [sub_ctx + 10] = starknet_contract_address;  // starknet_contract_address
     assert [sub_ctx + 11] = evm_contract_address;  // evm_contract_address
-
-    // Fill contract bytecode
-    let (bytecode) = alloc();
-    assert [bytecode] = 1907;
-    IContractAccount.write_bytecode(
-        contract_address=starknet_contract_address, bytecode_len=1, bytecode=bytecode
-    );
-
-    // Create context
-    let stack: model.Stack* = Stack.init();
-    let (bytecode) = alloc();
-    let ctx = TestHelpers.init_context_with_stack_and_sub_ctx(
-        0, bytecode, stack, cast(sub_ctx, model.ExecutionContext*)
-    );
-    assert [sub_ctx + 12] = cast(ctx, felt);  // calling_context
-
-    let sub_ctx_object: model.ExecutionContext* = cast(sub_ctx, model.ExecutionContext*);
+    assert [sub_ctx + 12] = 0;  // origin
+    assert [sub_ctx + 13] = cast(ctx, felt);  // calling_context
+    assert [sub_ctx + 14] = 0;  // sub_context
+    assert [sub_ctx + 15] = 0;  // destroy_contracts_len
+    assert [sub_ctx + 16] = cast(destroy_contracts, felt);  // destroy_contracts
+    assert [sub_ctx + 17] = 0;  // events_len
+    assert [sub_ctx + 18] = cast(0, felt);  // events
+    assert [sub_ctx + 19] = 0;  // create_addresses_len
+    assert [sub_ctx + 20] = cast(0, felt);  // create_addresses
+    assert [sub_ctx + 21] = cast(revert_contract_state, felt);  // revert_contract_state
+    assert [sub_ctx + 22] = 0;  // read only
 
     // When
     let sub_ctx_object: model.ExecutionContext* = SystemOperations.exec_selfdestruct(
