@@ -133,6 +133,7 @@ markers = [
     "UniswapV2Factory",
     "Utils",
     "Safe",
+    "EF_TEST",
 ]
 
 [tool.isort]
