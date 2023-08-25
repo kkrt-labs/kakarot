@@ -46,13 +46,45 @@ async def kakarot(
     return kakarot
 
 
-@pytest_asyncio.fixture(scope="session")
-async def addresses(
+@pytest.fixture(scope="session")
+def deploy_eoa(
     starknet,
     kakarot,
     externally_owned_account_class,
     fund_evm_address,
     deployer_address,
+):
+    async def _factory(private_key=None):
+        if private_key is None:
+            private_key = generate_random_private_key()
+
+        evm_address = private_key.public_key.to_checksum_address()
+
+        # pre fund account so that fees can be paid back to deployer
+        await fund_evm_address(int(evm_address, 16))
+
+        eoa_deploy_tx = await kakarot.deploy_externally_owned_account(
+            int(evm_address, 16)
+        ).execute(caller_address=deployer_address)
+
+        return Wallet(
+            address=evm_address,
+            private_key=private_key,
+            starknet_contract=StarknetContract(
+                starknet.state,
+                externally_owned_account_class.abi,
+                eoa_deploy_tx.call_info.internal_calls[0].contract_address,
+                eoa_deploy_tx,
+            ),
+            starknet_address=eoa_deploy_tx.call_info.internal_calls[0].contract_address,
+        )
+
+    return _factory
+
+
+@pytest_asyncio.fixture(scope="session")
+async def addresses(
+    deploy_eoa,
 ) -> List[Wallet]:
     """
     Returns a list of addresses to be used in tests.
@@ -73,30 +105,7 @@ async def addresses(
 
     wallets = []
     for private_key in private_keys:
-        evm_address = private_key.public_key.to_checksum_address()
-
-        # pre fund account so that fees can be paid back to deployer
-        await fund_evm_address(int(evm_address, 16))
-
-        eoa_deploy_tx = await kakarot.deploy_externally_owned_account(
-            int(evm_address, 16)
-        ).execute(caller_address=deployer_address)
-
-        wallets.append(
-            Wallet(
-                address=evm_address,
-                private_key=private_key,
-                starknet_contract=StarknetContract(
-                    starknet.state,
-                    externally_owned_account_class.abi,
-                    eoa_deploy_tx.call_info.internal_calls[0].contract_address,
-                    eoa_deploy_tx,
-                ),
-                starknet_address=eoa_deploy_tx.call_info.internal_calls[
-                    0
-                ].contract_address,
-            )
-        )
+        wallets.append(await deploy_eoa(private_key))
     return wallets
 
 
