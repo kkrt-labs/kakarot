@@ -41,7 +41,7 @@ class TestERC20:
             await erc_20.mint(
                 other.address,
                 TEST_SUPPLY,
-                caller_address=owner.starknet_address,
+                caller_address=owner,
             )
             assert await erc_20.totalSupply() == TEST_SUPPLY
             assert await erc_20.balanceOf(other.address) == TEST_SUPPLY
@@ -52,11 +52,9 @@ class TestERC20:
             await erc_20.mint(
                 other.address,
                 TEST_SUPPLY,
-                caller_address=owner.starknet_address,
+                caller_address=owner,
             )
-            await erc_20.burn(
-                other.address, burn_amount, caller_address=owner.starknet_address
-            )
+            await erc_20.burn(other.address, burn_amount, caller_address=owner)
             assert await erc_20.totalSupply() == TEST_SUPPLY - burn_amount
             assert await erc_20.balanceOf(other.address) == TEST_SUPPLY - burn_amount
 
@@ -65,19 +63,17 @@ class TestERC20:
             assert await erc_20.approve(
                 other.address,
                 TEST_SUPPLY,
-                caller_address=owner.starknet_address,
+                caller_address=owner,
             )
             assert await erc_20.allowance(owner.address, other.address) == TEST_SUPPLY
 
     class TestTransfer:
         async def test_should_transfer(self, erc_20, owner, other):
-            await erc_20.mint(
-                owner.address, TEST_SUPPLY, caller_address=owner.starknet_address
-            )
+            await erc_20.mint(owner.address, TEST_SUPPLY, caller_address=owner)
             assert await erc_20.transfer(
                 other.address,
                 TEST_SUPPLY,
-                caller_address=owner.starknet_address,
+                caller_address=owner,
             )
             assert await erc_20.totalSupply() == TEST_SUPPLY
             assert await erc_20.balanceOf(owner.address) == 0
@@ -86,14 +82,12 @@ class TestERC20:
         async def test_transfer_should_fail_when_insufficient_balance(
             self, erc_20, owner, other
         ):
-            await erc_20.mint(
-                owner.address, TEST_AMOUNT, caller_address=owner.starknet_address
-            )
+            await erc_20.mint(owner.address, TEST_AMOUNT, caller_address=owner)
             with kakarot_error():
                 await erc_20.transfer(
                     other.address,
                     TEST_SUPPLY,
-                    caller_address=owner.starknet_address,
+                    caller_address=owner,
                 )
 
     class TestTransferFrom:
@@ -104,24 +98,22 @@ class TestERC20:
             await erc_20.mint(
                 from_wallet.address,
                 TEST_SUPPLY,
-                caller_address=owner.starknet_address,
+                caller_address=owner,
             )
 
             await erc_20.approve(
                 owner.address,
                 TEST_SUPPLY,
-                caller_address=from_wallet.starknet_address,
+                caller_address=from_wallet,
             )
             assert await erc_20.transferFrom(
                 from_wallet.address,
                 to_wallet.address,
                 TEST_SUPPLY,
-                caller_address=owner.starknet_address,
+                caller_address=owner,
             )
             assert await erc_20.totalSupply() == TEST_SUPPLY
-
             assert await erc_20.allowance(from_wallet.address, owner.address) == 0
-
             assert await erc_20.balanceOf(from_wallet.address) == 0
             assert await erc_20.balanceOf(to_wallet.address) == TEST_SUPPLY
 
@@ -134,64 +126,45 @@ class TestERC20:
             await erc_20.mint(
                 from_wallet.address,
                 TEST_SUPPLY,
-                caller_address=owner.starknet_address,
+                caller_address=owner,
             )
 
-            await erc_20.approve(
-                owner.address, MAX_INT, caller_address=from_wallet.starknet_address
-            )
+            await erc_20.approve(owner.address, MAX_INT, caller_address=from_wallet)
             assert await erc_20.transferFrom(
                 from_wallet.address,
                 to_wallet.address,
                 TEST_SUPPLY,
-                caller_address=owner.starknet_address,
+                caller_address=owner,
             )
             assert await erc_20.totalSupply() == TEST_SUPPLY
-
             assert await erc_20.allowance(from_wallet.address, owner.address) == MAX_INT
-
             assert await erc_20.balanceOf(from_wallet.address) == 0
             assert await erc_20.balanceOf(others[1].address) == TEST_SUPPLY
 
         async def test_transfer_from_should_fail_when_insufficient_allowance(
             self, erc_20, owner, other, others
         ):
-            await erc_20.mint(
-                other.address, TEST_SUPPLY, caller_address=owner.starknet_address
-            )
-            await erc_20.approve(
-                owner.address,
-                TEST_AMOUNT,
-                caller_address=other.starknet_address,
-            )
+            await erc_20.mint(other.address, TEST_SUPPLY, caller_address=owner)
+            await erc_20.approve(owner.address, TEST_AMOUNT, caller_address=other)
             with kakarot_error():
                 await erc_20.transferFrom(
                     other.address,
                     others[1].address,
                     TEST_SUPPLY,
-                    caller_address=owner.starknet_address,
+                    caller_address=owner,
                 )
 
         async def test_transfer_from_should_fail_when_insufficient_balance(
             self, erc_20, owner, other, others
         ):
-            await erc_20.mint(
-                other.address,
-                TEST_AMOUNT,
-                caller_address=owner.starknet_address,
-            )
-
-            await erc_20.approve(
-                owner.address,
-                TEST_SUPPLY,
-                caller_address=other.starknet_address,
-            )
+            await erc_20.mint(other.address, TEST_AMOUNT, caller_address=owner)
+            await erc_20.approve(owner.address, TEST_SUPPLY, caller_address=other)
             with kakarot_error():
                 await erc_20.transferFrom(
                     other.address,
                     others[1].address,
                     TEST_SUPPLY,
-                    caller_address=owner.starknet_address,
+                    caller_address=owner,
                 )
 
     class TestPermit:
@@ -218,7 +191,7 @@ class TestERC20:
                 v,
                 r,
                 s,
-                caller_address=owner.starknet_address,
+                caller_address=owner,
             )
 
             assert await erc_20.allowance(owner.address, other.address) == TEST_SUPPLY
@@ -250,7 +223,7 @@ class TestERC20:
                     v,
                     r,
                     s,
-                    caller_address=owner.starknet_address,
+                    caller_address=owner,
                 )
 
         async def test_permit_should_fail_with_bad_deadline(
@@ -279,7 +252,7 @@ class TestERC20:
                     v,
                     r,
                     s,
-                    caller_address=owner.starknet_address,
+                    caller_address=owner,
                 )
 
         async def test_permit_should_fail_on_replay(
@@ -307,7 +280,7 @@ class TestERC20:
                 v,
                 r,
                 s,
-                caller_address=owner.starknet_address,
+                caller_address=owner,
             )
 
             with kakarot_error("INVALID_SIGNER"):
@@ -319,5 +292,5 @@ class TestERC20:
                     v,
                     r,
                     s,
-                    caller_address=owner.starknet_address,
+                    caller_address=owner,
                 )

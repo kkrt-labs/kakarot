@@ -125,11 +125,7 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Get the transaction info which contains the starknet origin address
-        let (tx_info) = get_tx_info();
-        // Get the EVM address from Starknet address
-        let (evm_contract_address) = IAccount.get_evm_address(tx_info.account_contract_address);
-        let origin_address = Helpers.to_uint256(evm_contract_address);
+        let origin_address = Helpers.to_uint256(ctx.origin);
 
         // Update Context stack
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=origin_address);
@@ -155,13 +151,10 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        // Get caller address.
-        let (current_address) = get_caller_address();
-        let (current_evm_address) = IAccount.get_evm_address(current_address);
         let is_root = ExecutionContext.is_root(ctx);
-        let evm_address = (1 - is_root) * ctx.calling_context.evm_contract_address + is_root *
-            current_evm_address;
-        let evm_address_uint256 = Helpers.to_uint256(evm_address);
+        let caller = (1 - is_root) * ctx.calling_context.evm_contract_address + is_root *
+            ctx.origin;
+        let evm_address_uint256 = Helpers.to_uint256(caller);
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=evm_address_uint256);
 
         // Update the execution context.

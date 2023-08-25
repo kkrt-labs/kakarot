@@ -33,11 +33,7 @@ class TestUniswapV2ERC20:
     class TestApprove:
         async def test_should_set_allowance(self, token_a, token_a_deployer, other):
             owner = token_a_deployer
-            await token_a.approve(
-                other.address,
-                TEST_AMOUNT,
-                caller_address=owner.starknet_address,
-            )
+            await token_a.approve(other.address, TEST_AMOUNT, caller_address=owner)
             assert token_a.events.Approval == [
                 {
                     "owner": owner.address,
@@ -53,11 +49,7 @@ class TestUniswapV2ERC20:
             self, token_a, token_a_deployer, other
         ):
             owner = token_a_deployer
-            await token_a.transfer(
-                other.address,
-                TEST_AMOUNT,
-                caller_address=owner.starknet_address,
-            )
+            await token_a.transfer(other.address, TEST_AMOUNT, caller_address=owner)
             assert token_a.events.Transfer == [
                 {
                     "from": owner.address,
@@ -73,36 +65,23 @@ class TestUniswapV2ERC20:
         ):
             with kakarot_error():
                 await token_a.transfer(
-                    other.address,
-                    TOTAL_SUPPLY + 1,
-                    caller_address=token_a_deployer.starknet_address,
+                    other.address, TOTAL_SUPPLY + 1, caller_address=token_a_deployer
                 )
 
         async def test_should_fail_when_amount_is_greater_than_balance_and_balance_zero(
             self, token_a, owner, other
         ):
             with kakarot_error():
-                await token_a.transfer(
-                    owner.address,
-                    1,
-                    caller_address=other.starknet_address,
-                )
+                await token_a.transfer(owner.address, 1, caller_address=other)
 
     class TestTransferFrom:
         async def test_should_transfer_token_when_signer_is_approved(
             self, token_a, token_a_deployer, other
         ):
             owner = token_a_deployer
-            await token_a.approve(
-                other.address,
-                TEST_AMOUNT,
-                caller_address=owner.starknet_address,
-            )
+            await token_a.approve(other.address, TEST_AMOUNT, caller_address=owner)
             await token_a.transferFrom(
-                owner.address,
-                other.address,
-                TEST_AMOUNT,
-                caller_address=other.starknet_address,
+                owner.address, other.address, TEST_AMOUNT, caller_address=other
             )
             assert token_a.events.Transfer == [
                 {"from": owner.address, "to": other.address, "value": TEST_AMOUNT}
@@ -116,16 +95,9 @@ class TestUniswapV2ERC20:
             self, token_a, token_a_deployer, other
         ):
             owner = token_a_deployer
-            await token_a.approve(
-                other.address,
-                MAX_INT,
-                caller_address=owner.starknet_address,
-            )
+            await token_a.approve(other.address, MAX_INT, caller_address=owner)
             await token_a.transferFrom(
-                owner.address,
-                other.address,
-                TEST_AMOUNT,
-                caller_address=other.starknet_address,
+                owner.address, other.address, TEST_AMOUNT, caller_address=other
             )
             assert token_a.events.Transfer == [
                 {"from": owner.address, "to": other.address, "value": TEST_AMOUNT}
@@ -159,7 +131,7 @@ class TestUniswapV2ERC20:
                 v,
                 r,
                 s,
-                caller_address=owner.starknet_address,
+                caller_address=owner,
             )
             assert token_a.events.Approval == [
                 {"owner": owner.address, "spender": other.address, "value": TEST_AMOUNT}

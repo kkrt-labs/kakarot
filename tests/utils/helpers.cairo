@@ -49,6 +49,7 @@ namespace TestHelpers {
             call_context,
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=evm_contract_address,
+            origin=0,
             gas_limit=Constants.TRANSACTION_GAS_LIMIT,
             gas_price=0,
             calling_context=root_context,
@@ -122,6 +123,19 @@ namespace TestHelpers {
         bytecode_len: felt, bytecode: felt*, stack: model.Stack*, sub_ctx: model.ExecutionContext*
     ) -> model.ExecutionContext* {
         let ctx: model.ExecutionContext* = init_context_with_stack(bytecode_len, bytecode, stack);
+        let ctx = ExecutionContext.update_sub_context(ctx, sub_ctx);
+        return ctx;
+    }
+
+    func init_context_with_sub_ctx{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(sub_ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        let (bytecode) = alloc();
+        let stack: model.Stack* = Stack.init();
+        let ctx: model.ExecutionContext* = init_context_with_stack(0, bytecode, stack);
         let ctx = ExecutionContext.update_sub_context(ctx, sub_ctx);
         return ctx;
     }

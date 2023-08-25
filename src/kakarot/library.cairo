@@ -64,6 +64,7 @@ namespace Kakarot {
     //      other will be removed
     // @param starknet_contract_address The starknet contract address of the called contract
     // @param evm_contract_address The corresponding EVM contract address of the called contract
+    // @param origin The caller EVM address
     // @param bytecode_len The length of the bytecode
     // @param bytecode The bytecode run
     // @param calldata_len The length of the calldata
@@ -79,6 +80,7 @@ namespace Kakarot {
     }(
         starknet_contract_address: felt,
         evm_contract_address: felt,
+        origin: felt,
         bytecode_len: felt,
         bytecode: felt*,
         calldata_len: felt,
@@ -117,6 +119,7 @@ namespace Kakarot {
             call_context=call_context,
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=evm_contract_address,
+            origin=origin,
             gas_limit=gas_limit,
             gas_price=gas_price,
             calling_context=root_context,
@@ -216,24 +219,24 @@ namespace Kakarot {
         return (deploy_fee_,);
     }
 
-    // @notice Transfer "value" native tokens to "to"
-    // @dev "from" parameter is taken from get_caller_address syscall
+    // @notice Transfer "value" native tokens from "origin" to "to"
+    // @param origin The sender address.
     // @param to_ The address the transaction is directed to.
     // @param value Integer of the value sent with this transaction
     // @return success Boolean to indicate success or failure of transfer
     func transfer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        to_: felt, value: felt
+        origin: felt, to_: felt, value: felt
     ) -> (success: felt) {
         alloc_locals;
         if (value == 0) {
             return (success=TRUE);
         }
         let (local native_token_address) = get_native_token();
-        let (from_) = get_caller_address();
+        let (sender) = Accounts.compute_starknet_address(origin);
         let (recipient) = Accounts.compute_starknet_address(to_);
         let amount = Helpers.to_uint256(value);
         let (success) = IERC20.transferFrom(
-            contract_address=native_token_address, sender=from_, recipient=recipient, amount=amount
+            contract_address=native_token_address, sender=sender, recipient=recipient, amount=amount
         );
         return (success=success);
     }
@@ -250,16 +253,14 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(bytecode_len: felt, bytecode: felt*) -> (
+    }(origin: felt, bytecode_len: felt, bytecode: felt*) -> (
         starknet_contract_address: felt, evm_contract_address: felt
     ) {
         alloc_locals;
-        let (caller_address) = get_caller_address();
-        let (sender_evm_address) = IAccount.get_evm_address(caller_address);
+        // TODO: read the nonce from the provided origin address, otherwise in view mode this will
+        // TODO: always use a 0 nonce
         let (tx_info) = get_tx_info();
-        let (evm_contract_address) = CreateHelper.get_create_address(
-            sender_evm_address, tx_info.nonce
-        );
+        let (evm_contract_address) = CreateHelper.get_create_address(origin, tx_info.nonce);
         let (class_hash) = contract_account_class_hash.read();
         let (starknet_contract_address) = Accounts.create(class_hash, evm_contract_address);
         let (empty_array: felt*) = alloc();
@@ -279,6 +280,7 @@ namespace Kakarot {
         ) = execute(
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=evm_contract_address,
+            origin=origin,
             bytecode_len=bytecode_len,
             bytecode=bytecode,
             calldata_len=0,
@@ -311,7 +313,6 @@ namespace Kakarot {
     }(evm_contract_address: felt) -> (starknet_contract_address: felt) {
         alloc_locals;
 
-        let (caller_address) = get_caller_address();
         let (class_hash) = externally_owned_account_class_hash.read();
         let (starknet_contract_address) = Accounts.create(class_hash, evm_contract_address);
 
@@ -319,6 +320,7 @@ namespace Kakarot {
         let (local deploy_fee) = get_deploy_fee();
 
         let amount = Helpers.to_uint256(deploy_fee);
+        let (caller_address) = get_caller_address();
         let (success) = IERC20.transferFrom(
             contract_address=native_token_address,
             sender=starknet_contract_address,
@@ -330,7 +332,7 @@ namespace Kakarot {
     }
 
     // @notice The eth_call function as described in the RPC spec, see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_call
-    // @dev "from" parameter is taken from the get_caller_address syscall
+    // @param origin The address the transaction is sent from.
     // @param to The address the transaction is directed to.
     // @param gas_limit Integer of the gas provided for the transaction execution
     // @param gas_price Integer of the gas price used for each paid gas
@@ -344,10 +346,16 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
-        return_data_len: felt, return_data: felt*
-    ) {
-        let (success) = transfer(to, value);
+    }(
+        origin: felt,
+        to: felt,
+        gas_limit: felt,
+        gas_price: felt,
+        value: felt,
+        data_len: felt,
+        data: felt*,
+    ) -> (return_data_len: felt, return_data: felt*) {
+        let (success) = transfer(origin, to, value);
         with_attr error_message("Kakarot: eth_call: failed to transfer {value} tokens to {to}") {
             assert success = TRUE;
         }
@@ -363,7 +371,7 @@ namespace Kakarot {
                 assert value = 0;
             }
             let (starknet_contract_address, evm_contract_address) = deploy_contract_account(
-                bytecode_len=data_len, bytecode=data
+                origin=origin, bytecode_len=data_len, bytecode=data
             );
             let (return_data) = alloc();
             assert [return_data] = evm_contract_address;
@@ -377,6 +385,7 @@ namespace Kakarot {
             let summary = execute(
                 starknet_contract_address,
                 to,
+                origin,
                 bytecode_len,
                 bytecode,
                 data_len,
@@ -414,27 +423,39 @@ namespace Kakarot {
         return ();
     }
 
-    // @notice The eth_send_transaction function as described in the RPC spec,
-    //         see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_sendtransaction
-    // @dev "from" parameter is taken from the get_caller_address syscall
-    // @dev "nonce" parameter is taken from the caller account
-    // @param to The address the transaction is directed to.
-    // @param gas_limit Integer of the gas provided for the transaction execution
-    // @param gas_price Integer of the gas price used for each paid gas
-    // @param value Integer of the value sent with this transaction
-    // @param data_len The length of the data
-    // @param data Hash of the method signature and encoded parameters. For details see Ethereum Contract ABI in the Solidity documentation
-    // @return return_data_len The length of the returned bytes
-    // @return return_data The returned bytes array
-    func eth_send_transaction{
+    // @notice Assert that the calling starknet contract is consistent with the provided
+    //         origin of eth_call, ie that it's corresponding evm address is actually the provided origin
+    // @dev Raise if the calling contract tries to impersonate an EVM address
+    func assert_caller_is_origin{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
-        return_data_len: felt, return_data: felt*
-    ) {
-        assert_caller_is_kakarot_account();
-        return eth_call(to, gas_limit, gas_price, value, data_len, data);
+    }(origin: felt) {
+        alloc_locals;
+        let (local starknet_caller_address) = get_caller_address();
+        let (local evm_caller_address) = IAccount.get_evm_address(starknet_caller_address);
+        with_attr error_message("Kakarot: caller contract is not consistent with from tx field") {
+            assert origin = evm_caller_address;
+        }
+
+        return ();
+    }
+
+    // @notice Since it's possible in starknet to send a transcation to a @view entrypoint, this
+    //         ensures that there is no ongoing transaction (so it's really a view call).
+    // @dev Raise if tx_info.account_contract_address is not 0
+    func assert_view{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }() {
+        let (tx_info) = get_tx_info();
+        with_attr error_message("Kakarot: entrypoint should only be called in view mode") {
+            assert tx_info.account_contract_address = 0;
+        }
+
+        return ();
     }
 }

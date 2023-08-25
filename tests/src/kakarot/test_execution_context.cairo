@@ -38,6 +38,7 @@ func test__init__should_return_an_empty_execution_context{
         call_context,
         starknet_contract_address=0,
         evm_contract_address=0,
+        origin=0,
         gas_limit=Constants.TRANSACTION_GAS_LIMIT,
         gas_price=0,
         calling_context=calling_ctx,

@@ -132,6 +132,7 @@ markers = [
     "UniswapV2ERC20",
     "UniswapV2Factory",
     "Utils",
+    "Safe",
 ]
 
 [tool.isort]

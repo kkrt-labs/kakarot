@@ -106,6 +106,7 @@ func init_context{
         gas_price=0,
         starknet_contract_address=0,
         evm_contract_address=420,
+        origin=100,
         calling_context=calling_context,
         sub_context=sub_context,
         destroy_contracts_len=0,

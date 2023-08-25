@@ -14,6 +14,7 @@ from utils.utils import Helpers
 from kakarot.constants import Constants
 from kakarot.model import model
 from kakarot.stack import Stack
+from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.system_operations import SystemOperations
 from kakarot.precompiles.precompiles import Precompiles
 from tests.utils.helpers import TestHelpers
@@ -58,12 +59,13 @@ func test__run_should_return_a_stopped_execution_context{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(address: felt) {
     // When
+    let calling_context = ExecutionContext.init_empty();
     let result = Precompiles.run(
         address=address,
         calldata_len=0,
         calldata=cast(0, felt*),
         value=0,
-        calling_context=cast(0, model.ExecutionContext*),
+        calling_context=calling_context,
         return_data_len=0,
         return_data=cast(0, felt*),
     );

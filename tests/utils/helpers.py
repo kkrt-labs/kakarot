@@ -181,16 +181,15 @@ def get_multicall_from_evm_txs(
 
         # See ./tests/src/kakarot/accounts/eoa/mock_kakarot.cairo
         expected_result += [
-            int.from_bytes(HexBytes(transaction["to"]), "big"),
-            transaction["gas"],
-            transaction.get("gasPrice", transaction.get("maxFeePerGas")),
-            transaction["value"],
+            int(private_key.public_key.to_address(), 16),  # origin
+            int.from_bytes(HexBytes(transaction["to"]), "big"),  # to
+            transaction["gas"],  # gas_limit
+            transaction.get("gasPrice", transaction.get("maxFeePerGas")),  # gas_price
+            transaction["value"],  # value
             len(
                 bytes.fromhex(transaction.get("data", "").replace("0x", ""))
-            ),  # calldata_len
-            *list(
-                bytes.fromhex(transaction.get("data", "").replace("0x", ""))
-            ),  # calldata
+            ),  # data_len
+            *list(bytes.fromhex(transaction.get("data", "").replace("0x", ""))),  # data
         ]
 
     return (calls, calldata, expected_result)

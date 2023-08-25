@@ -39,7 +39,14 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 @external
 func execute{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(value: felt, bytecode_len: felt, bytecode: felt*, calldata_len: felt, calldata: felt*) -> (
+}(
+    origin: felt,
+    value: felt,
+    bytecode_len: felt,
+    bytecode: felt*,
+    calldata_len: felt,
+    calldata: felt*,
+) -> (
     stack_accesses_len: felt,
     stack_accesses: felt*,
     stack_len: felt,
@@ -55,6 +62,7 @@ func execute{
     return Kakarot.execute(
         starknet_contract_address=0,
         evm_contract_address=0,
+        origin=origin,
         bytecode_len=bytecode_len,
         bytecode=bytecode,
         calldata_len=calldata_len,
