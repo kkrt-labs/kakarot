@@ -80,9 +80,9 @@ class TestKakarot:
         params: dict,
         request,
     ):
-        # TODO Call with MockSigner for TxInfo to be set with the right caller
         with traceit.context(request.node.callspec.id):
             res = await evm.execute(
+                origin=int(owner.address, 16),
                 value=int(params["value"]),
                 bytecode=hex_string_to_bytes_array(params["code"]),
                 calldata=hex_string_to_bytes_array(params["calldata"]),

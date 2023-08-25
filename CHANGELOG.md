@@ -10,4 +10,5 @@ and this project adheres to
 
 ### Added
 
+- fix: ORIGIN and CALLER work in both view and execute mode
 - ci: add `CHANGELOG.md` and enforce it is edited for each PR on `main`

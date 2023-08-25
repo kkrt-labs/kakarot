@@ -2,8 +2,7 @@ import string
 
 import pytest
 import pytest_asyncio
-from eth_utils import decode_hex, to_bytes, to_checksum_address
-from starkware.python.utils import from_bytes
+from eth_utils import to_bytes, to_checksum_address
 from starkware.starknet.testing.starknet import Starknet
 
 from tests.utils.errors import kakarot_error
@@ -90,13 +89,15 @@ class TestSystemOperations:
     async def test_create(self, system_operations):
         salt = 0
         # given we start with the first anvil test account
-        evm_caller_address_int = 0xF39FD6E51AAD88F6F4CE6AB8827279CFFFB92266
-        evm_caller_address_bytes = evm_caller_address_int.to_bytes(20, byteorder="big")
-        evm_caller_address = to_checksum_address(evm_caller_address_bytes)
+        evm_caller_address = to_checksum_address(
+            0xF39FD6E51AAD88F6F4CE6AB8827279CFFFB92266
+        )
         expected_create_addr = get_create_address(evm_caller_address, salt)
 
         await system_operations.test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at_expected_address(
-            evm_caller_address_int, salt, from_bytes(decode_hex(expected_create_addr))
+            int(evm_caller_address, 16),
+            salt,
+            int(expected_create_addr, 16),
         ).call()
 
     @pytest.mark.parametrize("nonce", [0, 127, 256, 2**55 - 1])
@@ -108,7 +109,9 @@ class TestSystemOperations:
         expected_create_addr = get_create_address(evm_caller_address, nonce)
 
         await system_operations.test__get_create_address_should_construct_address_deterministically(
-            int(evm_caller_address, 16), nonce, int(expected_create_addr, 16)
+            int(evm_caller_address, 16),
+            nonce,
+            int(expected_create_addr, 16),
         ).call()
 
     async def test_create2(self, system_operations):

@@ -29,9 +29,7 @@ class TestUniswapV2Factory:
             owner,
             tokens,
         ):
-            pair_evm_address = await factory.createPair(
-                *tokens, caller_address=owner.starknet_address
-            )
+            pair_evm_address = await factory.createPair(*tokens, caller_address=owner)
             token_0, token_1 = sorted(tokens)
             assert factory.events.PairCreated == [
                 {
@@ -43,16 +41,10 @@ class TestUniswapV2Factory:
             ]
 
             with kakarot_error("UniswapV2: PAIR_EXISTS"):
-                await factory.createPair(
-                    *tokens,
-                    caller_address=owner.starknet_address,
-                )
+                await factory.createPair(*tokens, caller_address=owner)
 
             with kakarot_error("UniswapV2: PAIR_EXISTS"):
-                await factory.createPair(
-                    *tokens[::-1],
-                    caller_address=owner.starknet_address,
-                )
+                await factory.createPair(*tokens[::-1], caller_address=owner)
 
             assert await factory.getPair(*tokens) == pair_evm_address
             assert await factory.getPair(*tokens[::-1]) == pair_evm_address
@@ -73,40 +65,30 @@ class TestUniswapV2Factory:
 
         @pytest.mark.skip("Skipped because gas metering is inaccurate in kakarot")
         async def test_should_use_correct_gas(self, factory, owner):
-            await factory.createPair(
-                *TEST_ADDRESSES, caller_address=owner.starknet_address
-            )
+            await factory.createPair(*TEST_ADDRESSES, caller_address=owner)
             assert factory.tx.result.gas_used == 2512920
 
     class TestSetFeeTo:
         async def test_should_revert_when_caller_is_not_owner(self, factory, other):
             with kakarot_error("UniswapV2: FORBIDDEN"):
-                await factory.setFeeTo(
-                    other.address, caller_address=other.starknet_address
-                )
+                await factory.setFeeTo(other.address, caller_address=other)
 
         async def test_should_set_fee_to_owner(self, factory, uniswap_factory_deployer):
             owner = uniswap_factory_deployer
-            await factory.setFeeTo(owner.address, caller_address=owner.starknet_address)
+            await factory.setFeeTo(owner.address, caller_address=owner)
             assert await factory.feeTo() == owner.address
 
     class TestSetFeeToSetter:
         async def test_should_revert_when_caller_is_not_owner(self, factory, other):
             with kakarot_error("UniswapV2: FORBIDDEN"):
-                await factory.setFeeToSetter(
-                    other.address, caller_address=other.starknet_address
-                )
+                await factory.setFeeToSetter(other.address, caller_address=other)
 
         async def test_should_set_fee_setter_to_other_and_transfer_permission(
             self, factory, uniswap_factory_deployer, other
         ):
             owner = uniswap_factory_deployer
-            await factory.setFeeToSetter(
-                other.address, caller_address=owner.starknet_address
-            )
+            await factory.setFeeToSetter(other.address, caller_address=owner)
             assert await factory.feeToSetter() == other.address
 
             with kakarot_error("UniswapV2: FORBIDDEN"):
-                await factory.setFeeToSetter(
-                    owner.address, caller_address=owner.starknet_address
-                )
+                await factory.setFeeToSetter(owner.address, caller_address=owner)

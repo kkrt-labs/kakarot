@@ -8,13 +8,12 @@ from starkware.cairo.common.alloc import alloc
 from kakarot.accounts.eoa.library import ExternallyOwnedAccount
 from kakarot.accounts.library import Accounts
 
-// Constructor
-@constructor
-func constructor{
+// Externally Owned Account initializer
+@external
+func initialize{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(kakarot_address: felt, evm_address: felt) {
-    ExternallyOwnedAccount.initialize(kakarot_address, evm_address);
-    return ();
+    return ExternallyOwnedAccount.initialize(kakarot_address, evm_address);
 }
 
 @external
@@ -32,4 +31,12 @@ func execute{
         call_array_len, call_array, calldata_len, calldata, response
     );
     return (response_len, response);
+}
+
+// @notice Return ethereum address of the externally owned account
+@view
+func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    evm_address: felt
+) {
+    return ExternallyOwnedAccount.get_evm_address();
 }

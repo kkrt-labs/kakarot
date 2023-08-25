@@ -58,6 +58,7 @@ namespace ExecutionContext {
         dw 0;  // gas_price
         dw 0;  // starknet_contract_address
         dw 0;  // evm_contract_address
+        dw 0;  // origin
         dw 0;  // calling_context
         dw 0;  // sub_context
         dw 0;  // destroy_contracts_len
@@ -76,6 +77,7 @@ namespace ExecutionContext {
     // @param call_context The call_context (see model.CallContext) to be executed.
     // @param starknet_contract_address The context starknet address.
     // @param evm_contract_address The context corresponding evm address.
+    // @param origin The caller EVM address
     // @param gas_limit The available gas for the ExecutionContext.
     // @param gas_price The price per unit of gas.
     // @param calling_context A reference to the context of the calling contract. This context stores the return data produced by the called contract in its memory.
@@ -92,6 +94,7 @@ namespace ExecutionContext {
         call_context: model.CallContext*,
         starknet_contract_address: felt,
         evm_contract_address: felt,
+        origin: felt,
         gas_limit: felt,
         gas_price: felt,
         calling_context: model.ExecutionContext*,
@@ -125,6 +128,7 @@ namespace ExecutionContext {
             gas_price=gas_price,
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=evm_contract_address,
+            origin=origin,
             calling_context=calling_context,
             sub_context=sub_context,
             destroy_contracts_len=0,
@@ -222,6 +226,7 @@ namespace ExecutionContext {
             gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            origin=self.origin,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
@@ -267,6 +272,7 @@ namespace ExecutionContext {
             gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            origin=self.origin,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
@@ -458,6 +464,7 @@ namespace ExecutionContext {
             gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            origin=self.origin,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
@@ -493,6 +500,7 @@ namespace ExecutionContext {
             gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            origin=self.origin,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
@@ -534,6 +542,7 @@ namespace ExecutionContext {
             gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            origin=self.origin,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
@@ -569,6 +578,7 @@ namespace ExecutionContext {
             gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            origin=self.origin,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
@@ -604,6 +614,7 @@ namespace ExecutionContext {
             gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            origin=self.origin,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
@@ -639,6 +650,7 @@ namespace ExecutionContext {
             gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            origin=self.origin,
             calling_context=self.calling_context,
             sub_context=sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
@@ -675,6 +687,7 @@ namespace ExecutionContext {
             gas_price=self.gas_price,
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=evm_contract_address,
+            origin=self.origin,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
@@ -715,6 +728,7 @@ namespace ExecutionContext {
             gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            origin=self.origin,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len + destroy_contracts_len,
@@ -757,6 +771,7 @@ namespace ExecutionContext {
             gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            origin=self.origin,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
@@ -791,6 +806,7 @@ namespace ExecutionContext {
             gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            origin=self.origin,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
@@ -826,6 +842,7 @@ namespace ExecutionContext {
             gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            origin=self.origin,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len + 1,
@@ -862,6 +879,7 @@ namespace ExecutionContext {
             gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            origin=self.origin,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
@@ -917,6 +935,7 @@ namespace ExecutionContext {
             gas_price=self.gas_price,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            origin=self.origin,
             calling_context=self.calling_context,
             sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,

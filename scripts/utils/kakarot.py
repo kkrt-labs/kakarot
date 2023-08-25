@@ -132,6 +132,7 @@ def _wrap_kakarot(fun: str):
         if abi["stateMutability"] == "view":
             kakarot_contract = await _get_starknet_contract("kakarot")
             result = await kakarot_contract.functions["eth_call"].call(
+                origin=int(EVM_ADDRESS, 16),
                 to=int(self.address, 16),
                 gas_limit=gas_limit,
                 gas_price=gas_price,
