@@ -4,6 +4,7 @@ import pytest
 from starkware.starknet.testing.contract import StarknetContract
 
 from tests.utils.helpers import hex_string_to_bytes_array
+from tests.utils.uint256 import uint256_to_int
 
 logger = logging.getLogger()
 
@@ -11,9 +12,6 @@ logger = logging.getLogger()
 @pytest.mark.asyncio
 @pytest.mark.EF_TEST
 class TestSha3:
-    @pytest.mark.skip(
-        "TODO: need to fix when return_data is shorter than retSize in CallHelper.finalize_calling_context"
-    )
     async def test_sha3_d0g0v0_Shanghai(
         self,
         owner,
@@ -24,6 +22,9 @@ class TestSha3:
         caller_contract = await create_account_with_bytecode(
             "0x604060206010600f6000600435610100016001600003f100"
         )
+
+        # this is derived from https://github.com/ethereum/tests/blob/develop/src/GeneralStateTestsFiller/VMTests/vmTests/sha3Filler.yml#L313
+        expected_sha3 = 0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470
 
         res = await kakarot.eth_send_transaction(
             origin=int(owner.address, 16),
@@ -38,5 +39,7 @@ class TestSha3:
                 f"0x693c6139{int(called_contract.evm_contract_address, 16) - 0x100:064x}"
             ),
         ).execute(caller_address=owner.starknet_address)
-        sha3 = called_contract.storage(0).call()
-        assert res == sha3
+        sha3 = await called_contract.storage((0, 0)).call()
+        actual_sha3 = uint256_to_int(sha3.result.value.low, sha3.result.value.high)
+
+        assert expected_sha3 == actual_sha3

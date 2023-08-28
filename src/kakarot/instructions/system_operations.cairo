@@ -452,6 +452,7 @@ namespace CallHelper {
         // During teardown we update the memory using this offset
         let return_data: felt* = alloc();
         assert [return_data] = ret_offset;
+        Helpers.fill(ret_size, return_data+1, 0);
 
         // Load calldata from Memory
         let (calldata: felt*) = alloc();
@@ -584,12 +585,16 @@ namespace CallHelper {
 
         let stack = Stack.push(ctx.stack, status);
         let ctx = ExecutionContext.update_stack(ctx, stack);
+        // in the case that the return data is empty, we use `slice_data` 
+        // to give us a zero padded array
+        let return_data_len = ctx.sub_context.return_data_len;
+        let return_data = Helpers.slice_data(return_data_len, ctx.sub_context.return_data, 0, return_data_len);
 
         // ret_offset, see prepare_args
         let memory = Memory.store_n(
             ctx.memory,
-            ctx.sub_context.return_data_len,
-            ctx.sub_context.return_data,
+            return_data_len,
+            return_data,
             [ctx.sub_context.return_data - 1],
         );
 
