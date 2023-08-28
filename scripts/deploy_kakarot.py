@@ -1,5 +1,6 @@
 # %% Imports
 import logging
+import os
 from asyncio import run
 
 from scripts.constants import (
@@ -64,7 +65,7 @@ async def main():
         deployments["blockhash_registry"]["address"],  # blockhash_registry address
     )
 
-    if NETWORK["name"] in ["madara", "katana", "custom_rpc"]:
+    if NETWORK["name"] in ["madara", "katana", os.getenv("RPC_NAME", "custom-rpc")]:
         deployments["deployer_account"] = await deploy_starknet_account(
             class_hash["OpenzeppelinAccount"], private_key=DEPLOYER_ACCOUNT_PRIVATE_KEY
         )

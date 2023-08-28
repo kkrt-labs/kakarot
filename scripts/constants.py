@@ -86,7 +86,7 @@ if os.getenv("STARKNET_NETWORK") is not None:
         )
 else:
     NETWORK = {
-        "name": "custom_rpc",
+        "name": os.getenv("RPC_NAME", "custom-rpc"),
         "rpc_url": os.getenv("RPC_URL"),
         "explorer_url": "",
         "devnet": False,
