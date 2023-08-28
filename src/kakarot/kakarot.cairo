@@ -6,6 +6,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.alloc import alloc
+from starkware.starknet.common.syscalls import get_caller_address
 
 // Local dependencies
 from kakarot.library import Kakarot
