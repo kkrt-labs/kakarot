@@ -156,14 +156,9 @@ func eth_call{
 @external
 func eth_send_transaction{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(
-    to: felt,
-    gas_limit: felt,
-    gas_price: felt,
-    value: felt,
-    data_len: felt,
-    data: felt*,
-) -> (return_data_len: felt, return_data: felt*) {
+}(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
+    return_data_len: felt, return_data: felt*
+) {
     alloc_locals;
     let (local starknet_caller_address) = get_caller_address();
     let (local origin) = IAccount.get_evm_address(starknet_caller_address);

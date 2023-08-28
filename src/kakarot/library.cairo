@@ -417,7 +417,6 @@ namespace Kakarot {
         return ();
     }
 
-
     // @notice Since it's possible in starknet to send a transcation to a @view entrypoint, this
     //         ensures that there is no ongoing transaction (so it's really a view call).
     // @dev Raise if tx_info.account_contract_address is not 0
