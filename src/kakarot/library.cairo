@@ -417,24 +417,6 @@ namespace Kakarot {
         return ();
     }
 
-    // @notice Assert that the calling starknet contract is consistent with the provided
-    //         origin of eth_call, ie that it's corresponding evm address is actually the provided origin
-    // @dev Raise if the calling contract tries to impersonate an EVM address
-    func assert_caller_is_origin{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(origin: felt) {
-        alloc_locals;
-        let (local starknet_caller_address) = get_caller_address();
-        let (local evm_caller_address) = IAccount.get_evm_address(starknet_caller_address);
-        with_attr error_message("Kakarot: caller contract is not consistent with from tx field") {
-            assert origin = evm_caller_address;
-        }
-
-        return ();
-    }
 
     // @notice Since it's possible in starknet to send a transcation to a @view entrypoint, this
     //         ensures that there is no ongoing transaction (so it's really a view call).

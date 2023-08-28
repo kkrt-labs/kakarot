@@ -157,7 +157,6 @@ func eth_call{
 func eth_send_transaction{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
-    origin: felt,
     to: felt,
     gas_limit: felt,
     gas_price: felt,
@@ -165,7 +164,9 @@ func eth_send_transaction{
     data_len: felt,
     data: felt*,
 ) -> (return_data_len: felt, return_data: felt*) {
+    alloc_locals;
+    let (local starknet_caller_address) = get_caller_address();
+    let (local origin) = IAccount.get_evm_address(starknet_caller_address);
     Kakarot.assert_caller_is_kakarot_account();
-    Kakarot.assert_caller_is_origin(origin);
     return Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
 }
