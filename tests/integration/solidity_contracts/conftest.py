@@ -5,11 +5,11 @@ from starkware.starknet.core.os.contract_address.contract_address import (
     calculate_contract_address_from_hash,
 )
 from starkware.starknet.testing.contract import StarknetContract
+from starkware.starknet.testing.contract_utils import gather_deprecated_compiled_class
 from web3 import Web3
 
 from tests.utils.contracts import get_contract, use_kakarot_backend
-from tests.utils.helpers import hex_string_to_bytes_array
-from tests.utils.reporting import traceit
+from tests.utils.helpers import generate_random_private_key, hex_string_to_bytes_array
 
 logger = logging.getLogger()
 
@@ -64,7 +64,48 @@ def get_solidity_contract(starknet, contract_account_class, kakarot):
 
 
 @pytest.fixture(scope="package")
-def deploy_solidity_contract(kakarot, get_solidity_contract):
+def deploy_bytecode(kakarot, deploy_eoa):
+    """
+    Fixture to deploy a bytecode in kakarot. Returns the EVM address of the deployed contract,
+    the corresponding starknet address and the starknet transaction.
+    """
+
+    async def _factory(bytecode: str, caller_eoa=None):
+        """
+        This factory is what is actually returned by pytest when requesting the `deploy_bytecode`
+        fixture.
+        """
+        if caller_eoa is None:
+            caller_eoa = await deploy_eoa(
+                generate_random_private_key(int(bytecode, 16))
+            )
+
+        tx = await kakarot.eth_send_transaction(
+            origin=int(caller_eoa.address, 16),
+            to=0,
+            gas_limit=1_000_000,
+            gas_price=0,
+            value=0,
+            data=hex_string_to_bytes_array(bytecode),
+        ).execute(caller_address=caller_eoa.starknet_address)
+
+        deploy_event = [
+            e
+            for e in tx.main_call_events
+            if type(e).__name__ == "evm_contract_deployed"
+        ][0]
+
+        starknet_contract_address = deploy_event.starknet_contract_address
+        evm_contract_address = Web3.to_checksum_address(
+            f"{deploy_event.evm_contract_address:040x}"
+        )
+        return evm_contract_address, starknet_contract_address, tx
+
+    return _factory
+
+
+@pytest.fixture(scope="package")
+def deploy_solidity_contract(deploy_bytecode, get_solidity_contract):
     """
     Fixture to deploy a solidity contract in kakarot. The returned contract is a modified
     web3.contract instance with an added `contract_account` attribute that return the actual
@@ -83,33 +124,10 @@ def deploy_solidity_contract(kakarot, get_solidity_contract):
         is required and filtered out before calling the constructor.
         """
         contract = get_contract(contract_app, contract_name)
-        if "caller_eoa" not in kwargs:
-            raise ValueError(
-                "caller_eoa needs to be given in kwargs for deploying the contract"
-            )
-        caller_eoa = kwargs["caller_eoa"]
-        del kwargs["caller_eoa"]
-        deploy_bytecode = hex_string_to_bytes_array(
-            contract.constructor(*args, **kwargs).data_in_transaction
-        )
-        with traceit.context(contract_name):
-            tx = await kakarot.eth_send_transaction(
-                origin=int(caller_eoa.address, 16),
-                to=0,
-                gas_limit=1_000_000,
-                gas_price=0,
-                value=0,
-                data=deploy_bytecode,
-            ).execute(caller_address=caller_eoa.starknet_address)
-
-        deploy_event = [
-            e
-            for e in tx.main_call_events
-            if type(e).__name__ == "evm_contract_deployed"
-        ][0]
-        starknet_contract_address = deploy_event.starknet_contract_address
-        evm_contract_address = Web3.to_checksum_address(
-            f"{deploy_event.evm_contract_address:040x}"
+        caller_eoa = kwargs.pop("caller_eoa", None)
+        evm_contract_address, starknet_contract_address, tx = await deploy_bytecode(
+            contract.constructor(*args, **kwargs).data_in_transaction,
+            caller_eoa,
         )
         return get_solidity_contract(
             contract_app,
@@ -118,5 +136,49 @@ def deploy_solidity_contract(kakarot, get_solidity_contract):
             evm_contract_address,
             tx,
         )
+
+    return _factory
+
+
+@pytest.fixture(scope="package")
+def create_account_with_bytecode(starknet, kakarot, deploy_bytecode, deploy_eoa):
+    """
+    Fixture to create a solidity contract in kakarot without running the bytecode.
+    The given bytecode is directly stored into the account, similarly to what is done
+    in a genesis config.
+
+    Returns the corresponding starknet contract with the extra evm_contract_address attribute.
+    """
+
+    async def _factory(bytecode: str, caller_eoa=None):
+        """
+        This factory is what is actually returned by pytest when requesting the `create_account_with_bytecode`
+        fixture.
+        """
+        if caller_eoa is None:
+            caller_eoa = await deploy_eoa(
+                generate_random_private_key(int(bytecode, 16))
+            )
+
+        evm_contract_address, starknet_contract_address, _ = await deploy_bytecode(
+            "",
+            caller_eoa,
+        )
+        contract_class = gather_deprecated_compiled_class(
+            source="./src/kakarot/accounts/contract/contract_account.cairo",
+            cairo_path=["src"],
+            disable_hint_validation=True,
+        )
+        contract = StarknetContract(
+            starknet.state,
+            contract_class.abi,
+            starknet_contract_address,
+            None,
+        )
+        await contract.write_bytecode(hex_string_to_bytes_array(bytecode)).execute(
+            caller_address=kakarot.contract_address
+        )
+        setattr(contract, "evm_contract_address", evm_contract_address)
+        return contract
 
     return _factory

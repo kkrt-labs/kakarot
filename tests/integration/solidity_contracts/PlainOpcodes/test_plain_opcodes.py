@@ -178,7 +178,7 @@ class TestPlainOpcodes:
             evm_addresses = await plain_opcodes.create(
                 bytecode=counter.constructor().data_in_transaction,
                 count=count,
-                caller_address=plain_opcodes_deployer.starknet_address,
+                caller_address=plain_opcodes_deployer,
             )
             assert len(evm_addresses) == count
             for evm_address in evm_addresses:

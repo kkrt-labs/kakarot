@@ -360,12 +360,6 @@ namespace Kakarot {
             assert success = TRUE;
         }
 
-        // TODO: add check that target contract does not exist or has empty bytecode
-        if (data_len == 0) {
-            let (return_data) = alloc();
-            return (0, return_data);
-        }
-
         if (to == 0) {
             with_attr error_message("Kakarot: value should be 0 when deploying a contract") {
                 assert value = 0;
