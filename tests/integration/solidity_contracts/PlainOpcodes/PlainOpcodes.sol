@@ -151,4 +151,8 @@ contract PlainOpcodes {
             loopValue += 1;
         }
     }
+
+    function sendSome(address payable to, uint amount) public {
+        to.send(amount);
+    }
 }
