@@ -12,9 +12,8 @@ with the project.
 To get started on Kakarot, you'll need python3.9, as well as Starknet-related
 libraries, e.g. `cairo-lang`.
 
-- Follow
-  [Starknet's install tutorial](https://www.cairo-lang.org/docs/quickstart.html).
-- Install [poetry](https://python-poetry.org/docs/).
+- Install [poetry](https://python-poetry.org/docs/)
+- Note you may need to run `curl -sSL https://install.python-poetry.org | python3.9 -` and not `curl -sSL https://install.python-poetry.org | python3 -` in order to force poetry to install itself on python3.9, just in case you have both python version 3.9 and 3.10 in your path.
 
 #### Install foundry
 
@@ -48,7 +47,7 @@ To set up a development environment, please follow these steps:
 1. Clone the repo
 
    ```sh
-   git clone https://github.com/sayajin-labs/kakarot
+   git clone https://github.com/kkrt-labs/kakarot
    ```
 
 2. Install dependencies
@@ -67,7 +66,7 @@ To set up a development environment, please follow these steps:
 
 You've found a bug in the source code, a mistake in the documentation or maybe
 you'd like a new feature? You can help us by
-[submitting an issue on GitHub](https://github.com/sayajin-labs/kakarot/issues/new/choose).
+[submitting an issue on GitHub](https://github.com/kkrt-labs/kakarot/issues/new/choose).
 Before you create an issue, make sure to search the issue archive -- your issue
 may have already been addressed!
 
@@ -84,7 +83,7 @@ Please try to create bug reports that are:
 ### How to submit a Pull Request
 
 1. Search our repository for open or closed
-   [Pull Requests](https://github.com/sayajin-labs/kakarot/pulls) that relate to
+   [Pull Requests](https://github.com/kkrt-labs/kakarot/pulls) that relate to
    your submission. You don't want to duplicate effort.
 2. Fork the project
 3. **Enable workflows** so CI can add an auto-commit during format checks
@@ -92,4 +91,4 @@ Please try to create bug reports that are:
 4. Create your feature branch (`git checkout -b feat/amazing_feature`)
 5. Add, then commit your changes (`git commit -m 'feat: add amazing_feature'`)
 6. Push to the branch (`git push origin feat/amazing_feature`)
-7. [Open a Pull Request](https://github.com/sayajin-labs/kakarot/compare?expand=1)
+7. [Open a Pull Request](https://github.com/kkrt-labs/kakarot/compare?expand=1)
