@@ -763,10 +763,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "Origin Address",
-        "marks": [
-            pytest.mark.ORIGIN,
-            pytest.mark.EnvironmentalInformation
-        ],
+        "marks": [pytest.mark.ORIGIN, pytest.mark.EnvironmentalInformation],
     },
     {
         "params": {

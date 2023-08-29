@@ -289,3 +289,15 @@ class TestPlainOpcodes:
         ):
             await plain_opcodes.testLoop(steps, caller_address=plain_opcodes_deployer)
             assert await plain_opcodes.loopValue() == steps
+
+    class TestTransfer:
+        @pytest.mark.skip(
+            "EOA execution flow incorrectly dispatches to `CreateHelper.finalize_calling_context`"
+            "See issue https://github.com/kkrt-labs/kakarot/issues/696"
+        )
+        async def test_send_some_should_send(
+            self, plain_opcodes, plain_opcodes_deployer, addresses
+        ):
+            await plain_opcodes.sendSome(
+                addresses[2].address, 0, caller_address=plain_opcodes_deployer
+            )
