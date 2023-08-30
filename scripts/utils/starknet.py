@@ -117,11 +117,11 @@ async def get_starknet_account(
     )
 
 
-async def get_eth_contract() -> Contract:
+async def get_eth_contract(provider=None) -> Contract:
     return Contract(
         ETH_TOKEN_ADDRESS,
         json.loads((Path("scripts") / "utils" / "erc20.json").read_text())["abi"],
-        await get_starknet_account(),
+        provider or await get_starknet_account(),
     )
 
 
@@ -133,7 +133,9 @@ async def get_contract(contract_name, address=None, provider=None) -> Contract:
     )
 
 
-async def fund_address(address: Union[int, str], amount: float):
+async def fund_address(
+    address: Union[int, str], amount: float, funding_account=None, token_contract=None
+):
     """
     Fund a given starknet address with {amount} ETH
     """
@@ -148,8 +150,8 @@ async def fund_address(address: Union[int, str], amount: float):
             logger.error(f"Cannot mint token to {address}: {response.text}")
         logger.info(f"{amount / 1e18} ETH minted to {hex(address)}")
     else:
-        account = await get_starknet_account()
-        eth_contract = await get_eth_contract()
+        account = funding_account or await get_starknet_account()
+        eth_contract = token_contract or await get_eth_contract()
         balance = (await eth_contract.functions["balanceOf"].call(account.address)).balance  # type: ignore
         if balance < amount:
             raise ValueError(

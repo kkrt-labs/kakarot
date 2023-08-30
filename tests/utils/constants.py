@@ -1,10 +1,10 @@
 CHAIN_ID = 1263227476  # KKRT (0x4b4b5254) in ASCII
 
 # Deployment fee to be returned to the deployer of the account
-DEPLOY_FEE = 10000
+DEPLOY_FEE = int(1e15)  # 0.001 ETH
 
 # Amount of funds to pre-fund the account with
-PRE_FUND_AMOUNT = int(1e9)
+PRE_FUND_AMOUNT = int(1e17)  # 0.01 ETH
 
 # Account balance is the amount of funds that the account has after being deployed
 ACCOUNT_BALANCE = PRE_FUND_AMOUNT - DEPLOY_FEE
