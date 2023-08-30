@@ -21,10 +21,6 @@ from starkware.cairo.common.hash_state import (
 from kakarot.constants import Constants, account_proxy_class_hash
 from kakarot.interfaces.interfaces import IAccount
 
-@storage_var
-func nonce() -> (nonce: felt) {
-}
-
 @event
 func evm_contract_deployed(evm_contract_address: felt, starknet_contract_address: felt) {
 }

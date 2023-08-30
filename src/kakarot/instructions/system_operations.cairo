@@ -816,11 +816,13 @@ namespace CreateHelper {
         // so we use popped_len to derive the way we should handle
         // the creation of evm addresses
         if (popped_len != 4) {
-            let (tx_info) = get_tx_info();
+            let (nonce) = IContractAccount.get_nonce(ctx.starknet_contract_address);
 
             let (evm_contract_address) = CreateHelper.get_create_address(
-                ctx.evm_contract_address, tx_info.nonce
+                ctx.evm_contract_address, nonce
             );
+
+            let (nonce) = IContractAccount.increment_nonce(ctx.starknet_contract_address);
 
             let (contract_account_class_hash_) = contract_account_class_hash.read();
             let (starknet_contract_address) = Accounts.create(
