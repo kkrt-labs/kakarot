@@ -25,6 +25,27 @@ def hex_string_to_bytes_array(h: str):
     return [int(b, 16) for b in wrap(h, 2)]
 
 
+def hex_string_to_uint256(h: str):
+    if len(h) % 2 != 0:
+        raise ValueError(f"Provided string has an odd length {len(h)}")
+
+    # Remove '0x' prefix if present
+    if h[:2] == "0x":
+        h = h[2:]
+
+    # Convert hex string directly to an integer
+    value = int(h, 16)
+
+    # Make sure integer doesn't exceed 256 bits
+    if value >= (1 << 256):
+        raise ValueError("Integer value overflowed 256 bits")
+
+    # Split integer into low and high parts
+    low = value & ((1 << 128) - 1)
+    high = value >> 128
+    return low, high
+
+
 def extract_memory_from_execute(result):
     mem = [0] * result.memory_bytes_len
     for i in range(0, len(result.memory_accesses), 3):

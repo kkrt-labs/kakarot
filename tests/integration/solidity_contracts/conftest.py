@@ -1,6 +1,7 @@
 import logging
 
 import pytest
+from typing import Dict
 from starkware.starknet.core.os.contract_address.contract_address import (
     calculate_contract_address_from_hash,
 )
@@ -9,7 +10,11 @@ from starkware.starknet.testing.contract_utils import gather_deprecated_compiled
 from web3 import Web3
 
 from tests.utils.contracts import get_contract, use_kakarot_backend
-from tests.utils.helpers import generate_random_private_key, hex_string_to_bytes_array
+from tests.utils.helpers import (
+    generate_random_private_key,
+    hex_string_to_bytes_array,
+    hex_string_to_uint256,
+)
 
 logger = logging.getLogger()
 
@@ -141,18 +146,20 @@ def deploy_solidity_contract(deploy_bytecode, get_solidity_contract):
 
 
 @pytest.fixture(scope="package")
-def create_account_with_bytecode(starknet, kakarot, deploy_bytecode, deploy_eoa):
+def create_account_with_bytecode_and_storage(
+    starknet, kakarot, deploy_bytecode, deploy_eoa
+):
     """
     Fixture to create a solidity contract in kakarot without running the bytecode.
-    The given bytecode is directly stored into the account, similarly to what is done
-    in a genesis config.
+    The given bytecode and storage are directly stored into the account, similarly to
+    what is done in a genesis config.
 
     Returns the corresponding starknet contract with the extra evm_contract_address attribute.
     """
 
-    async def _factory(bytecode: str, caller_eoa=None):
+    async def _factory(bytecode: str, storage: Dict[str, str], caller_eoa=None):
         """
-        This factory is what is actually returned by pytest when requesting the `create_account_with_bytecode`
+        This factory is what is actually returned by pytest when requesting the `create_account_with_bytecode_and_storage`
         fixture.
         """
         if caller_eoa is None:
@@ -175,9 +182,16 @@ def create_account_with_bytecode(starknet, kakarot, deploy_bytecode, deploy_eoa)
             starknet_contract_address,
             None,
         )
+
         await contract.write_bytecode(hex_string_to_bytes_array(bytecode)).execute(
             caller_address=kakarot.contract_address
         )
+
+        for key, value in storage.items():
+            await contract.write_storage(
+                hex_string_to_uint256(key), hex_string_to_uint256(value)
+            ).execute(caller_address=kakarot.contract_address)
+
         setattr(contract, "evm_contract_address", evm_contract_address)
         return contract
 

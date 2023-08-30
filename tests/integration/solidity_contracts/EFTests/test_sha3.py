@@ -17,12 +17,14 @@ class TestSha3:
     async def test_sha3_d0g0v0_Shanghai(
         self,
         owner,
-        create_account_with_bytecode,
+        create_account_with_bytecode_and_storage,
         kakarot: StarknetContract,
     ):
-        called_contract = await create_account_with_bytecode("0x600060002060005500")
-        caller_contract = await create_account_with_bytecode(
-            "0x604060206010600f6000600435610100016001600003f100"
+        called_contract = await create_account_with_bytecode_and_storage(
+            "0x600060002060005500", {}
+        )
+        caller_contract = await create_account_with_bytecode_and_storage(
+            "0x604060206010600f6000600435610100016001600003f100", {}
         )
 
         res = await kakarot.eth_send_transaction(
