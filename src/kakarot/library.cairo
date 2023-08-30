@@ -392,49 +392,30 @@ namespace Kakarot {
         }
     }
 
-    // @notice Assert that the calling contract is a Kakarot account, ie. that it has been
-    //         deployed by kakarot. This is currently required to make sure that evm and
-    //         starknet addresses remain consistents along an execution
+    // @notice returns the EVM address associated to a Starknet account deployed by kakarot. 
+    //         Prevents cases where some Starknet account has an entrypoint get_evm_address() 
+    //         but isn't part of Kakarot system
     // @dev Raise if the declared corresponding evm address (retrieved with get_evm_address)
-    //      does not lead to the actual caller address
-    func assert_caller_is_kakarot_account{
+    //      does not recomputes into to the actual caller address
+    func safe_get_evm_address{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }() {
+    }(starknet_address: felt) -> (evm_address: felt) {
         alloc_locals;
-        let (local starknet_caller_address) = get_caller_address();
-        let (local evm_caller_address) = IAccount.get_evm_address(starknet_caller_address);
+        let (local evm_address) = IAccount.get_evm_address(starknet_address);
         let (local computed_starknet_address) = Accounts.compute_starknet_address(
-            evm_caller_address
+            evm_address
         );
 
         with_attr error_message("Kakarot: caller contract is not a Kakarot Account") {
-            assert computed_starknet_address = starknet_caller_address;
+            assert computed_starknet_address = starknet_address;
         }
 
-        return ();
+        return (evm_address=evm_address);
     }
 
-    // @notice Assert that the calling starknet contract is consistent with the provided
-    //         origin of eth_call, ie that it's corresponding evm address is actually the provided origin
-    // @dev Raise if the calling contract tries to impersonate an EVM address
-    func assert_caller_is_origin{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(origin: felt) {
-        alloc_locals;
-        let (local starknet_caller_address) = get_caller_address();
-        let (local evm_caller_address) = IAccount.get_evm_address(starknet_caller_address);
-        with_attr error_message("Kakarot: caller contract is not consistent with from tx field") {
-            assert origin = evm_caller_address;
-        }
-
-        return ();
-    }
 
     // @notice Since it's possible in starknet to send a transcation to a @view entrypoint, this
     //         ensures that there is no ongoing transaction (so it's really a view call).

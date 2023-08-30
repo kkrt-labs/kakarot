@@ -6,6 +6,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.alloc import alloc
+from starkware.starknet.common.syscalls import get_caller_address
 
 // Local dependencies
 from kakarot.library import Kakarot
@@ -13,6 +14,7 @@ from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.memory import Memory
 from kakarot.accounts.library import Accounts
+from kakarot.interfaces.interfaces import IAccount
 
 // Constructor
 @constructor
@@ -144,7 +146,6 @@ func eth_call{
 // @notice The eth_send_transaction function as described in the spec,
 //         see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_sendtransaction
 // @dev "nonce" parameter is taken from the corresponding account contract
-// @param origin The address the transaction is sent from.
 // @param to The address the transaction is directed to.
 // @param gas_limit Integer of the gas provided for the transaction execution
 // @param gas_price Integer of the gas price used for each paid gas
@@ -157,7 +158,6 @@ func eth_call{
 func eth_send_transaction{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
-    origin: felt,
     to: felt,
     gas_limit: felt,
     gas_price: felt,
@@ -165,7 +165,8 @@ func eth_send_transaction{
     data_len: felt,
     data: felt*,
 ) -> (return_data_len: felt, return_data: felt*) {
-    Kakarot.assert_caller_is_kakarot_account();
-    Kakarot.assert_caller_is_origin(origin);
+    alloc_locals;
+    let (local starknet_caller_address) = get_caller_address();
+    let (local origin) =  Kakarot.safe_get_evm_address(starknet_caller_address);
     return Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
 }

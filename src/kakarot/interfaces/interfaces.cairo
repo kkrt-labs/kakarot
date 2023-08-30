@@ -102,7 +102,6 @@ namespace IKakarot {
     }
 
     func eth_send_transaction(
-        origin: felt,
         to: felt,
         gas_limit: felt,
         gas_price: felt,
