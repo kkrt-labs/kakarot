@@ -51,20 +51,19 @@ precompiles.
 
 ![](docs/img/architecture.png)
 
-- ✅ Kakarot is a smart contract, deployed on Starknet (goerli). It is written
-  in Cairo.
+- ✅ Kakarot is a set of Cairo programs, deployable on any chain that runs the
+  CairoVM as runtime.
 
 - ✅ Kakarot can: (a) execute arbitrary EVM bytecode, (b) deploy an EVM smart
   contract as is, (c) call a Kakarot-deployed EVM smart contract's functions
   (views and write methods).
 
-- ✅ Kakarot is an EVM bytecode interpreter.
+- ✅ Kakarot is an EVM implementation.
 
-- ❌ Kakarot is not a blockchain.
+- ❌ Kakarot is not a blockchain by itself. It still needs a chain that runs the
+  CairoVM to be deployed.
 
-- ❌ Kakarot is not a compiler. Check out
-  [Warp](https://github.com/NethermindEth/warp) for a Solidity -> Cairo
-  transpiler
+- ❌ Kakarot is not a compiler.
 
 <!-- TODO: Add updated sequence diagram for different operations on Kakarot when it is up-to-date
 ### Main execution flow
@@ -124,6 +123,15 @@ Otherwise, you can proceed with a regular installation on your host:
 # install poetry if you don't have it already
 # curl -sSL https://install.python-poetry.org | python3 -
 make setup
+```
+
+Note that you may need to symlink `starknet-compile-deprecated` (new name of the
+starknet-compile binary) to `starknet-compile` in order to make the CairoLS
+VSCode extension work:
+
+```bash
+ln -s <YOUR_PATH_TO_YOUR_PYTHON_VENV_BINARIES>/starknet-compile-deprecated <YOUR_PATH_TO_LOCAL_BINARIES>/starknet-compile
+# example: ln -s /Users/eliastazartes/code/kakarot/.venv/bin/starknet-compile-deprecated /usr/local/bin/starknet-compile
 ```
 
 ## Build
@@ -268,7 +276,6 @@ some more insight on the inside of this zkEVM. The legend can be found
 [here](https://github.com/FuzzingLabs/thoth/blob/master/images/callgraph_legend.png).
 You can use [this tool](https://dreampuf.github.io/GraphvizOnline/) to visualize
 the .gv files online.
-
 
 ## Contributing
 
