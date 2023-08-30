@@ -1,6 +1,5 @@
 # %% Imports
 import logging
-from asyncio import run
 from datetime import datetime
 
 from scripts.constants import COMPILED_CONTRACTS, NETWORK
@@ -12,7 +11,7 @@ logger.setLevel(logging.INFO)
 
 
 # %% Main
-async def main():
+def main():
     # %% Compile
     logger.info(f"ℹ️  Compiling contracts for network {NETWORK['name']}")
     initial_time = datetime.now()
@@ -26,4 +25,4 @@ async def main():
 
 # %% Run
 if __name__ == "__main__":
-    run(main())
+    main()
