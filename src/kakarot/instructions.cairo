@@ -7,7 +7,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.invoke import invoke
 from starkware.cairo.common.math import assert_nn
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_le, is_not_zero
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.registers import get_ap
@@ -630,10 +630,18 @@ namespace EVMInstructions {
                 let (bytecode_len) = IAccount.bytecode_len(
                     contract_address=ctx.starknet_contract_address
                 );
+
+                let has_return_data = is_not_zero(ctx.return_data_len);
+                let has_empty_return_data = (1 - has_return_data);
+
                 let is_eao = ExecutionContext.is_caller_eoa(self=ctx);
-                // If the starknet contract of the execution context has no bytecode and is not an EOA,
-                // then it means we are at the end of a CREATE/CREATE2 opcode.
-                if (bytecode_len + is_eao == 0) {
+
+                // If the starknet contract of the execution context has
+                // no bytecode,
+                // is not an EOA,
+                // and has an empty return data
+                // then we treat it as at the end of a CREATE/CREATE2 opcode.
+                if (bytecode_len + is_eao + has_empty_return_data == 0) {
                     let ctx = CreateHelper.finalize_calling_context(ctx);
                     return run(ctx=ctx);
                 } else {
