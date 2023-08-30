@@ -234,6 +234,8 @@ def is_fixture_contract(contract_name):
 
 
 def compile_contract(contract):
+    logger.info(f"⏳ Compiling {contract['contract_name']}")
+    start = datetime.now()
     is_fixture = is_fixture_contract(contract["contract_name"])
     contract_build_path = get_artifact(contract["contract_name"])
 
@@ -284,10 +286,11 @@ def compile_contract(contract):
         ),
         indent=2,
     )
+    elapsed = datetime.now() - start
+    logger.info(f"✅ Compiled in {elapsed.total_seconds():.2f}s")
 
 
 async def deploy_starknet_account(class_hash, private_key=None, amount=1) -> Account:
-
     salt = random.randint(0, 2**251)
     private_key = private_key or NETWORK["private_key"]
     if private_key is None:
