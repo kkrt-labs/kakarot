@@ -639,7 +639,7 @@ namespace EVMInstructions {
                 // If the starknet contract of the execution context has
                 // no bytecode,
                 // is not an EOA,
-                // and has an empty return data
+                // and has return data
                 // then we treat it as at the end of a CREATE/CREATE2 opcode.
                 if (bytecode_len + is_eao + has_empty_return_data == 0) {
                     let ctx = CreateHelper.finalize_calling_context(ctx);
