@@ -6,6 +6,7 @@ from typing import Tuple, Union, cast
 
 import toml
 from eth_account import Account as EvmAccount
+from eth_keys import keys
 from eth_utils.address import to_checksum_address
 from hexbytes import HexBytes
 from starknet_py.net.account.account import Account
@@ -173,19 +174,25 @@ async def _contract_exists(address: int) -> bool:
         return False
 
 
-async def get_eoa(address=None, private_key=None, amount=0.1) -> Account:
-    address = int(address or EVM_ADDRESS, 16)
-    private_key = int(private_key or EVM_PRIVATE_KEY, 16)
+async def get_eoa(private_key=None, amount=0.1) -> Account:
+    private_key = private_key or keys.PrivateKey(bytes.fromhex(EVM_PRIVATE_KEY[2:]))
 
-    starknet_address = await _get_starknet_address(address)
+    starknet_address = await _get_starknet_address(
+        private_key.public_key.to_checksum_address()
+    )
     if not await _contract_exists(starknet_address):
-        await deploy_and_fund_evm_address(hex(address), amount)
+        await deploy_and_fund_evm_address(
+            private_key.public_key.to_checksum_address(), amount
+        )
 
     return Account(
         address=starknet_address,
         client=CLIENT,
         chain=NETWORK["chain_id"],
-        key_pair=KeyPair(private_key, address),
+        # This is somehow a hack because we put EVM private key into a
+        # Stark signer KeyPair to have both a regular Starknet account
+        # and the access to the private key
+        key_pair=KeyPair(private_key, private_key.public_key),
     )
 
 
