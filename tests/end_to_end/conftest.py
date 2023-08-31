@@ -46,9 +46,7 @@ def starknet():
     # STARKNET_NETWORK env variable, so we just do this.
     # We could also add a pytest flag --no-deploy in case we want to be able to re-run easily tests
     # without unnecessarily redeploying everything
-    deploy = subprocess.run(
-        ["make", "deploy"], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
-    )
+    deploy = subprocess.run(["make", "deploy"])
     deploy.check_returncode()
     return RPC_CLIENT
 

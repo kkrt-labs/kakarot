@@ -74,3 +74,9 @@ build-sol:
 run:
 	mkdir -p deployments/starknet-devnet
 	poetry run starknet-devnet --lite-mode --seed 0 --dump-on exit --dump-path deployments/starknet-devnet/devnet.pkl --disable-rpc-request-validation --timeout 600
+
+install-katana:
+	cargo install --git https://github.com/dojoengine/dojo katana@0.2.1
+
+run-katana:
+	katana --validate-max-steps 16777216 --invoke-max-steps 16777216
