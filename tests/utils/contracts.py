@@ -90,8 +90,7 @@ def use_kakarot_backend(contract: Contract, kakarot: StarknetContract):
             caller_starknet_address = (
                 caller_address.starknet_address if caller_address is not None else 0
             )
-            call_kwargs = {
-                "origin": caller_evm_address,
+            invoke_kwargs = {
                 "to": int(self.address, 16),
                 "value": value,
                 "gas_limit": gas_limit,
@@ -99,11 +98,16 @@ def use_kakarot_backend(contract: Contract, kakarot: StarknetContract):
                 "data": hex_string_to_bytes_array(self.encodeABI(fun, args, kwargs)),
             }
 
+            call_kwargs = {
+                "origin": caller_evm_address,
+                **invoke_kwargs,
+            }
+
             if abi["stateMutability"] == "view":
                 prepared_call = kakarot.eth_call(**call_kwargs)
                 res = await prepared_call.call(caller_address=caller_starknet_address)
             else:
-                prepared_call = kakarot.eth_send_transaction(**call_kwargs)
+                prepared_call = kakarot.eth_send_transaction(**invoke_kwargs)
                 res = await prepared_call.execute(
                     caller_address=caller_starknet_address
                 )

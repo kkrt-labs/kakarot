@@ -5,10 +5,12 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.alloc import alloc
+from starkware.starknet.common.syscalls import get_caller_address
 
 from kakarot.accounts.library import Accounts
 from kakarot.constants import account_proxy_class_hash, externally_owned_account_class_hash
 from kakarot.library import native_token_address, Kakarot
+from kakarot.interfaces.interfaces import IAccount
 
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -82,7 +84,6 @@ func eth_call{
 func eth_send_transaction{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
-    origin: felt,
     to: felt,
     gas_limit: felt,
     gas_price: felt,
@@ -90,5 +91,8 @@ func eth_send_transaction{
     data_len: felt,
     data: felt*,
 ) -> (return_data_len: felt, return_data: felt*) {
+    alloc_locals;
+    let (local starknet_caller_address) = get_caller_address();
+    let (local origin) =  IAccount.get_evm_address(starknet_caller_address);
     return eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
 }
