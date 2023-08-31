@@ -5,7 +5,6 @@ from starknet_py.net.account.account import Account
 from starknet_py.net.client_models import TransactionStatus
 from starknet_py.net.full_node_client import FullNodeClient
 
-from scripts.utils.starknet import get_contract
 from tests.end_to_end.bytecodes import test_cases
 from tests.utils.constants import PRE_FUND_AMOUNT
 from tests.utils.helpers import (
@@ -24,6 +23,8 @@ async def evm():
     """
     Using a fixture with scope=session let us cache this function and make the test run faster
     """
+    from scripts.utils.starknet import get_contract
+
     return await get_contract("EVM")
 
 
@@ -101,7 +102,7 @@ class TestKakarot:
             fund_starknet_address,
             deploy_externally_owned_account,
             compute_starknet_address,
-            deployer,
+            get_contract,
         ):
             evm_address = generate_random_evm_address()
             starknet_address = await compute_starknet_address(evm_address)
@@ -109,9 +110,7 @@ class TestKakarot:
 
             await deploy_externally_owned_account(evm_address)
             eoa = await get_contract(
-                "externally_owned_account",
-                address=starknet_address,
-                provider=deployer,
+                "externally_owned_account", address=starknet_address
             )
             actual_evm_address = (
                 await eoa.functions["get_evm_address"].call()

@@ -10,14 +10,6 @@ from eth_utils.address import to_checksum_address
 from starknet_py.contract import Contract
 from starknet_py.net.account.account import Account
 
-from scripts.constants import RPC_CLIENT
-from scripts.utils.kakarot import get_eoa
-from scripts.utils.starknet import (
-    fund_address,
-    get_contract,
-    get_eth_contract,
-    get_starknet_account,
-)
 from tests.utils.helpers import generate_random_private_key
 
 logging.basicConfig()
@@ -38,16 +30,17 @@ def max_fee():
 
 @pytest.fixture(scope="session", autouse=True)
 def starknet():
-    # We want to keep the possibility to do:
-    # STARKNET_NETWORK=network pytest tests/end-to-end
-    # to run them against any given network
-    # We could run the network here instead of considering that it is already live though
-    # but at the time of this PR, there is no such command like `make run` depending on the
-    # STARKNET_NETWORK env variable, so we just do this.
-    # We could also add a pytest flag --no-deploy in case we want to be able to re-run easily tests
-    # without unnecessarily redeploying everything
-    deploy = subprocess.run(["make", "deploy"])
-    deploy.check_returncode()
+    """
+    End-to-end tests assume that there is already a "Starknet" network running
+    with kakarot deployed.
+    We return the RPC_CLIENT in a fixture to avoid importing in the test the scripts.utils
+    but gather instead in fixtures all the utils.
+
+    Since this `starknet` fixture is run before all the others, setting the STARKNET_NETWORK
+    environment variable here would effectively change the target network of the test suite.
+    """
+    from scripts.constants import RPC_CLIENT
+
     return RPC_CLIENT
 
 
@@ -59,6 +52,8 @@ async def addresses() -> List[Wallet]:
     - address: the hex string of the EVM address (20 bytes)
     - starknet_address: the corresponding address for starknet (same value but as int)
     """
+    from scripts.utils.kakarot import get_eoa
+
     wallets = []
     for i in range(2):
         private_key = generate_random_private_key(seed=i)
@@ -78,6 +73,8 @@ async def deployer() -> Account:
     Using a fixture with scope=session let us cache this function and make the test run faster
     """
 
+    from scripts.utils.starknet import get_starknet_account
+
     return await get_starknet_account()
 
 
@@ -86,6 +83,8 @@ async def eth(deployer) -> Contract:
     """
     Using a fixture with scope=session let us cache this function and make the test run faster
     """
+
+    from scripts.utils.starknet import get_eth_contract
 
     return await get_eth_contract(provider=deployer)
 
@@ -96,6 +95,8 @@ def fund_starknet_address(deployer, eth):
     Using a fixture with scope=session let us cache this function and make the test run faster
     """
 
+    from scripts.utils.starknet import fund_address
+
     return partial(fund_address, funding_account=deployer, token_contract=eth)
 
 
@@ -104,6 +105,8 @@ async def kakarot(deployer) -> Contract:
     """
     Using a fixture with scope=session let us cache this function and make the test run faster
     """
+    from scripts.utils.starknet import get_contract
+
     return await get_contract("kakarot", provider=deployer)
 
 
@@ -145,6 +148,23 @@ def deploy_externally_owned_account(kakarot: Contract, max_fee: int):
         )
         await tx.wait_for_acceptance()
         return tx
+
+    return _factory
+
+
+@pytest.fixture(scope="session")
+def get_contract(deployer):
+    """
+    A fixture just for easing the call and make the tests smaller
+    """
+    from scripts.utils.starknet import get_contract
+
+    async def _factory(contract_name, address=None, provider=deployer):
+        return await get_contract(
+            contract_name=contract_name,
+            address=address,
+            provider=provider,
+        )
 
     return _factory
 
