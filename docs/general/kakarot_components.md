@@ -4,7 +4,6 @@ The entire Kakarot protocol is composed of 4 different contracts:
 
 - Kakarot (Core)
 - Contract Accounts
-- Account Registry
 - Blockhash Registry
 
 ## Kakarot
