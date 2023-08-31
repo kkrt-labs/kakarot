@@ -6,7 +6,7 @@ from openzeppelin.access.ownable.library import Ownable
 
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.bool import FALSE, TRUE
+from starkware.cairo.common.bool import FALSE
 from starkware.starknet.common.syscalls import deploy as deploy_syscall
 from starkware.starknet.common.syscalls import get_contract_address
 from starkware.starknet.common.storage import normalize_address
@@ -20,10 +20,6 @@ from starkware.cairo.common.hash_state import (
 
 from kakarot.constants import Constants, account_proxy_class_hash
 from kakarot.interfaces.interfaces import IAccount
-
-@storage_var
-func is_evm_address_deployed_(evm_address: felt) -> (res: felt) {
-}
 
 @event
 func evm_contract_deployed(evm_contract_address: felt, starknet_contract_address: felt) {
@@ -82,11 +78,6 @@ namespace Accounts {
         let (kakarot_address: felt) = get_contract_address();
         let (_account_proxy_class_hash: felt) = account_proxy_class_hash.read();
         let (constructor_calldata: felt*) = alloc();
-        let (_is_evm_address_deployed: felt) = is_evm_address_deployed(evm_address);
-        if (_is_evm_address_deployed == TRUE) {
-            let (account_address) = compute_starknet_address(evm_address);
-            return (account_address=account_address);
-        }
         let (account_address) = deploy_syscall(
             _account_proxy_class_hash,
             contract_address_salt=evm_address,
@@ -98,28 +89,7 @@ namespace Accounts {
         assert constructor_calldata[1] = evm_address;
         IAccount.initialize(account_address, class_hash, 2, constructor_calldata);
         evm_contract_deployed.emit(evm_address, account_address);
-        set_evm_address_deployed(evm_address, TRUE);
 
         return (account_address=account_address);
-    }
-
-    // @notice Check if an EVM address is deployed on Kakarot.
-    // @dev We use this to check when we want to deploy a new account.
-    // @return Whether the EVM address is deployed or not
-    func is_evm_address_deployed{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        evm_address: felt
-    ) -> (res: felt) {
-        let (res) = is_evm_address_deployed_.read(evm_address);
-        return (res,);
-    }
-
-    // @notice Set deployment status of an EVM address on Kakarot.
-    // @dev We set it on CREATE, CREATE2 and SElfDESTRUCT.
-    // @param evm_address The EVM address to set deployment status.
-    func set_evm_address_deployed{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        evm_address: felt, value: felt
-    ) {
-        is_evm_address_deployed_.write(evm_address, value);
-        return ();
     }
 }

@@ -28,7 +28,6 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
 // Internal dependencies
 from kakarot.interfaces.interfaces import IAccount, IContractAccount
-from kakarot.accounts.library import Accounts
 
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
@@ -203,8 +202,6 @@ namespace Helpers {
         IContractAccount.write_bytecode(
             contract_address=starknet_contract_address, bytecode_len=0, bytecode=erase_data
         );
-        let (evm_address) = IAccount.get_evm_address(contract_address=starknet_contract_address);
-        Accounts.set_evm_address_deployed(evm_address, FALSE);
 
         return erase_contracts(contracts_len - 1, contracts_arr + 1);
     }
