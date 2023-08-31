@@ -134,6 +134,7 @@ markers = [
     "Utils",
     "Safe",
     "EF_TEST",
+    "SSTORE",
 ]
 
 [tool.isort]
