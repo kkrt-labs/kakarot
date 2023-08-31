@@ -1,5 +1,4 @@
 import logging
-import subprocess
 from collections import namedtuple
 from functools import partial
 from typing import List, Union
@@ -22,7 +21,7 @@ Wallet = namedtuple("Wallet", ["address", "private_key", "starknet_contract"])
 @pytest.fixture(scope="session")
 def max_fee():
     """
-    max_fee is just hard coded to 0.01 to make sure it passes
+    max_fee is just hard coded to 0.01 to make sure tx passes
     it is not used per se in the test
     """
     return int(1e16)
@@ -33,8 +32,9 @@ def starknet():
     """
     End-to-end tests assume that there is already a "Starknet" network running
     with kakarot deployed.
-    We return the RPC_CLIENT in a fixture to avoid importing in the test the scripts.utils
-    but gather instead in fixtures all the utils.
+    We return the RPC_CLIENT in a fixture to avoid importing in the tests the scripts.utils
+    but gather instead in fixtures all the utils. Using only fixtures in the tests will make
+    it easier to later on change the backend without rewriting the tests.
 
     Since this `starknet` fixture is run before all the others, setting the STARKNET_NETWORK
     environment variable here would effectively change the target network of the test suite.
@@ -49,8 +49,9 @@ async def addresses() -> List[Wallet]:
     """
     Returns a list of addresses to be used in tests.
     Addresses are returned as named tuples with
-    - address: the hex string of the EVM address (20 bytes)
-    - starknet_address: the corresponding address for starknet (same value but as int)
+    - address: the EVM address as int
+    - private_key: the PrivateKey of this address
+    - starknet_contract: the deployed Starknet contract handling this EOA
     """
     from scripts.utils.kakarot import get_eoa
 
@@ -113,7 +114,7 @@ async def kakarot(deployer) -> Contract:
 @pytest_asyncio.fixture(scope="session")
 async def deploy_fee(kakarot: Contract) -> int:
     """
-    Using a fixture with scope=session let us cache this function and make the test run faster
+    Using a fixture with scope=session let us cache this value and make the test run faster
     """
     return (await kakarot.functions["get_deploy_fee"].call()).deploy_fee
 
@@ -121,7 +122,7 @@ async def deploy_fee(kakarot: Contract) -> int:
 @pytest.fixture(scope="session")
 def compute_starknet_address(kakarot: Contract):
     """
-    A fixture just for easing the call and make the tests smaller
+    A fixture to isolate the starknet-py logic and make the test agnostic of the backend
     """
 
     async def _factory(evm_address: Union[int, str]):
@@ -137,7 +138,7 @@ def compute_starknet_address(kakarot: Contract):
 @pytest.fixture(scope="session")
 def deploy_externally_owned_account(kakarot: Contract, max_fee: int):
     """
-    A fixture just for easing the call and make the tests smaller
+    A fixture to isolate the starknet-py logic and make the test agnostic of the backend
     """
 
     async def _factory(evm_address: Union[int, str]):
@@ -155,7 +156,7 @@ def deploy_externally_owned_account(kakarot: Contract, max_fee: int):
 @pytest.fixture(scope="session")
 def get_contract(deployer):
     """
-    A fixture just for easing the call and make the tests smaller
+    Wrap script.utils.starknet.get_contract to make the test agnostics of the utils
     """
     from scripts.utils.starknet import get_contract
 
