@@ -291,13 +291,35 @@ class TestPlainOpcodes:
             assert await plain_opcodes.loopValue() == steps
 
     class TestTransfer:
-        @pytest.mark.skip(
-            "EOA execution flow incorrectly dispatches to `CreateHelper.finalize_calling_context`"
-            "See issue https://github.com/kkrt-labs/kakarot/issues/696"
-        )
         async def test_send_some_should_send(
-            self, plain_opcodes, plain_opcodes_deployer, addresses
+            self, eth, plain_opcodes, fund_evm_address, other
         ):
+            send_amount = 1
+
+            plain_opcodes_address = int(plain_opcodes.address, 16)
+            await fund_evm_address(plain_opcodes_address)
+
+            receiver_balance_before = (
+                await eth.balanceOf(other.starknet_address).call()
+            ).result.balance.low
+            sender_balance_before = (
+                await eth.balanceOf(
+                    plain_opcodes.contract_account.contract_address
+                ).call()
+            ).result.balance.low
+
             await plain_opcodes.sendSome(
-                addresses[2].address, 0, caller_address=plain_opcodes_deployer
+                other.address, send_amount, caller_address=other
             )
+
+            receiver_balance_after = (
+                await eth.balanceOf(other.starknet_address).call()
+            ).result.balance.low
+            sender_balance_after = (
+                await eth.balanceOf(
+                    plain_opcodes.contract_account.contract_address
+                ).call()
+            ).result.balance.low
+
+            assert receiver_balance_after - receiver_balance_before == send_amount
+            assert sender_balance_before - sender_balance_after == send_amount
