@@ -16,7 +16,7 @@ logger = logging.getLogger()
 @pytest.mark.EF_TEST
 @pytest.mark.SSTORE
 class TestSSTORE:
-    @pytest.mark.skip("TODO: Fix address collission with existing contract on CREATE")
+    @pytest.mark.skip("TODO: Fix address collision with existing contract on CREATE")
     async def test_InitCollision_d0g0v0_Shanghai(
         self,
         deploy_eoa,
