@@ -818,11 +818,11 @@ namespace CreateHelper {
         if (popped_len != 4) {
             let (nonce) = IContractAccount.get_nonce(ctx.starknet_contract_address);
 
+            // Increment nonce first to avoid address collision when doing several CREATE
+            let (nonce) = IContractAccount.increment_nonce(ctx.starknet_contract_address);
             let (evm_contract_address) = CreateHelper.get_create_address(
                 ctx.evm_contract_address, nonce
             );
-
-            let (nonce) = IContractAccount.increment_nonce(ctx.starknet_contract_address);
 
             let (contract_account_class_hash_) = contract_account_class_hash.read();
             let (starknet_contract_address) = Accounts.create(

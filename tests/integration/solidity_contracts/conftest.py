@@ -13,8 +13,8 @@ from tests.utils.contracts import get_contract, use_kakarot_backend
 from tests.utils.helpers import (
     generate_random_private_key,
     hex_string_to_bytes_array,
-    hex_string_to_uint256,
 )
+from tests.utils.uint256 import hex_string_to_uint256
 
 logger = logging.getLogger()
 
@@ -157,7 +157,9 @@ def create_account_with_bytecode_and_storage(
     Returns the corresponding starknet contract with the extra evm_contract_address attribute.
     """
 
-    async def _factory(bytecode: str, storage: Dict[str, str], caller_eoa=None):
+    async def _factory(
+        bytecode: str = "", storage: Dict[str, str] = {}, caller_eoa=None
+    ):
         """
         This factory is what is actually returned by pytest when requesting the `create_account_with_bytecode_and_storage`
         fixture.

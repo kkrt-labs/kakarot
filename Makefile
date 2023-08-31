@@ -32,9 +32,6 @@ run-test: build-sol
 run-test-mark-log: build-sol
 	poetry run pytest -m $(mark) --log-cli-level=INFO -vvv -s
 
-run-test-mark-debug: build-sol
-	poetry run pytest -m $(mark) --log-cli-level=INFO -vvv -s --pdb
-
 run-test-mark: build-sol
 	poetry run pytest -m $(mark)
 

@@ -5,9 +5,9 @@ from starkware.starknet.testing.contract import StarknetContract
 
 from tests.utils.helpers import (
     hex_string_to_bytes_array,
-    hex_string_to_uint256,
     private_key_from_hex,
 )
+from tests.utils.uint256 import hex_string_to_uint256
 
 logger = logging.getLogger()
 
@@ -16,7 +16,7 @@ logger = logging.getLogger()
 @pytest.mark.EF_TEST
 @pytest.mark.SSTORE
 class TestSSTORE:
-    @pytest.mark.skip("TODO: investigate why nonce is still not updated")
+    @pytest.mark.skip("TODO: Fix address collission with existing contract on CREATE")
     async def test_InitCollision_d0g0v0_Shanghai(
         self,
         deploy_eoa,
@@ -33,7 +33,7 @@ class TestSSTORE:
         # Pre-deploy contract account
         storage = {"0x01": "0x01"}
         contract_account = await create_account_with_bytecode_and_storage(
-            bytecode="", storage=storage, caller_eoa=caller_eoa
+            storage=storage, caller_eoa=caller_eoa
         )
         # https://github.com/ethereum/tests/blob/develop/BlockchainTests/GeneralStateTests/stSStoreTest/InitCollision.json#L685
         assert (
@@ -41,7 +41,9 @@ class TestSSTORE:
             == "0x6295eE1B4F6dD65047762F924Ecd367c17eaBf8f"
         )
         storage_initial = (
-            await contract_account.storage(hex_string_to_uint256("0x01")).call()
+            await contract_account.storage(
+                hex_string_to_uint256(storage["0x01"])
+            ).call()
         ).result.value
         assert storage_initial == hex_string_to_uint256("0x01")
         nonce_initial = (await contract_account.get_nonce().call()).result.nonce

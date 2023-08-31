@@ -79,7 +79,8 @@ func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
 // Contract Account
 //
 
-// @dev We are using a storage var, so that we can set custom nonces whilst still being able to increment them during the create execution.
+// @dev We are using a storage var, so that we can set custom nonces
+// whilst still being able to increment them during the create execution.
 @storage_var
 func mock_nonce() -> (nonce: felt) {
 }

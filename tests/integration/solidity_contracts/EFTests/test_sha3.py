@@ -21,10 +21,10 @@ class TestSha3:
         kakarot: StarknetContract,
     ):
         called_contract = await create_account_with_bytecode_and_storage(
-            "0x600060002060005500", {}
+            "0x600060002060005500",
         )
         caller_contract = await create_account_with_bytecode_and_storage(
-            "0x604060206010600f6000600435610100016001600003f100", {}
+            "0x604060206010600f6000600435610100016001600003f100",
         )
 
         res = await kakarot.eth_send_transaction(

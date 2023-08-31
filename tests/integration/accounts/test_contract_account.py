@@ -111,7 +111,9 @@ class TestContractAccount:
             )
 
         async def test_should_raise_when_caller_is_not_kakarot(
-            self, contract_account: StarknetContract
+            self, contract_account: StarknetContract, kakarot
         ):
             with kakarot_error():
-                await contract_account.increment_nonce().execute(caller_address=1)
+                await contract_account.increment_nonce().execute(
+                    caller_address=kakarot.contract_address + 1
+                )
