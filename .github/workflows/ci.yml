@@ -104,7 +104,9 @@ jobs:
       - name: Install Katana
         run: make install-katana
       - name: Run tests
-        run: make run-katana & make test-no-log
+        run: |
+          cp .env.example .env
+          make run-katana & make test-no-log
       - name: Upload coverage report to codecov
         uses: codecov/codecov-action@v3
         with:
