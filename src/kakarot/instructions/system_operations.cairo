@@ -515,6 +515,7 @@ namespace CallHelper {
                 calldata_len=call_args.args_size,
                 value=call_args.value,
             );
+            let (starknet_contract_address) = Accounts.compute_starknet_address(call_args.address);
             let sub_ctx = ExecutionContext.init(
                 call_context=call_context,
                 starknet_contract_address=starknet_contract_address,

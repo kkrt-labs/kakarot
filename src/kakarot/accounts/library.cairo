@@ -122,7 +122,8 @@ namespace Accounts {
             return (0, bytecode);
         }
 
-        return IAccount.bytecode(contract_address=starknet_address);
+        let (bytecode_len, bytecode) = IAccount.bytecode(contract_address=starknet_address);
+        return (bytecode_len, bytecode);
     }
 
     // @notice Returns the bytecode_len of a given EVM address
@@ -134,9 +135,10 @@ namespace Accounts {
         let (starknet_address) = get_starknet_address(evm_address);
 
         if (starknet_address == 0) {
-            return (0);
+            return (bytecode_len=0);
         }
 
-        return IAccount.bytecode_len(contract_address=starknet_address);
+        let (bytecode_len) = IAccount.bytecode_len(contract_address=starknet_address);
+        return (bytecode_len=bytecode_len);
     }
 }

@@ -354,6 +354,7 @@ namespace Kakarot {
         data_len: felt,
         data: felt*,
     ) -> (return_data_len: felt, return_data: felt*) {
+        alloc_locals;
         let (success) = transfer(origin, to, value);
         with_attr error_message("Kakarot: eth_call: failed to transfer {value} tokens to {to}") {
             assert success = TRUE;
@@ -371,6 +372,7 @@ namespace Kakarot {
             assert [return_data + 1] = starknet_contract_address;
             return (2, return_data);
         } else {
+            let (local starknet_contract_address) = Accounts.compute_starknet_address(to);
             let (bytecode_len, bytecode) = Accounts.get_bytecode(to);
             let summary = execute(
                 starknet_contract_address,
