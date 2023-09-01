@@ -112,7 +112,7 @@ namespace Kakarot {
             calldata=calldata,
             calldata_len=calldata_len,
             value=value,
-            );
+        );
 
         let ctx = ExecutionContext.init(
             call_context=call_context,

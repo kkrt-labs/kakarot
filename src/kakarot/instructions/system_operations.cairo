@@ -514,7 +514,7 @@ namespace CallHelper {
                 calldata=call_args.calldata,
                 calldata_len=call_args.args_size,
                 value=call_args.value,
-                );
+            );
             let sub_ctx = ExecutionContext.init(
                 call_context=call_context,
                 starknet_contract_address=starknet_contract_address,
@@ -798,7 +798,7 @@ namespace CreateHelper {
             calldata=empty_array,
             calldata_len=0,
             value=value.low,
-            );
+        );
         let (local return_data: felt*) = alloc();
         let (empty_destroy_contracts: felt*) = alloc();
         let (empty_create_addresses: felt*) = alloc();
@@ -850,7 +850,7 @@ namespace CreateHelper {
                 revert_contract_state=revert_contract_state,
                 reverted=FALSE,
                 read_only=FALSE,
-                );
+            );
 
             return sub_ctx;
         } else {
@@ -895,7 +895,7 @@ namespace CreateHelper {
                 revert_contract_state=revert_contract_state,
                 reverted=FALSE,
                 read_only=FALSE,
-                );
+            );
 
             return sub_ctx;
         }
@@ -917,7 +917,7 @@ namespace CreateHelper {
         if (is_reverted != 0) {
             local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(
                 self=ctx.calling_context, sub_context=ctx
-                );
+            );
             // In the case of a reverted create context, the gas of the reverted context should be rolled back and not consumed
 
             // Append contracts to selfdestruct to the calling_context
@@ -947,7 +947,7 @@ namespace CreateHelper {
 
             local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(
                 self=ctx.calling_context, sub_context=ctx
-                );
+            );
             let ctx = ExecutionContext.increment_gas_used(ctx, ctx.sub_context.gas_used);
 
             // Append contracts to selfdestruct to the calling_context
@@ -988,7 +988,7 @@ namespace SelfDestructHelper {
         let (revert_contract_state_dict_start) = default_dict_new(0);
         tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
             revert_contract_state_dict_start, revert_contract_state_dict_start
-            );
+        );
 
         return new model.ExecutionContext(
             call_context=ctx.call_context,
@@ -1015,6 +1015,6 @@ namespace SelfDestructHelper {
             revert_contract_state=revert_contract_state,
             reverted=FALSE,
             read_only=FALSE,
-            );
+        );
     }
 }
