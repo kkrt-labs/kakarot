@@ -177,7 +177,7 @@ async def _contract_exists(address: int) -> bool:
 async def get_eoa(private_key=None, amount=0.1) -> Account:
     private_key = private_key or keys.PrivateKey(bytes.fromhex(EVM_PRIVATE_KEY[2:]))
 
-    starknet_address = await _get_starknet_address(
+    starknet_address = await _compute_starknet_address(
         private_key.public_key.to_checksum_address()
     )
     if not await _contract_exists(starknet_address):
@@ -230,7 +230,7 @@ async def eth_send_transaction(
     return await CLIENT.get_transaction_receipt(response.transaction_hash)
 
 
-async def _get_starknet_address(address: Union[str, int]):
+async def _compute_starknet_address(address: Union[str, int]):
     evm_address = int(address, 16) if isinstance(address, str) else address
     kakarot_contract = await _get_starknet_contract("kakarot")
     return (
@@ -257,7 +257,7 @@ async def deploy_and_fund_evm_address(evm_address: str, amount: float):
 
 
 async def fund_address(address: Union[str, int], amount: float):
-    starknet_address = await _get_starknet_address(address)
+    starknet_address = await _compute_starknet_address(address)
     logger.info(
         f"ℹ️  Funding EVM address {address} at Starknet address {hex(starknet_address)}"
     )
