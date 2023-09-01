@@ -10,7 +10,6 @@ from pathlib import Path
 from typing import List, Union, cast
 
 import requests
-from caseconverter import snakecase
 from marshmallow import EXCLUDE
 from starknet_py.common import create_compiled_contract
 from starknet_py.contract import Contract
@@ -118,25 +117,25 @@ async def get_starknet_account(
     )
 
 
-async def get_eth_contract() -> Contract:
-    # TODO: use .from_address when katana implements getClass
+async def get_eth_contract(provider=None) -> Contract:
     return Contract(
         ETH_TOKEN_ADDRESS,
         json.loads((Path("scripts") / "utils" / "erc20.json").read_text())["abi"],
-        await get_starknet_account(),
+        provider or await get_starknet_account(),
     )
 
 
-async def get_contract(contract_name) -> Contract:
-    # TODO: use .from_address when katana implements getClass
+async def get_contract(contract_name, address=None, provider=None) -> Contract:
     return Contract(
-        get_deployments()[contract_name]["address"],
+        address or get_deployments()[contract_name]["address"],
         json.loads(get_artifact(contract_name).read_text())["abi"],
-        await get_starknet_account(),
+        provider or await get_starknet_account(),
     )
 
 
-async def fund_address(address: Union[int, str], amount: float):
+async def fund_address(
+    address: Union[int, str], amount: float, funding_account=None, token_contract=None
+):
     """
     Fund a given starknet address with {amount} ETH
     """
@@ -151,8 +150,8 @@ async def fund_address(address: Union[int, str], amount: float):
             logger.error(f"Cannot mint token to {address}: {response.text}")
         logger.info(f"{amount / 1e18} ETH minted to {hex(address)}")
     else:
-        account = await get_starknet_account()
-        eth_contract = await get_eth_contract()
+        account = funding_account or await get_starknet_account()
+        eth_contract = token_contract or await get_eth_contract()
         balance = (await eth_contract.functions["balanceOf"].call(account.address)).balance  # type: ignore
         if balance < amount:
             raise ValueError(
@@ -207,7 +206,17 @@ def dump_deployments(deployments):
 
 def get_deployments():
     try:
-        return json.load(open(DEPLOYMENTS_DIR / "deployments.json", "r"))
+        return {
+            name: {
+                **deployment,
+                "address": int(deployment["address"], 16),
+                "tx": int(deployment["tx"], 16),
+                "artifact": Path(deployment["artifact"]),
+            }
+            for name, deployment in json.load(
+                open(DEPLOYMENTS_DIR / "deployments.json", "r")
+            ).items()
+        }
     except FileNotFoundError:
         return {}
 
@@ -221,10 +230,6 @@ def get_artifact(contract_name):
     )
 
 
-def get_alias(contract_name):
-    return snakecase(contract_name)
-
-
 def get_tx_url(tx_hash: int) -> str:
     return f"{NETWORK['explorer_url']}/tx/0x{tx_hash:064x}"
 
@@ -234,6 +239,8 @@ def is_fixture_contract(contract_name):
 
 
 def compile_contract(contract):
+    logger.info(f"⏳ Compiling {contract['contract_name']}")
+    start = datetime.now()
     is_fixture = is_fixture_contract(contract["contract_name"])
     contract_build_path = get_artifact(contract["contract_name"])
 
@@ -284,10 +291,11 @@ def compile_contract(contract):
         ),
         indent=2,
     )
+    elapsed = datetime.now() - start
+    logger.info(f"✅ Compiled in {elapsed.total_seconds():.2f}s")
 
 
-async def deploy_starknet_account(class_hash, private_key=None, amount=1) -> Account:
-
+async def deploy_starknet_account(class_hash, private_key=None, amount=1):
     salt = random.randint(0, 2**251)
     private_key = private_key or NETWORK["private_key"]
     if private_key is None:
@@ -379,11 +387,15 @@ async def declare(contract_name):
 
 async def deploy(contract_name, *args):
     logger.info(f"ℹ️  Deploying {contract_name}")
-    abi = json.loads(Path(get_artifact(contract_name)).read_text())["abi"]
+    artifact = get_artifact(contract_name)
+    compiled_contract = Path(artifact).read_text()
+    abi = json.loads(compiled_contract)["abi"]
+    contract_class = create_compiled_contract(compiled_contract=compiled_contract)
+    class_hash = compute_class_hash(contract_class=deepcopy(contract_class))
     account = await get_starknet_account()
     deploy_result = await Contract.deploy_contract(
         account=account,
-        class_hash=get_declarations()[contract_name],
+        class_hash=class_hash,
         abi=abi,
         constructor_args=list(args),
         max_fee=_max_fee,
