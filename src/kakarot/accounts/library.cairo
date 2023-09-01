@@ -2,8 +2,6 @@
 
 %lang starknet
 
-from openzeppelin.access.ownable.library import Ownable
-
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import FALSE
@@ -29,7 +27,21 @@ func nonce() -> (nonce: felt) {
 func evm_contract_deployed(evm_contract_address: felt, starknet_contract_address: felt) {
 }
 
+@storage_var
+func evm_to_starknet_address(evm_address: felt) -> (starknet_address: felt) {
+}
+
 namespace Accounts {
+    // @dev Returns the registered starknet address for a given EVM address. Returns 0 if no contract is deployed for this
+    //      EVM address.
+    // @param evm_address The EVM address to transform to a starknet address
+    // @return starknet_address The Starknet Account Contract address or 0 if not already deployed
+    func get_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        evm_address: felt
+    ) -> (starknet_address: felt) {
+        return evm_to_starknet_address.read(evm_address);
+    }
+
     // @dev As contract addresses are deterministic we can know what will be the address of a starknet contract from its input EVM address
     // @dev Adapted code from: https://github.com/starkware-libs/cairo-lang/blob/master/src/starkware/starknet/core/os/contract_address/contract_address.cairo
     // @param evm_address The EVM address to transform to a starknet address
@@ -82,7 +94,7 @@ namespace Accounts {
         let (kakarot_address: felt) = get_contract_address();
         let (_account_proxy_class_hash: felt) = account_proxy_class_hash.read();
         let (constructor_calldata: felt*) = alloc();
-        let (account_address) = deploy_syscall(
+        let (starknet_address) = deploy_syscall(
             _account_proxy_class_hash,
             contract_address_salt=evm_address,
             constructor_calldata_size=0,
@@ -91,9 +103,42 @@ namespace Accounts {
         );
         assert constructor_calldata[0] = kakarot_address;
         assert constructor_calldata[1] = evm_address;
-        IAccount.initialize(account_address, class_hash, 2, constructor_calldata);
-        evm_contract_deployed.emit(evm_address, account_address);
+        IAccount.initialize(starknet_address, class_hash, 2, constructor_calldata);
+        evm_contract_deployed.emit(evm_address, starknet_address);
+        evm_to_starknet_address.write(evm_address, starknet_address);
+        return (account_address=starknet_address);
+    }
 
-        return (account_address=account_address);
+    // @notice Returns the bytecode of a given EVM address
+    // @dev Returns an empty bytecode if the corresponding Starknet contract is not deployed
+    //      as would eth_getCode do to any address
+    func get_bytecode{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        evm_address: felt
+    ) -> (bytecode_len: felt, bytecode: felt*) {
+        let (starknet_address) = get_starknet_address(evm_address);
+
+        if (starknet_address == 0) {
+            let (bytecode: felt*) = alloc();
+            return (0, bytecode);
+        }
+
+        let (bytecode_len, bytecode) = IAccount.bytecode(contract_address=starknet_address);
+        return (bytecode_len, bytecode);
+    }
+
+    // @notice Returns the bytecode_len of a given EVM address
+    // @dev Returns 0 if the corresponding Starknet contract is not deployed
+    //      as would eth_getCode do to any address
+    func get_bytecode_len{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        evm_address: felt
+    ) -> (bytecode_len: felt) {
+        let (starknet_address) = get_starknet_address(evm_address);
+
+        if (starknet_address == 0) {
+            return (bytecode_len=0);
+        }
+
+        let (bytecode_len) = IAccount.bytecode_len(contract_address=starknet_address);
+        return (bytecode_len=bytecode_len);
     }
 }

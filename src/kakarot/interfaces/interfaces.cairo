@@ -90,6 +90,9 @@ namespace IKakarot {
     func compute_starknet_address(evm_address: felt) -> (contract_address: felt) {
     }
 
+    func get_starknet_address(evm_address: felt) -> (starknet_address: felt) {
+    }
+
     func eth_call(
         origin: felt,
         to: felt,
@@ -102,12 +105,7 @@ namespace IKakarot {
     }
 
     func eth_send_transaction(
-        to: felt,
-        gas_limit: felt,
-        gas_price: felt,
-        value: felt,
-        data_len: felt,
-        data: felt*,
+        to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*
     ) -> (return_data_len: felt, return_data: felt*) {
     }
 }

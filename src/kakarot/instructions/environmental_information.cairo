@@ -89,9 +89,9 @@ namespace EnvironmentalInformation {
         // Get the evm address.
         let (stack: model.Stack*, address: Uint256) = Stack.pop(ctx.stack);
 
-        let felt_address = Helpers.uint256_to_felt(address);
+        let address_felt = Helpers.uint256_to_felt(address);
         // Get the starknet account address from the evm account address
-        let (starknet_contract_address) = Accounts.compute_starknet_address(felt_address);
+        let (starknet_contract_address) = Accounts.compute_starknet_address(address_felt);
         // Get the number of native tokens owned by the given starknet account
         let (native_token_address_) = native_token_address.read();
         let (balance: Uint256) = IERC20.balanceOf(
@@ -447,15 +447,7 @@ namespace EnvironmentalInformation {
         // 0 - address: 20-byte address of the contract to query.
         let (stack, address_uint256) = Stack.pop(self=stack);
         let address_felt = Helpers.uint256_to_felt(address_uint256);
-
-        // Get the starknet address from the given evm address
-        let (starknet_contract_address) = Accounts.compute_starknet_address(address_felt);
-
-        local bytecode_len;
-        // TODO (https://github.com/sayajin-labs/kakarot/issues/474)
-        //      should be able to check that there is a deployed starknet contract at this address
-        // if not return bytecode_len 0
-        let (bytecode_len) = IAccount.bytecode_len(contract_address=starknet_contract_address);
+        let (bytecode_len) = Accounts.get_bytecode_len(address_felt);
 
         // bytecode_len cannot be greater than 24k in the EVM
         let stack = Stack.push(stack, Uint256(low=bytecode_len, high=0));
@@ -502,17 +494,7 @@ namespace EnvironmentalInformation {
         let size = popped[3];
 
         let address_felt = Helpers.uint256_to_felt(address_uint256);
-
-        // Get the starknet address from the given evm address
-
-        let (starknet_contract_address) = Accounts.compute_starknet_address(address_felt);
-
-        // TODO (https://github.com/sayajin-labs/kakarot/issues/474)
-        //      should be able to check that there is a deployed starknet contract at this address
-        // we get the bytecode from the Starknet_contract
-        let (bytecode_len, bytecode) = IAccount.bytecode(
-            contract_address=starknet_contract_address
-        );
+        let (bytecode_len, bytecode) = Accounts.get_bytecode(address_felt);
 
         // Get bytecode slice from offset to size
         // in the case were
@@ -655,15 +637,7 @@ namespace EnvironmentalInformation {
         // 0 - address: 20-byte address of the contract to query.
         let (stack, address_uint256) = Stack.pop(self=stack);
         let address_felt = Helpers.uint256_to_felt(address_uint256);
-
-        // Get the starknet address from the given evm address
-        let (starknet_contract_address) = Accounts.compute_starknet_address(address_felt);
-
-        // TODO (https://github.com/sayajin-labs/kakarot/issues/474)
-        //      should be able to check that there is a deployed starknet contract at this address
-        let (bytecode_len, bytecode) = IAccount.bytecode(
-            contract_address=starknet_contract_address
-        );
+        let (bytecode_len, bytecode) = Accounts.get_bytecode(address_felt);
 
         let (local dest: felt*) = alloc();
         // convert to little endian

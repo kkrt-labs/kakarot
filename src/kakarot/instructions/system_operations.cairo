@@ -507,12 +507,7 @@ namespace CallHelper {
         // Check if the called address is a precompiled contract
         let is_precompile = Precompiles.is_precompile(address=call_args.address);
         if (is_precompile == FALSE) {
-            let (starknet_contract_address) = Accounts.compute_starknet_address(
-                evm_address=call_args.address
-            );
-            let (bytecode_len, bytecode) = IAccount.bytecode(
-                contract_address=starknet_contract_address
-            );
+            let (bytecode_len, bytecode) = Accounts.get_bytecode(call_args.address);
             tempvar call_context = new model.CallContext(
                 bytecode=bytecode,
                 bytecode_len=bytecode_len,
@@ -520,6 +515,7 @@ namespace CallHelper {
                 calldata_len=call_args.args_size,
                 value=call_args.value,
             );
+            let (starknet_contract_address) = Accounts.compute_starknet_address(call_args.address);
             let sub_ctx = ExecutionContext.init(
                 call_context=call_context,
                 starknet_contract_address=starknet_contract_address,

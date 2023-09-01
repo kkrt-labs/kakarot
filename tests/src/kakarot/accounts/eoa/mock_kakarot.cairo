@@ -42,6 +42,14 @@ func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
     return (contract_address=contract_address_);
 }
 
+// @dev mock function that returns the registered starknet address from an evm address or 0
+@view
+func get_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    evm_address: felt
+) -> (starknet_address: felt) {
+    return Accounts.get_starknet_address(evm_address);
+}
+
 // @notice Deploy a new externally owned account.
 // @param evm_address The evm address that is mapped to the newly deployed starknet contract address.
 // @return starknet_contract_address The newly deployed starknet contract address.
@@ -83,16 +91,11 @@ func eth_call{
 @external
 func eth_send_transaction{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(
-    to: felt,
-    gas_limit: felt,
-    gas_price: felt,
-    value: felt,
-    data_len: felt,
-    data: felt*,
-) -> (return_data_len: felt, return_data: felt*) {
+}(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
+    return_data_len: felt, return_data: felt*
+) {
     alloc_locals;
     let (local starknet_caller_address) = get_caller_address();
-    let (local origin) =  IAccount.get_evm_address(starknet_caller_address);
+    let (local origin) = IAccount.get_evm_address(starknet_caller_address);
     return eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
 }

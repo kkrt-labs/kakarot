@@ -58,9 +58,8 @@ namespace Kakarot {
     // @notice Run the given bytecode with the given calldata and parameters
     // @dev starknet_contract_address and evm_contract_address can be set to 0 if
     //      there is no notion of deployed contract in the bytecode. Otherwise,
-    //      they should match (ie. that
-    //      compute_starknet_address(IAccount.get_evm_address(starknet_contract_address))
-    //      shou equal starknet_contract_address. In a future version, either one or the
+    //      they should match (ie. that compute_starknet_address(IAccount.get_evm_address(starknet_contract_address))
+    //      should equal starknet_contract_address. In a future version, either one or the
     //      other will be removed
     // @param starknet_contract_address The starknet contract address of the called contract
     // @param evm_contract_address The corresponding EVM contract address of the called contract
@@ -355,6 +354,7 @@ namespace Kakarot {
         data_len: felt,
         data: felt*,
     ) -> (return_data_len: felt, return_data: felt*) {
+        alloc_locals;
         let (success) = transfer(origin, to, value);
         with_attr error_message("Kakarot: eth_call: failed to transfer {value} tokens to {to}") {
             assert success = TRUE;
@@ -372,10 +372,8 @@ namespace Kakarot {
             assert [return_data + 1] = starknet_contract_address;
             return (2, return_data);
         } else {
-            let (starknet_contract_address) = Accounts.compute_starknet_address(to);
-            let (bytecode_len, bytecode) = IAccount.bytecode(
-                contract_address=starknet_contract_address
-            );
+            let (local starknet_contract_address) = Accounts.compute_starknet_address(to);
+            let (bytecode_len, bytecode) = Accounts.get_bytecode(to);
             let summary = execute(
                 starknet_contract_address,
                 to,
@@ -392,8 +390,8 @@ namespace Kakarot {
         }
     }
 
-    // @notice returns the EVM address associated to a Starknet account deployed by kakarot. 
-    //         Prevents cases where some Starknet account has an entrypoint get_evm_address() 
+    // @notice returns the EVM address associated to a Starknet account deployed by kakarot.
+    //         Prevents cases where some Starknet account has an entrypoint get_evm_address()
     //         but isn't part of Kakarot system
     // @dev Raise if the declared corresponding evm address (retrieved with get_evm_address)
     //      does not recomputes into to the actual caller address
@@ -405,9 +403,7 @@ namespace Kakarot {
     }(starknet_address: felt) -> (evm_address: felt) {
         alloc_locals;
         let (local evm_address) = IAccount.get_evm_address(starknet_address);
-        let (local computed_starknet_address) = Accounts.compute_starknet_address(
-            evm_address
-        );
+        let (local computed_starknet_address) = Accounts.compute_starknet_address(evm_address);
 
         with_attr error_message("Kakarot: caller contract is not a Kakarot Account") {
             assert computed_starknet_address = starknet_address;
@@ -415,7 +411,6 @@ namespace Kakarot {
 
         return (evm_address=evm_address);
     }
-
 
     // @notice Since it's possible in starknet to send a transcation to a @view entrypoint, this
     //         ensures that there is no ongoing transaction (so it's really a view call).
