@@ -93,8 +93,10 @@ class TestContractAccount:
                 == "Uint256(low=340282366920938463463374607431768211455, high=340282366920938463463374607431768211455)"
             )
 
-    class TestNonce:
-        async def test_get_nonce(self, contract_account: StarknetContract, kakarot):
+    class TestGetNonce:
+        async def test_should_return_stored_nonce(
+            self, contract_account: StarknetContract, kakarot
+        ):
             # Get storage key for nonce
             key = get_storage_var_address("nonce")
 
@@ -107,6 +109,7 @@ class TestContractAccount:
             # Get nonce
             assert nonce == (await contract_account.get_nonce().call()).result.nonce
 
+    class TestIncrementNonce:
         async def test_should_increment_nonce(
             self, contract_account: StarknetContract, kakarot
         ):
