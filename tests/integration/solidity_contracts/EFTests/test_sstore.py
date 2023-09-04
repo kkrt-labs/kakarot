@@ -51,7 +51,6 @@ class TestSSTORE:
 
         # Send tx
         _ = await kakarot.eth_send_transaction(
-            origin=int(caller_eoa.address, 16),
             to=0,
             gas_limit=200_000,
             gas_price=0,

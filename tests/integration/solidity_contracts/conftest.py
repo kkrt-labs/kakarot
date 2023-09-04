@@ -86,7 +86,6 @@ def deploy_bytecode(kakarot, deploy_eoa):
             )
 
         tx = await kakarot.eth_send_transaction(
-            origin=int(caller_eoa.address, 16),
             to=0,
             gas_limit=1_000_000,
             gas_price=0,

@@ -28,7 +28,6 @@ class TestSha3:
         )
 
         res = await kakarot.eth_send_transaction(
-            origin=int(owner.address, 16),
             to=int(caller_contract.evm_contract_address, 16),
             gas_limit=1_000_000,
             gas_price=0,

@@ -2,10 +2,11 @@ import json
 import logging
 from pathlib import Path
 from types import MethodType
-from typing import Union, cast
+from typing import Tuple, Union, cast
 
 import toml
 from eth_account import Account as EvmAccount
+from eth_keys import keys
 from eth_utils.address import to_checksum_address
 from hexbytes import HexBytes
 from starknet_py.net.account.account import Account
@@ -41,7 +42,7 @@ if not NETWORK["devnet"]:
         fetch_deployments()
     except Exception as e:
         logger.warn(f"Using network {NETWORK}, couldn't fetch deployment, error:\n{e}")
-KAKAROT_ADDRESS = get_deployments()["kakarot"]["address"]
+
 FOUNDRY_FILE = toml.loads((Path(__file__).parents[2] / "foundry.toml").read_text())
 SOLIDITY_CONTRACTS_DIR = Path(FOUNDRY_FILE["profile"]["default"]["src"])
 
@@ -87,16 +88,13 @@ def get_contract(contract_app: str, contract_name: str, address=None) -> Web3Con
     return contract
 
 
-async def deploy(
-    contract_app: str, contract_name: str, *args, **kwargs
-) -> Web3Contract:
-    contract = get_contract(contract_app, contract_name)
-    logger.info(f"⏳ Deploying {contract_name}")
+async def deploy_bytecode(bytecode: Union[str, bytes]) -> Tuple[int, int]:
+    logger.info(f"⏳ Deploying bytecode")
     receipt = await eth_send_transaction(
         to=0,
         value=0,
         gas=int(1e18),
-        data=contract.constructor(*args, **kwargs).data_in_transaction,
+        data=bytecode,
     )
     deploy_event = [
         event
@@ -107,7 +105,19 @@ async def deploy(
         raise ValueError(
             f"Cannot locate evm contract address event, receipt events:\n{receipt.events}"
         )
-    evm_address, _ = deploy_event[0].data
+    evm_address, starknet_address = deploy_event[0].data
+    logger.info(f"✅ Bytecode deployed at address {evm_address}")
+    return evm_address, starknet_address
+
+
+async def deploy(
+    contract_app: str, contract_name: str, *args, **kwargs
+) -> Web3Contract:
+    logger.info(f"⏳ Deploying {contract_name}")
+    contract = get_contract(contract_app, contract_name)
+    evm_address, _ = await deploy_bytecode(
+        contract.constructor(*args, **kwargs).data_in_transaction
+    )
     contract.address = Web3.to_checksum_address(evm_address)
 
     for fun in contract.functions:
@@ -164,22 +174,25 @@ async def _contract_exists(address: int) -> bool:
         return False
 
 
-async def get_eoa(
-    address=None,
-    private_key=None,
-) -> Account:
-    address = int(address or EVM_ADDRESS, 16)
-    private_key = int(private_key or EVM_PRIVATE_KEY, 16)
+async def get_eoa(private_key=None, amount=0.1) -> Account:
+    private_key = private_key or keys.PrivateKey(bytes.fromhex(EVM_PRIVATE_KEY[2:]))
 
-    starknet_address = await _get_starknet_address(address)
+    starknet_address = await _compute_starknet_address(
+        private_key.public_key.to_checksum_address()
+    )
     if not await _contract_exists(starknet_address):
-        await deploy_and_fund_evm_address(hex(address), 0.1)
+        await deploy_and_fund_evm_address(
+            private_key.public_key.to_checksum_address(), amount
+        )
 
     return Account(
         address=starknet_address,
         client=CLIENT,
         chain=NETWORK["chain_id"],
-        key_pair=KeyPair(private_key, address),
+        # This is somehow a hack because we put EVM private key into a
+        # Stark signer KeyPair to have both a regular Starknet account
+        # and the access to the private key
+        key_pair=KeyPair(private_key, private_key.public_key),
     )
 
 
@@ -217,7 +230,7 @@ async def eth_send_transaction(
     return await CLIENT.get_transaction_receipt(response.transaction_hash)
 
 
-async def _get_starknet_address(address: Union[str, int]):
+async def _compute_starknet_address(address: Union[str, int]):
     evm_address = int(address, 16) if isinstance(address, str) else address
     kakarot_contract = await _get_starknet_contract("kakarot")
     return (
@@ -244,7 +257,7 @@ async def deploy_and_fund_evm_address(evm_address: str, amount: float):
 
 
 async def fund_address(address: Union[str, int], amount: float):
-    starknet_address = await _get_starknet_address(address)
+    starknet_address = await _compute_starknet_address(address)
     logger.info(
         f"ℹ️  Funding EVM address {address} at Starknet address {hex(starknet_address)}"
     )

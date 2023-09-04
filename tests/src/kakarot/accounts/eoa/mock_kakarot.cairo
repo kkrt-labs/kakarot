@@ -5,10 +5,12 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.alloc import alloc
+from starkware.starknet.common.syscalls import get_caller_address
 
 from kakarot.accounts.library import Accounts
 from kakarot.constants import account_proxy_class_hash, externally_owned_account_class_hash
 from kakarot.library import native_token_address, Kakarot
+from kakarot.interfaces.interfaces import IAccount
 
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -38,6 +40,14 @@ func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
 ) -> (contract_address: felt) {
     let (contract_address_) = Accounts.compute_starknet_address(evm_address);
     return (contract_address=contract_address_);
+}
+
+// @dev mock function that returns the registered starknet address from an evm address or 0
+@view
+func get_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    evm_address: felt
+) -> (starknet_address: felt) {
+    return Accounts.get_starknet_address(evm_address);
 }
 
 // @notice Deploy a new externally owned account.
@@ -81,14 +91,11 @@ func eth_call{
 @external
 func eth_send_transaction{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(
-    origin: felt,
-    to: felt,
-    gas_limit: felt,
-    gas_price: felt,
-    value: felt,
-    data_len: felt,
-    data: felt*,
-) -> (return_data_len: felt, return_data: felt*) {
+}(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
+    return_data_len: felt, return_data: felt*
+) {
+    alloc_locals;
+    let (local starknet_caller_address) = get_caller_address();
+    let (local origin) = IAccount.get_evm_address(starknet_caller_address);
     return eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
 }

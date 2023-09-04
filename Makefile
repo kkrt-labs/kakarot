@@ -11,17 +11,22 @@ check:
 setup:
 	poetry install
 
-test: build-sol
-	poetry run pytest tests --log-cli-level=INFO -n logical
+test: build-sol deploy
+	poetry run pytest tests/integration tests/src --log-cli-level=INFO -n logical
+	poetry run pytest tests/end_to_end
 
-test-no-log: build-sol
-	poetry run pytest tests -n logical
+test-no-log: build-sol deploy
+	poetry run pytest tests/integration tests/src -n logical
+	poetry run pytest tests/end_to_end
 
 test-integration: build-sol
 	poetry run pytest tests/integration --log-cli-level=INFO -n logical
 
 test-unit:
 	poetry run pytest tests/src --log-cli-level=INFO
+
+test-end-to-end: deploy
+	poetry run pytest tests/end_to_end --log-cli-level=INFO
 
 run-test-log: build-sol
 	poetry run pytest -k $(test) --log-cli-level=INFO -vvv
@@ -74,3 +79,9 @@ build-sol:
 run:
 	mkdir -p deployments/starknet-devnet
 	poetry run starknet-devnet --lite-mode --seed 0 --dump-on exit --dump-path deployments/starknet-devnet/devnet.pkl --disable-rpc-request-validation --timeout 600
+
+install-katana:
+	cargo install --git https://github.com/dojoengine/dojo katana@0.2.1
+
+run-katana:
+	katana --validate-max-steps 16777216 --invoke-max-steps 16777216
