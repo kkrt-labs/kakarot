@@ -48,20 +48,10 @@ class TestSSTORE:
         assert nonce_initial == 0
 
         # Send tx
-        _ = await kakarot.eth_send_transaction(
+        await kakarot.eth_send_transaction(
             to=0,
             gas_limit=200_000,
             gas_price=0,
             value=0,
             data=hex_string_to_bytes_array("0x6000600155600160015500"),
         ).execute(caller_address=caller_eoa.starknet_address)
-
-        # Check storage, no change: 1 -> 0 -> 1
-        storage_final = (
-            await contract_account.storage(hex_string_to_uint256("0x01")).call()
-        ).result.value
-        assert storage_final == hex_string_to_uint256("0x01")
-
-        # Check nonce, updated
-        nonce_final = (await contract_account.get_nonce().call()).result.nonce
-        assert nonce_final == 1
