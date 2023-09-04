@@ -41,11 +41,9 @@ class TestSSTORE:
             == "0x6295eE1B4F6dD65047762F924Ecd367c17eaBf8f"
         )
         storage_initial = (
-            await contract_account.storage(
-                hex_string_to_uint256(storage["0x01"])
-            ).call()
+            await contract_account.storage(hex_string_to_uint256("0x01")).call()
         ).result.value
-        assert storage_initial == hex_string_to_uint256("0x01")
+        assert storage_initial == hex_string_to_uint256(storage["0x01"])
         nonce_initial = (await contract_account.get_nonce().call()).result.nonce
         assert nonce_initial == 0
 

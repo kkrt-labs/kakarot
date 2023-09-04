@@ -819,7 +819,7 @@ namespace CreateHelper {
             );
 
             let (contract_account_class_hash_) = contract_account_class_hash.read();
-            let (nonce) = IContractAccount.increment_nonce(ctx.starknet_contract_address);
+            IContractAccount.increment_nonce(ctx.starknet_contract_address);
             let (starknet_contract_address) = Accounts.create(
                 contract_account_class_hash_, evm_contract_address
             );

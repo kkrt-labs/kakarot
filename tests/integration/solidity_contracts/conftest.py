@@ -163,9 +163,6 @@ def create_account_with_bytecode_and_storage(
         This factory is what is actually returned by pytest when requesting the `create_account_with_bytecode_and_storage`
         fixture.
         """
-        if storage is None:
-            storage = {}
-
         if caller_eoa is None:
             caller_eoa = await deploy_eoa(
                 generate_random_private_key(int(bytecode, 16))
@@ -191,6 +188,8 @@ def create_account_with_bytecode_and_storage(
             caller_address=kakarot.contract_address
         )
 
+        if storage is None:
+            storage = {}
         for key, value in storage.items():
             await contract.write_storage(
                 hex_string_to_uint256(key), hex_string_to_uint256(value)
