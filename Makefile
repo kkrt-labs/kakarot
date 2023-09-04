@@ -29,7 +29,7 @@ test-end-to-end: deploy
 	poetry run pytest tests/end_to_end --log-cli-level=INFO
 
 run-test-log: build-sol
-	poetry run pytest -k $(test) --log-cli-level=INFO -vvv
+	poetry run pytest -k $(test) --log-cli-level=INFO -vvv -s
 
 run-test: build-sol
 	poetry run pytest -k $(test)
