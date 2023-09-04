@@ -4,6 +4,7 @@ import pytest
 import pytest_asyncio
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
+from starkware.starknet.public.abi import get_storage_var_address
 
 from tests.utils.errors import kakarot_error
 from tests.utils.reporting import traceit
@@ -93,6 +94,19 @@ class TestContractAccount:
             )
 
     class TestNonce:
+        async def test_get_nonce(self, contract_account: StarknetContract, kakarot):
+            # Get storage key for nonce
+            key = get_storage_var_address("nonce")
+
+            # Set nonce to 1
+            nonce = 1
+            await contract_account.state.state.set_storage_at(
+                contract_account.contract_address, key, nonce
+            )
+
+            # Get nonce
+            assert nonce == (await contract_account.get_nonce().call()).result.nonce
+
         async def test_should_increment_nonce(
             self, contract_account: StarknetContract, kakarot
         ):
