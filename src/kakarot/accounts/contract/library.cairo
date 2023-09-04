@@ -176,7 +176,7 @@ namespace ContractAccount {
         return nonce.read();
     }
 
-    // @notice This function increases the accounts nonce by 1
+    // @notice This function increases the account nonce by 1
     func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
         // Access control check.
         Ownable.assert_only_owner();
