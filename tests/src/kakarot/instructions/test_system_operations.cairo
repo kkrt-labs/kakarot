@@ -96,6 +96,7 @@ func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
     let (current_nonce: felt) = mock_nonce.read();
     mock_nonce.write(current_nonce + 1);
+    return ();
 }
 
 // ///////////////////
