@@ -1,7 +1,7 @@
 import logging
 
 import pytest
-from typing import Dict
+from typing import Dict, Optional
 from starkware.starknet.core.os.contract_address.contract_address import (
     calculate_contract_address_from_hash,
 )
@@ -157,12 +157,15 @@ def create_account_with_bytecode_and_storage(
     """
 
     async def _factory(
-        bytecode: str = "", storage: Dict[str, str] = {}, caller_eoa=None
+        bytecode: str = "", storage: Optional[Dict[str, str]] = None, caller_eoa=None
     ):
         """
         This factory is what is actually returned by pytest when requesting the `create_account_with_bytecode_and_storage`
         fixture.
         """
+        if storage is None:
+            storage = {}
+
         if caller_eoa is None:
             caller_eoa = await deploy_eoa(
                 generate_random_private_key(int(bytecode, 16))
