@@ -189,11 +189,10 @@ def create_account_with_bytecode_and_storage(
         )
 
         if storage is None:
-            storage = {}
-        for key, value in storage.items():
-            await contract.write_storage(
-                hex_string_to_uint256(key), hex_string_to_uint256(value)
-            ).execute(caller_address=kakarot.contract_address)
+            for key, value in storage.items():
+                await contract.write_storage(
+                    hex_string_to_uint256(key), hex_string_to_uint256(value)
+                ).execute(caller_address=kakarot.contract_address)
 
         setattr(contract, "evm_contract_address", evm_contract_address)
         return contract
