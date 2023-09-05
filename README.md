@@ -21,18 +21,17 @@
 
 Kakarot is a zkEVM written in Cairo. It aims to allow users to leverage the
 scaling benefits of validity rollups while maintaining compatibility with the
-Ethereum ecosystem. Therefore, Kakarot can be used to run Ethereum smart
-contracts on Starknet.
+Ethereum ecosystem.
 
 We strongly believe the CairoVM will provide the best zero-knowledge toolbox in
-the coming years and that the Ethereum network effect will remain dominant in
+the coming years and that the Ethereum network effect will remain prevalent in
 the meantime. We present to developers an abstraction layer they're familiar
 with: the EVM. Build and deploy as if you were working on Ethereum, be forward
 compatible with the future of zero-knowledge.
 
-It is a work in progress, and it is not ready for production.
+Kakarot is a work in progress, and it is not ready for production.
 
-[Latest presentation of Kakarot at Starkware Session TLV 2023](https://www.youtube.com/watch?v=HnIqnhWdxpA)
+[Kakarot presentations and talks around the world]([https://www.youtube.com/watch?v=HnIqnhWdxpA](https://www.youtube.com/playlist?list=PLF3T1714MyKDwjjA8oHizXAdLNx62ka5U))
 
 [Getting started](#getting-started) • [Supported opcodes](#supported-opcodes) •
 [Build](#build) • [Test](#test) •
@@ -272,8 +271,7 @@ _For more information and to report security issues, please refer to our
 
 The callgraph artifacts contains all the contract's call graph. Those are
 generated using [thoth](https://github.com/FuzzingLabs/thoth) and can provide
-some more insight on the inside of this zkEVM. The legend can be found
-[here](https://github.com/FuzzingLabs/thoth/blob/master/images/callgraph_legend.png).
+some more insight on the inside of this zkEVM. 
 You can use [this tool](https://dreampuf.github.io/GraphvizOnline/) to visualize
 the .gv files online.
 
