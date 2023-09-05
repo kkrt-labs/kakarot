@@ -188,7 +188,7 @@ def create_account_with_bytecode_and_storage(
             caller_address=kakarot.contract_address
         )
 
-        if storage is None:
+        if storage is not None:
             for key, value in storage.items():
                 await contract.write_storage(
                     hex_string_to_uint256(key), hex_string_to_uint256(value)
