@@ -209,13 +209,15 @@ class TestPlainOpcodes:
 
             # Assert that the contract was deployed with the correct bytecode.
             assert len(evm_addresses) == 1
-            assert bytecode[2:] == "".join(
-                str(
-                    (
+            actual_bytecode = "".join(
+                [
+                    f"{x:02x}"
+                    for x in (
                         await plain_opcodes.contract_account.bytecode().call()
                     ).result.bytecode
-                )
+                ]
             )
+            assert bytecode[2:] == actual_bytecode
 
     class TestCreate2:
         async def test_should_deploy_bytecode_at_address(
