@@ -31,7 +31,7 @@ compatible with the future of zero-knowledge.
 
 Kakarot is a work in progress, and it is not ready for production.
 
-[Kakarot presentations and talks around the world]([https://www.youtube.com/watch?v=HnIqnhWdxpA](https://www.youtube.com/playlist?list=PLF3T1714MyKDwjjA8oHizXAdLNx62ka5U))
+[Kakarot presentations and talks around the world](https://www.youtube.com/playlist?list=PLF3T1714MyKDwjjA8oHizXAdLNx62ka5U)
 
 [Getting started](#getting-started) • [Supported opcodes](#supported-opcodes) •
 [Build](#build) • [Test](#test) •
@@ -271,9 +271,9 @@ _For more information and to report security issues, please refer to our
 
 The callgraph artifacts contains all the contract's call graph. Those are
 generated using [thoth](https://github.com/FuzzingLabs/thoth) and can provide
-some more insight on the inside of this zkEVM. 
-You can use [this tool](https://dreampuf.github.io/GraphvizOnline/) to visualize
-the .gv files online.
+some more insight on the inside of this zkEVM. You can use
+[this tool](https://dreampuf.github.io/GraphvizOnline/) to visualize the .gv
+files online.
 
 ## Contributing
 
