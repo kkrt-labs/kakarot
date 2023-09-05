@@ -9,7 +9,6 @@ from tests.utils.helpers import (
     private_key_from_hex,
 )
 from starkware.starknet.public.abi import get_storage_var_address
-from starkware.starknet.testing.contract_utils import gather_deprecated_compiled_class
 from tests.utils.uint256 import hex_string_to_uint256
 
 logger = logging.getLogger()
@@ -24,6 +23,7 @@ class TestSSTORE:
         starknet,
         deploy_eoa,
         set_storage_at_evm_address,
+        get_contract_account,
         kakarot: StarknetContract,
     ):
         evm_address = 0x6295EE1B4F6DD65047762F924ECD367C17EABF8F
@@ -53,15 +53,7 @@ class TestSSTORE:
             data=hex_string_to_bytes_array("0x6000600155600160015500"),
         ).execute(caller_address=caller_eoa.starknet_address)
 
-        contract_account_class = gather_deprecated_compiled_class(
-            source="./src/kakarot/accounts/contract/contract_account.cairo",
-            cairo_path=["src"],
-            disable_hint_validation=True,
-        )
-
-        contract_account = StarknetContract(
-            starknet.state, contract_account_class.abi, starknet_address, None
-        )
+        contract_account = get_contract_account(starknet_address)
 
         # Check storage, no change: 1 -> 0 -> 1
         storage_final = (

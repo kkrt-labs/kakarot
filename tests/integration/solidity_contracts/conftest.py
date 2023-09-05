@@ -7,8 +7,6 @@ from starkware.starknet.core.os.contract_address.contract_address import (
     calculate_contract_address_from_hash,
 )
 from starkware.starknet.testing.contract import StarknetContract
-from starkware.starknet.testing.contract_utils import gather_deprecated_compiled_class
-from starkware.starknet.public.abi import get_storage_var_address
 from web3 import Web3
 
 from tests.utils.contracts import get_contract, use_kakarot_backend
@@ -148,7 +146,7 @@ def deploy_solidity_contract(deploy_bytecode, get_solidity_contract):
 
 @pytest.fixture(scope="package")
 def create_account_with_bytecode_and_storage(
-    starknet, kakarot, deploy_bytecode, deploy_eoa
+    kakarot, deploy_bytecode, deploy_eoa, get_contract_account
 ):
     """
     Fixture to create a solidity contract in kakarot without running the bytecode.
@@ -174,30 +172,21 @@ def create_account_with_bytecode_and_storage(
             "",
             caller_eoa,
         )
-        contract_class = gather_deprecated_compiled_class(
-            source="./src/kakarot/accounts/contract/contract_account.cairo",
-            cairo_path=["src"],
-            disable_hint_validation=True,
-        )
-        contract = StarknetContract(
-            starknet.state,
-            contract_class.abi,
-            starknet_contract_address,
-            None,
-        )
 
-        await contract.write_bytecode(hex_string_to_bytes_array(bytecode)).execute(
-            caller_address=kakarot.contract_address
-        )
+        contract_account = get_contract_account(starknet_contract_address)
+
+        await contract_account.write_bytecode(
+            hex_string_to_bytes_array(bytecode)
+        ).execute(caller_address=kakarot.contract_address)
 
         if storage is not None:
             for key, value in storage.items():
-                await contract.write_storage(
+                await contract_account.write_storage(
                     hex_string_to_uint256(key), hex_string_to_uint256(value)
                 ).execute(caller_address=kakarot.contract_address)
 
-        setattr(contract, "evm_contract_address", evm_contract_address)
-        return contract
+        setattr(contract_account, "evm_contract_address", evm_contract_address)
+        return contract_account
 
     return _factory
 
@@ -224,12 +213,6 @@ def set_storage_at_evm_address(starknet, get_starknet_address):
             starknet_storage_values = hex_string_to_uint256(evm_storage_value)
             for key, value in zip(starknet_storage_keys, starknet_storage_values):
                 await starknet.state.state.set_storage_at(starknet_address, key, value)
-
-                # Verify storage
-                storage_value = await starknet.state.state.get_storage_at(
-                    starknet_address, key
-                )
-                assert storage_value == value
 
         return starknet_address
 
