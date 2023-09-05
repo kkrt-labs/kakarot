@@ -1,3 +1,7 @@
+from typing import Tuple
+from starkware.starknet.public.abi import get_storage_var_address
+
+
 def int_to_uint256(value):
     low = value & ((1 << 128) - 1)
     high = value >> 128
@@ -21,3 +25,8 @@ def hex_string_to_uint256(h: str):
 
     # Convert integer to uint256
     return int_to_uint256(value)
+
+
+def get_uint256_storage_var_keys(var_name: str, *args) -> Tuple[int, int]:
+    low_key = get_storage_var_address(var_name, *args)
+    return (low_key, low_key + 1)

@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 import pytest
@@ -7,6 +8,7 @@ from starkware.starknet.core.os.contract_address.contract_address import (
 )
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.contract_utils import gather_deprecated_compiled_class
+from starkware.starknet.public.abi import get_storage_var_address
 from web3 import Web3
 
 from tests.utils.contracts import get_contract, use_kakarot_backend
@@ -14,7 +16,7 @@ from tests.utils.helpers import (
     generate_random_private_key,
     hex_string_to_bytes_array,
 )
-from tests.utils.uint256 import hex_string_to_uint256
+from tests.utils.uint256 import hex_string_to_uint256, get_uint256_storage_var_keys
 
 logger = logging.getLogger()
 
@@ -196,5 +198,39 @@ def create_account_with_bytecode_and_storage(
 
         setattr(contract, "evm_contract_address", evm_contract_address)
         return contract
+
+    return _factory
+
+
+@pytest.fixture(scope="package")
+def set_storage_at_evm_address(starknet, get_starknet_address):
+    """
+    Fixture to set the storage of an evm address in kakarot.
+
+    Returns the corresponding starknet address.
+    """
+
+    async def _factory(evm_address, storage):
+        """
+        This factory is what is actually returned by pytest when calling `set_storage_at_evm_address`
+        """
+        starknet_address = get_starknet_address(evm_address)
+
+        # Set storage
+        for evm_storage_key, evm_storage_value in storage.items():
+            starknet_storage_keys = get_uint256_storage_var_keys(
+                "storage_", *hex_string_to_uint256(evm_storage_key)
+            )
+            starknet_storage_values = hex_string_to_uint256(evm_storage_value)
+            for key, value in zip(starknet_storage_keys, starknet_storage_values):
+                await starknet.state.state.set_storage_at(starknet_address, key, value)
+
+                # Verify storage
+                storage_value = await starknet.state.state.get_storage_at(
+                    starknet_address, key
+                )
+                assert storage_value == value
+
+        return starknet_address
 
     return _factory

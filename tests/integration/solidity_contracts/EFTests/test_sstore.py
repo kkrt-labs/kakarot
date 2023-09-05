@@ -19,42 +19,21 @@ logger = logging.getLogger()
 @pytest.mark.EF_TEST
 @pytest.mark.SSTORE
 class TestSSTORE:
-    @pytest.mark.skip("TODO: deploy_contract_account should also increment nonce")
     async def test_InitCollision_d0g0v0_Shanghai(
         self,
         starknet,
-        get_starknet_address,
         deploy_eoa,
+        set_storage_at_evm_address,
         kakarot: StarknetContract,
     ):
-        evm_contract_address = 0x6295EE1B4F6DD65047762F924ECD367C17EABF8F
-        starknet_contract_address = get_starknet_address(evm_contract_address)
-
-        # Set storage
+        evm_address = 0x6295EE1B4F6DD65047762F924ECD367C17EABF8F
         storage = {"0x01": "0x01"}
-        storage_key = get_storage_var_address(
-            "storage_", *hex_string_to_uint256("0x01")
-        )
-        keys = (storage_key, storage_key + 1)  # (low, high)
-        values = hex_string_to_uint256(storage["0x01"])
-        for key, value in zip(keys, values):
-            await starknet.state.state.set_storage_at(
-                starknet_contract_address, key, value
-            )
-
-        # Check initial storage
-        storage_initial = await asyncio.gather(
-            *(
-                starknet.state.state.get_storage_at(starknet_contract_address, key)
-                for key in keys
-            )
-        )
-        assert storage_initial == list(hex_string_to_uint256(storage["0x01"]))
+        starknet_address = await set_storage_at_evm_address(evm_address, storage)
 
         # Check initial nonce
         nonce_key = get_storage_var_address("nonce")
         nonce_initial = await starknet.state.state.get_storage_at(
-            starknet_contract_address, nonce_key
+            starknet_address, nonce_key
         )
         assert nonce_initial == 0
 
@@ -65,7 +44,7 @@ class TestSSTORE:
         )
         caller_eoa = await deploy_eoa(private_key)
 
-        # Send CREATE tx
+        # Send tx
         await kakarot.eth_send_transaction(
             to=0,
             gas_limit=200_000,
@@ -81,7 +60,7 @@ class TestSSTORE:
         )
 
         contract_account = StarknetContract(
-            starknet.state, contract_account_class.abi, starknet_contract_address, None
+            starknet.state, contract_account_class.abi, starknet_address, None
         )
 
         # Check storage, no change: 1 -> 0 -> 1
