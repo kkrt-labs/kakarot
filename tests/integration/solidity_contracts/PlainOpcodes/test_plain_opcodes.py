@@ -188,6 +188,32 @@ class TestPlainOpcodes:
             ).result.nonce
             assert nonce_final == nonce_initial + count
 
+        @pytest.mark.skip(
+            "TODO: need to fix when there is no return data from the bytecode execution in EVMInstructions.run"
+        )
+        @pytest.mark.parametrize("bytecode", ["0x", "0x6000600155600160015500"])
+        async def test_should_create_contract_with_bytecode_and_no_return_data(
+            self,
+            plain_opcodes,
+            plain_opcodes_deployer,
+            bytecode,
+        ):
+            nonce_initial = (
+                await plain_opcodes.contract_account.get_nonce().call()
+            ).result.nonce
+
+            evm_addresses = await plain_opcodes.create(
+                bytecode=bytecode,
+                count=1,
+                caller_address=plain_opcodes_deployer,
+            )
+            assert len(evm_addresses) == 1
+
+            nonce_final = (
+                await plain_opcodes.contract_account.get_nonce().call()
+            ).result.nonce
+            assert nonce_final == nonce_initial + 1
+
     class TestCreate2:
         async def test_should_deploy_bytecode_at_address(
             self,
