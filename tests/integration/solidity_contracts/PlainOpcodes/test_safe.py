@@ -35,6 +35,6 @@ class TestSafe:
             self, safe, safe_deployer, deploy_solidity_contract
         ):
             safe = await deploy_solidity_contract(
-                "PlainOpcodes", "Safe", value=int("1", 16)
+                "PlainOpcodes", "Safe", value=1
             )
             assert await safe.balance() == 1
