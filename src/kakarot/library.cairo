@@ -252,14 +252,11 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(origin: felt, bytecode_len: felt, bytecode: felt*) -> (
-        starknet_contract_address: felt, evm_contract_address: felt
+    }(origin: felt, evm_contract_address: felt, bytecode_len: felt, bytecode: felt*) -> (
+        starknet_contract_address: felt
     ) {
         alloc_locals;
-        // TODO: read the nonce from the provided origin address, otherwise in view mode this will
-        // TODO: always use a 0 nonce
-        let (tx_info) = get_tx_info();
-        let (evm_contract_address) = CreateHelper.get_create_address(origin, tx_info.nonce);
+
         let (class_hash) = contract_account_class_hash.read();
         let (starknet_contract_address) = Accounts.create(class_hash, evm_contract_address);
         let (empty_array: felt*) = alloc();
@@ -295,12 +292,7 @@ namespace Kakarot {
             bytecode_len=return_data_len,
             bytecode=return_data,
         );
-        // Increment nonce
-        IContractAccount.increment_nonce(contract_address=starknet_contract_address);
-        return (
-            starknet_contract_address=starknet_contract_address,
-            evm_contract_address=evm_contract_address,
-        );
+        return (starknet_contract_address=starknet_contract_address);
     }
 
     // @notice Deploy a new externally owned account.
@@ -357,23 +349,35 @@ namespace Kakarot {
         data: felt*,
     ) -> (return_data_len: felt, return_data: felt*) {
         alloc_locals;
-        let (success) = transfer(origin, to, value);
-        with_attr error_message("Kakarot: eth_call: failed to transfer {value} tokens to {to}") {
-            assert success = TRUE;
-        }
 
         if (to == 0) {
-            with_attr error_message("Kakarot: value should be 0 when deploying a contract") {
-                assert value = 0;
+            // TODO: read the nonce from the provided origin address, otherwise in view mode this will
+            // TODO: always use a 0 nonce
+            let (tx_info) = get_tx_info();
+            let (evm_contract_address) = CreateHelper.get_create_address(origin, tx_info.nonce);
+
+            let (success) = transfer(origin, evm_contract_address, value);
+            with_attr error_message(
+                    "Kakarot: eth_call: failed to transfer {value} tokens to {evm_contract_address}") {
+                assert success = TRUE;
             }
-            let (starknet_contract_address, evm_contract_address) = deploy_contract_account(
-                origin=origin, bytecode_len=data_len, bytecode=data
+
+            let (starknet_contract_address) = deploy_contract_account(
+                origin=origin,
+                evm_contract_address=evm_contract_address,
+                bytecode_len=data_len,
+                bytecode=data,
             );
             let (return_data) = alloc();
             assert [return_data] = evm_contract_address;
             assert [return_data + 1] = starknet_contract_address;
             return (2, return_data);
         } else {
+            let (success) = transfer(origin, to, value);
+            with_attr error_message(
+                    "Kakarot: eth_call: failed to transfer {value} tokens to {to}") {
+                assert success = TRUE;
+            }
             let (local starknet_contract_address) = Accounts.compute_starknet_address(to);
             let (bytecode_len, bytecode) = Accounts.get_bytecode(to);
             let summary = execute(

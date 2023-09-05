@@ -71,7 +71,7 @@ def deploy_bytecode(kakarot, deploy_eoa):
     the corresponding starknet address and the starknet transaction.
     """
 
-    async def _factory(bytecode: str, caller_eoa=None):
+    async def _factory(bytecode: str, value=0, caller_eoa=None):
         """
         This factory is what is actually returned by pytest when requesting the `deploy_bytecode`
         fixture.
@@ -85,7 +85,7 @@ def deploy_bytecode(kakarot, deploy_eoa):
             to=0,
             gas_limit=1_000_000,
             gas_price=0,
-            value=0,
+            value=value,
             data=hex_string_to_bytes_array(bytecode),
         ).execute(caller_address=caller_eoa.starknet_address)
 
@@ -124,10 +124,10 @@ def deploy_solidity_contract(deploy_bytecode, get_solidity_contract):
         is required and filtered out before calling the constructor.
         """
         contract = get_contract(contract_app, contract_name)
+        value = kwargs.pop("value", 0)
         caller_eoa = kwargs.pop("caller_eoa", None)
         evm_contract_address, starknet_contract_address, tx = await deploy_bytecode(
-            contract.constructor(*args, **kwargs).data_in_transaction,
-            caller_eoa,
+            contract.constructor(*args, **kwargs).data_in_transaction, value, caller_eoa
         )
         return get_solidity_contract(
             contract_app,
@@ -153,7 +153,7 @@ def create_account_with_bytecode_and_storage(
     """
 
     async def _factory(
-        bytecode: str = "", storage: Optional[Dict[str, str]] = None, caller_eoa=None
+        bytecode: str = "", storage: Optional[Dict[str, str]] = None, value=0, caller_eoa=None
     ):
         """
         This factory is what is actually returned by pytest when requesting the `create_account_with_bytecode_and_storage`
@@ -166,6 +166,7 @@ def create_account_with_bytecode_and_storage(
 
         evm_contract_address, starknet_contract_address, _ = await deploy_bytecode(
             "",
+            value,
             caller_eoa,
         )
 
