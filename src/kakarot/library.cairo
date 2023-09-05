@@ -295,6 +295,8 @@ namespace Kakarot {
             bytecode_len=return_data_len,
             bytecode=return_data,
         );
+        // Increment nonce
+        IContractAccount.increment_nonce(contract_address=starknet_contract_address);
         return (
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=evm_contract_address,

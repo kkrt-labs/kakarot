@@ -1,5 +1,5 @@
 import pytest_asyncio
-from starkware.starknet.testing.contract import DeclaredClass
+from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
 
@@ -28,3 +28,16 @@ async def account_proxy_class(starknet: Starknet):
         cairo_path=["src"],
         disable_hint_validation=True,
     )
+
+
+@pytest_asyncio.fixture(scope="session")
+def get_contract_account(starknet, contract_account_class):
+    def _factory(starknet_address):
+        return StarknetContract(
+            starknet.state,
+            contract_account_class.abi,
+            starknet_address,
+            None,
+        )
+
+    return _factory

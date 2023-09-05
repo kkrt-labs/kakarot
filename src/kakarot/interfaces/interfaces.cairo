@@ -68,6 +68,12 @@ namespace IContractAccount {
 
     func write_storage(key: Uint256, value: Uint256) {
     }
+
+    func get_nonce() -> (nonce: felt) {
+    }
+
+    func increment_nonce() {
+    }
 }
 
 @contract_interface

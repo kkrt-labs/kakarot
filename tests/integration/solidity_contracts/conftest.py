@@ -1,15 +1,20 @@
+import asyncio
 import logging
 
 import pytest
+from typing import Dict, Optional
 from starkware.starknet.core.os.contract_address.contract_address import (
     calculate_contract_address_from_hash,
 )
 from starkware.starknet.testing.contract import StarknetContract
-from starkware.starknet.testing.contract_utils import gather_deprecated_compiled_class
 from web3 import Web3
 
 from tests.utils.contracts import get_contract, use_kakarot_backend
-from tests.utils.helpers import generate_random_private_key, hex_string_to_bytes_array
+from tests.utils.helpers import (
+    generate_random_private_key,
+    hex_string_to_bytes_array,
+)
+from tests.utils.uint256 import hex_string_to_uint256, get_uint256_storage_var_keys
 
 logger = logging.getLogger()
 
@@ -140,18 +145,22 @@ def deploy_solidity_contract(deploy_bytecode, get_solidity_contract):
 
 
 @pytest.fixture(scope="package")
-def create_account_with_bytecode(starknet, kakarot, deploy_bytecode, deploy_eoa):
+def create_account_with_bytecode_and_storage(
+    kakarot, deploy_bytecode, deploy_eoa, get_contract_account
+):
     """
     Fixture to create a solidity contract in kakarot without running the bytecode.
-    The given bytecode is directly stored into the account, similarly to what is done
-    in a genesis config.
+    The given bytecode and storage are directly stored into the account, similarly to
+    what is done in a genesis config.
 
     Returns the corresponding starknet contract with the extra evm_contract_address attribute.
     """
 
-    async def _factory(bytecode: str, caller_eoa=None):
+    async def _factory(
+        bytecode: str = "", storage: Optional[Dict[str, str]] = None, caller_eoa=None
+    ):
         """
-        This factory is what is actually returned by pytest when requesting the `create_account_with_bytecode`
+        This factory is what is actually returned by pytest when requesting the `create_account_with_bytecode_and_storage`
         fixture.
         """
         if caller_eoa is None:
@@ -163,21 +172,48 @@ def create_account_with_bytecode(starknet, kakarot, deploy_bytecode, deploy_eoa)
             "",
             caller_eoa,
         )
-        contract_class = gather_deprecated_compiled_class(
-            source="./src/kakarot/accounts/contract/contract_account.cairo",
-            cairo_path=["src"],
-            disable_hint_validation=True,
-        )
-        contract = StarknetContract(
-            starknet.state,
-            contract_class.abi,
-            starknet_contract_address,
-            None,
-        )
-        await contract.write_bytecode(hex_string_to_bytes_array(bytecode)).execute(
-            caller_address=kakarot.contract_address
-        )
-        setattr(contract, "evm_contract_address", evm_contract_address)
-        return contract
+
+        contract_account = get_contract_account(starknet_contract_address)
+
+        await contract_account.write_bytecode(
+            hex_string_to_bytes_array(bytecode)
+        ).execute(caller_address=kakarot.contract_address)
+
+        if storage is not None:
+            for key, value in storage.items():
+                await contract_account.write_storage(
+                    hex_string_to_uint256(key), hex_string_to_uint256(value)
+                ).execute(caller_address=kakarot.contract_address)
+
+        setattr(contract_account, "evm_contract_address", evm_contract_address)
+        return contract_account
+
+    return _factory
+
+
+@pytest.fixture(scope="package")
+def set_storage_at_evm_address(starknet, get_starknet_address):
+    """
+    Fixture to set the storage of an evm address in kakarot.
+
+    Returns the corresponding starknet address.
+    """
+
+    async def _factory(evm_address, storage):
+        """
+        This factory is what is actually returned by pytest when calling `set_storage_at_evm_address`
+        """
+        starknet_address = get_starknet_address(evm_address)
+
+        # Set storage
+        for evm_storage_key, evm_storage_value in storage.items():
+            starknet_storage_keys = get_uint256_storage_var_keys(
+                "storage_", *hex_string_to_uint256(evm_storage_key)
+            )
+            starknet_storage_values = hex_string_to_uint256(evm_storage_value)
+            for key, value in zip(starknet_storage_keys, starknet_storage_values):
+                await starknet.state.state.set_storage_at(starknet_address, key, value)
+
+        return starknet_address
 
     return _factory

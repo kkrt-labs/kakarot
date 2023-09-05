@@ -154,18 +154,7 @@ class TestPlainOpcodes:
             assert plain_opcodes.events.Log4 == [event]
 
     class TestCreate:
-        @pytest.mark.parametrize(
-            "count",
-            (
-                pytest.param(1),
-                pytest.param(
-                    2,
-                    marks=pytest.mark.skip(
-                        "Fixme: CREATE cannot be called twice in the same tx"
-                    ),
-                ),
-            ),
-        )
+        @pytest.mark.parametrize("count", [1, 2])
         async def test_should_create_counters(
             self,
             kakarot,
@@ -175,6 +164,10 @@ class TestPlainOpcodes:
             get_solidity_contract,
             count,
         ):
+            nonce_initial = (
+                await plain_opcodes.contract_account.get_nonce().call()
+            ).result.nonce
+
             evm_addresses = await plain_opcodes.create(
                 bytecode=counter.constructor().data_in_transaction,
                 count=count,
@@ -189,6 +182,11 @@ class TestPlainOpcodes:
                     "PlainOpcodes", "Counter", starknet_address, evm_address, None
                 )
                 assert await deployed_counter.count() == 0
+
+            nonce_final = (
+                await plain_opcodes.contract_account.get_nonce().call()
+            ).result.nonce
+            assert nonce_final == nonce_initial + count
 
     class TestCreate2:
         async def test_should_deploy_bytecode_at_address(
