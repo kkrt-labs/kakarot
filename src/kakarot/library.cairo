@@ -243,10 +243,12 @@ namespace Kakarot {
     // @notice Deploy contract account.
     // @dev First deploy a contract_account with no bytecode, then run the calldata as bytecode with the new address,
     //      then set the bytecode with the result of the initial run.
+    // @param origin The origin for the transaction
+    // @param evm_contract_address The evm address of the contract to be deployed
+    // @param value The value to be transferred as part of this deploy call
     // @param bytecode_len The deploy bytecode length.
     // @param bytecode The deploy bytecode.
     // @return starknet_contract_address The newly deployed starknet contract address.
-    // @return evm_contract_address The evm address that is mapped to the newly deployed starknet contract address.
     func deploy_contract_account{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
