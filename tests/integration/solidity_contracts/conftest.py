@@ -1,8 +1,7 @@
-import asyncio
 import logging
+from typing import Dict, Optional
 
 import pytest
-from typing import Dict, Optional
 from starkware.starknet.core.os.contract_address.contract_address import (
     calculate_contract_address_from_hash,
 )
@@ -10,11 +9,8 @@ from starkware.starknet.testing.contract import StarknetContract
 from web3 import Web3
 
 from tests.utils.contracts import get_contract, use_kakarot_backend
-from tests.utils.helpers import (
-    generate_random_private_key,
-    hex_string_to_bytes_array,
-)
-from tests.utils.uint256 import hex_string_to_uint256, get_uint256_storage_var_keys
+from tests.utils.helpers import generate_random_private_key, hex_string_to_bytes_array
+from tests.utils.uint256 import get_uint256_storage_var_keys, hex_string_to_uint256
 
 logger = logging.getLogger()
 

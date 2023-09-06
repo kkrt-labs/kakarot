@@ -1,4 +1,5 @@
 from typing import Tuple
+
 from starkware.starknet.public.abi import get_storage_var_address
 
 
