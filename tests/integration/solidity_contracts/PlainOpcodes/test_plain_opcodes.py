@@ -192,14 +192,17 @@ class TestPlainOpcodes:
             """
             TODO: need to fix when there is no return data from the bytecode execution,
             it calls CallHelper instead of CreateHelper when finalizing calling context
+            https://github.com/kkrt-labs/kakarot/issues/726
             """
         )
         @pytest.mark.parametrize("bytecode", ["0x", "0x6000600155600160015500"])
-        async def test_should_create_contract_with_bytecode_and_no_return_data(
+        async def test_should_create_empty_contract_when_creation_code_has_no_return(
             self,
             plain_opcodes,
             plain_opcodes_deployer,
             bytecode,
+            get_starknet_address,
+            get_contract_account,
         ):
             evm_addresses = await plain_opcodes.create(
                 bytecode=bytecode,
@@ -207,17 +210,13 @@ class TestPlainOpcodes:
                 caller_address=plain_opcodes_deployer,
             )
 
-            # Assert that the contract was deployed with the correct bytecode.
+            # Assert that the contract was deployed with no bytecode
             assert len(evm_addresses) == 1
-            actual_bytecode = "".join(
-                [
-                    f"{x:02x}"
-                    for x in (
-                        await plain_opcodes.contract_account.bytecode().call()
-                    ).result.bytecode
-                ]
+            contract_account = get_contract_account(
+                get_starknet_address(evm_addresses[0])
             )
-            assert bytecode[2:] == actual_bytecode
+            actual_bytecode = (await contract_account.bytecode().call()).result.bytecode
+            assert actual_bytecode == []
 
     class TestCreate2:
         async def test_should_deploy_bytecode_at_address(
