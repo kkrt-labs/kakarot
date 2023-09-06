@@ -45,6 +45,10 @@ contract PlainOpcodes {
         return (blockhash(blockNumber));
     }
 
+    function opcodeTimestamp() public view returns (uint256) {
+        return block.timestamp;
+    }
+
     function opcodeAddress() public view returns (address selfAddress) {
         return (address(this));
     }
@@ -152,7 +156,7 @@ contract PlainOpcodes {
         }
     }
 
-    function sendSome(address payable to, uint amount) public {
+    function sendSome(address payable to, uint256 amount) public {
         to.send(amount);
     }
 }

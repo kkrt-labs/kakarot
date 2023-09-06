@@ -1,5 +1,6 @@
 import pytest
 from eth_utils import to_checksum_address
+from starkware.starknet.testing.starknet import Starknet
 from web3 import Web3
 
 from tests.utils.contracts import get_contract
@@ -30,6 +31,13 @@ class TestPlainOpcodes:
         ):
             await plain_opcodes.opcodeCall(caller_address=counter_deployer)
             assert await counter.count() == 1
+
+    class TestTimestamp:
+        async def test_should_return_starknet_timestamp(
+            self, starknet: Starknet, plain_opcodes
+        ):
+            timestamp = await plain_opcodes.opcodeTimestamp()
+            assert timestamp == starknet.state.state.block_info.block_timestamp
 
     class TestBlockhash:
         async def test_should_return_blockhash_with_valid_block_number(

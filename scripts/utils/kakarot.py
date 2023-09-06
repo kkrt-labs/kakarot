@@ -2,7 +2,7 @@ import json
 import logging
 from pathlib import Path
 from types import MethodType
-from typing import Tuple, Union, cast
+from typing import Optional, Tuple, Union, cast
 
 import toml
 from eth_account import Account as EvmAccount
@@ -88,25 +88,18 @@ def get_contract(contract_app: str, contract_name: str, address=None) -> Web3Con
     return contract
 
 
-async def deploy_bytecode(bytecode: Union[str, bytes]) -> Tuple[int, int]:
-    logger.info(f"⏳ Deploying bytecode")
-    receipt = await eth_send_transaction(
-        to=0,
-        value=0,
-        gas=int(1e18),
-        data=bytecode,
-    )
+async def deploy_bytecode(**kwargs) -> Tuple[int, int]:
+    receipt = await eth_send_transaction(to=0, value=0, gas=int(1e18), **kwargs)
     deploy_event = [
         event
         for event in receipt.events
-        if event.from_address == int(get_deployments()["kakarot"]["address"], 16)
+        if event.from_address == get_deployments()["kakarot"]["address"]
     ]
     if len(deploy_event) != 1:
         raise ValueError(
             f"Cannot locate evm contract address event, receipt events:\n{receipt.events}"
         )
     evm_address, starknet_address = deploy_event[0].data
-    logger.info(f"✅ Bytecode deployed at address {evm_address}")
     return evm_address, starknet_address
 
 
@@ -115,8 +108,12 @@ async def deploy(
 ) -> Web3Contract:
     logger.info(f"⏳ Deploying {contract_name}")
     contract = get_contract(contract_app, contract_name)
+    caller_eoa = kwargs.pop("caller_eoa", None)
+    max_fee = kwargs.pop("max_fee", None)
     evm_address, _ = await deploy_bytecode(
-        contract.constructor(*args, **kwargs).data_in_transaction
+        data=contract.constructor(*args, **kwargs).data_in_transaction,
+        caller_eoa=caller_eoa,
+        max_fee=max_fee,
     )
     contract.address = Web3.to_checksum_address(evm_address)
 
@@ -135,14 +132,16 @@ def _wrap_kakarot(fun: str):
         gas_price = kwargs.pop("gas_price", 1_000)
         gas_limit = kwargs.pop("gas_limit", 1_000_000_000)
         value = kwargs.pop("value", 0)
+        caller_eoa = kwargs.pop("caller_eoa", None)
         calldata = self.get_function_by_name(fun)(
             *args, **kwargs
         )._encode_transaction_data()
 
         if abi["stateMutability"] == "view":
             kakarot_contract = await _get_starknet_contract("kakarot")
+            origin = caller_eoa.address if caller_eoa else int(EVM_ADDRESS, 16)
             result = await kakarot_contract.functions["eth_call"].call(
-                origin=int(EVM_ADDRESS, 16),
+                origin=origin,
                 to=int(self.address, 16),
                 gas_limit=gas_limit,
                 gas_price=gas_price,
@@ -161,6 +160,8 @@ def _wrap_kakarot(fun: str):
             value=value,
             gas=gas_limit,
             data=calldata,
+            caller_eoa=caller_eoa.starknet_contract if caller_eoa else None,
+            max_fee=kwargs.pop("max_fee", None),
         )
 
     return _wrapper
@@ -192,7 +193,7 @@ async def get_eoa(private_key=None, amount=0.1) -> Account:
         # This is somehow a hack because we put EVM private key into a
         # Stark signer KeyPair to have both a regular Starknet account
         # and the access to the private key
-        key_pair=KeyPair(private_key, private_key.public_key),
+        key_pair=KeyPair(int(private_key), private_key.public_key),
     )
 
 
@@ -201,9 +202,11 @@ async def eth_send_transaction(
     value: Union[int, str],
     gas: int,
     data: Union[str, bytes],
+    caller_eoa: Optional[Account] = None,
+    max_fee: Optional[int] = None,
 ):
     """Execute the data at the EVM contract to on Kakarot."""
-    evm_account = await get_eoa()
+    evm_account = caller_eoa or await get_eoa()
     tx_payload = EvmAccount.sign_transaction(
         {
             "type": 0x2,
@@ -224,7 +227,7 @@ async def eth_send_transaction(
             selector=0xDEAD,  # unused in current EOA implementation
             calldata=tx_payload,
         ),
-        max_fee=int(5e17),
+        max_fee=max_fee or int(5e17),
     )
     await wait_for_transaction(tx_hash=response.transaction_hash)
     return await CLIENT.get_transaction_receipt(response.transaction_hash)
