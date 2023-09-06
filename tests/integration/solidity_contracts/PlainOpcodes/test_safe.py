@@ -29,3 +29,8 @@ class TestSafe:
             assert (
                 await eth.balanceOf(owner.starknet_address).call()
             ).result.balance.low == ACCOUNT_BALANCE
+
+    class TestDeploySafeWithValue:
+        async def test_deploy_safe_with_value(self, safe, deploy_solidity_contract):
+            safe = await deploy_solidity_contract("PlainOpcodes", "Safe", value=1)
+            assert await safe.balance() == 1

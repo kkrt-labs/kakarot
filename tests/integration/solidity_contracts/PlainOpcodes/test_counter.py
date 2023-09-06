@@ -41,3 +41,10 @@ class TestCounter:
             await counter.inc(caller_address=counter_deployer)
             await counter.reset(caller_address=counter_deployer)
             assert await counter.count() == 0
+
+    class TestDeploymentWithValue:
+        async def test_deployment_with_value_should_fail(
+            self, deploy_solidity_contract
+        ):
+            with kakarot_error():
+                await deploy_solidity_contract("PlainOpcodes", "Counter", value=1)

@@ -243,23 +243,22 @@ namespace Kakarot {
     // @notice Deploy contract account.
     // @dev First deploy a contract_account with no bytecode, then run the calldata as bytecode with the new address,
     //      then set the bytecode with the result of the initial run.
+    // @param origin The origin for the transaction
+    // @param evm_contract_address The evm address of the contract to be deployed
+    // @param value The value to be transferred as part of this deploy call
     // @param bytecode_len The deploy bytecode length.
     // @param bytecode The deploy bytecode.
     // @return starknet_contract_address The newly deployed starknet contract address.
-    // @return evm_contract_address The evm address that is mapped to the newly deployed starknet contract address.
     func deploy_contract_account{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(origin: felt, bytecode_len: felt, bytecode: felt*) -> (
-        starknet_contract_address: felt, evm_contract_address: felt
-    ) {
+    }(
+        origin: felt, evm_contract_address: felt, value: felt, bytecode_len: felt, bytecode: felt*
+    ) -> (starknet_contract_address: felt) {
         alloc_locals;
-        // TODO: read the nonce from the provided origin address, otherwise in view mode this will
-        // TODO: always use a 0 nonce
-        let (tx_info) = get_tx_info();
-        let (evm_contract_address) = CreateHelper.get_create_address(origin, tx_info.nonce);
+
         let (class_hash) = contract_account_class_hash.read();
         let (starknet_contract_address) = Accounts.create(class_hash, evm_contract_address);
         let (empty_array: felt*) = alloc();
@@ -284,7 +283,7 @@ namespace Kakarot {
             bytecode=bytecode,
             calldata_len=0,
             calldata=empty_array,
-            value=0,
+            value=value,
             gas_limit=0,
             gas_price=0,
         );
@@ -297,10 +296,7 @@ namespace Kakarot {
         );
         // Increment nonce
         IContractAccount.increment_nonce(contract_address=starknet_contract_address);
-        return (
-            starknet_contract_address=starknet_contract_address,
-            evm_contract_address=evm_contract_address,
-        );
+        return (starknet_contract_address=starknet_contract_address);
     }
 
     // @notice Deploy a new externally owned account.
@@ -357,23 +353,36 @@ namespace Kakarot {
         data: felt*,
     ) -> (return_data_len: felt, return_data: felt*) {
         alloc_locals;
-        let (success) = transfer(origin, to, value);
-        with_attr error_message("Kakarot: eth_call: failed to transfer {value} tokens to {to}") {
-            assert success = TRUE;
-        }
 
         if (to == 0) {
-            with_attr error_message("Kakarot: value should be 0 when deploying a contract") {
-                assert value = 0;
+            // TODO: read the nonce from the provided origin address, otherwise in view mode this will
+            // TODO: always use a 0 nonce
+            let (tx_info) = get_tx_info();
+            let (evm_contract_address) = CreateHelper.get_create_address(origin, tx_info.nonce);
+
+            let (success) = transfer(origin, evm_contract_address, value);
+            with_attr error_message(
+                    "Kakarot: eth_call: failed to transfer {value} tokens to {evm_contract_address}") {
+                assert success = TRUE;
             }
-            let (starknet_contract_address, evm_contract_address) = deploy_contract_account(
-                origin=origin, bytecode_len=data_len, bytecode=data
+
+            let (starknet_contract_address) = deploy_contract_account(
+                origin=origin,
+                evm_contract_address=evm_contract_address,
+                value=value,
+                bytecode_len=data_len,
+                bytecode=data,
             );
             let (return_data) = alloc();
             assert [return_data] = evm_contract_address;
             assert [return_data + 1] = starknet_contract_address;
             return (2, return_data);
         } else {
+            let (success) = transfer(origin, to, value);
+            with_attr error_message(
+                    "Kakarot: eth_call: failed to transfer {value} tokens to {to}") {
+                assert success = TRUE;
+            }
             let (local starknet_contract_address) = Accounts.compute_starknet_address(to);
             let (bytecode_len, bytecode) = Accounts.get_bytecode(to);
             let summary = execute(
