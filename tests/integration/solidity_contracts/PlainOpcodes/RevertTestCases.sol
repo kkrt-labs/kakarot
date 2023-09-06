@@ -23,4 +23,3 @@ contract ContractRevertsOnConstruction {
         revert("FAIL");
     }
 }
-
