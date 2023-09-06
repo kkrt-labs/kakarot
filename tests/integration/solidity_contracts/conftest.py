@@ -153,7 +153,10 @@ def create_account_with_bytecode_and_storage(
     """
 
     async def _factory(
-        bytecode: str = "", storage: Optional[Dict[str, str]] = None, value=0, caller_eoa=None
+        bytecode: str = "",
+        storage: Optional[Dict[str, str]] = None,
+        value=0,
+        caller_eoa=None,
     ):
         """
         This factory is what is actually returned by pytest when requesting the `create_account_with_bytecode_and_storage`
