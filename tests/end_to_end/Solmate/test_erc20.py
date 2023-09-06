@@ -124,7 +124,7 @@ class TestERC20:
         @pytest.mark.parametrize(
             "initial_allowance, final_allowance", ((TEST_SUPPLY, 0), (MAX_INT, MAX_INT))
         )
-        async def test_should_transfer_from(
+        async def test_should_transfer_and_update_allowance(
             self, erc_20, owner, others, initial_allowance, final_allowance
         ):
             from_wallet = others[0]
