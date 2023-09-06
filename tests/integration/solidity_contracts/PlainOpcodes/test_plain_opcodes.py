@@ -213,7 +213,7 @@ class TestPlainOpcodes:
             # Assert that the contract was deployed with no bytecode
             assert len(evm_addresses) == 1
             contract_account = get_contract_account(
-                get_starknet_address(int(evm_addresses[0]))
+                get_starknet_address(int(evm_addresses[0], 16))
             )
             actual_bytecode = (await contract_account.bytecode().call()).result.bytecode
             assert actual_bytecode == []
