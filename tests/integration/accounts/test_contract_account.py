@@ -2,9 +2,9 @@ import random
 
 import pytest
 import pytest_asyncio
+from starkware.starknet.public.abi import get_storage_var_address
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
-from starkware.starknet.public.abi import get_storage_var_address
 
 from tests.utils.errors import kakarot_error
 from tests.utils.reporting import traceit

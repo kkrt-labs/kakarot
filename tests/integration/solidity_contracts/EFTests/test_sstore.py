@@ -1,14 +1,10 @@
-import asyncio
 import logging
 
 import pytest
+from starkware.starknet.public.abi import get_storage_var_address
 from starkware.starknet.testing.contract import StarknetContract
 
-from tests.utils.helpers import (
-    hex_string_to_bytes_array,
-    private_key_from_hex,
-)
-from starkware.starknet.public.abi import get_storage_var_address
+from tests.utils.helpers import hex_string_to_bytes_array, private_key_from_hex
 from tests.utils.uint256 import hex_string_to_uint256
 
 logger = logging.getLogger()
