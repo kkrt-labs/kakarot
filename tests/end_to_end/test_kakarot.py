@@ -45,7 +45,7 @@ class TestKakarot:
         max_fee,
     ):
         call = evm.functions["execute"].prepare(
-            origin=addresses[0].address,
+            origin=int(addresses[0].address, 16),
             value=int(params["value"]),
             bytecode=hex_string_to_bytes_array(params["code"]),
             calldata=hex_string_to_bytes_array(params["calldata"]),
@@ -60,7 +60,7 @@ class TestKakarot:
                 int(x)
                 for x in params["stack"]
                 .format(
-                    account_address=addresses[0].address,
+                    account_address=int(addresses[0].address, 16),
                     timestamp=result.block_timestamp,
                     block_number=result.block_number,
                 )
