@@ -56,19 +56,34 @@ async def addresses(max_fee) -> List[Wallet]:
     from scripts.utils.kakarot import get_eoa
 
     wallets = []
-    for i in range(4):
+    for i in range(5):
         private_key = generate_random_private_key(seed=i)
         wallets.append(
             Wallet(
                 address=private_key.public_key.to_checksum_address(),
                 private_key=private_key,
-                # deploying an account with enough ETH to pass ~100 tx
+                # deploying an account with enough ETH to pass ~30 tx
                 starknet_contract=await get_eoa(
-                    private_key, amount=100 * max_fee / 1e18
+                    private_key, amount=30 * max_fee / 1e18
                 ),
             )
         )
     return wallets
+
+
+@pytest_asyncio.fixture(scope="session")
+def owner(addresses):
+    return addresses[0]
+
+
+@pytest_asyncio.fixture(scope="session")
+def other(addresses):
+    return addresses[1]
+
+
+@pytest_asyncio.fixture(scope="session")
+def others(addresses):
+    return addresses[2:]
 
 
 @pytest_asyncio.fixture(scope="session")

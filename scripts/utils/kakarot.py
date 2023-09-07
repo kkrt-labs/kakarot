@@ -242,15 +242,14 @@ async def deploy_and_fund_evm_address(evm_address: str, amount: float):
     """
     Deploy an EOA linked to the given EVM address and fund it with amount ETH
     """
-
-    await fund_address(evm_address, amount)
-
     starknet_address = (
         await _call_starknet(
             "kakarot", "compute_starknet_address", int(evm_address, 16)
         )
     ).contract_address
+
     if not await _contract_exists(starknet_address):
+        await fund_address(evm_address, amount)
         await _invoke_starknet(
             "kakarot", "deploy_externally_owned_account", int(evm_address, 16)
         )

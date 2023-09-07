@@ -11,21 +11,6 @@ TEST_SUPPLY = 10**18
 TEST_AMOUNT = int(0.9 * 10**18)
 
 
-@pytest_asyncio.fixture(scope="session")
-def owner(addresses):
-    return addresses[0]
-
-
-@pytest_asyncio.fixture(scope="session")
-def other(addresses):
-    return addresses[1]
-
-
-@pytest_asyncio.fixture(scope="session")
-def others(addresses):
-    return addresses[2:]
-
-
 @pytest_asyncio.fixture(scope="module")
 async def erc_20(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
@@ -104,7 +89,7 @@ class TestERC20:
             assert balance_sender_before - balance_sender_after == TEST_SUPPLY
             assert balance_receiver_after - balance_receiver_before == TEST_SUPPLY
 
-        @pytest.mark.skipif(
+        @pytest.mark.xfail(
             os.environ.get("STARKNET_NETWORK", "katana") == "katana",
             reason="https://github.com/dojoengine/dojo/issues/864",
         )
@@ -161,7 +146,7 @@ class TestERC20:
             assert balance_sender_before - balance_sender_after == TEST_SUPPLY
             assert balance_receiver_after - balance_receiver_before == TEST_SUPPLY
 
-        @pytest.mark.skipif(
+        @pytest.mark.xfail(
             os.environ.get("STARKNET_NETWORK", "katana") == "katana",
             reason="https://github.com/dojoengine/dojo/issues/864",
         )
@@ -178,7 +163,7 @@ class TestERC20:
                     caller_eoa=owner,
                 )
 
-        @pytest.mark.skipif(
+        @pytest.mark.xfail(
             os.environ.get("STARKNET_NETWORK", "katana") == "katana",
             reason="https://github.com/dojoengine/dojo/issues/864",
         )
@@ -226,7 +211,7 @@ class TestERC20:
             assert await erc_20.allowance(owner.address, other.address) == TEST_SUPPLY
             assert await erc_20.nonces(owner.address) == 1
 
-        @pytest.mark.skipif(
+        @pytest.mark.xfail(
             os.environ.get("STARKNET_NETWORK", "katana") == "katana",
             reason="https://github.com/dojoengine/dojo/issues/864",
         )
@@ -260,7 +245,7 @@ class TestERC20:
                     caller_eoa=owner,
                 )
 
-        @pytest.mark.skipif(
+        @pytest.mark.xfail(
             os.environ.get("STARKNET_NETWORK", "katana") == "katana",
             reason="https://github.com/dojoengine/dojo/issues/864",
         )
@@ -294,7 +279,7 @@ class TestERC20:
                     caller_eoa=owner,
                 )
 
-        @pytest.mark.skipif(
+        @pytest.mark.xfail(
             os.environ.get("STARKNET_NETWORK", "katana") == "katana",
             reason="https://github.com/dojoengine/dojo/issues/864",
         )

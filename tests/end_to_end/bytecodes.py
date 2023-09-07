@@ -1639,7 +1639,7 @@ test_cases = [
         "marks": [
             pytest.mark.EC_ADD,
             pytest.mark.Precompiles,
-            pytest.mark.skip("Hint is not whitelisted"),
+            pytest.mark.xfail(reason="Hint is not whitelisted"),
         ],
     },
     {
@@ -1661,7 +1661,7 @@ test_cases = [
         "marks": [
             pytest.mark.MOD_EXP,
             pytest.mark.Precompiles,
-            pytest.mark.skip("Hint is not whitelisted"),
+            pytest.mark.xfail(reason="Hint is not whitelisted"),
         ],
     },
     {
@@ -1683,7 +1683,7 @@ test_cases = [
         "marks": [
             pytest.mark.EC_MUL,
             pytest.mark.Precompiles,
-            pytest.mark.skip("Hint is not whitelisted"),
+            pytest.mark.xfail(reason="Hint is not whitelisted"),
         ],
     },
     {
