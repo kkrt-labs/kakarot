@@ -1,7 +1,7 @@
 import pytest
 from starkware.starknet.testing.contract import StarknetContract
 
-from tests.utils.uint256 import hex_string_to_uint256
+from tests.utils.uint256 import int_to_uint256
 
 
 @pytest.mark.asyncio
@@ -10,7 +10,10 @@ from tests.utils.uint256 import hex_string_to_uint256
 class TestSLOAD:
     # https://github.com/kkrt-labs/kakarot/issues/732
     @pytest.mark.xfail(
-        reason="GAS is dysfunctional in current implementation, will revisit accounting later"
+        reason="""
+            Bytecode calls GAS and then stores it. Gas accounting is
+            currently dysfunctional, marking this to fix later.
+        """
     )
     async def test_sloadGasCost_d0g0v0_Shanghai(
         self,
@@ -32,6 +35,6 @@ class TestSLOAD:
         ).execute(caller_address=owner.starknet_address)
 
         storage_final = (
-            await called_contract.storage(hex_string_to_uint256("0x01")).call()
+            await called_contract.storage(int_to_uint256(1)).call()
         ).result.value
-        assert storage_final == hex_string_to_uint256("0x0834")
+        assert storage_final == int_to_uint256(0x834)
