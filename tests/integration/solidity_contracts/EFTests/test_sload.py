@@ -1,5 +1,3 @@
-import logging
-
 import pytest
 from starkware.starknet.testing.contract import StarknetContract
 
