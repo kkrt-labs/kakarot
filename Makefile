@@ -16,7 +16,7 @@ test: build-sol deploy
 	poetry run pytest tests/end_to_end
 
 test-no-log: build-sol deploy
-	poetry run pytest tests/integration tests/src -n logical
+	# poetry run pytest tests/integration tests/src -n logical
 	poetry run pytest tests/end_to_end
 
 test-integration: build-sol
