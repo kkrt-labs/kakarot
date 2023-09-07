@@ -199,7 +199,7 @@ class TestERC20:
         async def test_should_permit(self, block_timestamp, erc_20, owner, other):
             nonce = await erc_20.nonces(owner.address)
             pending_timestamp = await block_timestamp("pending")
-            deadline = pending_timestamp
+            deadline = pending_timestamp + 1
             digest = get_approval_digest(
                 "Kakarot Token",
                 erc_20.address,
