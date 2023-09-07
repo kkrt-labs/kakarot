@@ -177,14 +177,9 @@ async def _contract_exists(address: int) -> bool:
 
 async def get_eoa(private_key=None, amount=0.1) -> Account:
     private_key = private_key or keys.PrivateKey(bytes.fromhex(EVM_PRIVATE_KEY[2:]))
-
-    starknet_address = await _compute_starknet_address(
-        private_key.public_key.to_checksum_address()
+    starknet_address = await deploy_and_fund_evm_address(
+        private_key.public_key.to_checksum_address(), amount
     )
-    if not await _contract_exists(starknet_address):
-        await deploy_and_fund_evm_address(
-            private_key.public_key.to_checksum_address(), amount
-        )
 
     return Account(
         address=starknet_address,
@@ -257,6 +252,7 @@ async def deploy_and_fund_evm_address(evm_address: str, amount: float):
         await _invoke_starknet(
             "kakarot", "deploy_externally_owned_account", int(evm_address, 16)
         )
+    return starknet_address
 
 
 async def fund_address(address: Union[str, int], amount: float):

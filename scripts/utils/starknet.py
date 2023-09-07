@@ -146,11 +146,12 @@ async def fund_address(
     if NETWORK["name"] == "starknet-devnet":
         response = requests.post(
             f"http://127.0.0.1:5050/mint",
-            json={"address": hex(address), "amount": amount},
+            json={"address": hex(address), "amount": int(amount)},
         )
         if response.status_code != 200:
             logger.error(f"Cannot mint token to {address}: {response.text}")
-        logger.info(f"{amount / 1e18} ETH minted to {hex(address)}")
+        else:
+            logger.info(f"{amount / 1e18} ETH minted to {hex(address)}")
     else:
         account = funding_account or await get_starknet_account()
         eth_contract = token_contract or await get_eth_contract()
@@ -460,7 +461,6 @@ async def invoke(contract: Union[str, int], *args, **kwargs):
         if isinstance(contract, int)
         else invoke_contract(contract, *args, **kwargs)
     )
-    logger.info(f"⏳ Waiting for tx {get_tx_url(response.transaction_hash)}")
     status = await wait_for_transaction(response.transaction_hash)
     status = "✅" if status == TransactionStatus.ACCEPTED_ON_L2 else "❌"
     logger.info(
@@ -548,7 +548,9 @@ async def wait_for_transaction(*args, **kwargs):
         payload = json.loads(response.text)
         if payload.get("error"):
             if payload["error"]["message"] != "Transaction hash not found":
-                logger.warn(json.dumps(payload["error"]))
+                logger.warn(
+                    f"tx {transaction_hash:x} error: {json.dumps(payload['error'])}"
+                )
                 break
         status = payload.get("result", {}).get("status")
         if status is not None:

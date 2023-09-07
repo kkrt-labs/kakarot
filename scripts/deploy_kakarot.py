@@ -81,10 +81,10 @@ async def main():
     logger.info("✅ Configuration Complete")
 
     if EVM_ADDRESS:
-        logger.info(f"ℹ️  Found default EVM address {EVM_ADDRESS} to deploy an EOA for")
-        from scripts.utils.kakarot import deploy_and_fund_evm_address
+        logger.info(f"ℹ️  Found default EVM address {EVM_ADDRESS}")
+        from scripts.utils.kakarot import get_eoa
 
-        await deploy_and_fund_evm_address(EVM_ADDRESS, amount=1)
+        await get_eoa(amount=1)
 
 
 # %% Run
