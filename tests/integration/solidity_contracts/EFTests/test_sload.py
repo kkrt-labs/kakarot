@@ -5,14 +5,15 @@ from starkware.starknet.testing.contract import StarknetContract
 
 from tests.utils.uint256 import hex_string_to_uint256
 
-logger = logging.getLogger()
-
 
 @pytest.mark.asyncio
 @pytest.mark.EF_TEST
 @pytest.mark.SLOAD
 class TestSLOAD:
-    # https://github.com/kkrt-labs/ef-tests/issues/79
+    # https://github.com/kkrt-labs/kakarot/issues/732
+    @pytest.mark.xfail(
+        reason="GAS is dysfunctional in current implementation, will revisit accounting later"
+    )
     async def test_sloadGasCost_d0g0v0_Shanghai(
         self,
         owner,
