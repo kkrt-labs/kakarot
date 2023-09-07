@@ -1,3 +1,4 @@
+import functools
 import json
 import logging
 from pathlib import Path
@@ -47,6 +48,7 @@ FOUNDRY_FILE = toml.loads((Path(__file__).parents[2] / "foundry.toml").read_text
 SOLIDITY_CONTRACTS_DIR = Path(FOUNDRY_FILE["profile"]["default"]["src"])
 
 
+@functools.lru_cache()
 def get_contract(contract_app: str, contract_name: str, address=None) -> Web3Contract:
     target_solidity_file_path = list(
         (SOLIDITY_CONTRACTS_DIR / contract_app).glob(f"**/{contract_name}.sol")
