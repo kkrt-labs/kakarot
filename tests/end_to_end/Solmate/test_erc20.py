@@ -231,10 +231,11 @@ class TestERC20:
             reason="https://github.com/dojoengine/dojo/issues/864",
         )
         async def test_permit_should_fail_with_bad_nonce(
-            self, blockhashes, erc_20, owner, other
+            self, block_timestamp, erc_20, owner, other
         ):
             bad_nonce = 1
-            deadline = blockhashes["current_block"]["timestamp"]
+            pending_timestamp = await block_timestamp("pending")
+            deadline = pending_timestamp + 1
             digest = get_approval_digest(
                 "Kakarot Token",
                 erc_20.evm_contract_address,
@@ -264,10 +265,11 @@ class TestERC20:
             reason="https://github.com/dojoengine/dojo/issues/864",
         )
         async def test_permit_should_fail_with_bad_deadline(
-            self, erc_20, blockhashes, owner, other
+            self, erc_20, block_timestamp, owner, other
         ):
             nonce = await erc_20.nonces(owner.address)
-            deadline = blockhashes["current_block"]["timestamp"]
+            pending_timestamp = await block_timestamp("pending")
+            deadline = pending_timestamp + 1
             digest = get_approval_digest(
                 "Kakarot Token",
                 erc_20.evm_contract_address,
@@ -297,10 +299,11 @@ class TestERC20:
             reason="https://github.com/dojoengine/dojo/issues/864",
         )
         async def test_permit_should_fail_on_replay(
-            self, blockhashes, erc_20, owner, other
+            self, block_timestamp, erc_20, owner, other
         ):
             nonce = await erc_20.nonces(owner.address)
-            deadline = blockhashes["current_block"]["timestamp"]
+            pending_timestamp = await block_timestamp("pending")
+            deadline = pending_timestamp + 1
             digest = get_approval_digest(
                 "Kakarot Token",
                 erc_20.evm_contract_address,
