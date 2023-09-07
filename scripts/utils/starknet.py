@@ -91,6 +91,8 @@ async def get_starknet_account(
             if (
                 err.message == "Client failed with code 40: Contract error."
                 or err.message
+                == "Client failed with code 40: Requested entry point was not found."
+                or err.message
                 == "Client failed with code 21: Invalid message selector."
                 or "StarknetErrorCode.ENTRY_POINT_NOT_FOUND_IN_CONTRACT" in err.message
             ):
