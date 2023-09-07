@@ -78,7 +78,7 @@ build-sol:
 
 run:
 	mkdir -p deployments/starknet-devnet
-	poetry run starknet-devnet --lite-mode --seed 0 --dump-on exit --dump-path deployments/starknet-devnet/devnet.pkl --disable-rpc-request-validation --timeout 600
+	docker run -p 5050:5050 shardlabs/starknet-devnet-rs --seed 0
 
 install-katana:
 	cargo install --git https://github.com/dojoengine/dojo katana@0.2.1
