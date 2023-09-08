@@ -38,8 +38,8 @@ class TestPlainOpcodes:
             timestamp = await plain_opcodes.opcodeTimestamp()
             assert timestamp == block_with_tx_hashes("pending")["timestamp"]
 
-    @pytest.mark.xfail(reason="Need to fix blockhash on real Starknet network")
     class TestBlockhash:
+        @pytest.mark.xfail(reason="Need to fix blockhash on real Starknet network")
         async def test_should_return_blockhash_with_valid_block_number(
             self,
             plain_opcodes,
