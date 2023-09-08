@@ -189,7 +189,7 @@ def get_contract(deployer):
 
 
 @pytest.fixture(scope="session")
-def ethBalanceOf(eth: Contract, compute_starknet_address):
+def eth_balance_of(eth: Contract, compute_starknet_address):
     """
     A fixture to get the balance of an address.
     Accept both EVM and Starknet address, int or hex str

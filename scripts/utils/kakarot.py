@@ -91,7 +91,7 @@ def get_contract(contract_app: str, contract_name: str, address=None) -> Web3Con
 
 
 async def deploy_bytecode(**kwargs) -> Tuple[int, int]:
-    receipt = await eth_send_transaction(to=0, value=0, gas=int(1e18), **kwargs)
+    receipt = await eth_send_transaction(to=0, gas=int(1e18), **kwargs)
     deploy_event = [
         event
         for event in receipt.events
@@ -112,10 +112,12 @@ async def deploy(
     contract = get_contract(contract_app, contract_name)
     caller_eoa = kwargs.pop("caller_eoa", None)
     max_fee = kwargs.pop("max_fee", None)
+    value = kwargs.pop("value", 0)
     evm_address, _ = await deploy_bytecode(
         data=contract.constructor(*args, **kwargs).data_in_transaction,
         caller_eoa=caller_eoa,
         max_fee=max_fee,
+        value=value,
     )
     contract.address = Web3.to_checksum_address(evm_address)
 
@@ -196,9 +198,9 @@ async def get_eoa(private_key=None, amount=0.1) -> Account:
 
 async def eth_send_transaction(
     to: Union[int, str],
-    value: Union[int, str],
     gas: int,
     data: Union[str, bytes],
+    value: Union[int, str] = 0,
     caller_eoa: Optional[Account] = None,
     max_fee: Optional[int] = None,
 ):

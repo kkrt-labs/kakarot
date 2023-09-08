@@ -124,7 +124,7 @@ class TestKakarot:
             deploy_externally_owned_account,
             compute_starknet_address,
             deployer: Account,
-            ethBalanceOf,
+            eth_balance_of,
             deploy_fee: int,
         ):
             # using a different seed here so that the evm address is different from the one used in the previous test
@@ -132,14 +132,14 @@ class TestKakarot:
             starknet_address = await compute_starknet_address(evm_address)
             await fund_starknet_address(starknet_address, PRE_FUND_AMOUNT / 1e18)
 
-            eoa_balance_prev = await ethBalanceOf(starknet_address)
-            deployer_balance_prev = await ethBalanceOf(deployer.address)
+            eoa_balance_prev = await eth_balance_of(starknet_address)
+            deployer_balance_prev = await eth_balance_of(deployer.address)
 
             tx = await deploy_externally_owned_account(evm_address)
             receipt = await starknet.get_transaction_receipt(tx.hash)
 
-            deployer_balance_after = await ethBalanceOf(deployer.address)
-            eoa_balance_after = await ethBalanceOf(starknet_address)
+            deployer_balance_after = await eth_balance_of(deployer.address)
+            eoa_balance_after = await eth_balance_of(starknet_address)
 
             assert (
                 deployer_balance_after - deployer_balance_prev
