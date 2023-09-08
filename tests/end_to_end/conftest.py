@@ -228,14 +228,33 @@ def deploy_solidity_contract(max_fee: int):
     return _factory
 
 
-@pytest.fixture()
-def block_timestamp(starknet):
+@pytest.fixture(scope="session")
+def get_solidity_contract():
+    """
+    Fixture to attach a modified web3.contract instance to an already deployed contract_account in kakarot.
+    """
+
+    from scripts.utils.kakarot import get_contract
+
+    def _factory(contract_app, contract_name, *args, **kwargs):
+        """
+        This factory is what is actually returned by pytest when requesting the `deploy_solidity_contract`
+        fixture.
+        It creates a web3.contract based on the basename of the target solidity file.
+        """
+        return get_contract(contract_app, contract_name, *args, **kwargs)
+
+    return _factory
+
+
+@pytest.fixture
+def block_with_tx_hashes(starknet):
     """
     Not using starknet object because of
     https://github.com/software-mansion/starknet.py/issues/1174
     """
 
-    async def _factory(block_number: Optional[int] = None):
+    def _factory(block_number: Optional[int] = None):
         import json
 
         import requests
@@ -249,6 +268,6 @@ def block_timestamp(starknet):
                 "id": 0,
             },
         )
-        return json.loads(response.text)["result"]["timestamp"]
+        return json.loads(response.text)["result"]
 
     return _factory

@@ -5,10 +5,10 @@ pragma solidity >=0.8.0;
 /// @author Kakarot9000
 /// @dev Use this contract to call a contract from another contract
 contract Caller {
-    function call(
-        address target,
-        bytes calldata payload
-    ) external returns (bool success, bytes memory returnData) {
-        return address(target).call(payload);
+    event Call(bool success, bytes returnData);
+
+    function call(address target, bytes calldata payload) external {
+        (bool success, bytes memory returnData) = address(target).call(payload);
+        emit Call(success, returnData);
     }
 }

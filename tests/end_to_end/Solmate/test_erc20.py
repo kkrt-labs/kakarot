@@ -181,9 +181,9 @@ class TestERC20:
                 )
 
     class TestPermit:
-        async def test_should_permit(self, block_timestamp, erc_20, owner, other):
+        async def test_should_permit(self, block_with_tx_hashes, erc_20, owner, other):
             nonce = await erc_20.nonces(owner.address)
-            pending_timestamp = await block_timestamp("pending")
+            pending_timestamp = block_with_tx_hashes("pending")["timestamp"]
             deadline = pending_timestamp + 1
             digest = get_approval_digest(
                 "Kakarot Token",
@@ -216,10 +216,10 @@ class TestERC20:
             reason="https://github.com/dojoengine/dojo/issues/864",
         )
         async def test_permit_should_fail_with_bad_nonce(
-            self, block_timestamp, erc_20, owner, other
+            self, block_with_tx_hashes, erc_20, owner, other
         ):
             bad_nonce = 1
-            pending_timestamp = await block_timestamp("pending")
+            pending_timestamp = block_with_tx_hashes("pending")["timestamp"]
             deadline = pending_timestamp + 1
             digest = get_approval_digest(
                 "Kakarot Token",
@@ -250,10 +250,10 @@ class TestERC20:
             reason="https://github.com/dojoengine/dojo/issues/864",
         )
         async def test_permit_should_fail_with_bad_deadline(
-            self, erc_20, block_timestamp, owner, other
+            self, erc_20, block_with_tx_hashes, owner, other
         ):
             nonce = await erc_20.nonces(owner.address)
-            pending_timestamp = await block_timestamp("pending")
+            pending_timestamp = block_with_tx_hashes("pending")["timestamp"]
             deadline = pending_timestamp + 1
             digest = get_approval_digest(
                 "Kakarot Token",
@@ -284,10 +284,10 @@ class TestERC20:
             reason="https://github.com/dojoengine/dojo/issues/864",
         )
         async def test_permit_should_fail_on_replay(
-            self, block_timestamp, erc_20, owner, other
+            self, block_with_tx_hashes, erc_20, owner, other
         ):
             nonce = await erc_20.nonces(owner.address)
-            pending_timestamp = await block_timestamp("pending")
+            pending_timestamp = block_with_tx_hashes("pending")["timestamp"]
             deadline = pending_timestamp + 1
             digest = get_approval_digest(
                 "Kakarot Token",
