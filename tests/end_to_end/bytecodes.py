@@ -1721,6 +1721,10 @@ test_cases = [
             "return_value": "",
         },
         "id": "Precompiles - SHA2-256 - playground test case",
-        "marks": [pytest.mark.SHA256, pytest.mark.Precompiles, pytest.mark.skip],
+        "marks": [
+            pytest.mark.SHA256,
+            pytest.mark.Precompiles,
+            pytest.mark.xfail(reason="Hint is not whitelisted"),
+        ],
     },
 ]
