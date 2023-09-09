@@ -3,5 +3,8 @@ src = 'tests/integration/solidity_contracts'
 test = 'tests/integration/solidity_contracts'
 out = 'tests/integration/solidity_contracts/build'
 libs = ['lib']
+eth_rpc_url = "anvil"
 
-# See more config options https://github.com/foundry-rs/foundry/tree/master/config
+[rpc_endpoints]
+anvil = "http://127.0.0.1:8545"
+kakarot = "http://127.0.0.1:3030"
