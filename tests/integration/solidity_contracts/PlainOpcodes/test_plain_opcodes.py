@@ -182,6 +182,9 @@ class TestPlainOpcodes:
                     "PlainOpcodes", "Counter", starknet_address, evm_address, None
                 )
                 assert await deployed_counter.count() == 0
+                assert (
+                    await deployed_counter.contract_account.get_nonce().call()
+                ).result.nonce == 1
 
             nonce_final = (
                 await plain_opcodes.contract_account.get_nonce().call()
@@ -227,17 +230,29 @@ class TestPlainOpcodes:
             get_starknet_address,
             get_solidity_contract,
         ):
+            nonce_initial = (
+                await plain_opcodes.contract_account.get_nonce().call()
+            ).result.nonce
+
             salt = 1234
             evm_address = await plain_opcodes.create2(
                 bytecode=counter.constructor().data_in_transaction,
                 salt=salt,
                 caller_address=plain_opcodes_deployer,
             )
-            starknet_address = get_starknet_address(salt)
+            starknet_address = get_starknet_address(int(evm_address, 16))
             deployed_counter = get_solidity_contract(
                 "PlainOpcodes", "Counter", starknet_address, evm_address, None
             )
             assert await deployed_counter.count() == 0
+            assert (
+                await deployed_counter.contract_account.get_nonce().call()
+            ).result.nonce == 1
+
+            nonce_final = (
+                await plain_opcodes.contract_account.get_nonce().call()
+            ).result.nonce
+            assert nonce_final == nonce_initial + 1
 
     class TestRequire:
         async def test_should_revert_when_address_is_zero(self, plain_opcodes, owner):
