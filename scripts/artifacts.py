@@ -19,7 +19,7 @@ def get_resources(
 ):
     # Pull latest main artifacts
     response = requests.get(
-        "https://api.github.com/repos/sayajin-labs/kakarot/actions/artifacts"
+        "https://api.github.com/repos/kkrt-labs/kakarot/actions/artifacts"
     )
     artifacts = (
         pd.DataFrame(
@@ -52,7 +52,7 @@ def get_resources(
 
 def fetch_deployments(path: str = "deployments"):
     response = requests.get(
-        "https://api.github.com/repos/sayajin-labs/kakarot/actions/artifacts"
+        "https://api.github.com/repos/kkrt-labs/kakarot/actions/artifacts"
     )
     artifacts = (
         pd.DataFrame(
