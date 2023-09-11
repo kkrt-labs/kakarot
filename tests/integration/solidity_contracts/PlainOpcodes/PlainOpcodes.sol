@@ -22,14 +22,14 @@ contract PlainOpcodes {
     //////////////////////////////////////////////////////////////*/
     ICounter counter;
 
+    event CreateAddress(address _address) anonymous;
+    event Create2Address(address _address) anonymous;
     event Log0() anonymous;
     event Log0Value(uint256 value) anonymous;
     event Log1(uint256 value);
     event Log2(address indexed owner, uint256 value);
     event Log3(address indexed owner, address indexed spender, uint256 value);
     event Log4(address indexed owner, address indexed spender, uint256 indexed value);
-
-    uint256 public loopValue;
 
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
@@ -43,6 +43,10 @@ contract PlainOpcodes {
     //////////////////////////////////////////////////////////////*/
     function opcodeBlockHash(uint256 blockNumber) public view returns (bytes32 _blockhash) {
         return (blockhash(blockNumber));
+    }
+
+    function opcodeTimestamp() public view returns (uint256) {
+        return block.timestamp;
     }
 
     function opcodeAddress() public view returns (address selfAddress) {
@@ -94,6 +98,7 @@ contract PlainOpcodes {
                 _address := create(0, add(bytecode, 32), mload(bytecode))
             }
             addresses[i] = _address;
+            emit CreateAddress(_address);
         }
         return addresses;
     }
@@ -102,10 +107,11 @@ contract PlainOpcodes {
         assembly {
             _address := create2(0, add(bytecode, 32), mload(bytecode), salt)
         }
+        emit Create2Address(_address);
     }
 
-    function requireNotZero(address _address) external pure {
-        require(_address != address(0), "ZERO_ADDRESS");
+    function requireNotZero(uint256 value) external pure {
+        require(value != 0, "ZERO_VALUE");
     }
 
     function originAndSender() external view returns (address origin, address sender) {
@@ -126,33 +132,25 @@ contract PlainOpcodes {
         }
     }
 
-    function testCallingContextShouldPropogateRevertFromSubContextOnCreate() public {
-        ContractRevertsOnConstruction doomedContract = new ContractRevertsOnConstruction();
-        doomedContract.value();
+    function newContractConstructorRevert() public {
+        new ContractRevertsOnConstruction();
     }
 
-    function testShouldRevertViaCall() external returns (bytes memory returnData) {
+    function contractCallRevert() external returns (bool, bytes memory) {
         ContractRevertsOnMethodCall doomedContract = new ContractRevertsOnMethodCall();
-
-        (bool success, bytes memory returnData1) =
-            address(doomedContract).call(abi.encodeWithSignature("triggerRevert()"));
-        address doomedContractCounter = address(doomedContract.counter());
-
-        assert(!success);
-        assert(doomedContractCounter == address(0));
-        assert(doomedContract.value() == 0);
-
-        return returnData1;
+        return address(doomedContract).call(abi.encodeWithSignature("triggerRevert()"));
     }
 
-    function testLoop(uint256 steps) public {
-        loopValue = 0;
+    function loop(uint256 steps) public pure returns (uint256) {
+        uint256 loopValue;
         for (uint256 i = 0; i < steps; i++) {
             loopValue += 1;
         }
+        return loopValue;
     }
 
-    function sendSome(address payable to, uint amount) public {
-        to.send(amount);
+    function sendSome(address payable to, uint256 amount) public {
+        bool success = to.send(amount);
+        require(success, "failed to send");
     }
 }

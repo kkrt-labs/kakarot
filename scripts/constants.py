@@ -56,7 +56,7 @@ NETWORKS = {
         "explorer_url": "",
         "rpc_url": "http://127.0.0.1:5050",
         "devnet": True,
-        "check_interval": 0.1,
+        "check_interval": 0.01,
         "max_wait": 1,
     },
     "madara": {

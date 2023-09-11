@@ -1,3 +1,5 @@
+import os
+
 import pytest
 import pytest_asyncio
 
@@ -9,26 +11,20 @@ TEST_SUPPLY = 10**18
 TEST_AMOUNT = int(0.9 * 10**18)
 
 
-@pytest_asyncio.fixture(scope="session")
-def erc_20_deployer(addresses):
-    return addresses[5]
-
-
 @pytest_asyncio.fixture(scope="module")
-async def erc_20(deploy_solidity_contract, erc_20_deployer):
+async def erc_20(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
         "Solmate",
         "ERC20",
         "Kakarot Token",
         "KKT",
         18,
-        caller_eoa=erc_20_deployer,
+        caller_eoa=owner.starknet_contract,
     )
 
 
 @pytest.mark.asyncio
 @pytest.mark.SolmateERC20
-@pytest.mark.usefixtures("starknet_snapshot")
 class TestERC20:
     class TestDeploy:
         async def test_should_set_name_symbol_and_decimals(self, erc_20):
@@ -38,142 +34,160 @@ class TestERC20:
 
     class TestMint:
         async def test_should_mint(self, erc_20, owner, other):
-            await erc_20.mint(
-                other.address,
-                TEST_SUPPLY,
-                caller_address=owner,
-            )
-            assert await erc_20.totalSupply() == TEST_SUPPLY
-            assert await erc_20.balanceOf(other.address) == TEST_SUPPLY
+            total_supply_before = await erc_20.totalSupply()
+            balance_before = await erc_20.balanceOf(other.address)
+
+            await erc_20.mint(other.address, TEST_SUPPLY, caller_eoa=owner)
+
+            total_supply_after = await erc_20.totalSupply()
+            balance_after = await erc_20.balanceOf(other.address)
+
+            assert total_supply_after - total_supply_before == TEST_SUPPLY
+            assert balance_after - balance_before == TEST_SUPPLY
 
     class TestBurn:
         async def test_should_burn(self, erc_20, owner, other):
-            burn_amount = TEST_AMOUNT
-            await erc_20.mint(
-                other.address,
-                TEST_SUPPLY,
-                caller_address=owner,
-            )
-            await erc_20.burn(other.address, burn_amount, caller_address=owner)
-            assert await erc_20.totalSupply() == TEST_SUPPLY - burn_amount
-            assert await erc_20.balanceOf(other.address) == TEST_SUPPLY - burn_amount
+            await erc_20.mint(other.address, TEST_SUPPLY, caller_eoa=owner)
+
+            total_supply_before = await erc_20.totalSupply()
+            balance_before = await erc_20.balanceOf(other.address)
+
+            await erc_20.burn(other.address, TEST_SUPPLY, caller_eoa=owner)
+
+            total_supply_after = await erc_20.totalSupply()
+            balance_after = await erc_20.balanceOf(other.address)
+
+            assert total_supply_before - total_supply_after == TEST_SUPPLY
+            assert balance_before - balance_after == TEST_SUPPLY
 
     class TestApprove:
         async def test_should_approve(self, erc_20, owner, other):
-            assert await erc_20.approve(
-                other.address,
-                TEST_SUPPLY,
-                caller_address=owner,
-            )
-            assert await erc_20.allowance(owner.address, other.address) == TEST_SUPPLY
+            allowance_before = await erc_20.allowance(owner.address, other.address)
+
+            assert await erc_20.approve(other.address, TEST_SUPPLY, caller_eoa=owner)
+
+            allowance_after = await erc_20.allowance(owner.address, other.address)
+
+            assert allowance_after - allowance_before == TEST_SUPPLY
 
     class TestTransfer:
         async def test_should_transfer(self, erc_20, owner, other):
-            await erc_20.mint(owner.address, TEST_SUPPLY, caller_address=owner)
+            await erc_20.mint(owner.address, TEST_SUPPLY, caller_eoa=owner)
+
+            balance_sender_before = await erc_20.balanceOf(owner.address)
+            balance_receiver_before = await erc_20.balanceOf(other.address)
+
             assert await erc_20.transfer(
                 other.address,
                 TEST_SUPPLY,
-                caller_address=owner,
+                caller_eoa=owner,
             )
-            assert await erc_20.totalSupply() == TEST_SUPPLY
-            assert await erc_20.balanceOf(owner.address) == 0
-            assert await erc_20.balanceOf(other.address) == TEST_SUPPLY
 
+            balance_sender_after = await erc_20.balanceOf(owner.address)
+            balance_receiver_after = await erc_20.balanceOf(other.address)
+
+            assert balance_sender_before - balance_sender_after == TEST_SUPPLY
+            assert balance_receiver_after - balance_receiver_before == TEST_SUPPLY
+
+        @pytest.mark.xfail(
+            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
+            reason="https://github.com/dojoengine/dojo/issues/864",
+        )
         async def test_transfer_should_fail_when_insufficient_balance(
             self, erc_20, owner, other
         ):
-            await erc_20.mint(owner.address, TEST_AMOUNT, caller_address=owner)
+            await erc_20.mint(owner.address, TEST_AMOUNT, caller_eoa=owner)
+            balance_sender_before = await erc_20.balanceOf(owner.address)
             with kakarot_error():
                 await erc_20.transfer(
                     other.address,
-                    TEST_SUPPLY,
-                    caller_address=owner,
+                    balance_sender_before + 1,
+                    caller_eoa=owner,
                 )
 
     class TestTransferFrom:
-        async def test_should_transfer_from(self, erc_20, owner, others):
+        @pytest.mark.parametrize(
+            "initial_allowance, final_allowance", ((TEST_SUPPLY, 0), (MAX_INT, MAX_INT))
+        )
+        async def test_should_transfer_and_update_allowance(
+            self, erc_20, owner, others, initial_allowance, final_allowance
+        ):
             from_wallet = others[0]
             to_wallet = others[1]
 
             await erc_20.mint(
                 from_wallet.address,
                 TEST_SUPPLY,
-                caller_address=owner,
+                caller_eoa=owner,
             )
+
+            balance_sender_before = await erc_20.balanceOf(from_wallet.address)
+            balance_receiver_before = await erc_20.balanceOf(to_wallet.address)
 
             await erc_20.approve(
                 owner.address,
-                TEST_SUPPLY,
-                caller_address=from_wallet,
+                initial_allowance,
+                caller_eoa=from_wallet,
             )
             assert await erc_20.transferFrom(
                 from_wallet.address,
                 to_wallet.address,
                 TEST_SUPPLY,
-                caller_address=owner,
-            )
-            assert await erc_20.totalSupply() == TEST_SUPPLY
-            assert await erc_20.allowance(from_wallet.address, owner.address) == 0
-            assert await erc_20.balanceOf(from_wallet.address) == 0
-            assert await erc_20.balanceOf(to_wallet.address) == TEST_SUPPLY
-
-        async def test_should_transfer_from_with_infinite_approve(
-            self, erc_20, owner, others
-        ):
-            from_wallet = others[0]
-            to_wallet = others[1]
-
-            await erc_20.mint(
-                from_wallet.address,
-                TEST_SUPPLY,
-                caller_address=owner,
+                caller_eoa=owner,
             )
 
-            await erc_20.approve(owner.address, MAX_INT, caller_address=from_wallet)
-            assert await erc_20.transferFrom(
-                from_wallet.address,
-                to_wallet.address,
-                TEST_SUPPLY,
-                caller_address=owner,
-            )
-            assert await erc_20.totalSupply() == TEST_SUPPLY
-            assert await erc_20.allowance(from_wallet.address, owner.address) == MAX_INT
-            assert await erc_20.balanceOf(from_wallet.address) == 0
-            assert await erc_20.balanceOf(others[1].address) == TEST_SUPPLY
+            balance_sender_after = await erc_20.balanceOf(from_wallet.address)
+            balance_receiver_after = await erc_20.balanceOf(to_wallet.address)
 
+            assert (
+                await erc_20.allowance(from_wallet.address, owner.address)
+                == final_allowance
+            )
+            assert balance_sender_before - balance_sender_after == TEST_SUPPLY
+            assert balance_receiver_after - balance_receiver_before == TEST_SUPPLY
+
+        @pytest.mark.xfail(
+            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
+            reason="https://github.com/dojoengine/dojo/issues/864",
+        )
         async def test_transfer_from_should_fail_when_insufficient_allowance(
             self, erc_20, owner, other, others
         ):
-            await erc_20.mint(other.address, TEST_SUPPLY, caller_address=owner)
-            await erc_20.approve(owner.address, TEST_AMOUNT, caller_address=other)
+            await erc_20.mint(other.address, TEST_SUPPLY, caller_eoa=owner)
+            await erc_20.approve(owner.address, TEST_AMOUNT, caller_eoa=other)
             with kakarot_error():
                 await erc_20.transferFrom(
                     other.address,
                     others[1].address,
                     TEST_SUPPLY,
-                    caller_address=owner,
+                    caller_eoa=owner,
                 )
 
+        @pytest.mark.xfail(
+            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
+            reason="https://github.com/dojoengine/dojo/issues/864",
+        )
         async def test_transfer_from_should_fail_when_insufficient_balance(
             self, erc_20, owner, other, others
         ):
-            await erc_20.mint(other.address, TEST_AMOUNT, caller_address=owner)
-            await erc_20.approve(owner.address, TEST_SUPPLY, caller_address=other)
+            await erc_20.mint(other.address, TEST_AMOUNT, caller_eoa=owner)
+            await erc_20.approve(owner.address, TEST_SUPPLY, caller_eoa=other)
             with kakarot_error():
                 await erc_20.transferFrom(
                     other.address,
                     others[1].address,
                     TEST_SUPPLY,
-                    caller_address=owner,
+                    caller_eoa=owner,
                 )
 
     class TestPermit:
-        async def test_should_permit(self, blockhashes, erc_20, owner, other):
+        async def test_should_permit(self, block_with_tx_hashes, erc_20, owner, other):
             nonce = await erc_20.nonces(owner.address)
-            deadline = blockhashes["current_block"]["timestamp"]
+            pending_timestamp = block_with_tx_hashes("pending")["timestamp"]
+            deadline = pending_timestamp + 1
             digest = get_approval_digest(
                 "Kakarot Token",
-                erc_20.evm_contract_address,
+                erc_20.address,
                 {
                     "owner": owner.address,
                     "spender": other.address,
@@ -191,17 +205,22 @@ class TestERC20:
                 v,
                 r,
                 s,
-                caller_address=owner,
+                caller_eoa=owner,
             )
 
             assert await erc_20.allowance(owner.address, other.address) == TEST_SUPPLY
             assert await erc_20.nonces(owner.address) == 1
 
+        @pytest.mark.xfail(
+            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
+            reason="https://github.com/dojoengine/dojo/issues/864",
+        )
         async def test_permit_should_fail_with_bad_nonce(
-            self, blockhashes, erc_20, owner, other
+            self, block_with_tx_hashes, erc_20, owner, other
         ):
             bad_nonce = 1
-            deadline = blockhashes["current_block"]["timestamp"]
+            pending_timestamp = block_with_tx_hashes("pending")["timestamp"]
+            deadline = pending_timestamp + 1
             digest = get_approval_digest(
                 "Kakarot Token",
                 erc_20.evm_contract_address,
@@ -223,14 +242,19 @@ class TestERC20:
                     v,
                     r,
                     s,
-                    caller_address=owner,
+                    caller_eoa=owner,
                 )
 
+        @pytest.mark.xfail(
+            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
+            reason="https://github.com/dojoengine/dojo/issues/864",
+        )
         async def test_permit_should_fail_with_bad_deadline(
-            self, erc_20, blockhashes, owner, other
+            self, erc_20, block_with_tx_hashes, owner, other
         ):
             nonce = await erc_20.nonces(owner.address)
-            deadline = blockhashes["current_block"]["timestamp"]
+            pending_timestamp = block_with_tx_hashes("pending")["timestamp"]
+            deadline = pending_timestamp + 1
             digest = get_approval_digest(
                 "Kakarot Token",
                 erc_20.evm_contract_address,
@@ -252,14 +276,19 @@ class TestERC20:
                     v,
                     r,
                     s,
-                    caller_address=owner,
+                    caller_eoa=owner,
                 )
 
+        @pytest.mark.xfail(
+            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
+            reason="https://github.com/dojoengine/dojo/issues/864",
+        )
         async def test_permit_should_fail_on_replay(
-            self, blockhashes, erc_20, owner, other
+            self, block_with_tx_hashes, erc_20, owner, other
         ):
             nonce = await erc_20.nonces(owner.address)
-            deadline = blockhashes["current_block"]["timestamp"]
+            pending_timestamp = block_with_tx_hashes("pending")["timestamp"]
+            deadline = pending_timestamp + 1
             digest = get_approval_digest(
                 "Kakarot Token",
                 erc_20.evm_contract_address,
@@ -280,7 +309,7 @@ class TestERC20:
                 v,
                 r,
                 s,
-                caller_address=owner,
+                caller_eoa=owner,
             )
 
             with kakarot_error("INVALID_SIGNER"):
@@ -292,5 +321,5 @@ class TestERC20:
                     v,
                     r,
                     s,
-                    caller_address=owner,
+                    caller_eoa=owner,
                 )

@@ -37,6 +37,8 @@ eth-utils = "^2.1.0"
 eth-keys = "^0.4.0"
 ipykernel = "^6.23.1"
 toml = "^0.10.2"
+async-lru = "^2.0.4"
+setuptools = "^68.2.0"
 
 [tool.pytest.ini_options]
 filterwarnings = [

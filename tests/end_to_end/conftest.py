@@ -1,7 +1,7 @@
 import logging
 from collections import namedtuple
 from functools import partial
-from typing import List, Union
+from typing import List, Optional, Union
 
 import pytest
 import pytest_asyncio
@@ -21,10 +21,10 @@ Wallet = namedtuple("Wallet", ["address", "private_key", "starknet_contract"])
 @pytest.fixture(scope="session")
 def max_fee():
     """
-    max_fee is just hard coded to 0.01 to make sure tx passes
+    max_fee is just hard coded to 1 ETH to make sure tx passes
     it is not used per se in the test
     """
-    return int(1e16)
+    return int(1e18)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -45,7 +45,7 @@ def starknet():
 
 
 @pytest_asyncio.fixture(scope="session")
-async def addresses() -> List[Wallet]:
+async def addresses(max_fee) -> List[Wallet]:
     """
     Returns a list of addresses to be used in tests.
     Addresses are returned as named tuples with
@@ -56,16 +56,34 @@ async def addresses() -> List[Wallet]:
     from scripts.utils.kakarot import get_eoa
 
     wallets = []
-    for i in range(2):
+    for i in range(5):
         private_key = generate_random_private_key(seed=i)
         wallets.append(
             Wallet(
-                address=int(private_key.public_key.to_address(), 16),
+                address=private_key.public_key.to_checksum_address(),
                 private_key=private_key,
-                starknet_contract=await get_eoa(private_key),
+                # deploying an account with enough ETH to pass ~30 tx
+                starknet_contract=await get_eoa(
+                    private_key, amount=30 * max_fee / 1e18
+                ),
             )
         )
     return wallets
+
+
+@pytest_asyncio.fixture(scope="session")
+def owner(addresses):
+    return addresses[0]
+
+
+@pytest_asyncio.fixture(scope="session")
+def other(addresses):
+    return addresses[1]
+
+
+@pytest_asyncio.fixture(scope="session")
+def others(addresses):
+    return addresses[2:]
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -171,7 +189,7 @@ def get_contract(deployer):
 
 
 @pytest.fixture(scope="session")
-def ethBalanceOf(eth: Contract, compute_starknet_address):
+def eth_balance_of(eth: Contract, compute_starknet_address):
     """
     A fixture to get the balance of an address.
     Accept both EVM and Starknet address, int or hex str
@@ -185,5 +203,71 @@ def ethBalanceOf(eth: Contract, compute_starknet_address):
             address = address if isinstance(address, int) else int(address, 16)
 
         return (await eth.functions["balanceOf"].call(address)).balance
+
+    return _factory
+
+
+@pytest.fixture(scope="session")
+def deploy_solidity_contract(max_fee: int):
+    """
+    Fixture to attach a modified web3.contract instance to an already deployed contract_account in kakarot.
+    """
+
+    from scripts.utils.kakarot import deploy
+
+    async def _factory(contract_app, contract_name, *args, **kwargs):
+        """
+        This factory is what is actually returned by pytest when requesting the `deploy_solidity_contract`
+        fixture.
+        It creates a web3.contract based on the basename of the target solidity file.
+        """
+        return await deploy(
+            contract_app, contract_name, *args, **kwargs, max_fee=max_fee
+        )
+
+    return _factory
+
+
+@pytest.fixture(scope="session")
+def get_solidity_contract():
+    """
+    Fixture to attach a modified web3.contract instance to an already deployed contract_account in kakarot.
+    """
+
+    from scripts.utils.kakarot import get_contract
+
+    def _factory(contract_app, contract_name, *args, **kwargs):
+        """
+        This factory is what is actually returned by pytest when requesting the `deploy_solidity_contract`
+        fixture.
+        It creates a web3.contract based on the basename of the target solidity file.
+        """
+        return get_contract(contract_app, contract_name, *args, **kwargs)
+
+    return _factory
+
+
+@pytest.fixture
+def block_with_tx_hashes(starknet):
+    """
+    Not using starknet object because of
+    https://github.com/software-mansion/starknet.py/issues/1174
+    """
+
+    def _factory(block_number: Optional[int] = None):
+        import json
+
+        import requests
+
+        response = requests.post(
+            starknet.url,
+            json={
+                "jsonrpc": "2.0",
+                "method": f"starknet_getBlockWithTxHashes",
+                "params": [block_number or "latest"],
+                "id": 0,
+            },
+        )
+        return json.loads(response.text)["result"]
 
     return _factory
