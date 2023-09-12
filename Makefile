@@ -81,7 +81,10 @@ run:
 	docker run -p 5050:5050 shardlabs/starknet-devnet-rs --seed 0
 
 install-katana:
-	cargo install --git https://github.com/dojoengine/dojo katana@0.2.1
+	cargo install --git https://github.com/dojoengine/dojo --rev 1d3f47dfcade922449f2499cb40c3fc6033134ae katana@0.2.1
 
 run-katana:
 	katana --validate-max-steps 16777216 --invoke-max-steps 16777216
+
+run-katana-with-dump:
+	katana --validate-max-steps 16777216 --invoke-max-steps 16777216 --dump-state ./kakarot-katana-dump
