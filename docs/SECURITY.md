@@ -6,7 +6,7 @@ If there are any vulnerabilities in **Kakarot**, don't hesitate to _report
 them_.
 
 1. Use any of the
-   [private contact addresses](https://github.com/sayajin-labs/kakarot#support).
+   [private contact addresses](https://github.com/kkrt-labs/kakarot#support).
 2. Describe the vulnerability.
 
    If you have a fix, that is most welcome -- please attach or summarize it in
