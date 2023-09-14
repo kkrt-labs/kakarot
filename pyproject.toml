@@ -39,6 +39,8 @@ ipykernel = "^6.23.1"
 toml = "^0.10.2"
 async-lru = "^2.0.4"
 setuptools = "^68.2.0"
+cairo-rs-py = "^0.2.0"
+starknet-devnet = "^0.5.0"
 
 [tool.pytest.ini_options]
 filterwarnings = [

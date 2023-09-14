@@ -14,6 +14,7 @@ from starkware.starknet.business_logic.execution.execute_entry_point import (
 from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 from starkware.starknet.definitions.general_config import StarknetGeneralConfig
 from starkware.starknet.testing.starknet import Starknet
+from starknet_devnet.cairo_rs_py_patch import cairo_rs_py_monkeypatch
 
 from tests.utils.reporting import (
     dump_coverage,
@@ -33,6 +34,10 @@ logger = logging.getLogger()
 
 @pytest_asyncio.fixture(scope="session")
 async def starknet(worker_id, request, blockhashes) -> AsyncGenerator[Starknet, None]:
+    # apply cairo-rs-py monkey patch to use the rust VM
+    cairo_rs_py_monkeypatch()
+    logger.info("Using Cairo VM: Rust")
+
     config = StarknetGeneralConfig(
         invoke_tx_max_n_steps=2**24, validate_max_n_steps=2**24  # type: ignore
     )
