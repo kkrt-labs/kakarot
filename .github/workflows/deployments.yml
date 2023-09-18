@@ -3,7 +3,9 @@ name: Deployments
 on:
   push:
     branches:
-      - "main"
+      - main
+
+permissions: read-all
 
 jobs:
   deploy:
@@ -20,7 +22,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: "3.9.13"
+          python-version: 3.9.13
       - name: Load cached Poetry installation
         id: cached-poetry
         uses: actions/cache@v3
@@ -28,7 +30,7 @@ jobs:
           path: ~/.local
           key: poetry-${{ runner.os }}
       - name: Install Poetry
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
         with:
           virtualenvs-create: true
