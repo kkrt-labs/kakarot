@@ -20,5 +20,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+          cache: pip
+      - run: pip install cairo-lang
+
       - name: Trunk Check
         uses: trunk-io/trunk-action@v1
