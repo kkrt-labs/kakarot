@@ -35,14 +35,6 @@ NETWORKS = {
         "devnet": False,
         "chain_id": StarknetChainId.TESTNET,
     },
-    "testnet2": {
-        "name": "testnet2",
-        "explorer_url": "https://testnet-2.starkscan.co",
-        "rpc_url": f"https://starknet-goerli2.infura.io/v3/{os.getenv('INFURA_KEY')}",
-        "gateway": "testnet2",
-        "devnet": False,
-        "chain_id": StarknetChainId.TESTNET2,
-    },
     "starknet-devnet": {
         "name": "starknet-devnet",
         "explorer_url": "",

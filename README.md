@@ -244,8 +244,8 @@ env variable, for example:
 
 ```bash
 make deploy # localhost
+STARKNET_NETWORK=katana make deploy
 STARKNET_NETWORK=testnet make deploy
-STARKNET_NETWORK=testnet2 make deploy
 STARKNET_NETWORK=mainnet make deploy
 ```
 

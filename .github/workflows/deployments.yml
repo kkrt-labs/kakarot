@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        network: [testnet, testnet2]
+        network: [testnet]
     env:
       ACCOUNT_ADDRESS: ${{ secrets.ACCOUNT_ADDRESS }}
       PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
