@@ -9,7 +9,7 @@ permissions: read-all
 
 jobs:
   dump-katana:
-    runs-on: ubuntu-latest-16-cores
+    runs-on: ubuntu-latest
     env:
       STARKNET_NETWORK: katana
     steps:
