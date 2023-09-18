@@ -2,9 +2,6 @@ import logging
 from typing import Dict, Optional
 
 import pytest
-from starkware.starknet.core.os.contract_address.contract_address import (
-    calculate_contract_address_from_hash,
-)
 from starkware.starknet.testing.contract import StarknetContract
 from web3 import Web3
 
@@ -13,23 +10,6 @@ from tests.utils.helpers import generate_random_private_key, hex_string_to_bytes
 from tests.utils.uint256 import get_uint256_storage_var_keys, hex_string_to_uint256
 
 logger = logging.getLogger()
-
-
-@pytest.fixture(scope="package")
-def get_starknet_address(account_proxy_class, kakarot):
-    """
-    Fixture to return the starknet address of a contract deployed by kakarot using CREATE2.
-    """
-
-    def _factory(evm_contract_address):
-        return calculate_contract_address_from_hash(
-            salt=evm_contract_address,
-            class_hash=account_proxy_class.class_hash,
-            constructor_calldata=[],
-            deployer_address=kakarot.contract_address,
-        )
-
-    return _factory
 
 
 @pytest.fixture(scope="package")

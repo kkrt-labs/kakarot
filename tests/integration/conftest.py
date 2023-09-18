@@ -3,6 +3,9 @@ from typing import List
 
 import pytest
 import pytest_asyncio
+from starkware.starknet.core.os.contract_address.contract_address import (
+    calculate_contract_address_from_hash,
+)
 from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
@@ -141,6 +144,23 @@ async def fund_evm_address(kakarot, eth, deployer_address):
         # pre fund account so that fees can be paid back to deployer
         await eth.mint(computed_starknet_address, (amount, 0)).execute(
             caller_address=deployer_address
+        )
+
+    return _factory
+
+
+@pytest.fixture(scope="session")
+def get_starknet_address(account_proxy_class, kakarot):
+    """
+    Fixture to return the starknet address of a contract deployed by kakarot using CREATE2.
+    """
+
+    def _factory(evm_contract_address):
+        return calculate_contract_address_from_hash(
+            salt=evm_contract_address,
+            class_hash=account_proxy_class.class_hash,
+            constructor_calldata=[],
+            deployer_address=kakarot.contract_address,
         )
 
     return _factory
