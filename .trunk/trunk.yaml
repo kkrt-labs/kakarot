@@ -12,7 +12,22 @@ runtimes:
     - node@18.12.1
     - python@3.10.8
 lint:
+  files:
+    - name: cairo
+      extensions:
+        - cairo
+  definitions:
+    - name: cairo
+      files: [cairo]
+      commands:
+        - output: rewrite
+          success_codes: [0]
+          formatter: true
+          run: cairo-format ${target}
+          read_output_from: stdout
+          run_linter_from: workspace
   enabled:
+    - cairo@SYSTEM
     - actionlint@1.6.25
     - black@23.9.1
     - checkov@2.4.9

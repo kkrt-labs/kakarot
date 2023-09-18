@@ -60,23 +60,39 @@ namespace Helpers {
     // @param val: pointer to the first byte of the 32.
     // @return res: Uint256 representation of the given input in bytes32.
     func bytes32_to_uint256(val: felt*) -> Uint256 {
-        let res = Uint256(
-            low=[val + 16] * 256 ** 15 + [val + 17] * 256 ** 14 + [val + 18] * 256 ** 13 + [
-                val + 19
-            ] * 256 ** 12 + [val + 20] * 256 ** 11 + [val + 21] * 256 ** 10 + [val + 22] * 256 **
-            9 + [val + 23] * 256 ** 8 + [val + 24] * 256 ** 7 + [val + 25] * 256 ** 6 + [val + 26] *
-            256 ** 5 + [val + 27] * 256 ** 4 + [val + 28] * 256 ** 3 + [val + 29] * 256 ** 2 + [
-                val + 30
-            ] * 256 + [val + 31],
-            high=[val] * 256 ** 15 + [val + 1] * 256 ** 14 + [val + 2] * 256 ** 13 + [val + 3] *
-            256 ** 12 + [val + 4] * 256 ** 11 + [val + 5] * 256 ** 10 + [val + 6] * 256 ** 9 + [
-                val + 7
-            ] * 256 ** 8 + [val + 8] * 256 ** 7 + [val + 9] * 256 ** 6 + [val + 10] * 256 ** 5 + [
-                val + 11
-            ] * 256 ** 4 + [val + 12] * 256 ** 3 + [val + 13] * 256 ** 2 + [val + 14] * 256 + [
-                val + 15
-            ],
-        );
+        let low = [val + 16] * 256 ** 15;
+        let low = low + [val + 17] * 256 ** 14;
+        let low = low + [val + 18] * 256 ** 13;
+        let low = low + [val + 19] * 256 ** 12;
+        let low = low + [val + 20] * 256 ** 11;
+        let low = low + [val + 21] * 256 ** 10;
+        let low = low + [val + 22] * 256 ** 9;
+        let low = low + [val + 23] * 256 ** 8;
+        let low = low + [val + 24] * 256 ** 7;
+        let low = low + [val + 25] * 256 ** 6;
+        let low = low + [val + 26] * 256 ** 5;
+        let low = low + [val + 27] * 256 ** 4;
+        let low = low + [val + 28] * 256 ** 3;
+        let low = low + [val + 29] * 256 ** 2;
+        let low = low + [val + 30] * 256 ** 1;
+        let low = low + [val + 31];
+        let high = [val] * 256 ** 1;
+        let high = high + [val + 1] * 256 ** 14;
+        let high = high + [val + 2] * 256 ** 13;
+        let high = high + [val + 3] * 256 ** 12;
+        let high = high + [val + 4] * 256 ** 11;
+        let high = high + [val + 5] * 256 ** 10;
+        let high = high + [val + 6] * 256 ** 9;
+        let high = high + [val + 7] * 256 ** 8;
+        let high = high + [val + 8] * 256 ** 7;
+        let high = high + [val + 9] * 256 ** 6;
+        let high = high + [val + 10] * 256 ** 5;
+        let high = high + [val + 11] * 256 ** 4;
+        let high = high + [val + 12] * 256 ** 3;
+        let high = high + [val + 13] * 256 ** 2;
+        let high = high + [val + 14] * 256;
+        let high = high + [val + 15];
+        let res = Uint256(low=low, high=high);
         return res;
     }
     // @notice This function is used to convert a sequence of i bytes to Uint256.
@@ -176,11 +192,15 @@ namespace Helpers {
     // @param val: pointer to the first byte.
     // @return: felt representation of the input.
     func bytes_to_64_bits_little_felt(bytes: felt*) -> felt {
-        return [bytes + 7] * 256 ** 7 + [bytes + 6] * 256 ** 6 + [bytes + 5] * 256 ** 5 + [
-            bytes + 4
-        ] * 256 ** 4 + [bytes + 3] * 256 ** 3 + [bytes + 2] * 256 ** 2 + [bytes + 1] * 256 + [
-            bytes
-        ];
+        let res = [bytes + 7] * 256 ** 7;
+        let res = res + [bytes + 6] * 256 ** 6;
+        let res = res + [bytes + 5] * 256 ** 5;
+        let res = res + [bytes + 4] * 256 ** 4;
+        let res = res + [bytes + 3] * 256 ** 3;
+        let res = res + [bytes + 2] * 256 ** 2;
+        let res = res + [bytes + 1] * 256;
+        let res = res + [bytes];
+        return res;
     }
 
     func erase_contracts{

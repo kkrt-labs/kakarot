@@ -1,5 +1,4 @@
 .PHONY: build test coverage
-cairo_files = $(shell find ./src ./tests -type f -name "*.cairo")
 
 build: check
 	$(MAKE) clean
@@ -44,11 +43,9 @@ deploy: build
 	poetry run python ./scripts/deploy_kakarot.py
 
 format:
-	poetry run cairo-format -i ${cairo_files}
 	trunk check --fix
 
 format-check:
-	poetry run cairo-format -c ${cairo_files}
 	trunk check --ci
 
 clean:

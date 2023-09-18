@@ -46,22 +46,8 @@ jobs:
         run: make setup
 
       # Build artifacts
-      - name: Event name
-        run: echo "github.event_name=${{ github.event_name }}"
-      - name: Format all the cairo files
-        run: make format
-      - name: Commit changes
-        # Run on push events and commit only when there are changes, otherwise it continues
-        if: github.event_name == 'push'
-        run: |
-          git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
-          git config --global user.email "kkrt-labs@users.noreply.github.com"
-          git add -A
-          git diff-index --quiet HEAD || (git commit -m "${{ env.CI_COMMIT_MESSAGE }}" && git push)
       - name: Compile all the cairo files
-        run: |
-          make format-check
-          make build
+        run: make build
 
   tests:
     runs-on: ubuntu-latest-16-cores
