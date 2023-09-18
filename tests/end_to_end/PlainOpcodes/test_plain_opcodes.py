@@ -78,7 +78,7 @@ class TestPlainOpcodes:
             self, plain_opcodes, counter, offset, size
         ):
             """
-            The counter.bytecode is indeed the structured as follows
+            The counter.bytecode is indeed the structured as follows.
 
                 constructor bytecode      contract bytecode       calldata
             |------------------------FE|----------------------|---------------|

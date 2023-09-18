@@ -13,7 +13,11 @@ To get started on Kakarot, you'll need python3.9, as well as Starknet-related
 libraries, e.g. `cairo-lang`.
 
 - Install [poetry](https://python-poetry.org/docs/)
-- Note you may need to run `curl -sSL https://install.python-poetry.org | python3.9 -` and not `curl -sSL https://install.python-poetry.org | python3 -` in order to force poetry to install itself on python3.9, just in case you have both python version 3.9 and 3.10 in your path.
+- Note you may need to run
+  `curl -sSL https://install.python-poetry.org | python3.9 -` and not
+  `curl -sSL https://install.python-poetry.org | python3 -` in order to force
+  poetry to install itself on python3.9, just in case you have both python
+  version 3.9 and 3.10 in your path.
 
 #### Install foundry
 
@@ -34,8 +38,8 @@ Common caveats:
   your pyenv are using the 3.9 version of Python. Your machine may have
   conflicting versions of python.
   - 3.9-dev will fail when running `make setup` since it is evaluated as 3.9.10+
-      and therefore an invalid PEP 440 version (Poetry
-      [enforces PEP 440 versioning](https://python-poetry.org/docs/faq#why-does-poetry-enforce-pep-440-versions)). 
+    and therefore an invalid PEP 440 version (Poetry
+    [enforces PEP 440 versioning](https://python-poetry.org/docs/faq#why-does-poetry-enforce-pep-440-versions)).
 - Mac M1 chips are subject to some quirks/bugs with regards to some
   cryptographic libraries used by `cairo-lang`.
   - you may need to run `brew install gmp`.

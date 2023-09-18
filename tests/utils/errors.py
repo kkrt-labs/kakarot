@@ -37,6 +37,7 @@ def kakarot_error(message=None):
                         expected_short_string == revert_reason_short_string
                     ), f"Expected {expected_short_string}, got {revert_reason_short_string}"
                     return
+            # trunk-ignore(ruff/E722)
             except:
                 assert (
                     message == revert_reason

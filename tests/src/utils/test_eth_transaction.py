@@ -31,7 +31,7 @@ class TestEthTransaction:
             """
             Note: the seeds 41 and 42 have been manually selected after observing that some private keys
             were making the Counter deploy transaction failing because their signature parameters length (s and v)
-            were not 32 bytes
+            were not 32 bytes.
             """
             random.seed(seed)
             private_key = generate_random_private_key()

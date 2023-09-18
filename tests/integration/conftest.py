@@ -87,10 +87,10 @@ async def addresses(
     deploy_eoa,
 ) -> List[Wallet]:
     """
-    Returns a list of addresses to be used in tests.
+    Return a list of addresses to be used in tests.
     Addresses are returned as named tuples with
     - address: the hex string of the EVM address (20 bytes)
-    - starknet_address: the corresponding address for starknet (same value but as int)
+    - starknet_address: the corresponding address for starknet (same value but as int).
     """
     # Predefined private key shared with anvil,
     # so we can more easily compare results for validity

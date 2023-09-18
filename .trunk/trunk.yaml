@@ -14,7 +14,6 @@ runtimes:
 lint:
   enabled:
     - actionlint@1.6.25
-    - bandit@1.7.5
     - black@23.9.1
     - checkov@2.4.9
     - codespell@2.2.5
@@ -31,12 +30,17 @@ lint:
     - taplo@0.8.1
     - terrascan@1.18.3
     - trivy@0.45.0
-    - trufflehog@3.56.0
     - yamllint@1.32.0
+  disabled:
+    - trufflehog@3.56.0
+    - bandit@1.7.5
+  ignore:
+    - linters: [bandit]
+      paths: [tests, docker]
 actions:
   disabled:
     - trunk-announce
-    - trunk-check-pre-push
     - trunk-fmt-pre-commit
   enabled:
     - trunk-upgrade-available
+    - trunk-check-pre-push

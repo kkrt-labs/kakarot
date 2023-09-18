@@ -58,7 +58,7 @@ async def erc_721_non_recipient(deploy_solidity_contract, owner):
 @pytest.fixture
 def token_id(request):
     """
-    A fixture to generate a random unique token_id for a given test function
+    Generate a random unique token_id for a given test function.
     """
     return abs(hash(request.function.__name__))
 
@@ -161,7 +161,7 @@ class TestERC721:
 
             assert (
                 await erc_721.isApprovedForAll(others[0].address, others[1].address)
-                == True
+                is True
             )
 
         @pytest.mark.xfail(

@@ -76,7 +76,7 @@ def use_kakarot_backend(contract: Contract, kakarot: StarknetContract):
 
     def wrap_zk_evm(fun: str):
         """
-        Decorator to update contract.fun to target kakarot instead.
+        Update contract.fun to target kakarot instead.
         """
 
         async def _wrapped(self, *args, **kwargs):
@@ -156,6 +156,7 @@ def use_kakarot_backend(contract: Contract, kakarot: StarknetContract):
                             transactionIndex=0,
                         )
                     )
+                # trunk-ignore(ruff/E722)
                 except:
                     continue
 
@@ -163,8 +164,8 @@ def use_kakarot_backend(contract: Contract, kakarot: StarknetContract):
                 logs = get_matching_logs_for_event(codec, event_abi, log_receipts)
                 setattr(self.events, event_abi["name"], logs)
 
-            setattr(self, "raw_log_receipts", log_receipts)
-            setattr(self, "tx", res)
+            self.raw_log_receipts = log_receipts
+            self.tx = res
 
             return result
 
@@ -179,7 +180,7 @@ def use_kakarot_backend(contract: Contract, kakarot: StarknetContract):
             )
     except web3.exceptions.NoABIFunctionsFound:
         pass
-    setattr(contract, "query_logs", MethodType(query_logs, contract))
+    contract.query_logs = MethodType(query_logs, contract)
     return contract
 
 
@@ -237,5 +238,5 @@ def get_contract(
         bytecode=compilation_output[0]["bytecode"]["object"],
         address=address,
     )
-    setattr(contract, "_contract_name", contract_name)
+    contract._contract_name = contract_name
     return cast(Contract, contract)

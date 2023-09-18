@@ -64,7 +64,8 @@ precompiles.
 
 - ❌ Kakarot is not a compiler.
 
-<!-- TODO: Add updated sequence diagram for different operations on Kakarot when it is up-to-date
+<!-- markdownlint-disable MD013 -->
+<!-- TODO: Update sequence diagram
 ### Main execution flow
 
 mermaid
@@ -102,6 +103,7 @@ sequenceDiagram
     end
     Kakarot->>-User: ctx
 -->
+<!-- markdownlint-enable MD013 -->
 
 ## Getting started
 

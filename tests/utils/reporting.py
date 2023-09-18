@@ -42,7 +42,7 @@ def timeit(fun: T) -> T:
 
 class traceit:
     """
-    Record resources used by a StarknetContract and VM
+    Record resources used by a StarknetContract and VM.
     """
 
     _context = ""
@@ -51,7 +51,7 @@ class traceit:
     @property
     def prefix(cls) -> str:
         """
-        Prefix the log output with the context if used
+        Prefix the log output with the context if used.
         """
         return cls._context + ":" if cls._context != "" else ""
 
@@ -75,9 +75,9 @@ class traceit:
             **resources,
         }
 
-        args_serializable = [_a.hex() if type(_a) == bytes else _a for _a in args]
+        args_serializable = [_a.hex() if isinstance(_a, bytes) else _a for _a in args]
         kwargs_serializable = {
-            k: v.hex() if type(v) == bytes else v for k, v in kwargs.items()
+            k: v.hex() if isinstance(v, bytes) else v for k, v in kwargs.items()
         }
         _resources_report.append(
             {
@@ -124,7 +124,7 @@ class traceit:
     @classmethod
     def _trace_attr(cls, fun: Callable, contract_name: str):
         """
-        Wrapper to be applied to a contract's method to keep track of the ExecutionResources used.
+        Apply this wrapper to a contract's method to keep track of the ExecutionResources used.
         """
 
         def wrapped(*args, **kwargs):
@@ -142,7 +142,7 @@ class traceit:
                             **kwargs,
                         ),
                     )
-                    setattr(prepared_call, "_traced", True)
+                    prepared_call._traced = True
             return prepared_call
 
         return wrapped
@@ -180,7 +180,7 @@ class traceit:
         context,
     ):
         """
-        Context manager to add a context field to the logs and records
+        Context manager to add a context field to the logs and records.
         """
         prev_context = cls._context
         cls._context = context
@@ -283,8 +283,8 @@ def dump_coverage(path: Union[str, Path], files: List[CoverageFile]):
         {
             "coverage": {
                 file.name.split("__main__/")[-1]: {
-                    **{l: 0 for l in file.missed},
-                    **{l: 1 for l in file.covered},
+                    **{line: 0 for line in file.missed},
+                    **{line: 1 for line in file.covered},
                 }
                 for file in files
             }
