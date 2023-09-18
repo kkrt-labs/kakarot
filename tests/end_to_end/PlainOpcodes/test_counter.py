@@ -9,14 +9,7 @@ from tests.utils.errors import kakarot_error
 @pytest.mark.Counter
 class TestCounter:
     class TestCount:
-        async def test_should_return_0_after_deployment(
-            self, deploy_solidity_contract, owner
-        ):
-            counter = await deploy_solidity_contract(
-                "PlainOpcodes",
-                "Counter",
-                caller_eoa=owner.starknet_contract,
-            )
+        async def test_should_return_0_after_deployment(self, counter):
             assert await counter.count() == 0
 
     class TestInc:
