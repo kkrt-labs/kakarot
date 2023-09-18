@@ -154,7 +154,7 @@ make build-sol
 
 ## Code style
 
-The project uses [trunk.io](https://trunk.io/) for run a comprehensive list of
+The project uses [trunk.io](https://trunk.io/) to run a comprehensive list of
 linters.
 
 To install Trunk, run:
