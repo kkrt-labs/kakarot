@@ -152,6 +152,23 @@ To build the test Solidity smart contracts:
 make build-sol
 ```
 
+## Code style
+
+The project uses [trunk.io](https://trunk.io/) for run a comprehensive list of
+linters.
+
+To install Trunk, run:
+
+```bash
+curl https://get.trunk.io -fsSL | bash
+```
+
+You can also add Trunk to VSCode with
+[this extension](https://marketplace.visualstudio.com/items?itemName=Trunk.io).
+
+Then, don't forget to select Trunk as your default formatter in VSCode (command
+palette > Format Document With > Trunk).
+
 ## Test
 
 ```bash
