@@ -76,7 +76,7 @@ namespace Helpers {
         let low = low + [val + 29] * 256 ** 2;
         let low = low + [val + 30] * 256 ** 1;
         let low = low + [val + 31];
-        let high = [val] * 256 ** 1;
+        let high = [val] * 256 ** 1 * 256 ** 14;
         let high = high + [val + 1] * 256 ** 14;
         let high = high + [val + 2] * 256 ** 13;
         let high = high + [val + 3] * 256 ** 12;
