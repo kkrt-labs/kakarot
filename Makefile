@@ -1,5 +1,4 @@
 .PHONY: build test coverage
-cairo_files = $(shell find ./src ./tests -type f -name "*.cairo")
 
 build: check
 	$(MAKE) clean
@@ -44,28 +43,14 @@ deploy: build
 	poetry run python ./scripts/deploy_kakarot.py
 
 format:
-	poetry run cairo-format -i ${cairo_files}
-	poetry run black tests/. scripts/.
-	poetry run isort tests/. scripts/.
-	poetry run autoflake . -r
+	trunk check --fix
 
 format-check:
-	poetry run cairo-format -c ${cairo_files}
-	poetry run black tests/. --check
-	poetry run isort tests/. --check
-	poetry run autoflake . -r -cd
+	trunk check --ci
 
 clean:
 	rm -rf build
 	mkdir build
-
-lint:
-	amarna ./src/kakarot -o lint.sarif -rules unused-imports,dead-store,unknown-decorator,unused-arguments
-
-format-mac:
-	cairo-format src/**/*.cairo -i
-	black tests/.
-	isort tests/.
 
 check-resources:
 	poetry run python scripts/check_resources.py

@@ -2,9 +2,15 @@ name: CI
 
 on: [push, pull_request]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: read-all
+
 jobs:
   build:
-    runs-on: ubuntu-latest-16-cores
+    runs-on: ubuntu-latest
     env:
       CI_COMMIT_MESSAGE: CI Formatting Auto Commit
       CI_COMMIT_AUTHOR: ${{ github.event.repository.name }} CI
@@ -40,22 +46,8 @@ jobs:
         run: make setup
 
       # Build artifacts
-      - name: Event name
-        run: echo "github.event_name=${{ github.event_name }}"
-      - name: Format all the cairo files
-        run: make format
-      - name: Commit changes
-        # Run on push events and commit only when there are changes, otherwise it continues
-        if: github.event_name == 'push'
-        run: |
-          git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
-          git config --global user.email "kkrt-labs@users.noreply.github.com"
-          git add -A
-          git diff-index --quiet HEAD || (git commit -m "${{ env.CI_COMMIT_MESSAGE }}" && git push)
       - name: Compile all the cairo files
-        run: |
-          make format-check
-          make build
+        run: make build
 
   tests:
     runs-on: ubuntu-latest-16-cores
@@ -118,7 +110,7 @@ jobs:
           name: coverage
 
   resources:
-    runs-on: ubuntu-latest-16-cores
+    runs-on: ubuntu-latest
     needs: tests
     steps:
       - uses: actions/checkout@v3

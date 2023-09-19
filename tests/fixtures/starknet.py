@@ -112,7 +112,7 @@ async def eth(starknet: Starknet):
 @pytest.fixture()
 def starknet_snapshot(starknet):
     """
-    Use this fixture to snapshot the starknet state before each test and reset it at teardown
+    Use this fixture to snapshot the starknet state before each test and reset it at teardown.
     """
     initial_state = starknet.state.copy()
 

@@ -64,7 +64,8 @@ precompiles.
 
 - ❌ Kakarot is not a compiler.
 
-<!-- TODO: Add updated sequence diagram for different operations on Kakarot when it is up-to-date
+<!-- markdownlint-disable MD013 -->
+<!-- TODO: Update sequence diagram
 ### Main execution flow
 
 mermaid
@@ -102,6 +103,7 @@ sequenceDiagram
     end
     Kakarot->>-User: ctx
 -->
+<!-- markdownlint-enable MD013 -->
 
 ## Getting started
 
@@ -149,6 +151,23 @@ To build the test Solidity smart contracts:
 # foundryup
 make build-sol
 ```
+
+## Code style
+
+The project uses [trunk.io](https://trunk.io/) to run a comprehensive list of
+linters.
+
+To install Trunk, run:
+
+```bash
+curl https://get.trunk.io -fsSL | bash
+```
+
+You can also add Trunk to VSCode with
+[this extension](https://marketplace.visualstudio.com/items?itemName=Trunk.io).
+
+Then, don't forget to select Trunk as your default formatter in VSCode (command
+palette > Format Document With > Trunk).
 
 ## Test
 

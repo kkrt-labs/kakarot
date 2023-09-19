@@ -143,13 +143,13 @@ async def fund_address(
     address: Union[int, str], amount: float, funding_account=None, token_contract=None
 ):
     """
-    Fund a given starknet address with {amount} ETH
+    Fund a given starknet address with {amount} ETH.
     """
     address = int(address, 16) if isinstance(address, str) else address
     amount = amount * 1e18
     if NETWORK["name"] == "starknet-devnet":
         response = requests.post(
-            f"http://127.0.0.1:5050/mint",
+            "http://127.0.0.1:5050/mint",
             json={"address": hex(address), "amount": int(amount)},
         )
         if response.status_code != 200:
@@ -320,7 +320,7 @@ async def deploy_starknet_account(class_hash, private_key=None, amount=1):
     )
     logger.info(f"ℹ️  Funding account {hex(address)} with {amount} ETH")
     await fund_address(address, amount=amount)
-    logger.info(f"ℹ️  Deploying account")
+    logger.info("ℹ️  Deploying account")
     res = await Account.deploy_account(
         address=address,
         class_hash=class_hash,
@@ -350,7 +350,7 @@ async def declare(contract_name):
     class_hash = compute_class_hash(contract_class=deepcopy(contract_class))
     try:
         await CLIENT.get_class_by_hash(class_hash)
-        logger.info(f"✅ Class already declared, skipping")
+        logger.info("✅ Class already declared, skipping")
         return class_hash
     except Exception:
         pass
@@ -459,7 +459,7 @@ async def invoke(contract: Union[str, int], *args, **kwargs):
      - either with a name (expect that a matching ABIs is to be found in the project artifacts)
        `invoke("MyContract", "foo")`
      - or with a plain address (in this later case, no parsing is done on the calldata)
-       `invoke(0x1234, "foo")`
+       `invoke(0x1234, "foo")`.
     """
     response = await (
         invoke_address(contract, *args, **kwargs)
@@ -503,7 +503,7 @@ async def call(contract: Union[str, int], *args, **kwargs):
      - either with a name (expect that a matching ABIs is to be found in the project artifacts)
      `call("MyContract", "foo")`
      - or with a plain address (in this later case, no parsing is done on the calldata)
-     `call(0x1234, "foo")`
+     `call(0x1234, "foo")`.
     """
     return await (
         call_address(contract, *args, **kwargs)
@@ -518,7 +518,7 @@ async def call(contract: Union[str, int], *args, **kwargs):
 async def wait_for_transaction(*args, **kwargs):
     """
     We need to write this custom hacky wait_for_transaction instead of using the one from starknet-py
-    because the RPCs don't know RECEIVED, PENDING and REJECTED states currently
+    because the RPCs don't know RECEIVED, PENDING and REJECTED states currently.
     """
     if GATEWAY_CLIENT is not None:
         # Gateway case, just use it
@@ -545,7 +545,7 @@ async def wait_for_transaction(*args, **kwargs):
             RPC_CLIENT.url,
             json={
                 "jsonrpc": "2.0",
-                "method": f"starknet_getTransactionReceipt",
+                "method": "starknet_getTransactionReceipt",
                 "params": {"transaction_hash": hex(transaction_hash)},
                 "id": 0,
             },

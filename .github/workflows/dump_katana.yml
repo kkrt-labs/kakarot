@@ -3,66 +3,68 @@ name: dump-katana
 on:
   push:
     branches:
-      - "main"
+      - main
+
+permissions: read-all
 
 jobs:
-    dump-katana:
-        runs-on: ubuntu-latest-16-cores
-        env:
-            STARKNET_NETWORK: katana
-        steps:
-            - uses: actions/checkout@v3
-            - name: Set up Python 3.9
-              uses: actions/setup-python@v4
-              with:
-                  python-version: 3.9
-            - name: Load cached Poetry installation
-              id: cached-poetry
-              uses: actions/cache@v3
-              with:
-               path: ~/.local
-               key: poetry-${{ runner.os }}
-            - name: Install Poetry
-              if: steps.cached-poetry.outputs.cache-hit != 'true'
-              uses: snok/install-poetry@v1
-              with:
-                virtualenvs-create: true
-                virtualenvs-in-project: true
-                installer-parallel: true
-            - run: poetry config installer.modern-installation false
-            - name: Load cached venv
-              id: cached-poetry-dependencies
-              uses: actions/cache@v3
-              with:
-                path: .venv
-                key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
-            - name: Install dependencies
-              if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-              run: make setup
-            - name: Setup Rust Toolchain
-              uses: actions-rs/toolchain@v1
-              with:
-                profile: minimal
-                override: true
-            - name: Retrieve cached dependencies
-              uses: Swatinem/rust-cache@v2
-            - name: Install Katana
-              run: make install-katana
+  dump-katana:
+    runs-on: ubuntu-latest
+    env:
+      STARKNET_NETWORK: katana
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Load cached Poetry installation
+        id: cached-poetry
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}
+      - name: Install Poetry
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+      - run: poetry config installer.modern-installation false
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: make setup
+      - name: Setup Rust Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          override: true
+      - name: Retrieve cached dependencies
+        uses: Swatinem/rust-cache@v2
+      - name: Install Katana
+        run: make install-katana
 
-            ## create dump
-            - name: create katana dump
-              run: |
-                 cp .env.example .env
-                 make run-katana-with-dump & (make deploy && kill -2 $(lsof -t -i :5050))
+      ## create dump
+      - name: create katana dump
+        run: |
+          cp .env.example .env
+          make run-katana-with-dump & (make deploy && kill -2 $(lsof -t -i :5050))
 
-            ## upload artifacts
-            - name: upload kakarot on katana dump
-              uses: actions/upload-artifact@v3
-              with:
-                path: ./kakarot-katana-dump
-                name: kakarot-katana-dump
-            - name: upload kakarot on katana deployments
-              uses: actions/upload-artifact@v3
-              with:
-                path: ./deployments/katana
-                name: katana-deployments
+      ## upload artifacts
+      - name: upload kakarot on katana dump
+        uses: actions/upload-artifact@v3
+        with:
+          path: ./kakarot-katana-dump
+          name: kakarot-katana-dump
+      - name: upload kakarot on katana deployments
+        uses: actions/upload-artifact@v3
+        with:
+          path: ./deployments/katana
+          name: katana-deployments

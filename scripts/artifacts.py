@@ -68,7 +68,7 @@ def fetch_deployments(path: str = "deployments"):
     )
 
     if artifacts.empty:
-        raise ValueError(f"No deployment artifacts found for base branch main")
+        raise ValueError("No deployment artifacts found for base branch main")
 
     github_token = os.getenv("GITHUB_TOKEN")
     if not github_token:

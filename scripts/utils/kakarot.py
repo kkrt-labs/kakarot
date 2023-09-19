@@ -97,11 +97,7 @@ def get_contract(contract_app: str, contract_name: str, address=None) -> Web3Con
 
     for fun in contract.functions:
         setattr(contract, fun, MethodType(_wrap_kakarot(fun), contract))
-    setattr(
-        contract.events,
-        "parse_starknet_events",
-        MethodType(_parse_events, contract.events),
-    )
+    contract.events.parse_starknet_events = MethodType(_parse_events, contract.events)
     return contract
 
 
@@ -135,7 +131,7 @@ async def deploy(
         value=value,
     )
     contract.address = Web3.to_checksum_address(evm_address)
-    setattr(contract, "starknet_address", starknet_address)
+    contract.starknet_address = starknet_address
     logger.info(f"✅ {contract_name} deployed at address {contract.address}")
 
     return contract
@@ -305,7 +301,7 @@ async def _compute_starknet_address(address: Union[str, int]):
 
 async def deploy_and_fund_evm_address(evm_address: str, amount: float):
     """
-    Deploy an EOA linked to the given EVM address and fund it with amount ETH
+    Deploy an EOA linked to the given EVM address and fund it with amount ETH.
     """
     starknet_address = (
         await _call_starknet(

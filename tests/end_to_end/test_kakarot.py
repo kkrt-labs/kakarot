@@ -21,7 +21,7 @@ params_execute = [pytest.param(case.pop("params"), **case) for case in test_case
 @pytest_asyncio.fixture(scope="session")
 async def evm():
     """
-    Using a fixture with scope=session let us cache this function and make the test run faster
+    Return a cached EVM contract.
     """
     from scripts.utils.starknet import get_contract
 

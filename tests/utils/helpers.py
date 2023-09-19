@@ -78,7 +78,7 @@ def get_domain_separator(name: str, token_address: str) -> bytes:
 
 def get_create_address(sender_address: str, nonce: int) -> str:
     """
-    See [CREATE](https://www.evm.codes/#f0)
+    See [CREATE](https://www.evm.codes/#f0).
     """
     return to_checksum_address(
         keccak(rlp.encode([decode_hex(sender_address), nonce]))[-20:]
@@ -89,7 +89,7 @@ def get_create2_address(
     sender_address: str, salt: bytes, initialization_code: bytes
 ) -> str:
     """
-    See [CREATE2](https://www.evm.codes/#f5)
+    See [CREATE2](https://www.evm.codes/#f5).
     """
     return to_checksum_address(
         keccak(

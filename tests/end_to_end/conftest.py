@@ -22,7 +22,7 @@ Wallet = namedtuple("Wallet", ["address", "private_key", "starknet_contract"])
 def max_fee():
     """
     max_fee is just hard coded to 1 ETH to make sure tx passes
-    it is not used per se in the test
+    it is not used per se in the test.
     """
     return int(1e18)
 
@@ -47,11 +47,11 @@ def starknet():
 @pytest_asyncio.fixture(scope="session")
 async def addresses(max_fee) -> List[Wallet]:
     """
-    Returns a list of addresses to be used in tests.
+    Return a list of addresses to be used in tests.
     Addresses are returned as named tuples with
     - address: the EVM address as int
     - private_key: the PrivateKey of this address
-    - starknet_contract: the deployed Starknet contract handling this EOA
+    - starknet_contract: the deployed Starknet contract handling this EOA.
     """
     from scripts.utils.kakarot import get_eoa
 
@@ -89,7 +89,7 @@ def others(addresses):
 @pytest_asyncio.fixture(scope="session")
 async def deployer() -> Account:
     """
-    Using a fixture with scope=session let us cache this function and make the test run faster
+    Return a cached version of the deployer contract.
     """
 
     from scripts.utils.starknet import get_starknet_account
@@ -100,7 +100,7 @@ async def deployer() -> Account:
 @pytest_asyncio.fixture(scope="session")
 async def eth(deployer) -> Contract:
     """
-    Using a fixture with scope=session let us cache this function and make the test run faster
+    Return a cached version of the eth contract.
     """
 
     from scripts.utils.starknet import get_eth_contract
@@ -111,7 +111,7 @@ async def eth(deployer) -> Contract:
 @pytest.fixture(scope="session")
 def fund_starknet_address(deployer, eth):
     """
-    Using a fixture with scope=session let us cache this function and make the test run faster
+    Return a cached fund_starknet_address for the whole session.
     """
 
     from scripts.utils.starknet import fund_address
@@ -122,7 +122,7 @@ def fund_starknet_address(deployer, eth):
 @pytest_asyncio.fixture(scope="session")
 async def kakarot(deployer) -> Contract:
     """
-    Using a fixture with scope=session let us cache this function and make the test run faster
+    Return a cached deployer for the whole session.
     """
     from scripts.utils.starknet import get_contract
 
@@ -132,7 +132,7 @@ async def kakarot(deployer) -> Contract:
 @pytest_asyncio.fixture(scope="session")
 async def deploy_fee(kakarot: Contract) -> int:
     """
-    Using a fixture with scope=session let us cache this value and make the test run faster
+    Return a cached deploy_fee for the whole session.
     """
     return (await kakarot.functions["get_deploy_fee"].call()).deploy_fee
 
@@ -140,7 +140,7 @@ async def deploy_fee(kakarot: Contract) -> int:
 @pytest.fixture(scope="session")
 def compute_starknet_address(kakarot: Contract):
     """
-    A fixture to isolate the starknet-py logic and make the test agnostic of the backend
+    Isolate the starknet-py logic and make the test agnostic of the backend.
     """
 
     async def _factory(evm_address: Union[int, str]):
@@ -156,7 +156,7 @@ def compute_starknet_address(kakarot: Contract):
 @pytest.fixture(scope="session")
 def deploy_externally_owned_account(kakarot: Contract, max_fee: int):
     """
-    A fixture to isolate the starknet-py logic and make the test agnostic of the backend
+    Isolate the starknet-py logic and make the test agnostic of the backend.
     """
 
     async def _factory(evm_address: Union[int, str]):
@@ -174,7 +174,7 @@ def deploy_externally_owned_account(kakarot: Contract, max_fee: int):
 @pytest.fixture(scope="session")
 def get_contract(deployer):
     """
-    Wrap script.utils.starknet.get_contract to make the test agnostics of the utils
+    Wrap script.utils.starknet.get_contract to make the test agnostics of the utils.
     """
     from scripts.utils.starknet import get_contract
 
@@ -191,14 +191,16 @@ def get_contract(deployer):
 @pytest.fixture(scope="session")
 def eth_balance_of(eth: Contract, compute_starknet_address):
     """
-    A fixture to get the balance of an address.
-    Accept both EVM and Starknet address, int or hex str
+    Get the balance of an address.
+
+    Accept both EVM and Starknet address, int or hex str.
     """
 
     async def _factory(address: Union[int, str]):
         try:
             evm_address = to_checksum_address(address)
             address = await compute_starknet_address(evm_address)
+        # trunk-ignore(ruff/E722)
         except:
             address = address if isinstance(address, int) else int(address, 16)
 
@@ -217,9 +219,7 @@ def deploy_solidity_contract(max_fee: int):
 
     async def _factory(contract_app, contract_name, *args, **kwargs):
         """
-        This factory is what is actually returned by pytest when requesting the `deploy_solidity_contract`
-        fixture.
-        It creates a web3.contract based on the basename of the target solidity file.
+        Create a web3.contract based on the basename of the target solidity file.
         """
         return await deploy(
             contract_app, contract_name, *args, **kwargs, max_fee=max_fee
@@ -238,9 +238,7 @@ def get_solidity_contract():
 
     def _factory(contract_app, contract_name, *args, **kwargs):
         """
-        This factory is what is actually returned by pytest when requesting the `deploy_solidity_contract`
-        fixture.
-        It creates a web3.contract based on the basename of the target solidity file.
+        Create a web3.contract based on the basename of the target solidity file.
         """
         return get_contract(contract_app, contract_name, *args, **kwargs)
 
@@ -251,7 +249,7 @@ def get_solidity_contract():
 def block_with_tx_hashes(starknet):
     """
     Not using starknet object because of
-    https://github.com/software-mansion/starknet.py/issues/1174
+    https://github.com/software-mansion/starknet.py/issues/1174.
     """
 
     def _factory(block_number: Optional[int] = None):
@@ -263,7 +261,7 @@ def block_with_tx_hashes(starknet):
             starknet.url,
             json={
                 "jsonrpc": "2.0",
-                "method": f"starknet_getBlockWithTxHashes",
+                "method": "starknet_getBlockWithTxHashes",
                 "params": [block_number or "latest"],
                 "id": 0,
             },

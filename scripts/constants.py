@@ -107,7 +107,7 @@ try:
         RPC_CLIENT.url,
         json={
             "jsonrpc": "2.0",
-            "method": f"starknet_chainId",
+            "method": "starknet_chainId",
             "params": [],
             "id": 0,
         },
@@ -118,7 +118,7 @@ try:
         chain_id = int(payload["result"], 16)
 
     NETWORK["chain_id"] = ChainId.chain_id
-except:
+except (requests.exceptions.ConnectionError, requests.exceptions.MissingSchema):
     pass
 
 ETH_TOKEN_ADDRESS = 0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7
