@@ -557,7 +557,9 @@ async def wait_for_transaction(*args, **kwargs):
                     f"tx {transaction_hash:x} error: {json.dumps(payload['error'])}"
                 )
                 break
-        status = payload.get("result", {}).get("status")
+        status = payload.get("result", {}).get("status") or payload.get(
+            "result", {}
+        ).get("finality_status")
         if status is not None:
             status = TransactionStatus(status)
         else:
