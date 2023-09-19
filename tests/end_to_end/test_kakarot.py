@@ -38,6 +38,7 @@ class TestKakarot:
         self,
         starknet: FullNodeClient,
         eth: Contract,
+        wait_for_transaction,
         params: dict,
         request,
         evm: Contract,
@@ -75,9 +76,9 @@ class TestKakarot:
         if events:
             # Events only show up in a transaction, thus we run the same call, but in a tx
             tx = await call.invoke(max_fee=max_fee)
-            await tx.wait_for_acceptance()
+            status = await wait_for_transaction(tx.hash)
+            assert status == TransactionStatus.ACCEPTED_ON_L2
             receipt = await starknet.get_transaction_receipt(tx.hash)
-            assert receipt.status == TransactionStatus.ACCEPTED_ON_L2
             assert [
                 [
                     # we remove the key that is used to convey the emitting kakarot evm contract
