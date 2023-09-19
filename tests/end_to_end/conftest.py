@@ -154,7 +154,19 @@ def compute_starknet_address(kakarot: Contract):
 
 
 @pytest.fixture(scope="session")
-def deploy_externally_owned_account(kakarot: Contract, max_fee: int):
+def wait_for_transaction():
+    from scripts.utils.starknet import wait_for_transaction
+
+    async def _factory(*args, **kwargs):
+        return await wait_for_transaction(*args, **kwargs)
+
+    return _factory
+
+
+@pytest.fixture(scope="session")
+def deploy_externally_owned_account(
+    kakarot: Contract, max_fee: int, wait_for_transaction
+):
     """
     Isolate the starknet-py logic and make the test agnostic of the backend.
     """
@@ -165,7 +177,7 @@ def deploy_externally_owned_account(kakarot: Contract, max_fee: int):
         tx = await kakarot.functions["deploy_externally_owned_account"].invoke(
             evm_address, max_fee=max_fee
         )
-        await tx.wait_for_acceptance()
+        await wait_for_transaction(tx.hash)
         return tx
 
     return _factory
