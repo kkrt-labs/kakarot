@@ -7,6 +7,7 @@ def pytest_addoption(parser):
         action="store",
         type=str,
         help="Specify ef test directory or suite to run, where a suite is a json file.",
+        default=None,
     )
     parser.addoption(
         "--case",
@@ -14,6 +15,7 @@ def pytest_addoption(parser):
         type=str,
         nargs="+",
         help="Specify one or more particular cases within the JSON suite files to run",
+        default=None,
     )
     parser.addoption(
         "--network",
