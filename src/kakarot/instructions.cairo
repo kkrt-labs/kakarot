@@ -631,7 +631,7 @@ namespace EVMInstructions {
                     contract_address=ctx.starknet_contract_address
                 );
 
-                let has_return_data = is_not_zero(ctx.return_data_len);
+                let has_return_data = is_not_zero(ctx.return_info.len);
                 let has_empty_return_data = (1 - has_return_data);
 
                 let is_eao = ExecutionContext.is_caller_eoa(self=ctx);

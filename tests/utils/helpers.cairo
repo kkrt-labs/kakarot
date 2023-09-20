@@ -45,6 +45,10 @@ namespace TestHelpers {
         );
         let root_context = ExecutionContext.init_empty();
         let return_data: felt* = alloc();
+        tempvar return_info: model.ReturnInfo* = new model.ReturnInfo(
+            len=0, data=return_data, size=0, offset=0
+        );
+
         let ctx: model.ExecutionContext* = ExecutionContext.init(
             call_context,
             starknet_contract_address=starknet_contract_address,
@@ -53,8 +57,7 @@ namespace TestHelpers {
             gas_limit=Constants.TRANSACTION_GAS_LIMIT,
             gas_price=0,
             calling_context=root_context,
-            return_data_len=0,
-            return_data=return_data,
+            return_info=return_info,
             read_only=FALSE,
         );
         return ctx;

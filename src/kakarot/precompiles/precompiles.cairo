@@ -62,13 +62,16 @@ namespace Precompiles {
         tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
             revert_contract_state_dict_start, revert_contract_state_dict_start
         );
+        tempvar return_info: model.ReturnInfo* = new model.ReturnInfo(
+            len=return_data_len, data=return_data, size=0, offset=0
+        );
+
         // Build returned execution context
         local sub_ctx: model.ExecutionContext* = new model.ExecutionContext(
             call_context=cast(0, model.CallContext*),
             program_counter=0,
             stopped=TRUE,
-            return_data=return_data,
-            return_data_len=return_data_len,
+            return_info=return_info,
             stack=cast(0, model.Stack*),
             memory=cast(0, model.Memory*),
             gas_used=gas_used,

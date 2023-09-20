@@ -49,8 +49,7 @@ namespace ExecutionContext {
         dw 0;  // call_context
         dw 0;  // program_counter
         dw 1;  // stopped
-        dw 0;  // return_data
-        dw 0;  // return_data_len
+        dw 0;  // return_info
         dw 0;  // stack
         dw 0;  // memory
         dw 0;  // gas_used
@@ -98,8 +97,7 @@ namespace ExecutionContext {
         gas_limit: felt,
         gas_price: felt,
         calling_context: model.ExecutionContext*,
-        return_data_len: felt,
-        return_data: felt*,
+        return_info: model.ReturnInfo*,
         read_only: felt,
     ) -> model.ExecutionContext* {
         alloc_locals;
@@ -119,8 +117,7 @@ namespace ExecutionContext {
             call_context=call_context,
             program_counter=0,
             stopped=FALSE,
-            return_data=return_data,
-            return_data_len=return_data_len,
+            return_info=return_info,
             stack=stack,
             memory=memory,
             gas_used=0,
@@ -156,8 +153,8 @@ namespace ExecutionContext {
         return new Summary(
             memory=memory_summary,
             stack=stack_summary,
-            return_data=self.return_data,
-            return_data_len=self.return_data_len,
+            return_data=self.return_info.data,
+            return_data_len=self.return_info.len,
             gas_used=self.gas_used,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
@@ -217,8 +214,7 @@ namespace ExecutionContext {
             call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=TRUE,
-            return_data=self.return_data,
-            return_data_len=self.return_data_len,
+            return_info=self.return_info,
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,
@@ -258,13 +254,12 @@ namespace ExecutionContext {
     func revert(
         self: model.ExecutionContext*, revert_reason: felt*, size: felt
     ) -> model.ExecutionContext* {
-        memcpy(self.return_data, revert_reason, size);
+        memcpy(self.return_info.data, revert_reason, size);
         return new model.ExecutionContext(
             call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=TRUE,
-            return_data=self.return_data,
-            return_data_len=size,
+            return_info=self.return_info,
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,
@@ -399,8 +394,8 @@ namespace ExecutionContext {
         let is_reverted = ExecutionContext.is_reverted(self);
 
         if (is_reverted != 0) {
-            let revert_reason_bytes: felt* = self.return_data;
-            let size = self.return_data_len;
+            tempvar revert_reason_bytes: felt* = self.return_info.data;
+            tempvar size = self.return_info.len;
             // revert with loaded revert reason short string: 31 bytes of the last word
             let reason_is_single_word = is_le(size, 32);
             if (reason_is_single_word != FALSE) {
@@ -455,8 +450,7 @@ namespace ExecutionContext {
             call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=self.stopped,
-            return_data=self.return_data,
-            return_data_len=self.return_data_len,
+            return_info=self.return_info,
             stack=new_stack,
             memory=self.memory,
             gas_used=self.gas_used,
@@ -491,8 +485,7 @@ namespace ExecutionContext {
             call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=self.stopped,
-            return_data=self.return_data,
-            return_data_len=self.return_data_len,
+            return_info=self.return_info,
             stack=self.stack,
             memory=new_memory,
             gas_used=self.gas_used,
@@ -529,12 +522,15 @@ namespace ExecutionContext {
     }(
         self: model.ExecutionContext*, new_return_data_len: felt, new_return_data: felt*
     ) -> model.ExecutionContext* {
+        tempvar new_return_info: model.ReturnInfo* = new model.ReturnInfo(
+            len=new_return_data_len, data=new_return_data, size=0, offset=0
+        );
+
         return new model.ExecutionContext(
             call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=self.stopped,
-            return_data=new_return_data,
-            return_data_len=new_return_data_len,
+            return_info=new_return_info,
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,
@@ -569,8 +565,7 @@ namespace ExecutionContext {
             call_context=self.call_context,
             program_counter=self.program_counter + inc_value,
             stopped=self.stopped,
-            return_data=self.return_data,
-            return_data_len=self.return_data_len,
+            return_info=self.return_info,
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,
@@ -605,8 +600,7 @@ namespace ExecutionContext {
             call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=self.stopped,
-            return_data=self.return_data,
-            return_data_len=self.return_data_len,
+            return_info=self.return_info,
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used + inc_value,
@@ -641,8 +635,7 @@ namespace ExecutionContext {
             call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=self.stopped,
-            return_data=self.return_data,
-            return_data_len=self.return_data_len,
+            return_info=self.return_info,
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,
@@ -678,8 +671,7 @@ namespace ExecutionContext {
             call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=self.stopped,
-            return_data=self.return_data,
-            return_data_len=self.return_data_len,
+            return_info=self.return_info,
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,
@@ -719,8 +711,7 @@ namespace ExecutionContext {
             call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=self.stopped,
-            return_data=self.return_data,
-            return_data_len=self.return_data_len,
+            return_info=self.return_info,
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,
@@ -762,8 +753,7 @@ namespace ExecutionContext {
             call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=self.stopped,
-            return_data=self.return_data,
-            return_data_len=self.return_data_len,
+            return_info=self.return_info,
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,
@@ -797,8 +787,7 @@ namespace ExecutionContext {
             call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=self.stopped,
-            return_data=self.return_data,
-            return_data_len=self.return_data_len,
+            return_info=self.return_info,
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,
@@ -833,8 +822,7 @@ namespace ExecutionContext {
             call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=TRUE,
-            return_data=self.return_data,
-            return_data_len=self.return_data_len,
+            return_info=self.return_info,
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,
@@ -870,8 +858,7 @@ namespace ExecutionContext {
             call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=FALSE,
-            return_data=self.return_data,
-            return_data_len=self.return_data_len,
+            return_info=self.return_info,
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,
@@ -926,8 +913,7 @@ namespace ExecutionContext {
             call_context=self.call_context,
             program_counter=new_pc_offset,
             stopped=self.stopped,
-            return_data=self.return_data,
-            return_data_len=self.return_data_len,
+            return_info=self.return_info,
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,

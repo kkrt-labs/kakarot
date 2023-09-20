@@ -34,6 +34,10 @@ func test__init__should_return_an_empty_execution_context{
     );
     let calling_ctx = ExecutionContext.init_empty();
     let (return_data: felt*) = alloc();
+    tempvar return_info: model.ReturnInfo* = new model.ReturnInfo(
+        len=0, size=0, offset=0, data=return_data
+    );
+
     let result: model.ExecutionContext* = ExecutionContext.init(
         call_context,
         starknet_contract_address=0,
@@ -42,8 +46,7 @@ func test__init__should_return_an_empty_execution_context{
         gas_limit=Constants.TRANSACTION_GAS_LIMIT,
         gas_price=0,
         calling_context=calling_ctx,
-        return_data_len=0,
-        return_data=return_data,
+        return_info=return_info,
         read_only=0,
     );
 

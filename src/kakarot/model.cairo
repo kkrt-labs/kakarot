@@ -75,6 +75,13 @@ namespace model {
         data: felt*,
     }
 
+    struct ReturnInfo {
+        len: felt,
+        data: felt*,
+        size: felt,
+        offset: felt,
+    }
+
     // @dev Stores all data relevant to the current execution context.
     // @param call_context The call context data.
     // @param program_counter The keep track of the current position in the program as it is being executed.
@@ -103,8 +110,7 @@ namespace model {
         call_context: CallContext*,
         program_counter: felt,
         stopped: felt,
-        return_data: felt*,
-        return_data_len: felt,
+        return_info: ReturnInfo*,
         stack: Stack*,
         memory: Memory*,
         gas_used: felt,

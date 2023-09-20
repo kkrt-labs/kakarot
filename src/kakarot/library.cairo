@@ -114,6 +114,10 @@ namespace Kakarot {
             value=value,
         );
 
+        tempvar return_info: model.ReturnInfo* = new model.ReturnInfo(
+            len=0, data=return_data, size=0, offset=0
+        );
+
         let ctx = ExecutionContext.init(
             call_context=call_context,
             starknet_contract_address=starknet_contract_address,
@@ -122,8 +126,7 @@ namespace Kakarot {
             gas_limit=gas_limit,
             gas_price=gas_price,
             calling_context=root_context,
-            return_data_len=0,
-            return_data=return_data,
+            return_info=return_info,
             read_only=FALSE,
         );
 

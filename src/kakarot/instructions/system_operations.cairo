@@ -165,7 +165,7 @@ namespace SystemOperations {
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
         let (memory, gas_cost) = Memory.load_n(
-            self=ctx.memory, element_len=size.low, element=ctx.return_data, offset=offset.low
+            self=ctx.memory, element_len=size.low, element=ctx.return_info.data, offset=offset.low
         );
         let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
 
@@ -174,7 +174,7 @@ namespace SystemOperations {
 
         // Note: only new data_len needs to be updated indeed.
         let ctx = ExecutionContext.update_return_data(
-            ctx, new_return_data_len=size.low, new_return_data=ctx.return_data
+            ctx, new_return_data_len=size.low, new_return_data=ctx.return_info.data
         );
 
         let ctx = ExecutionContext.stop(ctx);
@@ -421,6 +421,7 @@ namespace CallHelper {
         args_size: felt,
         calldata: felt*,
         ret_size: felt,
+        ret_offset: felt,
         return_data: felt*,
     }
 
@@ -451,8 +452,6 @@ namespace CallHelper {
         // Note: We store the offset here because we can't pre-allocate a memory segment in cairo
         // During teardown we update the memory using this offset
         let return_data: felt* = alloc();
-        assert [return_data] = ret_offset;
-        assert [return_data + 1] = ret_size;
 
         // Load calldata from Memory
         let (calldata: felt*) = alloc();
@@ -479,7 +478,8 @@ namespace CallHelper {
             args_size=args_size,
             calldata=calldata,
             ret_size=ret_size,
-            return_data=return_data + 2,
+            ret_offset=ret_offset,
+            return_data=return_data,
         );
 
         let ctx = ExecutionContext.update_memory(ctx, memory);
@@ -517,6 +517,12 @@ namespace CallHelper {
                 value=call_args.value,
             );
             let (starknet_contract_address) = Accounts.compute_starknet_address(call_args.address);
+            tempvar return_info: model.ReturnInfo* = new model.ReturnInfo(
+                len=0,
+                data=call_args.return_data,
+                size=call_args.ret_size,
+                offset=call_args.ret_offset,
+            );
             let sub_ctx = ExecutionContext.init(
                 call_context=call_context,
                 starknet_contract_address=starknet_contract_address,
@@ -525,8 +531,7 @@ namespace CallHelper {
                 gas_limit=call_args.gas,
                 gas_price=calling_ctx.gas_price,
                 calling_context=calling_ctx,
-                return_data_len=0,
-                return_data=call_args.return_data,
+                return_info=return_info,
                 read_only=read_only,
             );
 
@@ -583,12 +588,12 @@ namespace CallHelper {
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
         // ugly_ret_size and ugly_ret_offset, see original sins in prepare_args
-        let ugly_ret_size = [ctx.sub_context.return_data - 1];
-        let ugly_ret_offset = [ctx.sub_context.return_data - 2];
+        let ugly_ret_size = ctx.sub_context.return_info.size;
+        let ugly_ret_offset = ctx.sub_context.return_info.offset;
 
         let padded_return_data = Helpers.slice_data(
-            data_len=ctx.sub_context.return_data_len,
-            data=ctx.sub_context.return_data,
+            data_len=ctx.sub_context.return_info.len,
+            data=ctx.sub_context.return_info.data,
             data_offset=0,
             slice_len=ugly_ret_size,
         );
@@ -833,12 +838,15 @@ namespace CreateHelper {
             let (local revert_contract_state_dict_start) = default_dict_new(0);
             tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
                 revert_contract_state_dict_start, revert_contract_state_dict_start);
+            tempvar return_info: model.ReturnInfo* = new model.ReturnInfo(
+                len=0, data=return_data, size=0, offset=0
+            );
+
             tempvar sub_ctx = new model.ExecutionContext(
                 call_context=call_context,
                 program_counter=0,
                 stopped=FALSE,
-                return_data=return_data,
-                return_data_len=0,
+                return_info=return_info,
                 stack=stack,
                 memory=memory,
                 gas_used=0,
@@ -879,12 +887,14 @@ namespace CreateHelper {
             let (local revert_contract_state_dict_start) = default_dict_new(0);
             tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
                 revert_contract_state_dict_start, revert_contract_state_dict_start);
+            tempvar return_info: model.ReturnInfo* = new model.ReturnInfo(
+                len=0, data=return_data, size=0, offset=0
+            );
             tempvar sub_ctx = new model.ExecutionContext(
                 call_context=call_context,
                 program_counter=0,
                 stopped=FALSE,
-                return_data=return_data,
-                return_data_len=0,
+                return_info=return_info,
                 stack=stack,
                 memory=memory,
                 gas_used=0,
@@ -945,13 +955,13 @@ namespace CreateHelper {
         } else {
             IContractAccount.write_bytecode(
                 contract_address=ctx.starknet_contract_address,
-                bytecode_len=ctx.return_data_len,
-                bytecode=ctx.return_data,
+                bytecode_len=ctx.return_info.len,
+                bytecode=ctx.return_info.data,
             );
 
             // code_deposit_code := 200 * deployed_code_size * BYTES_PER_FELT (as Kakarot packs bytes inside a felt)
             // dynamic_gas :=  deployment_code_execution_cost + code_deposit_cost
-            let dynamic_gas = ctx.gas_used + 200 * ctx.return_data_len * Constants.BYTES_PER_FELT;
+            let dynamic_gas = ctx.gas_used + 200 * ctx.return_info.len * Constants.BYTES_PER_FELT;
             let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=dynamic_gas);
 
             local ctx: model.ExecutionContext* = ExecutionContext.update_sub_context(
@@ -1003,8 +1013,7 @@ namespace SelfDestructHelper {
             call_context=ctx.call_context,
             program_counter=ctx.program_counter,
             stopped=ctx.stopped,
-            return_data=ctx.return_data,
-            return_data_len=ctx.return_data_len,
+            return_info=ctx.return_info,
             stack=ctx.stack,
             memory=ctx.memory,
             gas_used=ctx.gas_used,
