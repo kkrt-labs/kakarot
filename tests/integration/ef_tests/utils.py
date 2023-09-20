@@ -36,14 +36,14 @@ def filter_network_tests(json_content, network):
     ]
 
 
-def load_ef_tests_from_directory(directory_path, network):
+def load_ef_blockchain_tests_from_directory(directory_path, network):
     ef_tests = []
     for filename in os.listdir(directory_path):
         filepath = os.path.join(directory_path, filename)
 
         # Check if filepath is a directory
         if os.path.isdir(filepath):
-            ef_tests.extend(load_ef_tests_from_directory(filepath, network))
+            ef_tests.extend(load_ef_blockchain_tests_from_directory(filepath, network))
         elif filename.endswith(".json"):
             json_content = load_json_file(filepath)
             ef_tests.extend(filter_network_tests(json_content, network))
@@ -51,7 +51,7 @@ def load_ef_tests_from_directory(directory_path, network):
     return ef_tests
 
 
-def load_ef_tests(relative_path, network):
+def load_ef_blockchain_tests(relative_path, network):
     """
     Load Ethereum Foundation tests from the directory or file specified
     under a fixed root path.
@@ -68,7 +68,7 @@ def load_ef_tests(relative_path, network):
         return filter_network_tests(json_content, network)
 
     elif os.path.isdir(full_path):
-        return load_ef_tests_from_directory(full_path, network)
+        return load_ef_blockchain_tests_from_directory(full_path, network)
 
     else:
         raise ValueError(
@@ -76,5 +76,5 @@ def load_ef_tests(relative_path, network):
         )
 
 
-def load_default_ef_tests():
+def load_default_ef_blockchain_tests(network_name):
     return {}
