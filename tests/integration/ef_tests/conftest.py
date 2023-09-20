@@ -1,4 +1,12 @@
-from utils import filter_by_case_ids, load_default_ef_tests, load_ef_tests
+import logging
+
+from utils import (
+    filter_by_case_ids,
+    load_default_ef_blockchain_tests,
+    load_ef_blockchain_tests,
+)
+
+logger = logging.getLogger()
 
 
 def pytest_addoption(parser):
@@ -27,27 +35,40 @@ def pytest_addoption(parser):
 
 
 def pytest_generate_tests(metafunc):
-    if "ef_test" in metafunc.fixturenames:
+    if "ef_blockchain_test" in metafunc.fixturenames:
         suite_or_directory = metafunc.config.getoption("target")
         case_ids = metafunc.config.getoption("case")
         network_name = metafunc.config.getoption("network")
 
+        # Initialize as empty lists
+        ef_blockchain_test_ids = []
+        ef_blockchain_test_objects = []
+
         if suite_or_directory:
-            ef_tests = load_ef_tests(suite_or_directory, network_name)
-            if not ef_tests:
-                raise ValueError(
-                    f"No tests found for `--target` param {suite_or_directory}"
-                )
+            ef_blockchain_tests = load_ef_blockchain_tests(
+                suite_or_directory, network_name
+            )
         else:
-            ef_tests = load_default_ef_tests()
+            ef_blockchain_tests = load_default_ef_blockchain_tests(network_name)
 
         if case_ids:
-            # Filter ef_tests based on the provided case names
-            # Flattening the list because `--case` with `action="append"` and `nargs="+"`
-            # results in a nested list, even if only one value is provided.
             flattened_case_ids = [item for sublist in case_ids for item in sublist]
-            ef_tests = filter_by_case_ids(ef_tests, flattened_case_ids)
+            ef_blockchain_tests = filter_by_case_ids(
+                ef_blockchain_tests, flattened_case_ids
+            )
 
-        ef_test_ids, ef_test_objects = zip(*ef_tests)
+        if not ef_blockchain_tests:
+            logger.warning(
+                f"No tests found for `--target` param {suite_or_directory} and `--case_ids` {case_ids}. Skipping tests."
+            )
+        else:
+            ef_blockchain_test_ids, ef_blockchain_test_objects = zip(
+                *ef_blockchain_tests
+            )
 
-        metafunc.parametrize("ef_test", ef_test_objects, ids=ef_test_ids)
+        # Parametrize regardless of whether ef_blockchain_tests is empty or not
+        metafunc.parametrize(
+            "ef_blockchain_test",
+            ef_blockchain_test_objects,
+            ids=ef_blockchain_test_ids,
+        )

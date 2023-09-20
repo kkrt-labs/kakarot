@@ -16,7 +16,7 @@ class TestEFBlockhain:
         kakarot: StarknetContract,
         starknet: StarknetContract,
         owner,
-        ef_test,
+        ef_blockchain_test,
     ):
         """
         Run a single test case based on the Ethereum Foundation Blockchain test format data.
@@ -32,10 +32,10 @@ class TestEFBlockhain:
             eth,
             kakarot,
             starknet,
-            ef_test["pre"],
+            ef_blockchain_test["pre"],
         )
         await do_transaction(
-            ef_test["blocks"], get_starknet_address, kakarot, owner, starknet
+            ef_blockchain_test["blocks"], get_starknet_address, kakarot, owner, starknet
         )
         await assert_post_state(
             get_contract_account,
@@ -43,5 +43,5 @@ class TestEFBlockhain:
             eth,
             kakarot,
             starknet,
-            ef_test["postState"],
+            ef_blockchain_test["postState"],
         )
