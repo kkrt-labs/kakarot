@@ -452,6 +452,7 @@ namespace CallHelper {
         // During teardown we update the memory using this offset
         let return_data: felt* = alloc();
         assert [return_data] = ret_offset;
+        assert [return_data + 1] = ret_size;
 
         // Load calldata from Memory
         let (calldata: felt*) = alloc();
@@ -478,7 +479,7 @@ namespace CallHelper {
             args_size=args_size,
             calldata=calldata,
             ret_size=ret_size,
-            return_data=return_data + 1,
+            return_data=return_data + 2,
         );
 
         let ctx = ExecutionContext.update_memory(ctx, memory);
@@ -524,7 +525,7 @@ namespace CallHelper {
                 gas_limit=call_args.gas,
                 gas_price=calling_ctx.gas_price,
                 calling_context=calling_ctx,
-                return_data_len=call_args.ret_size,
+                return_data_len=0,
                 return_data=call_args.return_data,
                 read_only=read_only,
             );
@@ -581,13 +582,18 @@ namespace CallHelper {
         let stack = Stack.push(ctx.stack, status);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        // ret_offset, see prepare_args
-        let memory = Memory.store_n(
-            ctx.memory,
-            ctx.sub_context.return_data_len,
-            ctx.sub_context.return_data,
-            [ctx.sub_context.return_data - 1],
+        // ugly_ret_size and ugly_ret_offset, see original sins in prepare_args
+        let ugly_ret_size = [ctx.sub_context.return_data - 1];
+        let ugly_ret_offset = [ctx.sub_context.return_data - 2];
+
+        let padded_return_data = Helpers.slice_data(
+            data_len=ctx.sub_context.return_data_len,
+            data=ctx.sub_context.return_data,
+            data_offset=0,
+            slice_len=ugly_ret_size,
         );
+
+        let memory = Memory.store_n(ctx.memory, ugly_ret_size, padded_return_data, ugly_ret_offset);
 
         let ctx = ExecutionContext.update_memory(ctx, memory);
         return ctx;

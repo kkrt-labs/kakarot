@@ -45,7 +45,7 @@ def pytest_generate_tests(metafunc):
                 suite_or_directory, network_name
             )
         else:
-            ef_blockchain_tests = load_default_ef_blockchain_tests()
+            ef_blockchain_tests = load_default_ef_blockchain_tests(network_name)
 
         if case_ids:
             # Filter ef_tests based on the provided case names

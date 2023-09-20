@@ -76,5 +76,6 @@ def load_ef_blockchain_tests(relative_path, network):
         )
 
 
-def load_default_ef_blockchain_tests():
-    return {}
+def load_default_ef_blockchain_tests(network):
+    sha3_suite = load_ef_blockchain_tests("VMTests/vmTests/sha3.json", network)
+    return sha3_suite
