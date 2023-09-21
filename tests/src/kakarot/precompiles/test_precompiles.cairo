@@ -23,15 +23,20 @@ from tests.utils.helpers import TestHelpers
 func test__precompiles_should_throw_on_out_of_bounds{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(address: felt) {
+    let return_data: felt* = alloc();
+
     // When
+    tempvar return_info: model.ReturnInfo* = new model.ReturnInfo(
+        len=0, data=return_data, size=0, offset=0
+    );
+
     let result = Precompiles.run(
         address=address,
         calldata_len=0,
         calldata=cast(0, felt*),
         value=0,
         calling_context=cast(0, model.ExecutionContext*),
-        return_data_len=0,
-        return_data=cast(0, felt*),
+        return_info=return_info,
     );
 
     return ();
@@ -58,6 +63,11 @@ func test__not_implemented_precompile_should_raise_with_detailed_error_message{
 func test__run_should_return_a_stopped_execution_context{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(address: felt) {
+    let return_data: felt* = alloc();
+    tempvar return_info: model.ReturnInfo* = new model.ReturnInfo(
+        len=0, data=return_data, size=0, offset=0
+    );
+
     // When
     let calling_context = ExecutionContext.init_empty();
     let result = Precompiles.run(
@@ -66,8 +76,7 @@ func test__run_should_return_a_stopped_execution_context{
         calldata=cast(0, felt*),
         value=0,
         calling_context=calling_context,
-        return_data_len=0,
-        return_data=cast(0, felt*),
+        return_info=return_info,
     );
 
     assert result.stopped = 1;

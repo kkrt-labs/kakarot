@@ -523,7 +523,7 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
     assert sub_ctx.call_context.value = 0;
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
-    assert sub_ctx.return_info.len = ret_size.low;
+    assert sub_ctx.return_info.size = ret_size.low;
     assert sub_ctx.return_info.offset = ret_offset.low;
     assert sub_ctx.gas_used = 0;
     let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
@@ -808,7 +808,7 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
         created_contract_bytecode_len,
         created_contract_bytecode,
         return_data_len,
-        sub_ctx.return_data,
+        sub_ctx.return_info.data,
     );
 
     return ();
@@ -859,31 +859,32 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     let sub_ctx_object: model.ExecutionContext* = cast(sub_ctx, model.ExecutionContext*);
     let ctx = TestHelpers.init_context_with_sub_ctx(sub_ctx_object);
 
+    tempvar return_info: model.ReturnInfo* = new model.ReturnInfo(
+        len=0, data=return_data, size=0, offset=0
+    );
+
     assert [sub_ctx] = cast(call_context, felt);  // call_context
     assert [sub_ctx + 1] = 0;  // program_counter
     assert [sub_ctx + 2] = 0;  // stopped
-    assert [sub_ctx + 3] = 1;  // return_data_len
-    assert [sub_ctx + 4] = cast(return_data + 1, felt);  // return_data
-    assert [sub_ctx + 5] = 0;  // size
-    assert [sub_ctx + 6] = 0;  // size
-    assert [sub_ctx + 7] = cast(stack, felt);  // stack
-    assert [sub_ctx + 8] = cast(memory, felt);  // memory
-    assert [sub_ctx + 9] = 0;  // gas_used
-    assert [sub_ctx + 10] = 0;  // gas_limit
-    assert [sub_ctx + 11] = 0;  // intrinsic_gas_cost
-    assert [sub_ctx + 12] = starknet_contract_address;  // starknet_contract_address
-    assert [sub_ctx + 13] = evm_contract_address;  // evm_contract_address
-    assert [sub_ctx + 14] = 0;  // origin
-    assert [sub_ctx + 15] = cast(ctx, felt);  // calling_context
-    assert [sub_ctx + 16] = 0;  // sub_context
-    assert [sub_ctx + 17] = 0;  // destroy_contracts_len
-    assert [sub_ctx + 18] = cast(destroy_contracts, felt);  // destroy_contracts
-    assert [sub_ctx + 19] = 0;  // events_len
-    assert [sub_ctx + 20] = cast(0, felt);  // events
-    assert [sub_ctx + 21] = 0;  // create_addresses_len
-    assert [sub_ctx + 22] = cast(0, felt);  // create_addresses
-    assert [sub_ctx + 23] = cast(revert_contract_state, felt);  // revert_contract_state
-    assert [sub_ctx + 24] = 0;  // read only
+    assert [sub_ctx + 3] = cast(return_info, felt);
+    assert [sub_ctx + 4] = cast(stack, felt);  // stack
+    assert [sub_ctx + 5] = cast(memory, felt);  // memory
+    assert [sub_ctx + 6] = 0;  // gas_used
+    assert [sub_ctx + 7] = 0;  // gas_limit
+    assert [sub_ctx + 8] = 0;  // intrinsic_gas_cost
+    assert [sub_ctx + 9] = starknet_contract_address;  // starknet_contract_address
+    assert [sub_ctx + 10] = evm_contract_address;  // evm_contract_address
+    assert [sub_ctx + 11] = 0;  // origin
+    assert [sub_ctx + 12] = cast(ctx, felt);  // calling_context
+    assert [sub_ctx + 13] = 0;  // sub_context
+    assert [sub_ctx + 14] = 0;  // destroy_contracts_len
+    assert [sub_ctx + 15] = cast(destroy_contracts, felt);  // destroy_contracts
+    assert [sub_ctx + 16] = 0;  // events_len
+    assert [sub_ctx + 17] = cast(0, felt);  // events
+    assert [sub_ctx + 18] = 0;  // create_addresses_len
+    assert [sub_ctx + 19] = cast(0, felt);  // create_addresses
+    assert [sub_ctx + 20] = cast(revert_contract_state, felt);  // revert_contract_state
+    assert [sub_ctx + 21] = 0;  // read only
 
     // When
     let sub_ctx_object: model.ExecutionContext* = SystemOperations.exec_selfdestruct(

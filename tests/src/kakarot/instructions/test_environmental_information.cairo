@@ -92,13 +92,15 @@ func init_context{
     tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
         revert_contract_state_dict_start, revert_contract_state_dict_start
     );
+    tempvar return_info: model.ReturnInfo* = new model.ReturnInfo(
+        len=0, data=empty_return_data, size=0, offset=0
+    );
 
     local ctx: model.ExecutionContext* = new model.ExecutionContext(
         call_context=call_context,
         program_counter=0,
         stopped=FALSE,
-        return_data=empty_return_data,
-        return_data_len=0,
+        return_info=return_info,
         stack=stack,
         memory=memory,
         gas_used=0,

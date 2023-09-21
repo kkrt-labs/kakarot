@@ -35,7 +35,7 @@ func test__init__should_return_an_empty_execution_context{
     let calling_ctx = ExecutionContext.init_empty();
     let (return_data: felt*) = alloc();
     tempvar return_info: model.ReturnInfo* = new model.ReturnInfo(
-        len=0, size=0, offset=0, data=return_data
+        len=0, data=return_data, size=0, offset=0
     );
 
     let result: model.ExecutionContext* = ExecutionContext.init(

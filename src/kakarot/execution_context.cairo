@@ -254,12 +254,18 @@ namespace ExecutionContext {
     func revert(
         self: model.ExecutionContext*, revert_reason: felt*, size: felt
     ) -> model.ExecutionContext* {
-        memcpy(self.return_info.data, revert_reason, size);
+        alloc_locals;
+        let return_data: felt* = alloc();
+        memcpy(return_data, revert_reason, size);
+        tempvar return_info: model.ReturnInfo* = new model.ReturnInfo(
+            len=size, data=return_data, size=0, offset=0
+        );
+
         return new model.ExecutionContext(
             call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=TRUE,
-            return_info=self.return_info,
+            return_info=return_info,
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,

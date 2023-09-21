@@ -251,7 +251,10 @@ namespace TestHelpers {
         assert ctx_0.stopped = ctx_1.stopped;
 
         assert_array_equal(
-            ctx_0.return_data_len, ctx_0.return_data, ctx_1.return_data_len, ctx_1.return_data
+            ctx_0.return_info.len,
+            ctx_0.return_info.data,
+            ctx_1.return_info.len,
+            ctx_1.return_info.data,
         );
 
         // TODO: Implement assert_dict_access_equal and finalize this helper once Stack and Memory are stabilized

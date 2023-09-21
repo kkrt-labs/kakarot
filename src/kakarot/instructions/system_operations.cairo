@@ -538,14 +538,16 @@ namespace CallHelper {
             return sub_ctx;
         }
 
+        tempvar return_info: model.ReturnInfo* = new model.ReturnInfo(
+            len=0, data=call_args.return_data, size=call_args.ret_size, offset=call_args.ret_offset
+        );
         let sub_ctx = Precompiles.run(
             address=call_args.address,
             calldata_len=call_args.args_size,
             calldata=call_args.calldata,
             value=call_args.value,
             calling_context=calling_ctx,
-            return_data_len=call_args.ret_size,
-            return_data=call_args.return_data,
+            return_info=return_info,
         );
 
         return sub_ctx;
