@@ -55,15 +55,15 @@ namespace Precompiles {
         let (output_len, output, gas_used) = _exec_precompile(address, calldata_len, calldata);
 
         // Copy results of precompile to return data
-        let return_data: felt* = alloc();
-        memcpy(return_data, output, output_len);
+
+        memcpy(return_info.data, output, output_len);
 
         let (local revert_contract_state_dict_start) = default_dict_new(0);
         tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
             revert_contract_state_dict_start, revert_contract_state_dict_start
         );
         tempvar return_info: model.ReturnInfo* = new model.ReturnInfo(
-            len=return_info.len, data=return_data, size=return_info.size, offset=return_info.offset
+            len=output_len, data=return_info.data, size=return_info.size, offset=return_info.offset
         );
 
         // Build returned execution context
