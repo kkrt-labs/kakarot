@@ -34,7 +34,7 @@ coverage/*
 blockhashes.json
 deployed_addresses.json
 
-# thoth relateds stuff 
+# thoth relateds stuff
 output-callgraph/*
 build/*
 docs/callgraphs/*

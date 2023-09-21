@@ -1,0 +1,118 @@
+name: EF Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions: read-all
+
+jobs:
+  ef-tests:
+    runs-on: ubuntu-latest
+    steps:
+      # Install packages
+      - name: install packages
+        run: sudo apt-get install curl
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      # Build Kakarot
+      - uses: actions/checkout@v3
+        with:
+          path: kakarot
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.9.13
+      - name: Load cached Poetry installation
+        id: cached-poetry
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}
+      - name: Install Poetry
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+      - run: poetry config installer.modern-installation false
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Install dependencies
+        # TODO: investigate why cache is not working and remove this
+        # if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: make setup
+        working-directory: kakarot
+      - name: Build
+        run: |
+          STARKNET_NETWORK=katana poetry run python ./scripts/compile_kakarot.py && make build-sol
+        working-directory: kakarot
+
+      # Make Katana dump for the build
+      - name: Checkout kakarot-rpc
+        uses: actions/checkout@v3
+        with:
+          repository: kkrt-labs/kakarot-rpc
+          path: kakarot-rpc
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: "true"
+      - name: make environment
+        run: ./scripts/make_with_env.sh
+        working-directory: kakarot-rpc
+      - name: pull kakarot submodule
+        run: |
+          git submodule update --init --remote ./lib/kakarot
+        working-directory: kakarot-rpc
+      - name: copy kakarot builds
+        run: |
+          cp -r ./kakarot/build ./kakarot-rpc/lib/kakarot
+          cp -r ./kakarot/tests/integration/solidity_contracts/build ./kakarot-rpc/lib/kakarot/tests/integration/solidity_contracts
+      - name: build dump-katana
+        run: cargo build --features="dump" --bin dump-katana --release
+        working-directory: kakarot-rpc
+
+      - name: make kakarot dump
+        run: |
+          ./target/release/dump-katana
+          export KATANA_DUMP_PATH=$(realpath .katana)
+        working-directory: kakarot-rpc
+
+      - name: clear builds
+        run: |
+          rm -rf ./target
+        working-directory: kakarot-rpc
+
+      # run ef-tests
+      - name: Checkout ef-tests
+        uses: actions/checkout@v3
+        with:
+          repository: kkrt-labs/ef-tests
+          path: ef-test
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: "true"
+      - name: setup
+        run: make setup
+        working-directory: ef-test
+      - uses: taiki-e/install-action@nextest
+      - name: copy katana dumps
+        run: cp -r ./kakarot-rpc/.katana ./ef-test
+      # run tests
+      - name: run tests
+        run: cargo test -p ef-testing --features ef-tests -- --nocapture
+        working-directory: ef-test
