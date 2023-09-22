@@ -67,6 +67,7 @@ def _load_ef_blockchain_tests(relative_path):
     return load_ef_blockchain_tests_from_path(full_path)
 
 
-def load_default_ef_blockchain_tests(network):
-    sha3_suite = load_ef_blockchain_tests("VMTests/vmTests/sha3.json", network)
-    return sha3_suite
+def load_ef_blockchain_tests(keyword):
+    # Load all available tests and filter them using the keyword
+    all_tests = _load_ef_blockchain_tests(".")
+    return filter_by_keyword(all_tests, keyword)
