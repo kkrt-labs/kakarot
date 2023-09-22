@@ -16,21 +16,17 @@ class TestUniswapV2Factory:
             assert await factory.allPairsLength() == 0
 
     class TestCreatePair:
-        @pytest.mark.parametrize("tokens", [TEST_ADDRESSES, TEST_ADDRESSES[::-1]])
         async def test_should_create_pair_only_once(
             self,
             factory,
             get_solidity_contract,
             owner,
-            tokens,
         ):
-            receipt = await factory.createPair(*tokens, caller_eoa=owner, max_fee=0)
-            # if no events, then the pair already exists
-            # TODO: update when Katana passes the revert reason
-            if not receipt.events:
-                return
-            token_0, token_1 = sorted(tokens)
-            pair_evm_address = await factory.getPair(*tokens)
+            receipt = await factory.createPair(
+                *TEST_ADDRESSES, caller_eoa=owner, max_fee=0
+            )
+            token_0, token_1 = sorted(TEST_ADDRESSES)
+            pair_evm_address = await factory.getPair(*TEST_ADDRESSES)
             assert factory.events.parse_starknet_events(receipt.events)[
                 "PairCreated"
             ] == [
@@ -42,16 +38,18 @@ class TestUniswapV2Factory:
                 }
             ]
 
-            receipt = await factory.createPair(*tokens, caller_eoa=owner, max_fee=0)
-            assert not receipt.events
-
             receipt = await factory.createPair(
-                *tokens[::-1], caller_eoa=owner, max_fee=0
+                *TEST_ADDRESSES, caller_eoa=owner, max_fee=0
             )
             assert not receipt.events
 
-            assert await factory.getPair(*tokens) == pair_evm_address
-            assert await factory.getPair(*tokens[::-1]) == pair_evm_address
+            receipt = await factory.createPair(
+                *TEST_ADDRESSES[::-1], caller_eoa=owner, max_fee=0
+            )
+            assert not receipt.events
+
+            assert await factory.getPair(*TEST_ADDRESSES) == pair_evm_address
+            assert await factory.getPair(*TEST_ADDRESSES[::-1]) == pair_evm_address
             assert await factory.allPairs(0) == pair_evm_address
             assert await factory.allPairsLength() == 1
 

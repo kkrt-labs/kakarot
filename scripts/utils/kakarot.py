@@ -285,7 +285,7 @@ async def eth_send_transaction(
             selector=0xDEAD,  # unused in current EOA implementation
             calldata=tx_payload,
         ),
-        max_fee=int(100000000000000000) if max_fee is None else max_fee,
+        max_fee=int(5e17) if max_fee is None else max_fee,
     )
     await wait_for_transaction(tx_hash=response.transaction_hash)
     return await CLIENT.get_transaction_receipt(response.transaction_hash)

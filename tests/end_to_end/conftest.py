@@ -21,9 +21,9 @@ Wallet = namedtuple("Wallet", ["address", "private_key", "starknet_contract"])
 @pytest.fixture(scope="session")
 def zero_fee():
     """
-    max_fee is set to 0 for the sake of the tests. This allows to
+    Return max fee hardcoded to 0 ETH. This allows to
     set the allowed number of execute steps to whatever is passed
-    when launching katana.
+    when launching Katana.
     """
     return int(0)
 
