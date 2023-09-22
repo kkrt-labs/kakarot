@@ -1,47 +1,15 @@
 import pytest
-from runner import assert_post_state, do_transaction, write_test_state
-from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
+from runner import create_test_function
 
+from utils import load_ef_blockchain_tests
 
-@pytest.mark.usefixtures("starknet_snapshot")
-class TestEFBlockhain:
-    async def test_case(
-        self,
-        account_proxy_class: DeclaredClass,
-        contract_account_class: DeclaredClass,
-        externally_owned_account_class: DeclaredClass,
-        get_contract_account,
-        get_starknet_address,
-        eth: StarknetContract,
-        kakarot: StarknetContract,
-        starknet: StarknetContract,
-        owner,
-        ef_blockchain_test,
-    ):
-        """
-        Run a single test case based on the Ethereum Foundation Blockchain test format data.
+# In order to use the standard `keyword` and `markexpr` ux for pytest
+# we generate a test for each case.
 
-        See https://ethereum-tests.readthedocs.io/en/latest/blockchain-ref.html
-        """
-        await write_test_state(
-            account_proxy_class,
-            contract_account_class,
-            externally_owned_account_class,
-            get_contract_account,
-            get_starknet_address,
-            eth,
-            kakarot,
-            starknet,
-            ef_blockchain_test["pre"],
-        )
-        await do_transaction(
-            ef_blockchain_test["blocks"], get_starknet_address, kakarot, owner, starknet
-        )
-        await assert_post_state(
-            get_contract_account,
-            get_starknet_address,
-            eth,
-            kakarot,
-            starknet,
-            ef_blockchain_test["postState"],
-        )
+all_ef_blockchain_test_cases = load_ef_blockchain_tests(".", "Shanghai")
+
+for ef_case_name, ef_test in all_ef_blockchain_test_cases:
+    test_func = create_test_function(ef_test)
+    test_func.__name__ = f"test_{ef_case_name}"
+
+    globals()[f"test_{ef_case_name}"] = test_func

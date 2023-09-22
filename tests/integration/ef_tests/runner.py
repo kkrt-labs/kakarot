@@ -1,3 +1,4 @@
+import pytest
 from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
 from state_management import (
     fund_and_set_allowance,
@@ -139,3 +140,53 @@ async def assert_post_state(
             await assert_contract_post_state(
                 address, contract, starknet, starknet_address, post_state
             )
+
+
+def create_test_function(ef_test):
+    @pytest.mark.usefixtures(
+        "account_proxy_class",
+        "contract_account_class",
+        "externally_owned_account_class",
+        "get_contract_account",
+        "get_starknet_address",
+        "eth",
+        "kakarot",
+        "starknet",
+        "owner",
+        "starknet_snapshot",
+    )
+    async def test_function(
+        account_proxy_class: DeclaredClass,
+        contract_account_class: DeclaredClass,
+        externally_owned_account_class: DeclaredClass,
+        get_contract_account,
+        get_starknet_address,
+        eth: StarknetContract,
+        kakarot: StarknetContract,
+        starknet: StarknetContract,
+        owner,
+    ):
+        await write_test_state(
+            account_proxy_class,
+            contract_account_class,
+            externally_owned_account_class,
+            get_contract_account,
+            get_starknet_address,
+            eth,
+            kakarot,
+            starknet,
+            ef_test["pre"],
+        )
+        await do_transaction(
+            ef_test["blocks"], get_starknet_address, kakarot, owner, starknet
+        )
+        await assert_post_state(
+            get_contract_account,
+            get_starknet_address,
+            eth,
+            kakarot,
+            starknet,
+            ef_test["postState"],
+        )
+
+    return test_function
