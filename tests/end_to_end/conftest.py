@@ -19,9 +19,19 @@ Wallet = namedtuple("Wallet", ["address", "private_key", "starknet_contract"])
 
 
 @pytest.fixture(scope="session")
+def zero_fee():
+    """
+    max_fee is set to 0 for the sake of the tests. This allows to
+    set the allowed number of execute steps to whatever is passed
+    when launching katana.
+    """
+    return int(0)
+
+
+@pytest.fixture(scope="session")
 def max_fee():
     """
-    max_fee is just hard coded to 1 ETH to make sure tx passes
+    Return max fee hardcoded to 1 ETH to make sure tx passes
     it is not used per se in the test.
     """
     return int(1e18)
@@ -48,9 +58,9 @@ def starknet():
 async def addresses(max_fee) -> List[Wallet]:
     """
     Return a list of addresses to be used in tests.
-    Addresses are returned as named tuples with
-    - address: the EVM address as int
-    - private_key: the PrivateKey of this address
+    Addresses are returned as named tuples with:
+    - address: the EVM address as int.
+    - private_key: the PrivateKey of this address.
     - starknet_contract: the deployed Starknet contract handling this EOA.
     """
     from scripts.utils.kakarot import get_eoa
@@ -204,7 +214,6 @@ def get_contract(deployer):
 def eth_balance_of(eth: Contract, compute_starknet_address):
     """
     Get the balance of an address.
-
     Accept both EVM and Starknet address, int or hex str.
     """
 
@@ -222,7 +231,7 @@ def eth_balance_of(eth: Contract, compute_starknet_address):
 
 
 @pytest.fixture(scope="session")
-def deploy_solidity_contract(max_fee: int):
+def deploy_solidity_contract(zero_fee: int):
     """
     Fixture to attach a modified web3.contract instance to an already deployed contract_account in kakarot.
     """
@@ -234,7 +243,7 @@ def deploy_solidity_contract(max_fee: int):
         Create a web3.contract based on the basename of the target solidity file.
         """
         return await deploy(
-            contract_app, contract_name, *args, **kwargs, max_fee=max_fee
+            contract_app, contract_name, *args, **kwargs, max_fee=zero_fee
         )
 
     return _factory
@@ -277,6 +286,7 @@ def block_with_tx_hashes(starknet):
                 "params": [block_number or "latest"],
                 "id": 0,
             },
+            timeout=60,
         )
         return json.loads(response.text)["result"]
 

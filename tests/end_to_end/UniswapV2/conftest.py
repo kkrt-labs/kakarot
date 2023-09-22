@@ -1,5 +1,3 @@
-from typing import Callable
-
 import pytest_asyncio
 
 TOTAL_SUPPLY = 10000 * 10**18
@@ -36,13 +34,12 @@ async def factory(
     deploy_solidity_contract,
     owner,
 ):
-    receipt = await deploy_solidity_contract(
+    return await deploy_solidity_contract(
         "UniswapV2",
         "UniswapV2Factory",
         owner.address,
         caller_eoa=owner.starknet_contract,
     )
-    return receipt
 
 
 @pytest_asyncio.fixture(scope="module")
