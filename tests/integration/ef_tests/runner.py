@@ -89,6 +89,37 @@ async def do_transaction(
             await starknet.state.state.increment_nonce(starknet_address)
 
 
+async def assert_eoa_post_state(
+    address, starknet, starknet_address, expected_post_state
+):
+    actual_nonce = await starknet.state.state.get_nonce_at(starknet_address)
+    assert actual_nonce == int(
+        expected_post_state["nonce"], 16
+    ), f"{expected_post_state['nonce']} of {starknet_address} is not {actual_nonce}"
+    assert not expected_post_state[
+        "storage"
+    ], f"EOA {address} should have empty post state, but got {expected_post_state['storage']}"
+
+
+async def assert_contract_post_state(
+    address, contract, starknet, starknet_address, expected_post_state
+):
+    actual_nonce = (await contract.get_nonce().call()).result.nonce
+
+    assert actual_nonce == int(
+        expected_post_state["nonce"], 16
+    ), f"{expected_post_state['nonce']} of {starknet_address} is not {actual_nonce}"
+
+    for key, expected_storage in expected_post_state["storage"].items():
+        key = int_to_uint256(int(key, 16))
+        expected_storage = int_to_uint256(int(expected_storage, 16))
+        actual_storage = (await contract.storage(key).call()).result.value
+
+        assert (
+            actual_storage == expected_storage
+        ), f"Contract {address} has expected storage={display_storage(expected_storage)} is not actual_storage={display_storage(actual_storage)}"
+
+
 async def assert_post_state(
     get_contract_account,
     get_starknet_address,
@@ -97,34 +128,14 @@ async def assert_post_state(
     starknet: StarknetContract,
     expected_post_state,
 ):
-    """
-    Assert the resultant state using a test case from an ef-test BlockchainTest format's `postState` field.
-    """
-
     for address, post_state in expected_post_state.items():
         evm_address = int(address, 16)
         starknet_address = get_starknet_address(evm_address)
 
-        # one day, this will be assertable.
-        # actual_balance = await eth.balanceOf(starknet_address)
-        # expected_balance = int(post_state["balance"], 16)
-
-        # assert actual_balance == expected_balance, f"expected balance of  {address} is not actual"
-
-        contract = get_contract_account(starknet_address)
-
-        actual_nonce = await starknet.state.state.get_nonce_at(starknet_address)
-        expected_nonce = int(post_state["nonce"], 16)
-
-        assert (
-            actual_nonce == expected_nonce
-        ), f"{expected_nonce=} of  {address=} is not {actual_nonce=}"
-
-        for key, expected_storage in post_state["storage"].items():
-            key = int_to_uint256(int(key, 16))
-            expected_storage = int_to_uint256(int(expected_storage, 16))
-            actual_storage = (await contract.storage(key).call()).result.value
-
-            assert (
-                actual_storage == expected_storage
-            ), f"expected storage={display_storage(expected_storage)} is not actual_storage={display_storage(actual_storage)} for {address=}"
+        if is_account_eoa(post_state):
+            await assert_eoa_post_state(address, starknet, starknet_address, post_state)
+        else:
+            contract = get_contract_account(starknet_address)
+            await assert_contract_post_state(
+                address, contract, starknet, starknet_address, post_state
+            )
