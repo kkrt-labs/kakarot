@@ -5,7 +5,7 @@ from tests.utils.uint256 import uint256_to_int
 
 # Root of the GeneralStateTest in BlockchainTest format
 EF_GENERAL_STATE_TEST_ROOT_PATH = (
-    "./tests/integration/ef_tests/testdata/BlockchainTests/GeneralStateTests/"
+    "./tests/integration/ef_tests/test_data/BlockchainTests/GeneralStateTests/"
 )
 
 
@@ -57,7 +57,6 @@ def load_ef_blockchain_tests(relative_path, network):
     under a fixed root path.
     """
     full_path = os.path.join(EF_GENERAL_STATE_TEST_ROOT_PATH, relative_path)
-
     if not os.path.exists(full_path):
         raise ValueError(f"The path {full_path} does not exist.")
 
