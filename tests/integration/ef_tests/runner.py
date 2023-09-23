@@ -1,4 +1,3 @@
-import pytest
 from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
 from state_management import (
     fund_and_set_allowance,
@@ -94,9 +93,10 @@ async def assert_eoa_post_state(
     address, starknet, starknet_address, expected_post_state
 ):
     actual_nonce = await starknet.state.state.get_nonce_at(starknet_address)
-    assert actual_nonce == int(
-        expected_post_state["nonce"], 16
-    ), f"{expected_post_state['nonce']} of {starknet_address} is not {actual_nonce}"
+    expected_nonce = int(expected_post_state["nonce"], 16)
+    assert (
+        actual_nonce == expected_nonce
+    ), f"EOA {address}: {expected_nonce=} is not {actual_nonce=}"
     assert not expected_post_state[
         "storage"
     ], f"EOA {address} should have empty post state, but got {expected_post_state['storage']}"
@@ -105,11 +105,12 @@ async def assert_eoa_post_state(
 async def assert_contract_post_state(
     address, contract, starknet, starknet_address, expected_post_state
 ):
-    actual_nonce = (await contract.get_nonce().call()).result.nonce
+    actual_nonce = int((await contract.get_nonce().call()).result.nonce)
+    expected_nonce = int(expected_post_state["nonce"], 16)
 
-    assert actual_nonce == int(
-        expected_post_state["nonce"], 16
-    ), f"{expected_post_state['nonce']} of {starknet_address} is not {actual_nonce}"
+    assert (
+        actual_nonce == expected_nonce
+    ), f"Contract {address=}: {expected_nonce=} is not {actual_nonce=}"
 
     for key, expected_storage in expected_post_state["storage"].items():
         key = int_to_uint256(int(key, 16))
@@ -118,7 +119,7 @@ async def assert_contract_post_state(
 
         assert (
             actual_storage == expected_storage
-        ), f"Contract {address} has expected storage={display_storage(expected_storage)} is not actual_storage={display_storage(actual_storage)}"
+        ), f"Contract {address}: expected storage={display_storage(expected_storage)} is not actual_storage={display_storage(actual_storage)}"
 
 
 async def assert_post_state(
@@ -140,53 +141,3 @@ async def assert_post_state(
             await assert_contract_post_state(
                 address, contract, starknet, starknet_address, post_state
             )
-
-
-def create_test_function(ef_test):
-    @pytest.mark.usefixtures(
-        "account_proxy_class",
-        "contract_account_class",
-        "externally_owned_account_class",
-        "get_contract_account",
-        "get_starknet_address",
-        "eth",
-        "kakarot",
-        "starknet",
-        "owner",
-        "starknet_snapshot",
-    )
-    async def test_function(
-        account_proxy_class: DeclaredClass,
-        contract_account_class: DeclaredClass,
-        externally_owned_account_class: DeclaredClass,
-        get_contract_account,
-        get_starknet_address,
-        eth: StarknetContract,
-        kakarot: StarknetContract,
-        starknet: StarknetContract,
-        owner,
-    ):
-        await write_test_state(
-            account_proxy_class,
-            contract_account_class,
-            externally_owned_account_class,
-            get_contract_account,
-            get_starknet_address,
-            eth,
-            kakarot,
-            starknet,
-            ef_test["pre"],
-        )
-        await do_transaction(
-            ef_test["blocks"], get_starknet_address, kakarot, owner, starknet
-        )
-        await assert_post_state(
-            get_contract_account,
-            get_starknet_address,
-            eth,
-            kakarot,
-            starknet,
-            ef_test["postState"],
-        )
-
-    return test_function
