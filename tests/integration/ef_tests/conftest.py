@@ -1,9 +1,35 @@
-import pytest
+import time
+
+from utils import load_all_ef_blockchain_tests
 
 
-def pytest_runtest_setup(item):
-    keywordexpr = item.config.getoption("keyword")
+# This enables devs to use the familiar keyword (-k argument) to select a subset of the EF test suite,
+# which are loaded as fixtures.
+def pytest_generate_tests(metafunc):
+    if "ef_blockchain_test" in metafunc.fixturenames:
+        keyword = metafunc.config.getoption("keyword")
 
-    # If the keyword expression doesn't match the nodeid (test name), skip the test
-    if item.nodeid.find(keywordexpr) == -1 or not keywordexpr :
-        pytest.skip("Skipping test, didn't match keyword expression.")
+        if not keyword:
+            # with no keyword, we parametrize as empty
+            metafunc.parametrize(
+                "ef_blockchain_test",
+                [],
+                ids=[],
+            )
+        else:
+            start_time = time.time()
+            ef_blockchain_tests = load_all_ef_blockchain_tests()
+            # Calculate and print the elapsed time
+            elapsed_time = time.time() - start_time
+            print(f"Time taken to load_ef_blockchain_tests: {elapsed_time} seconds")
+
+            ef_blockchain_test_ids, ef_blockchain_test_objects = (
+                zip(*ef_blockchain_tests) if ef_blockchain_tests else ([], [])
+            )
+
+            # Parametrize regardless of whether ef_blockchain_tests is empty or not
+            metafunc.parametrize(
+                "ef_blockchain_test",
+                ef_blockchain_test_objects,
+                ids=ef_blockchain_test_ids,
+            )

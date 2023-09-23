@@ -1,5 +1,8 @@
 .PHONY: build test coverage
 
+pull-ef-tests: .gitmodules
+	git submodule update --init --recursive
+
 build: check
 	$(MAKE) clean
 	poetry run python ./scripts/compile_kakarot.py
@@ -14,7 +17,7 @@ test: build-sol deploy
 	poetry run pytest tests/integration tests/src --log-cli-level=INFO -n logical
 	poetry run pytest tests/end_to_end
 
-test-no-log: build-sol deploy
+test-no-log: build-sol deploy pull-ef-tests
 	poetry run pytest tests/integration tests/src -n logical
 	poetry run pytest tests/end_to_end
 
