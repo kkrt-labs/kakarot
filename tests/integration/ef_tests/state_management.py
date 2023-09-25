@@ -39,11 +39,7 @@ def construct_storage_entries_for_eoa(
 ):
     eoa = construct_common_storage_entries(evm_address, class_hash)
 
-    eoa.update(
-        {
-            "kakarot_address": kakarot_address,
-        }
-    )
+    eoa.update({"kakarot_address": kakarot_address, "nonce": 1})
 
     return eoa
 
