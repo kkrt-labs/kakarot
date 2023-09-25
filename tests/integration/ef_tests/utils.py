@@ -55,6 +55,13 @@ def load_ef_blockchain_tests(relative_path):
     return load_ef_blockchain_tests_from_path(full_path)
 
 
+def is_directory_or_file_keyword(keyword):
+    """
+    If keyword ends with "/" or ".json", treat it as a path and load tests from there.
+    """
+    return keyword.endswith("/") or keyword.endswith(".json")
+
+
 def load_all_ef_blockchain_tests():
     """
     Load all ef blockchain tests from root directory, recursively. This allows users to pattern match with the -k (keyword) option.
