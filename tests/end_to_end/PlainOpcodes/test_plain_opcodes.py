@@ -10,7 +10,7 @@ from tests.utils.errors import kakarot_error
 @pytest.mark.PlainOpcodes
 class TestPlainOpcodes:
     class TestStaticCall:
-        async def test_should_return_counter_count(self, counter, plain_opcodes, owner):
+        async def test_should_return_counter_count(self, counter, plain_opcodes):
             assert await plain_opcodes.opcodeStaticCall() == await counter.count()
 
         async def test_should_revert_when_trying_to_modify_state(
