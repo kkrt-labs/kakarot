@@ -1,35 +1,34 @@
-import time
+import json
+import os
+from pathlib import Path
 
-from utils import load_all_ef_blockchain_tests
+# Root of the GeneralStateTest in BlockchainTest format
+EF_GENERAL_STATE_TEST_ROOT_PATH = Path(
+    "./tests/integration/ef_tests/test_data/BlockchainTests/GeneralStateTests/"
+)
+
+DEFAULT_NETWORK = "Shanghai"
 
 
-# This enables devs to use the familiar keyword (-k argument) to select a subset of the EF test suite,
-# which are loaded as fixtures.
 def pytest_generate_tests(metafunc):
+    """
+     Enable devs to use the familiar keyword (-k argument) to select the GeneralStateTransition tests in BlockchainTest format of the EF test suite,
+    which are loaded as fixtures.
+    """
     if "ef_blockchain_test" in metafunc.fixturenames:
-        keyword = metafunc.config.getoption("keyword")
+        test_ids, test_objects = zip(
+            *[
+                (name, content)
+                for (root, _, files) in os.walk(EF_GENERAL_STATE_TEST_ROOT_PATH)
+                for file in files
+                if file.endswith(".json")
+                for name, content in json.loads((Path(root) / file).read_text()).items()
+                if content["network"] == DEFAULT_NETWORK
+            ]
+        )
 
-        if not keyword:
-            # with no keyword, we parametrize as empty
-            metafunc.parametrize(
-                "ef_blockchain_test",
-                [],
-                ids=[],
-            )
-        else:
-            start_time = time.time()
-            ef_blockchain_tests = load_all_ef_blockchain_tests()
-            # Calculate and print the elapsed time
-            elapsed_time = time.time() - start_time
-            print(f"Time taken to load_ef_blockchain_tests: {elapsed_time} seconds")
-
-            ef_blockchain_test_ids, ef_blockchain_test_objects = (
-                zip(*ef_blockchain_tests) if ef_blockchain_tests else ([], [])
-            )
-
-            # Parametrize regardless of whether ef_blockchain_tests is empty or not
-            metafunc.parametrize(
-                "ef_blockchain_test",
-                ef_blockchain_test_objects,
-                ids=ef_blockchain_test_ids,
-            )
+        metafunc.parametrize(
+            "ef_blockchain_test",
+            test_objects,
+            ids=test_ids,
+        )
