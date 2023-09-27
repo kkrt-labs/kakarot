@@ -135,7 +135,7 @@ markers = [
   "UniswapV2Factory",
   "Utils",
   "Safe",
-  "EF_TEST",
+  "EFTests",
   "SSTORE",
   "SLOAD",
 ]
