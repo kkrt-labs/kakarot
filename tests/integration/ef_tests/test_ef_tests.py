@@ -51,7 +51,7 @@ class TestEFBlockchain:
                 else (
                     (("Ownable_owner",), kakarot.contract_address),
                     (("_implementation",), contract_account_class.class_hash),
-                    (("nonce",), 1),
+                    (("nonce",), int(account["nonce"], 16)),
                 )
             )
 
@@ -60,6 +60,12 @@ class TestEFBlockchain:
                     contract_address=starknet_address,
                     key=get_storage_var_address(*storage_var),
                     value=value,
+                )
+
+            # an EOA's nonce is managed at the starknet level
+            if is_account_eoa(account):
+                starknet.state.state.cache._nonce_writes[starknet_address] = int(
+                    account["nonce"], 16
                 )
 
             balance = int_to_uint256(int(account["balance"], 16))
@@ -85,7 +91,7 @@ class TestEFBlockchain:
         starknet: StarknetContract,
         expected_post_state,
     ):
-        for address, post_state in expected_post_state.items():
+        for address, account in expected_post_state.items():
             evm_address = int(address, 16)
             starknet_address = get_starknet_address(evm_address)
             contract = get_contract_account(starknet_address)
@@ -100,13 +106,13 @@ class TestEFBlockchain:
                 )
             )
 
-            expected_nonce = int(post_state["nonce"], 16)
+            expected_nonce = int(account["nonce"], 16)
 
             assert (
                 actual_nonce == expected_nonce
             ), f"Contract {address=}: {expected_nonce=} is not {actual_nonce=}"
 
-            for key, expected_storage in post_state["storage"].items():
+            for key, expected_storage in account["storage"].items():
                 key = int_to_uint256(int(key, 16))
                 expected_storage = int_to_uint256(int(expected_storage, 16))
                 actual_storage = (await contract.storage(key).call()).result.value
