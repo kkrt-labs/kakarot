@@ -12,11 +12,11 @@ DEFAULT_NETWORK = "Shanghai"
 
 def pytest_generate_tests(metafunc):
     """
-     Enable devs to use the familiar keyword (-k argument) to select the GeneralStateTransition tests in BlockchainTest format of the EF test suite,
-    which are loaded as fixtures.
+    Parameterizes `ef_blockchain_test` fixture with cases loaded from the Ethereum Foundation tests repository,
+    see: https://github.com/kkrt-labs/kakarot/blob/main/.gitmodules#L7.
     """
     if "ef_blockchain_test" in metafunc.fixturenames:
-        test_ids, test_objects = zip(
+        test_ids, test_cases = zip(
             *[
                 (name, content)
                 for (root, _, files) in os.walk(EF_GENERAL_STATE_TEST_ROOT_PATH)
@@ -29,6 +29,6 @@ def pytest_generate_tests(metafunc):
 
         metafunc.parametrize(
             "ef_blockchain_test",
-            test_objects,
+            test_cases,
             ids=test_ids,
         )

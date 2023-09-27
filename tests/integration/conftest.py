@@ -152,7 +152,7 @@ async def fund_evm_address(kakarot, eth, deployer_address):
 @pytest.fixture(scope="session")
 def get_starknet_address(account_proxy_class, kakarot):
     """
-    Fixture to return the starknet address of a contract deployed by kakarot using CREATE2.
+    Fixture to return the starknet address of a contract deployed by kakarot.
     """
 
     def _factory(evm_contract_address):
