@@ -66,7 +66,7 @@ run:
 	docker run -p 5050:5050 shardlabs/starknet-devnet-rs --seed 0
 
 install-katana:
-	cargo install --git https://github.com/dojoengine/dojo --rev 1d3f47dfcade922449f2499cb40c3fc6033134ae katana@0.2.1
+	cargo install --git https://github.com/dojoengine/dojo --locked --rev e0054e7 katana
 
 run-katana:
 	katana --validate-max-steps 16777216 --invoke-max-steps 16777216

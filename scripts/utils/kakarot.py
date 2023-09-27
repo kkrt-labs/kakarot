@@ -59,7 +59,6 @@ def get_contract(contract_app: str, contract_name: str, address=None) -> Web3Con
         json.load(open(file))
         for file in (SOLIDITY_CONTRACTS_DIR / "build").glob(f"**/{contract_name}.json")
     ]
-
     if len(all_compilation_outputs) == 1:
         target_compilation_output = all_compilation_outputs[0]
     else:
@@ -108,10 +107,10 @@ async def deploy_bytecode(**kwargs) -> Tuple[int, int]:
         for event in receipt.events
         if event.from_address == get_deployments()["kakarot"]["address"]
     ]
+    if len(deploy_event) == 0:
+        raise ValueError("Cannot locate evm contract deployed event")
     if len(deploy_event) != 1:
-        raise ValueError(
-            f"Cannot locate evm contract address event, receipt events:\n{receipt.events}"
-        )
+        logger.warning(f"Got {len(deploy_event)} events while deploying bytecode")
     evm_address, starknet_address = deploy_event[0].data
     return evm_address, starknet_address
 
@@ -196,6 +195,7 @@ def _wrap_kakarot(fun: str):
         gas_limit = kwargs.pop("gas_limit", 1_000_000_000)
         value = kwargs.pop("value", 0)
         caller_eoa = kwargs.pop("caller_eoa", None)
+        max_fee = kwargs.pop("max_fee", None)
         calldata = self.get_function_by_name(fun)(
             *args, **kwargs
         )._encode_transaction_data()
@@ -224,7 +224,7 @@ def _wrap_kakarot(fun: str):
             gas=gas_limit,
             data=calldata,
             caller_eoa=caller_eoa.starknet_contract if caller_eoa else None,
-            max_fee=kwargs.pop("max_fee", None),
+            max_fee=max_fee,
         )
 
     return _wrapper
@@ -285,7 +285,7 @@ async def eth_send_transaction(
             selector=0xDEAD,  # unused in current EOA implementation
             calldata=tx_payload,
         ),
-        max_fee=max_fee or int(5e17),
+        max_fee=int(5e17) if max_fee is None else max_fee,
     )
     await wait_for_transaction(tx_hash=response.transaction_hash)
     return await CLIENT.get_transaction_receipt(response.transaction_hash)
