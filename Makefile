@@ -1,5 +1,8 @@
 .PHONY: build test coverage
 
+pull-ef-tests: .gitmodules
+	git submodule update --init --recursive
+
 build: check
 	$(MAKE) clean
 	poetry run python ./scripts/compile_kakarot.py
@@ -11,15 +14,15 @@ setup:
 	poetry install
 
 test: build-sol deploy
-	poetry run pytest tests/integration tests/src --log-cli-level=INFO -n logical
+	poetry run pytest tests/integration tests/src -m "not EFTests" --log-cli-level=INFO -n logical
 	poetry run pytest tests/end_to_end
 
-test-no-log: build-sol deploy
-	poetry run pytest tests/integration tests/src -n logical
+test-no-log: build-sol deploy 
+	poetry run pytest tests/integration tests/src -m "not EFTests" -n logical
 	poetry run pytest tests/end_to_end
 
 test-integration: build-sol
-	poetry run pytest tests/integration --log-cli-level=INFO -n logical
+	poetry run pytest tests/integration -m "not EFTests"  --log-cli-level=INFO -n logical
 
 test-unit:
 	poetry run pytest tests/src --log-cli-level=INFO
@@ -28,10 +31,10 @@ test-end-to-end: deploy
 	poetry run pytest tests/end_to_end --log-cli-level=INFO
 
 run-test-log: build-sol
-	poetry run pytest -k $(test) --log-cli-level=INFO -vvv -s
+	poetry run pytest -k $(test) -m "not EFTests" --log-cli-level=INFO -vvv -s
 
 run-test: build-sol
-	poetry run pytest -k $(test)
+	poetry run pytest -k $(test) -m "not EFTests"
 
 run-test-mark-log: build-sol
 	poetry run pytest -m $(mark) --log-cli-level=INFO -vvv -s

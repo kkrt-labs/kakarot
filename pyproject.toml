@@ -41,6 +41,7 @@ async-lru = "^2.0.4"
 setuptools = "^68.2.0"
 
 [tool.pytest.ini_options]
+norecursedirs = "tests/integration/ef_tests/test_data"
 filterwarnings = [
   "ignore:Using or importing the ABCs:DeprecationWarning",                                # from frozendict
   "ignore:lexer_state will be removed in subsequent releases. Use lexer_thread instead.", # from lark
@@ -134,7 +135,7 @@ markers = [
   "UniswapV2Factory",
   "Utils",
   "Safe",
-  "EF_TEST",
+  "EFTests",
   "SSTORE",
   "SLOAD",
 ]
