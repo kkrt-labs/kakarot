@@ -41,7 +41,7 @@ class TestEFBlockchain:
             storage_entries = (
                 (("is_initialized",), 1),
                 (("evm_address",), evm_address),
-                (("evm_to_starknet_address", starknet_address), evm_address),
+                (("evm_to_starknet_address", evm_address), starknet_address),
             ) + (
                 (
                     (("kakarot_address",), kakarot.contract_address),
