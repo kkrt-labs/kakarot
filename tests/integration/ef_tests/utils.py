@@ -1,2 +1,2 @@
-def is_account_eoa(state: dict) -> bool:
-    return state.get("code") in [None, "0x"] and not state.get("storage")
+def is_account_eoa(account: dict) -> bool:
+    return account.get("code") in [None, "0x"] and not account.get("storage")
