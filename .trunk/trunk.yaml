@@ -23,7 +23,7 @@ lint:
         - output: rewrite
           success_codes: [0]
           formatter: true
-          run: cairo-format ${target}
+          run: poetry run cairo-format ${target}
           read_output_from: stdout
           run_linter_from: workspace
   enabled:
@@ -56,6 +56,6 @@ actions:
   disabled:
     - trunk-announce
     - trunk-fmt-pre-commit
+    - trunk-check-pre-push
   enabled:
     - trunk-upgrade-available
-    - trunk-check-pre-push
