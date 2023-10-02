@@ -41,7 +41,7 @@ class TestEFBlockchain:
             storage_entries = (
                 (("is_initialized",), 1),
                 (("evm_address",), evm_address),
-                (("evm_to_starknet_address", starknet_address), evm_address),
+                (("evm_to_starknet_address", evm_address), starknet_address),
             ) + (
                 (
                     (("kakarot_address",), kakarot.contract_address),
@@ -99,7 +99,7 @@ class TestEFBlockchain:
             actual_nonce = (
                 # For EOA's, nonces are mapped to system level nonce.
                 await starknet.state.state.get_nonce_at(starknet_address)
-                if is_account_eoa(expected_post_state)
+                if is_account_eoa(account)
                 # For evm contracts, nonces are managed by Kakarot as contract state.
                 else await starknet.state.state.get_storage_at(
                     starknet_address, get_storage_var_address("nonce")
