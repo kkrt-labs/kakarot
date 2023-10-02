@@ -3,9 +3,9 @@ pragma solidity >=0.8.0;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
-import {PlainOpcodes} from "./PlainOpcodes.sol";
-import {ContractRevertsOnMethodCall} from "./RevertTestCases.sol";
-import {Counter} from "./Counter.sol";
+import {PlainOpcodes} from "../src/PlainOpcodes/PlainOpcodes.sol";
+import {ContractRevertsOnMethodCall} from "../src/PlainOpcodes/RevertTestCases.sol";
+import {Counter} from "../src/PlainOpcodes/Counter.sol";
 
 contract PlainOpcodesTest is Test {
     PlainOpcodes plainOpcodes;

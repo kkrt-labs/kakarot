@@ -2,8 +2,8 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Script.sol";
-import {Counter} from "./Counter.sol";
-import {PlainOpcodes} from "./PlainOpcodes.sol";
+import {Counter} from "../src/PlainOpcodes/Counter.sol";
+import {PlainOpcodes} from "../src/PlainOpcodes/PlainOpcodes.sol";
 
 contract CounterScript is Script {
     Counter public counter;
