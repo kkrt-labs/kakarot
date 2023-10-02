@@ -49,21 +49,27 @@ if not NETWORK["devnet"]:
     except Exception as e:
         logger.warn(f"Using network {NETWORK}, couldn't fetch deployment, error:\n{e}")
 
-FOUNDRY_FILE = toml.loads((Path(__file__).parents[2] / "foundry.toml").read_text())
-SOLIDITY_CONTRACTS_DIR = Path(FOUNDRY_FILE["profile"]["default"]["src"])
+try:
+    FOUNDRY_FILE = toml.loads((Path(__file__).parents[2] / "foundry.toml").read_text())
+except NameError:
+    FOUNDRY_FILE = toml.loads(Path("foundry.toml").read_text())
 
 
 @functools.lru_cache()
 def get_contract(contract_app: str, contract_name: str, address=None) -> Web3Contract:
     all_compilation_outputs = [
         json.load(open(file))
-        for file in (SOLIDITY_CONTRACTS_DIR / "build").glob(f"**/{contract_name}.json")
+        for file in Path(FOUNDRY_FILE["profile"]["default"]["out"]).glob(
+            f"**/{contract_name}.json"
+        )
     ]
     if len(all_compilation_outputs) == 1:
         target_compilation_output = all_compilation_outputs[0]
     else:
         target_solidity_file_path = list(
-            (SOLIDITY_CONTRACTS_DIR / contract_app).glob(f"**/{contract_name}.sol")
+            (Path(FOUNDRY_FILE["profile"]["default"]["src"]) / contract_app).glob(
+                f"**/{contract_name}.sol"
+            )
         )
         if len(target_solidity_file_path) != 1:
             raise ValueError(
