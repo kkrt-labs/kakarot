@@ -1,9 +1,8 @@
 [profile.default]
-src = 'tests/integration/solidity_contracts'
-test = 'tests/integration/solidity_contracts'
-out = 'tests/integration/solidity_contracts/build'
+src = 'solidity_contracts/src'
+test = 'solidity_contracts/tests'
+out = 'solidity_contracts/build'
 libs = ['lib']
-eth_rpc_url = "anvil"
 
 [rpc_endpoints]
 anvil = "http://127.0.0.1:8545"
