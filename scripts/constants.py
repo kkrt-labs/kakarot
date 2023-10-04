@@ -143,6 +143,7 @@ COMPILED_CONTRACTS = [
     {"contract_name": "proxy", "is_account_contract": False},
     {"contract_name": "EVM", "is_account_contract": False},
     {"contract_name": "OpenzeppelinAccount", "is_account_contract": True},
+    {"contract_name": "ERC20", "is_account_contract": False},
 ]
 
 KAKAROT_CHAIN_ID = 1263227476  # KKRT (0x4b4b5254) in ASCII
