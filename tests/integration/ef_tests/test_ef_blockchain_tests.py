@@ -93,7 +93,6 @@ class TestEFBlockchain:
                 # Split the integers into two felts
                 # Mask to extract the lower u128 part
                 mask_u128 = (1 << 128) - 1
-                ca_storage_entries = []
 
                 # Add an invariant: There must be as many storage keys as storage values
                 assert len(storage_keys) == len(storage_values)
@@ -107,24 +106,17 @@ class TestEFBlockchain:
                     value_high = int(storage_values[index], 16) >> 128
                     value_low = int(storage_values[index], 16) & mask_u128
 
-                    # We append to the storage entries a tuple of (key: Cairo.U256, value: Cairo.U256)
+                    # Now we have to perform low level custom storage for Starknet
+                    # Reference: https://docs.starknet.io/documentation/architecture_and_concepts/Smart_Contracts/contract-storage/
+
                     # Note that when serializing, we need to store low first and then high:
                     # {low: u128, high: 128} => serde => [low, high]
-                    ca_storage_entries.append(
-                        ([key_low, key_high], [value_low, value_high])
-                    )
-
-                # Now we have to perform low level custom storage for Starknet
-                # Reference: https://docs.starknet.io/documentation/architecture_and_concepts/Smart_Contracts/contract-storage/
-                for storage_key, storage_value in ca_storage_entries:
                     # The address for storage is pedersen(<STORAGE_VAR_NAME>, key_1, key_2)
                     # Here: pedersen("storage_", high, low)
                     await starknet.state.state.set_storage_at(
                         contract_address=starknet_address,
-                        key=get_storage_var_address(
-                            "storage_", storage_key[0], storage_key[1]
-                        ),
-                        value=storage_value[0],
+                        key=get_storage_var_address("storage_", key_low, key_high),
+                        value=value_low,
                     )
 
                     # Since we need to store both a high and low element, the second value to store is simply located
@@ -133,11 +125,8 @@ class TestEFBlockchain:
                     # Above, we'll need to compute a new address to prevent collision
                     await starknet.state.state.set_storage_at(
                         contract_address=starknet_address,
-                        key=get_storage_var_address(
-                            "storage_", storage_key[0], storage_key[1]
-                        )
-                        + 1,
-                        value=storage_value[1],
+                        key=get_storage_var_address("storage_", key_low, key_high) + 1,
+                        value=value_high,
                     )
 
     @staticmethod
