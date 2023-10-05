@@ -41,11 +41,13 @@ class TestEFBlockchain:
             storage_entries = (
                 (("is_initialized",), 1),
                 (("evm_address",), evm_address),
-                (("evm_to_starknet_address", evm_address), starknet_address),
             ) + (
                 (
                     (("kakarot_address",), kakarot.contract_address),
-                    (("_implementation",), externally_owned_account_class.class_hash),
+                    (
+                        ("_implementation",),
+                        externally_owned_account_class.class_hash,
+                    ),
                 )
                 if is_account_eoa(account)
                 else (
@@ -61,6 +63,13 @@ class TestEFBlockchain:
                     key=get_storage_var_address(*storage_var),
                     value=value,
                 )
+
+            # Store the evm_to_starknet_address mapping inside Kakarot storage
+            await starknet.state.state.set_storage_at(
+                contract_address=kakarot.contract_address,
+                key=get_storage_var_address("evm_to_starknet_address", evm_address),
+                value=starknet_address,
+            )
 
             # an EOA's nonce is managed at the starknet level
             if is_account_eoa(account):
