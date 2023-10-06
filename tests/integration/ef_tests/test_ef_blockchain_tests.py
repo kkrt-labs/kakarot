@@ -79,10 +79,55 @@ class TestEFBlockchain:
             ).execute(caller_address=starknet_address)
 
             if not is_account_eoa(account):
+                # Write bytecode of contract
                 contract = get_contract_account(starknet_address)
                 await contract.write_bytecode(
                     hex_string_to_bytes_array(account["code"])
                 ).execute(caller_address=kakarot.contract_address)
+
+                # Write storage at correct values
+                # Get keys and values to store
+                storage_keys = list(account["storage"].keys())
+                storage_values = list(account["storage"].values())
+
+                # Split the integers into two felts
+                # Mask to extract the lower u128 part
+                mask_u128 = (1 << 128) - 1
+
+                # Add an invariant: There must be as many storage keys as storage values
+                assert len(storage_keys) == len(storage_values)
+
+                for index in range(len(storage_keys)):
+                    # Key for storage is u256, it should be split into {high: u128, low: u128}
+                    key_high = int(storage_keys[index], 16) >> 128
+                    key_low = int(storage_keys[index], 16) & mask_u128
+
+                    # Value for storage is u256, it should be split into {high: u128, low: u128}
+                    value_high = int(storage_values[index], 16) >> 128
+                    value_low = int(storage_values[index], 16) & mask_u128
+
+                    # Now we have to perform low level custom storage for Starknet
+                    # Reference: https://docs.starknet.io/documentation/architecture_and_concepts/Smart_Contracts/contract-storage/
+
+                    # Note that when serializing, we need to store low first and then high:
+                    # {low: u128, high: 128} => serde => [low, high]
+                    # The address for storage is pedersen(<STORAGE_VAR_NAME>, key_1, key_2)
+                    # Here: pedersen("storage_", high, low)
+                    await starknet.state.state.set_storage_at(
+                        contract_address=starknet_address,
+                        key=get_storage_var_address("storage_", key_low, key_high),
+                        value=value_low,
+                    )
+
+                    # Since we need to store both a high and low element, the second value to store is simply located
+                    # At the address calculated above + 1
+                    # We're able to store 256 felts this way in a custom Struct.
+                    # Above, we'll need to compute a new address to prevent collision
+                    await starknet.state.state.set_storage_at(
+                        contract_address=starknet_address,
+                        key=get_storage_var_address("storage_", key_low, key_high) + 1,
+                        value=value_high,
+                    )
 
     @staticmethod
     async def assert_post_state(
