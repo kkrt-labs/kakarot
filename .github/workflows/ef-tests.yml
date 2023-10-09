@@ -80,6 +80,7 @@ jobs:
       - name: copy kakarot builds
         run: |
           cp -r ./kakarot/build ./kakarot-rpc/lib/kakarot
+          cp -r ./kakarot/solidity_contracts/build ./kakarot-rpc/lib/kakarot/solidity_contracts/
       - name: build dump-katana
         run: cargo build --features="dump" --bin dump-katana --release
         working-directory: kakarot-rpc
