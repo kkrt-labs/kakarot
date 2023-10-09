@@ -174,7 +174,7 @@ namespace SystemOperations {
 
         // Note: only new data_len needs to be updated indeed.
         let ctx = ExecutionContext.update_return_data(
-            ctx, new_return_data_len=size.low, new_return_data=ctx.return_data
+            ctx, return_data_len=size.low, return_data=ctx.return_data
         );
 
         let ctx = ExecutionContext.stop(ctx);
@@ -420,8 +420,6 @@ namespace CallHelper {
         value: felt,
         args_size: felt,
         calldata: felt*,
-        ret_size: felt,
-        return_data: felt*,
     }
 
     // @dev: with_value arg lets specify if the call requires a value (CALL, CALLCODE) or not (STATICCALL, DELEGATECALL).
@@ -448,10 +446,11 @@ namespace CallHelper {
         let ret_offset = 2 ** 128 * popped[4 + with_value].high + popped[4 + with_value].low;
         let ret_size = 2 ** 128 * popped[5 + with_value].high + popped[5 + with_value].low;
 
-        // Note: We store the offset here because we can't pre-allocate a memory segment in cairo
-        // During teardown we update the memory using this offset
+        // Note: We use the calling context's `return_data` & `return_data_len` to store
+        // the location and size of the sub context's return data to be stored at teardown
         let return_data: felt* = alloc();
         assert [return_data] = ret_offset;
+        let ctx = ExecutionContext.update_return_data(ctx, ret_size, return_data);
 
         // Load calldata from Memory
         let (calldata: felt*) = alloc();
@@ -472,13 +471,7 @@ namespace CallHelper {
         let gas_limit = Helpers.min(gas, max_allowed_gas);
 
         let call_args = CallArgs(
-            gas=gas_limit,
-            address=address,
-            value=value,
-            args_size=args_size,
-            calldata=calldata,
-            ret_size=ret_size,
-            return_data=return_data + 1,
+            gas=gas_limit, address=address, value=value, args_size=args_size, calldata=calldata
         );
 
         let ctx = ExecutionContext.update_memory(ctx, memory);
@@ -507,6 +500,7 @@ namespace CallHelper {
         // Check if the called address is a precompiled contract
         let is_precompile = Precompiles.is_precompile(address=call_args.address);
         if (is_precompile == FALSE) {
+            let (local return_data: felt*) = alloc();
             let (bytecode_len, bytecode) = Accounts.get_bytecode(call_args.address);
             tempvar call_context = new model.CallContext(
                 bytecode=bytecode,
@@ -524,8 +518,8 @@ namespace CallHelper {
                 gas_limit=call_args.gas,
                 gas_price=calling_ctx.gas_price,
                 calling_context=calling_ctx,
-                return_data_len=call_args.ret_size,
-                return_data=call_args.return_data,
+                return_data_len=0,
+                return_data=return_data,
                 read_only=read_only,
             );
 
@@ -538,8 +532,6 @@ namespace CallHelper {
             calldata=call_args.calldata,
             value=call_args.value,
             calling_context=calling_ctx,
-            return_data_len=call_args.ret_size,
-            return_data=call_args.return_data,
         );
 
         return sub_ctx;
@@ -581,15 +573,23 @@ namespace CallHelper {
         let stack = Stack.push(ctx.stack, status);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        // ret_offset, see prepare_args
-        let memory = Memory.store_n(
-            ctx.memory,
-            ctx.sub_context.return_data_len,
-            ctx.sub_context.return_data,
-            [ctx.sub_context.return_data - 1],
+        // see prepare_args
+        let ret_offset = [ctx.return_data];
+        let ret_size = ctx.return_data_len;
+        let return_data = Helpers.slice_data(
+            data_len=ctx.sub_context.return_data_len,
+            data=ctx.sub_context.return_data,
+            data_offset=0,
+            slice_len=ret_size,
         );
-
+        let memory = Memory.store_n(ctx.memory, ret_size, return_data, ret_offset);
         let ctx = ExecutionContext.update_memory(ctx, memory);
+
+        // Clear sub_context's return_data args
+        let (local return_data: felt*) = alloc();
+        let ctx = ExecutionContext.update_return_data(
+            ctx, return_data_len=0, return_data=return_data
+        );
         return ctx;
     }
 }

@@ -30,8 +30,6 @@ func test__precompiles_should_throw_on_out_of_bounds{
         calldata=cast(0, felt*),
         value=0,
         calling_context=cast(0, model.ExecutionContext*),
-        return_data_len=0,
-        return_data=cast(0, felt*),
     );
 
     return ();
@@ -66,8 +64,6 @@ func test__run_should_return_a_stopped_execution_context{
         calldata=cast(0, felt*),
         value=0,
         calling_context=calling_context,
-        return_data_len=0,
-        return_data=cast(0, felt*),
     );
 
     assert result.stopped = 1;

@@ -33,8 +33,6 @@ namespace Precompiles {
     // @param calldata The calldata.
     // @param value The value.
     // @param calling_context The calling context.
-    // @param return_data_len The length of the return data array.
-    // @param return_data The return data array.
     // @return ExecutionContext The initialized execution context.
     func run{
         syscall_ptr: felt*,
@@ -47,16 +45,11 @@ namespace Precompiles {
         calldata: felt*,
         value: felt,
         calling_context: model.ExecutionContext*,
-        return_data_len: felt,
-        return_data: felt*,
     ) -> model.ExecutionContext* {
         alloc_locals;
 
         // Execute the precompile at a given address
         let (output_len, output, gas_used) = _exec_precompile(address, calldata_len, calldata);
-
-        // Copy results of precompile to return data
-        memcpy(return_data, output, output_len);
 
         let (local revert_contract_state_dict_start) = default_dict_new(0);
         tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
@@ -67,8 +60,8 @@ namespace Precompiles {
             call_context=cast(0, model.CallContext*),
             program_counter=0,
             stopped=TRUE,
-            return_data=return_data,
-            return_data_len=return_data_len,
+            return_data=output,
+            return_data_len=output_len,
             stack=cast(0, model.Stack*),
             memory=cast(0, model.Memory*),
             gas_used=gas_used,

@@ -518,8 +518,8 @@ namespace ExecutionContext {
     // @notice Update the return data of the current execution context.
     // @dev The memory is updated with the given memory.
     // @param self The pointer to the execution context.
-    // @param new_return_data_len The length of the return data array.
-    // @param new_return_data The return data array.
+    // @param return_data_len The length of the return data array.
+    // @param return_data The return data array.
     // @return ExecutionContext The pointer to the updated execution context.
     func update_return_data{
         syscall_ptr: felt*,
@@ -527,14 +527,14 @@ namespace ExecutionContext {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(
-        self: model.ExecutionContext*, new_return_data_len: felt, new_return_data: felt*
+        self: model.ExecutionContext*, return_data_len: felt, return_data: felt*
     ) -> model.ExecutionContext* {
         return new model.ExecutionContext(
             call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=self.stopped,
-            return_data=new_return_data,
-            return_data_len=new_return_data_len,
+            return_data=return_data,
+            return_data_len=return_data_len,
             stack=self.stack,
             memory=self.memory,
             gas_used=self.gas_used,

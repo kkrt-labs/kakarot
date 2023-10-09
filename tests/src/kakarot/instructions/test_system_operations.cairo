@@ -199,7 +199,7 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     // Put some value in memory as it is used for calldata with args_size and args_offset
     // Word is 0x 11 22 33 44 55 66 77 88 00 00 ... 00
     // calldata should be 0x 44 55 66 77
-    let memory_word = Uint256(low=0, high=22774453838368691922685013100469420032);
+    let memory_word = Uint256(low=0, high=0x11223344556677880000000000000000);
     let memory_offset = Uint256(0, 0);
     let stack = Stack.push(stack, memory_word);
     let stack = Stack.push(stack, memory_offset);
@@ -214,6 +214,8 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     let sub_ctx = SystemOperations.exec_call(ctx);
 
     // Then
+    assert sub_ctx.calling_context.return_data_len = ret_size.low;
+    assert [sub_ctx.calling_context.return_data] = ret_offset.low;
     assert sub_ctx.call_context.bytecode_len = bytecode_len;
     assert sub_ctx.call_context.calldata_len = 4;
     assert [sub_ctx.call_context.calldata] = 0x44;
@@ -223,8 +225,7 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     assert sub_ctx.call_context.value = value.low;
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
-    assert sub_ctx.return_data_len = ret_size.low;
-    assert [sub_ctx.return_data] = ret_offset.low;
+    assert sub_ctx.return_data_len = 0;
     assert sub_ctx.gas_used = 0;
     let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
     assert_le(sub_ctx.gas_limit, gas_felt);
@@ -236,14 +237,18 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     // Fake a RETURN in sub_ctx then teardow, see note in evm.codes:
     // If the size of the return data is not known, it can also be retrieved after the call with
     // the instructions RETURNDATASIZE and RETURNDATACOPY (since the Byzantium fork).
-    // So it's expected that the RETURN of the sub_ctx does set proper values for return_data_len and return_data
-    let sub_ctx = ExecutionContext.update_return_data(sub_ctx, 0, sub_ctx.return_data);
+    let (local return_data: felt*) = alloc();
+    assert [return_data] = 0x11;
+    let sub_ctx = ExecutionContext.update_return_data(sub_ctx, 1, return_data);
     let ctx = CallHelper.finalize_calling_context(sub_ctx);
 
     // Then
     let (stack, success) = Stack.peek(ctx.stack, 0);
     assert success.low = 1;
     TestHelpers.assert_execution_context_equal(ctx.sub_context, sub_ctx);
+    let (local loaded_return_data: felt*) = alloc();
+    Memory.load_n(ctx.memory, ret_size.low, loaded_return_data, ret_offset.low);
+    assert [loaded_return_data] = 0x11;
 
     return ();
 }
@@ -376,8 +381,8 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
     assert sub_ctx.call_context.value = value.low;
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
-    assert sub_ctx.return_data_len = ret_size.low;
-    assert [sub_ctx.return_data] = ret_offset.low;
+    assert sub_ctx.calling_context.return_data_len = ret_size.low;
+    assert [sub_ctx.calling_context.return_data] = ret_offset.low;
     assert sub_ctx.gas_used = 0;
     let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
     assert_le(sub_ctx.gas_limit, gas_felt);
@@ -523,8 +528,8 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
     assert sub_ctx.call_context.value = 0;
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
-    assert sub_ctx.return_data_len = ret_size.low;
-    assert [sub_ctx.return_data] = ret_offset.low;
+    assert sub_ctx.calling_context.return_data_len = ret_size.low;
+    assert [sub_ctx.calling_context.return_data] = ret_offset.low;
     assert sub_ctx.gas_used = 0;
     let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
     assert_le(sub_ctx.gas_limit, gas_felt);
@@ -601,8 +606,8 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
     assert sub_ctx.call_context.value = 0;
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
-    assert sub_ctx.return_data_len = ret_size.low;
-    assert [sub_ctx.return_data] = ret_offset.low;
+    assert sub_ctx.calling_context.return_data_len = ret_size.low;
+    assert [sub_ctx.calling_context.return_data] = ret_offset.low;
     assert sub_ctx.gas_used = 0;
     let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
     assert_le(sub_ctx.gas_limit, gas_felt);
@@ -887,10 +892,7 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     let sub_ctx_object: model.ExecutionContext* = SystemOperations.exec_selfdestruct(
         sub_ctx_object
     );
-
-    // Simulate run
-    let ctx = CallHelper.finalize_calling_context(sub_ctx_object);
-    let ctx = SelfDestructHelper.finalize(ctx);
+    SelfDestructHelper.finalize(sub_ctx_object);
 
     // Then
     let (evm_contract_byte_len) = IAccount.bytecode_len(contract_address=starknet_contract_address);
