@@ -16,6 +16,7 @@ from starkware.cairo.common.uint256 import (
     uint256_mul_div_mod,
 )
 from starkware.cairo.common.bool import FALSE, TRUE
+from starkware.cairo.common.alloc import alloc
 
 // Internal dependencies
 from kakarot.model import model
@@ -50,8 +51,13 @@ namespace StopAndArithmeticOperations {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx_ptr: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = ExecutionContext.stop(ctx_ptr);
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        // Clear latest sub_context's return data
+        let (return_data: felt*) = alloc();
+        let ctx = ExecutionContext.update_return_data(
+            ctx, return_data_len=0, return_data=return_data
+        );
+        let ctx = ExecutionContext.stop(ctx);
         return ctx;
     }
 

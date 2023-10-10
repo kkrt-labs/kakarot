@@ -585,11 +585,6 @@ namespace CallHelper {
         let memory = Memory.store_n(ctx.memory, ret_size, return_data, ret_offset);
         let ctx = ExecutionContext.update_memory(ctx, memory);
 
-        // Clear sub_context's return_data args
-        let (local return_data: felt*) = alloc();
-        let ctx = ExecutionContext.update_return_data(
-            ctx, return_data_len=0, return_data=return_data
-        );
         return ctx;
     }
 }
