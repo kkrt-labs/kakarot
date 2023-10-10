@@ -427,7 +427,9 @@ namespace CallHelper {
         ctx: model.ExecutionContext*, call_args: CallArgs
     ) {
         alloc_locals;
-        let (stack, popped) = Stack.pop_n(self=ctx.stack, n=6 + with_value);
+        // Note: We don't pop ret_offset and ret_size here but at the end of the sub context
+        // See finalize_calling_context
+        let (stack, popped) = Stack.pop_n(self=ctx.stack, n=4 + with_value);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
         let gas = 2 ** 128 * popped[0].high + popped[0].low;
@@ -437,14 +439,6 @@ namespace CallHelper {
         let value = with_value * stack_value + (1 - with_value) * ctx.call_context.value;
         let args_offset = 2 ** 128 * popped[2 + with_value].high + popped[2 + with_value].low;
         let args_size = 2 ** 128 * popped[3 + with_value].high + popped[3 + with_value].low;
-        let ret_offset = 2 ** 128 * popped[4 + with_value].high + popped[4 + with_value].low;
-        let ret_size = 2 ** 128 * popped[5 + with_value].high + popped[5 + with_value].low;
-
-        // Note: We use the calling context's `return_data` & `return_data_len` to store
-        // the location and size of the sub context's return data to be stored at teardown
-        let return_data: felt* = alloc();
-        assert [return_data] = ret_offset;
-        let ctx = ExecutionContext.update_return_data(ctx, ret_size, return_data);
 
         // Load calldata from Memory
         let (calldata: felt*) = alloc();
@@ -541,16 +535,17 @@ namespace CallHelper {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        // Pop ret_offset and ret_size
+        let (stack, popped) = Stack.pop_n(self=ctx.calling_context.stack, n=2);
+        let ret_offset = 2 ** 128 * popped[0].high + popped[0].low;
+        let ret_size = 2 ** 128 * popped[1].high + popped[1].low;
+
         // Put status in stack
         let is_reverted = ExecutionContext.is_reverted(self=ctx);
         let status = Uint256(low=1 - is_reverted, high=0);
-        let stack = Stack.push(ctx.calling_context.stack, status);
+        let stack = Stack.push(stack, status);
 
         // Store RETURN_DATA in memory
-        // Call args ret_offset and ret_size temporarily stored in calling context return_data fields
-        // See prepare_args
-        let ret_offset = [ctx.calling_context.return_data];
-        let ret_size = ctx.calling_context.return_data_len;
         let return_data = Helpers.slice_data(
             data_len=ctx.return_data_len, data=ctx.return_data, data_offset=0, slice_len=ret_size
         );
