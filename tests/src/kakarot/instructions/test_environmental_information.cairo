@@ -86,7 +86,6 @@ func init_context{
     let memory: model.Memory* = Memory.init();
     let gas_limit = Constants.TRANSACTION_GAS_LIMIT;
     let calling_context = ExecutionContext.init_empty();
-    let sub_context = ExecutionContext.init_empty();
 
     let (local revert_contract_state_dict_start) = default_dict_new(0);
     tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
@@ -108,7 +107,6 @@ func init_context{
         evm_contract_address=420,
         origin=100,
         calling_context=calling_context,
-        sub_context=sub_context,
         destroy_contracts_len=0,
         destroy_contracts=empty_destroy_contracts,
         events_len=0,
@@ -320,7 +318,7 @@ func test__returndatacopy{
     let return_data_len: felt = 32;
 
     TestHelpers.array_fill(return_data, return_data_len, 0xFF);
-    let child_ctx: model.ExecutionContext* = TestHelpers.init_context_with_return_data(
+    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_return_data(
         0, bytecode, return_data_len, return_data
     );
 
@@ -332,26 +330,24 @@ func test__returndatacopy{
     let stack: model.Stack* = Stack.push(stack, Uint256(32, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack_and_sub_ctx(
-        0, bytecode, stack, child_ctx
-    );
+    let ctx = ExecutionContext.update_stack(ctx, stack);
 
     // When
-    let result: model.ExecutionContext* = EnvironmentalInformation.exec_returndatacopy(ctx);
+    let ctx: model.ExecutionContext* = EnvironmentalInformation.exec_returndatacopy(ctx);
 
     // Then
-    let (memory, data) = Memory._load(result.memory, 0);
+    let (memory, data) = Memory._load(ctx.memory, 0);
     assert_uint256_eq(
         data, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)
     );
-    assert result.gas_used = 3;
+    assert ctx.gas_used = 3;
 
     // Pushing parameters for another RETURNDATACOPY
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(31, 0));
     let stack: model.Stack* = Stack.push(stack, Uint256(32, 0));
-    let ctx: model.ExecutionContext* = ExecutionContext.update_stack(result, stack);
+    let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
     let ctx: model.ExecutionContext* = ExecutionContext.update_memory(ctx, memory);
 
     // When

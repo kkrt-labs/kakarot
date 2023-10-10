@@ -549,7 +549,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         // Get return data size.
-        let return_data_size = Helpers.to_uint256(ctx.sub_context.return_data_len);
+        let return_data_size = Helpers.to_uint256(ctx.return_data_len);
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=return_data_size);
 
         // Update the execution context.
@@ -588,12 +588,9 @@ namespace EnvironmentalInformation {
         let return_data_offset = popped[1];
         let element_len = popped[2];
 
-        let return_data_len: felt = ctx.sub_context.return_data_len;
-        let return_data: felt* = ctx.sub_context.return_data;
-
         let sliced_return_data: felt* = Helpers.slice_data(
-            data_len=return_data_len,
-            data=return_data,
+            data_len=ctx.return_data_len,
+            data=ctx.return_data,
             data_offset=return_data_offset.low,
             slice_len=element_len.low,
         );

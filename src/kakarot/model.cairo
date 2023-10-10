@@ -90,7 +90,6 @@ namespace model {
     // @param evm_contract_address The evm address of the contract interacted with.
     // @param calling_context The parent context of the current execution context, can be empty when context
     //                        is root context | see ExecutionContext.is_root(ctx).
-    // @param sub_context The child context of the current execution context, can be empty.
     // @param destroy_contracts_len The destroy_contract length.
     // @param destroy_contracts The array of contracts to destroy at the end of the transaction.
     // @param events_len The events length.
@@ -114,7 +113,6 @@ namespace model {
         evm_contract_address: felt,
         origin: felt,
         calling_context: ExecutionContext*,
-        sub_context: ExecutionContext*,
         destroy_contracts_len: felt,
         destroy_contracts: felt*,
         events_len: felt,

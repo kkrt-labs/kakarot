@@ -52,7 +52,7 @@ namespace StopAndArithmeticOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        // Clear latest sub_context's return data
+        // Clear data from the last executed sub context
         let (return_data: felt*) = alloc();
         let ctx = ExecutionContext.update_return_data(
             ctx, return_data_len=0, return_data=return_data

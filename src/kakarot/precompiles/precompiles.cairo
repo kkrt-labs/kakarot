@@ -71,7 +71,6 @@ namespace Precompiles {
             evm_contract_address=address,
             origin=calling_context.origin,
             calling_context=calling_context,
-            sub_context=cast(0, model.ExecutionContext*),
             destroy_contracts_len=0,
             destroy_contracts=cast(0, felt*),
             events_len=0,

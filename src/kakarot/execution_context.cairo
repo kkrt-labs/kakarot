@@ -60,7 +60,6 @@ namespace ExecutionContext {
         dw 0;  // evm_contract_address
         dw 0;  // origin
         dw 0;  // calling_context
-        dw 0;  // sub_context
         dw 0;  // destroy_contracts_len
         dw 0;  // destroy_contracts
         dw 0;  // events_len
@@ -113,7 +112,6 @@ namespace ExecutionContext {
 
         let stack: model.Stack* = Stack.init();
         let memory: model.Memory* = Memory.init();
-        let sub_context = init_empty();
 
         return new model.ExecutionContext(
             call_context=call_context,
@@ -130,7 +128,6 @@ namespace ExecutionContext {
             evm_contract_address=evm_contract_address,
             origin=origin,
             calling_context=calling_context,
-            sub_context=sub_context,
             destroy_contracts_len=0,
             destroy_contracts=empty_destroy_contracts,
             events_len=0,
@@ -197,17 +194,6 @@ namespace ExecutionContext {
         return FALSE;
     }
 
-    // @notice Return whether the current execution context is a leaf.
-    // @dev A leaf context is a context without sub context.
-    // @param self The pointer to the execution context.
-    // @return is_leaf TRUE if the execution context is a leaf, FALSE otherwise.
-    func is_leaf(self: model.ExecutionContext*) -> felt {
-        if (cast(self.sub_context.call_context, felt) == 0) {
-            return TRUE;
-        }
-        return FALSE;
-    }
-
     // @notice Stop the current execution context.
     // @dev When the execution context is stopped, no more instructions can be executed.
     // @param self The pointer to the execution context.
@@ -228,7 +214,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             events_len=self.events_len,
@@ -258,12 +243,11 @@ namespace ExecutionContext {
     func revert(
         self: model.ExecutionContext*, revert_reason: felt*, size: felt
     ) -> model.ExecutionContext* {
-        memcpy(self.return_data, revert_reason, size);
         return new model.ExecutionContext(
             call_context=self.call_context,
             program_counter=self.program_counter,
             stopped=TRUE,
-            return_data=self.return_data,
+            return_data=revert_reason,
             return_data_len=size,
             stack=self.stack,
             memory=self.memory,
@@ -274,7 +258,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             events_len=self.events_len,
@@ -466,7 +449,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             events_len=self.events_len,
@@ -502,7 +484,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             events_len=self.events_len,
@@ -544,7 +525,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             events_len=self.events_len,
@@ -580,7 +560,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             events_len=self.events_len,
@@ -616,43 +595,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            sub_context=self.sub_context,
-            destroy_contracts_len=self.destroy_contracts_len,
-            destroy_contracts=self.destroy_contracts,
-            events_len=self.events_len,
-            events=self.events,
-            create_addresses_len=self.create_addresses_len,
-            create_addresses=self.create_addresses,
-            revert_contract_state=self.revert_contract_state,
-            reverted=self.reverted,
-            read_only=self.read_only,
-        );
-    }
-
-    // @notice Update the child context of the current execution context.
-    // @dev The sub_context is updated with the given context.
-    // @param self The pointer to the execution context.
-    // @param sub_context The pointer to the child context.
-    // @return ExecutionContext The pointer to the updated execution context.
-    func update_sub_context(
-        self: model.ExecutionContext*, sub_context: model.ExecutionContext*
-    ) -> model.ExecutionContext* {
-        return new model.ExecutionContext(
-            call_context=self.call_context,
-            program_counter=self.program_counter,
-            stopped=self.stopped,
-            return_data=self.return_data,
-            return_data_len=self.return_data_len,
-            stack=self.stack,
-            memory=self.memory,
-            gas_used=self.gas_used,
-            gas_limit=self.gas_limit,
-            gas_price=self.gas_price,
-            starknet_contract_address=self.starknet_contract_address,
-            evm_contract_address=self.evm_contract_address,
-            origin=self.origin,
-            calling_context=self.calling_context,
-            sub_context=sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             events_len=self.events_len,
@@ -689,7 +631,6 @@ namespace ExecutionContext {
             evm_contract_address=evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             events_len=self.events_len,
@@ -730,7 +671,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len + destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             events_len=self.events_len,
@@ -773,7 +713,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             events_len=self.events_len + 1,
@@ -808,7 +747,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             events_len=self.events_len,
@@ -844,7 +782,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len + 1,
             destroy_contracts=self.destroy_contracts,
             events_len=self.events_len,
@@ -881,7 +818,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             events_len=self.events_len,
@@ -937,7 +873,6 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            sub_context=self.sub_context,
             destroy_contracts_len=self.destroy_contracts_len,
             destroy_contracts=self.destroy_contracts,
             events_len=self.events_len,
