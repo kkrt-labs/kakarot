@@ -34,4 +34,18 @@ contract Counter {
     function reset() public {
         count = 0;
     }
+
+    function incForLoop(uint256 iterations) public {
+        count = 0;
+        for (uint256 i = 0; i < iterations; i++) {
+            count++;
+        }
+    }
+
+    function incWhileLoop(uint256 iterations) public {
+        count = 0;
+        while (count < iterations) {
+            count++;
+        }
+    }
 }
