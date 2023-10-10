@@ -56,22 +56,6 @@ jobs:
           STARKNET_NETWORK=katana poetry run python ./scripts/compile_kakarot.py && make build-sol
         working-directory: kakarot
 
-                cp -r ./kakarot/solidity_contracts/build ./kakarot-rpc/lib/kakarot/solidity_contracts/
-      - name: build dump-katana
-        run: cargo build --features="dump" --bin dump-katana --release
-        working-directory: kakarot-rpc
-
-      - name: make kakarot dump
-        run: |
-          ./target/release/dump-katana
-          export KATANA_DUMP_PATH=$(realpath .katana)
-        working-directory: kakarot-rpc
-
-      - name: clear builds
-        run: |
-          rm -rf ./target
-        working-directory: kakarot-rpc
-
       # run ef-tests
       - name: Checkout ef-tests
         uses: actions/checkout@v3
