@@ -52,7 +52,10 @@ namespace StopAndArithmeticOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        // Clear data from the last executed sub context
+        // return_data stored the return_data for the last executed sub context
+        // see CALLs opcodes. When we run the STOP opcode, we stop the current
+        // execution context with *no* return data (unlike RETURN and REVERT).
+        // hence we just clear the return_data and stop.
         let (return_data: felt*) = alloc();
         let ctx = ExecutionContext.update_return_data(
             ctx, return_data_len=0, return_data=return_data

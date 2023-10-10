@@ -213,9 +213,6 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     let sub_ctx = SystemOperations.exec_call(ctx);
 
     // Then
-    // assert than calling_context stores the CALL args for RETURN_DATA
-    assert sub_ctx.calling_context.return_data_len = ret_size.low;
-    assert [sub_ctx.calling_context.return_data] = ret_offset.low;
 
     // assert than sub_context is well initialized
     assert sub_ctx.call_context.bytecode_len = 0;
@@ -382,8 +379,6 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
     assert sub_ctx.call_context.value = value.low;
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
-    assert sub_ctx.calling_context.return_data_len = ret_size.low;
-    assert [sub_ctx.calling_context.return_data] = ret_offset.low;
     assert sub_ctx.gas_used = 0;
     let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
     assert_le(sub_ctx.gas_limit, gas_felt);
@@ -528,8 +523,6 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
     assert sub_ctx.call_context.value = 0;
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
-    assert sub_ctx.calling_context.return_data_len = ret_size.low;
-    assert [sub_ctx.calling_context.return_data] = ret_offset.low;
     assert sub_ctx.gas_used = 0;
     let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
     assert_le(sub_ctx.gas_limit, gas_felt);
@@ -605,8 +598,6 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
     assert sub_ctx.call_context.value = 0;
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
-    assert sub_ctx.calling_context.return_data_len = ret_size.low;
-    assert [sub_ctx.calling_context.return_data] = ret_offset.low;
     assert sub_ctx.gas_used = 0;
     let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
     assert_le(sub_ctx.gas_limit, gas_felt);
