@@ -31,9 +31,16 @@ class TestCounter:
             os.environ.get("STARKNET_NETWORK", "katana") == "katana",
             reason="https://github.com/dojoengine/dojo/issues/864",
         )
-        async def test_should_raise_when_count_is_0(self, counter, owner):
+        async def test_should_raise_when_count_is_0_from_modifier(self, counter, owner):
             with kakarot_error("count should be strictly greater than 0"):
                 await counter.dec(caller_eoa=owner)
+
+        @pytest.mark.xfail(
+            reason="https://github.com/kkrt-labs/kakarot/issues/683",
+        )
+        async def test_should_raise_when_count_is_0_from_vm(self, counter, owner):
+            with kakarot_error():
+                await counter.decUnchecked(caller_eoa=owner)
 
         async def test_should_decrease_count(self, counter, owner):
             count_before = await counter.count()

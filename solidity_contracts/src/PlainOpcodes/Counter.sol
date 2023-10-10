@@ -17,7 +17,7 @@ contract Counter {
         count += 1;
     }
 
-    function decUnchecked() public greaterThanZero {
+    function decUnchecked() public {
         unchecked {
             count -= 1;
         }
