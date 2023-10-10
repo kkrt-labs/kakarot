@@ -300,7 +300,9 @@ def compile_contract(contract):
         indent=2,
     )
     elapsed = datetime.now() - start
-    logger.info(f"✅ Compiled in {elapsed.total_seconds():.2f}s")
+    logger.info(
+        f"✅ {contract['contract_name']} compiled in {elapsed.total_seconds():.2f}s"
+    )
 
 
 async def deploy_starknet_account(class_hash, private_key=None, amount=1):

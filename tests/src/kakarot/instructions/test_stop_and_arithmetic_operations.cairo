@@ -328,6 +328,7 @@ func test__exec_stop{
     let stopped_ctx = StopAndArithmeticOperations.exec_stop(ctx);
 
     assert stopped_ctx.stopped = TRUE;
+    assert stopped_ctx.return_data_len = 0;
 
     return ();
 }
