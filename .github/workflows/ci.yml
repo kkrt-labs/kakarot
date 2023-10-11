@@ -133,18 +133,14 @@ jobs:
       - uses: taiki-e/install-action@nextest
 
       - name: make build directory
-        run: mkdir build
+        run: cd ./lib/kakarot && mkdir build
 
       - name: Download Kakarot build artifacts
         uses: actions/download-artifact@v3
         with:
           name: kakarot-build
-          path: ./build
+          path: ./lib/kakarot/build
 
-      - name: ls
-        run: ls
-      - name: copy kakarot-build
-        run: cp -r ./build ./lib/kakarot
       # run tests
       - name: run tests
         run: cargo test -p ef-testing --features ef-tests -- --nocapture
