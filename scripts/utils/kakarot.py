@@ -135,7 +135,7 @@ async def deploy(
         max_fee=max_fee,
         value=value,
     )
-    contract.address = Web3.to_checksum_address(evm_address)
+    contract.address = Web3.to_checksum_address(f"0x{evm_address:040x}")
     contract.starknet_address = starknet_address
     logger.info(f"✅ {contract_name} deployed at address {contract.address}")
 
