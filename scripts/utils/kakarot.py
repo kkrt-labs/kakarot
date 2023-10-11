@@ -147,11 +147,11 @@ def _parse_events(cls: ContractEvents, starknet_events: List[Event]):
     kakarot_events = [
         event
         for event in starknet_events
-        if event.from_address == kakarot_address and len(hex(event.keys[0])) == 42
+        if event.from_address == kakarot_address and event.keys[0] < 2**160
     ]
     log_receipts = [
         LogReceipt(
-            address=to_checksum_address(event.keys[0]),
+            address=to_checksum_address(f"0x{event.keys[0]:040x}"),
             blockHash=bytes(),
             blockNumber=bytes(),
             data=bytes(event.data),
@@ -235,7 +235,9 @@ def _wrap_kakarot(fun: str):
             max_fee=max_fee,
         )
         if success == 0:
+            logger.error(f"❌ {self.address}.{fun} failed")
             raise EvmTransactionError(response)
+        logger.info(f"✅ {self.address}.{fun}")
         return receipt
 
     return _wrapper
