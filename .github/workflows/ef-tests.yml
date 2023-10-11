@@ -9,6 +9,7 @@ permissions: read-all
 
 jobs:
   ef-tests:
+    # trunk-ignore(actionlint/runner-label)
     runs-on: ubuntu-latest-32-cores
     steps:
       # Install packages
