@@ -135,6 +135,8 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: kakarot-build
+      - name: ls
+        run: ls
       - name: copy kakarot-build
         run: cp -r ./build ./lib/kakarot
       # run tests
