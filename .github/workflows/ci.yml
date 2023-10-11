@@ -129,7 +129,7 @@ jobs:
         with:
           cache-on-failure: "true"
       - name: setup
-        run: make setup && make pull-kakarot
+        run: make setup
       - uses: taiki-e/install-action@nextest
 
       - name: Download Kakarot build artifacts
