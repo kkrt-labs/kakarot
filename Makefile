@@ -17,7 +17,7 @@ test: build-sol deploy
 	poetry run pytest tests/integration tests/src -m "not EFTests" --log-cli-level=INFO -n logical
 	poetry run pytest tests/end_to_end
 
-test-no-log: build-sol deploy 
+test-no-log: build-sol deploy
 	poetry run pytest tests/integration tests/src -m "not EFTests" -n logical
 	poetry run pytest tests/end_to_end
 
