@@ -17,7 +17,7 @@ logger.setLevel(logging.INFO)
 
 def pytest_generate_tests(metafunc):
     """
-    Parameterizes `ef_blockchain_test` fixture with cases loaded from the
+    Parametrizes `ef_blockchain_test` fixture with cases loaded from the
     Ethereum Foundation tests repository, see:
     https://github.com/kkrt-labs/kakarot/blob/main/.gitmodules#L7.
     """

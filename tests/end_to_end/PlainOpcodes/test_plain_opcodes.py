@@ -1,9 +1,7 @@
-import os
-
 import pytest
 from web3 import Web3
 
-from tests.utils.errors import kakarot_error
+from tests.utils.errors import evm_error
 
 
 @pytest.mark.asyncio
@@ -17,7 +15,7 @@ class TestPlainOpcodes:
             self,
             plain_opcodes,
         ):
-            with kakarot_error():
+            with evm_error():
                 await plain_opcodes.opcodeStaticCall2()
 
     class TestCall:
@@ -249,7 +247,7 @@ class TestPlainOpcodes:
 
     class TestRequire:
         async def test_should_revert_when_value_is_zero(self, plain_opcodes):
-            with kakarot_error():
+            with evm_error("ZERO_VALUE"):
                 await plain_opcodes.requireNotZero(0)
 
         @pytest.mark.parametrize("value", [2**127, 2**128])
@@ -259,14 +257,10 @@ class TestPlainOpcodes:
             await plain_opcodes.requireNotZero(value)
 
     class TestExceptionHandling:
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_calling_context_should_propagate_revert_from_sub_context_on_create(
             self, plain_opcodes, owner
         ):
-            with kakarot_error():
+            with evm_error("FAIL"):
                 await plain_opcodes.newContractConstructorRevert(caller_eoa=owner)
 
         async def test_should_revert_via_call(

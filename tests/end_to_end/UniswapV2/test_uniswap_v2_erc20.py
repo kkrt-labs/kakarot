@@ -1,9 +1,7 @@
-import os
-
 import pytest
 
 from tests.utils.constants import MAX_INT
-from tests.utils.errors import kakarot_error
+from tests.utils.errors import evm_error
 from tests.utils.helpers import (
     PERMIT_TYPEHASH,
     ec_sign,
@@ -65,26 +63,18 @@ class TestUniswapV2ERC20:
             assert await token_a.balanceOf(owner.address) == TOTAL_SUPPLY - TEST_AMOUNT
             assert await token_a.balanceOf(other.address) == TEST_AMOUNT
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_when_amount_is_greater_than_balance_and_balance_not_zero(
             self, token_a, owner, other
         ):
-            with kakarot_error():
+            with evm_error():
                 await token_a.transfer(
                     other.address, TOTAL_SUPPLY + 1, caller_eoa=owner
                 )
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_when_amount_is_greater_than_balance_and_balance_zero(
             self, token_a, owner, other
         ):
-            with kakarot_error():
+            with evm_error():
                 await token_a.transfer(owner.address, 1, caller_eoa=other)
 
     class TestTransferFrom:

@@ -138,6 +138,7 @@ func deploy_externally_owned_account{
 // @param data Hash of the method signature and encoded parameters. For details see Ethereum Contract ABI in the Solidity documentation
 // @return return_data_len The length of the return_data
 // @return return_data An array of returned felts
+// @return success An boolean, TRUE if the transaction succeeded, FALSE otherwise
 @view
 func eth_call{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -149,7 +150,7 @@ func eth_call{
     value: felt,
     data_len: felt,
     data: felt*,
-) -> (return_data_len: felt, return_data: felt*) {
+) -> (return_data_len: felt, return_data: felt*, success: felt) {
     Kakarot.assert_view();
     return Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
 }
@@ -165,11 +166,12 @@ func eth_call{
 // @param data Hash of the method signature and encoded parameters. For details see Ethereum Contract ABI in the Solidity documentation
 // @return return_data_len The length of the return_data
 // @return return_data An array of returned felts
+// @return success An boolean, TRUE if the transaction succeeded, FALSE otherwise
 @external
 func eth_send_transaction{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
-    return_data_len: felt, return_data: felt*
+    return_data_len: felt, return_data: felt*, success: felt
 ) {
     alloc_locals;
     let (local starknet_caller_address) = get_caller_address();

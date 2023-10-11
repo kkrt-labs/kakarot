@@ -134,7 +134,9 @@ func test__exec_return_should_return_context_with_updated_return_data{
 @external
 func test__exec_revert{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(reason_low: felt, reason_high: felt, size: felt) {
+}(reason_low: felt, reason_high: felt, size: felt) -> (
+    revert_reason_len: felt, revert_reason: felt*
+) {
     // Given
     alloc_locals;
     let reason_uint256 = Uint256(low=reason_low, high=reason_high);
@@ -158,8 +160,8 @@ func test__exec_revert{
 
     // Then
     assert is_reverted = 1;
-    ExecutionContext.maybe_throw_revert(ctx);
-    return ();
+    assert ctx.return_data_len = size;
+    return (ctx.return_data_len, ctx.return_data);
 }
 
 @external

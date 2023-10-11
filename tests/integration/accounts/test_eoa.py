@@ -1,6 +1,6 @@
 import pytest
 
-from tests.utils.errors import kakarot_error
+from tests.utils.errors import cairo_error
 
 
 @pytest.mark.asyncio
@@ -16,7 +16,7 @@ class TestExternallyOwnedAccount:
 
     class TestValidateDeclare:
         async def test_should_raise(self, owner):
-            with kakarot_error():
+            with cairo_error():
                 await owner.starknet_contract.__validate_declare__(0).call()
 
     async def test_bytecode(self, owner):

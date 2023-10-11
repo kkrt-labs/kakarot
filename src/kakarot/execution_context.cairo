@@ -36,6 +36,7 @@ namespace ExecutionContext {
         gas_used: felt,
         starknet_contract_address: felt,
         evm_contract_address: felt,
+        reverted: felt,
     }
 
     // @notice Initialize an empty context to act as a placeholder for root context.
@@ -158,6 +159,7 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             starknet_contract_address=self.starknet_contract_address,
             evm_contract_address=self.evm_contract_address,
+            reverted=self.reverted,
         );
     }
 
@@ -365,44 +367,6 @@ namespace ExecutionContext {
             // meaning events should be fired off!
             emit_events(self.evm_contract_address, self.events_len, self.events);
             return self;
-        }
-    }
-
-    // @notice If execution context is reverted, we take its revert reason in bytes, encode it as a short string felt, and convey it as a thrown error message. Otherwise we do nothing.
-    // @dev Meant to be used at 'top level' entry points so we can be sure there is no calling context that handles a revert.
-    // @param self The pointer to the execution context.
-    func maybe_throw_revert{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.ExecutionContext*) {
-        alloc_locals;
-
-        let is_reverted = ExecutionContext.is_reverted(self);
-
-        if (is_reverted != 0) {
-            let revert_reason_bytes: felt* = self.return_data;
-            let size = self.return_data_len;
-            // revert with loaded revert reason short string: 31 bytes of the last word
-            let reason_is_single_word = is_le(size, 32);
-            if (reason_is_single_word != FALSE) {
-                tempvar initial_byte: felt* = revert_reason_bytes;
-                tempvar actual_size = size;
-            } else {
-                tempvar byte_shift = size - 32;
-                tempvar initial_byte: felt* = revert_reason_bytes + byte_shift;
-                tempvar actual_size = 31;
-            }
-            let revert_reason_uint256 = Helpers.bytes_i_to_uint256(initial_byte, actual_size);
-            local revert_reason = Helpers.uint256_to_felt(revert_reason_uint256);
-            with_attr error_message("Kakarot: Reverted with reason: {revert_reason}") {
-                assert is_reverted = 0;
-            }
-
-            return ();
-        } else {
-            return ();
         }
     }
 

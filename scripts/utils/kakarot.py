@@ -3,11 +3,12 @@ import json
 import logging
 from pathlib import Path
 from types import MethodType
-from typing import List, Optional, Tuple, Union, cast
+from typing import List, Optional, Union, cast
 
 import toml
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_account import Account as EvmAccount
+from eth_account._utils.typed_transactions import TypedTransaction
 from eth_keys import keys
 from eth_utils.address import to_checksum_address
 from hexbytes import HexBytes
@@ -15,13 +16,14 @@ from starknet_py.net.account.account import Account
 from starknet_py.net.client_errors import ClientError
 from starknet_py.net.client_models import Call, Event
 from starknet_py.net.signer.stark_curve_signer import KeyPair
+from starkware.starknet.public.abi import starknet_keccak
 from web3 import Web3
 from web3._utils.abi import map_abi_data
 from web3._utils.events import get_event_data
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.contract import Contract as Web3Contract
 from web3.contract.contract import ContractEvents
-from web3.exceptions import LogTopicError, MismatchedABI
+from web3.exceptions import LogTopicError, MismatchedABI, NoABIFunctionsFound
 from web3.types import LogReceipt
 
 from scripts.artifacts import fetch_deployments
@@ -53,6 +55,10 @@ try:
     FOUNDRY_FILE = toml.loads((Path(__file__).parents[2] / "foundry.toml").read_text())
 except NameError:
     FOUNDRY_FILE = toml.loads(Path("foundry.toml").read_text())
+
+
+class EvmTransactionError(Exception):
+    pass
 
 
 @functools.lru_cache()
@@ -100,25 +106,13 @@ def get_contract(contract_app: str, contract_name: str, address=None) -> Web3Con
         ),
     )
 
-    for fun in contract.functions:
-        setattr(contract, fun, MethodType(_wrap_kakarot(fun), contract))
+    try:
+        for fun in contract.functions:
+            setattr(contract, fun, MethodType(_wrap_kakarot(fun), contract))
+    except NoABIFunctionsFound:
+        pass
     contract.events.parse_starknet_events = MethodType(_parse_events, contract.events)
     return contract
-
-
-async def deploy_bytecode(**kwargs) -> Tuple[int, int]:
-    receipt = await eth_send_transaction(to=0, gas=int(1e18), **kwargs)
-    deploy_event = [
-        event
-        for event in receipt.events
-        if event.from_address == get_deployments()["kakarot"]["address"]
-    ]
-    if len(deploy_event) == 0:
-        raise ValueError("Cannot locate evm contract deployed event")
-    if len(deploy_event) != 1:
-        logger.warning(f"Got {len(deploy_event)} events while deploying bytecode")
-    evm_address, starknet_address = deploy_event[0].data
-    return evm_address, starknet_address
 
 
 async def deploy(
@@ -129,12 +123,18 @@ async def deploy(
     caller_eoa = kwargs.pop("caller_eoa", None)
     max_fee = kwargs.pop("max_fee", None)
     value = kwargs.pop("value", 0)
-    evm_address, starknet_address = await deploy_bytecode(
+    receipt, response, success = await eth_send_transaction(
+        to=0,
+        gas=int(1e18),
         data=contract.constructor(*args, **kwargs).data_in_transaction,
         caller_eoa=caller_eoa,
         max_fee=max_fee,
         value=value,
     )
+    if success == 0:
+        raise EvmTransactionError(response)
+
+    evm_address, starknet_address = response
     contract.address = Web3.to_checksum_address(f"0x{evm_address:040x}")
     contract.starknet_address = starknet_address
     logger.info(f"✅ {contract_name} deployed at address {contract.address}")
@@ -217,6 +217,8 @@ def _wrap_kakarot(fun: str):
                 value=value,
                 data=list(HexBytes(calldata)),
             )
+            if result.success == 0:
+                raise EvmTransactionError(result.return_data)
             codec = Web3().codec
             types = [o["type"] for o in abi["outputs"]]
             decoded = codec.decode(types, bytes(result.return_data))
@@ -224,7 +226,7 @@ def _wrap_kakarot(fun: str):
             return normalized[0] if len(normalized) == 1 else normalized
 
         logger.info(f"⏳ Executing {fun} at address {self.address}")
-        return await eth_send_transaction(
+        receipt, response, success = await eth_send_transaction(
             to=self.address,
             value=value,
             gas=gas_limit,
@@ -232,6 +234,9 @@ def _wrap_kakarot(fun: str):
             caller_eoa=caller_eoa.starknet_contract if caller_eoa else None,
             max_fee=max_fee,
         )
+        if success == 0:
+            raise EvmTransactionError(response)
+        return receipt
 
     return _wrapper
 
@@ -271,7 +276,8 @@ async def eth_send_transaction(
 ):
     """Execute the data at the EVM contract to on Kakarot."""
     evm_account = caller_eoa or await get_eoa()
-    tx_payload = EvmAccount.sign_transaction(
+
+    typed_transaction = TypedTransaction.from_dict(
         {
             "type": 0x2,
             "chainId": KAKAROT_CHAIN_ID,
@@ -282,19 +288,42 @@ async def eth_send_transaction(
             "to": to_checksum_address(to) if to else None,
             "value": value,
             "data": data,
-        },
+        }
+    )
+    evm_tx = EvmAccount.sign_transaction(
+        typed_transaction.as_dict(),
         hex(evm_account.signer.private_key),
-    ).rawTransaction
+    )
     response = await evm_account.execute(
         calls=Call(
             to_addr=0xDEAD,  # unused in current EOA implementation
             selector=0xDEAD,  # unused in current EOA implementation
-            calldata=tx_payload,
+            calldata=evm_tx.rawTransaction,
         ),
         max_fee=int(5e17) if max_fee is None else max_fee,
     )
     await wait_for_transaction(tx_hash=response.transaction_hash)
-    return await CLIENT.get_transaction_receipt(response.transaction_hash)
+    receipt = await CLIENT.get_transaction_receipt(response.transaction_hash)
+    transaction_events = [
+        event
+        for event in receipt.events
+        if event.from_address == evm_account.address
+        and event.keys[0] == starknet_keccak(b"transaction_executed")
+    ]
+    if len(transaction_events) != 1:
+        raise ValueError("Cannot locate the single event giving the actual tx status")
+    (
+        msg_hash_low,
+        msg_hash_high,
+        response_len,
+        *response,
+        success,
+    ) = transaction_events[0].data
+
+    if response_len != len(response):
+        raise ValueError("Not able to parse event data")
+
+    return receipt, response, success
 
 
 async def _compute_starknet_address(address: Union[str, int]):

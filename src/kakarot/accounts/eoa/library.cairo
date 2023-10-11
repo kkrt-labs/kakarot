@@ -24,6 +24,10 @@ func kakarot_address() -> (kakarot_address: felt) {
 func is_initialized_() -> (res: felt) {
 }
 
+@event
+func transaction_executed(msg_hash: Uint256, response_len: felt, response: felt*, success: felt) {
+}
+
 namespace ExternallyOwnedAccount {
     // Constants
     // @dev see utils/interface_id.py
@@ -130,11 +134,21 @@ namespace ExternallyOwnedAccount {
         }
 
         let (
-            nonce, gas_price, gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s
+            nonce,
+            gas_price,
+            gas_limit,
+            destination,
+            amount,
+            payload_len,
+            payload,
+            msg_hash,
+            v,
+            r,
+            s,
         ) = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
 
         let (_kakarot_address) = kakarot_address.read();
-        let (return_data_len, return_data) = IKakarot.eth_send_transaction(
+        let (return_data_len, return_data, success) = IKakarot.eth_send_transaction(
             contract_address=_kakarot_address,
             to=destination,
             gas_limit=gas_limit,
@@ -144,6 +158,13 @@ namespace ExternallyOwnedAccount {
             data=payload,
         );
         memcpy(response, return_data, return_data_len);
+
+        // See Argent account
+        // https://github.com/argentlabs/argent-contracts-starknet/blob/c6d3ee5e05f0f4b8a5c707b4094446c3bc822427/contracts/account/ArgentAccount.cairo#L132
+        // Using here the EVM msg_hash instead of the Starknet tx.hash
+        transaction_executed.emit(
+            msg_hash=msg_hash, response_len=return_data_len, response=return_data, success=success
+        );
 
         let (response_len) = execute(
             call_array_len - 1,

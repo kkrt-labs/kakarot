@@ -1,8 +1,6 @@
-import os
-
 import pytest
 
-from tests.utils.errors import kakarot_error
+from tests.utils.errors import evm_error
 
 
 @pytest.mark.asyncio
@@ -26,13 +24,9 @@ class TestCounter:
             assert await counter.count() == 1
 
     class TestDec:
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_raise_from_modifier_when_count_is_0(self, counter, owner):
             await counter.reset(caller_eoa=owner)
-            with kakarot_error("count should be strictly greater than 0"):
+            with evm_error("count should be strictly greater than 0"):
                 await counter.dec(caller_eoa=owner)
 
         @pytest.mark.xfail(
@@ -40,7 +34,7 @@ class TestCounter:
         )
         async def test_should_raise_from_vm_when_count_is_0(self, counter, owner):
             await counter.reset(caller_eoa=owner)
-            with kakarot_error():
+            with evm_error():
                 await counter.decUnchecked(caller_eoa=owner)
 
         async def test_should_decrease_count(self, counter, owner):
@@ -71,7 +65,7 @@ class TestCounter:
         async def test_deployment_with_value_should_fail(
             self, deploy_solidity_contract
         ):
-            with kakarot_error():
+            with evm_error():
                 await deploy_solidity_contract("PlainOpcodes", "Counter", value=1)
 
     class TestLoops:

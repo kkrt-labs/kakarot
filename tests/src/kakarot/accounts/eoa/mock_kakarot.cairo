@@ -71,7 +71,7 @@ func eth_call{
     value: felt,
     data_len: felt,
     data: felt*,
-) -> (return_data_len: felt, return_data: felt*) {
+) -> (return_data_len: felt, return_data: felt*, success: felt) {
     alloc_locals;
     // Do the transfer
     Kakarot.transfer(origin, to, value);
@@ -85,14 +85,14 @@ func eth_call{
     assert [return_data + 4] = value;
     assert [return_data + 5] = data_len;
     memcpy(return_data + 6, data, data_len);
-    return (data_len + 6, return_data);
+    return (data_len + 6, return_data, 1);
 }
 
 @external
 func eth_send_transaction{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
-    return_data_len: felt, return_data: felt*
+    return_data_len: felt, return_data: felt*, success: felt
 ) {
     alloc_locals;
     let (local starknet_caller_address) = get_caller_address();
