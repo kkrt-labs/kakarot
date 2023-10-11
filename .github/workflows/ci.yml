@@ -131,10 +131,16 @@ jobs:
       - name: setup
         run: make setup && make pull-kakarot
       - uses: taiki-e/install-action@nextest
+
+      - name: make build directory
+        run: mkdir build
+
       - name: Download Kakarot build artifacts
         uses: actions/download-artifact@v3
         with:
           name: kakarot-build
+          path: ./build
+
       - name: ls
         run: ls
       - name: copy kakarot-build
