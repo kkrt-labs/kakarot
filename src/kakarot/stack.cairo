@@ -4,11 +4,11 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.math import assert_le, unsigned_div_rem
-from starkware.cairo.common.uint256 import Uint256
-from starkware.cairo.common.memcpy import memcpy
-from starkware.cairo.common.dict import DictAccess, dict_read, dict_write
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
+from starkware.cairo.common.dict import DictAccess, dict_read, dict_write
+from starkware.cairo.common.math import assert_le, unsigned_div_rem
+from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
 from kakarot.constants import Constants

@@ -79,7 +79,7 @@ func test__datacopy_via_staticcall{
 
     // When
     let result = SystemOperations.exec_staticcall(ctx);
-    let summary = ExecutionContext.finalize(sub_ctx);
+    let summary = ExecutionContext.finalize(result);
     let result = CallHelper.finalize_calling_context(summary);
 
     // Put the result alone on the stack

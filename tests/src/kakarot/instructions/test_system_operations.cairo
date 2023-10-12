@@ -858,7 +858,7 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     let (sub_ctx: felt*) = alloc();
     let sub_ctx_object: model.ExecutionContext* = cast(sub_ctx, model.ExecutionContext*);
 
-    assert [sub_ctx] = cast(call_context, felt);  // call_context
+    assert [sub_ctx + 0] = cast(call_context, felt);  // call_context
     assert [sub_ctx + 1] = 0;  // program_counter
     assert [sub_ctx + 2] = 0;  // stopped
     assert [sub_ctx + 3] = cast(return_data + 1, felt);  // return_data
@@ -879,7 +879,8 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     assert [sub_ctx + 18] = 0;  // create_addresses_len
     assert [sub_ctx + 19] = cast(0, felt);  // create_addresses
     assert [sub_ctx + 20] = cast(revert_contract_state, felt);  // revert_contract_state
-    assert [sub_ctx + 21] = 0;  // read only
+    assert [sub_ctx + 21] = 0;  // reverted
+    assert [sub_ctx + 22] = 0;  // read only
 
     // When
     let sub_ctx_object: model.ExecutionContext* = SystemOperations.exec_selfdestruct(

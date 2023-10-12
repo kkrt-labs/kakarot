@@ -4,17 +4,18 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.invoke import invoke
 from starkware.cairo.common.math import assert_nn
 from starkware.cairo.common.math_cmp import is_le, is_not_zero
 from starkware.cairo.common.memcpy import memcpy
-from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.registers import get_ap
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
+from kakarot.errors import Errors
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.block_information import BlockInformation
 from kakarot.instructions.comparison_operations import ComparisonOperations
@@ -27,10 +28,10 @@ from kakarot.instructions.push_operations import PushOperations
 from kakarot.instructions.sha3 import Sha3
 from kakarot.instructions.stop_and_arithmetic_operations import StopAndArithmeticOperations
 from kakarot.instructions.system_operations import (
-    SystemOperations,
     CallHelper,
     CreateHelper,
     SelfDestructHelper,
+    SystemOperations,
 )
 from kakarot.interfaces.interfaces import IAccount
 from kakarot.memory import Memory
@@ -667,26 +668,12 @@ namespace EVM {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx_ptr: model.ExecutionContext*) {
-        with_attr error_message("Kakarot: UnknownOpcode") {
-            assert 0 = 1;
-        }
-        return ();
-    }
-
-    // @notice A placeholder for opcodes that are not implemented yet.
-    // @dev Halts execution.
-    // @param ctx The pointer to the execution context.
-    func not_implemented_opcode{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx_ptr: model.ExecutionContext*) {
-        with_attr error_message("Kakarot: NotImplementedOpcode") {
-            assert 0 = 1;
-        }
-        return ();
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        let (revert_reason_len, revert_reason) = Errors.unknownOpcode();
+        let ctx = ExecutionContext.revert(
+            self=ctx, revert_reason=revert_reason, size=revert_reason_len
+        );
+        return ctx;
     }
 
     // @notice Finalizes a transaction.

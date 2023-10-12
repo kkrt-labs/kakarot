@@ -12,15 +12,15 @@ from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 
 from kakarot.accounts.library import Accounts
 from kakarot.constants import (
-    native_token_address,
-    contract_account_class_hash,
-    externally_owned_account_class_hash,
-    blockhash_registry_address,
     account_proxy_class_hash,
+    blockhash_registry_address,
+    contract_account_class_hash,
     deploy_fee,
+    externally_owned_account_class_hash,
+    native_token_address,
 )
-from kakarot.execution_context import ExecutionContext
 from kakarot.evm import EVM
+from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.system_operations import CreateHelper
 from kakarot.interfaces.interfaces import IAccount, IContractAccount, IERC20
 from kakarot.memory import Memory

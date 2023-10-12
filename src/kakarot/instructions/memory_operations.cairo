@@ -4,7 +4,7 @@
 
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.uint256 import Uint256, uint256_le, uint256_unsigned_div_rem
+from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_unsigned_div_rem
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.dict import (
@@ -17,12 +17,13 @@ from starkware.cairo.common.dict import (
 )
 from starkware.cairo.common.registers import get_fp_and_pc
 
-from kakarot.model import model
-from utils.utils import Helpers
-from kakarot.stack import Stack
-from kakarot.memory import Memory
+from kakarot.errors import Errors
 from kakarot.execution_context import ExecutionContext
 from kakarot.interfaces.interfaces import IContractAccount
+from kakarot.memory import Memory
+from kakarot.model import model
+from kakarot.stack import Stack
+from utils.utils import Helpers
 
 // @title Exchange operations opcodes.
 // @notice This file contains the functions to execute for memory operations opcodes.
@@ -191,12 +192,8 @@ namespace MemoryOperations {
         // 0 - offset: offset in the deployed code where execution will continue from
         let (stack, offset) = Stack.pop(stack);
 
-        // Update pc counter.
-        let ctx = ExecutionContext.update_program_counter(ctx, offset.low);
-
-        // Update context stack.
+        let ctx = ExecutionContext.jump(ctx, offset.low);
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_JUMP);
         return ctx;
     }
@@ -227,24 +224,16 @@ namespace MemoryOperations {
         let offset = popped[0];
         let skip_condition = popped[1];
 
-        // Update pc if skip_jump is anything other then 0
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_JUMPI);
 
-        let (is_condition_valid) = uint256_le(Uint256(1, 0), skip_condition);
-
-        if (is_condition_valid != FALSE) {
-            // Update pc counter.
-            let ctx = ExecutionContext.update_program_counter(ctx, offset.low);
-            // Update context stack.
-            let ctx = ExecutionContext.update_stack(ctx, stack);
-            // Increment gas used.
-            let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_JUMPI);
+        // If skip_condition is 0, then don't jump
+        let (skip_condition_is_zero) = uint256_eq(Uint256(0, 0), skip_condition);
+        if (skip_condition_is_zero != FALSE) {
             return ctx;
         }
 
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_JUMPI);
+        let ctx = ExecutionContext.jump(ctx, offset.low);
         return ctx;
     }
 
@@ -360,9 +349,10 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
-        with_attr error_message("Kakarot: StateModificationError") {
-            assert ctx.read_only = FALSE;
+        if (ctx.read_only != FALSE) {
+            let (revert_reason_len, revert_reason) = Errors.stateModificationError();
+            let ctx = ExecutionContext.revert(ctx, revert_reason, revert_reason_len);
+            return ctx;
         }
 
         let stack = ctx.stack;

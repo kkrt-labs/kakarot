@@ -2,8 +2,6 @@ import pytest
 import pytest_asyncio
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.errors import cairo_error
-
 
 @pytest_asyncio.fixture(scope="module")
 async def evm(starknet: Starknet):
@@ -18,9 +16,5 @@ async def evm(starknet: Starknet):
 @pytest.mark.asyncio
 class TestInstructions:
     async def test__unknown_opcode(self, evm):
-        with cairo_error("Kakarot: UnknownOpcode"):
-            await evm.test__unknown_opcode().call()
-
-    async def test__not_implemented_opcode(self, evm):
-        with cairo_error("Kakarot: NotImplementedOpcode"):
-            await evm.test__not_implemented_opcode().call()
+        result = await evm.test__unknown_opcode().call()
+        assert result.result.revert_reason == list(b"Kakarot: UnknownOpcode")

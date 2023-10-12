@@ -27,16 +27,17 @@ from starkware.starknet.common.syscalls import (
 )
 
 // Internal dependencies
+from kakarot.accounts.library import Accounts
 from kakarot.constants import contract_account_class_hash, native_token_address, Constants
-from kakarot.precompiles.precompiles import Precompiles
+from kakarot.errors import Errors
 from kakarot.execution_context import ExecutionContext
 from kakarot.interfaces.interfaces import IContractAccount, IERC20, IAccount
 from kakarot.memory import Memory
 from kakarot.model import model
+from kakarot.precompiles.precompiles import Precompiles
 from kakarot.stack import Stack
 from utils.rlp import RLP
 from utils.utils import Helpers
-from kakarot.accounts.library import Accounts
 
 // @title System operations opcodes.
 // @notice This file contains the functions to execute for system operations opcodes.
@@ -61,9 +62,10 @@ namespace SystemOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
-        with_attr error_message("Kakarot: StateModificationError") {
-            assert ctx.read_only = FALSE;
+        if (ctx.read_only != FALSE) {
+            let (revert_reason_len, revert_reason) = Errors.stateModificationError();
+            let ctx = ExecutionContext.revert(ctx, revert_reason, revert_reason_len);
+            return ctx;
         }
 
         // Stack input:
@@ -102,9 +104,10 @@ namespace SystemOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
-        with_attr error_message("Kakarot: StateModificationError") {
-            assert ctx.read_only = FALSE;
+        if (ctx.read_only != FALSE) {
+            let (revert_reason_len, revert_reason) = Errors.stateModificationError();
+            let ctx = ExecutionContext.revert(ctx, revert_reason, revert_reason_len);
+            return ctx;
         }
 
         // Stack input:
@@ -121,7 +124,8 @@ namespace SystemOperations {
     }
 
     // @notice INVALID operation.
-    // @dev Designated invalid instruction.
+    // @dev Equivalent to REVERT (since Byzantium fork) with 0,0 as stack parameters,
+    //      except that all the gas given to the current context is consumed.
     // @custom:since Frontier
     // @custom:group System Operations
     // @custom:gas NaN
@@ -135,11 +139,10 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        with_attr error_message("Kakarot: 0xFE: Invalid Opcode") {
-            assert TRUE = FALSE;
-        }
         // TODO: map the concept of consuming all the gas given to the context
-
+        alloc_locals;
+        let (revert_reason: felt*) = alloc();
+        let ctx = ExecutionContext.revert(self=ctx, revert_reason=revert_reason, size=0);
         return ctx;
     }
 
@@ -234,9 +237,10 @@ namespace SystemOperations {
         let sub_ctx = CallHelper.init_sub_context(
             calling_ctx=ctx, with_value=TRUE, read_only=ctx.read_only
         );
-        // This instruction is disallowed when called from a `staticcall` context when there is an attempt to transfer funds, which occurs when there is a nonzero value argument.
-        with_attr error_message("Kakarot: StateModificationError") {
-            assert ctx.read_only * sub_ctx.call_context.value = FALSE;
+        if (ctx.read_only * sub_ctx.call_context.value != FALSE) {
+            let (revert_reason_len, revert_reason) = Errors.stateModificationError();
+            let ctx = ExecutionContext.revert(ctx, revert_reason, revert_reason_len);
+            return ctx;
         }
 
         if (sub_ctx.call_context.value == 0) {
@@ -363,9 +367,10 @@ namespace SystemOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
-        with_attr error_message("Kakarot: StateModificationError") {
-            assert ctx.read_only = FALSE;
+        if (ctx.read_only != FALSE) {
+            let (revert_reason_len, revert_reason) = Errors.stateModificationError();
+            let ctx = ExecutionContext.revert(ctx, revert_reason, revert_reason_len);
+            return ctx;
         }
 
         // Get stack and memory from context

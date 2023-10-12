@@ -77,4 +77,9 @@ contract PlainOpcodesTest is Test {
         uint256 value = plainOpcodes.loop(10);
         assert(value == 10);
     }
+
+    function testStaticCallToInc() public view {
+        (bool success,) = plainOpcodes.opcodeStaticCall2();
+        assert(!success);
+    }
 }

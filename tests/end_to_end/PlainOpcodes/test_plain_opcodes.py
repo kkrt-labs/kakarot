@@ -15,8 +15,9 @@ class TestPlainOpcodes:
             self,
             plain_opcodes,
         ):
-            with evm_error():
-                await plain_opcodes.opcodeStaticCall2()
+            success, error = await plain_opcodes.opcodeStaticCall2()
+            assert not success
+            assert error == b"Kakarot: StateModificationError"
 
     class TestCall:
         async def test_should_increase_counter(

@@ -16,13 +16,14 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import emit_event
 
 // Internal dependencies
-from utils.utils import Helpers
-from kakarot.model import model
-from kakarot.memory import Memory
-from kakarot.stack import Stack
-from kakarot.constants import Constants
-from kakarot.interfaces.interfaces import IAccount, IContractAccount
 from kakarot.accounts.library import Accounts
+from kakarot.constants import Constants
+from kakarot.errors import Errors
+from kakarot.interfaces.interfaces import IAccount, IContractAccount
+from kakarot.memory import Memory
+from kakarot.model import model
+from kakarot.stack import Stack
+from utils.utils import Helpers
 
 // @title ExecutionContext related functions.
 // @notice This file contains functions related to the execution context.
@@ -710,33 +711,29 @@ namespace ExecutionContext {
         );
     }
 
-    // @notice Dump the current execution context.
-    // @dev The execution context is dumped to the debug server if `DEBUG` environment variable is set to `True`.
-    // @param self The pointer to the execution context.
-    func dump{range_check_ptr}(self: model.ExecutionContext*) {
-        let pc = self.program_counter;
-        let stopped = is_stopped(self);
-
-        return ();
-    }
-
     // @notice Update the program counter.
     // @dev The program counter is updated to a given value. This is only ever called by JUMP or JUMPI
     // @param self The pointer to the execution context.
     // @param new_pc_offset The value to update the program counter by.
     // @return ExecutionContext The pointer to the updated execution context.
-    func update_program_counter{range_check_ptr}(
+    func jump{range_check_ptr}(
         self: model.ExecutionContext*, new_pc_offset: felt
     ) -> model.ExecutionContext* {
         alloc_locals;
-        // Revert if new_value points outside of the code range
-        with_attr error_message("Kakarot: new pc target out of range") {
-            assert_nn(new_pc_offset);
-            assert_le(new_pc_offset, self.call_context.bytecode_len - 1);
+
+        let is_nn_pc = is_nn(new_pc_offset);
+        let is_le_bytecode_len = is_le(new_pc_offset, self.call_context.bytecode_len - 1);
+        if (is_nn_pc + is_le_bytecode_len != 2) {
+            let (revert_reason_len, revert_reason) = Errors.programCounterOutOfRange();
+            let ctx = ExecutionContext.revert(self, revert_reason, revert_reason_len);
+            return ctx;
         }
 
-        // Revert if new pc_offset points to something other then JUMPDEST
-        check_jumpdest(self=self, pc_location=new_pc_offset);
+        if ([self.call_context.bytecode + new_pc_offset] != 0x5b) {
+            let (revert_reason_len, revert_reason) = Errors.jumpToNonJumpdest();
+            let ctx = ExecutionContext.revert(self, revert_reason, revert_reason_len);
+            return ctx;
+        }
 
         return new model.ExecutionContext(
             call_context=self.call_context,
@@ -763,25 +760,6 @@ namespace ExecutionContext {
             reverted=self.reverted,
             read_only=self.read_only,
         );
-    }
-
-    // @notice Check if location is a valid Jump destination
-    // @dev Extract the byte that the current pc is pointing to and revert if it is not a JUMPDEST operation.
-    // @param self The pointer to the execution context
-    // @param pc_location location to check
-    func check_jumpdest(self: model.ExecutionContext*, pc_location: felt) {
-        alloc_locals;
-        let (local output: felt*) = alloc();
-
-        // Copy bytecode slice
-        memcpy(dst=output, src=self.call_context.bytecode + pc_location, len=1);
-
-        // Revert if current pc location is not JUMPDEST
-        with_attr error_message("Kakarot: JUMPed to pc offset is not JUMPDEST") {
-            assert [output] = 0x5b;
-        }
-
-        return ();
     }
 }
 
