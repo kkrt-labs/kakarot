@@ -210,8 +210,8 @@ namespace TestHelpers {
     func assert_execution_context_equal(
         ctx_0: model.ExecutionContext*, ctx_1: model.ExecutionContext*
     ) {
-        let is_context_0_root = ExecutionContext.is_root(ctx_0);
-        let is_context_1_root = ExecutionContext.is_root(ctx_1);
+        let is_context_0_root = ExecutionContext.is_empty(ctx_0.calling_context);
+        let is_context_1_root = ExecutionContext.is_empty(ctx_1.calling_context);
         assert is_context_0_root = is_context_1_root;
         if (is_context_0_root != FALSE) {
             return ();

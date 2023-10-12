@@ -55,15 +55,18 @@ namespace Precompiles {
         tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
             revert_contract_state_dict_start, revert_contract_state_dict_start
         );
+
         // Build returned execution context
+        let stack = Stack.init();
+        let memory = Memory.init();
         local sub_ctx: model.ExecutionContext* = new model.ExecutionContext(
             call_context=cast(0, model.CallContext*),
             program_counter=0,
             stopped=TRUE,
             return_data=output,
             return_data_len=output_len,
-            stack=cast(0, model.Stack*),
-            memory=cast(0, model.Memory*),
+            stack=stack,
+            memory=memory,
             gas_used=gas_used,
             gas_limit=0,
             gas_price=0,
@@ -71,8 +74,8 @@ namespace Precompiles {
             evm_contract_address=address,
             origin=calling_context.origin,
             calling_context=calling_context,
-            destroy_contracts_len=0,
-            destroy_contracts=cast(0, felt*),
+            selfdestruct_contracts_len=0,
+            selfdestruct_contracts=cast(0, felt*),
             events_len=0,
             events=cast(0, model.Event*),
             create_addresses_len=0,

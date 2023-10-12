@@ -10,7 +10,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 // Local dependencies
 from utils.utils import Helpers
 from kakarot.model import model
-from kakarot.instructions import EVMInstructions
+from kakarot.evm import EVM
 from tests.utils.helpers import TestHelpers
 
 @external
@@ -20,7 +20,7 @@ func test__unknown_opcode{
     alloc_locals;
     let (bytecode) = alloc();
     let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
-    EVMInstructions.unknown_opcode(ctx);
+    EVM.unknown_opcode(ctx);
 
     return ();
 }
@@ -32,7 +32,7 @@ func test__not_implemented_opcode{
     alloc_locals;
     let (bytecode) = alloc();
     let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
-    EVMInstructions.not_implemented_opcode(ctx);
+    EVM.not_implemented_opcode(ctx);
 
     return ();
 }

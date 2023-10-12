@@ -67,9 +67,6 @@ func test__run_should_return_a_stopped_execution_context{
     );
 
     assert result.stopped = 1;
-    assert result.program_counter = 0;
-    assert result.stack = cast(0, model.Stack*);
-    assert result.memory = cast(0, model.Memory*);
 
     return ();
 }

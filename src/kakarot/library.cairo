@@ -20,7 +20,7 @@ from kakarot.constants import (
     deploy_fee,
 )
 from kakarot.execution_context import ExecutionContext
-from kakarot.instructions import EVMInstructions
+from kakarot.evm import EVM
 from kakarot.instructions.system_operations import CreateHelper
 from kakarot.interfaces.interfaces import IAccount, IContractAccount, IERC20
 from kakarot.memory import Memory
@@ -133,11 +133,7 @@ namespace Kakarot {
         let cost = ExecutionContext.compute_intrinsic_gas_cost(ctx);
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=cost);
 
-        // Start execution
-        let ctx = EVMInstructions.run(ctx);
-
-        // Finalize
-        let summary = ExecutionContext.finalize(self=ctx);
+        let summary = EVM.run(ctx);
 
         let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
         let stack_accesses_len = summary.stack.squashed_end - summary.stack.squashed_start;

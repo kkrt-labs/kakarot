@@ -89,9 +89,9 @@ namespace model {
     // @param starknet_contract_address The starknet address of the contract interacted with.
     // @param evm_contract_address The evm address of the contract interacted with.
     // @param calling_context The parent context of the current execution context, can be empty when context
-    //                        is root context | see ExecutionContext.is_root(ctx).
-    // @param destroy_contracts_len The destroy_contract length.
-    // @param destroy_contracts The array of contracts to destroy at the end of the transaction.
+    //                        is root context | see ExecutionContext.is_empty(ctx).
+    // @param selfdestruct_contracts_len The destroy_contract length.
+    // @param selfdestruct_contracts The array of contracts to destroy at the end of the transaction.
     // @param events_len The events length.
     // @param events The events to be emitted upon a non-reverted stopped execution context.
     // @param create_addresses_len The create_addresses length.
@@ -113,8 +113,8 @@ namespace model {
         evm_contract_address: felt,
         origin: felt,
         calling_context: ExecutionContext*,
-        destroy_contracts_len: felt,
-        destroy_contracts: felt*,
+        selfdestruct_contracts_len: felt,
+        selfdestruct_contracts: felt*,
         events_len: felt,
         events: Event*,
         create_addresses_len: felt,

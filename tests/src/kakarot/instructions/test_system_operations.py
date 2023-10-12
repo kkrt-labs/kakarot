@@ -35,10 +35,10 @@ async def mint(system_operations, eth):
     async def _factory(evm_address: str, value: int):
         # mint tokens to the provided evm address
         sender = int(get_create_address(evm_address, 0), 16)
-        starket_contract_address = (
+        starknet_contract_address = (
             await system_operations.compute_starknet_address(sender).call()
         ).result.contract_address
-        await eth.mint(starket_contract_address, int_to_uint256(value)).execute()
+        await eth.mint(starknet_contract_address, int_to_uint256(value)).execute()
 
     return _factory
 

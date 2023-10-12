@@ -151,7 +151,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        let is_root = ExecutionContext.is_root(ctx);
+        let is_root = ExecutionContext.is_empty(ctx.calling_context);
         let caller = (1 - is_root) * ctx.calling_context.evm_contract_address + is_root *
             ctx.origin;
         let evm_address_uint256 = Helpers.to_uint256(caller);

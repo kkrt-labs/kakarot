@@ -37,10 +37,23 @@ from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.precompiles.precompiles import Precompiles
 from kakarot.stack import Stack
+from utils.utils import Helpers
 
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.
-namespace EVMInstructions {
+namespace EVM {
+    // Summary of the execution. Created upon finalization of the execution.
+    struct Summary {
+        memory: Memory.Summary*,
+        stack: Stack.Summary*,
+        return_data: felt*,
+        return_data_len: felt,
+        gas_used: felt,
+        starknet_contract_address: felt,
+        evm_contract_address: felt,
+        reverted: felt,
+    }
+
     // @notice Decode the current opcode and execute associated function.
     // @dev The function uses an internal jump table to execute the corresponding opcode
     // @param ctx The pointer to the execution context.
@@ -603,56 +616,47 @@ namespace EVMInstructions {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+    }(ctx: model.ExecutionContext*) -> Summary* {
         alloc_locals;
-        // Decode and execute
+
         let ctx: model.ExecutionContext* = decode_and_execute(ctx=ctx);
 
-        // Check if execution should be stopped
-        let stopped: felt = ExecutionContext.is_stopped(self=ctx);
-        let is_root: felt = ExecutionContext.is_root(self=ctx);
-
-        // Terminate execution
-        if (stopped != FALSE) {
-            let ctx = ExecutionContext.finalize_state(ctx);
-            if (is_root != FALSE) {
-                if (ctx.destroy_contracts_len != 0) {
-                    let ctx = SelfDestructHelper.finalize(ctx);
-                    return ctx;
-                }
-                return ctx;
-            } else {
-                let is_precompile = Precompiles.is_precompile(address=ctx.evm_contract_address);
-                if (is_precompile != FALSE) {
-                    let ctx = CallHelper.finalize_calling_context(ctx);
-                    return run(ctx=ctx);
-                }
-                let (bytecode_len) = IAccount.bytecode_len(
-                    contract_address=ctx.starknet_contract_address
-                );
-
-                let has_return_data = is_not_zero(ctx.return_data_len);
-                let has_empty_return_data = (1 - has_return_data);
-
-                let is_eao = ExecutionContext.is_caller_eoa(self=ctx);
-
-                // If the starknet contract of the execution context has
-                // no bytecode,
-                // is not an EOA,
-                // and has return data
-                // then we treat it as at the end of a CREATE/CREATE2 opcode.
-                if (bytecode_len + is_eao + has_empty_return_data == 0) {
-                    let ctx = CreateHelper.finalize_calling_context(ctx);
-                    return run(ctx=ctx);
-                } else {
-                    let ctx = CallHelper.finalize_calling_context(ctx);
-                    return run(ctx=ctx);
-                }
-            }
+        if (ctx.stopped == FALSE) {
+            return run(ctx=ctx);
         }
 
-        // Continue execution
-        return run(ctx=ctx);
+        let summary = ExecutionContext.finalize(ctx);
+        let is_root: felt = ExecutionContext.is_empty(self=summary.calling_context);
+        if (is_root != FALSE) {
+            return finalize(summary);
+        }
+
+        let is_precompile = Precompiles.is_precompile(address=summary.evm_contract_address);
+        if (is_precompile != FALSE) {
+            let ctx = CallHelper.finalize_calling_context(summary);
+            return run(ctx=ctx);
+        }
+        let (bytecode_len) = IAccount.bytecode_len(
+            contract_address=summary.starknet_contract_address
+        );
+
+        let has_return_data = is_not_zero(summary.return_data_len);
+        let has_empty_return_data = (1 - has_return_data);
+
+        let is_eao = Helpers.is_address_caller(summary.starknet_contract_address);
+
+        // If the starknet contract of the execution context has
+        // no bytecode,
+        // is not an EOA,
+        // and has return data
+        // then we treat it as at the end of a CREATE/CREATE2 opcode.
+        if (bytecode_len + is_eao + has_empty_return_data == 0) {
+            let ctx = CreateHelper.finalize_calling_context(summary);
+            return run(ctx=ctx);
+        } else {
+            let ctx = CallHelper.finalize_calling_context(summary);
+            return run(ctx=ctx);
+        }
     }
 
     // @notice A placeholder for opcodes that don't exist
@@ -683,5 +687,32 @@ namespace EVMInstructions {
             assert 0 = 1;
         }
         return ();
+    }
+
+    // @notice Finalizes a transaction.
+    // @param ctx_summary The pointer to the execution context summary.
+    // @return Summary The pointer to the transaction Summary.
+    func finalize{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx_summary: ExecutionContext.Summary*) -> Summary* {
+        alloc_locals;
+
+        Helpers.erase_contracts(
+            ctx_summary.selfdestruct_contracts_len, ctx_summary.selfdestruct_contracts
+        );
+
+        return new Summary(
+            memory=ctx_summary.memory,
+            stack=ctx_summary.stack,
+            return_data=ctx_summary.return_data,
+            return_data_len=ctx_summary.return_data_len,
+            gas_used=ctx_summary.gas_used,
+            starknet_contract_address=ctx_summary.starknet_contract_address,
+            evm_contract_address=ctx_summary.evm_contract_address,
+            reverted=ctx_summary.reverted,
+        );
     }
 }

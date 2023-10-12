@@ -6,9 +6,9 @@ from tests.utils.errors import cairo_error
 
 
 @pytest_asyncio.fixture(scope="module")
-async def instructions(starknet: Starknet):
+async def evm(starknet: Starknet):
     class_hash = await starknet.deprecated_declare(
-        source="./tests/src/kakarot/test_instructions.cairo",
+        source="./tests/src/kakarot/test_evm.cairo",
         cairo_path=["src"],
         disable_hint_validation=False,
     )
@@ -17,10 +17,10 @@ async def instructions(starknet: Starknet):
 
 @pytest.mark.asyncio
 class TestInstructions:
-    async def test__unknown_opcode(self, instructions):
+    async def test__unknown_opcode(self, evm):
         with cairo_error("Kakarot: UnknownOpcode"):
-            await instructions.test__unknown_opcode().call()
+            await evm.test__unknown_opcode().call()
 
-    async def test__not_implemented_opcode(self, instructions):
+    async def test__not_implemented_opcode(self, evm):
         with cairo_error("Kakarot: NotImplementedOpcode"):
-            await instructions.test__not_implemented_opcode().call()
+            await evm.test__not_implemented_opcode().call()

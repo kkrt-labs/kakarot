@@ -241,7 +241,8 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     let (local return_data: felt*) = alloc();
     assert [return_data] = 0x11;
     let sub_ctx = ExecutionContext.update_return_data(sub_ctx, 1, return_data);
-    let ctx = CallHelper.finalize_calling_context(sub_ctx);
+    let summary = ExecutionContext.finalize(sub_ctx);
+    let ctx = CallHelper.finalize_calling_context(summary);
 
     // Then
     let (stack, success) = Stack.peek(ctx.stack, 0);
@@ -394,7 +395,8 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
     // the instructions RETURNDATASIZE and RETURNDATACOPY (since the Byzantium fork).
     // So it's expected that the RETURN of the sub_ctx does set proper values for return_data_len and return_data
     let sub_ctx = ExecutionContext.update_return_data(sub_ctx, 0, sub_ctx.return_data);
-    let ctx = CallHelper.finalize_calling_context(sub_ctx);
+    let summary = ExecutionContext.finalize(sub_ctx);
+    let ctx = CallHelper.finalize_calling_context(summary);
 
     // Then
     let (stack, success) = Stack.peek(ctx.stack, 0);
@@ -538,7 +540,8 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
     // the instructions RETURNDATASIZE and RETURNDATACOPY (since the Byzantium fork).
     // So it's expected that the RETURN of the sub_ctx does set proper values for return_data_len and return_data
     let sub_ctx = ExecutionContext.update_return_data(sub_ctx, 0, sub_ctx.return_data);
-    let ctx = CallHelper.finalize_calling_context(sub_ctx);
+    let summary = ExecutionContext.finalize(sub_ctx);
+    let ctx = CallHelper.finalize_calling_context(summary);
 
     // Then
     let (stack, success) = Stack.peek(ctx.stack, 0);
@@ -613,7 +616,8 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
     // the instructions RETURNDATASIZE and RETURNDATACOPY (since the Byzantium fork).
     // So it's expected that the RETURN of the sub_ctx does set proper values for return_data_len and return_data
     let sub_ctx = ExecutionContext.update_return_data(sub_ctx, 0, sub_ctx.return_data);
-    let ctx = CallHelper.finalize_calling_context(sub_ctx);
+    let summary = ExecutionContext.finalize(sub_ctx);
+    let ctx = CallHelper.finalize_calling_context(summary);
 
     // Then
     let (stack, success) = Stack.peek(ctx.stack, 0);
@@ -688,7 +692,8 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
     let sub_ctx = ExecutionContext.update_return_data(
         sub_ctx, return_data_len, sub_ctx.return_data
     );
-    let ctx = CreateHelper.finalize_calling_context(sub_ctx);
+    let summary = ExecutionContext.finalize(sub_ctx);
+    let ctx = CreateHelper.finalize_calling_context(summary);
 
     // Then
     let (stack, address) = Stack.peek(ctx.stack, 0);
@@ -788,7 +793,8 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     let sub_ctx = ExecutionContext.update_return_data(
         sub_ctx, return_data_len, sub_ctx.return_data
     );
-    let ctx = CreateHelper.finalize_calling_context(sub_ctx);
+    let summary = ExecutionContext.finalize(sub_ctx);
+    let ctx = CreateHelper.finalize_calling_context(summary);
 
     // Then
     let (stack, address) = Stack.peek(ctx.stack, 0);
@@ -822,7 +828,7 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     let (return_data) = alloc();
     assert [return_data] = 0;
     assert [return_data + 1] = 10;
-    let (destroy_contracts) = alloc();
+    let (selfdestruct_contracts) = alloc();
     let (calldata) = alloc();
     assert [calldata] = '';
     local call_context: model.CallContext* = new model.CallContext(
@@ -866,8 +872,8 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     assert [sub_ctx + 11] = evm_contract_address;  // evm_contract_address
     assert [sub_ctx + 12] = 0;  // origin
     assert [sub_ctx + 13] = 0;  // calling_context
-    assert [sub_ctx + 14] = 0;  // destroy_contracts_len
-    assert [sub_ctx + 15] = cast(destroy_contracts, felt);  // destroy_contracts
+    assert [sub_ctx + 14] = 0;  // selfdestruct_contracts_len
+    assert [sub_ctx + 15] = cast(selfdestruct_contracts, felt);  // selfdestruct_contracts
     assert [sub_ctx + 16] = 0;  // events_len
     assert [sub_ctx + 17] = cast(0, felt);  // events
     assert [sub_ctx + 18] = 0;  // create_addresses_len
