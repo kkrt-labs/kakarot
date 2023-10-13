@@ -15,7 +15,7 @@ func test__decode{
     amount: felt,
     payload_len: felt,
     payload: felt*,
-    tx_hash: Uint256,
+    msg_hash: Uint256,
     v: felt,
     r: Uint256,
     s: Uint256,

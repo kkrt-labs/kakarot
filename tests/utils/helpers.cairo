@@ -4,9 +4,10 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.default_dict import default_dict_new
-from starkware.cairo.common.bool import TRUE, FALSE
+from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.uint256 import (
     Uint256,
     uint256_check,
@@ -14,7 +15,6 @@ from starkware.cairo.common.uint256 import (
     uint256_eq,
     assert_uint256_eq,
 )
-from starkware.cairo.common.math import split_felt
 
 // Internal dependencies
 from kakarot.constants import Constants
@@ -210,8 +210,8 @@ namespace TestHelpers {
     func assert_execution_context_equal(
         ctx_0: model.ExecutionContext*, ctx_1: model.ExecutionContext*
     ) {
-        let is_context_0_root = ExecutionContext.is_root(ctx_0);
-        let is_context_1_root = ExecutionContext.is_root(ctx_1);
+        let is_context_0_root = ExecutionContext.is_empty(ctx_0.calling_context);
+        let is_context_1_root = ExecutionContext.is_empty(ctx_1.calling_context);
         assert is_context_0_root = is_context_1_root;
         if (is_context_0_root != FALSE) {
             return ();

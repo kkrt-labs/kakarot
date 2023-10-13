@@ -6,7 +6,7 @@ from starkware.starknet.public.abi import get_storage_var_address
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.errors import kakarot_error
+from tests.utils.errors import cairo_error
 from tests.utils.reporting import traceit
 
 random.seed(0)
@@ -45,7 +45,7 @@ class TestContractAccount:
         async def test_should_run_only_once(
             self, contract_account: StarknetContract, kakarot
         ):
-            with kakarot_error():
+            with cairo_error():
                 await contract_account.initialize(kakarot.contract_address, 1).execute(
                     caller_address=kakarot.contract_address
                 )
@@ -53,7 +53,7 @@ class TestContractAccount:
         async def test_should_set_ownership(
             self, contract_account: StarknetContract, kakarot
         ):
-            with kakarot_error():
+            with cairo_error():
                 await contract_account.write_bytecode([0]).execute(caller_address=1)
             await contract_account.write_bytecode([0]).execute(
                 caller_address=kakarot.contract_address
@@ -130,7 +130,7 @@ class TestContractAccount:
         async def test_should_raise_when_caller_is_not_kakarot(
             self, contract_account: StarknetContract, kakarot
         ):
-            with kakarot_error():
+            with cairo_error():
                 await contract_account.increment_nonce().execute(
                     caller_address=kakarot.contract_address + 1
                 )

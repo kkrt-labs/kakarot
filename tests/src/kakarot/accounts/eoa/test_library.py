@@ -69,7 +69,7 @@ async def mock_externally_owned_account(
 @pytest.mark.asyncio
 class TestLibrary:
     async def test_execute_should_make_all_calls_and_return_concat_results(
-        self, mock_externally_owned_account, eth, private_key, mock_kakarot
+        self, mock_externally_owned_account, eth, private_key
     ):
         (calls, calldata, expected_result) = get_multicall_from_evm_txs(
             evm_txs=TRANSACTIONS,

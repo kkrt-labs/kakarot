@@ -6,7 +6,7 @@ from eth_account.account import Account
 from starkware.starknet.testing.starknet import Starknet
 
 from tests.utils.constants import TRANSACTIONS
-from tests.utils.errors import kakarot_error
+from tests.utils.errors import cairo_error
 from tests.utils.helpers import generate_random_evm_address, generate_random_private_key
 
 
@@ -49,7 +49,7 @@ class TestEthTransaction:
             address = private_key.public_key.to_checksum_address()
             t = {**transaction, "chainId": 1}
             signed = Account.sign_transaction(t, private_key)
-            with kakarot_error():
+            with cairo_error():
                 await eth_transaction.test__validate(
                     int(address, 16),
                     transaction["nonce"],
@@ -65,7 +65,7 @@ class TestEthTransaction:
             signed = Account.sign_transaction(transaction, private_key)
 
             assert address != int(private_key.public_key.to_address(), 16)
-            with kakarot_error():
+            with cairo_error():
                 await eth_transaction.test__validate(
                     address, transaction["nonce"], list(signed["rawTransaction"])
                 ).call()
@@ -79,7 +79,7 @@ class TestEthTransaction:
             signed = Account.sign_transaction(transaction, private_key)
 
             assert address != int(private_key.public_key.to_address(), 16)
-            with kakarot_error():
+            with cairo_error():
                 await eth_transaction.test__validate(
                     address, transaction["nonce"] + 1, list(signed["rawTransaction"])
                 ).call()

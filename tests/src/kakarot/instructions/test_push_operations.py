@@ -2,7 +2,7 @@ import pytest
 import pytest_asyncio
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.errors import kakarot_error
+from tests.utils.errors import cairo_error
 from tests.utils.helpers import extract_stack_from_execute
 from tests.utils.uint256 import int_to_uint256
 
@@ -21,7 +21,7 @@ async def push_operations(starknet: Starknet):
 class TestPushOperations:
     @pytest.mark.parametrize("i", range(2, 33))
     async def test__exec_push_should_raise(self, push_operations, i):
-        with kakarot_error():
+        with cairo_error():
             await push_operations.test__exec_push_should_raise(i).call()
 
     # The `exec_push_i` is tested by initializing the bytecode with a fill value of 0xFF.
@@ -49,7 +49,7 @@ class TestPushOperations:
     # our impl throws at 1026
     async def test__exec_push0_should_overflow(self, push_operations):
         stack_len = 1026
-        with kakarot_error("Kakarot: StackOverflow"):
+        with cairo_error("Kakarot: StackOverflow"):
             await push_operations.test__exec_push_should_push_n_times(
                 stack_len, 0
             ).call()

@@ -4,16 +4,17 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import emit_event
-from starkware.cairo.common.bool import FALSE
 
 // Internal dependencies
-from kakarot.model import model
-from utils.utils import Helpers
+from kakarot.errors import Errors
 from kakarot.execution_context import ExecutionContext
-from kakarot.stack import Stack
 from kakarot.memory import Memory
+from kakarot.model import model
+from kakarot.stack import Stack
+from utils.utils import Helpers
 
 // @title Logging operations opcodes.
 // @notice This file contains the functions to execute for logging operations opcodes.
@@ -33,9 +34,10 @@ namespace LoggingOperations {
     ) -> model.ExecutionContext* {
         alloc_locals;
 
-        // This instruction is disallowed when called from a `staticcall` context, which we demark by a read_only attribute
-        with_attr error_message("Kakarot: StateModificationError") {
-            assert ctx.read_only = FALSE;
+        if (ctx.read_only != FALSE) {
+            let (revert_reason_len, revert_reason) = Errors.stateModificationError();
+            let ctx = ExecutionContext.revert(ctx, revert_reason, revert_reason_len);
+            return ctx;
         }
 
         // Get stack from context.

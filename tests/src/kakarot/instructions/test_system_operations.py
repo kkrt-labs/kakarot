@@ -5,7 +5,6 @@ import pytest_asyncio
 from eth_utils import to_bytes, to_checksum_address
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.errors import kakarot_error
 from tests.utils.helpers import get_create2_address, get_create_address
 from tests.utils.uint256 import int_to_uint256
 
@@ -36,10 +35,10 @@ async def mint(system_operations, eth):
     async def _factory(evm_address: str, value: int):
         # mint tokens to the provided evm address
         sender = int(get_create_address(evm_address, 0), 16)
-        starket_contract_address = (
+        starknet_contract_address = (
             await system_operations.compute_starknet_address(sender).call()
         ).result.contract_address
-        await eth.mint(starket_contract_address, int_to_uint256(value)).execute()
+        await eth.mint(starknet_contract_address, int_to_uint256(value)).execute()
 
     return _factory
 
@@ -49,13 +48,13 @@ class TestSystemOperations:
     @pytest.mark.parametrize("size", range(34, 65))
     async def test_revert(self, system_operations, size):
         # reason = 0x abcdefghijklmnopqrstuvwxyzABCDEF
-        reason = int(string.ascii_letters[:32].encode().hex(), 16)
-        reason_low, reason_high = int_to_uint256(reason)
-        # The current implementation takes the 31 first bytes of the last 32 bytes
-        with kakarot_error(string.ascii_letters[: (size - 32 - 1)][-31:]):
-            await system_operations.test__exec_revert(
-                reason_low, reason_high, size
-            ).call()
+        reason = string.ascii_letters[:32].encode()
+        reason_low, reason_high = int_to_uint256(int(reason.hex(), 16))
+        revert_reason = await system_operations.test__exec_revert(
+            reason_low, reason_high, size
+        ).call()
+        expected_revert_reason = ([0] * 32 + list(reason) + [0] * 32)[:size]
+        assert revert_reason.result[0] == expected_revert_reason
 
     async def test_return(self, system_operations):
         await system_operations.test__exec_return_should_return_context_with_updated_return_data(

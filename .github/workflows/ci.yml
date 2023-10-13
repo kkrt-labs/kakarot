@@ -137,10 +137,8 @@ jobs:
         with:
           name: kakarot-build
           path: ./lib/kakarot/build
-
-      # run tests
       - name: run tests
-        run: cargo test -p ef-testing --features ef-tests -- --nocapture
+        run: make ef-test
 
   resources:
     runs-on: ubuntu-latest

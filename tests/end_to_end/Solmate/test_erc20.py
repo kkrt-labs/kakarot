@@ -1,10 +1,8 @@
-import os
-
 import pytest
 import pytest_asyncio
 
 from tests.utils.constants import MAX_INT
-from tests.utils.errors import kakarot_error
+from tests.utils.errors import evm_error
 from tests.utils.helpers import ec_sign, get_approval_digest
 
 TEST_SUPPLY = 10**18
@@ -89,16 +87,12 @@ class TestERC20:
             assert balance_sender_before - balance_sender_after == TEST_SUPPLY
             assert balance_receiver_after - balance_receiver_before == TEST_SUPPLY
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_transfer_should_fail_when_insufficient_balance(
             self, erc_20, owner, other
         ):
             await erc_20.mint(owner.address, TEST_AMOUNT, caller_eoa=owner)
             balance_sender_before = await erc_20.balanceOf(owner.address)
-            with kakarot_error():
+            with evm_error():
                 await erc_20.transfer(
                     other.address,
                     balance_sender_before + 1,
@@ -146,16 +140,12 @@ class TestERC20:
             assert balance_sender_before - balance_sender_after == TEST_SUPPLY
             assert balance_receiver_after - balance_receiver_before == TEST_SUPPLY
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_transfer_from_should_fail_when_insufficient_allowance(
             self, erc_20, owner, other, others
         ):
             await erc_20.mint(other.address, TEST_SUPPLY, caller_eoa=owner)
             await erc_20.approve(owner.address, TEST_AMOUNT, caller_eoa=other)
-            with kakarot_error():
+            with evm_error():
                 await erc_20.transferFrom(
                     other.address,
                     others[1].address,
@@ -163,20 +153,17 @@ class TestERC20:
                     caller_eoa=owner,
                 )
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_transfer_from_should_fail_when_insufficient_balance(
             self, erc_20, owner, other, others
         ):
             await erc_20.mint(other.address, TEST_AMOUNT, caller_eoa=owner)
-            await erc_20.approve(owner.address, TEST_SUPPLY, caller_eoa=other)
-            with kakarot_error():
+            balance_other = await erc_20.balanceOf(other.address)
+            await erc_20.approve(owner.address, balance_other + 1, caller_eoa=other)
+            with evm_error():
                 await erc_20.transferFrom(
                     other.address,
                     others[1].address,
-                    TEST_SUPPLY,
+                    balance_other + 1,
                     caller_eoa=owner,
                 )
 
@@ -211,19 +198,12 @@ class TestERC20:
             assert await erc_20.allowance(owner.address, other.address) == TEST_SUPPLY
             assert await erc_20.nonces(owner.address) == 1
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
-        async def test_permit_should_fail_with_bad_nonce(
-            self, block_with_tx_hashes, erc_20, owner, other
-        ):
+        async def test_permit_should_fail_with_bad_nonce(self, erc_20, owner, other):
             bad_nonce = 1
-            pending_timestamp = block_with_tx_hashes("pending")["timestamp"]
-            deadline = pending_timestamp + 1
+            deadline = 2**256 - 1
             digest = get_approval_digest(
                 "Kakarot Token",
-                erc_20.evm_contract_address,
+                erc_20.address,
                 {
                     "owner": owner.address,
                     "spender": other.address,
@@ -233,7 +213,7 @@ class TestERC20:
                 deadline,
             )
             v, r, s = ec_sign(digest, owner.private_key)
-            with kakarot_error("INVALID_SIGNER"):
+            with evm_error("INVALID_SIGNER"):
                 await erc_20.permit(
                     owner.address,
                     other.address,
@@ -245,19 +225,15 @@ class TestERC20:
                     caller_eoa=owner,
                 )
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_permit_should_fail_with_bad_deadline(
             self, erc_20, block_with_tx_hashes, owner, other
         ):
             nonce = await erc_20.nonces(owner.address)
             pending_timestamp = block_with_tx_hashes("pending")["timestamp"]
-            deadline = pending_timestamp + 1
+            deadline = pending_timestamp - 1
             digest = get_approval_digest(
                 "Kakarot Token",
-                erc_20.evm_contract_address,
+                erc_20.address,
                 {
                     "owner": owner.address,
                     "spender": other.address,
@@ -267,7 +243,7 @@ class TestERC20:
                 deadline,
             )
             v, r, s = ec_sign(digest, owner.private_key)
-            with kakarot_error("PERMIT_DEADLINE_EXPIRED"):
+            with evm_error("PERMIT_DEADLINE_EXPIRED"):
                 await erc_20.permit(
                     owner.address,
                     other.address,
@@ -279,19 +255,12 @@ class TestERC20:
                     caller_eoa=owner,
                 )
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
-        async def test_permit_should_fail_on_replay(
-            self, block_with_tx_hashes, erc_20, owner, other
-        ):
+        async def test_permit_should_fail_on_replay(self, erc_20, owner, other):
             nonce = await erc_20.nonces(owner.address)
-            pending_timestamp = block_with_tx_hashes("pending")["timestamp"]
-            deadline = pending_timestamp + 1
+            deadline = 2**256 - 1
             digest = get_approval_digest(
                 "Kakarot Token",
-                erc_20.evm_contract_address,
+                erc_20.address,
                 {
                     "owner": owner.address,
                     "spender": other.address,
@@ -312,7 +281,7 @@ class TestERC20:
                 caller_eoa=owner,
             )
 
-            with kakarot_error("INVALID_SIGNER"):
+            with evm_error("INVALID_SIGNER"):
                 await erc_20.permit(
                     owner.address,
                     other.address,

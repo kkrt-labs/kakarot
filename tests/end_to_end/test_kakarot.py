@@ -1,3 +1,5 @@
+import random
+
 import pytest
 import pytest_asyncio
 from starknet_py.contract import Contract
@@ -123,13 +125,18 @@ class TestKakarot:
             starknet: FullNodeClient,
             fund_starknet_address,
             deploy_externally_owned_account,
+            is_account_deployed,
             compute_starknet_address,
             deployer: Account,
             eth_balance_of,
             deploy_fee: int,
         ):
-            # using a different seed here so that the evm address is different from the one used in the previous test
-            evm_address = generate_random_evm_address(seed=0xDEADBEEF)
+            seed = random.randint(0, 0x5EED)
+            evm_address = generate_random_evm_address(seed=seed)
+            while await is_account_deployed(evm_address):
+                seed += 1
+                evm_address = generate_random_evm_address(seed=seed)
+
             starknet_address = await compute_starknet_address(evm_address)
             await fund_starknet_address(starknet_address, PRE_FUND_AMOUNT / 1e18)
 

@@ -1,11 +1,9 @@
-import os
-
 import pytest
 import pytest_asyncio
 from eth_utils import keccak
 
 from tests.utils.constants import ZERO_ADDRESS
-from tests.utils.errors import kakarot_error
+from tests.utils.errors import evm_error
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -75,12 +73,12 @@ class TestERC721:
         async def test_owner_of_should_fail_when_token_does_not_exist(
             self, erc_721, token_id
         ):
-            with kakarot_error():
+            with evm_error():
                 await erc_721.ownerOf(token_id)
 
     class TestBalanceOf:
         async def test_balance_of_should_fail_on_zero_address(self, erc_721):
-            with kakarot_error():
+            with evm_error():
                 await erc_721.balanceOf(ZERO_ADDRESS)
 
     class TestMint:
@@ -89,18 +87,10 @@ class TestERC721:
             assert await erc_721.balanceOf(other.address) == 1
             assert await erc_721.ownerOf(token_id) == other.address
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_mint_to_zero_address(self, erc_721, other, token_id):
-            with kakarot_error("INVALID_RECIPIENT"):
+            with evm_error("INVALID_RECIPIENT"):
                 await erc_721.mint(ZERO_ADDRESS, token_id, caller_eoa=other)
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_double_mint(self, erc_721, other, token_id):
             await erc_721.mint(
                 other.address,
@@ -108,7 +98,7 @@ class TestERC721:
                 caller_eoa=other,
             )
 
-            with kakarot_error("ALREADY_MINTED"):
+            with evm_error("ALREADY_MINTED"):
                 await erc_721.mint(
                     other.address,
                     token_id,
@@ -125,27 +115,19 @@ class TestERC721:
             balance_after = await erc_721.balanceOf(other.address)
             assert balance_after == balance_before
 
-            with kakarot_error():
+            with evm_error():
                 await erc_721.ownerOf(token_id)
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_burn_unminted(self, erc_721, other, token_id):
-            with kakarot_error("NOT_MINTED"):
+            with evm_error("NOT_MINTED"):
                 await erc_721.burn(token_id, caller_eoa=other)
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_double_burn(self, erc_721, other, token_id):
             await erc_721.mint(other.address, token_id, caller_eoa=other)
 
             await erc_721.burn(token_id, caller_eoa=other)
 
-            with kakarot_error("NOT_MINTED"):
+            with evm_error("NOT_MINTED"):
                 await erc_721.burn(token_id, caller_eoa=other)
 
     class TestApprove:
@@ -164,27 +146,19 @@ class TestERC721:
                 is True
             )
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_approve_unminted(self, erc_721, others, token_id):
-            with kakarot_error("NOT_AUTHORIZED"):
+            with evm_error("NOT_AUTHORIZED"):
                 await erc_721.approve(
                     others[1].address,
                     token_id,
                     caller_eoa=others[0],
                 )
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_approve_unauthorized(
             self, erc_721, others, token_id
         ):
             await erc_721.mint(others[0].address, token_id, caller_eoa=others[0])
-            with kakarot_error("NOT_AUTHORIZED"):
+            with evm_error("NOT_AUTHORIZED"):
                 await erc_721.approve(
                     others[1].address,
                     token_id,
@@ -262,14 +236,10 @@ class TestERC721:
             assert receiver_balance_after - receiver_balance_before == 1
             assert sender_balance_after == sender_balance_before
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_transfer_from_unowned(
             self, erc_721, others, token_id
         ):
-            with kakarot_error():
+            with evm_error():
                 await erc_721.transferFrom(
                     others[0].address,
                     others[1].address,
@@ -277,15 +247,11 @@ class TestERC721:
                     caller_eoa=others[0],
                 )
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_transfer_from_wrong_from(
             self, erc_721, others, token_id
         ):
             await erc_721.mint(others[1].address, token_id, caller_eoa=others[1])
-            with kakarot_error():
+            with evm_error():
                 await erc_721.transferFrom(
                     others[0].address,
                     others[2].address,
@@ -293,15 +259,11 @@ class TestERC721:
                     caller_eoa=others[0],
                 )
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_transfer_from_to_zero(
             self, erc_721, other, token_id
         ):
             await erc_721.mint(other.address, token_id, caller_eoa=other)
-            with kakarot_error("INVALID_RECIPIENT"):
+            with evm_error("INVALID_RECIPIENT"):
                 await erc_721.transferFrom(
                     other.address,
                     ZERO_ADDRESS,
@@ -309,15 +271,14 @@ class TestERC721:
                     caller_eoa=other,
                 )
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_transfer_from_not_owner(
             self, erc_721, others, token_id
         ):
             await erc_721.mint(others[0].address, token_id, caller_eoa=others[0])
-            with kakarot_error("NOT_AUTHORIZED"):
+            await erc_721.setApprovalForAll(
+                others[1].address, False, caller_eoa=others[0]
+            )
+            with evm_error("NOT_AUTHORIZED"):
                 await erc_721.transferFrom(
                     others[0].address,
                     others[2].address,
@@ -445,10 +406,6 @@ class TestERC721:
             assert recipient_token_id == token_id
             assert recipient_data == data
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_safe_transfer_from_to_NonERC721Recipient(
             self, erc_721, erc_721_non_recipient, other, token_id
         ):
@@ -456,7 +413,7 @@ class TestERC721:
 
             await erc_721.mint(other.address, token_id, caller_eoa=other)
 
-            with kakarot_error():
+            with evm_error():
                 await erc_721.safeTransferFrom(
                     other.address,
                     recipient_address,
@@ -464,10 +421,6 @@ class TestERC721:
                     caller_eoa=other,
                 )
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_safe_transfer_from_to_NonERC721Recipient_with_data(
             self, erc_721, erc_721_non_recipient, other, token_id
         ):
@@ -475,7 +428,7 @@ class TestERC721:
 
             await erc_721.mint(other.address, token_id, caller_eoa=other)
 
-            with kakarot_error():
+            with evm_error():
                 await erc_721.safeTransferFrom2(
                     other.address,
                     recipient_address,
@@ -484,10 +437,6 @@ class TestERC721:
                     caller_eoa=other,
                 )
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_safe_transfer_from_to_RevertingERC721Recipient(
             self, erc_721, erc_721_reverting_recipient, other, token_id
         ):
@@ -497,7 +446,7 @@ class TestERC721:
             selector = keccak(text="onERC721Received(address,address,uint256,bytes)")[
                 :4
             ]
-            with kakarot_error(selector):
+            with evm_error(selector):
                 await erc_721.safeTransferFrom(
                     other.address,
                     recipient_address,
@@ -505,10 +454,6 @@ class TestERC721:
                     caller_eoa=other,
                 )
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_safe_transfer_from_to_RevertingERC721Recipient_with_data(
             self, erc_721, erc_721_reverting_recipient, other, token_id
         ):
@@ -518,7 +463,7 @@ class TestERC721:
             selector = keccak(text="onERC721Received(address,address,uint256,bytes)")[
                 :4
             ]
-            with kakarot_error(selector):
+            with evm_error(selector):
                 await erc_721.safeTransferFrom2(
                     other.address,
                     recipient_address,
@@ -527,17 +472,13 @@ class TestERC721:
                     caller_eoa=other,
                 )
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_safe_transfer_from_to_ERC721RecipientWithWrongReturnData(
             self, erc_721, erc_721_recipient_with_wrong_return_data, other, token_id
         ):
             recipient_address = erc_721_recipient_with_wrong_return_data.address
 
             await erc_721.mint(other.address, token_id, caller_eoa=other)
-            with kakarot_error("UNSAFE_RECIPIENT"):
+            with evm_error("UNSAFE_RECIPIENT"):
                 await erc_721.safeTransferFrom(
                     other.address,
                     recipient_address,
@@ -545,10 +486,6 @@ class TestERC721:
                     caller_eoa=other,
                 )
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_safe_transfer_from_to_ERC721RecipientWithWrongReturnData_with_data(
             self, erc_721, erc_721_recipient_with_wrong_return_data, other, token_id
         ):
@@ -556,7 +493,7 @@ class TestERC721:
 
             await erc_721.mint(other.address, token_id, caller_eoa=other)
 
-            with kakarot_error("UNSAFE_RECIPIENT"):
+            with evm_error("UNSAFE_RECIPIENT"):
                 await erc_721.safeTransferFrom2(
                     other.address,
                     recipient_address,
@@ -631,32 +568,24 @@ class TestERC721:
             assert recipient_token_id == token_id
             assert recipient_data == data
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_safe_mint_to_NonERC721Recipient(
             self, erc_721, erc_721_non_recipient, other, token_id
         ):
             recipient_address = erc_721_non_recipient.address
 
-            with kakarot_error():
+            with evm_error():
                 await erc_721.safeMint(
                     recipient_address,
                     token_id,
                     caller_eoa=other,
                 )
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_safe_mint_to_NonERC721Recipient_with_data(
             self, erc_721, erc_721_non_recipient, other, token_id
         ):
             recipient_address = erc_721_non_recipient.address
 
-            with kakarot_error():
+            with evm_error():
                 await erc_721.safeMint2(
                     recipient_address,
                     token_id,
@@ -664,32 +593,24 @@ class TestERC721:
                     caller_eoa=other,
                 )
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_safe_mint_to_RevertingERC721Recipient(
             self, erc_721, erc_721_reverting_recipient, other, token_id
         ):
             recipient_address = erc_721_reverting_recipient.address
 
-            with kakarot_error():
+            with evm_error():
                 await erc_721.safeMint(
                     recipient_address,
                     token_id,
                     caller_eoa=other,
                 )
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_safe_mint_to_RevertingERC721Recipient_with_data(
             self, erc_721, erc_721_reverting_recipient, other, token_id
         ):
             recipient_address = erc_721_reverting_recipient.address
 
-            with kakarot_error():
+            with evm_error():
                 await erc_721.safeMint2(
                     recipient_address,
                     token_id,
@@ -697,32 +618,24 @@ class TestERC721:
                     caller_eoa=other,
                 )
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_safe_mint_to_ERC721RecipientWithWrongReturnData(
             self, erc_721, erc_721_recipient_with_wrong_return_data, other, token_id
         ):
             recipient_address = erc_721_recipient_with_wrong_return_data.address
 
-            with kakarot_error():
+            with evm_error():
                 await erc_721.safeMint(
                     recipient_address,
                     token_id,
                     caller_eoa=other,
                 )
 
-        @pytest.mark.xfail(
-            os.environ.get("STARKNET_NETWORK", "katana") == "katana",
-            reason="https://github.com/dojoengine/dojo/issues/864",
-        )
         async def test_should_fail_to_safe_mint_to_ERC721RecipientWithWrongReturnData_with_data(
             self, erc_721, erc_721_recipient_with_wrong_return_data, other, token_id
         ):
             recipient_address = erc_721_recipient_with_wrong_return_data.address
 
-            with kakarot_error():
+            with evm_error():
                 await erc_721.safeMint2(
                     recipient_address,
                     token_id,

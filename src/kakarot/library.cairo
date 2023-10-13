@@ -12,15 +12,15 @@ from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 
 from kakarot.accounts.library import Accounts
 from kakarot.constants import (
-    native_token_address,
-    contract_account_class_hash,
-    externally_owned_account_class_hash,
-    blockhash_registry_address,
     account_proxy_class_hash,
+    blockhash_registry_address,
+    contract_account_class_hash,
     deploy_fee,
+    externally_owned_account_class_hash,
+    native_token_address,
 )
+from kakarot.evm import EVM
 from kakarot.execution_context import ExecutionContext
-from kakarot.instructions import EVMInstructions
 from kakarot.instructions.system_operations import CreateHelper
 from kakarot.interfaces.interfaces import IAccount, IContractAccount, IERC20
 from kakarot.memory import Memory
@@ -71,6 +71,7 @@ namespace Kakarot {
     // @param value The value of the execution
     // @param gas_limit The gas limit of the execution
     // @param gas_price The gas price for the execution
+    // @param reverted Whether the transaction is reverted or not
     func execute{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -99,6 +100,7 @@ namespace Kakarot {
         return_data_len: felt,
         return_data: felt*,
         gas_used: felt,
+        reverted: felt,
     ) {
         alloc_locals;
 
@@ -131,12 +133,7 @@ namespace Kakarot {
         let cost = ExecutionContext.compute_intrinsic_gas_cost(ctx);
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=cost);
 
-        // Start execution
-        let ctx = EVMInstructions.run(ctx);
-        ExecutionContext.maybe_throw_revert(ctx);
-
-        // Finalize
-        let summary = ExecutionContext.finalize(self=ctx);
+        let summary = EVM.run(ctx);
 
         let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
         let stack_accesses_len = summary.stack.squashed_end - summary.stack.squashed_start;
@@ -153,6 +150,7 @@ namespace Kakarot {
             return_data_len=summary.return_data_len,
             return_data=summary.return_data,
             gas_used=summary.gas_used,
+            reverted=summary.reverted,
         );
     }
 
@@ -256,7 +254,7 @@ namespace Kakarot {
         bitwise_ptr: BitwiseBuiltin*,
     }(
         origin: felt, evm_contract_address: felt, value: felt, bytecode_len: felt, bytecode: felt*
-    ) -> (starknet_contract_address: felt) {
+    ) -> (starknet_contract_address: felt, reverted: felt) {
         alloc_locals;
 
         let (class_hash) = contract_account_class_hash.read();
@@ -275,6 +273,7 @@ namespace Kakarot {
             return_data_len,
             return_data,
             gas_used,
+            reverted,
         ) = execute(
             starknet_contract_address=starknet_contract_address,
             evm_contract_address=evm_contract_address,
@@ -288,13 +287,19 @@ namespace Kakarot {
             gas_price=0,
         );
 
-        // Update contract bytecode with execution result
-        IContractAccount.write_bytecode(
-            contract_address=starknet_contract_address,
-            bytecode_len=return_data_len,
-            bytecode=return_data,
-        );
-        return (starknet_contract_address=starknet_contract_address);
+        if (reverted == 0) {
+            // Update contract bytecode with execution result
+            IContractAccount.write_bytecode(
+                contract_address=starknet_contract_address,
+                bytecode_len=return_data_len,
+                bytecode=return_data,
+            );
+            return (starknet_contract_address=starknet_contract_address, reverted=reverted);
+        } else {
+            // Just do nothing, the deployed account at starknet_contract_address is empty
+            // and will not be targeted again because the address depends on the caller nonce
+            return (starknet_contract_address=starknet_contract_address, reverted=reverted);
+        }
     }
 
     // @notice Deploy a new externally owned account.
@@ -336,6 +341,7 @@ namespace Kakarot {
     // @param data Hash of the method signature and encoded parameters. For details see Ethereum Contract ABI in the Solidity documentation
     // @return return_data_len The length of the returned bytes
     // @return return_data The returned bytes array
+    // @return success A boolean TRUE if the transaction succeeded, FALSE if it's reverted
     func eth_call{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -349,7 +355,7 @@ namespace Kakarot {
         value: felt,
         data_len: felt,
         data: felt*,
-    ) -> (return_data_len: felt, return_data: felt*) {
+    ) -> (return_data_len: felt, return_data: felt*, success: felt) {
         alloc_locals;
 
         if (to == 0) {
@@ -364,7 +370,7 @@ namespace Kakarot {
                 assert success = TRUE;
             }
 
-            let (starknet_contract_address) = deploy_contract_account(
+            let (starknet_contract_address, reverted) = deploy_contract_account(
                 origin=origin,
                 evm_contract_address=evm_contract_address,
                 value=value,
@@ -374,7 +380,7 @@ namespace Kakarot {
             let (return_data) = alloc();
             assert [return_data] = evm_contract_address;
             assert [return_data + 1] = starknet_contract_address;
-            return (2, return_data);
+            return (2, return_data, 1 - reverted);
         } else {
             let (success) = transfer(origin, to, value);
             with_attr error_message(
@@ -395,7 +401,7 @@ namespace Kakarot {
                 gas_limit,
                 gas_price,
             );
-            return (summary.return_data_len, summary.return_data);
+            return (summary.return_data_len, summary.return_data, 1 - summary.reverted);
         }
     }
 

@@ -1,48 +1,37 @@
 import re
 from contextlib import contextmanager
-from textwrap import wrap
 
 import pytest
 
 
 @contextmanager
-def kakarot_error(message=None):
+def evm_error(message=None):
+    try:
+        with pytest.raises(Exception) as e:
+            yield e
+        # FIXME: We should catch only Evm errors
+        # FIXME: When all the other Kakarot errors are fixed (e.g. Kakarot: StateModificationError)
+        # FIXME: uncomment this
+        # assert e.typename == "EvmTransactionError"
+        if message is None:
+            return
+        revert_reason = bytes(e.value.args[0])
+        message = message.encode() if isinstance(message, str) else message
+        assert (
+            message.hex() in revert_reason.hex()
+        ), f"Expected {message}, got {revert_reason}"
+    finally:
+        pass
+
+
+@contextmanager
+def cairo_error(message=None):
     try:
         with pytest.raises(Exception) as e:
             yield e
         if message is None:
             return
         error = re.search(r"Error message: (.*)", e.value.message)[1]  # type: ignore
-        if re.match("Kakarot: Reverted with reason: ", error):
-            revert_reason = re.search(r"Kakarot: Reverted with reason: (.*)", error)[1]  # type: ignore
-            try:
-                revert_reason = int(revert_reason)
-                if isinstance(message, int):
-                    assert (
-                        message == revert_reason
-                    ), f"Expected {message}, got {revert_reason}"
-                    return
-                revert_reason = bytes(
-                    [b for b in bytes.fromhex(f"{revert_reason:x}") if b != 0]
-                )
-                if isinstance(message, bytes):
-                    assert (
-                        message == revert_reason
-                    ), f"Expected {message}, got {revert_reason}"
-                    return
-                if isinstance(message, str):
-                    expected_short_string = wrap(message, 32)[-1].strip()
-                    revert_reason_short_string = revert_reason.decode().strip()
-                    assert (
-                        expected_short_string == revert_reason_short_string
-                    ), f"Expected {expected_short_string}, got {revert_reason_short_string}"
-                    return
-            # trunk-ignore(ruff/E722)
-            except:
-                assert (
-                    message == revert_reason
-                ), f"Expected {message}, got {revert_reason}"
-        else:
-            assert message == error, f"Expected {message}, got {error}"
+        assert message == error, f"Expected {message}, got {error}"
     finally:
         pass

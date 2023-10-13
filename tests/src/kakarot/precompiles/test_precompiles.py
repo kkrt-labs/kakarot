@@ -2,7 +2,7 @@ import pytest
 import pytest_asyncio
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.errors import kakarot_error
+from tests.utils.errors import cairo_error
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -43,7 +43,7 @@ class TestPrecompiles:
         ):
             # we choose an address of a non implemented precompile and we check that the Non Implemented Precompile error msg appear.
             not_impl_precompile_address = 0x8
-            with kakarot_error(
+            with cairo_error(
                 f"Kakarot: NotImplementedPrecompile {not_impl_precompile_address}"
             ):
                 await precompiles.test__precompiles_should_throw_on_out_of_bounds(
@@ -56,7 +56,7 @@ class TestPrecompiles:
         ):
             # we choose an address of a non implemented precompile and we check that the Non Implemented Precompile error msg appear.
             not_impl_precompile_address = 0x9 + 1
-            with kakarot_error():
+            with cairo_error():
                 await precompiles.test__exec_precompiles_should_throw_non_implemented_precompile_message(
                     address=not_impl_precompile_address
                 ).call()

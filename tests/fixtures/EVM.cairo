@@ -61,6 +61,7 @@ func execute{
     return_data_len: felt,
     return_data: felt*,
     gas_used: felt,
+    success: felt,
 ) {
     alloc_locals;
     let (local block_number) = get_block_number();
@@ -77,6 +78,7 @@ func execute{
         return_data_len,
         return_data,
         gas_used,
+        reverted,
     ) = Kakarot.execute(
         starknet_contract_address=0,
         evm_contract_address=0,
@@ -103,5 +105,6 @@ func execute{
         return_data_len,
         return_data,
         gas_used,
+        1 - reverted,
     );
 }

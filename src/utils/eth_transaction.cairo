@@ -38,7 +38,7 @@ namespace EthTransaction {
         amount: felt,
         payload_len: felt,
         payload: felt*,
-        tx_hash: Uint256,
+        msg_hash: Uint256,
         v: felt,
         r: Uint256,
         s: Uint256,
@@ -105,7 +105,7 @@ namespace EthTransaction {
                 dest=words,
                 dest_index=0,
             );
-            let (tx_hash) = cairo_keccak_bigend(inputs=words, n_bytes=rlp_data_len);
+            let (msg_hash) = cairo_keccak_bigend(inputs=words, n_bytes=rlp_data_len);
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
 
@@ -128,7 +128,17 @@ namespace EthTransaction {
         let payload_len = sub_items[nonce_idx + 5].data_len;
         let payload: felt* = sub_items[nonce_idx + 5].data;
         return (
-            nonce, gas_price, gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s
+            nonce,
+            gas_price,
+            gas_limit,
+            destination,
+            amount,
+            payload_len,
+            payload,
+            msg_hash,
+            v,
+            r,
+            s,
         );
     }
 
@@ -152,7 +162,7 @@ namespace EthTransaction {
         amount: felt,
         payload_len: felt,
         payload: felt*,
-        tx_hash: Uint256,
+        msg_hash: Uint256,
         v: felt,
         r: Uint256,
         s: Uint256,
@@ -218,7 +228,7 @@ namespace EthTransaction {
                 dest=words,
                 dest_index=0,
             );
-            let (tx_hash) = cairo_keccak_bigend(inputs=words, n_bytes=rlp_len + 1);
+            let (msg_hash) = cairo_keccak_bigend(inputs=words, n_bytes=rlp_len + 1);
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
 
@@ -242,7 +252,17 @@ namespace EthTransaction {
         let payload_len = sub_items[gas_price_idx + 4].data_len;
         let payload: felt* = sub_items[gas_price_idx + 4].data;
         return (
-            nonce, gas_price, gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s
+            nonce,
+            gas_price,
+            gas_limit,
+            destination,
+            amount,
+            payload_len,
+            payload,
+            msg_hash,
+            v,
+            r,
+            s,
         );
     }
 
@@ -275,7 +295,7 @@ namespace EthTransaction {
         amount: felt,
         payload_len: felt,
         payload: felt*,
-        tx_hash: Uint256,
+        msg_hash: Uint256,
         v: felt,
         r: Uint256,
         s: Uint256,
@@ -305,13 +325,23 @@ namespace EthTransaction {
     }(address: felt, account_nonce: felt, tx_data_len: felt, tx_data: felt*) {
         alloc_locals;
         let (
-            nonce, gas_price, gas_limit, destination, amount, payload_len, payload, tx_hash, v, r, s
+            nonce,
+            gas_price,
+            gas_limit,
+            destination,
+            amount,
+            payload_len,
+            payload,
+            msg_hash,
+            v,
+            r,
+            s,
         ) = decode(tx_data_len, tx_data);
         assert nonce = account_nonce;
         let (local keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
         with keccak_ptr {
-            verify_eth_signature_uint256(msg_hash=tx_hash, r=r, s=s, v=v, eth_address=address);
+            verify_eth_signature_uint256(msg_hash=msg_hash, r=r, s=s, v=v, eth_address=address);
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
         return ();

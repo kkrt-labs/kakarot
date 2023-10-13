@@ -71,4 +71,15 @@ contract PlainOpcodesTest is Test {
             console.logAddress(addresses[i]);
         }
     }
+
+    function testSelfDestruct() public {
+        plainOpcodes.kill(payable(address(this)));
+        uint256 value = plainOpcodes.loop(10);
+        assert(value == 10);
+    }
+
+    function testStaticCallToInc() public view {
+        (bool success,) = plainOpcodes.opcodeStaticCall2();
+        assert(!success);
+    }
 }

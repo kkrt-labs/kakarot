@@ -153,4 +153,8 @@ contract PlainOpcodes {
         bool success = to.send(amount);
         require(success, "failed to send");
     }
+
+    function kill(address payable to) public {
+        selfdestruct(to);
+    }
 }

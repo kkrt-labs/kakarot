@@ -273,11 +273,11 @@ def block_with_tx_hashes(starknet):
     https://github.com/software-mansion/starknet.py/issues/1174.
     """
 
+    import json
+
+    import requests
+
     def _factory(block_number: Optional[int] = None):
-        import json
-
-        import requests
-
         response = requests.post(
             starknet.url,
             json={
@@ -289,5 +289,25 @@ def block_with_tx_hashes(starknet):
             timeout=60,
         )
         return json.loads(response.text)["result"]
+
+    return _factory
+
+
+@pytest.fixture
+def is_account_deployed(starknet, compute_starknet_address):
+    """
+    Return True if the corresponding EVM account is already deployed, False otherwise.
+    """
+
+    from starknet_py.net.client_errors import ClientError
+
+    async def _factory(evm_address: Union[str, int]):
+        starknet_address = await compute_starknet_address(evm_address)
+        try:
+            await starknet.get_class_hash_at(starknet_address)
+            return True
+        except ClientError as e:
+            if "Contract not found" in e.message:
+                return False
 
     return _factory

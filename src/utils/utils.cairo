@@ -25,6 +25,7 @@ from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.starknet.common.syscalls import get_caller_address
 
 // Internal dependencies
 from kakarot.interfaces.interfaces import IAccount, IContractAccount
@@ -874,5 +875,23 @@ namespace Helpers {
         return bytes4_array_to_bytes(
             data_len=data_len - 1, data=data + 1, bytes_len=bytes_len + 4, bytes=res
         );
+    }
+
+    // @notice Check if a starknet contract address is the caller of the transaction
+    // @dev use syscall to get caller address and compare it to the starknet contract address
+    // @param starknet_address The address of the Starknet contract
+    // @return felt 1 if the given starknet address is the caller
+    func is_address_caller{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(starknet_address: felt) -> felt {
+        let (caller_address) = get_caller_address();
+        if (caller_address == starknet_address) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 }

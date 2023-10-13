@@ -13,16 +13,17 @@ from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256
-from starkware.starknet.common.syscalls import emit_event, get_caller_address
+from starkware.starknet.common.syscalls import emit_event
 
 // Internal dependencies
-from utils.utils import Helpers
-from kakarot.model import model
-from kakarot.memory import Memory
-from kakarot.stack import Stack
-from kakarot.constants import Constants
-from kakarot.interfaces.interfaces import IAccount, IContractAccount
 from kakarot.accounts.library import Accounts
+from kakarot.constants import Constants
+from kakarot.errors import Errors
+from kakarot.interfaces.interfaces import IAccount, IContractAccount
+from kakarot.memory import Memory
+from kakarot.model import model
+from kakarot.stack import Stack
+from utils.utils import Helpers
 
 // @title ExecutionContext related functions.
 // @notice This file contains functions related to the execution context.
@@ -36,6 +37,10 @@ namespace ExecutionContext {
         gas_used: felt,
         starknet_contract_address: felt,
         evm_contract_address: felt,
+        reverted: felt,
+        selfdestruct_contracts_len: felt,
+        selfdestruct_contracts: felt*,
+        calling_context: model.ExecutionContext*,
     }
 
     // @notice Initialize an empty context to act as a placeholder for root context.
@@ -60,8 +65,8 @@ namespace ExecutionContext {
         dw 0;  // evm_contract_address
         dw 0;  // origin
         dw 0;  // calling_context
-        dw 0;  // destroy_contracts_len
-        dw 0;  // destroy_contracts
+        dw 0;  // selfdestruct_contracts_len
+        dw 0;  // selfdestruct_contracts
         dw 0;  // events_len
         dw 0;  // events
         dw 0;  // create_contracts_len
@@ -102,7 +107,7 @@ namespace ExecutionContext {
         read_only: felt,
     ) -> model.ExecutionContext* {
         alloc_locals;
-        let (empty_destroy_contracts: felt*) = alloc();
+        let (empty_selfdestruct_contracts: felt*) = alloc();
         let (empty_events: model.Event*) = alloc();
         let (empty_create_contracts: felt*) = alloc();
         let (local revert_contract_state_dict_start) = default_dict_new(0);
@@ -128,8 +133,8 @@ namespace ExecutionContext {
             evm_contract_address=evm_contract_address,
             origin=origin,
             calling_context=calling_context,
-            destroy_contracts_len=0,
-            destroy_contracts=empty_destroy_contracts,
+            selfdestruct_contracts_len=0,
+            selfdestruct_contracts=empty_selfdestruct_contracts,
             events_len=0,
             events=empty_events,
             create_addresses_len=0,
@@ -137,27 +142,6 @@ namespace ExecutionContext {
             revert_contract_state=revert_contract_state,
             reverted=FALSE,
             read_only=read_only,
-        );
-    }
-
-    // @notice Finalizes the execution context.
-    // @dev See https://www.cairo-lang.org/docs/reference/common_library.html#dictaccess
-    //      TL;DR: ensure that the prover used values that are consistent with the dictionary.
-    // @param self The pointer to the execution context.
-    // @return Summary The pointer to the execution Summary.
-    func finalize{range_check_ptr}(self: model.ExecutionContext*) -> Summary* {
-        alloc_locals;
-        let memory_summary = Memory.finalize(self.memory);
-        let stack_summary = Stack.finalize(self.stack);
-
-        return new Summary(
-            memory=memory_summary,
-            stack=stack_summary,
-            return_data=self.return_data,
-            return_data_len=self.return_data_len,
-            gas_used=self.gas_used,
-            starknet_contract_address=self.starknet_contract_address,
-            evm_contract_address=self.evm_contract_address,
         );
     }
 
@@ -183,12 +167,12 @@ namespace ExecutionContext {
         return self.stopped;
     }
 
-    // @notice Return whether the current execution context is root.
-    // @dev When the execution context is root, no calling context can be called when this context stops.
+    // @notice Return whether the current execution context is empty (dummy) or a real context.
+    // @dev When the calling_context of an execution context is empty, no calling context can be called when this context stops.
     // @param self The pointer to the execution context.
-    // @return is_root TRUE if the execution context is root, FALSE otherwise.
-    func is_root(self: model.ExecutionContext*) -> felt {
-        if (cast(self.calling_context.call_context, felt) == 0) {
+    // @return  TRUE if the execution context is empty, FALSE otherwise.
+    func is_empty(self: model.ExecutionContext*) -> felt {
+        if (cast(self.call_context, felt) == 0) {
             return TRUE;
         }
         return FALSE;
@@ -214,8 +198,8 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            destroy_contracts_len=self.destroy_contracts_len,
-            destroy_contracts=self.destroy_contracts,
+            selfdestruct_contracts_len=self.selfdestruct_contracts_len,
+            selfdestruct_contracts=self.selfdestruct_contracts,
             events_len=self.events_len,
             events=self.events,
             create_addresses_len=self.create_addresses_len,
@@ -258,8 +242,8 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            destroy_contracts_len=self.destroy_contracts_len,
-            destroy_contracts=self.destroy_contracts,
+            selfdestruct_contracts_len=self.selfdestruct_contracts_len,
+            selfdestruct_contracts=self.selfdestruct_contracts,
             events_len=self.events_len,
             events=self.events,
             create_addresses_len=self.create_addresses_len,
@@ -270,140 +254,35 @@ namespace ExecutionContext {
         );
     }
 
-    // @notice Iterates through the `revert_contract_state` dict and restores a contract state to what it was prior to the reverting execution context's writes.
-    // @param starknet_contract_address The contract address whose state is being restored to prior the execution contexts writes.
-    // @param dict_start The start of the `revert_contract_state` dict.
-    // @param dict_end The end of the `revert_contract_state` dict.
-    // @return ExecutionContext The pointer to the updated execution context.
-    func finalize_reverting_writes{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(starknet_contract_address: felt, dict_start: DictAccess*, dict_end: DictAccess*) {
-        alloc_locals;
-        if (dict_start == dict_end) {
-            return ();
-        }
-
-        let reverted_state = dict_start.new_value;
-        let casted_reverted_state = cast(reverted_state, model.KeyValue*);
-        IContractAccount.write_storage(
-            contract_address=starknet_contract_address,
-            key=casted_reverted_state.key,
-            value=casted_reverted_state.value,
-        );
-        return finalize_reverting_writes(
-            starknet_contract_address=starknet_contract_address,
-            dict_start=dict_start + DictAccess.SIZE,
-            dict_end=dict_end,
-        );
-    }
-
-    // @notice Iterates through a list of events and emits them on the case that a context ran successfully (stopped and not reverted).
-    // @param evm_contract_address The execution context's evm contract address.
-    // @param events_len The length of the events array.
-    // @param events The array of Event structs that are emitted via the `emit_event` syscall.
-    func emit_events{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(evm_contract_address: felt, events_len: felt, events: model.Event*) {
-        alloc_locals;
-
-        if (events_len == 0) {
-            return ();
-        }
-
-        let event: model.Event = [events];
-        let event_keys_felt = cast(event.keys, felt*);
-        // we add the operating evm_contract_address of an execution context
-        // as the first key of an event
-        // we track kakarot events as those emitted from the kkrt contract
-        // and map it to the kkrt contract via this convention
-        let (event_keys: felt*) = alloc();
-        memcpy(dst=event_keys + 1, src=event_keys_felt, len=event.keys_len);
-        assert [event_keys] = evm_contract_address;
-        let updated_event_len = event.keys_len + 1;
-
-        emit_event(
-            keys_len=updated_event_len, keys=event_keys, data_len=event.data_len, data=event.data
-        );
-        // we maintain the semantics of one event struct involves iterating a full event struct size recursively
-        emit_events(evm_contract_address, events_len - 1, events + 1 * model.Event.SIZE);
-        return ();
-    }
-
-    // @notice Handles the necessary state upkeep of a context, depending on whether it is reverted or ran successfully.
+    // @notice Finalizes the execution context.
+    // @dev See https://www.cairo-lang.org/docs/reference/common_library.html#dictaccess
+    //      TL;DR: ensure that the prover used values that are consistent with the dictionary.
     // @param self The pointer to the execution context.
-    // @return ExecutionContext The pointer to the updated execution context.
-    func finalize_state{
+    // @return Summary The pointer to the execution Summary.
+    func finalize{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.ExecutionContext*) -> model.ExecutionContext* {
+    }(self: model.ExecutionContext*) -> Summary* {
         alloc_locals;
+        let memory_summary = Memory.finalize(self.memory);
+        let stack_summary = Stack.finalize(self.stack);
+        Internals._finalize_state_updates(self);
 
-        let is_reverted = ExecutionContext.is_reverted(self);
-
-        if (is_reverted != 0) {
-            let revert_contract_state_dict_end = self.revert_contract_state.dict_end;
-            let revert_contract_state_dict_start = self.revert_contract_state.dict_start;
-            let (squashed_dict_start, squashed_dict_end) = default_dict_finalize(
-                revert_contract_state_dict_start, revert_contract_state_dict_end, 0
-            );
-            finalize_reverting_writes(
-                self.starknet_contract_address, squashed_dict_start, squashed_dict_end
-            );
-            Helpers.erase_contracts(self.create_addresses_len, self.create_addresses);
-            return self;
-        } else {
-            // this is called after a top level check that a given context is stopped
-            // so this is the case of a stopped, non reverted context
-            // meaning events should be fired off!
-            emit_events(self.evm_contract_address, self.events_len, self.events);
-            return self;
-        }
-    }
-
-    // @notice If execution context is reverted, we take its revert reason in bytes, encode it as a short string felt, and convey it as a thrown error message. Otherwise we do nothing.
-    // @dev Meant to be used at 'top level' entry points so we can be sure there is no calling context that handles a revert.
-    // @param self The pointer to the execution context.
-    func maybe_throw_revert{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.ExecutionContext*) {
-        alloc_locals;
-
-        let is_reverted = ExecutionContext.is_reverted(self);
-
-        if (is_reverted != 0) {
-            let revert_reason_bytes: felt* = self.return_data;
-            let size = self.return_data_len;
-            // revert with loaded revert reason short string: 31 bytes of the last word
-            let reason_is_single_word = is_le(size, 32);
-            if (reason_is_single_word != FALSE) {
-                tempvar initial_byte: felt* = revert_reason_bytes;
-                tempvar actual_size = size;
-            } else {
-                tempvar byte_shift = size - 32;
-                tempvar initial_byte: felt* = revert_reason_bytes + byte_shift;
-                tempvar actual_size = 31;
-            }
-            let revert_reason_uint256 = Helpers.bytes_i_to_uint256(initial_byte, actual_size);
-            local revert_reason = Helpers.uint256_to_felt(revert_reason_uint256);
-            with_attr error_message("Kakarot: Reverted with reason: {revert_reason}") {
-                assert is_reverted = 0;
-            }
-
-            return ();
-        } else {
-            return ();
-        }
+        return new Summary(
+            memory=memory_summary,
+            stack=stack_summary,
+            return_data=self.return_data,
+            return_data_len=self.return_data_len,
+            gas_used=self.gas_used,
+            starknet_contract_address=self.starknet_contract_address,
+            evm_contract_address=self.evm_contract_address,
+            reverted=self.reverted,
+            selfdestruct_contracts_len=self.selfdestruct_contracts_len,
+            selfdestruct_contracts=self.selfdestruct_contracts,
+            calling_context=self.calling_context,
+        );
     }
 
     // @notice Read and return data from bytecode.
@@ -449,8 +328,8 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            destroy_contracts_len=self.destroy_contracts_len,
-            destroy_contracts=self.destroy_contracts,
+            selfdestruct_contracts_len=self.selfdestruct_contracts_len,
+            selfdestruct_contracts=self.selfdestruct_contracts,
             events_len=self.events_len,
             events=self.events,
             create_addresses_len=self.create_addresses_len,
@@ -484,8 +363,8 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            destroy_contracts_len=self.destroy_contracts_len,
-            destroy_contracts=self.destroy_contracts,
+            selfdestruct_contracts_len=self.selfdestruct_contracts_len,
+            selfdestruct_contracts=self.selfdestruct_contracts,
             events_len=self.events_len,
             events=self.events,
             create_addresses_len=self.create_addresses_len,
@@ -525,8 +404,8 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            destroy_contracts_len=self.destroy_contracts_len,
-            destroy_contracts=self.destroy_contracts,
+            selfdestruct_contracts_len=self.selfdestruct_contracts_len,
+            selfdestruct_contracts=self.selfdestruct_contracts,
             events_len=self.events_len,
             events=self.events,
             create_addresses_len=self.create_addresses_len,
@@ -560,8 +439,8 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            destroy_contracts_len=self.destroy_contracts_len,
-            destroy_contracts=self.destroy_contracts,
+            selfdestruct_contracts_len=self.selfdestruct_contracts_len,
+            selfdestruct_contracts=self.selfdestruct_contracts,
             events_len=self.events_len,
             events=self.events,
             create_addresses_len=self.create_addresses_len,
@@ -595,8 +474,8 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            destroy_contracts_len=self.destroy_contracts_len,
-            destroy_contracts=self.destroy_contracts,
+            selfdestruct_contracts_len=self.selfdestruct_contracts_len,
+            selfdestruct_contracts=self.selfdestruct_contracts,
             events_len=self.events_len,
             events=self.events,
             create_addresses_len=self.create_addresses_len,
@@ -631,8 +510,8 @@ namespace ExecutionContext {
             evm_contract_address=evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            destroy_contracts_len=self.destroy_contracts_len,
-            destroy_contracts=self.destroy_contracts,
+            selfdestruct_contracts_len=self.selfdestruct_contracts_len,
+            selfdestruct_contracts=self.selfdestruct_contracts,
             events_len=self.events_len,
             events=self.events,
             create_addresses_len=self.create_addresses_len,
@@ -645,16 +524,18 @@ namespace ExecutionContext {
 
     // @notice Update the array of contracts to destroy.
     // @param self The pointer to the execution context.
-    // @param destroy_contracts_len Array length of destroy_contracts to add.
-    // @param destroy_contracts The pointer to the new array of contracts to destroy.
+    // @param selfdestruct_contracts_len Array length of selfdestruct_contracts to add.
+    // @param selfdestruct_contracts The pointer to the new array of contracts to destroy.
     // @return ExecutionContext The pointer to the updated execution context.
-    func push_to_destroy_contracts(
-        self: model.ExecutionContext*, destroy_contracts_len: felt, destroy_contracts: felt*
+    func push_to_selfdestruct_contracts(
+        self: model.ExecutionContext*,
+        selfdestruct_contracts_len: felt,
+        selfdestruct_contracts: felt*,
     ) -> model.ExecutionContext* {
         Helpers.fill_array(
-            fill_len=destroy_contracts_len,
-            input_arr=destroy_contracts,
-            output_arr=self.destroy_contracts + self.destroy_contracts_len,
+            fill_len=selfdestruct_contracts_len,
+            input_arr=selfdestruct_contracts,
+            output_arr=self.selfdestruct_contracts + self.selfdestruct_contracts_len,
         );
         return new model.ExecutionContext(
             call_context=self.call_context,
@@ -671,8 +552,8 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            destroy_contracts_len=self.destroy_contracts_len + destroy_contracts_len,
-            destroy_contracts=self.destroy_contracts,
+            selfdestruct_contracts_len=self.selfdestruct_contracts_len + selfdestruct_contracts_len,
+            selfdestruct_contracts=self.selfdestruct_contracts,
             events_len=self.events_len,
             events=self.events,
             create_addresses_len=self.create_addresses_len,
@@ -685,8 +566,8 @@ namespace ExecutionContext {
 
     // @notice Update the array of events to emit in the case of a execution context successfully running to completion (see `LoggingHelper.finalize`).
     // @param self The pointer to the execution context.
-    // @param destroy_contracts_len Array length of events to add.
-    // @param destroy_contracts The pointer to the new array of contracts to destroy.
+    // @param selfdestruct_contracts_len Array length of events to add.
+    // @param selfdestruct_contracts The pointer to the new array of contracts to destroy.
     func push_event_to_emit(
         self: model.ExecutionContext*,
         event_keys_len: felt,
@@ -713,8 +594,8 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            destroy_contracts_len=self.destroy_contracts_len,
-            destroy_contracts=self.destroy_contracts,
+            selfdestruct_contracts_len=self.selfdestruct_contracts_len,
+            selfdestruct_contracts=self.selfdestruct_contracts,
             events_len=self.events_len + 1,
             events=self.events,
             create_addresses_len=self.create_addresses_len,
@@ -747,8 +628,8 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            destroy_contracts_len=self.destroy_contracts_len,
-            destroy_contracts=self.destroy_contracts,
+            selfdestruct_contracts_len=self.selfdestruct_contracts_len,
+            selfdestruct_contracts=self.selfdestruct_contracts,
             events_len=self.events_len,
             events=self.events,
             create_addresses_len=self.create_addresses_len + 1,
@@ -766,7 +647,7 @@ namespace ExecutionContext {
     func push_to_destroy_contract(
         self: model.ExecutionContext*, destroy_contract: felt
     ) -> model.ExecutionContext* {
-        assert [self.destroy_contracts + self.destroy_contracts_len] = destroy_contract;
+        assert [self.selfdestruct_contracts + self.selfdestruct_contracts_len] = destroy_contract;
         return new model.ExecutionContext(
             call_context=self.call_context,
             program_counter=self.program_counter,
@@ -782,8 +663,8 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            destroy_contracts_len=self.destroy_contracts_len + 1,
-            destroy_contracts=self.destroy_contracts,
+            selfdestruct_contracts_len=self.selfdestruct_contracts_len + 1,
+            selfdestruct_contracts=self.selfdestruct_contracts,
             events_len=self.events_len,
             events=self.events,
             create_addresses_len=self.create_addresses_len,
@@ -818,8 +699,8 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            destroy_contracts_len=self.destroy_contracts_len,
-            destroy_contracts=self.destroy_contracts,
+            selfdestruct_contracts_len=self.selfdestruct_contracts_len,
+            selfdestruct_contracts=self.selfdestruct_contracts,
             events_len=self.events_len,
             events=self.events,
             create_addresses_len=self.create_addresses_len,
@@ -830,33 +711,29 @@ namespace ExecutionContext {
         );
     }
 
-    // @notice Dump the current execution context.
-    // @dev The execution context is dumped to the debug server if `DEBUG` environment variable is set to `True`.
-    // @param self The pointer to the execution context.
-    func dump{range_check_ptr}(self: model.ExecutionContext*) {
-        let pc = self.program_counter;
-        let stopped = is_stopped(self);
-
-        return ();
-    }
-
     // @notice Update the program counter.
     // @dev The program counter is updated to a given value. This is only ever called by JUMP or JUMPI
     // @param self The pointer to the execution context.
     // @param new_pc_offset The value to update the program counter by.
     // @return ExecutionContext The pointer to the updated execution context.
-    func update_program_counter{range_check_ptr}(
+    func jump{range_check_ptr}(
         self: model.ExecutionContext*, new_pc_offset: felt
     ) -> model.ExecutionContext* {
         alloc_locals;
-        // Revert if new_value points outside of the code range
-        with_attr error_message("Kakarot: new pc target out of range") {
-            assert_nn(new_pc_offset);
-            assert_le(new_pc_offset, self.call_context.bytecode_len - 1);
+
+        let is_nn_pc = is_nn(new_pc_offset);
+        let is_le_bytecode_len = is_le(new_pc_offset, self.call_context.bytecode_len - 1);
+        if (is_nn_pc + is_le_bytecode_len != 2) {
+            let (revert_reason_len, revert_reason) = Errors.programCounterOutOfRange();
+            let ctx = ExecutionContext.revert(self, revert_reason, revert_reason_len);
+            return ctx;
         }
 
-        // Revert if new pc_offset points to something other then JUMPDEST
-        check_jumpdest(self=self, pc_location=new_pc_offset);
+        if ([self.call_context.bytecode + new_pc_offset] != 0x5b) {
+            let (revert_reason_len, revert_reason) = Errors.jumpToNonJumpdest();
+            let ctx = ExecutionContext.revert(self, revert_reason, revert_reason_len);
+            return ctx;
+        }
 
         return new model.ExecutionContext(
             call_context=self.call_context,
@@ -873,8 +750,8 @@ namespace ExecutionContext {
             evm_contract_address=self.evm_contract_address,
             origin=self.origin,
             calling_context=self.calling_context,
-            destroy_contracts_len=self.destroy_contracts_len,
-            destroy_contracts=self.destroy_contracts,
+            selfdestruct_contracts_len=self.selfdestruct_contracts_len,
+            selfdestruct_contracts=self.selfdestruct_contracts,
             events_len=self.events_len,
             events=self.events,
             create_addresses_len=self.create_addresses_len,
@@ -884,41 +761,99 @@ namespace ExecutionContext {
             read_only=self.read_only,
         );
     }
+}
 
-    // @notice Check if location is a valid Jump destination
-    // @dev Extract the byte that the current pc is pointing to and revert if it is not a JUMPDEST operation.
-    // @param self The pointer to the execution context
-    // @param pc_location location to check
-    func check_jumpdest(self: model.ExecutionContext*, pc_location: felt) {
-        alloc_locals;
-        let (local output: felt*) = alloc();
-
-        // Copy bytecode slice
-        memcpy(dst=output, src=self.call_context.bytecode + pc_location, len=1);
-
-        // Revert if current pc location is not JUMPDEST
-        with_attr error_message("Kakarot: JUMPed to pc offset is not JUMPDEST") {
-            assert [output] = 0x5b;
-        }
-
-        return ();
-    }
-
-    // @notice Check if starknet contract address is an EOA
-    // @dev use syscall to get caller address and compare it to the starknet contract address
-    // @param self The pointer to the execution context
-    // @return felt 1 if starknet contract address is an EOA, 0 otherwise
-    func is_caller_eoa{
+namespace Internals {
+    // @notice Iterates through a list of events and emits them on the case that a context ran successfully (stopped and not reverted).
+    // @param evm_contract_address The execution context's evm contract address.
+    // @param events_len The length of the events array.
+    // @param events The array of Event structs that are emitted via the `emit_event` syscall.
+    func _emit_events{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.ExecutionContext*) -> felt {
-        let (address) = get_caller_address();
-        if (address == self.starknet_contract_address) {
-            return TRUE;
-        } else {
-            return FALSE;
+    }(evm_contract_address: felt, events_len: felt, events: model.Event*) {
+        alloc_locals;
+
+        if (events_len == 0) {
+            return ();
         }
+
+        let event: model.Event = [events];
+        let event_keys_felt = cast(event.keys, felt*);
+        // we add the operating evm_contract_address of an execution context
+        // as the first key of an event
+        // we track kakarot events as those emitted from the kkrt contract
+        // and map it to the kkrt contract via this convention
+        let (event_keys: felt*) = alloc();
+        memcpy(dst=event_keys + 1, src=event_keys_felt, len=event.keys_len);
+        assert [event_keys] = evm_contract_address;
+        let updated_event_len = event.keys_len + 1;
+
+        emit_event(
+            keys_len=updated_event_len, keys=event_keys, data_len=event.data_len, data=event.data
+        );
+        // we maintain the semantics of one event struct involves iterating a full event struct size recursively
+        _emit_events(evm_contract_address, events_len - 1, events + 1 * model.Event.SIZE);
+        return ();
+    }
+
+    // @notice Finalize the state updates brought by this ExecutionContext: contract creation, balances, sstore and events.
+    // @param self The ExecutionContext.
+    func _finalize_state_updates{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.ExecutionContext*) {
+        alloc_locals;
+        let (dict_start, dict_end) = default_dict_finalize(
+            self.revert_contract_state.dict_start, self.revert_contract_state.dict_end, 0
+        );
+
+        if (self.reverted == 0) {
+            _emit_events(self.evm_contract_address, self.events_len, self.events);
+            return ();
+        }
+
+        _finalize_storage_updates(
+            starknet_contract_address=self.starknet_contract_address,
+            dict_start=dict_start,
+            dict_end=dict_end,
+        );
+        Helpers.erase_contracts(self.create_addresses_len, self.create_addresses);
+        return ();
+    }
+
+    // @notice Iterates through the `revert_contract_state` dict and restores a contract state to what it was prior to the reverting execution context's writes.
+    // @param starknet_contract_address The contract address whose state is being restored to prior the execution contexts writes.
+    // @param reverted Whether the ExecutionContext was reverted or not
+    // @param dict_start The start of the `revert_contract_state` dict.
+    // @param dict_end The end of the `revert_contract_state` dict.
+    // @return ExecutionContext The pointer to the updated execution context.
+    func _finalize_storage_updates{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(starknet_contract_address: felt, dict_start: DictAccess*, dict_end: DictAccess*) {
+        alloc_locals;
+        if (dict_start == dict_end) {
+            return ();
+        }
+
+        let reverted_state = dict_start.new_value;
+        let casted_reverted_state = cast(reverted_state, model.KeyValue*);
+        IContractAccount.write_storage(
+            contract_address=starknet_contract_address,
+            key=casted_reverted_state.key,
+            value=casted_reverted_state.value,
+        );
+        return _finalize_storage_updates(
+            starknet_contract_address=starknet_contract_address,
+            dict_start=dict_start + DictAccess.SIZE,
+            dict_end=dict_end,
+        );
     }
 }
