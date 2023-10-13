@@ -72,7 +72,7 @@ namespace IContractAccount {
     func get_nonce() -> (nonce: felt) {
     }
 
-    func increment_nonce() {
+    func set_nonce(nonce: felt) {
     }
 }
 

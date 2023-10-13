@@ -4,11 +4,12 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.default_dict import default_dict_new
+from starkware.cairo.common.math import split_felt, assert_not_zero, assert_le
 from starkware.cairo.common.uint256 import Uint256, uint256_sub
 from starkware.starknet.common.syscalls import deploy, get_contract_address
-from starkware.cairo.common.math import split_felt, assert_not_zero, assert_le
 
 // Third party dependencies
 from openzeppelin.token.erc20.library import ERC20
@@ -22,12 +23,7 @@ from kakarot.constants import (
 )
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.memory_operations import MemoryOperations
-from kakarot.instructions.system_operations import (
-    SystemOperations,
-    CallHelper,
-    CreateHelper,
-    SelfDestructHelper,
-)
+from kakarot.instructions.system_operations import SystemOperations, CallHelper, CreateHelper
 from kakarot.interfaces.interfaces import IContractAccount, IKakarot, IAccount, IERC20
 from kakarot.library import Kakarot
 from kakarot.accounts.library import Accounts
@@ -229,18 +225,18 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     assert sub_ctx.return_data_len = 0;
     assert sub_ctx.gas_used = 0;
     let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
-    assert_le(sub_ctx.gas_limit, gas_felt);
-    assert sub_ctx.gas_price = 0;
-    assert sub_ctx.starknet_contract_address = callee_starknet_contract_address;
-    assert sub_ctx.evm_contract_address = callee_evm_contract_address;
-    TestHelpers.assert_execution_context_equal(sub_ctx.calling_context, ctx);
+    assert_le(sub_ctx.call_context.gas_limit, gas_felt);
+    assert sub_ctx.call_context.gas_price = 0;
+    assert sub_ctx.call_context.address.starknet = callee_starknet_contract_address;
+    assert sub_ctx.call_context.address.evm = callee_evm_contract_address;
+    TestHelpers.assert_execution_context_equal(sub_ctx.call_context.calling_context, ctx);
 
     // Fake a RETURN in sub_ctx then teardow, see note in evm.codes:
     // If the size of the return data is not known, it can also be retrieved after the call with
     // the instructions RETURNDATASIZE and RETURNDATACOPY (since the Byzantium fork).
     let (local return_data: felt*) = alloc();
     assert [return_data] = 0x11;
-    let sub_ctx = ExecutionContext.update_return_data(sub_ctx, 1, return_data);
+    let sub_ctx = ExecutionContext.stop(sub_ctx, 1, return_data, FALSE);
     let summary = ExecutionContext.finalize(sub_ctx);
     let ctx = CallHelper.finalize_calling_context(summary);
 
@@ -384,17 +380,17 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
     assert sub_ctx.stopped = 0;
     assert sub_ctx.gas_used = 0;
     let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
-    assert_le(sub_ctx.gas_limit, gas_felt);
-    assert sub_ctx.gas_price = 0;
-    assert sub_ctx.starknet_contract_address = caller_starknet_contract_address;
-    assert sub_ctx.evm_contract_address = caller_evm_contract_address;
-    TestHelpers.assert_execution_context_equal(sub_ctx.calling_context, ctx);
+    assert_le(sub_ctx.call_context.gas_limit, gas_felt);
+    assert sub_ctx.call_context.gas_price = 0;
+    assert sub_ctx.call_context.address.starknet = caller_starknet_contract_address;
+    assert sub_ctx.call_context.address.evm = caller_evm_contract_address;
+    TestHelpers.assert_execution_context_equal(sub_ctx.call_context.calling_context, ctx);
 
     // Fake a RETURN in sub_ctx then teardow, see note in evm.codes:
     // If the size of the return data is not known, it can also be retrieved after the call with
     // the instructions RETURNDATASIZE and RETURNDATACOPY (since the Byzantium fork).
     // So it's expected that the RETURN of the sub_ctx does set proper values for return_data_len and return_data
-    let sub_ctx = ExecutionContext.update_return_data(sub_ctx, 0, sub_ctx.return_data);
+    let sub_ctx = ExecutionContext.stop(sub_ctx, 0, sub_ctx.return_data, FALSE);
     let summary = ExecutionContext.finalize(sub_ctx);
     let ctx = CallHelper.finalize_calling_context(summary);
 
@@ -529,17 +525,17 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
     assert sub_ctx.stopped = 0;
     assert sub_ctx.gas_used = 0;
     let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
-    assert_le(sub_ctx.gas_limit, gas_felt);
-    assert sub_ctx.gas_price = 0;
-    assert sub_ctx.starknet_contract_address = starknet_contract_address;
-    assert sub_ctx.evm_contract_address = evm_contract_address;
-    TestHelpers.assert_execution_context_equal(sub_ctx.calling_context, ctx);
+    assert_le(sub_ctx.call_context.gas_limit, gas_felt);
+    assert sub_ctx.call_context.gas_price = 0;
+    assert sub_ctx.call_context.address.starknet = starknet_contract_address;
+    assert sub_ctx.call_context.address.evm = evm_contract_address;
+    TestHelpers.assert_execution_context_equal(sub_ctx.call_context.calling_context, ctx);
 
     // Fake a RETURN in sub_ctx then teardow, see note in evm.codes:
     // If the size of the return data is not known, it can also be retrieved after the call with
     // the instructions RETURNDATASIZE and RETURNDATACOPY (since the Byzantium fork).
     // So it's expected that the RETURN of the sub_ctx does set proper values for return_data_len and return_data
-    let sub_ctx = ExecutionContext.update_return_data(sub_ctx, 0, sub_ctx.return_data);
+    let sub_ctx = ExecutionContext.stop(sub_ctx, 0, sub_ctx.return_data, FALSE);
     let summary = ExecutionContext.finalize(sub_ctx);
     let ctx = CallHelper.finalize_calling_context(summary);
 
@@ -605,17 +601,17 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
     assert sub_ctx.stopped = 0;
     assert sub_ctx.gas_used = 0;
     let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
-    assert_le(sub_ctx.gas_limit, gas_felt);
-    assert sub_ctx.gas_price = 0;
-    assert sub_ctx.starknet_contract_address = ctx.starknet_contract_address;
-    assert sub_ctx.evm_contract_address = ctx.evm_contract_address;
-    TestHelpers.assert_execution_context_equal(sub_ctx.calling_context, ctx);
+    assert_le(sub_ctx.call_context.gas_limit, gas_felt);
+    assert sub_ctx.call_context.gas_price = 0;
+    assert sub_ctx.call_context.address.starknet = ctx.call_context.address.starknet;
+    assert sub_ctx.call_context.address.evm = ctx.call_context.address.evm;
+    TestHelpers.assert_execution_context_equal(sub_ctx.call_context.calling_context, ctx);
 
     // Fake a RETURN in sub_ctx then teardow, see note in evm.codes:
     // If the size of the return data is not known, it can also be retrieved after the call with
     // the instructions RETURNDATASIZE and RETURNDATACOPY (since the Byzantium fork).
     // So it's expected that the RETURN of the sub_ctx does set proper values for return_data_len and return_data
-    let sub_ctx = ExecutionContext.update_return_data(sub_ctx, 0, sub_ctx.return_data);
+    let sub_ctx = ExecutionContext.stop(sub_ctx, 0, sub_ctx.return_data, FALSE);
     let summary = ExecutionContext.finalize(sub_ctx);
     let ctx = CallHelper.finalize_calling_context(summary);
 
@@ -676,32 +672,30 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
     assert sub_ctx.stopped = 0;
     assert sub_ctx.return_data_len = 0;
     assert sub_ctx.gas_used = 0;
-    assert sub_ctx.gas_limit = 0;
-    assert sub_ctx.gas_price = 0;
-    assert_not_zero(sub_ctx.starknet_contract_address);
-    assert_not_zero(sub_ctx.evm_contract_address);
+    assert sub_ctx.call_context.gas_limit = 0;
+    assert sub_ctx.call_context.gas_price = 0;
+    assert_not_zero(sub_ctx.call_context.address.starknet);
+    assert_not_zero(sub_ctx.call_context.address.evm);
     let (sub_ctx_contract_stored_bytecode) = IAccount.bytecode_len(
-        sub_ctx.starknet_contract_address
+        sub_ctx.call_context.address.starknet
     );
     assert sub_ctx_contract_stored_bytecode = 0;
-    TestHelpers.assert_execution_context_equal(ctx, sub_ctx.calling_context);
+    TestHelpers.assert_execution_context_equal(ctx, sub_ctx.call_context.calling_context);
 
     // Fake a RETURN in sub_ctx then finalize
     let return_data_len = 65;
     TestHelpers.array_fill(sub_ctx.return_data, return_data_len, 0xff);
-    let sub_ctx = ExecutionContext.update_return_data(
-        sub_ctx, return_data_len, sub_ctx.return_data
-    );
+    let sub_ctx = ExecutionContext.stop(sub_ctx, return_data_len, sub_ctx.return_data, FALSE);
     let summary = ExecutionContext.finalize(sub_ctx);
     let ctx = CreateHelper.finalize_calling_context(summary);
 
     // Then
     let (stack, address) = Stack.peek(ctx.stack, 0);
     let evm_contract_address = Helpers.uint256_to_felt(address);
-    assert evm_contract_address = sub_ctx.evm_contract_address;
-    assert sub_ctx.evm_contract_address = expected_create_address;
+    assert evm_contract_address = sub_ctx.call_context.address.evm;
+    assert sub_ctx.call_context.address.evm = expected_create_address;
     let (created_contract_bytecode_len, created_contract_bytecode) = IAccount.bytecode(
-        sub_ctx.starknet_contract_address
+        sub_ctx.call_context.address.starknet
     );
     TestHelpers.assert_array_equal(
         created_contract_bytecode_len,
@@ -759,7 +753,7 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
         contract_address, evm_caller_address, bytecode_len, bytecode, stack
     );
 
-    assert ctx.evm_contract_address = evm_caller_address;
+    assert ctx.call_context.address.evm = evm_caller_address;
     let ctx = MemoryOperations.exec_mstore(ctx);
 
     // When
@@ -777,32 +771,30 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     assert sub_ctx.stopped = 0;
     assert sub_ctx.return_data_len = 0;
     assert sub_ctx.gas_used = 0;
-    assert sub_ctx.gas_limit = 0;
-    assert sub_ctx.gas_price = 0;
-    assert_not_zero(sub_ctx.starknet_contract_address);
-    assert_not_zero(sub_ctx.evm_contract_address);
+    assert sub_ctx.call_context.gas_limit = 0;
+    assert sub_ctx.call_context.gas_price = 0;
+    assert_not_zero(sub_ctx.call_context.address.starknet);
+    assert_not_zero(sub_ctx.call_context.address.evm);
     let (sub_ctx_contract_stored_bytecode) = IAccount.bytecode_len(
-        sub_ctx.starknet_contract_address
+        sub_ctx.call_context.address.starknet
     );
     assert sub_ctx_contract_stored_bytecode = 0;
-    TestHelpers.assert_execution_context_equal(ctx, sub_ctx.calling_context);
+    TestHelpers.assert_execution_context_equal(ctx, sub_ctx.call_context.calling_context);
 
     // Fake a RETURN in sub_ctx then finalize
     let return_data_len = 65;
     TestHelpers.array_fill(sub_ctx.return_data, return_data_len, 0xff);
-    let sub_ctx = ExecutionContext.update_return_data(
-        sub_ctx, return_data_len, sub_ctx.return_data
-    );
+    let sub_ctx = ExecutionContext.stop(sub_ctx, return_data_len, sub_ctx.return_data, FALSE);
     let summary = ExecutionContext.finalize(sub_ctx);
     let ctx = CreateHelper.finalize_calling_context(summary);
 
     // Then
     let (stack, address) = Stack.peek(ctx.stack, 0);
     let evm_contract_address = Helpers.uint256_to_felt(address);
-    assert evm_contract_address = sub_ctx.evm_contract_address;
-    assert sub_ctx.evm_contract_address = expected_create2_address;
+    assert evm_contract_address = sub_ctx.call_context.address.evm;
+    assert sub_ctx.call_context.address.evm = expected_create2_address;
     let (created_contract_bytecode_len, created_contract_bytecode) = IAccount.bytecode(
-        sub_ctx.starknet_contract_address
+        sub_ctx.call_context.address.starknet
     );
     TestHelpers.assert_array_equal(
         created_contract_bytecode_len,
@@ -815,7 +807,7 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
 }
 
 @external
-func test__exec_selfdestruct__should_delete_account_bytecode{
+func test__exec_selfdestruct__should_add_account_to_state{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     alloc_locals;
@@ -828,7 +820,7 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     let (return_data) = alloc();
     assert [return_data] = 0;
     assert [return_data + 1] = 10;
-    let (selfdestruct_contracts) = alloc();
+    let (selfdestructs) = alloc();
     let (calldata) = alloc();
     assert [calldata] = '';
     local call_context: model.CallContext* = new model.CallContext(
@@ -854,6 +846,7 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
         contract_address=starknet_contract_address, bytecode_len=1, bytecode=bytecode
     );
 
+    tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
     // Create context
     let (sub_ctx: felt*) = alloc();
     let sub_ctx_object: model.ExecutionContext* = cast(sub_ctx, model.ExecutionContext*);
@@ -868,17 +861,12 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     assert [sub_ctx + 7] = 0;  // gas_used
     assert [sub_ctx + 8] = 0;  // gas_limit
     assert [sub_ctx + 9] = 0;  // intrinsic_gas_cost
-    assert [sub_ctx + 10] = starknet_contract_address;  // starknet_contract_address
-    assert [sub_ctx + 11] = evm_contract_address;  // evm_contract_address
+    assert [sub_ctx + 10] = cast(address, felt);  // address
     assert [sub_ctx + 12] = 0;  // origin
     assert [sub_ctx + 13] = 0;  // calling_context
-    assert [sub_ctx + 14] = 0;  // selfdestruct_contracts_len
-    assert [sub_ctx + 15] = cast(selfdestruct_contracts, felt);  // selfdestruct_contracts
-    assert [sub_ctx + 16] = 0;  // events_len
-    assert [sub_ctx + 17] = cast(0, felt);  // events
-    assert [sub_ctx + 18] = 0;  // create_addresses_len
-    assert [sub_ctx + 19] = cast(0, felt);  // create_addresses
-    assert [sub_ctx + 20] = cast(revert_contract_state, felt);  // revert_contract_state
+    assert [sub_ctx + 14] = 0;  // selfdestructs_len
+    assert [sub_ctx + 15] = cast(selfdestructs, felt);  // selfdestructs
+    assert [sub_ctx + 17] = cast(0, felt);  // state
     assert [sub_ctx + 21] = 0;  // reverted
     assert [sub_ctx + 22] = 0;  // read only
 
@@ -886,11 +874,10 @@ func test__exec_selfdestruct__should_delete_account_bytecode{
     let sub_ctx_object: model.ExecutionContext* = SystemOperations.exec_selfdestruct(
         sub_ctx_object
     );
-    SelfDestructHelper.finalize(sub_ctx_object);
 
     // Then
-    let (evm_contract_byte_len) = IAccount.bytecode_len(contract_address=starknet_contract_address);
-
-    assert evm_contract_byte_len = 0;
+    assert_non_zero(sub_ctx.selfdestructs_len);
+    let address = [sub_ctx.selfdestructs + sub_ctx.selfdestructs_len - 1];
+    assert address = sub_ctx_object.address.starknet;
     return ();
 }

@@ -28,7 +28,7 @@ from kakarot.stack import Stack
 namespace Precompiles {
     // @notice Executes a precompile at a given precompile address
     // @dev Associates gas used and precompile return values to a execution subcontext
-    // @param address The precompile address to be executed
+    // @param evm_address The precompile evm_address to be executed
     // @param calldata_len The calldata length
     // @param calldata The calldata.
     // @param value The value.
@@ -40,7 +40,7 @@ namespace Precompiles {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(
-        address: felt,
+        evm_address: felt,
         calldata_len: felt,
         calldata: felt*,
         value: felt,
@@ -48,42 +48,29 @@ namespace Precompiles {
     ) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Execute the precompile at a given address
-        let (output_len, output, gas_used) = _exec_precompile(address, calldata_len, calldata);
-
-        let (local revert_contract_state_dict_start) = default_dict_new(0);
-        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
-            revert_contract_state_dict_start, revert_contract_state_dict_start
-        );
+        // Execute the precompile at a given evm_address
+        let (output_len, output, gas_used) = _exec_precompile(evm_address, calldata_len, calldata);
 
         // Build returned execution context
         let stack = Stack.init();
         let memory = Memory.init();
-        local sub_ctx: model.ExecutionContext* = new model.ExecutionContext(
-            call_context=cast(0, model.CallContext*),
-            program_counter=0,
-            stopped=TRUE,
-            return_data=output,
-            return_data_len=output_len,
-            stack=stack,
-            memory=memory,
-            gas_used=gas_used,
-            gas_limit=0,
+        tempvar address = new model.Address(0, evm_address);
+        tempvar call_context = new model.CallContext(
+            bytecode=cast(0, felt*),
+            bytecode_len=0,
+            calldata=cast(0, felt*),
+            calldata_len=0,
+            value=0,
+            gas_limit=Constants.TRANSACTION_GAS_LIMIT,
             gas_price=0,
-            starknet_contract_address=0,
-            evm_contract_address=address,
-            origin=calling_context.origin,
+            origin=calling_context.call_context.origin,
             calling_context=calling_context,
-            selfdestruct_contracts_len=0,
-            selfdestruct_contracts=cast(0, felt*),
-            events_len=0,
-            events=cast(0, model.Event*),
-            create_addresses_len=0,
-            create_addresses=cast(0, felt*),
-            revert_contract_state=revert_contract_state,
-            reverted=FALSE,
+            address=address,
             read_only=FALSE,
         );
+        let sub_ctx = ExecutionContext.init(call_context);
+        let sub_ctx = ExecutionContext.stop(sub_ctx, output_len, output, FALSE);
+        let sub_ctx = ExecutionContext.increment_gas_used(sub_ctx, gas_used);
 
         return sub_ctx;
     }

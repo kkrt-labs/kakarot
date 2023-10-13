@@ -26,6 +26,7 @@ from kakarot.interfaces.interfaces import IAccount, IContractAccount, IERC20
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
+from kakarot.constants import Constants
 from utils.utils import Helpers
 
 // @title Kakarot main library file.
@@ -106,28 +107,22 @@ namespace Kakarot {
 
         // Prepare execution context
         let root_context = ExecutionContext.init_empty();
-        let return_data: felt* = alloc();
-
+        tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
         tempvar call_context = new model.CallContext(
             bytecode=bytecode,
             bytecode_len=bytecode_len,
             calldata=calldata,
             calldata_len=calldata_len,
             value=value,
-        );
-
-        let ctx = ExecutionContext.init(
-            call_context=call_context,
-            starknet_contract_address=starknet_contract_address,
-            evm_contract_address=evm_contract_address,
-            origin=origin,
             gas_limit=gas_limit,
             gas_price=gas_price,
+            origin=origin,
             calling_context=root_context,
-            return_data_len=0,
-            return_data=return_data,
+            address=address,
             read_only=FALSE,
         );
+
+        let ctx = ExecutionContext.init(call_context);
 
         // Compute intrinsic gas cost and update gas used
         let cost = ExecutionContext.compute_intrinsic_gas_cost(ctx);
@@ -145,8 +140,8 @@ namespace Kakarot {
             memory_accesses_len=memory_accesses_len,
             memory_accesses=summary.memory.squashed_start,
             memory_bytes_len=summary.memory.bytes_len,
-            starknet_contract_address=summary.starknet_contract_address,
-            evm_contract_address=summary.evm_contract_address,
+            starknet_contract_address=summary.address.starknet,
+            evm_contract_address=summary.address.evm,
             return_data_len=summary.return_data_len,
             return_data=summary.return_data,
             gas_used=summary.gas_used,
@@ -283,7 +278,7 @@ namespace Kakarot {
             calldata_len=0,
             calldata=empty_array,
             value=value,
-            gas_limit=0,
+            gas_limit=Constants.TRANSACTION_GAS_LIMIT,
             gas_price=0,
         );
 

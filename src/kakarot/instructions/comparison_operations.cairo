@@ -81,7 +81,7 @@ namespace ComparisonOperations {
         let stack: model.Stack* = Stack.push(self=stack, element=Uint256(result, 0));
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_LT);
         return ctx;
@@ -121,7 +121,7 @@ namespace ComparisonOperations {
         let stack: model.Stack* = Stack.push(stack, Uint256(result, 0));
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_GT);
         return ctx;
@@ -161,7 +161,7 @@ namespace ComparisonOperations {
         let stack: model.Stack* = Stack.push(self=stack, element=Uint256(result, 0));
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SLT);
         return ctx;
@@ -201,7 +201,7 @@ namespace ComparisonOperations {
         let stack: model.Stack* = Stack.push(self=stack, element=Uint256(result, 0));
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SGT);
         return ctx;
@@ -241,7 +241,7 @@ namespace ComparisonOperations {
         let stack: model.Stack* = Stack.push(self=stack, element=Uint256(result, 0));
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_EQ);
         return ctx;
@@ -278,7 +278,7 @@ namespace ComparisonOperations {
         let stack: model.Stack* = Stack.push(self=stack, element=Uint256(result, 0));
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_ISZERO);
         return ctx;
@@ -318,7 +318,7 @@ namespace ComparisonOperations {
         let stack: model.Stack* = Stack.push(self=stack, element=result);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_AND);
         return ctx;
@@ -358,7 +358,7 @@ namespace ComparisonOperations {
         let stack: model.Stack* = Stack.push(self=stack, element=result);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_OR);
         return ctx;
@@ -396,7 +396,7 @@ namespace ComparisonOperations {
         let stack: model.Stack* = Stack.push(self=stack, element=result);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_XOR);
         return ctx;
@@ -437,7 +437,7 @@ namespace ComparisonOperations {
         let stack: model.Stack* = Stack.push(self=stack, element=result);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_BYTE);
         return ctx;
@@ -477,7 +477,7 @@ namespace ComparisonOperations {
         let stack: model.Stack* = Stack.push(self=stack, element=result);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SHL);
         return ctx;
@@ -517,7 +517,7 @@ namespace ComparisonOperations {
         let stack: model.Stack* = Stack.push(self=stack, element=result);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SHR);
         return ctx;
@@ -586,7 +586,7 @@ namespace ComparisonOperations {
         let stack: model.Stack* = Stack.push(self=stack, element=result);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SAR);
         return ctx;
     }
@@ -622,7 +622,7 @@ namespace ComparisonOperations {
         let stack: model.Stack* = Stack.push(self=stack, element=result);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_NOT);
         return ctx;

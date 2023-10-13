@@ -57,10 +57,7 @@ namespace StopAndArithmeticOperations {
         // execution context with *no* return data (unlike RETURN and REVERT).
         // hence we just clear the return_data and stop.
         let (return_data: felt*) = alloc();
-        let ctx = ExecutionContext.update_return_data(
-            ctx, return_data_len=0, return_data=return_data
-        );
-        let ctx = ExecutionContext.stop(ctx);
+        let ctx = ExecutionContext.stop(ctx, 0, return_data, FALSE);
         return ctx;
     }
 
@@ -483,7 +480,7 @@ namespace StopAndArithmeticOperations {
         ctx: model.ExecutionContext*, stack: model.Stack*, gas_cost: felt
     ) -> model.ExecutionContext* {
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=gas_cost);
         return ctx;

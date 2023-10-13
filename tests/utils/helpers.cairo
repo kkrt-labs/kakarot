@@ -40,23 +40,22 @@ namespace TestHelpers {
 
         let (calldata) = alloc();
         assert [calldata] = '';
-        local call_context: model.CallContext* = new model.CallContext(
-            bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
-        );
         let root_context = ExecutionContext.init_empty();
-        let return_data: felt* = alloc();
-        let ctx: model.ExecutionContext* = ExecutionContext.init(
-            call_context,
-            starknet_contract_address=starknet_contract_address,
-            evm_contract_address=evm_contract_address,
-            origin=0,
+        tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
+        local call_context: model.CallContext* = new model.CallContext(
+            bytecode=bytecode,
+            bytecode_len=bytecode_len,
+            calldata=calldata,
+            calldata_len=1,
+            value=0,
             gas_limit=Constants.TRANSACTION_GAS_LIMIT,
             gas_price=0,
+            origin=0,
             calling_context=root_context,
-            return_data_len=0,
-            return_data=return_data,
+            address=address,
             read_only=FALSE,
         );
+        let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
         return ctx;
     }
 
@@ -123,7 +122,7 @@ namespace TestHelpers {
         bytecode_len: felt, bytecode: felt*, return_data_len: felt, return_data: felt*
     ) -> model.ExecutionContext* {
         let ctx: model.ExecutionContext* = init_context(bytecode_len, bytecode);
-        let ctx = ExecutionContext.update_return_data(ctx, return_data_len, return_data);
+        let ctx = ExecutionContext.stop(ctx, return_data_len, return_data, FALSE);
         return ctx;
     }
 
@@ -232,7 +231,7 @@ namespace TestHelpers {
         assert ctx_0.gas_limit = ctx_1.gas_limit;
         assert ctx_0.gas_price = ctx_1.gas_price;
         assert ctx_0.starknet_contract_address = ctx_1.starknet_contract_address;
-        assert ctx_0.evm_contract_address = ctx_1.evm_contract_address;
+        assert ctx_0.address.evm = ctx_1.address.evm;
         return assert_execution_context_equal(ctx_0.calling_context, ctx_1.calling_context);
     }
 
@@ -281,7 +280,7 @@ namespace TestHelpers {
             print(f"{ids.execution_context.gas_limit=}")
             print(f"{ids.execution_context.gas_price}")
             print(f"{ids.execution_context.starknet_contract_address=}")
-            print(f"{ids.execution_context.evm_contract_address=}")
+            print(f"{ids.execution_context.address.evm=}")
         %}
         return ();
     }

@@ -4,7 +4,7 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import emit_event
 
@@ -34,9 +34,9 @@ namespace LoggingOperations {
     ) -> model.ExecutionContext* {
         alloc_locals;
 
-        if (ctx.read_only != FALSE) {
+        if (ctx.call_context.read_only != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
-            let ctx = ExecutionContext.revert(ctx, revert_reason, revert_reason_len);
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
             return ctx;
         }
 
@@ -60,12 +60,8 @@ namespace LoggingOperations {
             self=ctx.memory, element_len=actual_size, element=data, offset=actual_offset
         );
 
-        let ctx = ExecutionContext.push_event_to_emit(
-            self=ctx,
-            event_keys_len=topics_len * 2,
-            event_keys=popped + 4,
-            event_data_len=actual_size,
-            event_data=data,
+        let ctx = ExecutionContext.push_event(
+            self=ctx, topics_len=topics_len, topics=popped + 4, data_len=actual_size, data=data
         );
 
         // Update context stack.

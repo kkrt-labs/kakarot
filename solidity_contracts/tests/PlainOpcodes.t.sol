@@ -73,7 +73,23 @@ contract PlainOpcodesTest is Test {
     }
 
     function testSelfDestruct() public {
+        (bool success,) = address(plainOpcodes).call{value: 0.1 ether}("");
+        assert(success == true);
+
+        uint256 contractBalanceBefore = address(plainOpcodes).balance;
+        assert(contractBalanceBefore == 0.1 ether);
+        uint256 callerBalanceBefore = address(this).balance;
+
         plainOpcodes.kill(payable(address(this)));
+
+        uint256 contractBalanceAfter = address(plainOpcodes).balance;
+        assert(contractBalanceAfter == 0);
+
+        // Balance is transferred immediately
+        uint256 callerBalanceAfter = address(this).balance;
+        assert(callerBalanceAfter - callerBalanceBefore == 0.1 ether);
+
+        // Account is still callable until the end of the tx
         uint256 value = plainOpcodes.loop(10);
         assert(value == 10);
     }

@@ -74,49 +74,24 @@ func init_context{
     tempvar bytecode_len = 1;
     let (calldata) = alloc();
     assert [calldata] = '';
+    let calling_context = ExecutionContext.init_empty();
+    tempvar address = new model.Address(0, 420);
     local call_context: model.CallContext* = new model.CallContext(
-        bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
+        bytecode=bytecode,
+        bytecode_len=bytecode_len,
+        calldata=calldata,
+        calldata_len=1,
+        value=0,
+        gas_limit=Constants.TRANSACTION_GAS_LIMIT,
+        gas_price=0,
+        origin=100,
+        calling_context=calling_context,
+        address=address,
+        read_only=FALSE,
     );
 
     // Initialize ExecutionContext
-    let (empty_return_data: felt*) = alloc();
-    let (empty_selfdestruct_contracts: felt*) = alloc();
-    let (empty_events: model.Event*) = alloc();
-    let stack: model.Stack* = Stack.init();
-    let memory: model.Memory* = Memory.init();
-    let gas_limit = Constants.TRANSACTION_GAS_LIMIT;
-    let calling_context = ExecutionContext.init_empty();
-
-    let (local revert_contract_state_dict_start) = default_dict_new(0);
-    tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
-        revert_contract_state_dict_start, revert_contract_state_dict_start
-    );
-
-    local ctx: model.ExecutionContext* = new model.ExecutionContext(
-        call_context=call_context,
-        program_counter=0,
-        stopped=FALSE,
-        return_data=empty_return_data,
-        return_data_len=0,
-        stack=stack,
-        memory=memory,
-        gas_used=0,
-        gas_limit=gas_limit,
-        gas_price=0,
-        starknet_contract_address=0,
-        evm_contract_address=420,
-        origin=100,
-        calling_context=calling_context,
-        selfdestruct_contracts_len=0,
-        selfdestruct_contracts=empty_selfdestruct_contracts,
-        events_len=0,
-        events=empty_events,
-        create_addresses_len=0,
-        create_addresses=cast(0, felt*),
-        revert_contract_state=revert_contract_state,
-        reverted=FALSE,
-        read_only=FALSE,
-    );
+    let ctx = ExecutionContext.init(call_context);
     return ctx;
 }
 
@@ -294,7 +269,7 @@ func test__exec_gasprice{
         bytecode_len, bytecode, stack
     );
 
-    let expected_gas_price_uint256 = Helpers.to_uint256(ctx.gas_price);
+    let expected_gas_price_uint256 = Helpers.to_uint256(ctx.call_context.gas_price);
 
     let result = EnvironmentalInformation.exec_gasprice(ctx);
     let (stack, gasprice) = Stack.peek(result.stack, 0);

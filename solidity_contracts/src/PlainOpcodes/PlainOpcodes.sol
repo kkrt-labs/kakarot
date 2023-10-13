@@ -154,7 +154,10 @@ contract PlainOpcodes {
         require(success, "failed to send");
     }
 
-    function kill(address payable to) public {
+    function kill(address payable to) public payable {
         selfdestruct(to);
     }
+
+    receive() external payable {}
+    fallback() external payable {}
 }

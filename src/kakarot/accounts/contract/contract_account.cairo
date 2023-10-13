@@ -96,8 +96,8 @@ func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     return ContractAccount.get_nonce();
 }
 
-// @notice This function increases the contract account nonce by 1
+// @notice This function set the contract account nonce
 @external
-func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    return ContractAccount.increment_nonce();
+func set_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(nonce: felt) {
+    return ContractAccount.set_nonce(nonce);
 }

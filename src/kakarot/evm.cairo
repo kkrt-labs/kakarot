@@ -4,7 +4,7 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.invoke import invoke
 from starkware.cairo.common.math import assert_nn
@@ -27,17 +27,13 @@ from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.push_operations import PushOperations
 from kakarot.instructions.sha3 import Sha3
 from kakarot.instructions.stop_and_arithmetic_operations import StopAndArithmeticOperations
-from kakarot.instructions.system_operations import (
-    CallHelper,
-    CreateHelper,
-    SelfDestructHelper,
-    SystemOperations,
-)
+from kakarot.instructions.system_operations import CallHelper, CreateHelper, SystemOperations
 from kakarot.interfaces.interfaces import IAccount
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.precompiles.precompiles import Precompiles
 from kakarot.stack import Stack
+from kakarot.state import State
 from utils.utils import Helpers
 
 // @title EVM instructions processing.
@@ -50,8 +46,7 @@ namespace EVM {
         return_data: felt*,
         return_data_len: felt,
         gas_used: felt,
-        starknet_contract_address: felt,
-        evm_contract_address: felt,
+        address: model.Address*,
         reverted: felt,
     }
 
@@ -632,19 +627,17 @@ namespace EVM {
             return finalize(summary);
         }
 
-        let is_precompile = Precompiles.is_precompile(address=summary.evm_contract_address);
+        let is_precompile = Precompiles.is_precompile(address=summary.address.evm);
         if (is_precompile != FALSE) {
             let ctx = CallHelper.finalize_calling_context(summary);
             return run(ctx=ctx);
         }
-        let (bytecode_len) = IAccount.bytecode_len(
-            contract_address=summary.starknet_contract_address
-        );
+        let (bytecode_len) = IAccount.bytecode_len(contract_address=summary.address.starknet);
 
         let has_return_data = is_not_zero(summary.return_data_len);
         let has_empty_return_data = (1 - has_return_data);
 
-        let is_eao = Helpers.is_address_caller(summary.starknet_contract_address);
+        let is_eao = Helpers.is_address_caller(summary.address.starknet);
 
         // If the starknet contract of the execution context has
         // no bytecode,
@@ -670,9 +663,7 @@ namespace EVM {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         let (revert_reason_len, revert_reason) = Errors.unknownOpcode();
-        let ctx = ExecutionContext.revert(
-            self=ctx, revert_reason=revert_reason, size=revert_reason_len
-        );
+        let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
         return ctx;
     }
 
@@ -686,20 +677,23 @@ namespace EVM {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_summary: ExecutionContext.Summary*) -> Summary* {
         alloc_locals;
-
-        Helpers.erase_contracts(
-            ctx_summary.selfdestruct_contracts_len, ctx_summary.selfdestruct_contracts
-        );
-
-        return new Summary(
+        local summary: Summary* = new Summary(
             memory=ctx_summary.memory,
             stack=ctx_summary.stack,
             return_data=ctx_summary.return_data,
             return_data_len=ctx_summary.return_data_len,
             gas_used=ctx_summary.gas_used,
-            starknet_contract_address=ctx_summary.starknet_contract_address,
-            evm_contract_address=ctx_summary.evm_contract_address,
+            address=ctx_summary.address,
             reverted=ctx_summary.reverted,
         );
+
+        if (ctx_summary.reverted != FALSE) {
+            return summary;
+        }
+
+        Helpers.erase_contracts(ctx_summary.selfdestructs_len, ctx_summary.selfdestructs);
+        State.commit(ctx_summary.state);
+
+        return summary;
     }
 }

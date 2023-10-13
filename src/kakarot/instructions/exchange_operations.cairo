@@ -33,7 +33,7 @@ namespace ExchangeOperations {
         let stack = Stack.swap_i(self=stack, i=i + 1);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SWAP);
         return ctx;

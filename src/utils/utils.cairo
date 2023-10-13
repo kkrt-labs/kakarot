@@ -26,6 +26,7 @@ from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256,
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import get_caller_address
+from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_update
 
 // Internal dependencies
 from kakarot.interfaces.interfaces import IAccount, IContractAccount

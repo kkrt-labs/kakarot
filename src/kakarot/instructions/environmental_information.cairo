@@ -16,8 +16,7 @@ from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 from kakarot.memory import Memory
-from kakarot.constants import native_token_address
-from kakarot.interfaces.interfaces import IERC20, IAccount
+from kakarot.state import State
 from kakarot.accounts.library import Accounts
 
 // @title Environmental information opcodes.
@@ -60,10 +59,10 @@ namespace EnvironmentalInformation {
 
         // Get the current execution contract from the context,
         // convert to Uin256, and push to Stack.
-        let address = Helpers.to_uint256(ctx.evm_contract_address);
-        let stack: model.Stack* = Stack.push(self=ctx.stack, element=address);
+        let address = Helpers.to_uint256(ctx.call_context.address.evm);
+        let stack: model.Stack* = Stack.push(ctx.stack, address);
         // Update the execution context.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_ADDRESS);
         return ctx;
@@ -86,25 +85,17 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Get the evm address.
-        let (stack: model.Stack*, address: Uint256) = Stack.pop(ctx.stack);
+        let (stack, address_uin256) = Stack.pop(ctx.stack);
 
-        let address_felt = Helpers.uint256_to_felt(address);
-        // Get the starknet account address from the evm account address
-        let (starknet_contract_address) = Accounts.compute_starknet_address(address_felt);
-        // Get the number of native tokens owned by the given starknet account
-        let (native_token_address_) = native_token_address.read();
-        let (balance: Uint256) = IERC20.balanceOf(
-            contract_address=native_token_address_, account=starknet_contract_address
-        );
+        let evm_address = Helpers.uint256_to_felt(address_uin256);
+        let (starknet_address) = Accounts.compute_starknet_address(evm_address);
+        tempvar address = new model.Address(starknet_address, evm_address);
+        let (state, balance) = State.read_balance(ctx.state, address);
+        let stack = Stack.push(stack, balance);
 
-        let stack: model.Stack* = Stack.push(stack, balance);
-
-        // Update the execution context.
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_BALANCE);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_state(ctx, state);
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_BALANCE);
         return ctx;
     }
 
@@ -125,11 +116,11 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let origin_address = Helpers.to_uint256(ctx.origin);
+        let origin_address = Helpers.to_uint256(ctx.call_context.origin);
 
         // Update Context stack
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=origin_address);
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_ORIGIN);
         return ctx;
@@ -151,15 +142,15 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        let is_root = ExecutionContext.is_empty(ctx.calling_context);
-        let caller = (1 - is_root) * ctx.calling_context.evm_contract_address + is_root *
-            ctx.origin;
+        let is_root = ExecutionContext.is_empty(ctx.call_context.calling_context);
+        let caller = (1 - is_root) * ctx.call_context.address.evm + is_root *
+            ctx.call_context.origin;
         let evm_address_uint256 = Helpers.to_uint256(caller);
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=evm_address_uint256);
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CALLER);
         return ctx;
@@ -228,7 +219,7 @@ namespace EnvironmentalInformation {
         let stack: model.Stack* = Stack.push(self=stack, element=uint256_sliced_calldata);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CALLDATALOAD);
         return ctx;
@@ -305,9 +296,9 @@ namespace EnvironmentalInformation {
         );
 
         // Update context memory.
-        let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
+        let ctx = ExecutionContext.update_memory(ctx, memory);
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CALLDATACOPY);
         return ctx;
@@ -335,7 +326,7 @@ namespace EnvironmentalInformation {
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CODESIZE);
         return ctx;
@@ -411,7 +402,7 @@ namespace EnvironmentalInformation {
         alloc_locals;
 
         // Get the gasprice.
-        let gas_price_felt = ctx.gas_price;
+        let gas_price_felt = ctx.call_context.gas_price;
         let gas_price_uint256 = Helpers.to_uint256(gas_price_felt);
 
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=gas_price_uint256);
@@ -453,7 +444,7 @@ namespace EnvironmentalInformation {
         let stack = Stack.push(stack, Uint256(low=bytecode_len, high=0));
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
 
         // TODO:distinction between warm and cold addresses determines dynamic cost
         //  for now we assume a cold address, which sets dynamic cost to 2600
@@ -516,9 +507,9 @@ namespace EnvironmentalInformation {
         );
 
         // Update context memory.
-        let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
+        let ctx = ExecutionContext.update_memory(ctx, memory);
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let (minimum_word_size) = Helpers.minimum_word_count(size.low);
 
@@ -554,7 +545,7 @@ namespace EnvironmentalInformation {
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_RETURNDATASIZE);
         return ctx;
@@ -603,9 +594,9 @@ namespace EnvironmentalInformation {
         );
 
         // Update context memory.
-        let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
+        let ctx = ExecutionContext.update_memory(ctx, memory);
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLDATACOPY);
         return ctx;
