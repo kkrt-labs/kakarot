@@ -26,6 +26,7 @@ from kakarot.interfaces.interfaces import IAccount, IContractAccount, IERC20
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
+from kakarot.state import State
 from kakarot.constants import Constants
 from utils.utils import Helpers
 
@@ -124,9 +125,12 @@ namespace Kakarot {
 
         let ctx = ExecutionContext.init(call_context);
 
-        // Compute intrinsic gas cost and update gas used
         let cost = ExecutionContext.compute_intrinsic_gas_cost(ctx);
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=cost);
+        let transfer = make_transfer(origin, evm_contract_address, value);
+        let state = State.add_transfer(ctx.state, transfer);
+
+        let ctx = ExecutionContext.update_state(ctx, state);
+        let ctx = ExecutionContext.increment_gas_used(ctx, cost);
 
         let summary = EVM.run(ctx);
 
@@ -216,21 +220,16 @@ namespace Kakarot {
     // @param to_ The address the transaction is directed to.
     // @param value Integer of the value sent with this transaction
     // @return success Boolean to indicate success or failure of transfer
-    func transfer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    func make_transfer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         origin: felt, to_: felt, value: felt
-    ) -> (success: felt) {
+    ) -> model.Transfer* {
         alloc_locals;
-        if (value == 0) {
-            return (success=TRUE);
-        }
-        let (local native_token_address) = get_native_token();
-        let (sender) = Accounts.compute_starknet_address(origin);
-        let (recipient) = Accounts.compute_starknet_address(to_);
+        let (local sender_starknet_address) = Accounts.compute_starknet_address(origin);
+        let (local recipient_starknet_address) = Accounts.compute_starknet_address(to_);
+        tempvar sender = new model.Address(sender_starknet_address, origin);
+        tempvar recipient = new model.Address(to_, recipient_starknet_address);
         let amount = Helpers.to_uint256(value);
-        let (success) = IERC20.transferFrom(
-            contract_address=native_token_address, sender=sender, recipient=recipient, amount=amount
-        );
-        return (success=success);
+        return new model.Transfer(sender, recipient, amount);
     }
 
     // @notice Deploy contract account.
@@ -346,13 +345,6 @@ namespace Kakarot {
             // TODO: always use a 0 nonce
             let (tx_info) = get_tx_info();
             let (evm_contract_address) = CreateHelper.get_create_address(origin, tx_info.nonce);
-
-            let (success) = transfer(origin, evm_contract_address, value);
-            with_attr error_message(
-                    "Kakarot: eth_call: failed to transfer {value} tokens to {evm_contract_address}") {
-                assert success = TRUE;
-            }
-
             let (starknet_contract_address, reverted) = deploy_contract_account(
                 origin=origin,
                 evm_contract_address=evm_contract_address,
@@ -365,11 +357,6 @@ namespace Kakarot {
             assert [return_data + 1] = starknet_contract_address;
             return (2, return_data, 1 - reverted);
         } else {
-            let (success) = transfer(origin, to, value);
-            with_attr error_message(
-                    "Kakarot: eth_call: failed to transfer {value} tokens to {to}") {
-                assert success = TRUE;
-            }
             let (local starknet_contract_address) = Accounts.compute_starknet_address(to);
             let (bytecode_len, bytecode) = Accounts.get_bytecode(to);
             let summary = execute(

@@ -19,6 +19,7 @@ from kakarot.accounts.library import Accounts
 from kakarot.interfaces.interfaces import IAccount, IContractAccount, IERC20
 from kakarot.model import model
 from kakarot.constants import native_token_address, contract_account_class_hash
+from starkware.starknet.common.syscalls import call_contract
 
 namespace State {
     // @dev Create a new empty State
@@ -433,6 +434,7 @@ namespace Internals {
     func _save_accounts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         accounts_start: DictAccess*, accounts_end: DictAccess*
     ) {
+        alloc_locals;
         if (accounts_start == accounts_end) {
             return ();
         }
@@ -453,9 +455,9 @@ namespace Internals {
 
         // Deploy accounts
         let (class_hash) = contract_account_class_hash.read();
-        let (starknet_address) = Accounts.create(class_hash, address.evm);
+        Accounts.create(class_hash, address.evm);
         // Write bytecode
-        IContractAccount.write_bytecode(starknet_address, account.code_len, account.code);
+        IContractAccount.write_bytecode(address.starknet, account.code_len, account.code);
         _save_accounts(accounts_start + DictAccess.SIZE, accounts_end);
 
         return ();
