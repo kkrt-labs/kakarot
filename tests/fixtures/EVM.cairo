@@ -80,8 +80,8 @@ func execute{
         gas_used,
         reverted,
     ) = Kakarot.execute(
-        starknet_contract_address=0,
-        evm_contract_address=0,
+        starknet_contract_address=1,
+        evm_contract_address=1,
         origin=origin,
         bytecode_len=bytecode_len,
         bytecode=bytecode,

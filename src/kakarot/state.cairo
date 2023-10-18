@@ -299,39 +299,25 @@ namespace State {
     // @param self The pointer to the State
     // @param event The pointer to the Transfer
     // @return The updated State
-    func add_transfer{range_check_ptr}(
-        self: model.State*, transfer: model.Transfer*
-    ) -> model.State* {
+    func add_transfer{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(self: model.State*, transfer: model.Transfer*) -> model.State* {
         alloc_locals;
         // See https://docs.cairo-lang.org/0.12.0/how_cairo_works/functions.html#retrieving-registers
         let fp_and_pc = get_fp_and_pc();
         local __fp__: felt* = fp_and_pc.fp_val;
 
-        let balances = self.balances;
-
-        let (local pointer) = dict_read{dict_ptr=balances}(transfer.sender.evm);
-        tempvar sender_balance_prev_ptr = cast(pointer, Uint256*);
-        tempvar sender_balance_prev = Uint256(
-            sender_balance_prev_ptr.low, sender_balance_prev_ptr.high
-        );
-
-        let (local pointer) = dict_read{dict_ptr=balances}(transfer.recipient.evm);
-        tempvar recipient_balance_prev_ptr = cast(pointer, Uint256*);
-        tempvar recipient_balance_prev = Uint256(
-            recipient_balance_prev_ptr.low, recipient_balance_prev_ptr.high
-        );
-
+        let (self, sender_balance_prev) = read_balance(self, transfer.sender);
+        let (self, recipient_balance_prev) = read_balance(self, transfer.recipient);
         let (local sender_balance_new) = uint256_sub(sender_balance_prev, transfer.amount);
-        tempvar sender_balance_new_ptr = new Uint256(
-            sender_balance_new.low, sender_balance_new.high
-        );
         let (local recipient_balance_new, carry) = uint256_add(
             recipient_balance_prev, transfer.amount
         );
-        tempvar recipient_balance_new_ptr = new Uint256(
-            recipient_balance_new.low, recipient_balance_new.high
-        );
 
+        let balances = self.balances;
         dict_write{dict_ptr=balances}(
             key=transfer.sender.evm, new_value=cast(&sender_balance_new, felt)
         );

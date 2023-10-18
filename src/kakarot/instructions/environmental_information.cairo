@@ -58,7 +58,7 @@ namespace EnvironmentalInformation {
         alloc_locals;
 
         // Get the current execution contract from the context,
-        // convert to Uin256, and push to Stack.
+        // convert to Uint256, and push to Stack.
         let address = Helpers.to_uint256(ctx.call_context.address.evm);
         let stack: model.Stack* = Stack.push(ctx.stack, address);
         // Update the execution context.
@@ -85,9 +85,9 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let (stack, address_uin256) = Stack.pop(ctx.stack);
+        let (stack, address_uint256) = Stack.pop(ctx.stack);
 
-        let evm_address = Helpers.uint256_to_felt(address_uin256);
+        let evm_address = Helpers.uint256_to_felt(address_uint256);
         let (starknet_address) = Accounts.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
         let (state, balance) = State.read_balance(ctx.state, address);

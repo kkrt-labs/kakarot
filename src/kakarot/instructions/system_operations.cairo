@@ -16,6 +16,7 @@ from starkware.starknet.common.syscalls import (
     get_contract_address,
     get_tx_info,
 )
+from starkware.cairo.common.registers import get_fp_and_pc
 
 // Internal dependencies
 from kakarot.accounts.library import Accounts
@@ -221,6 +222,10 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        // See https://docs.cairo-lang.org/0.12.0/how_cairo_works/functions.html#retrieving-registers
+        alloc_locals;
+        let fp_and_pc = get_fp_and_pc();
+        local __fp__: felt* = fp_and_pc.fp_val;
         let sub_ctx = CallHelper.init_sub_context(
             ctx=ctx, with_value=TRUE, read_only=ctx.call_context.read_only, self_call=FALSE
         );

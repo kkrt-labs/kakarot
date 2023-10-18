@@ -126,7 +126,11 @@ namespace Kakarot {
         let ctx = ExecutionContext.init(call_context);
 
         let cost = ExecutionContext.compute_intrinsic_gas_cost(ctx);
-        let transfer = make_transfer(origin, evm_contract_address, value);
+
+        let (origin_starknet_address) = Accounts.compute_starknet_address(origin);
+        tempvar sender = new model.Address(origin_starknet_address, origin);
+        let amount = Helpers.to_uint256(value);
+        tempvar transfer = new model.Transfer(sender, address, amount);
         let state = State.add_transfer(ctx.state, transfer);
 
         let ctx = ExecutionContext.update_state(ctx, state);
@@ -213,23 +217,6 @@ namespace Kakarot {
     ) {
         let (deploy_fee_) = deploy_fee.read();
         return (deploy_fee_,);
-    }
-
-    // @notice Transfer "value" native tokens from "origin" to "to"
-    // @param origin The sender address.
-    // @param to_ The address the transaction is directed to.
-    // @param value Integer of the value sent with this transaction
-    // @return success Boolean to indicate success or failure of transfer
-    func make_transfer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        origin: felt, to_: felt, value: felt
-    ) -> model.Transfer* {
-        alloc_locals;
-        let (local sender_starknet_address) = Accounts.compute_starknet_address(origin);
-        let (local recipient_starknet_address) = Accounts.compute_starknet_address(to_);
-        tempvar sender = new model.Address(sender_starknet_address, origin);
-        tempvar recipient = new model.Address(to_, recipient_starknet_address);
-        let amount = Helpers.to_uint256(value);
-        return new model.Transfer(sender, recipient, amount);
     }
 
     // @notice Deploy contract account.
