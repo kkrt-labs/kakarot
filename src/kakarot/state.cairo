@@ -18,7 +18,7 @@ from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_upd
 from kakarot.accounts.library import Accounts
 from kakarot.interfaces.interfaces import IAccount, IContractAccount, IERC20
 from kakarot.model import model
-from kakarot.constants import native_token_address
+from kakarot.constants import native_token_address, contract_account_class_hash
 
 namespace State {
     // @dev Create a new empty State
@@ -450,10 +450,12 @@ namespace Internals {
             _save_accounts(accounts_start + DictAccess.SIZE, accounts_end);
             return ();
         }
-        // FIXME: doesn't compile for unknown reason
+
         // Deploy accounts
+        let (class_hash) = contract_account_class_hash.read();
+        let (starknet_address) = Accounts.create(class_hash, address.evm);
         // Write bytecode
-        // IContractAccount.write_bytecode(address.starknet, account.code_len, account.code);
+        IContractAccount.write_bytecode(starknet_address, account.code_len, account.code);
         _save_accounts(accounts_start + DictAccess.SIZE, accounts_end);
 
         return ();
