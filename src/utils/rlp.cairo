@@ -185,7 +185,7 @@ namespace RLP {
             // the length
             // of
             // the value of the length of item's byte representation
-            // then the actual length of the the bytes representation of item
+            // then the actual length of the bytes representation of item
             // then the element bytes (phew)
             let (local item_len_bytes: felt*) = alloc();
             // note the subtle shift of terms: we are taking the value of the length of bytes of the item and converting it to bytes!

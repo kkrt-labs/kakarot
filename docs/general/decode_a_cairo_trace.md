@@ -1,6 +1,6 @@
 # How to decode a Cairo trace
 
-When there is a error in a cairo program, the VM throws something like:
+When there is an error in a cairo program, the VM throws something like:
 
 ```shell
 Cairo traceback (most recent call last):
@@ -34,7 +34,7 @@ this cryptic message to map location in the original cairo program.
 - Make sure you have installed the proper libraries locally (cairo-lang, etc.),
   i.e. the project's python dependencies
 
-- Make to sure to compile Kakarot with `debug_info`
+- Make sure to compile Kakarot with `debug_info`
 
   - by default in the `compile_kakarot.py` script, the `--no_debug_info` is
     applied when the target network is not a devnet (e.g katana)
