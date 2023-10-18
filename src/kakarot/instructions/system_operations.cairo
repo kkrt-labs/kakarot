@@ -7,7 +7,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
-from starkware.cairo.common.math import split_felt
+from starkware.cairo.common.math import split_felt, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
@@ -328,8 +328,8 @@ namespace SystemOperations {
         // Stack input:
         // 0 - address: account to send the current balance to
         let (stack, address) = Stack.pop(ctx.stack);
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-
+        let (_, address_high) = unsigned_div_rem(address.high, 2 ** 32);
+        let address = Uint256(address_high, address.low);
         let recipient_evm_address = Helpers.uint256_to_felt(address);
         let (recipient_starknet_address) = Accounts.compute_starknet_address(recipient_evm_address);
         tempvar recipient = new model.Address(recipient_starknet_address, recipient_evm_address);
@@ -341,6 +341,7 @@ namespace SystemOperations {
 
         let ctx = ExecutionContext.push_selfdestruct(ctx, 1, ctx.call_context.address);
         let ctx = ExecutionContext.update_state(ctx, state);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
 
         return ctx;
     }

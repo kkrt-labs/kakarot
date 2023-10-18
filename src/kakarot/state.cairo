@@ -40,27 +40,21 @@ namespace State {
     }
 
     // @dev Deep copy of the state, creating new memory segments
-    // @dev Dicts are squashed to copy the minimum number of cells
     // @param self The pointer to the State
     func copy{range_check_ptr}(self: model.State*) -> model.State* {
         alloc_locals;
-        let (accounts_start, accounts) = default_dict_finalize(
-            self.accounts_start, self.accounts, 0
-        );
-        let (balances_start, balances) = default_dict_finalize(
-            self.balances_start, self.balances, 0
-        );
+        let self = finalize(self);
         let (local events: felt*) = alloc();
         memcpy(dst=events, src=self.events, len=self.events_len * model.Event.SIZE);
         let (local transfers: felt*) = alloc();
         memcpy(dst=transfers, src=self.transfers, len=self.transfers_len * model.Transfer.SIZE);
         return new model.State(
-            accounts_start=accounts_start,
-            accounts=accounts,
+            accounts_start=self.accounts_start,
+            accounts=self.accounts,
             events_len=self.events_len,
             events=cast(events, model.Event*),
-            balances_start=balances_start,
-            balances=balances,
+            balances_start=self.balances_start,
+            balances=self.balances,
             transfers_len=self.transfers_len,
             transfers=cast(transfers, model.Transfer*),
         );
@@ -143,8 +137,28 @@ namespace State {
         } else {
             // Otherwise read values from contract storage
             local accounts: DictAccess* = accounts;
+            let (bytecode_len, bytecode) = Accounts.get_bytecode(address.evm);
+            // we assume that if there is no bytecode this is an EOA.
+            // in this context, the nonce is managed by Starkware and not accessible from within
+            // the contract, hence we put 0.
+            // It shouldn't have any impact
+            if (bytecode_len == 0) {
+                let account = new_account(code_len=bytecode_len, code=bytecode, nonce=0);
+                dict_write{dict_ptr=accounts}(key=address.evm, new_value=cast(account, felt));
+                tempvar state = new model.State(
+                    accounts_start=self.accounts_start,
+                    accounts=accounts,
+                    events_len=self.events_len,
+                    events=self.events,
+                    balances_start=self.balances_start,
+                    balances=self.balances,
+                    transfers_len=self.transfers_len,
+                    transfers=self.transfers,
+                );
+                return (state, account);
+            }
+
             let (nonce) = IContractAccount.get_nonce(contract_address=address.starknet);
-            let (bytecode_len, bytecode) = IAccount.bytecode(contract_address=address.starknet);
             let account = new_account(code_len=bytecode_len, code=bytecode, nonce=nonce);
             dict_write{dict_ptr=accounts}(key=address.evm, new_value=cast(account, felt));
             tempvar state = new model.State(

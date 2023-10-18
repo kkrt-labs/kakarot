@@ -282,19 +282,7 @@ namespace Kakarot {
             gas_price=0,
         );
 
-        if (reverted == 0) {
-            // Update contract bytecode with execution result
-            IContractAccount.write_bytecode(
-                contract_address=starknet_contract_address,
-                bytecode_len=return_data_len,
-                bytecode=return_data,
-            );
-            return (starknet_contract_address=starknet_contract_address, reverted=reverted);
-        } else {
-            // Just do nothing, the deployed account at starknet_contract_address is empty
-            // and will not be targeted again because the address depends on the caller nonce
-            return (starknet_contract_address=starknet_contract_address, reverted=reverted);
-        }
+        return (starknet_contract_address=starknet_contract_address, reverted=reverted);
     }
 
     // @notice Deploy a new externally owned account.
