@@ -4,16 +4,18 @@
 %lang starknet
 
 // Starkware dependencies
+from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp
 
 // Local dependencies
+from kakarot.evm import EVM
 from kakarot.library import Kakarot
 from kakarot.model import model
 from kakarot.stack import Stack
-
+from kakarot.state import State
 from kakarot.constants import (
     native_token_address,
     contract_account_class_hash,
@@ -37,8 +39,34 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     return ();
 }
 
-@external
 func execute{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(
+    origin: felt,
+    value: felt,
+    bytecode_len: felt,
+    bytecode: felt*,
+    calldata_len: felt,
+    calldata: felt*,
+) -> EVM.Summary* {
+    alloc_locals;
+    tempvar address = new model.Address(1, 1);
+    let summary = Kakarot.execute(
+        address=address,
+        origin=origin,
+        bytecode_len=bytecode_len,
+        bytecode=bytecode,
+        calldata_len=calldata_len,
+        calldata=calldata,
+        value=value,
+        gas_limit=Constants.TRANSACTION_GAS_LIMIT,
+        gas_price=0,
+    );
+    return summary;
+}
+
+@view
+func evm_call{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
     origin: felt,
@@ -66,18 +94,7 @@ func execute{
     alloc_locals;
     let (local block_number) = get_block_number();
     let (local block_timestamp) = get_block_timestamp();
-    tempvar address = new model.Address(1, 1);
-    let summary = Kakarot.execute(
-        address=address,
-        origin=origin,
-        bytecode_len=bytecode_len,
-        bytecode=bytecode,
-        calldata_len=calldata_len,
-        calldata=calldata,
-        value=value,
-        gas_limit=Constants.TRANSACTION_GAS_LIMIT,
-        gas_price=0,
-    );
+    let summary = execute(origin, value, bytecode_len, bytecode, calldata_len, calldata);
     let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
     let stack_accesses_len = summary.stack.squashed_end - summary.stack.squashed_start;
 
@@ -97,4 +114,26 @@ func execute{
         summary.gas_used,
         1 - summary.reverted,
     );
+}
+
+@external
+func evm_execute{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(
+    origin: felt,
+    value: felt,
+    bytecode_len: felt,
+    bytecode: felt*,
+    calldata_len: felt,
+    calldata: felt*,
+) -> (return_data_len: felt, return_data: felt*, success: felt) {
+    alloc_locals;
+    let summary = execute(origin, value, bytecode_len, bytecode, calldata_len, calldata);
+
+    if (summary.reverted != FALSE) {
+        return (summary.return_data_len, summary.return_data, 1 - summary.reverted);
+    }
+
+    State.commit(summary.state);
+    return (summary.return_data_len, summary.return_data, 1 - summary.reverted);
 }

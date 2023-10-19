@@ -48,14 +48,13 @@ class TestKakarot:
             addresses,
             max_fee,
         ):
-            call = evm.functions["execute"].prepare(
-                origin=int(addresses[0].address, 16),
-                value=int(params["value"]),
-                bytecode=hex_string_to_bytes_array(params["code"]),
-                calldata=hex_string_to_bytes_array(params["calldata"]),
-            )
             with traceit.context(request.node.callspec.id):
-                result = await call.call()
+                result = await evm.functions["evm_call"].call(
+                    origin=int(addresses[0].address, 16),
+                    value=int(params["value"]),
+                    bytecode=hex_string_to_bytes_array(params["code"]),
+                    calldata=hex_string_to_bytes_array(params["calldata"]),
+                )
             stack_result = extract_stack_from_execute(result)
             memory_result = extract_memory_from_execute(result)
 
@@ -78,7 +77,13 @@ class TestKakarot:
             events = params.get("events")
             if events:
                 # Events only show up in a transaction, thus we run the same call, but in a tx
-                tx = await call.invoke(max_fee=max_fee)
+                tx = await evm.functions["evm_execute"].invoke(
+                    origin=int(addresses[0].address, 16),
+                    value=int(params["value"]),
+                    bytecode=hex_string_to_bytes_array(params["code"]),
+                    calldata=hex_string_to_bytes_array(params["calldata"]),
+                    max_fee=max_fee,
+                )
                 status = await wait_for_transaction(tx.hash)
                 assert status == TransactionStatus.ACCEPTED_ON_L2
                 receipt = await starknet.get_transaction_receipt(tx.hash)

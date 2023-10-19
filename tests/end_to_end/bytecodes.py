@@ -708,7 +708,7 @@ test_cases = [
             "return_value": "",
         },
         "id": "System operations INVALID",
-        "marks": [pytest.mark.INVALID, pytest.mark.SystemOperations, pytest.mark.xfail],
+        "marks": [pytest.mark.INVALID, pytest.mark.SystemOperations],
     },
     {
         "params": {
@@ -1579,7 +1579,7 @@ test_cases = [
             "value": 0,
             "code": "3000",
             "calldata": "",
-            "stack": "0",
+            "stack": "1",
             "memory": "",
             "return_value": "",
         },
