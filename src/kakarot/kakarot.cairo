@@ -3,18 +3,20 @@
 %lang starknet
 
 // Starkware dependencies
+from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
-from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import get_caller_address
 
 // Local dependencies
+from kakarot.accounts.library import Accounts
 from kakarot.library import Kakarot
+from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.memory import Memory
-from kakarot.accounts.library import Accounts
-from kakarot.interfaces.interfaces import IAccount
+from kakarot.state import State
+from utils.utils import Helpers
 
 // Constructor
 @constructor
@@ -152,7 +154,15 @@ func eth_call{
     data: felt*,
 ) -> (return_data_len: felt, return_data: felt*, success: felt) {
     Kakarot.assert_view();
-    return Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
+    let summary = Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
+    if (to == 0) {
+        let (return_data) = alloc();
+        assert [return_data] = summary.address.starknet;
+        assert [return_data + 1] = summary.address.evm;
+        return (2, return_data, 1 - summary.reverted);
+    } else {
+        return (summary.return_data_len, summary.return_data, 1 - summary.reverted);
+    }
 }
 
 // @notice The eth_send_transaction function as described in the spec,
@@ -176,5 +186,20 @@ func eth_send_transaction{
     alloc_locals;
     let (local starknet_caller_address) = get_caller_address();
     let (local origin) = Kakarot.safe_get_evm_address(starknet_caller_address);
-    return Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
+    let summary = Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
+
+    if (summary.reverted != FALSE) {
+        return (summary.return_data_len, summary.return_data, 1 - summary.reverted);
+    }
+
+    State.commit(summary.state);
+
+    if (to == 0) {
+        let (return_data) = alloc();
+        assert [return_data] = summary.address.starknet;
+        assert [return_data + 1] = summary.address.evm;
+        return (2, return_data, 1 - summary.reverted);
+    } else {
+        return (summary.return_data_len, summary.return_data, 1 - summary.reverted);
+    }
 }

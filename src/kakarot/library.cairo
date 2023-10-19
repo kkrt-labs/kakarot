@@ -9,6 +9,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.default_dict import default_dict_new
 from starkware.starknet.common.syscalls import deploy as deploy_syscall
 from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
+from starkware.cairo.common.math_cmp import is_not_zero
 
 from kakarot.accounts.library import Accounts
 from kakarot.constants import (
@@ -22,7 +23,7 @@ from kakarot.constants import (
 from kakarot.evm import EVM
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.system_operations import CreateHelper
-from kakarot.interfaces.interfaces import IAccount, IContractAccount, IERC20
+from kakarot.interfaces.interfaces import IAccount, IERC20
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
@@ -58,13 +59,7 @@ namespace Kakarot {
     }
 
     // @notice Run the given bytecode with the given calldata and parameters
-    // @dev starknet_contract_address and evm_contract_address can be set to 0 if
-    //      there is no notion of deployed contract in the bytecode. Otherwise,
-    //      they should match (ie. that compute_starknet_address(IAccount.get_evm_address(starknet_contract_address))
-    //      should equal starknet_contract_address. In a future version, either one or the
-    //      other will be removed
-    // @param starknet_contract_address The starknet contract address of the called contract
-    // @param evm_contract_address The corresponding EVM contract address of the called contract
+    // @param address The target account address
     // @param origin The caller EVM address
     // @param bytecode_len The length of the bytecode
     // @param bytecode The bytecode run
@@ -80,8 +75,7 @@ namespace Kakarot {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(
-        starknet_contract_address: felt,
-        evm_contract_address: felt,
+        address: model.Address*,
         origin: felt,
         bytecode_len: felt,
         bytecode: felt*,
@@ -90,25 +84,11 @@ namespace Kakarot {
         value: felt,
         gas_limit: felt,
         gas_price: felt,
-    ) -> (
-        stack_accesses_len: felt,
-        stack_accesses: felt*,
-        stack_len: felt,
-        memory_accesses_len: felt,
-        memory_accesses: felt*,
-        memory_bytes_len: felt,
-        starknet_contract_address: felt,
-        evm_contract_address: felt,
-        return_data_len: felt,
-        return_data: felt*,
-        gas_used: felt,
-        reverted: felt,
-    ) {
+    ) -> EVM.Summary* {
         alloc_locals;
 
         // Prepare execution context
         let root_context = ExecutionContext.init_empty();
-        tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
         tempvar call_context = new model.CallContext(
             bytecode=bytecode,
             bytecode_len=bytecode_len,
@@ -137,24 +117,7 @@ namespace Kakarot {
         let ctx = ExecutionContext.increment_gas_used(ctx, cost);
 
         let summary = EVM.run(ctx);
-
-        let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
-        let stack_accesses_len = summary.stack.squashed_end - summary.stack.squashed_start;
-
-        return (
-            stack_accesses_len=stack_accesses_len,
-            stack_accesses=summary.stack.squashed_start,
-            stack_len=summary.stack.len_16bytes,
-            memory_accesses_len=memory_accesses_len,
-            memory_accesses=summary.memory.squashed_start,
-            memory_bytes_len=summary.memory.bytes_len,
-            starknet_contract_address=summary.address.starknet,
-            evm_contract_address=summary.address.evm,
-            return_data_len=summary.return_data_len,
-            return_data=summary.return_data,
-            gas_used=summary.gas_used,
-            reverted=summary.reverted,
-        );
+        return summary;
     }
 
     // @notice The Blockhash registry is used by the BLOCKHASH opcode
@@ -219,58 +182,6 @@ namespace Kakarot {
         return (deploy_fee_,);
     }
 
-    // @notice Deploy contract account.
-    // @dev First deploy a contract_account with no bytecode, then run the calldata as bytecode with the new address,
-    //      then set the bytecode with the result of the initial run.
-    // @param origin The origin for the transaction
-    // @param evm_contract_address The evm address of the contract to be deployed
-    // @param value The value to be transferred as part of this deploy call
-    // @param bytecode_len The deploy bytecode length.
-    // @param bytecode The deploy bytecode.
-    // @return starknet_contract_address The newly deployed starknet contract address.
-    func deploy_contract_account{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(
-        origin: felt, evm_contract_address: felt, value: felt, bytecode_len: felt, bytecode: felt*
-    ) -> (starknet_contract_address: felt, reverted: felt) {
-        alloc_locals;
-
-        let (class_hash) = contract_account_class_hash.read();
-        let (starknet_contract_address) = Accounts.create(class_hash, evm_contract_address);
-        let (empty_array: felt*) = alloc();
-
-        let (
-            stack_accesses_len,
-            stack_accesses,
-            stack_len,
-            memory_accesses_len,
-            memory_accesses,
-            memory_bytes_len,
-            starknet_contract_address,
-            evm_contract_address,
-            return_data_len,
-            return_data,
-            gas_used,
-            reverted,
-        ) = execute(
-            starknet_contract_address=starknet_contract_address,
-            evm_contract_address=evm_contract_address,
-            origin=origin,
-            bytecode_len=bytecode_len,
-            bytecode=bytecode,
-            calldata_len=0,
-            calldata=empty_array,
-            value=value,
-            gas_limit=Constants.TRANSACTION_GAS_LIMIT,
-            gas_price=0,
-        );
-
-        return (starknet_contract_address=starknet_contract_address, reverted=reverted);
-    }
-
     // @notice Deploy a new externally owned account.
     // @param evm_contract_address The evm address that is mapped to the newly deployed starknet contract address.
     // @return starknet_contract_address The newly deployed starknet contract address.
@@ -300,6 +211,34 @@ namespace Kakarot {
         return (starknet_contract_address=starknet_contract_address);
     }
 
+    // @notice Get the ExecutionContext address from the transaction
+    // @dev When to=0, it's a deploy tx so we first computer the target address
+    // @param to The transaction to parameter
+    // @param origin The transaction origin parameter
+    // @return the target evm address
+    func get_address{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(to: felt, origin: felt) -> model.Address* {
+        alloc_locals;
+        if (to == 0) {
+            // TODO: read the nonce from the provided origin address, otherwise in view mode this will
+            // TODO: always use a 0 nonce
+            let (tx_info) = get_tx_info();
+            let (local evm_contract_address) = CreateHelper.get_create_address(
+                origin, tx_info.nonce
+            );
+            let (class_hash) = contract_account_class_hash.read();
+            let (starknet_contract_address) = Accounts.create(class_hash, evm_contract_address);
+            return new model.Address(starknet_contract_address, evm_contract_address);
+        } else {
+            let (starknet_contract_address) = Accounts.compute_starknet_address(to);
+            return new model.Address(starknet_contract_address, to);
+        }
+    }
+
     // @notice The eth_call function as described in the RPC spec, see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_call
     // @param origin The address the transaction is sent from.
     // @param to The address the transaction is directed to.
@@ -324,42 +263,27 @@ namespace Kakarot {
         value: felt,
         data_len: felt,
         data: felt*,
-    ) -> (return_data_len: felt, return_data: felt*, success: felt) {
+    ) -> EVM.Summary* {
         alloc_locals;
-
-        if (to == 0) {
-            // TODO: read the nonce from the provided origin address, otherwise in view mode this will
-            // TODO: always use a 0 nonce
-            let (tx_info) = get_tx_info();
-            let (evm_contract_address) = CreateHelper.get_create_address(origin, tx_info.nonce);
-            let (starknet_contract_address, reverted) = deploy_contract_account(
-                origin=origin,
-                evm_contract_address=evm_contract_address,
-                value=value,
-                bytecode_len=data_len,
-                bytecode=data,
-            );
-            let (return_data) = alloc();
-            assert [return_data] = evm_contract_address;
-            assert [return_data + 1] = starknet_contract_address;
-            return (2, return_data, 1 - reverted);
-        } else {
-            let (local starknet_contract_address) = Accounts.compute_starknet_address(to);
-            let (bytecode_len, bytecode) = Accounts.get_bytecode(to);
-            let summary = execute(
-                starknet_contract_address,
-                to,
-                origin,
-                bytecode_len,
-                bytecode,
-                data_len,
-                data,
-                value,
-                gas_limit,
-                gas_price,
-            );
-            return (summary.return_data_len, summary.return_data, 1 - summary.reverted);
-        }
+        let address = get_address(to, origin);
+        let is_regular_tx = is_not_zero(to);
+        let is_deploy_tx = 1 - is_regular_tx;
+        let (bytecode_len, bytecode) = Accounts.get_bytecode(address.evm);
+        // If deploy_tx is TRUE, then
+        // bytecode is data and data_len is 0
+        // else, bytecode and data are kept as is
+        let bytecode_len = data_len * is_deploy_tx + bytecode_len * (1 - is_deploy_tx);
+        let data_len = data_len * (1 - is_deploy_tx);
+        let bytecode_ptr = cast(data, felt) * is_deploy_tx + cast(bytecode, felt) * (
+            1 - is_deploy_tx
+        );
+        let data_ptr = cast(data, felt) * (1 - is_deploy_tx);
+        let bytecode = cast(bytecode_ptr, felt*);
+        let data = cast(data_ptr, felt*);
+        let summary = execute(
+            address, origin, bytecode_len, bytecode, data_len, data, value, gas_limit, gas_price
+        );
+        return summary;
     }
 
     // @notice returns the EVM address associated to a Starknet account deployed by kakarot.

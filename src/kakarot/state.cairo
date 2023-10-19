@@ -18,8 +18,10 @@ from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_upd
 from kakarot.accounts.library import Accounts
 from kakarot.interfaces.interfaces import IAccount, IContractAccount, IERC20
 from kakarot.model import model
+from kakarot.account import Account
 from kakarot.constants import native_token_address, contract_account_class_hash
 from starkware.starknet.common.syscalls import call_contract
+from utils.utils import Helpers
 
 namespace State {
     // @dev Create a new empty State
@@ -144,7 +146,7 @@ namespace State {
             // the contract, hence we put 0.
             // It shouldn't have any impact
             if (bytecode_len == 0) {
-                let account = new_account(code_len=bytecode_len, code=bytecode, nonce=0);
+                let account = Account.init(code_len=bytecode_len, code=bytecode, nonce=0);
                 dict_write{dict_ptr=accounts}(key=address.evm, new_value=cast(account, felt));
                 tempvar state = new model.State(
                     accounts_start=self.accounts_start,
@@ -160,7 +162,7 @@ namespace State {
             }
 
             let (nonce) = IContractAccount.get_nonce(contract_address=address.starknet);
-            let account = new_account(code_len=bytecode_len, code=bytecode, nonce=nonce);
+            let account = Account.init(code_len=bytecode_len, code=bytecode, nonce=nonce);
             dict_write{dict_ptr=accounts}(key=address.evm, new_value=cast(account, felt));
             tempvar state = new model.State(
                 accounts_start=self.accounts_start,
@@ -174,24 +176,6 @@ namespace State {
             );
             return (state, account);
         }
-    }
-
-    // @notice Create a new account
-    // @dev New accounts start at nonce=1.
-    // @param code_len The length of the code
-    // @param code The pointer to the code
-    // @param nonce The initial nonce
-    // @return The updated state
-    // @return The account
-    func new_account(code_len: felt, code: felt*, nonce: felt) -> model.Account* {
-        let (storage_start) = default_dict_new(0);
-        return new model.Account(
-            code_len=code_len,
-            code=code,
-            storage_start=storage_start,
-            storage=storage_start,
-            nonce=nonce,
-        );
     }
 
     // @notice Set the Account at the given address
@@ -229,32 +213,9 @@ namespace State {
     }(self: model.State*, address: model.Address*, key: Uint256*) -> (model.State*, Uint256) {
         alloc_locals;
         let (self, account) = get_account(self, address);
-        let storage = account.storage;
-        let (local storage_key) = hash_felts{hash_ptr=pedersen_ptr}(cast(key, felt*), 2);
-
-        let (pointer) = dict_read{dict_ptr=storage}(key=storage_key);
-
-        if (pointer != 0) {
-            // Return from local storage if found
-            let value_ptr = cast(pointer, Uint256*);
-            tempvar account = new model.Account(
-                account.code_len, account.code, account.storage_start, storage, account.nonce
-            );
-            let self = set_account(self, address, account);
-
-            return (self, [value_ptr]);
-        } else {
-            // Otherwise regular read value from contract storage
-            let (value) = IContractAccount.storage(contract_address=address.starknet, key=[key]);
-            // Cache for possible later use (almost free and can save a lot)
-            tempvar new_value = new Uint256(value.low, value.high);
-            dict_write{dict_ptr=storage}(key=storage_key, new_value=cast(new_value, felt));
-            tempvar account = new model.Account(
-                account.code_len, account.code, account.storage_start, storage, account.nonce
-            );
-            let self = set_account(self, address, account);
-            return (self, value);
-        }
+        let (account, value) = Account.read_storage(account, address, key);
+        let self = set_account(self, address, account);
+        return (self, value);
     }
 
     // @notice Update a storage key with the given value
@@ -267,12 +228,7 @@ namespace State {
     ) -> model.State* {
         alloc_locals;
         let (self, account) = get_account(self, address);
-        local storage: DictAccess* = account.storage;
-        let (storage_key) = hash_felts{hash_ptr=pedersen_ptr}(cast(key, felt*), 2);
-        dict_write{dict_ptr=storage}(key=storage_key, new_value=cast(value, felt));
-        tempvar account = new model.Account(
-            account.code_len, account.code, account.storage_start, storage, account.nonce
-        );
+        let account = Account.write_storage(account, key, value);
         let self = set_account(self, address, account);
         return self;
     }
@@ -394,20 +350,8 @@ namespace Internals {
             return ();
         }
 
-        let address = cast(accounts_start.key, model.Address*);
         let account = cast(accounts_start.new_value, model.Account*);
-
-        let storage = account.storage;
-        let (storage_start, storage) = default_dict_finalize(
-            account.storage_start, account.storage, 0
-        );
-        tempvar account = new model.Account(
-            code_len=account.code_len,
-            code=account.code,
-            storage_start=storage_start,
-            storage=storage,
-            nonce=account.nonce,
-        );
+        let account = Account.finalize(account);
         dict_write{dict_ptr=accounts}(key=accounts_start.key, new_value=cast(account, felt));
 
         return _finalize_accounts(accounts_start + DictAccess.SIZE, accounts_end);
@@ -427,43 +371,11 @@ namespace Internals {
 
         let address = cast(accounts_start.key, model.Address*);
         let account = cast(accounts_start.new_value, model.Account*);
+        Account.commit(account, address);
 
-        IContractAccount.set_nonce(address.starknet, account.nonce);
-        _save_storage(address, account.storage_start, account.storage);
-
-        let (bytecode_len) = Accounts.get_bytecode_len(address.starknet);
-        if (bytecode_len != 0) {
-            // Account bytecode is immutable, so if a bytecode is already here, it must
-            // be the same
-            _save_accounts(accounts_start + DictAccess.SIZE, accounts_end);
-            return ();
-        }
-
-        // Deploy accounts
-        let (class_hash) = contract_account_class_hash.read();
-        Accounts.create(class_hash, address.evm);
-        // Write bytecode
-        IContractAccount.write_bytecode(address.starknet, account.code_len, account.code);
         _save_accounts(accounts_start + DictAccess.SIZE, accounts_end);
 
         return ();
-    }
-
-    // @notice Iterates through the storage dict and update Contract Account storage.
-    // @param storage_start The dict start pointer
-    // @param storage_end The dict end pointer
-    func _save_storage{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        address: model.Address*, storage_start: DictAccess*, storage_end: DictAccess*
-    ) {
-        if (storage_start == storage_end) {
-            return ();
-        }
-        let key = cast(storage_start.key, Uint256*);
-        let value = cast(storage_start.new_value, Uint256*);
-
-        IContractAccount.write_storage(contract_address=address.starknet, key=[key], value=[value]);
-
-        return _save_storage(address, storage_start + DictAccess.SIZE, storage_end);
     }
 
     // @notice Iterates through a list of events and emits them.

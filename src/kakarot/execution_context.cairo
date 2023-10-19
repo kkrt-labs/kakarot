@@ -17,7 +17,6 @@ from starkware.cairo.common.uint256 import Uint256
 from kakarot.accounts.library import Accounts
 from kakarot.constants import Constants
 from kakarot.errors import Errors
-from kakarot.interfaces.interfaces import IAccount, IContractAccount
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
@@ -36,8 +35,6 @@ namespace ExecutionContext {
         gas_used: felt,
         address: model.Address*,
         reverted: felt,
-        selfdestructs_len: felt,
-        selfdestructs: model.Address*,
         state: model.State*,
         calling_context: model.ExecutionContext*,
     }
@@ -59,8 +56,6 @@ namespace ExecutionContext {
         dw 0;  // program_counter
         dw 1;  // stopped
         dw 0;  // gas_used
-        dw 0;  // selfdestructs_len
-        dw 0;  // selfdestructs
         dw 0;  // reverted
     }
 
@@ -77,7 +72,6 @@ namespace ExecutionContext {
         let stack = Stack.init();
         let memory = Memory.init();
         let state = State.init();
-        let (selfdestructs: model.Address*) = alloc();
         let (return_data: felt*) = alloc();
 
         return new model.ExecutionContext(
@@ -90,8 +84,6 @@ namespace ExecutionContext {
             program_counter=0,
             stopped=FALSE,
             gas_used=0,
-            selfdestructs_len=0,
-            selfdestructs=selfdestructs,
             reverted=FALSE,
         );
     }
@@ -149,8 +141,6 @@ namespace ExecutionContext {
             program_counter=self.program_counter,
             stopped=TRUE,
             gas_used=self.gas_used,
-            selfdestructs_len=self.selfdestructs_len,
-            selfdestructs=self.selfdestructs,
             reverted=reverted,
         );
     }
@@ -191,8 +181,6 @@ namespace ExecutionContext {
                 gas_used=self.gas_used,
                 address=self.call_context.address,
                 reverted=self.reverted,
-                selfdestructs_len=self.selfdestructs_len,
-                selfdestructs=self.selfdestructs,
                 state=state,
                 calling_context=self.call_context.calling_context,
             );
@@ -206,8 +194,6 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             address=self.call_context.address,
             reverted=self.reverted,
-            selfdestructs_len=self.selfdestructs_len,
-            selfdestructs=self.selfdestructs,
             state=state,
             calling_context=self.call_context.calling_context,
         );
@@ -251,8 +237,6 @@ namespace ExecutionContext {
             program_counter=self.program_counter,
             stopped=self.stopped,
             gas_used=self.gas_used,
-            selfdestructs_len=self.selfdestructs_len,
-            selfdestructs=self.selfdestructs,
             reverted=self.reverted,
         );
     }
@@ -275,8 +259,6 @@ namespace ExecutionContext {
             program_counter=self.program_counter,
             stopped=self.stopped,
             gas_used=self.gas_used,
-            selfdestructs_len=self.selfdestructs_len,
-            selfdestructs=self.selfdestructs,
             reverted=self.reverted,
         );
     }
@@ -299,8 +281,6 @@ namespace ExecutionContext {
             program_counter=self.program_counter + inc_value,
             stopped=self.stopped,
             gas_used=self.gas_used,
-            selfdestructs_len=self.selfdestructs_len,
-            selfdestructs=self.selfdestructs,
             reverted=self.reverted,
         );
     }
@@ -323,8 +303,6 @@ namespace ExecutionContext {
             program_counter=self.program_counter,
             stopped=self.stopped,
             gas_used=self.gas_used + inc_value,
-            selfdestructs_len=self.selfdestructs_len,
-            selfdestructs=self.selfdestructs,
             reverted=self.reverted,
         );
     }
@@ -364,34 +342,6 @@ namespace ExecutionContext {
         return ExecutionContext.update_state(self, state);
     }
 
-    // @notice Add one contract to the array of contracts to destruct.
-    // @param self The pointer to the execution context.
-    // @param address contract to destroy.
-    // @return ExecutionContext The pointer to the updated execution context.
-    func push_selfdestruct(
-        self: model.ExecutionContext*, selfdestruct_len: felt, selfdestruct: model.Address*
-    ) -> model.ExecutionContext* {
-        if (selfdestruct_len == 0) {
-            return self;
-        }
-        let index = self.selfdestructs_len * model.Address.SIZE;
-        assert [self.selfdestructs + index] = [selfdestruct];
-        return new model.ExecutionContext(
-            state=self.state,
-            call_context=self.call_context,
-            stack=self.stack,
-            memory=self.memory,
-            return_data_len=self.return_data_len,
-            return_data=self.return_data,
-            program_counter=self.program_counter,
-            stopped=self.stopped,
-            gas_used=self.gas_used,
-            selfdestructs_len=self.selfdestructs_len + 1,
-            selfdestructs=self.selfdestructs,
-            reverted=self.reverted,
-        );
-    }
-
     // @notice Updates the dictionary that keeps track of the prior-to-first-write value of a contract storage key so it can be reverted to if the writing execution context reverts.
     // @param self The pointer to the execution context.
     // @param state The pointer to model.State
@@ -408,8 +358,6 @@ namespace ExecutionContext {
             program_counter=self.program_counter,
             stopped=self.stopped,
             gas_used=self.gas_used,
-            selfdestructs_len=self.selfdestructs_len,
-            selfdestructs=self.selfdestructs,
             reverted=self.reverted,
         );
     }
@@ -448,8 +396,6 @@ namespace ExecutionContext {
             program_counter=new_pc_offset,
             stopped=self.stopped,
             gas_used=self.gas_used,
-            selfdestructs_len=self.selfdestructs_len,
-            selfdestructs=self.selfdestructs,
             reverted=self.reverted,
         );
     }

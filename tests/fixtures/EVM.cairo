@@ -66,22 +66,9 @@ func execute{
     alloc_locals;
     let (local block_number) = get_block_number();
     let (local block_timestamp) = get_block_timestamp();
-    let (
-        stack_accesses_len,
-        stack_accesses,
-        stack_len,
-        memory_accesses_len,
-        memory_accesses,
-        memory_bytes_len,
-        starknet_contract_address,
-        evm_contract_address,
-        return_data_len,
-        return_data,
-        gas_used,
-        reverted,
-    ) = Kakarot.execute(
-        starknet_contract_address=1,
-        evm_contract_address=1,
+    tempvar address = new model.Address(1, 1);
+    let summary = Kakarot.execute(
+        address=address,
         origin=origin,
         bytecode_len=bytecode_len,
         bytecode=bytecode,
@@ -91,20 +78,23 @@ func execute{
         gas_limit=Constants.TRANSACTION_GAS_LIMIT,
         gas_price=0,
     );
+    let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
+    let stack_accesses_len = summary.stack.squashed_end - summary.stack.squashed_start;
+
     return (
         block_number,
         block_timestamp,
         stack_accesses_len,
-        stack_accesses,
-        stack_len,
+        summary.stack.squashed_start,
+        summary.stack.len_16bytes,
         memory_accesses_len,
-        memory_accesses,
-        memory_bytes_len,
-        starknet_contract_address,
-        evm_contract_address,
-        return_data_len,
-        return_data,
-        gas_used,
-        1 - reverted,
+        summary.memory.squashed_start,
+        summary.memory.bytes_len,
+        summary.address.starknet,
+        summary.address.evm,
+        summary.return_data_len,
+        summary.return_data,
+        summary.gas_used,
+        1 - summary.reverted,
     );
 }

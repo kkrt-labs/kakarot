@@ -42,7 +42,6 @@ namespace model {
     //      transfers := List<Transfer>
     //      Unlike in standard EVM, we need to store the native token transfers as well since we use the
     //      Starknet's ETH and can't just set the balances
-    // @dev The Storages could (should?) be put in the Account
     struct State {
         accounts_start: DictAccess*,
         accounts: DictAccess*,
@@ -62,6 +61,7 @@ namespace model {
         storage_start: DictAccess*,
         storage: DictAccess*,
         nonce: felt,
+        selfdestruct: felt,
     }
 
     // @notice The struct representing an EVM event.
@@ -125,8 +125,6 @@ namespace model {
     // @param stack The current execution context stack.
     // @param memory The current execution context memory.
     // @param gas_used The gas consumed by the current state of the execution.
-    // @param selfdestructs_len The destroy_contract length.
-    // @param selfdestructs The array of contracts to destroy at the end of the transaction.
     // @param state The current journal of state updates.
     struct ExecutionContext {
         state: State*,
@@ -138,8 +136,6 @@ namespace model {
         program_counter: felt,
         stopped: felt,
         gas_used: felt,
-        selfdestructs_len: felt,
-        selfdestructs: Address*,
         reverted: felt,
     }
 }

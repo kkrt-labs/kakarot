@@ -13,7 +13,7 @@ from starkware.cairo.common.uint256 import Uint256
 // Internal dependencies
 from kakarot.constants import Constants, native_token_address, blockhash_registry_address
 from kakarot.execution_context import ExecutionContext
-from kakarot.interfaces.interfaces import IERC20, IBlockhashRegistry
+from kakarot.interfaces.interfaces import IBlockhashRegistry
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.state import State

@@ -32,64 +32,65 @@ async def evm():
 
 @pytest.mark.asyncio
 class TestKakarot:
-    @pytest.mark.parametrize(
-        "params",
-        params_execute,
-    )
-    async def test_execute(
-        self,
-        starknet: FullNodeClient,
-        eth: Contract,
-        wait_for_transaction,
-        params: dict,
-        request,
-        evm: Contract,
-        addresses,
-        max_fee,
-    ):
-        call = evm.functions["execute"].prepare(
-            origin=int(addresses[0].address, 16),
-            value=int(params["value"]),
-            bytecode=hex_string_to_bytes_array(params["code"]),
-            calldata=hex_string_to_bytes_array(params["calldata"]),
+    class TestEVM:
+        @pytest.mark.parametrize(
+            "params",
+            params_execute,
         )
-        with traceit.context(request.node.callspec.id):
-            result = await call.call()
-        stack_result = extract_stack_from_execute(result)
-        memory_result = extract_memory_from_execute(result)
+        async def test_execute(
+            self,
+            starknet: FullNodeClient,
+            eth: Contract,
+            wait_for_transaction,
+            params: dict,
+            request,
+            evm: Contract,
+            addresses,
+            max_fee,
+        ):
+            call = evm.functions["execute"].prepare(
+                origin=int(addresses[0].address, 16),
+                value=int(params["value"]),
+                bytecode=hex_string_to_bytes_array(params["code"]),
+                calldata=hex_string_to_bytes_array(params["calldata"]),
+            )
+            with traceit.context(request.node.callspec.id):
+                result = await call.call()
+            stack_result = extract_stack_from_execute(result)
+            memory_result = extract_memory_from_execute(result)
 
-        assert stack_result == (
-            [
-                int(x)
-                for x in params["stack"]
-                .format(
-                    account_address=int(addresses[0].address, 16),
-                    timestamp=result.block_timestamp,
-                    block_number=result.block_number,
-                )
-                .split(",")
-            ]
-            if params["stack"]
-            else []
-        )
-        assert memory_result == hex_string_to_bytes_array(params["memory"])
-
-        events = params.get("events")
-        if events:
-            # Events only show up in a transaction, thus we run the same call, but in a tx
-            tx = await call.invoke(max_fee=max_fee)
-            status = await wait_for_transaction(tx.hash)
-            assert status == TransactionStatus.ACCEPTED_ON_L2
-            receipt = await starknet.get_transaction_receipt(tx.hash)
-            assert [
+            assert stack_result == (
                 [
-                    # we remove the key that is used to convey the emitting kakarot evm contract
-                    event.keys[1:],
-                    event.data,
+                    int(x)
+                    for x in params["stack"]
+                    .format(
+                        account_address=int(addresses[0].address, 16),
+                        timestamp=result.block_timestamp,
+                        block_number=result.block_number,
+                    )
+                    .split(",")
                 ]
-                for event in receipt.events
-                if event.from_address != eth.address
-            ] == events
+                if params["stack"]
+                else []
+            )
+            assert memory_result == hex_string_to_bytes_array(params["memory"])
+
+            events = params.get("events")
+            if events:
+                # Events only show up in a transaction, thus we run the same call, but in a tx
+                tx = await call.invoke(max_fee=max_fee)
+                status = await wait_for_transaction(tx.hash)
+                assert status == TransactionStatus.ACCEPTED_ON_L2
+                receipt = await starknet.get_transaction_receipt(tx.hash)
+                assert [
+                    [
+                        # we remove the key that is used to convey the emitting kakarot evm contract
+                        event.keys[1:],
+                        event.data,
+                    ]
+                    for event in receipt.events
+                    if event.from_address != eth.address
+                ] == events
 
     class TestComputeStarknetAddress:
         async def test_should_return_same_as_deployed_address(

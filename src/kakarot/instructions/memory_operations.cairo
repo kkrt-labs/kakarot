@@ -12,7 +12,6 @@ from starkware.cairo.common.registers import get_fp_and_pc
 
 from kakarot.errors import Errors
 from kakarot.execution_context import ExecutionContext
-from kakarot.interfaces.interfaces import IContractAccount
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack

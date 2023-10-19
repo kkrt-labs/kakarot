@@ -19,11 +19,11 @@ from starkware.starknet.common.syscalls import (
 from starkware.cairo.common.registers import get_fp_and_pc
 
 // Internal dependencies
+from kakarot.account import Account
 from kakarot.accounts.library import Accounts
 from kakarot.constants import contract_account_class_hash, native_token_address, Constants
 from kakarot.errors import Errors
 from kakarot.execution_context import ExecutionContext
-from kakarot.interfaces.interfaces import IContractAccount, IERC20, IAccount
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.precompiles.precompiles import Precompiles
@@ -332,6 +332,8 @@ namespace SystemOperations {
 
         // Stack input:
         // 0 - address: account to send the current balance to
+
+        // Transfer funds
         let (stack, address) = Stack.pop(ctx.stack);
         let (_, address_high) = unsigned_div_rem(address.high, 2 ** 32);
         let address = Uint256(address_high, address.low);
@@ -344,7 +346,11 @@ namespace SystemOperations {
         );
         let state = State.add_transfer(state, transfer);
 
-        let ctx = ExecutionContext.push_selfdestruct(ctx, 1, ctx.call_context.address);
+        // Register for SELFDESTRUCT
+        let (state, account) = State.get_account(state, ctx.call_context.address);
+        let account = Account.selfdestruct(account);
+        let state = State.set_account(state, ctx.call_context.address, account);
+
         let ctx = ExecutionContext.update_state(ctx, state);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
@@ -522,8 +528,6 @@ namespace CallHelper {
             program_counter=summary.calling_context.program_counter,
             stopped=summary.calling_context.stopped,
             gas_used=summary.calling_context.gas_used + summary.gas_used,
-            selfdestructs_len=summary.calling_context.selfdestructs_len,
-            selfdestructs=summary.calling_context.selfdestructs,
             reverted=summary.calling_context.reverted,
         );
 
@@ -532,9 +536,6 @@ namespace CallHelper {
             return ctx;
         }
 
-        let ctx = ExecutionContext.push_selfdestruct(
-            ctx, summary.selfdestructs_len, summary.selfdestructs
-        );
         let ctx = ExecutionContext.update_state(ctx, summary.state);
 
         return ctx;
@@ -757,7 +758,7 @@ namespace CreateHelper {
 
         // Create Account with empty bytecode
         let (bytecode: felt*) = alloc();
-        let account = State.new_account(0, bytecode, 1);
+        let account = Account.init(0, bytecode, 1);
 
         // Load CallContext bytecode code from memory
         let value = popped[0];
@@ -841,8 +842,6 @@ namespace CreateHelper {
             program_counter=summary.calling_context.program_counter,
             stopped=summary.calling_context.stopped,
             gas_used=summary.calling_context.gas_used + summary.gas_used,
-            selfdestructs_len=summary.calling_context.selfdestructs_len,
-            selfdestructs=summary.calling_context.selfdestructs,
             reverted=summary.calling_context.reverted,
         );
 
@@ -852,14 +851,11 @@ namespace CreateHelper {
         }
 
         // Write bytecode to Account
-        let account = State.new_account(
+        let account = Account.init(
             code_len=summary.return_data_len, code=summary.return_data, nonce=1
         );
         let state = State.set_account(summary.state, summary.address, account);
 
-        let ctx = ExecutionContext.push_selfdestruct(
-            ctx, summary.selfdestructs_len, summary.selfdestructs
-        );
         let ctx = ExecutionContext.update_state(ctx, state);
 
         return ctx;

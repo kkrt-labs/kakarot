@@ -48,6 +48,7 @@ namespace EVM {
         gas_used: felt,
         address: model.Address*,
         reverted: felt,
+        state: model.State*,
     }
 
     // @notice Decode the current opcode and execute associated function.
@@ -685,14 +686,8 @@ namespace EVM {
             gas_used=ctx_summary.gas_used,
             address=ctx_summary.address,
             reverted=ctx_summary.reverted,
+            state=ctx_summary.state,
         );
-
-        if (ctx_summary.reverted != FALSE) {
-            return summary;
-        }
-
-        Helpers.erase_contracts(ctx_summary.selfdestructs_len, ctx_summary.selfdestructs);
-        State.commit(ctx_summary.state);
 
         return summary;
     }
