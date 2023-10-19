@@ -274,12 +274,15 @@ namespace Kakarot {
         // else, bytecode and data are kept as is
         let bytecode_len = data_len * is_deploy_tx + bytecode_len * (1 - is_deploy_tx);
         let data_len = data_len * (1 - is_deploy_tx);
-        let bytecode_ptr = cast(data, felt) * is_deploy_tx + cast(bytecode, felt) * (
-            1 - is_deploy_tx
-        );
-        let data_ptr = cast(data, felt) * (1 - is_deploy_tx);
-        let bytecode = cast(bytecode_ptr, felt*);
-        let data = cast(data_ptr, felt*);
+        if (is_deploy_tx != 0) {
+            let (empty: felt*) = alloc();
+            tempvar bytecode = data;
+            tempvar data = empty;
+        } else {
+            tempvar bytecode = bytecode;
+            tempvar data = data;
+        }
+
         let summary = execute(
             address, origin, bytecode_len, bytecode, data_len, data, value, gas_limit, gas_price
         );

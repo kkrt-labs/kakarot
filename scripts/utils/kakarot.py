@@ -134,7 +134,7 @@ async def deploy(
     if success == 0:
         raise EvmTransactionError(response)
 
-    evm_address, starknet_address = response
+    starknet_address, evm_address = response
     contract.address = Web3.to_checksum_address(f"0x{evm_address:040x}")
     contract.starknet_address = starknet_address
     logger.info(f"✅ {contract_name} deployed at address {contract.address}")

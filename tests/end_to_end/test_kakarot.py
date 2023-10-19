@@ -73,6 +73,7 @@ class TestKakarot:
                 else []
             )
             assert memory_result == hex_string_to_bytes_array(params["memory"])
+            assert bytes(result.return_data).hex() == params["return_value"]
 
             events = params.get("events")
             if events:
