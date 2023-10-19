@@ -34,7 +34,7 @@ def max_fee():
     Return max fee hardcoded to 1 ETH to make sure tx passes
     it is not used per se in the test.
     """
-    return int(1e18)
+    return int(5e17)
 
 
 @pytest.fixture(scope="session", autouse=True)

@@ -756,10 +756,6 @@ namespace CreateHelper {
     }(ctx: model.ExecutionContext*, popped_len: felt, popped: Uint256*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Create Account with empty bytecode
-        let (bytecode: felt*) = alloc();
-        let account = Account.init(0, bytecode, 1);
-
         // Load CallContext bytecode code from memory
         let value = popped[0];
         let offset = popped[1];
@@ -776,6 +772,10 @@ namespace CreateHelper {
         );
         let (starknet_contract_address) = Accounts.compute_starknet_address(evm_contract_address);
         tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
+
+        // Create Account with empty bytecode
+        let (bytecode: felt*) = alloc();
+        let account = Account.init(evm_contract_address, 0, bytecode, 1);
 
         // Update calling context before creating sub context
         let ctx = ExecutionContext.update_memory(ctx, memory);
@@ -852,7 +852,10 @@ namespace CreateHelper {
 
         // Write bytecode to Account
         let account = Account.init(
-            code_len=summary.return_data_len, code=summary.return_data, nonce=1
+            address=summary.address.evm,
+            code_len=summary.return_data_len,
+            code=summary.return_data,
+            nonce=1,
         );
         let state = State.set_account(summary.state, summary.address, account);
 

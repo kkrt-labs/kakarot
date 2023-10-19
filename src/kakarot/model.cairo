@@ -36,9 +36,9 @@ namespace model {
     // @dev In Cairo Zero, dict are list of DictAccess, ie that they can contain only felts. For having
     //      dict of structs, we store in the dict pointers to the struct. List of structs are just list of
     //      felt with inlined structs. Hence one has eventually
-    //      accounts := Dict<Address*, Account*>
+    //      accounts := Dict<starknet_address, Account*>
     //      events := List<Event>
-    //      balances := Dict<Address*, Uint256*>
+    //      balances := Dict<starknet_address, Uint256*>
     //      transfers := List<Transfer>
     //      Unlike in standard EVM, we need to store the native token transfers as well since we use the
     //      Starknet's ETH and can't just set the balances
@@ -55,7 +55,9 @@ namespace model {
 
     // @notice The struct representing an EVM account.
     // @dev We don't put the balance here to avoid loading the whole Account just for sending ETH
+    // @dev The address here is consequently an EVM address
     struct Account {
+        address: felt,
         code_len: felt,
         code: felt*,
         storage_start: DictAccess*,
@@ -80,7 +82,7 @@ namespace model {
         amount: Uint256,
     }
 
-    // @dev Though one of the two address is enough, we store both to save on steps and the usage.
+    // @dev Though one of the two address is enough, we store both to save on steps and simplify the usage.
     struct Address {
         starknet: felt,
         evm: felt,

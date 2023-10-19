@@ -49,6 +49,8 @@ namespace EVM {
         address: model.Address*,
         reverted: felt,
         state: model.State*,
+        call_context: model.CallContext*,
+        program_counter: felt,
     }
 
     // @notice Decode the current opcode and execute associated function.
@@ -687,6 +689,8 @@ namespace EVM {
             address=ctx_summary.address,
             reverted=ctx_summary.reverted,
             state=ctx_summary.state,
+            call_context=ctx_summary.call_context,
+            program_counter=ctx_summary.program_counter,
         );
 
         return summary;

@@ -37,6 +37,8 @@ namespace ExecutionContext {
         reverted: felt,
         state: model.State*,
         calling_context: model.ExecutionContext*,
+        call_context: model.CallContext*,
+        program_counter: felt,
     }
 
     // @notice Initialize an empty context to act as a placeholder for root context.
@@ -183,6 +185,8 @@ namespace ExecutionContext {
                 reverted=self.reverted,
                 state=state,
                 calling_context=self.call_context.calling_context,
+                call_context=self.call_context,
+                program_counter=self.program_counter,
             );
         }
 
@@ -196,6 +200,8 @@ namespace ExecutionContext {
             reverted=self.reverted,
             state=state,
             calling_context=self.call_context.calling_context,
+            call_context=self.call_context,
+            program_counter=self.program_counter,
         );
     }
 

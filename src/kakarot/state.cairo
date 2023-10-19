@@ -121,7 +121,7 @@ namespace State {
     ) -> (model.State*, model.Account*) {
         alloc_locals;
         let accounts = self.accounts;
-        let (pointer) = dict_read{dict_ptr=accounts}(key=address.evm);
+        let (pointer) = dict_read{dict_ptr=accounts}(key=address.starknet);
 
         if (pointer != 0) {
             // Return from local storage if found
@@ -146,8 +146,10 @@ namespace State {
             // the contract, hence we put 0.
             // It shouldn't have any impact
             if (bytecode_len == 0) {
-                let account = Account.init(code_len=bytecode_len, code=bytecode, nonce=0);
-                dict_write{dict_ptr=accounts}(key=address.evm, new_value=cast(account, felt));
+                let account = Account.init(
+                    address=address.evm, code_len=bytecode_len, code=bytecode, nonce=0
+                );
+                dict_write{dict_ptr=accounts}(key=address.starknet, new_value=cast(account, felt));
                 tempvar state = new model.State(
                     accounts_start=self.accounts_start,
                     accounts=accounts,
@@ -162,8 +164,10 @@ namespace State {
             }
 
             let (nonce) = IContractAccount.get_nonce(contract_address=address.starknet);
-            let account = Account.init(code_len=bytecode_len, code=bytecode, nonce=nonce);
-            dict_write{dict_ptr=accounts}(key=address.evm, new_value=cast(account, felt));
+            let account = Account.init(
+                address=address.evm, code_len=bytecode_len, code=bytecode, nonce=nonce
+            );
+            dict_write{dict_ptr=accounts}(key=address.starknet, new_value=cast(account, felt));
             tempvar state = new model.State(
                 accounts_start=self.accounts_start,
                 accounts=accounts,
@@ -186,7 +190,7 @@ namespace State {
         self: model.State*, address: model.Address*, account: model.Account*
     ) -> model.State* {
         let accounts = self.accounts;
-        dict_write{dict_ptr=accounts}(key=address.evm, new_value=cast(account, felt));
+        dict_write{dict_ptr=accounts}(key=address.starknet, new_value=cast(account, felt));
         return new model.State(
             accounts_start=self.accounts_start,
             accounts=accounts,
@@ -275,10 +279,10 @@ namespace State {
 
         let balances = self.balances;
         dict_write{dict_ptr=balances}(
-            key=transfer.sender.evm, new_value=cast(&sender_balance_new, felt)
+            key=transfer.sender.starknet, new_value=cast(&sender_balance_new, felt)
         );
         dict_write{dict_ptr=balances}(
-            key=transfer.recipient.evm, new_value=cast(&recipient_balance_new, felt)
+            key=transfer.recipient.starknet, new_value=cast(&recipient_balance_new, felt)
         );
         assert [self.transfers + self.transfers_len] = [transfer];
 
@@ -305,7 +309,7 @@ namespace State {
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.State*, address: model.Address*) -> (state: model.State*, balance: Uint256) {
         let balances = self.balances;
-        let (pointer) = dict_read{dict_ptr=balances}(key=address.evm);
+        let (pointer) = dict_read{dict_ptr=balances}(key=address.starknet);
         if (pointer != 0) {
             let balance_ptr = cast(pointer, Uint256*);
             tempvar self = new model.State(
@@ -323,7 +327,7 @@ namespace State {
             let (native_token_address_) = native_token_address.read();
             let (balance) = IERC20.balanceOf(native_token_address_, address.starknet);
             tempvar balance_ptr = new Uint256(balance.low, balance.high);
-            dict_write{dict_ptr=balances}(key=address.evm, new_value=cast(balance_ptr, felt));
+            dict_write{dict_ptr=balances}(key=address.starknet, new_value=cast(balance_ptr, felt));
             tempvar self = new model.State(
                 accounts_start=self.accounts_start,
                 accounts=self.accounts,
@@ -369,9 +373,9 @@ namespace Internals {
             return ();
         }
 
-        let address = cast(accounts_start.key, model.Address*);
+        let starknet_address = accounts_start.key;
         let account = cast(accounts_start.new_value, model.Account*);
-        Account.commit(account, address);
+        Account.commit(account, starknet_address);
 
         _save_accounts(accounts_start + DictAccess.SIZE, accounts_end);
 

@@ -16,6 +16,7 @@ from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.state import State
+from kakarot.evm import EVM
 from utils.utils import Helpers
 
 // Constructor
@@ -152,16 +153,40 @@ func eth_call{
     value: felt,
     data_len: felt,
     data: felt*,
-) -> (return_data_len: felt, return_data: felt*, success: felt) {
-    Kakarot.assert_view();
+) -> (
+    return_data_len: felt,
+    return_data: felt*,
+    success: felt,
+    program_counter: felt,
+    bytecode_len: felt,
+    bytecode: felt*,
+    data_len: felt,
+    data: felt*,
+) {
     let summary = Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
+    let result = (
+        summary.return_data_len,
+        summary.return_data,
+        1 - summary.reverted,
+        summary.program_counter,
+        summary.call_context.bytecode_len,
+        summary.call_context.bytecode,
+        summary.call_context.calldata_len,
+        summary.call_context.calldata,
+    );
     if (to == 0) {
-        let (return_data) = alloc();
-        assert [return_data] = summary.address.starknet;
-        assert [return_data + 1] = summary.address.evm;
-        return (2, return_data, 1 - summary.reverted);
+        return (
+            2,
+            cast(summary.address, felt*),
+            1 - summary.reverted,
+            summary.program_counter,
+            summary.call_context.bytecode_len,
+            summary.call_context.bytecode,
+            summary.call_context.calldata_len,
+            summary.call_context.calldata,
+        );
     } else {
-        return (summary.return_data_len, summary.return_data, 1 - summary.reverted);
+        return result;
     }
 }
 
@@ -181,25 +206,48 @@ func eth_call{
 func eth_send_transaction{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
-    return_data_len: felt, return_data: felt*, success: felt
+    return_data_len: felt,
+    return_data: felt*,
+    success: felt,
+    program_counter: felt,
+    bytecode_len: felt,
+    bytecode: felt*,
+    data_len: felt,
+    data: felt*,
 ) {
     alloc_locals;
     let (local starknet_caller_address) = get_caller_address();
     let (local origin) = Kakarot.safe_get_evm_address(starknet_caller_address);
     let summary = Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
+    let result = (
+        summary.return_data_len,
+        summary.return_data,
+        1 - summary.reverted,
+        summary.program_counter,
+        summary.call_context.bytecode_len,
+        summary.call_context.bytecode,
+        summary.call_context.calldata_len,
+        summary.call_context.calldata,
+    );
 
     if (summary.reverted != FALSE) {
-        return (summary.return_data_len, summary.return_data, 1 - summary.reverted);
+        return result;
     }
 
     State.commit(summary.state);
 
     if (to == 0) {
-        let (return_data) = alloc();
-        assert [return_data] = summary.address.starknet;
-        assert [return_data + 1] = summary.address.evm;
-        return (2, return_data, 1 - summary.reverted);
+        return (
+            2,
+            cast(summary.address, felt*),
+            1 - summary.reverted,
+            summary.program_counter,
+            summary.call_context.bytecode_len,
+            summary.call_context.bytecode,
+            summary.call_context.calldata_len,
+            summary.call_context.calldata,
+        );
     } else {
-        return (summary.return_data_len, summary.return_data, 1 - summary.reverted);
+        return result;
     }
 }

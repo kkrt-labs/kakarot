@@ -135,6 +135,10 @@ async def deploy(
         raise EvmTransactionError(response)
 
     starknet_address, evm_address = response
+    assert (
+        await _call_starknet("contract_account", "bytecode", address=starknet_address)
+        == contract.bytecode
+    )
     contract.address = Web3.to_checksum_address(f"0x{evm_address:040x}")
     contract.starknet_address = starknet_address
     logger.info(f"✅ {contract_name} deployed at address {contract.address}")

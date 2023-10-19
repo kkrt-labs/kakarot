@@ -212,31 +212,25 @@ namespace Kakarot {
     }
 
     // @notice Get the ExecutionContext address from the transaction
-    // @dev When to=0, it's a deploy tx so we first computer the target address
+    // @dev When to=0, it's a deploy tx so we first compute the target address
     // @param to The transaction to parameter
     // @param origin The transaction origin parameter
     // @return the target evm address
-    func get_address{
+    func resolve_to{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(to: felt, origin: felt) -> model.Address* {
+    }(to: felt, origin: felt) -> felt {
         alloc_locals;
-        if (to == 0) {
-            // TODO: read the nonce from the provided origin address, otherwise in view mode this will
-            // TODO: always use a 0 nonce
-            let (tx_info) = get_tx_info();
-            let (local evm_contract_address) = CreateHelper.get_create_address(
-                origin, tx_info.nonce
-            );
-            let (class_hash) = contract_account_class_hash.read();
-            let (starknet_contract_address) = Accounts.create(class_hash, evm_contract_address);
-            return new model.Address(starknet_contract_address, evm_contract_address);
-        } else {
-            let (starknet_contract_address) = Accounts.compute_starknet_address(to);
-            return new model.Address(starknet_contract_address, to);
+        if (to != 0) {
+            return to;
         }
+        // TODO: read the nonce from the provided origin address, otherwise in view mode this will
+        // TODO: always use a 0 nonce
+        let (tx_info) = get_tx_info();
+        let (local evm_contract_address) = CreateHelper.get_create_address(origin, tx_info.nonce);
+        return evm_contract_address;
     }
 
     // @notice The eth_call function as described in the RPC spec, see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_call
@@ -265,7 +259,10 @@ namespace Kakarot {
         data: felt*,
     ) -> EVM.Summary* {
         alloc_locals;
-        let address = get_address(to, origin);
+        let evm_contract_address = resolve_to(to, origin);
+        let (starknet_contract_address) = Accounts.compute_starknet_address(evm_contract_address);
+        tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
+
         let is_regular_tx = is_not_zero(to);
         let is_deploy_tx = 1 - is_regular_tx;
         let (bytecode_len, bytecode) = Accounts.get_bytecode(address.evm);
@@ -309,22 +306,5 @@ namespace Kakarot {
         }
 
         return (evm_address=evm_address);
-    }
-
-    // @notice Since it's possible in starknet to send a transcation to a @view entrypoint, this
-    //         ensures that there is no ongoing transaction (so it's really a view call).
-    // @dev Raise if tx_info.account_contract_address is not 0
-    func assert_view{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }() {
-        let (tx_info) = get_tx_info();
-        with_attr error_message("Kakarot: entrypoint should only be called in view mode") {
-            assert tx_info.account_contract_address = 0;
-        }
-
-        return ();
     }
 }
