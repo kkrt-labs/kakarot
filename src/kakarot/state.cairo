@@ -248,7 +248,7 @@ namespace State {
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.State*, address: model.Address*, key: Uint256*) -> (model.State*, Uint256) {
         alloc_locals;
-        let (self, account) = get_account(self, address);
+        let (self, account) = get_or_fetch_account(self, address);
         let (account, value) = Account.read_storage(account, address, key);
         let self = set_account(self, address, account);
         return (self, value);
@@ -263,7 +263,7 @@ namespace State {
         self: model.State*, address: model.Address*, key: Uint256*, value: Uint256*
     ) -> model.State* {
         alloc_locals;
-        let (self, account) = get_account(self, address);
+        let (self, account) = get_or_fetch_account(self, address);
         let account = Account.write_storage(account, key, value);
         let self = set_account(self, address, account);
         return self;
