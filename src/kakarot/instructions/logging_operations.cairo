@@ -152,39 +152,3 @@ namespace LoggingOperations {
         return ctx;
     }
 }
-
-namespace LoggingHelper {
-    func _finalize_loop{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(events_len: felt, events: model.Event*) -> felt* {
-        alloc_locals;
-
-        if (events_len == 0) {
-            return (events);
-        }
-
-        let event: model.Event = [events];
-
-        emit_event(
-            keys_len=event.keys_len, keys=event.keys, data_len=event.data_len, data=event.data
-        );
-        // we maintain the semantics of one event struct involves iterating a full event struct size recursively
-        return _finalize_loop(events_len - 1, events + 1 * model.Event.SIZE);
-    }
-
-    // @notice helper for log family opcodes.
-    // @notice emits all registered events when a calling context is finalized
-    // @return The pointer to the updated execution_context.
-    func finalize{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        _finalize_loop(ctx.events_len, ctx.events);
-        return ctx;
-    }
-}

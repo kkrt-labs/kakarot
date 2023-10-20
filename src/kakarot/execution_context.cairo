@@ -301,7 +301,7 @@ namespace ExecutionContext {
         );
     }
 
-    // @notice Update the array of events to emit in the case of a execution context successfully running to completion (see `LoggingHelper.finalize`).
+    // @notice Update the array of events to emit in the case of a execution context successfully running to completion (see `ExecutionContext.finalize`).
     // @param self The pointer to the execution context.
     // @param topics_len The length of the topics
     // @param topics The topics Uint256 array

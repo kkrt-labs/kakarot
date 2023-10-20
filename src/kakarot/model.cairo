@@ -5,7 +5,6 @@
 // StarkWare dependencies
 from starkware.cairo.common.dict import DictAccess
 from starkware.cairo.common.uint256 import Uint256
-from starkware.starknet.common.syscalls import EmitEvent
 
 namespace model {
     // @notice Info: https://www.evm.codes/about#stack
