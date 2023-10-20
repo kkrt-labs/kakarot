@@ -625,18 +625,19 @@ namespace EVM {
             return run(ctx=ctx);
         }
 
-        let summary = ExecutionContext.finalize(ctx);
-        let is_root: felt = ExecutionContext.is_empty(self=summary.calling_context);
+        let ctx_summary = ExecutionContext.finalize(ctx);
+        let is_root: felt = ExecutionContext.is_empty(self=ctx_summary.calling_context);
         if (is_root != FALSE) {
-            return finalize(summary);
+            let evm_summary = finalize(ctx_summary);
+            return evm_summary;
         }
 
-        if (summary.call_context.is_create != 0) {
-            let ctx = CreateHelper.finalize_calling_context(summary);
+        if (ctx_summary.call_context.is_create != 0) {
+            let ctx = CreateHelper.finalize_calling_context(ctx_summary);
             return run(ctx=ctx);
         }
 
-        let ctx = CallHelper.finalize_calling_context(summary);
+        let ctx = CallHelper.finalize_calling_context(ctx_summary);
         return run(ctx=ctx);
     }
 
@@ -657,25 +658,9 @@ namespace EVM {
     // @notice Finalizes a transaction.
     // @param ctx_summary The pointer to the execution context summary.
     // @return Summary The pointer to the transaction Summary.
-    func finalize{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx_summary: ExecutionContext.Summary*) -> Summary* {
-        if (ctx_summary.call_context.is_create != 0) {
-            let (state, account) = State.get_account(ctx_summary.state, ctx_summary.address);
-            let account = Account.set_code(
-                account, ctx_summary.return_data_len, ctx_summary.return_data
-            );
-            let state = State.set_account(state, ctx_summary.address, account);
-            tempvar state = state;
-        } else {
-            tempvar state = ctx_summary.state;
-        }
-
-        let state_summary = State.finalize(state);
-
+    func finalize{range_check_ptr}(ctx_summary: ExecutionContext.Summary*) -> Summary* {
+        alloc_locals;
+        let state_summary = Internals._get_state_summary(ctx_summary);
         tempvar summary: Summary* = new Summary(
             memory=ctx_summary.memory,
             stack=ctx_summary.stack,
@@ -690,5 +675,38 @@ namespace EVM {
         );
 
         return summary;
+    }
+}
+
+namespace Internals {
+    func _get_state_summary{range_check_ptr}(
+        ctx_summary: ExecutionContext.Summary*
+    ) -> State.Summary* {
+        alloc_locals;
+        // Top level reverted ExecutionContext has returned parent state, ie. root (empty) context state
+        if (ctx_summary.reverted != FALSE) {
+            let state_ptr = cast(ctx_summary.state, felt);
+            with_attr error_message("Reverted tx should have an empty state") {
+                assert state_ptr = 0;
+            }
+            let state_summary = cast(ctx_summary.state, State.Summary*);
+            return state_summary;
+        }
+
+        // In case of a deploy tx, we need to store the return_data in the Account
+        if (ctx_summary.call_context.is_create != FALSE) {
+            let (state, account) = State.get_account(ctx_summary.state, ctx_summary.address);
+            let account = Account.set_code(
+                account, ctx_summary.return_data_len, ctx_summary.return_data
+            );
+            let state = State.set_account(state, ctx_summary.address, account);
+            tempvar state = state;
+            // Else the state is just the returned state of the ExecutionContext
+        } else {
+            tempvar state = ctx_summary.state;
+        }
+
+        let state_summary = State.finalize(state);
+        return state_summary;
     }
 }

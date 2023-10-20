@@ -14,6 +14,7 @@ from starkware.starknet.common.syscalls import emit_event
 from starkware.cairo.common.uint256 import uint256_add, uint256_sub
 from starkware.starknet.common.storage import normalize_address
 from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_update, hash_felts
+from starkware.cairo.common.math import assert_not_zero
 
 from kakarot.accounts.library import Accounts
 from kakarot.interfaces.interfaces import IAccount, IContractAccount, IERC20
@@ -184,14 +185,21 @@ namespace State {
     }
 
     // @notice get the Account at the given address
+    // @dev Raises if the account doesn't exist already
     // @param self The pointer to the State.
     // @param address The address of the Account
     // @param account The new account
     func get_account(self: model.State*, address: model.Address*) -> (
         model.State*, model.Account*
     ) {
+        alloc_locals;
         let accounts = self.accounts;
         let (pointer) = dict_read{dict_ptr=accounts}(key=address.starknet);
+        tempvar starknet_address = address.starknet;
+        with_attr error_message("Account {starknet_address} not found") {
+            assert_not_zero(pointer);
+        }
+
         let account = cast(pointer, model.Account*);
         tempvar state = new model.State(
             accounts_start=self.accounts_start,
