@@ -85,6 +85,8 @@ func evm_call{
     memory_accesses_len: felt,
     memory_accesses: felt*,
     memory_bytes_len: felt,
+    accounts_accesses_len: felt,
+    accounts_accesses: felt*,
     starknet_contract_address: felt,
     evm_contract_address: felt,
     return_data_len: felt,
@@ -97,24 +99,27 @@ func evm_call{
     let (local block_timestamp) = get_block_timestamp();
     let summary = execute(origin, value, bytecode_len, bytecode, calldata_len, calldata);
 
-    let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
     let stack_accesses_len = summary.stack.squashed_end - summary.stack.squashed_start;
+    let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
+    let accounts_accesses_len = summary.state.accounts - summary.state.accounts_start;
 
     return (
-        block_number,
-        block_timestamp,
-        stack_accesses_len,
-        summary.stack.squashed_start,
-        summary.stack.len_16bytes,
-        memory_accesses_len,
-        summary.memory.squashed_start,
-        summary.memory.bytes_len,
-        summary.address.starknet,
-        summary.address.evm,
-        summary.return_data_len,
-        summary.return_data,
-        summary.gas_used,
-        1 - summary.reverted,
+        block_number=block_number,
+        block_timestamp=block_timestamp,
+        stack_accesses_len=stack_accesses_len,
+        stack_accesses=summary.stack.squashed_start,
+        stack_len=summary.stack.len_16bytes,
+        memory_accesses_len=memory_accesses_len,
+        memory_accesses=summary.memory.squashed_start,
+        memory_bytes_len=summary.memory.bytes_len,
+        accounts_accesses_len=accounts_accesses_len,
+        accounts_accesses=summary.state.accounts_start,
+        starknet_contract_address=summary.address.starknet,
+        evm_contract_address=summary.address.evm,
+        return_data_len=summary.return_data_len,
+        return_data=summary.return_data,
+        gas_used=summary.gas_used,
+        success=1 - summary.reverted,
     );
 }
 

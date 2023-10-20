@@ -172,12 +172,6 @@ namespace ExecutionContext {
         let stack_summary = Stack.finalize(self.stack);
         State.finalize(self.state);
 
-        if (self.reverted != FALSE) {
-            tempvar state = self.call_context.calling_context.state;
-        } else {
-            tempvar state = self.state;
-        }
-
         return new Summary(
             memory=memory_summary,
             stack=stack_summary,
@@ -186,7 +180,7 @@ namespace ExecutionContext {
             gas_used=self.gas_used,
             address=self.call_context.address,
             reverted=self.reverted,
-            state=state,
+            state=self.state,
             calling_context=self.call_context.calling_context,
             call_context=self.call_context,
             program_counter=self.program_counter,

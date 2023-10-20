@@ -683,16 +683,6 @@ namespace Internals {
         ctx_summary: ExecutionContext.Summary*
     ) -> State.Summary* {
         alloc_locals;
-        // Top level reverted ExecutionContext has returned parent state, ie. root (empty) context state
-        if (ctx_summary.reverted != FALSE) {
-            let state_ptr = cast(ctx_summary.state, felt);
-            with_attr error_message("Reverted tx should have an empty state") {
-                assert state_ptr = 0;
-            }
-            let state_summary = cast(ctx_summary.state, State.Summary*);
-            return state_summary;
-        }
-
         // In case of a deploy tx, we need to store the return_data in the Account
         if (ctx_summary.call_context.is_create != FALSE) {
             let (state, account) = State.get_account(ctx_summary.state, ctx_summary.address);
