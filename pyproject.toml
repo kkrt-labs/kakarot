@@ -102,6 +102,8 @@ markers = [
   "MLOAD:          Opcode Value 0x51 - Load word from memory",
   "MSTORE:         Opcode Value 0x52 - Save word to memory",
   "MSTORE8:        Opcode Value 0x53 - Save byte to memory",
+  "SLOAD:          Opcode Value 0x54 - Load word from storage",
+  "SSTORE:         Opcode Value 0x55 - Save word to storage",
   "JUMP:           Opcode Value 0x56 - Alter the program counter",
   "JUMPI:          Opcode Value 0x57 - Conditionally alter the program counter",
   "PC:             Opcode Value 0x58 - Get the value of the program counter prior to the increment",

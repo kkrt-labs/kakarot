@@ -1727,4 +1727,16 @@ test_cases = [
             pytest.mark.xfail(reason="Hint is not whitelisted"),
         ],
     },
+    {
+        "params": {
+            "value": 0,
+            "code": "60ff6100aa556100aa54",
+            "calldata": "",
+            "stack": f"{0xff}",
+            "memory": "",
+            "return_value": "",
+        },
+        "id": "SSTORE 0xff at key 0xaa, then SLOAD 0xaa",
+        "marks": [pytest.mark.SSTORE, pytest.mark.SLOAD],
+    },
 ]
