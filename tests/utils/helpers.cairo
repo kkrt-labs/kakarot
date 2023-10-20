@@ -54,6 +54,7 @@ namespace TestHelpers {
             calling_context=root_context,
             address=address,
             read_only=FALSE,
+            is_create=FALSE,
         );
         let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
         return ctx;

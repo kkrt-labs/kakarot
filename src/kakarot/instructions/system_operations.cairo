@@ -347,7 +347,7 @@ namespace SystemOperations {
         let state = State.add_transfer(state, transfer);
 
         // Register for SELFDESTRUCT
-        let (state, account) = State.get_account(state, ctx.call_context.address);
+        let (state, account) = State.get_or_fetch_account(state, ctx.call_context.address);
         let account = Account.selfdestruct(account);
         let state = State.set_account(state, ctx.call_context.address, account);
 
@@ -415,7 +415,7 @@ namespace CallHelper {
     // @param calling_ctx The pointer to the calling execution context.
     // @param with_value The boolean that determines whether the sub-context's calling context has a value read from the calling context's stack or the calling context's calling context.
     // @param read_only The boolean that determines whether state modifications can be executed from the sub-execution context.
-    // @param self_call A boolean to indicate whether the CallContext is self (current address) or the args address
+    // @param self_call A boolean to indicate whether the account to message-call into is self (address of the current executing account) or the call argument's address (address of the call's target account)
     // @return ExecutionContext The pointer to the sub context.
     func init_sub_context{
         syscall_ptr: felt*,
@@ -444,48 +444,33 @@ namespace CallHelper {
 
         let (starknet_contract_address) = Accounts.compute_starknet_address(call_args.address);
         tempvar call_address = new model.Address(starknet_contract_address, call_args.address);
-        let (state, account) = State.get_account(ctx.state, call_address);
+        let (state, account) = State.get_or_fetch_account(ctx.state, call_address);
         let ctx = ExecutionContext.update_state(ctx, state);
 
         if (self_call == FALSE) {
-            tempvar call_context = new model.CallContext(
-                bytecode=account.code,
-                bytecode_len=account.code_len,
-                calldata=call_args.calldata,
-                calldata_len=call_args.args_size,
-                value=call_args.value,
-                gas_limit=call_args.gas,
-                gas_price=ctx.call_context.gas_price,
-                origin=ctx.call_context.origin,
-                calling_context=ctx,
-                address=call_address,
-                read_only=read_only,
-            );
-            let sub_ctx = ExecutionContext.init(call_context);
-            let state = State.copy(ctx.state);
-            let sub_ctx = ExecutionContext.update_state(sub_ctx, state);
-
-            return sub_ctx;
+            tempvar address = call_address;
         } else {
-            tempvar call_context = new model.CallContext(
-                bytecode=account.code,
-                bytecode_len=account.code_len,
-                calldata=call_args.calldata,
-                calldata_len=call_args.args_size,
-                value=call_args.value,
-                gas_limit=call_args.gas,
-                gas_price=ctx.call_context.gas_price,
-                origin=ctx.call_context.origin,
-                calling_context=ctx,
-                address=ctx.call_context.address,
-                read_only=read_only,
-            );
-            let sub_ctx = ExecutionContext.init(call_context);
-            let state = State.copy(ctx.state);
-            let sub_ctx = ExecutionContext.update_state(sub_ctx, state);
-
-            return sub_ctx;
+            tempvar address = ctx.call_context.address;
         }
+
+        tempvar call_context = new model.CallContext(
+            bytecode=account.code,
+            bytecode_len=account.code_len,
+            calldata=call_args.calldata,
+            calldata_len=call_args.args_size,
+            value=call_args.value,
+            gas_limit=call_args.gas,
+            gas_price=ctx.call_context.gas_price,
+            origin=ctx.call_context.origin,
+            calling_context=ctx,
+            address=address,
+            read_only=read_only,
+            is_create=FALSE,
+        );
+        let sub_ctx = ExecutionContext.init(call_context);
+        let state = State.copy(ctx.state);
+        let sub_ctx = ExecutionContext.update_state(sub_ctx, state);
+        return sub_ctx;
     }
 
     // @notice At the end of a sub-context call, the calling context's stack and memory are updated.
@@ -728,7 +713,7 @@ namespace CreateHelper {
         // so we use popped_len to derive the way we should handle
         // the creation of evm addresses
         if (popped_len != 4) {
-            let (local state, account) = State.get_account(state, address);
+            let (local state, account) = State.get_or_fetch_account(state, address);
             let (evm_contract_address) = CreateHelper.get_create_address(
                 address.evm, account.nonce
             );
@@ -800,6 +785,7 @@ namespace CreateHelper {
             calling_context=ctx,
             address=address,
             read_only=FALSE,
+            is_create=TRUE,
         );
         let sub_ctx = ExecutionContext.init(call_context);
         let sub_ctx = ExecutionContext.update_state(sub_ctx, state);
@@ -851,13 +837,9 @@ namespace CreateHelper {
         }
 
         // Write bytecode to Account
-        let account = Account.init(
-            address=summary.address.evm,
-            code_len=summary.return_data_len,
-            code=summary.return_data,
-            nonce=1,
-        );
-        let state = State.set_account(summary.state, summary.address, account);
+        let (state, account) = State.get_or_fetch_account(summary.state, summary.address);
+        let account = Account.set_code(account, summary.return_data_len, summary.return_data);
+        let state = State.set_account(state, summary.address, account);
 
         let ctx = ExecutionContext.update_state(ctx, state);
 

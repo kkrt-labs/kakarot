@@ -15,6 +15,7 @@ from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
+from kakarot.account import Account
 from kakarot.errors import Errors
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.block_information import BlockInformation
@@ -48,7 +49,7 @@ namespace EVM {
         gas_used: felt,
         address: model.Address*,
         reverted: felt,
-        state: model.State*,
+        state: State.Summary*,
         call_context: model.CallContext*,
         program_counter: felt,
     }
@@ -630,30 +631,13 @@ namespace EVM {
             return finalize(summary);
         }
 
-        let is_precompile = Precompiles.is_precompile(address=summary.address.evm);
-        if (is_precompile != FALSE) {
-            let ctx = CallHelper.finalize_calling_context(summary);
-            return run(ctx=ctx);
-        }
-        let (bytecode_len) = IAccount.bytecode_len(contract_address=summary.address.starknet);
-
-        let has_return_data = is_not_zero(summary.return_data_len);
-        let has_empty_return_data = (1 - has_return_data);
-
-        let is_eao = Helpers.is_address_caller(summary.address.starknet);
-
-        // If the starknet contract of the execution context has
-        // no bytecode,
-        // is not an EOA,
-        // and has return data
-        // then we treat it as at the end of a CREATE/CREATE2 opcode.
-        if (bytecode_len + is_eao + has_empty_return_data == 0) {
+        if (summary.call_context.is_create != 0) {
             let ctx = CreateHelper.finalize_calling_context(summary);
             return run(ctx=ctx);
-        } else {
-            let ctx = CallHelper.finalize_calling_context(summary);
-            return run(ctx=ctx);
         }
+
+        let ctx = CallHelper.finalize_calling_context(summary);
+        return run(ctx=ctx);
     }
 
     // @notice A placeholder for opcodes that don't exist
@@ -679,8 +663,20 @@ namespace EVM {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx_summary: ExecutionContext.Summary*) -> Summary* {
-        alloc_locals;
-        local summary: Summary* = new Summary(
+        if (ctx_summary.call_context.is_create != 0) {
+            let (state, account) = State.get_account(ctx_summary.state, ctx_summary.address);
+            let account = Account.set_code(
+                account, ctx_summary.return_data_len, ctx_summary.return_data
+            );
+            let state = State.set_account(state, ctx_summary.address, account);
+            tempvar state = state;
+        } else {
+            tempvar state = ctx_summary.state;
+        }
+
+        let state_summary = State.finalize(state);
+
+        tempvar summary: Summary* = new Summary(
             memory=ctx_summary.memory,
             stack=ctx_summary.stack,
             return_data=ctx_summary.return_data,
@@ -688,7 +684,7 @@ namespace EVM {
             gas_used=ctx_summary.gas_used,
             address=ctx_summary.address,
             reverted=ctx_summary.reverted,
-            state=ctx_summary.state,
+            state=state_summary,
             call_context=ctx_summary.call_context,
             program_counter=ctx_summary.program_counter,
         );

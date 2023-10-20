@@ -104,6 +104,7 @@ namespace model {
     // @param address The address of the current EVM account. Note that the bytecode may not be the one
     //        of the account in case of a CALLCODE or DELEGATECALL
     // @param read_only if set to true, context cannot do any state modifying instructions or send ETH in the sub context.
+    // @param is_create if set to true, the call context is a CREATEs or deploy execution
     struct CallContext {
         bytecode: felt*,
         bytecode_len: felt,
@@ -116,6 +117,7 @@ namespace model {
         calling_context: ExecutionContext*,
         address: Address*,
         read_only: felt,
+        is_create: felt,
     }
 
     // @dev Stores all data relevant to the current execution context.

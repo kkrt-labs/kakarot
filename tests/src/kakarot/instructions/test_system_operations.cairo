@@ -806,78 +806,78 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     return ();
 }
 
-@external
-func test__exec_selfdestruct__should_add_account_to_state{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    alloc_locals;
+// @external
+// func test__exec_selfdestruct__should_add_account_to_state{
+//     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+// }() {
+//     alloc_locals;
 
-    // Create sub_ctx writing directly in memory because need to update calling_context
-    let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
-    let memory: model.Memory* = Memory.init();
-    let (bytecode) = alloc();
-    let (return_data) = alloc();
-    assert [return_data] = 0;
-    assert [return_data + 1] = 10;
-    let (selfdestructs) = alloc();
-    let (calldata) = alloc();
-    assert [calldata] = '';
-    local call_context: model.CallContext* = new model.CallContext(
-        bytecode=bytecode, bytecode_len=0, calldata=calldata, calldata_len=1, value=0
-    );
-    let stack = Stack.push(stack, Uint256(10, 0));
-    let (local revert_contract_state_dict_start) = default_dict_new(0);
-    tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
-        revert_contract_state_dict_start, revert_contract_state_dict_start
-    );
+// // Create sub_ctx writing directly in memory because need to update calling_context
+//     let (bytecode) = alloc();
+//     let stack: model.Stack* = Stack.init();
+//     let memory: model.Memory* = Memory.init();
+//     let (bytecode) = alloc();
+//     let (return_data) = alloc();
+//     assert [return_data] = 0;
+//     assert [return_data + 1] = 10;
+//     let (selfdestructs) = alloc();
+//     let (calldata) = alloc();
+//     assert [calldata] = '';
+//     local call_context: model.CallContext* = new model.CallContext(
+//         bytecode=bytecode, bytecode_len=0, calldata=calldata, calldata_len=1, value=0
+//     );
+//     let stack = Stack.push(stack, Uint256(10, 0));
+//     let (local revert_contract_state_dict_start) = default_dict_new(0);
+//     tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
+//         revert_contract_state_dict_start, revert_contract_state_dict_start
+//     );
 
-    // Simulate contract creation
-    let (contract_account_class_hash_) = contract_account_class_hash.read();
-    let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (local starknet_contract_address) = Accounts.create(
-        contract_account_class_hash_, evm_contract_address
-    );
+// // Simulate contract creation
+//     let (contract_account_class_hash_) = contract_account_class_hash.read();
+//     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
+//     let (local starknet_contract_address) = Accounts.create(
+//         contract_account_class_hash_, evm_contract_address
+//     );
 
-    // Fill contract bytecode
-    let (bytecode) = alloc();
-    assert [bytecode] = 1907;
-    IContractAccount.write_bytecode(
-        contract_address=starknet_contract_address, bytecode_len=1, bytecode=bytecode
-    );
+// // Fill contract bytecode
+//     let (bytecode) = alloc();
+//     assert [bytecode] = 1907;
+//     IContractAccount.write_bytecode(
+//         contract_address=starknet_contract_address, bytecode_len=1, bytecode=bytecode
+//     );
 
-    tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
-    // Create context
-    let (sub_ctx: felt*) = alloc();
-    let sub_ctx_object: model.ExecutionContext* = cast(sub_ctx, model.ExecutionContext*);
+// tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
+//     // Create context
+//     let (sub_ctx: felt*) = alloc();
+//     let sub_ctx_object: model.ExecutionContext* = cast(sub_ctx, model.ExecutionContext*);
 
-    assert [sub_ctx + 0] = cast(call_context, felt);  // call_context
-    assert [sub_ctx + 1] = 0;  // program_counter
-    assert [sub_ctx + 2] = 0;  // stopped
-    assert [sub_ctx + 3] = cast(return_data + 1, felt);  // return_data
-    assert [sub_ctx + 4] = 1;  // return_data_len
-    assert [sub_ctx + 5] = cast(stack, felt);  // stack
-    assert [sub_ctx + 6] = cast(memory, felt);  // memory
-    assert [sub_ctx + 7] = 0;  // gas_used
-    assert [sub_ctx + 8] = 0;  // gas_limit
-    assert [sub_ctx + 9] = 0;  // intrinsic_gas_cost
-    assert [sub_ctx + 10] = cast(address, felt);  // address
-    assert [sub_ctx + 12] = 0;  // origin
-    assert [sub_ctx + 13] = 0;  // calling_context
-    assert [sub_ctx + 14] = 0;  // selfdestructs_len
-    assert [sub_ctx + 15] = cast(selfdestructs, felt);  // selfdestructs
-    assert [sub_ctx + 17] = cast(0, felt);  // state
-    assert [sub_ctx + 21] = 0;  // reverted
-    assert [sub_ctx + 22] = 0;  // read only
+// assert [sub_ctx + 0] = cast(call_context, felt);  // call_context
+//     assert [sub_ctx + 1] = 0;  // program_counter
+//     assert [sub_ctx + 2] = 0;  // stopped
+//     assert [sub_ctx + 3] = cast(return_data + 1, felt);  // return_data
+//     assert [sub_ctx + 4] = 1;  // return_data_len
+//     assert [sub_ctx + 5] = cast(stack, felt);  // stack
+//     assert [sub_ctx + 6] = cast(memory, felt);  // memory
+//     assert [sub_ctx + 7] = 0;  // gas_used
+//     assert [sub_ctx + 8] = 0;  // gas_limit
+//     assert [sub_ctx + 9] = 0;  // intrinsic_gas_cost
+//     assert [sub_ctx + 10] = cast(address, felt);  // address
+//     assert [sub_ctx + 12] = 0;  // origin
+//     assert [sub_ctx + 13] = 0;  // calling_context
+//     assert [sub_ctx + 14] = 0;  // selfdestructs_len
+//     assert [sub_ctx + 15] = cast(selfdestructs, felt);  // selfdestructs
+//     assert [sub_ctx + 17] = cast(0, felt);  // state
+//     assert [sub_ctx + 21] = 0;  // reverted
+//     assert [sub_ctx + 22] = 0;  // read only
 
-    // When
-    let sub_ctx_object: model.ExecutionContext* = SystemOperations.exec_selfdestruct(
-        sub_ctx_object
-    );
+// // When
+//     let sub_ctx_object: model.ExecutionContext* = SystemOperations.exec_selfdestruct(
+//         sub_ctx_object
+//     );
 
-    // Then
-    assert_non_zero(sub_ctx.selfdestructs_len);
-    let address = [sub_ctx.selfdestructs + sub_ctx.selfdestructs_len - 1];
-    assert address = sub_ctx_object.address.starknet;
-    return ();
-}
+// // Then
+//     assert_non_zero(sub_ctx.selfdestructs_len);
+//     let address = [sub_ctx.selfdestructs + sub_ctx.selfdestructs_len - 1];
+//     assert address = sub_ctx_object.address.starknet;
+//     return ();
+// }

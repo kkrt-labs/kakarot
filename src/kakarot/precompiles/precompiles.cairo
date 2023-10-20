@@ -67,6 +67,7 @@ namespace Precompiles {
             calling_context=calling_context,
             address=address,
             read_only=FALSE,
+            is_create=FALSE,
         );
         let sub_ctx = ExecutionContext.init(call_context);
         let sub_ctx = ExecutionContext.stop(sub_ctx, output_len, output, FALSE);

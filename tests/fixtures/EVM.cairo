@@ -53,6 +53,7 @@ func execute{
     tempvar address = new model.Address(1, 1);
     let summary = Kakarot.execute(
         address=address,
+        is_deploy_tx=0,
         origin=origin,
         bytecode_len=bytecode_len,
         bytecode=bytecode,
@@ -94,18 +95,8 @@ func evm_call{
     alloc_locals;
     let (local block_number) = get_block_number();
     let (local block_timestamp) = get_block_timestamp();
-    tempvar address = new model.Address(1, 1);
-    let summary = Kakarot.execute(
-        address=address,
-        origin=origin,
-        bytecode_len=bytecode_len,
-        bytecode=bytecode,
-        calldata_len=calldata_len,
-        calldata=calldata,
-        value=value,
-        gas_limit=Constants.TRANSACTION_GAS_LIMIT,
-        gas_price=0,
-    );
+    let summary = execute(origin, value, bytecode_len, bytecode, calldata_len, calldata);
+
     let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
     let stack_accesses_len = summary.stack.squashed_end - summary.stack.squashed_start;
 
@@ -139,23 +130,13 @@ func evm_execute{
     calldata: felt*,
 ) -> (return_data_len: felt, return_data: felt*, success: felt) {
     alloc_locals;
-    tempvar address = new model.Address(1, 1);
-    let summary = Kakarot.execute(
-        address=address,
-        origin=origin,
-        bytecode_len=bytecode_len,
-        bytecode=bytecode,
-        calldata_len=calldata_len,
-        calldata=calldata,
-        value=value,
-        gas_limit=Constants.TRANSACTION_GAS_LIMIT,
-        gas_price=0,
-    );
+    let summary = execute(origin, value, bytecode_len, bytecode, calldata_len, calldata);
+    let result = (summary.return_data_len, summary.return_data, 1 - summary.reverted);
 
     if (summary.reverted != FALSE) {
-        return (summary.return_data_len, summary.return_data, 1 - summary.reverted);
+        return result;
     }
 
     State.commit(summary.state);
-    return (summary.return_data_len, summary.return_data, 1 - summary.reverted);
+    return result;
 }

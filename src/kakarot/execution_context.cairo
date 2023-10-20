@@ -94,14 +94,15 @@ namespace ExecutionContext {
     // @dev Computes with the intrinsic gas cost based on per transaction constant and cost of input data (16 gas per non-zero byte and 4 gas per zero byte).
     // @param self The execution context.
     // @return intrinsic gas cost.
-    func compute_intrinsic_gas_cost(self: model.ExecutionContext*) -> felt {
+    func add_intrinsic_gas_cost(self: model.ExecutionContext*) -> model.ExecutionContext* {
         let calldata = self.call_context.calldata;
         let calldata_len = self.call_context.calldata_len;
         let count = Helpers.count_nonzeroes(nonzeroes=0, idx=0, arr_len=calldata_len, arr=calldata);
         let zeroes = calldata_len - count.nonzeroes;
         let calldata_cost = zeroes * 4 + count.nonzeroes * 16;
+        let cost = Constants.TRANSACTION_INTRINSIC_GAS_COST + calldata_cost;
 
-        return (Constants.TRANSACTION_INTRINSIC_GAS_COST + calldata_cost);
+        return ExecutionContext.increment_gas_used(self, cost);
     }
 
     // @notice Return whether the current execution context is stopped.
@@ -169,25 +170,12 @@ namespace ExecutionContext {
         alloc_locals;
         let memory_summary = Memory.finalize(self.memory);
         let stack_summary = Stack.finalize(self.stack);
-        let state = State.finalize(self.state);
+        State.finalize(self.state);
 
-        // REVERTED: final state is initial state
         if (self.reverted != FALSE) {
             tempvar state = self.call_context.calling_context.state;
-
-            return new Summary(
-                memory=memory_summary,
-                stack=stack_summary,
-                return_data_len=self.return_data_len,
-                return_data=self.return_data,
-                gas_used=self.gas_used,
-                address=self.call_context.address,
-                reverted=self.reverted,
-                state=state,
-                calling_context=self.call_context.calling_context,
-                call_context=self.call_context,
-                program_counter=self.program_counter,
-            );
+        } else {
+            tempvar state = self.state;
         }
 
         return new Summary(

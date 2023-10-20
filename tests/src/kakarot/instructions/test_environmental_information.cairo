@@ -88,6 +88,7 @@ func init_context{
         calling_context=calling_context,
         address=address,
         read_only=FALSE,
+        is_create=FALSE,
     );
 
     // Initialize ExecutionContext

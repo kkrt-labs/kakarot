@@ -22,8 +22,21 @@ from kakarot.account import Account
 from kakarot.constants import native_token_address, contract_account_class_hash
 from starkware.starknet.common.syscalls import call_contract
 from utils.utils import Helpers
+from utils.dict import default_dict_copy
 
 namespace State {
+    // @dev Like an State, but frozen after squashing all dicts
+    struct Summary {
+        accounts_start: DictAccess*,
+        accounts: DictAccess*,
+        events_len: felt,
+        events: model.Event*,
+        balances_start: DictAccess*,
+        balances: DictAccess*,
+        transfers_len: felt,
+        transfers: model.Transfer*,
+    }
+
     // @dev Create a new empty State
     func init() -> model.State* {
         let (accounts_start) = default_dict_new(0);
@@ -46,18 +59,27 @@ namespace State {
     // @param self The pointer to the State
     func copy{range_check_ptr}(self: model.State*) -> model.State* {
         alloc_locals;
-        let self = finalize(self);
+        // accounts are a new memory segment
+        let (accounts_start, accounts) = default_dict_copy(self.accounts_start, self.accounts);
+        // for each account, storage is a new memory segment
+        Internals._copy_accounts{accounts=accounts}(accounts_start, accounts);
+
+        // balances values are immutable so no need for an Internals._copy_balances
+        let (balances_start, balances) = default_dict_copy(self.balances_start, self.balances);
+
         let (local events: felt*) = alloc();
         memcpy(dst=events, src=self.events, len=self.events_len * model.Event.SIZE);
+
         let (local transfers: felt*) = alloc();
         memcpy(dst=transfers, src=self.transfers, len=self.transfers_len * model.Transfer.SIZE);
+
         return new model.State(
-            accounts_start=self.accounts_start,
-            accounts=self.accounts,
+            accounts_start=accounts_start,
+            accounts=accounts,
             events_len=self.events_len,
             events=cast(events, model.Event*),
-            balances_start=self.balances_start,
-            balances=self.balances,
+            balances_start=balances_start,
+            balances=balances,
             transfers_len=self.transfers_len,
             transfers=cast(transfers, model.Transfer*),
         );
@@ -65,18 +87,22 @@ namespace State {
 
     // @dev Squash dicts used internally
     // @param self The pointer to the State
-    func finalize{range_check_ptr}(self: model.State*) -> model.State* {
+    func finalize{range_check_ptr}(self: model.State*) -> Summary* {
         alloc_locals;
+        // First squash to get only one account per key
         let (local accounts_start, accounts) = default_dict_finalize(
             self.accounts_start, self.accounts, 0
         );
+        // Finalizing the accounts create another entry per account
         Internals._finalize_accounts{accounts=accounts}(accounts_start, accounts);
+        // Squash again to keep only one Account.Summary per key
+        let (local accounts_start, accounts) = default_dict_finalize(accounts_start, accounts, 0);
 
         let (balances_start, balances) = default_dict_finalize(
             self.balances_start, self.balances, 0
         );
 
-        return new model.State(
+        return new Summary(
             accounts_start=accounts_start,
             accounts=accounts,
             events_len=self.events_len,
@@ -89,15 +115,16 @@ namespace State {
     }
 
     // @notice Commit the current state to the underlying data backend (here, Starknet)
+    // @dev Works on State.Summary to make sure only finalized states are committed.
     // @param self The pointer to the State
     func commit{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.State*) {
+    }(self: Summary*) {
         // Accounts
-        Internals._save_accounts(self.accounts_start, self.accounts);
+        Internals._commit_accounts(self.accounts_start, self.accounts);
 
         // Events
         Internals._emit_events(self.events_len, self.events);
@@ -116,7 +143,7 @@ namespace State {
     // @param key The pointer to the address
     // @return The updated state
     // @return The account
-    func get_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    func get_or_fetch_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.State*, address: model.Address*
     ) -> (model.State*, model.Account*) {
         alloc_locals;
@@ -140,33 +167,7 @@ namespace State {
         } else {
             // Otherwise read values from contract storage
             local accounts: DictAccess* = accounts;
-            let (bytecode_len, bytecode) = Accounts.get_bytecode(address.evm);
-            // we assume that if there is no bytecode this is an EOA.
-            // in this context, the nonce is managed by Starkware and not accessible from within
-            // the contract, hence we put 0.
-            // It shouldn't have any impact
-            if (bytecode_len == 0) {
-                let account = Account.init(
-                    address=address.evm, code_len=bytecode_len, code=bytecode, nonce=0
-                );
-                dict_write{dict_ptr=accounts}(key=address.starknet, new_value=cast(account, felt));
-                tempvar state = new model.State(
-                    accounts_start=self.accounts_start,
-                    accounts=accounts,
-                    events_len=self.events_len,
-                    events=self.events,
-                    balances_start=self.balances_start,
-                    balances=self.balances,
-                    transfers_len=self.transfers_len,
-                    transfers=self.transfers,
-                );
-                return (state, account);
-            }
-
-            let (nonce) = IContractAccount.get_nonce(contract_address=address.starknet);
-            let account = Account.init(
-                address=address.evm, code_len=bytecode_len, code=bytecode, nonce=nonce
-            );
+            let account = Account.fetch(address);
             dict_write{dict_ptr=accounts}(key=address.starknet, new_value=cast(account, felt));
             tempvar state = new model.State(
                 accounts_start=self.accounts_start,
@@ -180,6 +181,29 @@ namespace State {
             );
             return (state, account);
         }
+    }
+
+    // @notice get the Account at the given address
+    // @param self The pointer to the State.
+    // @param address The address of the Account
+    // @param account The new account
+    func get_account(self: model.State*, address: model.Address*) -> (
+        model.State*, model.Account*
+    ) {
+        let accounts = self.accounts;
+        let (pointer) = dict_read{dict_ptr=accounts}(key=address.starknet);
+        let account = cast(pointer, model.Account*);
+        tempvar state = new model.State(
+            accounts_start=self.accounts_start,
+            accounts=accounts,
+            events_len=self.events_len,
+            events=self.events,
+            balances_start=self.balances_start,
+            balances=self.balances,
+            transfers_len=self.transfers_len,
+            transfers=self.transfers,
+        );
+        return (state, account);
     }
 
     // @notice Set the Account at the given address
@@ -344,6 +368,25 @@ namespace State {
 }
 
 namespace Internals {
+    // @notice Iterate through the accounts dict and copy them
+    // @param accounts_start The dict start pointer
+    // @param accounts_end The dict end pointer
+    func _copy_accounts{range_check_ptr, accounts: DictAccess*}(
+        accounts_start: DictAccess*, accounts_end: DictAccess*
+    ) {
+        if (accounts_start == accounts_end) {
+            return ();
+        }
+
+        let account = cast(accounts_start.new_value, model.Account*);
+        let account_summary = Account.copy(account);
+        dict_write{dict_ptr=accounts}(
+            key=accounts_start.key, new_value=cast(account_summary, felt)
+        );
+
+        return _copy_accounts(accounts_start + DictAccess.SIZE, accounts_end);
+    }
+
     // @notice Iterate through the accounts dict and finalize them
     // @param accounts_start The dict start pointer
     // @param accounts_end The dict end pointer
@@ -355,17 +398,19 @@ namespace Internals {
         }
 
         let account = cast(accounts_start.new_value, model.Account*);
-        let account = Account.finalize(account);
-        dict_write{dict_ptr=accounts}(key=accounts_start.key, new_value=cast(account, felt));
+        let account_summary = Account.finalize(account);
+        dict_write{dict_ptr=accounts}(
+            key=accounts_start.key, new_value=cast(account_summary, felt)
+        );
 
         return _finalize_accounts(accounts_start + DictAccess.SIZE, accounts_end);
     }
 
-    // @notice Iterate through the accounts dict and update the Starknet storage
+    // @notice Iterate through the accounts dict and commit them
     // @dev Account is deployed here if it doesn't exist already
     // @param accounts_start The dict start pointer
     // @param accounts_end The dict end pointer
-    func _save_accounts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    func _commit_accounts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         accounts_start: DictAccess*, accounts_end: DictAccess*
     ) {
         alloc_locals;
@@ -374,10 +419,10 @@ namespace Internals {
         }
 
         let starknet_address = accounts_start.key;
-        let account = cast(accounts_start.new_value, model.Account*);
+        let account = cast(accounts_start.new_value, Account.Summary*);
         Account.commit(account, starknet_address);
 
-        _save_accounts(accounts_start + DictAccess.SIZE, accounts_end);
+        _commit_accounts(accounts_start + DictAccess.SIZE, accounts_end);
 
         return ();
     }

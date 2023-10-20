@@ -60,6 +60,7 @@ namespace Kakarot {
 
     // @notice Run the given bytecode with the given calldata and parameters
     // @param address The target account address
+    // @param is_deploy_tx Whether the transaction is a deploy tx or not
     // @param origin The caller EVM address
     // @param bytecode_len The length of the bytecode
     // @param bytecode The bytecode run
@@ -68,7 +69,6 @@ namespace Kakarot {
     // @param value The value of the execution
     // @param gas_limit The gas limit of the execution
     // @param gas_price The gas price for the execution
-    // @param reverted Whether the transaction is reverted or not
     func execute{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -76,6 +76,7 @@ namespace Kakarot {
         bitwise_ptr: BitwiseBuiltin*,
     }(
         address: model.Address*,
+        is_deploy_tx: felt,
         origin: felt,
         bytecode_len: felt,
         bytecode: felt*,
@@ -86,8 +87,25 @@ namespace Kakarot {
         gas_price: felt,
     ) -> EVM.Summary* {
         alloc_locals;
+        let (origin_starknet_address) = Accounts.compute_starknet_address(origin);
+        tempvar sender = new model.Address(origin_starknet_address, origin);
+        let amount = Helpers.to_uint256(value);
+        tempvar transfer = new model.Transfer(sender, address, amount);
 
-        // Prepare execution context
+        // If is_deploy_tx is TRUE, then
+        // bytecode is data and data is empty
+        // else, bytecode and data are kept as is
+        let bytecode_len = calldata_len * is_deploy_tx + bytecode_len * (1 - is_deploy_tx);
+        let calldata_len = calldata_len * (1 - is_deploy_tx);
+        if (is_deploy_tx != 0) {
+            let (empty: felt*) = alloc();
+            tempvar bytecode = calldata;
+            tempvar calldata = empty;
+        } else {
+            tempvar bytecode = bytecode;
+            tempvar calldata = calldata;
+        }
+
         let root_context = ExecutionContext.init_empty();
         tempvar call_context = new model.CallContext(
             bytecode=bytecode,
@@ -101,22 +119,64 @@ namespace Kakarot {
             calling_context=root_context,
             address=address,
             read_only=FALSE,
+            is_create=is_deploy_tx,
         );
 
         let ctx = ExecutionContext.init(call_context);
-
-        let cost = ExecutionContext.compute_intrinsic_gas_cost(ctx);
-
-        let (origin_starknet_address) = Accounts.compute_starknet_address(origin);
-        tempvar sender = new model.Address(origin_starknet_address, origin);
-        let amount = Helpers.to_uint256(value);
-        tempvar transfer = new model.Transfer(sender, address, amount);
+        let ctx = ExecutionContext.add_intrinsic_gas_cost(ctx);
         let state = State.add_transfer(ctx.state, transfer);
-
         let ctx = ExecutionContext.update_state(ctx, state);
-        let ctx = ExecutionContext.increment_gas_used(ctx, cost);
 
         let summary = EVM.run(ctx);
+        return summary;
+    }
+
+    // @notice The eth_call function as described in the RPC spec, see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_call
+    // @param origin The address the transaction is sent from.
+    // @param to The address the transaction is directed to.
+    // @param gas_limit Integer of the gas provided for the transaction execution
+    // @param gas_price Integer of the gas price used for each paid gas
+    // @param value Integer of the value sent with this transaction
+    // @param data_len The length of the data
+    // @param data Hash of the method signature and encoded parameters. For details see Ethereum Contract ABI in the Solidity documentation
+    // @return return_data_len The length of the returned bytes
+    // @return return_data The returned bytes array
+    // @return success A boolean TRUE if the transaction succeeded, FALSE if it's reverted
+    func eth_call{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(
+        origin: felt,
+        to: felt,
+        gas_limit: felt,
+        gas_price: felt,
+        value: felt,
+        data_len: felt,
+        data: felt*,
+    ) -> EVM.Summary* {
+        alloc_locals;
+        let evm_contract_address = resolve_to(to, origin);
+        let (starknet_contract_address) = Accounts.compute_starknet_address(evm_contract_address);
+        tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
+
+        let is_regular_tx = is_not_zero(to);
+        let is_deploy_tx = 1 - is_regular_tx;
+        let (bytecode_len, bytecode) = Accounts.get_bytecode(address.evm);
+
+        let summary = execute(
+            address,
+            is_deploy_tx,
+            origin,
+            bytecode_len,
+            bytecode,
+            data_len,
+            data,
+            value,
+            gas_limit,
+            gas_price,
+        );
         return summary;
     }
 
@@ -231,59 +291,6 @@ namespace Kakarot {
         let (tx_info) = get_tx_info();
         let (local evm_contract_address) = CreateHelper.get_create_address(origin, tx_info.nonce);
         return evm_contract_address;
-    }
-
-    // @notice The eth_call function as described in the RPC spec, see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_call
-    // @param origin The address the transaction is sent from.
-    // @param to The address the transaction is directed to.
-    // @param gas_limit Integer of the gas provided for the transaction execution
-    // @param gas_price Integer of the gas price used for each paid gas
-    // @param value Integer of the value sent with this transaction
-    // @param data_len The length of the data
-    // @param data Hash of the method signature and encoded parameters. For details see Ethereum Contract ABI in the Solidity documentation
-    // @return return_data_len The length of the returned bytes
-    // @return return_data The returned bytes array
-    // @return success A boolean TRUE if the transaction succeeded, FALSE if it's reverted
-    func eth_call{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(
-        origin: felt,
-        to: felt,
-        gas_limit: felt,
-        gas_price: felt,
-        value: felt,
-        data_len: felt,
-        data: felt*,
-    ) -> EVM.Summary* {
-        alloc_locals;
-        let evm_contract_address = resolve_to(to, origin);
-        let (starknet_contract_address) = Accounts.compute_starknet_address(evm_contract_address);
-        tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
-
-        let is_regular_tx = is_not_zero(to);
-        let is_deploy_tx = 1 - is_regular_tx;
-        let (bytecode_len, bytecode) = Accounts.get_bytecode(address.evm);
-        // If deploy_tx is TRUE, then
-        // bytecode is data and data_len is 0
-        // else, bytecode and data are kept as is
-        let bytecode_len = data_len * is_deploy_tx + bytecode_len * (1 - is_deploy_tx);
-        let data_len = data_len * (1 - is_deploy_tx);
-        if (is_deploy_tx != 0) {
-            let (empty: felt*) = alloc();
-            tempvar bytecode = data;
-            tempvar data = empty;
-        } else {
-            tempvar bytecode = bytecode;
-            tempvar data = data;
-        }
-
-        let summary = execute(
-            address, origin, bytecode_len, bytecode, data_len, data, value, gas_limit, gas_price
-        );
-        return summary;
     }
 
     // @notice returns the EVM address associated to a Starknet account deployed by kakarot.

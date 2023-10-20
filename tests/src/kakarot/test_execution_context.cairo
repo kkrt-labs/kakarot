@@ -42,6 +42,7 @@ func test__init__should_return_an_empty_execution_context{
         calling_context=calling_ctx,
         address=address,
         read_only=0,
+        is_create=0,
     );
 
     let result: model.ExecutionContext* = ExecutionContext.init(call_context);
