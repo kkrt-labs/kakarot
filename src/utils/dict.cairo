@@ -12,8 +12,9 @@ func default_dict_copy{range_check_ptr}(start: DictAccess*, end: DictAccess*) ->
 ) {
     alloc_locals;
     let (squashed_start, squashed_end) = dict_squash(start, end);
+    let dict_len = squashed_end - squashed_start;
 
-    if (squashed_start == squashed_end) {
+    if (dict_len == 0) {
         tempvar default_value = 0;
     } else {
         tempvar default_value = squashed_start.prev_value;
@@ -21,18 +22,17 @@ func default_dict_copy{range_check_ptr}(start: DictAccess*, end: DictAccess*) ->
 
     let (new_start) = default_dict_new(default_value);
     let new_ptr = new_start;
-    let end_loop = squashed_end - squashed_start;
 
-    if (end_loop == 0) {
+    if (dict_len == 0) {
         return (new_start, new_ptr);
     }
 
     loop:
     dict_write{dict_ptr=new_ptr}(key=squashed_start.key, new_value=squashed_start.new_value);
-    let squashed_start = squashed_start + DictAccess.SIZE;
-    tempvar end_loop = squashed_end - squashed_start;
+    tempvar squashed_start = squashed_start + DictAccess.SIZE;
+    tempvar dict_len = dict_len - DictAccess.SIZE;
 
-    jmp loop if end_loop != 0;
+    jmp loop if dict_len != 0;
 
     return (new_start, new_ptr);
 }
