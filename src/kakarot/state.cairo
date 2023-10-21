@@ -144,15 +144,15 @@ namespace State {
     // @param key The pointer to the address
     // @return The updated state
     // @return The account
-    func get_or_fetch_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    func get_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.State*, address: model.Address*
     ) -> (model.State*, model.Account*) {
         alloc_locals;
         let accounts = self.accounts;
         let (pointer) = dict_read{dict_ptr=accounts}(key=address.starknet);
 
+        // Return from local storage if found
         if (pointer != 0) {
-            // Return from local storage if found
             let account = cast(pointer, model.Account*);
             tempvar state = new model.State(
                 accounts_start=self.accounts_start,
@@ -168,7 +168,7 @@ namespace State {
         } else {
             // Otherwise read values from contract storage
             local accounts: DictAccess* = accounts;
-            let account = Account.fetch(address);
+            let account = Account.fetch_or_create(address);
             dict_write{dict_ptr=accounts}(key=address.starknet, new_value=cast(account, felt));
             tempvar state = new model.State(
                 accounts_start=self.accounts_start,
@@ -182,36 +182,6 @@ namespace State {
             );
             return (state, account);
         }
-    }
-
-    // @notice get the Account at the given address
-    // @dev Raises if the account doesn't exist already
-    // @param self The pointer to the State.
-    // @param address The address of the Account
-    // @param account The new account
-    func get_account(self: model.State*, address: model.Address*) -> (
-        model.State*, model.Account*
-    ) {
-        alloc_locals;
-        let accounts = self.accounts;
-        let (pointer) = dict_read{dict_ptr=accounts}(key=address.starknet);
-        tempvar starknet_address = address.starknet;
-        with_attr error_message("Account {starknet_address} not found") {
-            assert_not_zero(pointer);
-        }
-
-        let account = cast(pointer, model.Account*);
-        tempvar state = new model.State(
-            accounts_start=self.accounts_start,
-            accounts=accounts,
-            events_len=self.events_len,
-            events=self.events,
-            balances_start=self.balances_start,
-            balances=self.balances,
-            transfers_len=self.transfers_len,
-            transfers=self.transfers,
-        );
-        return (state, account);
     }
 
     // @notice Set the Account at the given address
@@ -248,7 +218,7 @@ namespace State {
         bitwise_ptr: BitwiseBuiltin*,
     }(self: model.State*, address: model.Address*, key: Uint256*) -> (model.State*, Uint256) {
         alloc_locals;
-        let (self, account) = get_or_fetch_account(self, address);
+        let (self, account) = get_account(self, address);
         let (account, value) = Account.read_storage(account, address, key);
         let self = set_account(self, address, account);
         return (self, value);
@@ -263,7 +233,7 @@ namespace State {
         self: model.State*, address: model.Address*, key: Uint256*, value: Uint256*
     ) -> model.State* {
         alloc_locals;
-        let (self, account) = get_or_fetch_account(self, address);
+        let (self, account) = get_account(self, address);
         let account = Account.write_storage(account, key, value);
         let self = set_account(self, address, account);
         return self;

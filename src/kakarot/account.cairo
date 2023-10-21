@@ -135,7 +135,7 @@ namespace Account {
     // @dev An non deployed account is just an empty account.
     // @param address the pointer to the Address
     // @return the account populated with Starknet data
-    func fetch{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    func fetch_or_create{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         address: model.Address*
     ) -> model.Account* {
         alloc_locals;
@@ -143,7 +143,7 @@ namespace Account {
         let (bytecode_len, bytecode) = Accounts.get_bytecode(address.evm);
         let starknet_account_exists = is_not_zero(registered_starknet_account);
 
-        // Case touching a non deployed account (non registered EOA)
+        // Case touching a non deployed account
         if (starknet_account_exists == 0) {
             let account = Account.init(
                 address=address.evm, code_len=bytecode_len, code=bytecode, nonce=0

@@ -347,7 +347,7 @@ namespace SystemOperations {
         let state = State.add_transfer(state, transfer);
 
         // Register for SELFDESTRUCT
-        let (state, account) = State.get_or_fetch_account(state, ctx.call_context.address);
+        let (state, account) = State.get_account(state, ctx.call_context.address);
         let account = Account.selfdestruct(account);
         let state = State.set_account(state, ctx.call_context.address, account);
 
@@ -444,7 +444,7 @@ namespace CallHelper {
 
         let (starknet_contract_address) = Accounts.compute_starknet_address(call_args.address);
         tempvar call_address = new model.Address(starknet_contract_address, call_args.address);
-        let (state, account) = State.get_or_fetch_account(ctx.state, call_address);
+        let (state, account) = State.get_account(ctx.state, call_address);
         let ctx = ExecutionContext.update_state(ctx, state);
 
         if (self_call == FALSE) {
@@ -713,7 +713,7 @@ namespace CreateHelper {
         // so we use popped_len to derive the way we should handle
         // the creation of evm addresses
         if (popped_len != 4) {
-            let (local state, account) = State.get_or_fetch_account(state, address);
+            let (local state, account) = State.get_account(state, address);
             let (evm_contract_address) = CreateHelper.get_create_address(
                 address.evm, account.nonce
             );
@@ -837,7 +837,7 @@ namespace CreateHelper {
         }
 
         // Write bytecode to Account
-        let (state, account) = State.get_or_fetch_account(summary.state, summary.address);
+        let (state, account) = State.get_account(summary.state, summary.address);
         let account = Account.set_code(account, summary.return_data_len, summary.return_data);
         let state = State.set_account(state, summary.address, account);
 

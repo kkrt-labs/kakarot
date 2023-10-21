@@ -658,7 +658,9 @@ namespace EVM {
     // @notice Finalizes a transaction.
     // @param ctx_summary The pointer to the execution context summary.
     // @return Summary The pointer to the transaction Summary.
-    func finalize{range_check_ptr}(ctx_summary: ExecutionContext.Summary*) -> Summary* {
+    func finalize{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx_summary: ExecutionContext.Summary*
+    ) -> Summary* {
         alloc_locals;
         let state_summary = Internals._get_state_summary(ctx_summary);
         tempvar summary: Summary* = new Summary(
@@ -679,7 +681,7 @@ namespace EVM {
 }
 
 namespace Internals {
-    func _get_state_summary{range_check_ptr}(
+    func _get_state_summary{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         ctx_summary: ExecutionContext.Summary*
     ) -> State.Summary* {
         alloc_locals;
@@ -691,10 +693,19 @@ namespace Internals {
             );
             let state = State.set_account(state, ctx_summary.address, account);
             tempvar state = state;
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
             // Else the state is just the returned state of the ExecutionContext
         } else {
             tempvar state = ctx_summary.state;
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
         }
+        tempvar syscall_ptr = syscall_ptr;
+        tempvar pedersen_ptr = pedersen_ptr;
+        tempvar range_check_ptr = range_check_ptr;
 
         let state_summary = State.finalize(state);
         return state_summary;
