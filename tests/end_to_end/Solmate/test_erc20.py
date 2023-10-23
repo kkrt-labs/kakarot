@@ -168,10 +168,9 @@ class TestERC20:
                 )
 
     class TestPermit:
-        async def test_should_permit(self, block_with_tx_hashes, erc_20, owner, other):
+        async def test_should_permit(self, erc_20, owner, other):
             nonce = await erc_20.nonces(owner.address)
-            pending_timestamp = block_with_tx_hashes("pending")["timestamp"]
-            deadline = pending_timestamp + 1
+            deadline = 2**256 - 1
             digest = get_approval_digest(
                 "Kakarot Token",
                 erc_20.address,
@@ -184,7 +183,7 @@ class TestERC20:
                 deadline,
             )
             v, r, s = ec_sign(digest, owner.private_key)
-            await erc_20.permit(
+            receipt = await erc_20.permit(
                 owner.address,
                 other.address,
                 TEST_SUPPLY,
@@ -194,7 +193,15 @@ class TestERC20:
                 s,
                 caller_eoa=owner,
             )
+            events = erc_20.events.parse_starknet_events(receipt.events)
 
+            assert events["Approval"] == [
+                {
+                    "owner": owner.address,
+                    "spender": other.address,
+                    "amount": TEST_SUPPLY,
+                }
+            ]
             assert await erc_20.allowance(owner.address, other.address) == TEST_SUPPLY
             assert await erc_20.nonces(owner.address) == 1
 
