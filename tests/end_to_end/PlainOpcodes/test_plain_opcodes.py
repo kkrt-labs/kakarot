@@ -166,13 +166,6 @@ class TestPlainOpcodes:
             ).nonce
             assert nonce_final == nonce_initial + count
 
-        @pytest.mark.xfail(
-            reason="""
-            TODO: need to fix when there is no return data from the bytecode execution,
-            it calls CallHelper instead of CreateHelper when finalizing calling context
-            https://github.com/kkrt-labs/kakarot/issues/726
-            """
-        )
         @pytest.mark.parametrize("bytecode", ["0x", "0x6000600155600160015500"])
         async def test_should_create_empty_contract_when_creation_code_has_no_return(
             self,
@@ -190,14 +183,13 @@ class TestPlainOpcodes:
 
             events = plain_opcodes.events.parse_starknet_events(receipt.events)
             assert len(events["CreateAddress"]) == 1
-            starknet_address = compute_starknet_address(
+            starknet_address = await compute_starknet_address(
                 events["CreateAddress"][0]["_address"]
             )
             contract_account = await get_contract(
                 "contract_account", address=starknet_address
             )
-            actual_bytecode = (await contract_account.bytecode().call()).result.bytecode
-            assert actual_bytecode == []
+            assert [] == (await contract_account.functions["bytecode"].call()).bytecode
 
     class TestCreate2:
         async def test_should_deploy_bytecode_at_address(
