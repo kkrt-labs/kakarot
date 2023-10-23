@@ -18,3 +18,7 @@ class TestDict:
     class TestDictKeys:
         async def test_should_return_keys(self, dict_):
             await dict_.test__dict_keys__should_return_keys().call()
+
+    class TestDefaultDictCopy:
+        async def test_should_return_copied_dict(self, dict_):
+            await dict_.test__default_dict_copy__should_return_copied_dict().call()

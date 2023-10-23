@@ -182,9 +182,9 @@ namespace Account {
         alloc_locals;
         let storage = self.storage;
         let (local storage_key) = hash_felts{hash_ptr=pedersen_ptr}(cast(key, felt*), 2);
-
         let (pointer) = dict_read{dict_ptr=storage}(key=storage_key);
 
+        // Case reading from local storage
         if (pointer != 0) {
             // Return from local storage if found
             let value_ptr = cast(pointer, Uint256*);
@@ -198,25 +198,40 @@ namespace Account {
                 self.selfdestruct,
             );
             return (self, [value_ptr]);
-        } else {
-            // Otherwise regular read value from contract storage
+        }
+
+        // Case reading from Starknet storage
+        let (local registered_starknet_account) = Accounts.get_starknet_address(address.evm);
+        let starknet_account_exists = is_not_zero(registered_starknet_account);
+        if (starknet_account_exists != 0) {
             let (value) = IContractAccount.storage(
                 contract_address=address.starknet, key=storage_key
             );
-            // Cache for possible later use (almost free and can save a lot)
-            tempvar new_value = new Uint256(value.low, value.high);
-            dict_write{dict_ptr=storage}(key=storage_key, new_value=cast(new_value, felt));
-            tempvar self = new model.Account(
-                self.address,
-                self.code_len,
-                self.code,
-                self.storage_start,
-                storage,
-                self.nonce,
-                self.selfdestruct,
-            );
-            return (self, value);
+            tempvar value_ptr = new Uint256(value.low, value.high);
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+            // Otherwise returns 0
+        } else {
+            tempvar value_ptr = new Uint256(0, 0);
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
         }
+
+        // Cache for possible later use (almost free and can save a syscall later on)
+        dict_write{dict_ptr=storage}(key=storage_key, new_value=cast(value_ptr, felt));
+
+        tempvar self = new model.Account(
+            self.address,
+            self.code_len,
+            self.code,
+            self.storage_start,
+            storage,
+            self.nonce,
+            self.selfdestruct,
+        );
+        return (self, [value_ptr]);
     }
 
     // @notice Update a storage key with the given value

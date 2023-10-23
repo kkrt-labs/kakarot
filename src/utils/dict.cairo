@@ -23,17 +23,38 @@ func default_dict_copy{range_check_ptr}(start: DictAccess*, end: DictAccess*) ->
         tempvar default_value = squashed_start.prev_value;
     }
 
-    let (new_start) = default_dict_new(default_value);
+    let (local new_start) = default_dict_new(default_value);
     let new_ptr = new_start;
 
     if (dict_len == 0) {
         return (new_start, new_ptr);
     }
 
+    tempvar range_check_ptr = range_check_ptr;
+    tempvar squashed_start = squashed_start;
+    tempvar dict_len = dict_len;
+    tempvar new_ptr = new_ptr;
+
     loop:
-    dict_write{dict_ptr=new_ptr}(key=squashed_start.key, new_value=squashed_start.new_value);
+    let range_check_ptr = [ap - 4];
+    let squashed_start = cast([ap - 3], DictAccess*);
+    let dict_len = [ap - 2];
+    let new_ptr = cast([ap - 1], DictAccess*);
+
+    let key = [squashed_start].key;
+    let new_value = [squashed_start].new_value;
+
+    dict_write{dict_ptr=new_ptr}(key=key, new_value=new_value);
+
+    tempvar range_check_ptr = range_check_ptr;
     tempvar squashed_start = squashed_start + DictAccess.SIZE;
     tempvar dict_len = dict_len - DictAccess.SIZE;
+    tempvar new_ptr = new_ptr;
+
+    static_assert range_check_ptr == [ap - 4];
+    static_assert squashed_start == [ap - 3];
+    static_assert dict_len == [ap - 2];
+    static_assert new_ptr == [ap - 1];
 
     jmp loop if dict_len != 0;
 
