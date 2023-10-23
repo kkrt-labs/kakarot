@@ -759,8 +759,8 @@ namespace CreateHelper {
         tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
 
         // Create Account with empty bytecode
-        let (bytecode: felt*) = alloc();
-        let account = Account.init(evm_contract_address, 0, bytecode, 1);
+        let (account_bytecode: felt*) = alloc();
+        let account = Account.init(evm_contract_address, 0, account_bytecode, 1);
 
         // Update calling context before creating sub context
         let ctx = ExecutionContext.update_memory(ctx, memory);
