@@ -142,9 +142,13 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        let is_root = ExecutionContext.is_empty(ctx.call_context.calling_context);
-        let caller = (1 - is_root) * ctx.call_context.address.evm + is_root *
-            ctx.call_context.origin;
+        let calling_context = ctx.call_context.calling_context;
+        let is_root = ExecutionContext.is_empty(calling_context);
+        if (is_root == 0) {
+            tempvar caller = calling_context.call_context.address.evm;
+        } else {
+            tempvar caller = ctx.call_context.origin;
+        }
         let evm_address_uint256 = Helpers.to_uint256(caller);
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=evm_address_uint256);
 
