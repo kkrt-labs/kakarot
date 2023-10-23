@@ -23,6 +23,7 @@ from kakarot.constants import (
     account_proxy_class_hash,
     Constants,
 )
+from utils.dict import dict_keys
 
 // Constructor
 @constructor
@@ -85,7 +86,8 @@ func evm_call{
     memory_accesses_len: felt,
     memory_accesses: felt*,
     memory_bytes_len: felt,
-    accounts_accesses_len: felt,
+    account_addresses_len: felt,
+    account_addresses: felt*,
     starknet_contract_address: felt,
     evm_contract_address: felt,
     return_data_len: felt,
@@ -100,7 +102,11 @@ func evm_call{
 
     let stack_accesses_len = summary.stack.squashed_end - summary.stack.squashed_start;
     let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
-    let accounts_accesses_len = summary.state.accounts - summary.state.accounts_start;
+
+    // Return only accounts keys, ie. touched starknet addresses
+    let (account_addresses_len, account_addresses) = dict_keys(
+        summary.state.accounts_start, summary.state.accounts
+    );
 
     return (
         block_number=block_number,
@@ -111,7 +117,8 @@ func evm_call{
         memory_accesses_len=memory_accesses_len,
         memory_accesses=summary.memory.squashed_start,
         memory_bytes_len=summary.memory.bytes_len,
-        accounts_accesses_len=accounts_accesses_len,
+        account_addresses_len=account_addresses_len,
+        account_addresses=account_addresses,
         starknet_contract_address=summary.address.starknet,
         evm_contract_address=summary.address.evm,
         return_data_len=summary.return_data_len,
