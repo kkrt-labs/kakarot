@@ -123,6 +123,13 @@ namespace Account {
             return ();
         }
 
+        // Case EOA
+        // TODO: use supports interface instead of the bytecode_len proxy
+        let (bytecode_len) = Accounts.get_bytecode_len(self.address);
+        if (bytecode_len == 0) {
+            return ();
+        }
+
         // Set nonce
         IContractAccount.set_nonce(starknet_address, self.nonce);
         // Save storages

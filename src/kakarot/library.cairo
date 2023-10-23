@@ -87,10 +87,6 @@ namespace Kakarot {
         gas_price: felt,
     ) -> EVM.Summary* {
         alloc_locals;
-        let (origin_starknet_address) = Accounts.compute_starknet_address(origin);
-        tempvar sender = new model.Address(origin_starknet_address, origin);
-        let amount = Helpers.to_uint256(value);
-        tempvar transfer = new model.Transfer(sender, address, amount);
 
         // If is_deploy_tx is TRUE, then
         // bytecode is data and data is empty
@@ -124,6 +120,11 @@ namespace Kakarot {
 
         let ctx = ExecutionContext.init(call_context);
         let ctx = ExecutionContext.add_intrinsic_gas_cost(ctx);
+
+        let (origin_starknet_address) = Accounts.compute_starknet_address(origin);
+        tempvar sender = new model.Address(origin_starknet_address, origin);
+        let amount = Helpers.to_uint256(value);
+        let transfer = model.Transfer(sender, address, amount);
         let state = State.add_transfer(ctx.state, transfer);
         let ctx = ExecutionContext.update_state(ctx, state);
 

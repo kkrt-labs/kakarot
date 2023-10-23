@@ -243,8 +243,9 @@ namespace State {
     // @param self The pointer to the State
     // @param event The pointer to the Event
     // @return The updated State
-    func add_event(self: model.State*, event: model.Event*) -> model.State* {
-        assert [self.events + self.events_len] = [event];
+    func add_event(self: model.State*, event: model.Event) -> model.State* {
+        assert self.events[self.events_len] = event;
+
         return new model.State(
             accounts_start=self.accounts_start,
             accounts=self.accounts,
@@ -266,7 +267,7 @@ namespace State {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.State*, transfer: model.Transfer*) -> model.State* {
+    }(self: model.State*, transfer: model.Transfer) -> model.State* {
         alloc_locals;
         // See https://docs.cairo-lang.org/0.12.0/how_cairo_works/functions.html#retrieving-registers
         let fp_and_pc = get_fp_and_pc();
@@ -286,7 +287,7 @@ namespace State {
         dict_write{dict_ptr=balances}(
             key=transfer.recipient.starknet, new_value=cast(&recipient_balance_new, felt)
         );
-        assert [self.transfers + self.transfers_len] = [transfer];
+        assert self.transfers[self.transfers_len] = transfer;
 
         return new model.State(
             accounts_start=self.accounts_start,

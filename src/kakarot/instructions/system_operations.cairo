@@ -238,7 +238,7 @@ namespace SystemOperations {
         let (value_high, value_low) = split_felt(sub_ctx.call_context.value);
         tempvar value = Uint256(value_low, value_high);
         let calling_context = sub_ctx.call_context.calling_context;
-        tempvar transfer = new model.Transfer(
+        let transfer = model.Transfer(
             calling_context.call_context.address, sub_ctx.call_context.address, value
         );
         let state = State.add_transfer(sub_ctx.state, transfer);
@@ -341,7 +341,7 @@ namespace SystemOperations {
         let (recipient_starknet_address) = Accounts.compute_starknet_address(recipient_evm_address);
         tempvar recipient = new model.Address(recipient_starknet_address, recipient_evm_address);
         let (state, balance) = State.read_balance(ctx.state, ctx.call_context.address);
-        tempvar transfer = new model.Transfer(
+        let transfer = model.Transfer(
             sender=ctx.call_context.address, recipient=recipient, amount=balance
         );
         let state = State.add_transfer(state, transfer);

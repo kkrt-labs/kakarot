@@ -318,7 +318,7 @@ namespace ExecutionContext {
         let (local topics_with_address: felt*) = alloc();
         assert [topics_with_address] = self.call_context.address.evm;
         memcpy(dst=topics_with_address + 1, src=cast(topics, felt*), len=topics_len * Uint256.SIZE);
-        tempvar event = new model.Event(
+        let event = model.Event(
             topics_len=1 + topics_len * Uint256.SIZE,
             topics=topics_with_address,
             data_len=data_len,
