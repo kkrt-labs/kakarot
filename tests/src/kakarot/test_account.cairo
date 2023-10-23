@@ -9,6 +9,7 @@ from starkware.cairo.common.dict import dict_read
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from starkware.cairo.common.math import assert_not_equal
 from starkware.cairo.common.dict_access import DictAccess
+from starkware.cairo.common.registers import get_fp_and_pc
 
 // Local dependencies
 from kakarot.model import model
@@ -119,6 +120,30 @@ func test__finalize__should_return_summary_with_no_default_dict{
     with_attr error_message("KeyError") {
         Account.read_storage(cast(summary, model.Account*), address, key);
     }
+
+    return ();
+}
+
+@external
+func test__write_storage__should_store_value_at_key{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}(key: Uint256, value: Uint256) {
+    // Given
+    alloc_locals;
+    let fp_and_pc = get_fp_and_pc();
+    local __fp__: felt* = fp_and_pc.fp_val;
+    tempvar address = new model.Address(0, 0);
+    let (local code: felt*) = alloc();
+    let account = Account.init(0, 0, code, 0);
+
+    // When
+    let account = Account.write_storage(account, &key, &value);
+
+    // Then
+    let storage_len = account.storage - account.storage_start;
+    assert storage_len = DictAccess.SIZE;
+    let (account, value_read) = Account.read_storage(account, address, &key);
+    assert_uint256_eq(value_read, value);
 
     return ();
 }

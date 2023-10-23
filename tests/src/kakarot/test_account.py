@@ -3,6 +3,7 @@ import pytest_asyncio
 from starkware.starknet.testing.starknet import Starknet
 
 from tests.utils.errors import cairo_error
+from tests.utils.uint256 import int_to_uint256
 
 
 @pytest_asyncio.fixture
@@ -58,3 +59,10 @@ class TestAccount:
                 await account.test__finalize__should_return_summary_with_no_default_dict(
                     address, code, nonce
                 ).call()
+
+    class TestWriteStorage:
+        @pytest.mark.parametrize("key, value", [(0, 0), (2**256 - 1, 2**256 - 1)])
+        async def test_should_store_value_at_key(self, account, key, value):
+            await account.test__write_storage__should_store_value_at_key(
+                int_to_uint256(key), int_to_uint256(value)
+            ).call()

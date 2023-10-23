@@ -350,7 +350,7 @@ namespace MemoryOperations {
 
         let (stack, popped) = Stack.pop_n(self=ctx.stack, n=2);
 
-        let key = popped;  // Uint256
+        let key = popped;  // Uint256*
         let value = popped + Uint256.SIZE;  // Uint256*
         let state = State.write_storage(ctx.state, ctx.call_context.address, key, value);
         let ctx = ExecutionContext.update_state(ctx, state);

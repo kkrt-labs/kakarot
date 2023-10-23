@@ -1730,7 +1730,19 @@ test_cases = [
     {
         "params": {
             "value": 0,
-            "code": "60ff6100aa556100aa54",
+            "code": "60ff60aa55",
+            "calldata": "",
+            "stack": f"",
+            "memory": "",
+            "return_value": "",
+        },
+        "id": "SSTORE 0xff at key 0xaa",
+        "marks": [pytest.mark.SSTORE],
+    },
+    {
+        "params": {
+            "value": 0,
+            "code": "60ff60aa5560aa54",
             "calldata": "",
             "stack": f"{0xff}",
             "memory": "",
