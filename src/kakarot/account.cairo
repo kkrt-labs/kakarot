@@ -200,7 +200,9 @@ namespace Account {
             return (self, [value_ptr]);
         } else {
             // Otherwise regular read value from contract storage
-            let (value) = IContractAccount.storage(contract_address=address.starknet, key=[key]);
+            let (value) = IContractAccount.storage(
+                contract_address=address.starknet, key=storage_key
+            );
             // Cache for possible later use (almost free and can save a lot)
             tempvar new_value = new Uint256(value.low, value.high);
             dict_write{dict_ptr=storage}(key=storage_key, new_value=cast(new_value, felt));
@@ -287,10 +289,11 @@ namespace Internals {
         if (storage_start == storage_end) {
             return ();
         }
-        let key = cast(storage_start.key, Uint256*);
         let value = cast(storage_start.new_value, Uint256*);
 
-        IContractAccount.write_storage(contract_address=starknet_address, key=[key], value=[value]);
+        IContractAccount.write_storage(
+            contract_address=starknet_address, key=storage_start.key, value=[value]
+        );
 
         return _save_storage(starknet_address, storage_start + DictAccess.SIZE, storage_end);
     }

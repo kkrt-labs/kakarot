@@ -23,7 +23,7 @@ func bytecode_len_() -> (res: felt) {
 }
 
 @storage_var
-func storage_(key: Uint256) -> (value: Uint256) {
+func storage_(key: felt) -> (value: Uint256) {
 }
 
 @storage_var
@@ -129,27 +129,27 @@ namespace ContractAccount {
     }
 
     // @notice This function is used to read the storage at a key.
-    // @param key The key to the stored value.
+    // @param key The storage key, which is hash_felts(cast(Uint256, felt*)) of the Uint256 storage key.
     // @return value The store value.
     func storage{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(key: Uint256) -> (value: Uint256) {
+    }(key: felt) -> (value: Uint256) {
         let value = storage_.read(key);
         return value;
     }
 
     // @notice This function is used to write to the storage of the account.
-    // @param key The key to the value to store.
+    // @param key The storage key, which is hash_felts(cast(Uint256, felt*)) of the Uint256 storage key.
     // @param value The value to store.
     func write_storage{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(key: Uint256, value: Uint256) {
+    }(key: felt, value: Uint256) {
         // Access control check.
         Ownable.assert_only_owner();
         // Write State

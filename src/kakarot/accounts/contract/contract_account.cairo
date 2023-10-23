@@ -61,22 +61,22 @@ func bytecode_len{
 }
 
 // @notice Store a key-value pair.
-// @param key The bytes32 storage key.
+// @param key The storage key, which is hash_felts(cast(Uint256, felt*)) of the Uint256 storage key.
 // @param value The bytes32 stored value.
 @external
 func write_storage{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(key: Uint256, value: Uint256) {
+}(key: felt, value: Uint256) {
     return ContractAccount.write_storage(key, value);
 }
 
 // @notice Read a given storage key
-// @param key The bytes32 storage key.
+// @param key The storage key, which is hash_felts(cast(Uint256, felt*)) of the Uint256 storage key.
 // @return value The stored value if the key exists, 0 otherwise.
 @view
 func storage{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(key: Uint256) -> (value: Uint256) {
+}(key: felt) -> (value: Uint256) {
     return ContractAccount.storage(key);
 }
 
