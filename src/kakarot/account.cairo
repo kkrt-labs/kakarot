@@ -284,6 +284,21 @@ namespace Account {
         );
     }
 
+    // @notice Set the nonce of the Account
+    // @param self The pointer to the Account
+    // @param nonce The new nonce
+    func set_nonce(self: model.Account*, nonce: felt) -> model.Account* {
+        return new model.Account(
+            address=self.address,
+            code_len=self.code_len,
+            code=self.code,
+            storage_start=self.storage_start,
+            storage=self.storage,
+            nonce=nonce,
+            selfdestruct=self.selfdestruct,
+        );
+    }
+
     // @notice Register an account for SELFDESTRUCT
     // @dev True means that the account will be erased at the end of the transaction
     // @return The pointer to the updated Account

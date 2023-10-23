@@ -709,14 +709,16 @@ namespace CreateHelper {
         bytecode: felt*,
     ) -> (model.State*, felt) {
         alloc_locals;
+        let (state, account) = State.get_account(state, address);
+        let nonce = account.nonce;
+        let account = Account.set_nonce(account, nonce + 1);
+        let state = State.set_account(state, address, account);
+
         // create2 context pops 4 off the stack, create pops 3
         // so we use popped_len to derive the way we should handle
         // the creation of evm addresses
         if (popped_len != 4) {
-            let (local state, account) = State.get_account(state, address);
-            let (evm_contract_address) = CreateHelper.get_create_address(
-                address.evm, account.nonce
-            );
+            let (evm_contract_address) = CreateHelper.get_create_address(address.evm, nonce);
             return (state, evm_contract_address);
         } else {
             let salt = popped[3];
