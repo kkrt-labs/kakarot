@@ -121,6 +121,11 @@ namespace Account {
 
         // Case new Account
         if (starknet_account_exists == 0) {
+            // If SELFDESTRUCT, just do nothing
+            if (self.selfdestruct != 0) {
+                return ();
+            }
+
             // Deploy accounts
             let (class_hash) = contract_account_class_hash.read();
             deploy(class_hash, self.address);
@@ -133,7 +138,7 @@ namespace Account {
             return ();
         }
 
-        // Case SELFDESTRUCT
+        // Case existing Account and SELFDESTRUCT
         if (self.selfdestruct != 0) {
             // SELFDESTRUCT
             // TODO: clean also the storage
