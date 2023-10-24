@@ -70,6 +70,7 @@ namespace Precompiles {
             is_create=FALSE,
         );
         let sub_ctx = ExecutionContext.init(call_context);
+        let sub_ctx = ExecutionContext.update_state(sub_ctx, calling_context.state);
         let sub_ctx = ExecutionContext.stop(sub_ctx, output_len, output, FALSE);
         let sub_ctx = ExecutionContext.increment_gas_used(sub_ctx, gas_used);
 
