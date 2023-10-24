@@ -47,21 +47,18 @@ namespace LoggingOperations {
         let (stack, popped) = Stack.pop_n(stack, topics_len + 2);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        let offset = popped[0];
-        let size = popped[1];
-
         // Transform data + safety checks
-        let actual_size = Helpers.uint256_to_felt(size);
-        let actual_offset = Helpers.uint256_to_felt(offset);
+        let size = Helpers.uint256_to_felt(popped[1]);
+        let offset = Helpers.uint256_to_felt(popped[0]);
 
         // Log topics by emitting a starknet event
         let (data: felt*) = alloc();
         let (memory, gas_cost) = Memory.load_n(
-            self=ctx.memory, element_len=actual_size, element=data, offset=actual_offset
+            self=ctx.memory, element_len=size, element=data, offset=offset
         );
 
         let ctx = ExecutionContext.push_event(
-            self=ctx, topics_len=topics_len, topics=popped + 4, data_len=actual_size, data=data
+            self=ctx, topics_len=topics_len, topics=popped + 4, data_len=size, data=data
         );
 
         // Update context stack.
