@@ -31,6 +31,10 @@ contract PlainOpcodes {
     event Log3(address indexed owner, address indexed spender, uint256 value);
     event Log4(address indexed owner, address indexed spender, uint256 indexed value);
 
+    event NonceIncreased(uint256 nonce);
+
+    mapping(address => uint256) public nonces;
+
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
@@ -41,6 +45,10 @@ contract PlainOpcodes {
     /*//////////////////////////////////////////////////////////////
                             FUNCTIONS FOR OPCODES
     //////////////////////////////////////////////////////////////*/
+    function incrementMapping() public {
+        emit NonceIncreased(nonces[msg.sender]++);
+    }
+
     function opcodeBlockHash(uint256 blockNumber) public view returns (bytes32 _blockhash) {
         return (blockhash(blockNumber));
     }

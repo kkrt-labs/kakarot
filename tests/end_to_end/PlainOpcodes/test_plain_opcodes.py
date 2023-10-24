@@ -320,3 +320,12 @@ class TestPlainOpcodes:
 
             assert receiver_balance_after - receiver_balance_before == amount
             assert sender_balance_before - sender_balance_after == amount
+
+    class TestMapping:
+        async def test_should_emit_event_and_increase_nonce(self, plain_opcodes):
+            receipt = await plain_opcodes.incrementMapping()
+            events = plain_opcodes.events.parse_starknet_events(receipt.events)
+            prev_nonce = events["NonceIncreased"][0]["nonce"]
+            receipt = await plain_opcodes.incrementMapping()
+            events = plain_opcodes.events.parse_starknet_events(receipt.events)
+            assert events["NonceIncreased"][0]["nonce"] - prev_nonce == 1
