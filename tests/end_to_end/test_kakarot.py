@@ -50,7 +50,10 @@ class TestKakarot:
         ):
             with traceit.context(request.node.callspec.id):
                 result = await evm.functions["evm_call"].call(
-                    origin=int(addresses[0].address, 16),
+                    origin={
+                        "starknet": addresses[0].starknet_contract.address,
+                        "evm": int(addresses[0].address, 16),
+                    },
                     value=int(params["value"]),
                     bytecode=hex_string_to_bytes_array(params["code"]),
                     calldata=hex_string_to_bytes_array(params["calldata"]),
@@ -58,6 +61,7 @@ class TestKakarot:
             stack_result = extract_stack_from_execute(result)
             memory_result = extract_memory_from_execute(result)
 
+            assert result.success == params["success"]
             assert stack_result == (
                 [
                     int(x)
@@ -73,13 +77,16 @@ class TestKakarot:
                 else []
             )
             assert memory_result == hex_string_to_bytes_array(params["memory"])
-            assert bytes(result.return_data).hex() == params["return_value"]
+            assert bytes(result.return_data).hex() == params["return_data"]
 
             events = params.get("events")
             if events:
                 # Events only show up in a transaction, thus we run the same call, but in a tx
                 tx = await evm.functions["evm_execute"].invoke(
-                    origin=int(addresses[0].address, 16),
+                    origin={
+                        "starknet": addresses[0].starknet_contract.address,
+                        "evm": int(addresses[0].address, 16),
+                    },
                     value=int(params["value"]),
                     bytecode=hex_string_to_bytes_array(params["code"]),
                     calldata=hex_string_to_bytes_array(params["calldata"]),

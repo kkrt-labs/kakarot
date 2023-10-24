@@ -240,8 +240,16 @@ namespace SystemOperations {
         let transfer = model.Transfer(
             calling_context.call_context.address, sub_ctx.call_context.address, value
         );
-        let state = State.add_transfer(sub_ctx.state, transfer);
+        let (state, success) = State.add_transfer(sub_ctx.state, transfer);
         let sub_ctx = ExecutionContext.update_state(sub_ctx, state);
+        if (success == 0) {
+            let (revert_reason_len, revert_reason) = Errors.balanceError();
+            tempvar sub_ctx = ExecutionContext.stop(
+                sub_ctx, revert_reason_len, revert_reason, TRUE
+            );
+        } else {
+            tempvar sub_ctx = sub_ctx;
+        }
 
         return sub_ctx;
     }
@@ -343,7 +351,7 @@ namespace SystemOperations {
         let transfer = model.Transfer(
             sender=ctx.call_context.address, recipient=recipient, amount=balance
         );
-        let state = State.add_transfer(state, transfer);
+        let (state, success) = State.add_transfer(state, transfer);
 
         // Register for SELFDESTRUCT
         let (state, account) = State.get_account(state, ctx.call_context.address);

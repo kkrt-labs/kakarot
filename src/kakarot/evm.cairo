@@ -618,26 +618,25 @@ namespace EVM {
     }(ctx: model.ExecutionContext*) -> Summary* {
         alloc_locals;
 
-        let ctx: model.ExecutionContext* = decode_and_execute(ctx=ctx);
+        if (ctx.stopped != FALSE) {
+            let ctx_summary = ExecutionContext.finalize(ctx);
+            let is_root: felt = ExecutionContext.is_empty(self=ctx_summary.calling_context);
+            if (is_root != FALSE) {
+                let evm_summary = finalize(ctx_summary);
+                return evm_summary;
+            }
 
-        if (ctx.stopped == FALSE) {
-            return run(ctx=ctx);
+            if (ctx_summary.call_context.is_create != 0) {
+                let ctx = CreateHelper.finalize_calling_context(ctx_summary);
+                return run(ctx);
+            } else {
+                let ctx = CallHelper.finalize_calling_context(ctx_summary);
+                return run(ctx);
+            }
         }
 
-        let ctx_summary = ExecutionContext.finalize(ctx);
-        let is_root: felt = ExecutionContext.is_empty(self=ctx_summary.calling_context);
-        if (is_root != FALSE) {
-            let evm_summary = finalize(ctx_summary);
-            return evm_summary;
-        }
-
-        if (ctx_summary.call_context.is_create != 0) {
-            let ctx = CreateHelper.finalize_calling_context(ctx_summary);
-            return run(ctx=ctx);
-        }
-
-        let ctx = CallHelper.finalize_calling_context(ctx_summary);
-        return run(ctx=ctx);
+        let ctx = decode_and_execute(ctx);
+        return run(ctx);
     }
 
     // @notice A placeholder for opcodes that don't exist

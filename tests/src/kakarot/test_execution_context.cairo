@@ -38,7 +38,7 @@ func test__init__should_return_an_empty_execution_context{
         value=0,
         gas_limit=Constants.TRANSACTION_GAS_LIMIT,
         gas_price=0,
-        origin=0,
+        origin=address,
         calling_context=calling_ctx,
         address=address,
         read_only=0,

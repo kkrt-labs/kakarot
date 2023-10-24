@@ -11,8 +11,7 @@ from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_upd
 from starkware.cairo.common.math import assert_not_zero
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_fp_and_pc
-from starkware.cairo.common.uint256 import Uint256
-from starkware.cairo.common.uint256 import uint256_add, uint256_sub
+from starkware.cairo.common.uint256 import Uint256, uint256_add, uint256_sub, uint256_le
 from starkware.starknet.common.storage import normalize_address
 from starkware.starknet.common.syscalls import call_contract
 from starkware.starknet.common.syscalls import emit_event
@@ -261,18 +260,25 @@ namespace State {
     // @param self The pointer to the State
     // @param event The pointer to the Transfer
     // @return The updated State
+    // @return The status of the transfer
     func add_transfer{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.State*, transfer: model.Transfer) -> model.State* {
+    }(self: model.State*, transfer: model.Transfer) -> (model.State*, felt) {
         alloc_locals;
         // See https://docs.cairo-lang.org/0.12.0/how_cairo_works/functions.html#retrieving-registers
         let fp_and_pc = get_fp_and_pc();
         local __fp__: felt* = fp_and_pc.fp_val;
 
         let (self, sender_balance_prev) = read_balance(self, transfer.sender);
+        let (success) = uint256_le(transfer.amount, sender_balance_prev);
+
+        if (success == 0) {
+            return (self, success);
+        }
+
         let (self, recipient_balance_prev) = read_balance(self, transfer.recipient);
         let (local sender_balance_new) = uint256_sub(sender_balance_prev, transfer.amount);
         let (local recipient_balance_new, carry) = uint256_add(
@@ -288,7 +294,7 @@ namespace State {
         );
         assert self.transfers[self.transfers_len] = transfer;
 
-        return new model.State(
+        tempvar state = new model.State(
             accounts_start=self.accounts_start,
             accounts=self.accounts,
             events_len=self.events_len,
@@ -298,6 +304,7 @@ namespace State {
             transfers_len=self.transfers_len + 1,
             transfers=self.transfers,
         );
+        return (state, success);
     }
 
     // @notice Get the balance of a given address

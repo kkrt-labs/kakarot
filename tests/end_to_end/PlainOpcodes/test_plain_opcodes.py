@@ -343,6 +343,28 @@ class TestPlainOpcodes:
             assert receiver_balance_after - receiver_balance_before == amount
             assert sender_balance_before - sender_balance_after == amount
 
+        async def test_send_some_should_revert_when_amount_exceed_balance(
+            self, plain_opcodes, fund_starknet_address, eth_balance_of, owner, other
+        ):
+            amount = 1
+            await fund_starknet_address(plain_opcodes.starknet_address, amount)
+
+            sender_balance_before = await eth_balance_of(plain_opcodes.starknet_address)
+            receipt = await plain_opcodes.sendSome(
+                other.address, sender_balance_before + 1, caller_eoa=owner
+            )
+            events = plain_opcodes.events.parse_starknet_events(receipt.events)
+            assert events["SentSome"] == [
+                {
+                    "to": other.address,
+                    "amount": sender_balance_before + 1,
+                    "success": False,
+                }
+            ]
+            assert sender_balance_before == await eth_balance_of(
+                plain_opcodes.starknet_address
+            )
+
     class TestMapping:
         async def test_should_emit_event_and_increase_nonce(self, plain_opcodes):
             receipt = await plain_opcodes.incrementMapping()

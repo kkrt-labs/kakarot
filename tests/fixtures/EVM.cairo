@@ -4,10 +4,11 @@
 %lang starknet
 
 // Starkware dependencies
+from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256
-from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp
 
 // Local dependencies
@@ -43,7 +44,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 func execute{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
-    origin: felt,
+    origin: model.Address,
     value: felt,
     bytecode_len: felt,
     bytecode: felt*,
@@ -51,11 +52,13 @@ func execute{
     calldata: felt*,
 ) -> EVM.Summary* {
     alloc_locals;
+    let fp_and_pc = get_fp_and_pc();
+    local __fp__: felt* = fp_and_pc.fp_val;
     tempvar address = new model.Address(1, 1);
     let summary = Kakarot.execute(
         address=address,
         is_deploy_tx=0,
-        origin=origin,
+        origin=&origin,
         bytecode_len=bytecode_len,
         bytecode=bytecode,
         calldata_len=calldata_len,
@@ -71,7 +74,7 @@ func execute{
 func evm_call{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
-    origin: felt,
+    origin: model.Address,
     value: felt,
     bytecode_len: felt,
     bytecode: felt*,
@@ -94,6 +97,7 @@ func evm_call{
     return_data: felt*,
     gas_used: felt,
     success: felt,
+    program_counter: felt,
 ) {
     alloc_locals;
     let (local block_number) = get_block_number();
@@ -125,6 +129,7 @@ func evm_call{
         return_data=summary.return_data,
         gas_used=summary.gas_used,
         success=1 - summary.reverted,
+        program_counter=summary.program_counter,
     );
 }
 
@@ -132,7 +137,7 @@ func evm_call{
 func evm_execute{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
-    origin: felt,
+    origin: model.Address,
     value: felt,
     bytecode_len: felt,
     bytecode: felt*,

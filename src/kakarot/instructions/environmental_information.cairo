@@ -116,7 +116,7 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let origin_address = Helpers.to_uint256(ctx.call_context.origin);
+        let origin_address = Helpers.to_uint256(ctx.call_context.origin.evm);
 
         // Update Context stack
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=origin_address);
@@ -147,7 +147,7 @@ namespace EnvironmentalInformation {
         if (is_root == 0) {
             tempvar caller = calling_context.call_context.address.evm;
         } else {
-            tempvar caller = ctx.call_context.origin;
+            tempvar caller = ctx.call_context.origin.evm;
         }
         let evm_address_uint256 = Helpers.to_uint256(caller);
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=evm_address_uint256);

@@ -84,7 +84,7 @@ func init_context{
         value=0,
         gas_limit=Constants.TRANSACTION_GAS_LIMIT,
         gas_price=0,
-        origin=100,
+        origin=address,
         calling_context=calling_context,
         address=address,
         read_only=FALSE,

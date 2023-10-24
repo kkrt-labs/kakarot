@@ -20,6 +20,8 @@ from kakarot.constants import (
     externally_owned_account_class_hash,
     native_token_address,
 )
+from kakarot.constants import Constants
+from kakarot.errors import Errors
 from kakarot.evm import EVM
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.system_operations import CreateHelper
@@ -28,7 +30,6 @@ from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.state import State
-from kakarot.constants import Constants
 from utils.utils import Helpers
 
 // @title Kakarot main library file.
@@ -77,7 +78,7 @@ namespace Kakarot {
     }(
         address: model.Address*,
         is_deploy_tx: felt,
-        origin: felt,
+        origin: model.Address*,
         bytecode_len: felt,
         bytecode: felt*,
         calldata_len: felt,
@@ -121,12 +122,17 @@ namespace Kakarot {
         let ctx = ExecutionContext.init(call_context);
         let ctx = ExecutionContext.add_intrinsic_gas_cost(ctx);
 
-        let (origin_starknet_address) = Account.compute_starknet_address(origin);
-        tempvar sender = new model.Address(origin_starknet_address, origin);
         let amount = Helpers.to_uint256(value);
-        let transfer = model.Transfer(sender, address, amount);
-        let state = State.add_transfer(ctx.state, transfer);
+        let transfer = model.Transfer(origin, address, amount);
+        let (state, success) = State.add_transfer(ctx.state, transfer);
         let ctx = ExecutionContext.update_state(ctx, state);
+
+        if (success == 0) {
+            let (revert_reason_len, revert_reason) = Errors.balanceError();
+            tempvar ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+        } else {
+            tempvar ctx = ctx;
+        }
 
         let summary = EVM.run(ctx);
         return summary;
@@ -161,6 +167,8 @@ namespace Kakarot {
         let evm_contract_address = resolve_to(to, origin);
         let (starknet_contract_address) = Account.compute_starknet_address(evm_contract_address);
         tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
+        let (starknet_origin_address) = Account.compute_starknet_address(origin);
+        tempvar origin_address = new model.Address(starknet_origin_address, origin);
 
         let is_regular_tx = is_not_zero(to);
         let is_deploy_tx = 1 - is_regular_tx;
@@ -169,7 +177,7 @@ namespace Kakarot {
         let summary = execute(
             address,
             is_deploy_tx,
-            origin,
+            origin_address,
             account.code_len,
             account.code,
             data_len,

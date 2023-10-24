@@ -112,7 +112,7 @@ namespace model {
         value: felt,
         gas_limit: felt,
         gas_price: felt,
-        origin: felt,
+        origin: Address*,
         calling_context: ExecutionContext*,
         address: Address*,
         read_only: felt,

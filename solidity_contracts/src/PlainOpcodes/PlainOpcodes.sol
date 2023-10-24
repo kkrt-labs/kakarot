@@ -32,6 +32,7 @@ contract PlainOpcodes {
     event Log3(address indexed owner, address indexed spender, uint256 value);
     event Log4(address indexed owner, address indexed spender, uint256 indexed value);
 
+    event SentSome(address to, uint256 amount, bool success);
     event NonceIncreased(uint256 nonce);
 
     mapping(address => uint256) public nonces;
@@ -178,7 +179,7 @@ contract PlainOpcodes {
 
     function sendSome(address payable to, uint256 amount) public {
         bool success = to.send(amount);
-        require(success, "failed to send");
+        emit SentSome(to, amount, success);
     }
 
     function kill(address payable to) public payable {
