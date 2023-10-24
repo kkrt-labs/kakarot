@@ -40,7 +40,7 @@ func test__copy__should_return_new_account_with_same_attributes{
     alloc_locals;
     // Given
     let account = Account.init(evm_address, code_len, code, nonce);
-    tempvar key = new Uint256(1, 2);
+    let key = Uint256(1, 2);
     tempvar value = new Uint256(3, 4);
     let account = Account.write_storage(account, key, value);
 
@@ -79,7 +79,7 @@ func test__finalize__should_return_summary{
     // Given
     alloc_locals;
     let account = Account.init(evm_address, code_len, code, nonce);
-    tempvar key = new Uint256(1, 2);
+    let key = Uint256(1, 2);
     tempvar value = new Uint256(3, 4);
     tempvar address = new model.Address(0, evm_address);
     let account = Account.write_storage(account, key, value);
@@ -137,7 +137,7 @@ func test__write_storage__should_store_value_at_key{
     let account = Account.init(0, 0, code, 0);
 
     // When
-    let account = Account.write_storage(account, &key, &value);
+    let account = Account.write_storage(account, key, &value);
 
     // Then
     let storage_len = account.storage - account.storage_start;

@@ -8,6 +8,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
 from starkware.cairo.common.dict import dict_read, dict_write
 from starkware.cairo.common.dict_access import DictAccess
+from starkware.cairo.common.hash import hash2
 from starkware.cairo.common.math_cmp import is_not_zero
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
@@ -19,7 +20,6 @@ from starkware.cairo.common.hash_state import (
     hash_update,
     hash_update_single,
     hash_update_with_hashchain,
-    hash_felts,
 )
 
 from kakarot.constants import (
@@ -210,12 +210,12 @@ namespace Account {
     // @return The updated Account
     // @return The read value
     func read_storage{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Account*, address: model.Address*, key: Uint256*
+        self: model.Account*, address: model.Address*, key: Uint256
     ) -> (model.Account*, Uint256) {
         alloc_locals;
         let storage = self.storage;
-        let (local storage_key) = hash_felts{hash_ptr=pedersen_ptr}(cast(key, felt*), 2);
-        let (pointer) = dict_read{dict_ptr=storage}(key=storage_key);
+        let (local storage_addr) = Internals._storage_addr(key);
+        let (pointer) = dict_read{dict_ptr=storage}(key=storage_addr);
 
         // Case reading from local storage
         if (pointer != 0) {
@@ -238,7 +238,7 @@ namespace Account {
         let starknet_account_exists = is_not_zero(registered_starknet_account);
         if (starknet_account_exists != 0) {
             let (value) = IContractAccount.storage(
-                contract_address=address.starknet, key=storage_key
+                contract_address=address.starknet, storage_addr=storage_addr
             );
             tempvar value_ptr = new Uint256(value.low, value.high);
             tempvar syscall_ptr = syscall_ptr;
@@ -253,7 +253,7 @@ namespace Account {
         }
 
         // Cache for possible later use (almost free and can save a syscall later on)
-        dict_write{dict_ptr=storage}(key=storage_key, new_value=cast(value_ptr, felt));
+        dict_write{dict_ptr=storage}(key=storage_addr, new_value=cast(value_ptr, felt));
 
         tempvar self = new model.Account(
             self.address,
@@ -272,12 +272,12 @@ namespace Account {
     // @param key The pointer to the Uint256 storage key
     // @param value The pointer to the Uint256 value
     func write_storage{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Account*, key: Uint256*, value: Uint256*
+        self: model.Account*, key: Uint256, value: Uint256*
     ) -> model.Account* {
         alloc_locals;
         local storage: DictAccess* = self.storage;
-        let (storage_key) = hash_felts{hash_ptr=pedersen_ptr}(cast(key, felt*), 2);
-        dict_write{dict_ptr=storage}(key=storage_key, new_value=cast(value, felt));
+        let (storage_addr) = Internals._storage_addr(key);
+        dict_write{dict_ptr=storage}(key=storage_addr, new_value=cast(value, felt));
         tempvar self = new model.Account(
             self.address,
             self.code_len,
@@ -432,9 +432,20 @@ namespace Internals {
         let value = cast(storage_start.new_value, Uint256*);
 
         IContractAccount.write_storage(
-            contract_address=starknet_address, key=storage_start.key, value=[value]
+            contract_address=starknet_address, storage_addr=storage_start.key, value=[value]
         );
 
         return _save_storage(starknet_address, storage_start + DictAccess.SIZE, storage_end);
+    }
+
+    // @notice Compute the storage address of the given key when the storage var interface is
+    //         storage_(key: Uint256)
+    // @dev    Just the generated addr method when compiling the contract_account
+    func _storage_addr{pedersen_ptr: HashBuiltin*, range_check_ptr}(key: Uint256) -> (res: felt) {
+        let res = 1510236440068827666686527023008568026372765124888307403567795291192307314167;
+        let (res) = hash2{hash_ptr=pedersen_ptr}(res, cast(&key, felt*)[0]);
+        let (res) = hash2{hash_ptr=pedersen_ptr}(res, cast(&key, felt*)[1]);
+        let (res) = normalize_address(addr=res);
+        return (res=res);
     }
 }

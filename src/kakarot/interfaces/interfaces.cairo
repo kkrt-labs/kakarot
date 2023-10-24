@@ -63,10 +63,10 @@ namespace IContractAccount {
     func write_bytecode(bytecode_len: felt, bytecode: felt*) {
     }
 
-    func storage(key: felt) -> (value: Uint256) {
+    func storage(storage_addr: felt) -> (value: Uint256) {
     }
 
-    func write_storage(key: felt, value: Uint256) {
+    func write_storage(storage_addr: felt, value: Uint256) {
     }
 
     func get_nonce() -> (nonce: felt) {
@@ -107,16 +107,7 @@ namespace IKakarot {
         value: felt,
         data_len: felt,
         data: felt*,
-    ) -> (
-        return_data_len: felt,
-        return_data: felt*,
-        success: felt,
-        program_counter: felt,
-        bytecode_len: felt,
-        bytecode: felt*,
-        data_len: felt,
-        data: felt*,
-    ) {
+    ) -> (return_data_len: felt, return_data: felt*, success: felt) {
     }
 
     func eth_send_transaction(

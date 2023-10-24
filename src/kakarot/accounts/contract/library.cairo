@@ -3,7 +3,6 @@
 %lang starknet
 
 // Starkware dependencies
-from kakarot.interfaces.interfaces import IERC20, IKakarot
 from openzeppelin.access.ownable.library import Ownable
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
@@ -11,6 +10,9 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256, uint256_not
+from starkware.starknet.common.syscalls import storage_read, storage_write
+
+from kakarot.interfaces.interfaces import IERC20, IKakarot
 
 // Storage
 
@@ -23,7 +25,7 @@ func bytecode_len_() -> (res: felt) {
 }
 
 @storage_var
-func storage_(key: felt) -> (value: Uint256) {
+func storage_(key: Uint256) -> (value: Uint256) {
 }
 
 @storage_var
@@ -136,9 +138,11 @@ namespace ContractAccount {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(key: felt) -> (value: Uint256) {
-        let value = storage_.read(key);
-        return value;
+    }(storage_addr: felt) -> (value: Uint256) {
+        let (low) = storage_read(address=storage_addr + 0);
+        let (high) = storage_read(address=storage_addr + 1);
+        let value = Uint256(low, high);
+        return (value,);
     }
 
     // @notice This function is used to write to the storage of the account.
@@ -149,11 +153,12 @@ namespace ContractAccount {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(key: felt, value: Uint256) {
+    }(storage_addr: felt, value: Uint256) {
         // Access control check.
         Ownable.assert_only_owner();
         // Write State
-        storage_.write(key, value);
+        storage_write(address=storage_addr + 0, value=value.low);
+        storage_write(address=storage_addr + 1, value=value.high);
         return ();
     }
 

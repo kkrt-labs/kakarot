@@ -350,7 +350,7 @@ namespace MemoryOperations {
 
         let (stack, popped) = Stack.pop_n(self=ctx.stack, n=2);
 
-        let key = popped;  // Uint256*
+        let key = popped[0];  // Uint256*
         let value = popped + Uint256.SIZE;  // Uint256*
         let state = State.write_storage(ctx.state, ctx.call_context.address, key, value);
         let ctx = ExecutionContext.update_state(ctx, state);
@@ -374,12 +374,9 @@ namespace MemoryOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        // See https://docs.cairo-lang.org/0.12.0/how_cairo_works/functions.html#retrieving-registers
         alloc_locals;
-        let fp_and_pc = get_fp_and_pc();
-        local __fp__: felt* = fp_and_pc.fp_val;
-        let (stack, local key) = Stack.pop(ctx.stack);
-        let (state, value) = State.read_storage(ctx.state, ctx.call_context.address, &key);
+        let (stack, key) = Stack.pop(ctx.stack);
+        let (state, value) = State.read_storage(ctx.state, ctx.call_context.address, key);
         let stack = Stack.push(stack, value);
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_state(ctx, state);

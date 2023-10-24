@@ -3,13 +3,13 @@
 %lang starknet
 
 // Starkware dependencies
+from openzeppelin.access.ownable.library import Ownable
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 
 // Local dependencies
 from kakarot.accounts.contract.library import ContractAccount
 from kakarot.account import Account
-from openzeppelin.access.ownable.library import Ownable
 
 // @title EVM smart contract account representation.
 
@@ -61,23 +61,23 @@ func bytecode_len{
 }
 
 // @notice Store a key-value pair.
-// @param key The storage key, which is hash_felts(cast(Uint256, felt*)) of the Uint256 storage key.
+// @param key The storage address, with storage_var being storage_(key: Uint256)
 // @param value The bytes32 stored value.
 @external
 func write_storage{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(key: felt, value: Uint256) {
-    return ContractAccount.write_storage(key, value);
+}(storage_addr: felt, value: Uint256) {
+    return ContractAccount.write_storage(storage_addr, value);
 }
 
 // @notice Read a given storage key
-// @param key The storage key, which is hash_felts(cast(Uint256, felt*)) of the Uint256 storage key.
+// @param key The storage address, with storage_var being storage_(key: Uint256)
 // @return value The stored value if the key exists, 0 otherwise.
 @view
 func storage{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(key: felt) -> (value: Uint256) {
-    return ContractAccount.storage(key);
+}(storage_addr: felt) -> (value: Uint256) {
+    return ContractAccount.storage(storage_addr);
 }
 
 // @notice This function checks if the account was initialized.
