@@ -31,7 +31,7 @@ from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.environmental_information import EnvironmentalInformation
 from tests.utils.helpers import TestHelpers
 from kakarot.library import Kakarot
-from kakarot.accounts.library import Accounts
+from kakarot.account import Account
 from kakarot.instructions.system_operations import CreateHelper
 
 @constructor
@@ -125,7 +125,7 @@ func test__exec_extcodesize__should_handle_address_with_no_code{
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (local starknet_contract_address) = Accounts.create(
+    let (local starknet_contract_address) = Account.deploy(
         contract_account_class_hash_, evm_contract_address
     );
     let evm_contract_address_uint256 = Helpers.to_uint256(evm_contract_address);
@@ -167,7 +167,7 @@ func test__exec_extcodecopy__should_handle_address_with_code{
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (local starknet_contract_address) = Accounts.create(
+    let (local starknet_contract_address) = Account.deploy(
         contract_account_class_hash_, evm_contract_address
     );
     IContractAccount.write_bytecode(starknet_contract_address, bytecode_len, bytecode);
@@ -216,7 +216,7 @@ func test__exec_extcodecopy__should_handle_address_with_no_code{
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (local starknet_contract_address) = Accounts.create(
+    let (local starknet_contract_address) = Account.deploy(
         contract_account_class_hash_, evm_contract_address
     );
     let evm_contract_address_uint256 = Helpers.to_uint256(evm_contract_address);
@@ -382,7 +382,7 @@ func test__exec_extcodehash__should_handle_address_with_code{
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (local starknet_contract_address) = Accounts.create(
+    let (local starknet_contract_address) = Account.deploy(
         contract_account_class_hash_, evm_contract_address
     );
     IContractAccount.write_bytecode(starknet_contract_address, bytecode_len, bytecode);

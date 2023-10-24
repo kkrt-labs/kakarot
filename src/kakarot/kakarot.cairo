@@ -11,7 +11,6 @@ from starkware.starknet.common.syscalls import get_caller_address
 
 // Local dependencies
 from kakarot.account import Account
-from kakarot.accounts.library import Accounts
 from kakarot.evm import EVM
 from kakarot.library import Kakarot
 from kakarot.memory import Memory
@@ -106,7 +105,7 @@ func get_deploy_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     evm_address: felt
 ) -> (contract_address: felt) {
-    return Accounts.compute_starknet_address(evm_address);
+    return Account.compute_starknet_address(evm_address);
 }
 
 // @notice Returns the registered starknet address for a given EVM address.
@@ -117,7 +116,7 @@ func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
 func get_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     evm_address: felt
 ) -> (starknet_address: felt) {
-    return Accounts.get_starknet_address(evm_address);
+    return Account.get_registered_starknet_address(evm_address);
 }
 
 // @notice Deploy a new externally owned account.

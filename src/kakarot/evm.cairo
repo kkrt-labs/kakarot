@@ -29,7 +29,6 @@ from kakarot.instructions.push_operations import PushOperations
 from kakarot.instructions.sha3 import Sha3
 from kakarot.instructions.stop_and_arithmetic_operations import StopAndArithmeticOperations
 from kakarot.instructions.system_operations import CallHelper, CreateHelper, SystemOperations
-from kakarot.interfaces.interfaces import IAccount
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.precompiles.precompiles import Precompiles

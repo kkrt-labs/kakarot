@@ -2,6 +2,7 @@
 pragma solidity >=0.8.0;
 
 import "./RevertTestCases.sol";
+import "./Counter.sol";
 
 interface ICounter {
     function count() external view returns (uint256);
@@ -116,6 +117,24 @@ contract PlainOpcodes {
             _address := create2(0, add(bytecode, 32), mload(bytecode), salt)
         }
         emit Create2Address(_address);
+    }
+
+    function createCounterAndCall() public returns (address counter_) {
+        bytes memory bytecode = type(Counter).creationCode;
+        assembly {
+            counter_ := create(0, add(bytecode, 32), mload(bytecode))
+        }
+        ICounter(counter_).count();
+        emit CreateAddress(counter_);
+    }
+
+    function createCounterAndInvoke() public returns (address counter_) {
+        bytes memory bytecode = type(Counter).creationCode;
+        assembly {
+            counter_ := create(0, add(bytecode, 32), mload(bytecode))
+        }
+        ICounter(counter_).inc();
+        emit CreateAddress(counter_);
     }
 
     function requireNotZero(uint256 value) external pure {

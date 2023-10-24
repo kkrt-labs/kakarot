@@ -20,7 +20,6 @@ from starkware.cairo.common.registers import get_fp_and_pc
 
 // Internal dependencies
 from kakarot.account import Account
-from kakarot.accounts.library import Accounts
 from kakarot.constants import contract_account_class_hash, native_token_address, Constants
 from kakarot.errors import Errors
 from kakarot.execution_context import ExecutionContext
@@ -338,7 +337,7 @@ namespace SystemOperations {
         let (_, address_high) = unsigned_div_rem(address.high, 2 ** 32);
         let address = Uint256(address_high, address.low);
         let recipient_evm_address = Helpers.uint256_to_felt(address);
-        let (recipient_starknet_address) = Accounts.compute_starknet_address(recipient_evm_address);
+        let (recipient_starknet_address) = Account.compute_starknet_address(recipient_evm_address);
         tempvar recipient = new model.Address(recipient_starknet_address, recipient_evm_address);
         let (state, balance) = State.read_balance(ctx.state, ctx.call_context.address);
         let transfer = model.Transfer(
@@ -442,7 +441,7 @@ namespace CallHelper {
             return sub_ctx;
         }
 
-        let (starknet_contract_address) = Accounts.compute_starknet_address(call_args.address);
+        let (starknet_contract_address) = Account.compute_starknet_address(call_args.address);
         tempvar call_address = new model.Address(starknet_contract_address, call_args.address);
         let (state, account) = State.get_account(ctx.state, call_address);
         let ctx = ExecutionContext.update_state(ctx, state);
@@ -757,7 +756,7 @@ namespace CreateHelper {
         let (state, evm_contract_address) = get_evm_address(
             ctx.state, ctx.call_context.address, popped_len, popped, size.low, bytecode
         );
-        let (starknet_contract_address) = Accounts.compute_starknet_address(evm_contract_address);
+        let (starknet_contract_address) = Account.compute_starknet_address(evm_contract_address);
         tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
 
         // Create Account with empty bytecode

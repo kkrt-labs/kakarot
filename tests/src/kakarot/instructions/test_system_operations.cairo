@@ -26,7 +26,7 @@ from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.system_operations import SystemOperations, CallHelper, CreateHelper
 from kakarot.interfaces.interfaces import IContractAccount, IKakarot, IAccount, IERC20
 from kakarot.library import Kakarot
-from kakarot.accounts.library import Accounts
+from kakarot.account import Account
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.memory import Memory
@@ -67,7 +67,7 @@ func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     evm_address: felt
 ) -> (contract_address: felt) {
-    let (contract_address_) = Accounts.compute_starknet_address(evm_address);
+    let (contract_address_) = Account.compute_starknet_address(evm_address);
     return (contract_address=contract_address_);
 }
 
@@ -169,11 +169,11 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (caller_evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (caller_starknet_contract_address) = Accounts.create(
+    let (caller_starknet_contract_address) = Account.deploy(
         contract_account_class_hash_, caller_evm_contract_address
     );
     let (callee_evm_contract_address) = CreateHelper.get_create_address(1, 0);
-    let (callee_starknet_contract_address) = Accounts.create(
+    let (callee_starknet_contract_address) = Account.deploy(
         contract_account_class_hash_, callee_evm_contract_address
     );
 
@@ -259,11 +259,11 @@ func test__exec_call__should_transfer_value{
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (caller_evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (caller_starknet_contract_address) = Accounts.create(
+    let (caller_starknet_contract_address) = Account.deploy(
         contract_account_class_hash_, caller_evm_contract_address
     );
     let (callee_evm_contract_address) = CreateHelper.get_create_address(1, 0);
-    let (callee_starknet_contract_address) = Accounts.create(
+    let (callee_starknet_contract_address) = Account.deploy(
         contract_account_class_hash_, callee_evm_contract_address
     );
 
@@ -328,11 +328,11 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (caller_evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (caller_starknet_contract_address) = Accounts.create(
+    let (caller_starknet_contract_address) = Account.deploy(
         contract_account_class_hash_, caller_evm_contract_address
     );
     let (callee_evm_contract_address) = CreateHelper.get_create_address(1, 0);
-    let (_) = Accounts.create(contract_account_class_hash_, callee_evm_contract_address);
+    let (_) = Account.deploy(contract_account_class_hash_, callee_evm_contract_address);
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
@@ -410,11 +410,11 @@ func test__exec_callcode__should_transfer_value{
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (caller_evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (caller_starknet_contract_address) = Accounts.create(
+    let (caller_starknet_contract_address) = Account.deploy(
         contract_account_class_hash_, caller_evm_contract_address
     );
     let (callee_evm_contract_address) = CreateHelper.get_create_address(1, 0);
-    let (callee_starknet_contract_address) = Accounts.create(
+    let (callee_starknet_contract_address) = Account.deploy(
         contract_account_class_hash_, callee_evm_contract_address
     );
 
@@ -479,7 +479,7 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (local starknet_contract_address) = Accounts.create(
+    let (local starknet_contract_address) = Account.deploy(
         contract_account_class_hash_, evm_contract_address
     );
 
@@ -555,7 +555,7 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (local starknet_contract_address) = Accounts.create(
+    let (local starknet_contract_address) = Account.deploy(
         contract_account_class_hash_, evm_contract_address
     );
 
@@ -835,7 +835,7 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
 // // Simulate contract creation
 //     let (contract_account_class_hash_) = contract_account_class_hash.read();
 //     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
-//     let (local starknet_contract_address) = Accounts.create(
+//     let (local starknet_contract_address) = Account.deploy(
 //         contract_account_class_hash_, evm_contract_address
 //     );
 

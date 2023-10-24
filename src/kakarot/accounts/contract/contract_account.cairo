@@ -8,7 +8,7 @@ from starkware.cairo.common.uint256 import Uint256
 
 // Local dependencies
 from kakarot.accounts.contract.library import ContractAccount
-from kakarot.accounts.library import Accounts
+from kakarot.account import Account
 from openzeppelin.access.ownable.library import Ownable
 
 // @title EVM smart contract account representation.

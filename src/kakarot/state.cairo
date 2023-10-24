@@ -4,26 +4,25 @@
 
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.dict import dict_read, dict_write
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
+from starkware.cairo.common.dict import dict_read, dict_write
 from starkware.cairo.common.dict_access import DictAccess
+from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_update, hash_felts
+from starkware.cairo.common.math import assert_not_zero
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256
-from starkware.starknet.common.syscalls import emit_event
 from starkware.cairo.common.uint256 import uint256_add, uint256_sub
 from starkware.starknet.common.storage import normalize_address
-from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_update, hash_felts
-from starkware.cairo.common.math import assert_not_zero
+from starkware.starknet.common.syscalls import call_contract
+from starkware.starknet.common.syscalls import emit_event
 
-from kakarot.accounts.library import Accounts
-from kakarot.interfaces.interfaces import IAccount, IContractAccount, IERC20
-from kakarot.model import model
 from kakarot.account import Account
 from kakarot.constants import native_token_address, contract_account_class_hash
-from starkware.starknet.common.syscalls import call_contract
-from utils.utils import Helpers
+from kakarot.interfaces.interfaces import IERC20
+from kakarot.model import model
 from utils.dict import default_dict_copy
+from utils.utils import Helpers
 
 namespace State {
     // @dev Like an State, but frozen after squashing all dicts

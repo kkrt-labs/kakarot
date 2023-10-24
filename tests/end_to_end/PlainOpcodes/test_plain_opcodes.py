@@ -191,6 +191,28 @@ class TestPlainOpcodes:
             )
             assert [] == (await contract_account.functions["bytecode"].call()).bytecode
 
+        async def test_should_create_counter_and_call_in_the_same_tx(
+            self,
+            plain_opcodes,
+            get_solidity_contract,
+        ):
+            receipt = await plain_opcodes.createCounterAndCall()
+            events = plain_opcodes.events.parse_starknet_events(receipt.events)
+            address = events["CreateAddress"][0]["_address"]
+            counter = get_solidity_contract("PlainOpcodes", "Counter", address=address)
+            assert await counter.count() == 0
+
+        async def test_should_create_counter_and_invoke_in_the_same_tx(
+            self,
+            plain_opcodes,
+            get_solidity_contract,
+        ):
+            receipt = await plain_opcodes.createCounterAndInvoke()
+            events = plain_opcodes.events.parse_starknet_events(receipt.events)
+            address = events["CreateAddress"][0]["_address"]
+            counter = get_solidity_contract("PlainOpcodes", "Counter", address=address)
+            assert await counter.count() == 1
+
     class TestCreate2:
         async def test_should_deploy_bytecode_at_address(
             self,

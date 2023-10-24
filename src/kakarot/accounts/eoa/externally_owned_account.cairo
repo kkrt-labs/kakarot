@@ -8,7 +8,7 @@ from starkware.starknet.common.syscalls import get_tx_info, get_caller_address
 from starkware.cairo.common.math import assert_le
 
 from kakarot.accounts.eoa.library import ExternallyOwnedAccount
-from kakarot.accounts.library import Accounts
+from kakarot.account import Account
 
 // Externally Owned Account initializer
 @external

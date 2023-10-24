@@ -11,7 +11,7 @@ from starkware.starknet.common.syscalls import deploy as deploy_syscall
 from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 from starkware.cairo.common.math_cmp import is_not_zero
 
-from kakarot.accounts.library import Accounts
+from kakarot.account import Account
 from kakarot.constants import (
     account_proxy_class_hash,
     blockhash_registry_address,
@@ -121,7 +121,7 @@ namespace Kakarot {
         let ctx = ExecutionContext.init(call_context);
         let ctx = ExecutionContext.add_intrinsic_gas_cost(ctx);
 
-        let (origin_starknet_address) = Accounts.compute_starknet_address(origin);
+        let (origin_starknet_address) = Account.compute_starknet_address(origin);
         tempvar sender = new model.Address(origin_starknet_address, origin);
         let amount = Helpers.to_uint256(value);
         let transfer = model.Transfer(sender, address, amount);
@@ -159,19 +159,19 @@ namespace Kakarot {
     ) -> EVM.Summary* {
         alloc_locals;
         let evm_contract_address = resolve_to(to, origin);
-        let (starknet_contract_address) = Accounts.compute_starknet_address(evm_contract_address);
+        let (starknet_contract_address) = Account.compute_starknet_address(evm_contract_address);
         tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
 
         let is_regular_tx = is_not_zero(to);
         let is_deploy_tx = 1 - is_regular_tx;
-        let (bytecode_len, bytecode) = Accounts.get_bytecode(address.evm);
+        let account = Account.fetch_or_create(address);
 
         let summary = execute(
             address,
             is_deploy_tx,
             origin,
-            bytecode_len,
-            bytecode,
+            account.code_len,
+            account.code,
             data_len,
             data,
             value,
@@ -255,7 +255,7 @@ namespace Kakarot {
         alloc_locals;
 
         let (class_hash) = externally_owned_account_class_hash.read();
-        let (starknet_contract_address) = Accounts.create(class_hash, evm_contract_address);
+        let (starknet_contract_address) = Account.deploy(class_hash, evm_contract_address);
 
         let (local native_token_address) = get_native_token();
         let (local deploy_fee) = get_deploy_fee();
@@ -307,7 +307,7 @@ namespace Kakarot {
     }(starknet_address: felt) -> (evm_address: felt) {
         alloc_locals;
         let (local evm_address) = IAccount.get_evm_address(starknet_address);
-        let (local computed_starknet_address) = Accounts.compute_starknet_address(evm_address);
+        let (local computed_starknet_address) = Account.compute_starknet_address(evm_address);
 
         with_attr error_message("Kakarot: caller contract is not a Kakarot Account") {
             assert computed_starknet_address = starknet_address;
