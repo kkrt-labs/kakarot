@@ -3,7 +3,7 @@
 %lang starknet
 
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
 from starkware.cairo.common.dict import dict_read, dict_write
@@ -177,11 +177,9 @@ namespace Account {
         let starknet_account_exists = is_not_zero(registered_starknet_account);
 
         // Case touching a non deployed account
-        // Touching a non-deploy account means either touching an EOA and nonce has no impact
-        // or creating a CA, hence nonce is 1
         if (starknet_account_exists == 0) {
             let (bytecode: felt*) = alloc();
-            let account = Account.init(address=address.evm, code_len=0, code=bytecode, nonce=1);
+            let account = Account.init(address=address.evm, code_len=0, code=bytecode, nonce=0);
             return account;
         }
 
@@ -417,6 +415,17 @@ namespace Account {
         evm_contract_deployed.emit(evm_address, starknet_address);
         evm_to_starknet_address.write(evm_address, starknet_address);
         return (account_address=starknet_address);
+    }
+
+    // @notice Tells if an account has code_len > 0 or nonce > 0
+    // @dev See https://github.com/ethereum/execution-specs/blob/3fe6514f2d9d234e760d11af883a47c1263eff51/src/ethereum/shanghai/state.py#L352
+    // @param self The pointer to the Account
+    // @return TRUE is either nonce > 0 or code_len > 0, FALSE otherwise
+    func has_code_or_nonce(self: model.Account*) -> felt {
+        if (self.nonce + self.code_len != 0) {
+            return TRUE;
+        }
+        return FALSE;
     }
 }
 

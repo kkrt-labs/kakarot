@@ -122,10 +122,28 @@ namespace Kakarot {
         let ctx = ExecutionContext.init(call_context);
         let ctx = ExecutionContext.add_intrinsic_gas_cost(ctx);
 
+        let state = ctx.state;
+        // Handle value
         let amount = Helpers.to_uint256(value);
         let transfer = model.Transfer(origin, address, amount);
-        let (state, success) = State.add_transfer(ctx.state, transfer);
+        let (state, success) = State.add_transfer(state, transfer);
+
+        // Check collision
+        let (state, account) = State.get_account(state, address);
+        let has_code_or_nonce = Account.has_code_or_nonce(account);
+        let is_collision = has_code_or_nonce * is_deploy_tx;
+        let nonce = account.nonce * (1 - is_deploy_tx) + is_deploy_tx;
+        let account = Account.set_nonce(account, nonce);
+        let state = State.set_account(state, address, account);
+
         let ctx = ExecutionContext.update_state(ctx, state);
+
+        if (is_collision != 0) {
+            let (revert_reason_len, revert_reason) = Errors.addressCollision();
+            tempvar ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+        } else {
+            tempvar ctx = ctx;
+        }
 
         if (success == 0) {
             let (revert_reason_len, revert_reason) = Errors.balanceError();

@@ -443,4 +443,36 @@ namespace Errors {
         dw 'c';
         dw 'e';
     }
+
+    func addressCollision() -> (error_len: felt, error: felt*) {
+        let (error) = get_label_location(address_collision_error_message);
+        return (25, error);
+
+        address_collision_error_message:
+        dw 'K';
+        dw 'a';
+        dw 'k';
+        dw 'a';
+        dw 'r';
+        dw 'o';
+        dw 't';
+        dw ':';
+        dw ' ';
+        dw 'a';
+        dw 'd';
+        dw 'd';
+        dw 'r';
+        dw 'e';
+        dw 's';
+        dw 's';
+        dw 'C';
+        dw 'o';
+        dw 'l';
+        dw 'l';
+        dw 'i';
+        dw 's';
+        dw 'i';
+        dw 'o';
+        dw 'n';
+    }
 }

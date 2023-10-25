@@ -66,3 +66,21 @@ class TestAccount:
             await account.test__write_storage__should_store_value_at_key(
                 int_to_uint256(key), int_to_uint256(value)
             ).call()
+
+    class TestHasCodeOrNonce:
+        @pytest.mark.parametrize(
+            "nonce,code,expected_result",
+            (
+                (0, [], False),
+                (1, [], True),
+                (0, [1], True),
+                (1, [1], True),
+            ),
+        )
+        async def test_should_return_true_when_nonce(
+            self, account, nonce, code, expected_result
+        ):
+            result = (
+                await account.test__has_code_or_nonce(nonce, code).call()
+            ).result.has_code_or_nonce
+            assert result == expected_result

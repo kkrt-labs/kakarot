@@ -16,7 +16,7 @@ from kakarot.evm import EVM
 from kakarot.library import Kakarot
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.state import State
+from kakarot.state import Internals as State
 from kakarot.constants import (
     native_token_address,
     contract_account_class_hash,
@@ -152,6 +152,8 @@ func evm_execute{
         return result;
     }
 
-    State.commit(summary.state);
+    // We just emit the events as committing the accounts is out of the scope of these EVM
+    // tests and requires a real CallContext.address (not Address(1, 1))
+    State._emit_events(summary.state.events_len, summary.state.events);
     return result;
 }

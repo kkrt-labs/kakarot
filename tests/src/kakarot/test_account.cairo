@@ -109,7 +109,7 @@ func test__finalize__should_return_summary_with_no_default_dict{
 }(evm_address: felt, code_len: felt, code: felt*, nonce: felt) {
     // Given
     alloc_locals;
-    tempvar key = new Uint256(1, 2);
+    tempvar key = Uint256(1, 2);
     tempvar address = new model.Address(0, evm_address);
     let account = Account.init(evm_address, code_len, code, nonce);
 
@@ -142,8 +142,22 @@ func test__write_storage__should_store_value_at_key{
     // Then
     let storage_len = account.storage - account.storage_start;
     assert storage_len = DictAccess.SIZE;
-    let (account, value_read) = Account.read_storage(account, address, &key);
+    let (account, value_read) = Account.read_storage(account, address, key);
     assert_uint256_eq(value_read, value);
 
     return ();
+}
+
+@external
+func test__has_code_or_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    nonce: felt, code_len: felt, code: felt*
+) -> (has_code_or_nonce: felt) {
+    // Given
+    let account = Account.init(0, code_len, code, nonce);
+
+    // When
+    let result = Account.has_code_or_nonce(account);
+
+    // Then
+    return (result,);
 }
