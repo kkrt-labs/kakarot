@@ -4,7 +4,7 @@ import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
 import {PlainOpcodes} from "../src/PlainOpcodes/PlainOpcodes.sol";
-import {ContractRevertsOnMethodCall} from "../src/PlainOpcodes/RevertTestCases.sol";
+import {ContractRevertsOnMethodCall, ContractWithSelfdestructMethod} from "../src/PlainOpcodes/RevertTestCases.sol";
 import {Counter} from "../src/PlainOpcodes/Counter.sol";
 
 contract PlainOpcodesTest is Test {
@@ -61,6 +61,19 @@ contract PlainOpcodesTest is Test {
         // decode the return data and check for the expected revert message
         (string memory errorMessage) = abi.decode(returnDataSlice, (string));
         assert(keccak256(bytes(errorMessage)) == keccak256("FAIL"));
+    }
+
+    function testSelfDestructAndCreateAgain() public {
+        bytes memory bytecode = type(ContractWithSelfdestructMethod).creationCode;
+        uint256 salt = 1234;
+        address addr = plainOpcodes.create2(bytecode, salt);
+        ContractWithSelfdestructMethod contract_ = ContractWithSelfdestructMethod(addr);
+        contract_.inc();
+        contract_.kill();
+        plainOpcodes.create2(bytecode, salt);
+        contract_.inc();
+        uint256 count = contract_.count();
+        assertEq(count, 2);
     }
 
     function testCreate() public {

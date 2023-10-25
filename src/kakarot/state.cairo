@@ -434,6 +434,8 @@ namespace Internals {
     }
 
     // @notice Iterates through a list of Transfer and makes them
+    // @dev Transfers are made last so as to have all accounts created beforehand.
+    //      Kakarot is not authorized for accounts that are created and SELDESTRUCT in the same transaction
     // @param transfers_len The length of the transfers array.
     // @param transfers The array of Transfer.
     func _transfer_eth{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
