@@ -177,9 +177,11 @@ namespace Account {
         let starknet_account_exists = is_not_zero(registered_starknet_account);
 
         // Case touching a non deployed account
+        // Touching a non-deploy account means either touching an EOA and nonce has no impact
+        // or creating a CA, hence nonce is 1
         if (starknet_account_exists == 0) {
             let (bytecode: felt*) = alloc();
-            let account = Account.init(address=address.evm, code_len=0, code=bytecode, nonce=0);
+            let account = Account.init(address=address.evm, code_len=0, code=bytecode, nonce=1);
             return account;
         }
 
