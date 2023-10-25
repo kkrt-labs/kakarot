@@ -11,6 +11,7 @@ from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256, uint256_not
 from starkware.starknet.common.syscalls import storage_read, storage_write
+from starkware.cairo.common.memset import memset
 
 from kakarot.interfaces.interfaces import IERC20, IKakarot
 
@@ -159,6 +160,35 @@ namespace ContractAccount {
         // Write State
         storage_write(address=storage_addr + 0, value=value.low);
         storage_write(address=storage_addr + 1, value=value.high);
+        return ();
+    }
+
+    // @notice Selfdestruct whatever can be
+    // @dev It's not possible to remove a contract in Starknet
+    func selfdestruct{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }() {
+        alloc_locals;
+        // Access control check.
+        Ownable.assert_only_owner();
+        nonce.write(0);
+        is_initialized_.write(0);
+        evm_address.write(0);
+
+        // Bytecode could we erased more efficiently, there is no read to
+        // initialize a new memory segment.
+        let (bytecode_len) = bytecode_len_.read();
+        let (local bytecode: felt*) = alloc();
+        memset(bytecode, 0, bytecode_len);
+        write_bytecode(bytecode_len, bytecode);
+
+        bytecode_len_.write(0);
+
+        // TODO: clean also the storage
+
         return ();
     }
 

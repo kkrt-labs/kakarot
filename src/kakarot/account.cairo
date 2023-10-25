@@ -139,13 +139,7 @@ namespace Account {
 
         // Case existing Account and SELFDESTRUCT
         if (self.selfdestruct != 0) {
-            // SELFDESTRUCT
-            // TODO: clean also the storage
-            let (local erase_data: felt*) = alloc();
-            Helpers.fill(self.code_len, erase_data, 0);
-            IContractAccount.write_bytecode(
-                contract_address=starknet_address, bytecode_len=self.code_len, bytecode=erase_data
-            );
+            IContractAccount.selfdestruct(contract_address=starknet_address);
             return ();
         }
 

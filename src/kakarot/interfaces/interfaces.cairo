@@ -77,6 +77,9 @@ namespace IContractAccount {
 
     func set_nonce(nonce: felt) {
     }
+
+    func selfdestruct() {
+    }
 }
 
 @contract_interface
