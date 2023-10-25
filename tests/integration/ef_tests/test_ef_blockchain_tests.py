@@ -210,7 +210,7 @@ class TestEFBlockchain:
                 starknet_address = get_starknet_address(int(transaction["sender"], 16))
 
                 await kakarot.eth_send_transaction(
-                    to=int(transaction["to"], 16),
+                    to=int(transaction["to"] or "0", 16),
                     gas_limit=int(transaction["gasLimit"], 16),
                     gas_price=int(transaction["gasPrice"], 16),
                     value=int(transaction["value"], 16),

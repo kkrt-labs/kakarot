@@ -101,3 +101,11 @@ func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 func set_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(nonce: felt) {
     return ContractAccount.set_nonce(nonce);
 }
+
+// @notice Returns the account type
+@view
+func account_type{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    type: felt
+) {
+    return ('CA',);
+}

@@ -56,6 +56,9 @@ namespace IAccount {
 
     func bytecode() -> (bytecode_len: felt, bytecode: felt*) {
     }
+
+    func account_type() -> (type: felt) {
+    }
 }
 
 @contract_interface

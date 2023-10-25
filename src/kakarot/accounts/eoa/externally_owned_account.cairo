@@ -136,3 +136,11 @@ func bytecode_len{
 }() -> (len: felt) {
     return (len=0);
 }
+
+// @notice Returns the account type
+@view
+func account_type{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    type: felt
+) {
+    return ('EOA',);
+}

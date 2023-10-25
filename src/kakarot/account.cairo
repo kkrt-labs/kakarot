@@ -116,8 +116,7 @@ namespace Account {
     ) {
         alloc_locals;
 
-        let (registered_starknet_account) = get_registered_starknet_address(self.address);
-        let starknet_account_exists = is_not_zero(registered_starknet_account);
+        let starknet_account_exists = is_registered(self.address);
 
         // Case new Account
         if (starknet_account_exists == 0) {
@@ -150,10 +149,8 @@ namespace Account {
             return ();
         }
 
-        // Case EOA
-        // TODO: use supports interface instead of the bytecode_len proxy
-        let (bytecode_len) = IAccount.bytecode_len(contract_address=starknet_address);
-        if (bytecode_len == 0) {
+        let (account_type) = IAccount.account_type(contract_address=starknet_address);
+        if (account_type == 'EOA') {
             return ();
         }
 
@@ -173,8 +170,7 @@ namespace Account {
         address: model.Address*
     ) -> model.Account* {
         alloc_locals;
-        let (local registered_starknet_account) = get_registered_starknet_address(address.evm);
-        let starknet_account_exists = is_not_zero(registered_starknet_account);
+        let starknet_account_exists = is_registered(address.evm);
 
         // Case touching a non deployed account
         if (starknet_account_exists == 0) {
@@ -183,17 +179,21 @@ namespace Account {
             return account;
         }
 
-        // Case EOA
-        // TODO: use supports interface instead of the bytecode_len proxy
-        let (bytecode_len, bytecode) = IAccount.bytecode(contract_address=address.starknet);
-        if (bytecode_len == 0) {
+        let (account_type) = IAccount.account_type(contract_address=address.starknet);
+
+        if (account_type == 'EOA') {
+            let (bytecode: felt*) = alloc();
             let account = Account.init(
-                address=address.evm, code_len=bytecode_len, code=bytecode, nonce=0
+                // There is no way to access the nonce of an EOA currently
+                // But putting 1 shouldn't have any impact and is safer than 0
+                // since has_code_or_nonce is used in some places to trigger collision
+                address=address.evm, code_len=0, code=bytecode, nonce=1
             );
             return account;
         }
 
         // Case CA
+        let (bytecode_len, bytecode) = IAccount.bytecode(contract_address=address.starknet);
         let (nonce) = IContractAccount.get_nonce(contract_address=address.starknet);
         let account = Account.init(
             address=address.evm, code_len=bytecode_len, code=bytecode, nonce=nonce
@@ -234,8 +234,7 @@ namespace Account {
         }
 
         // Case reading from Starknet storage
-        let (local registered_starknet_account) = get_registered_starknet_address(address.evm);
-        let starknet_account_exists = is_not_zero(registered_starknet_account);
+        let starknet_account_exists = is_registered(address.evm);
         if (starknet_account_exists != 0) {
             let (value) = IContractAccount.storage(
                 contract_address=address.starknet, storage_addr=storage_addr
@@ -426,6 +425,18 @@ namespace Account {
             return TRUE;
         }
         return FALSE;
+    }
+
+    // @notice Tell if an account is already registered
+    // @param address the address (EVM) as felt
+    // @return true if the account is already registered
+    func is_registered{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        address: felt
+    ) -> felt {
+        alloc_locals;
+        let (local registered_starknet_account) = get_registered_starknet_address(address);
+        let starknet_account_exists = is_not_zero(registered_starknet_account);
+        return starknet_account_exists;
     }
 }
 
