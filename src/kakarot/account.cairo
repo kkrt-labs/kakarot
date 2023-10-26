@@ -177,12 +177,10 @@ namespace Account {
 
         if (account_type == 'EOA') {
             let (bytecode: felt*) = alloc();
-            let account = Account.init(
-                // There is no way to access the nonce of an EOA currently
-                // But putting 1 shouldn't have any impact and is safer than 0
-                // since has_code_or_nonce is used in some places to trigger collision
-                address=address.evm, code_len=0, code=bytecode, nonce=1
-            );
+            // There is no way to access the nonce of an EOA currently
+            // But putting 1 shouldn't have any impact and is safer than 0
+            // since has_code_or_nonce is used in some places to trigger collision
+            let account = Account.init(address=address.evm, code_len=0, code=bytecode, nonce=1);
             return account;
         }
 
