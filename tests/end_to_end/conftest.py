@@ -72,9 +72,9 @@ async def addresses(max_fee) -> List[Wallet]:
             Wallet(
                 address=private_key.public_key.to_checksum_address(),
                 private_key=private_key,
-                # deploying an account with enough ETH to pass ~30 tx
+                # deploying an account with enough ETH to pass ~1000 tx
                 starknet_contract=await get_eoa(
-                    private_key, amount=30 * max_fee / 1e18
+                    private_key, amount=100 * max_fee / 1e18
                 ),
             )
         )
@@ -314,10 +314,10 @@ def is_account_deployed(starknet, compute_starknet_address):
 
 
 @pytest.fixture
-def eth_send_transaction():
+def eth_send_transaction(max_fee):
     """
     Send a decoded transaction to Kakarot.
     """
     from scripts.utils.kakarot import eth_send_transaction
 
-    return eth_send_transaction
+    return partial(eth_send_transaction, max_fee=max_fee)

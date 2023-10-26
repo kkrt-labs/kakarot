@@ -379,10 +379,20 @@ class TestPlainOpcodes:
             "data,value,message", (("", 1234, "receive"), ("0x00", 0, "fallback"))
         )
         async def test_should_revert_on_fallbacks(
-            self, revert_on_fallbacks, eth_send_transaction, data, value, message
+            self,
+            revert_on_fallbacks,
+            eth_send_transaction,
+            data,
+            value,
+            message,
+            addresses,
         ):
             receipt, response, success = await eth_send_transaction(
-                to=revert_on_fallbacks.address, gas=0, data=data, value=value
+                to=revert_on_fallbacks.address,
+                gas=0,
+                data=data,
+                value=value,
+                caller_eoa=addresses[2].starknet_contract,
             )
             assert not success
             assert f"reverted on {message}".encode() in bytes(response)
