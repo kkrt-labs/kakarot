@@ -311,3 +311,13 @@ def is_account_deployed(starknet, compute_starknet_address):
                 return False
 
     return _factory
+
+
+@pytest.fixture
+def eth_send_transaction():
+    """
+    Send a decoded transaction to Kakarot.
+    """
+    from scripts.utils.kakarot import eth_send_transaction
+
+    return eth_send_transaction

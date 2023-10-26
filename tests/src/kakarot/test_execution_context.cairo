@@ -56,8 +56,8 @@ func test__init__should_return_an_empty_execution_context{
     assert result.stack.len_16bytes = 0;
     assert result.memory.bytes_len = 0;
     assert result.gas_used = 0;
-    assert result.gas_limit = Constants.TRANSACTION_GAS_LIMIT;  // TODO: Add support for gas limit
-    assert result.gas_price = 0;
+    assert result.call_context.gas_limit = Constants.TRANSACTION_GAS_LIMIT;  // TODO: Add support for gas limit
+    assert result.call_context.gas_price = 0;
     return ();
 }
 

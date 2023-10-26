@@ -81,9 +81,9 @@ namespace Precompiles {
         return is_not_zero(address) * is_le(address, Constants.LAST_PRECOMPILE_ADDRESS);
     }
 
-    // @notice Executes associated function of precompiled address.
+    // @notice Executes associated function of precompiled evm_address.
     // @dev This function uses an internal jump table to execute the corresponding precompile impmentation.
-    // @param address The precompile address.
+    // @param evm_address The precompile evm_address.
     // @param input_len The length of the input array.
     // @param input The input array.
     // @return output_len The output length.
@@ -94,23 +94,23 @@ namespace Precompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, input_len: felt, input: felt*) -> (
+    }(evm_address: felt, input_len: felt, input: felt*) -> (
         output_len: felt, output: felt*, gas_used: felt
     ) {
         // Compute the corresponding offset in the jump table:
-        // count 1 for "next line" and 3 steps per precompile address: call, precompile, ret
-        tempvar offset = 1 + 3 * address;
+        // count 1 for "next line" and 3 steps per precompile evm_address: call, precompile, ret
+        tempvar offset = 1 + 3 * evm_address;
 
         // Prepare arguments
         [ap] = syscall_ptr, ap++;
         [ap] = pedersen_ptr, ap++;
         [ap] = range_check_ptr, ap++;
         [ap] = bitwise_ptr, ap++;
-        [ap] = address, ap++;
+        [ap] = evm_address, ap++;
         [ap] = input_len, ap++;
         [ap] = input, ap++;
 
-        // call precompile address
+        // call precompile evm_address
         jmp rel offset;
         call unknown_precompile;  // 0x0
         ret;
@@ -136,7 +136,7 @@ namespace Precompiles {
 
     // @notice A placeholder for precompile that are not implemented yet.
     // @dev Halts execution.
-    // @param address The address.
+    // @param evm_address The evm_address.
     // @param _input_len The length of the input array.
     // @param _input The input array.
     func unknown_precompile{
@@ -144,8 +144,8 @@ namespace Precompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, _input_len: felt, _input: felt*) {
-        with_attr error_message("Kakarot: UnknownPrecompile {address}") {
+    }(evm_address: felt, _input_len: felt, _input: felt*) {
+        with_attr error_message("Kakarot: UnknownPrecompile {evm_address}") {
             assert 0 = 1;
         }
         return ();
@@ -153,7 +153,7 @@ namespace Precompiles {
 
     // @notice A placeholder for precompile that are not implemented yet.
     // @dev Halts execution.
-    // @param address The address.
+    // @param evm_address The evm_address.
     // @param _input_len The length of the input array.
     // @param _input The input array.
     func not_implemented_precompile{
@@ -161,8 +161,8 @@ namespace Precompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, _input_len: felt, _input: felt*) {
-        with_attr error_message("Kakarot: NotImplementedPrecompile {address}") {
+    }(evm_address: felt, _input_len: felt, _input: felt*) {
+        with_attr error_message("Kakarot: NotImplementedPrecompile {evm_address}") {
             assert 0 = 1;
         }
         return ();
@@ -170,7 +170,7 @@ namespace Precompiles {
 
     // @notice A placeholder for precompile that are not implemented yet.
     // @dev Halts execution.
-    // @param address The address.
+    // @param evm_address The evm_address.
     // @param _input_len The length of the input array.
     // @param _input The input array.
     func not_whitelisted_precompile{
@@ -178,8 +178,8 @@ namespace Precompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, _input_len: felt, _input: felt*) {
-        with_attr error_message("Kakarot: NotWhitelistedPrecompile {address}") {
+    }(evm_address: felt, _input_len: felt, _input: felt*) {
+        with_attr error_message("Kakarot: NotWhitelistedPrecompile {evm_address}") {
             assert 0 = 1;
         }
         return ();

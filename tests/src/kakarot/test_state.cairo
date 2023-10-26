@@ -53,11 +53,12 @@ func test__copy__should_return_new_state_with_same_attributes{
     // 2. Put two accounts with some storage
     tempvar address_0 = new model.Address(1, 2);
     tempvar address_1 = new model.Address(3, 4);
-    tempvar key = Uint256(1, 2);
+    tempvar key_0 = Uint256(1, 2);
+    tempvar key_1 = Uint256(3, 4);
     tempvar value = new Uint256(3, 4);
-    let state = State.write_storage(state, address_0, key, value);
-    let state = State.write_storage(state, address_1, key, value);
-    let state = State.write_storage(state, address_1, value, value);
+    let state = State.write_storage(state, address_0, key_0, value);
+    let state = State.write_storage(state, address_1, key_0, value);
+    let state = State.write_storage(state, address_1, key_1, value);
 
     // 3. Put some events
     let (local topics: felt*) = alloc();
@@ -87,11 +88,11 @@ func test__copy__should_return_new_state_with_same_attributes{
     // Then
 
     // Storage
-    let (state_copy, value_copy) = State.read_storage(state_copy, address_0, key);
+    let (state_copy, value_copy) = State.read_storage(state_copy, address_0, key_0);
     assert_uint256_eq([value], value_copy);
-    let (state_copy, value_copy) = State.read_storage(state_copy, address_1, key);
+    let (state_copy, value_copy) = State.read_storage(state_copy, address_1, key_0);
     assert_uint256_eq([value], value_copy);
-    let (state_copy, value_copy) = State.read_storage(state_copy, address_1, value);
+    let (state_copy, value_copy) = State.read_storage(state_copy, address_1, key_1);
     assert_uint256_eq([value], value_copy);
 
     // Events

@@ -30,6 +30,7 @@ from kakarot.account import Account
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.memory import Memory
+from kakarot.state import State
 from tests.utils.helpers import TestHelpers
 from utils.utils import Helpers
 
@@ -224,8 +225,6 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     assert sub_ctx.stopped = 0;
     assert sub_ctx.return_data_len = 0;
     assert sub_ctx.gas_used = 0;
-    let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
-    assert_le(sub_ctx.call_context.gas_limit, gas_felt);
     assert sub_ctx.call_context.gas_price = 0;
     assert sub_ctx.call_context.address.starknet = callee_starknet_contract_address;
     assert sub_ctx.call_context.address.evm = callee_evm_contract_address;
@@ -262,15 +261,15 @@ func test__exec_call__should_transfer_value{
     let (caller_starknet_contract_address) = Account.deploy(
         contract_account_class_hash_, caller_evm_contract_address
     );
+    tempvar caller_address = new model.Address(
+        caller_starknet_contract_address, caller_evm_contract_address
+    );
     let (callee_evm_contract_address) = CreateHelper.get_create_address(1, 0);
     let (callee_starknet_contract_address) = Account.deploy(
         contract_account_class_hash_, callee_evm_contract_address
     );
-
-    // Get the balance of caller pre-call
-    let (native_token_address_) = native_token_address.read();
-    let (caller_pre_balance) = IERC20.balanceOf(
-        contract_address=native_token_address_, account=caller_starknet_contract_address
+    tempvar callee_address = new model.Address(
+        callee_starknet_contract_address, callee_evm_contract_address
     );
 
     // Fill the stack with input data
@@ -300,19 +299,19 @@ func test__exec_call__should_transfer_value{
         caller_starknet_contract_address, caller_evm_contract_address, bytecode_len, bytecode, stack
     );
     let ctx = MemoryOperations.exec_mstore(ctx);
+    // Get the balance of caller pre-call
+    let (state, caller_balance_prev) = State.read_balance(ctx.state, caller_address);
+    let ctx = ExecutionContext.update_state(ctx, state);
 
     // When
     let sub_ctx = SystemOperations.exec_call(ctx);
 
     // Then
     // get balances of caller and callee post-call
-    let (callee_balance) = IERC20.balanceOf(
-        contract_address=native_token_address_, account=callee_starknet_contract_address
-    );
-    let (caller_post_balance) = IERC20.balanceOf(
-        contract_address=native_token_address_, account=caller_starknet_contract_address
-    );
-    let (caller_diff_balance) = uint256_sub(caller_pre_balance, caller_post_balance);
+    let state = sub_ctx.state;
+    let (state, callee_balance) = State.read_balance(state, callee_address);
+    let (state, caller_balance_new) = State.read_balance(state, caller_address);
+    let (caller_diff_balance) = uint256_sub(caller_balance_prev, caller_balance_new);
 
     assert callee_balance = Uint256(2, 0);
     assert caller_diff_balance = Uint256(2, 0);
@@ -379,8 +378,6 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
     assert sub_ctx.gas_used = 0;
-    let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
-    assert_le(sub_ctx.call_context.gas_limit, gas_felt);
     assert sub_ctx.call_context.gas_price = 0;
     assert sub_ctx.call_context.address.starknet = caller_starknet_contract_address;
     assert sub_ctx.call_context.address.evm = caller_evm_contract_address;
@@ -413,15 +410,15 @@ func test__exec_callcode__should_transfer_value{
     let (caller_starknet_contract_address) = Account.deploy(
         contract_account_class_hash_, caller_evm_contract_address
     );
+    tempvar caller_address = new model.Address(
+        caller_starknet_contract_address, caller_evm_contract_address
+    );
     let (callee_evm_contract_address) = CreateHelper.get_create_address(1, 0);
     let (callee_starknet_contract_address) = Account.deploy(
         contract_account_class_hash_, callee_evm_contract_address
     );
-
-    // Get the balance of caller pre-call
-    let (native_token_address_) = native_token_address.read();
-    let (caller_pre_balance) = IERC20.balanceOf(
-        contract_address=native_token_address_, account=caller_starknet_contract_address
+    tempvar callee_address = new model.Address(
+        callee_starknet_contract_address, callee_evm_contract_address
     );
 
     // Fill the stack with input data
@@ -452,21 +449,21 @@ func test__exec_callcode__should_transfer_value{
     );
     let ctx = MemoryOperations.exec_mstore(ctx);
 
+    // Get the balance of caller pre-call
+    let (state, caller_pre_balance) = State.read_balance(ctx.state, caller_address);
+    let ctx = ExecutionContext.update_state(ctx, state);
+
     // When
     let sub_ctx = SystemOperations.exec_callcode(ctx);
 
     // Then
     // get balances of caller and callee post-call
-    let (callee_balance) = IERC20.balanceOf(
-        contract_address=native_token_address_, account=callee_starknet_contract_address
-    );
-    let (caller_post_balance) = IERC20.balanceOf(
-        contract_address=native_token_address_, account=caller_starknet_contract_address
-    );
+    let state = sub_ctx.state;
+    let (state, caller_post_balance) = State.read_balance(state, caller_address);
+    let (state, callee_balance) = State.read_balance(state, callee_address);
     let (caller_diff_balance) = uint256_sub(caller_pre_balance, caller_post_balance);
 
-    assert callee_balance = Uint256(2, 0);
-    assert caller_diff_balance = Uint256(2, 0);
+    assert caller_post_balance = caller_pre_balance;
     return ();
 }
 
@@ -524,8 +521,6 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
     assert sub_ctx.gas_used = 0;
-    let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
-    assert_le(sub_ctx.call_context.gas_limit, gas_felt);
     assert sub_ctx.call_context.gas_price = 0;
     assert sub_ctx.call_context.address.starknet = starknet_contract_address;
     assert sub_ctx.call_context.address.evm = evm_contract_address;
@@ -600,8 +595,6 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
     assert sub_ctx.gas_used = 0;
-    let (gas_felt, _) = Helpers.div_rem(Constants.TRANSACTION_GAS_LIMIT, 64);
-    assert_le(sub_ctx.call_context.gas_limit, gas_felt);
     assert sub_ctx.call_context.gas_price = 0;
     assert sub_ctx.call_context.address.starknet = ctx.call_context.address.starknet;
     assert sub_ctx.call_context.address.evm = ctx.call_context.address.evm;
@@ -672,14 +665,10 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
     assert sub_ctx.stopped = 0;
     assert sub_ctx.return_data_len = 0;
     assert sub_ctx.gas_used = 0;
-    assert sub_ctx.call_context.gas_limit = 0;
-    assert sub_ctx.call_context.gas_price = 0;
+    assert sub_ctx.call_context.gas_limit = ctx.call_context.gas_limit;
+    assert sub_ctx.call_context.gas_price = ctx.call_context.gas_price;
     assert_not_zero(sub_ctx.call_context.address.starknet);
     assert_not_zero(sub_ctx.call_context.address.evm);
-    let (sub_ctx_contract_stored_bytecode) = IAccount.bytecode_len(
-        sub_ctx.call_context.address.starknet
-    );
-    assert sub_ctx_contract_stored_bytecode = 0;
     TestHelpers.assert_execution_context_equal(ctx, sub_ctx.call_context.calling_context);
 
     // Fake a RETURN in sub_ctx then finalize
@@ -694,14 +683,9 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
     let evm_contract_address = Helpers.uint256_to_felt(address);
     assert evm_contract_address = sub_ctx.call_context.address.evm;
     assert sub_ctx.call_context.address.evm = expected_create_address;
-    let (created_contract_bytecode_len, created_contract_bytecode) = IAccount.bytecode(
-        sub_ctx.call_context.address.starknet
-    );
+    let (state, account) = State.get_account(ctx.state, sub_ctx.call_context.address);
     TestHelpers.assert_array_equal(
-        created_contract_bytecode_len,
-        created_contract_bytecode,
-        return_data_len,
-        sub_ctx.return_data,
+        account.code_len, account.code, return_data_len, sub_ctx.return_data
     );
 
     return ();
@@ -771,14 +755,10 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     assert sub_ctx.stopped = 0;
     assert sub_ctx.return_data_len = 0;
     assert sub_ctx.gas_used = 0;
-    assert sub_ctx.call_context.gas_limit = 0;
-    assert sub_ctx.call_context.gas_price = 0;
+    assert sub_ctx.call_context.gas_limit = ctx.call_context.gas_limit;
+    assert sub_ctx.call_context.gas_price = ctx.call_context.gas_price;
     assert_not_zero(sub_ctx.call_context.address.starknet);
     assert_not_zero(sub_ctx.call_context.address.evm);
-    let (sub_ctx_contract_stored_bytecode) = IAccount.bytecode_len(
-        sub_ctx.call_context.address.starknet
-    );
-    assert sub_ctx_contract_stored_bytecode = 0;
     TestHelpers.assert_execution_context_equal(ctx, sub_ctx.call_context.calling_context);
 
     // Fake a RETURN in sub_ctx then finalize
@@ -793,14 +773,10 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     let evm_contract_address = Helpers.uint256_to_felt(address);
     assert evm_contract_address = sub_ctx.call_context.address.evm;
     assert sub_ctx.call_context.address.evm = expected_create2_address;
-    let (created_contract_bytecode_len, created_contract_bytecode) = IAccount.bytecode(
-        sub_ctx.call_context.address.starknet
-    );
+    let state = ctx.state;
+    let (state, account) = State.get_account(state, sub_ctx.call_context.address);
     TestHelpers.assert_array_equal(
-        created_contract_bytecode_len,
-        created_contract_bytecode,
-        return_data_len,
-        sub_ctx.return_data,
+        account.code_len, account.code, return_data_len, sub_ctx.return_data
     );
 
     return ();

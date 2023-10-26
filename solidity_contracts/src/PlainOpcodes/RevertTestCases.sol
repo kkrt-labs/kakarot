@@ -39,3 +39,13 @@ contract ContractWithSelfdestructMethod {
         selfdestruct(payable(msg.sender));
     }
 }
+
+contract ContractRevertOnFallbackAndReceive {
+    fallback() external payable {
+        revert("reverted on fallback");
+    }
+
+    receive() external payable {
+        revert("reverted on receive");
+    }
+}

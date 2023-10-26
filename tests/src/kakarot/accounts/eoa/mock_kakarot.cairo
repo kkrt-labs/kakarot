@@ -73,8 +73,6 @@ func eth_call{
     data: felt*,
 ) -> (return_data_len: felt, return_data: felt*, success: felt) {
     alloc_locals;
-    // Do the transfer
-    Kakarot.transfer(origin, to, value);
 
     // Mock only the execution part
     let (local return_data) = alloc();
