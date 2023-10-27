@@ -83,34 +83,40 @@ class TestERC721:
 
     class TestMint:
         async def test_should_mint(self, erc_721, other, token_id):
-            await erc_721.mint(other.address, token_id, caller_eoa=other)
+            await erc_721.mint(
+                other.address, token_id, caller_eoa=other.starknet_contract
+            )
             assert await erc_721.balanceOf(other.address) == 1
             assert await erc_721.ownerOf(token_id) == other.address
 
         async def test_should_fail_mint_to_zero_address(self, erc_721, other, token_id):
             with evm_error("INVALID_RECIPIENT"):
-                await erc_721.mint(ZERO_ADDRESS, token_id, caller_eoa=other)
+                await erc_721.mint(
+                    ZERO_ADDRESS, token_id, caller_eoa=other.starknet_contract
+                )
 
         async def test_should_fail_to_double_mint(self, erc_721, other, token_id):
             await erc_721.mint(
                 other.address,
                 token_id,
-                caller_eoa=other,
+                caller_eoa=other.starknet_contract,
             )
 
             with evm_error("ALREADY_MINTED"):
                 await erc_721.mint(
                     other.address,
                     token_id,
-                    caller_eoa=other,
+                    caller_eoa=other.starknet_contract,
                 )
 
     class TestBurn:
         async def test_should_burn(self, erc_721, other, token_id):
             balance_before = await erc_721.balanceOf(other.address)
 
-            await erc_721.mint(other.address, token_id, caller_eoa=other)
-            await erc_721.burn(token_id, caller_eoa=other)
+            await erc_721.mint(
+                other.address, token_id, caller_eoa=other.starknet_contract
+            )
+            await erc_721.burn(token_id, caller_eoa=other.starknet_contract)
 
             balance_after = await erc_721.balanceOf(other.address)
             assert balance_after == balance_before
@@ -120,25 +126,31 @@ class TestERC721:
 
         async def test_should_fail_to_burn_unminted(self, erc_721, other, token_id):
             with evm_error("NOT_MINTED"):
-                await erc_721.burn(token_id, caller_eoa=other)
+                await erc_721.burn(token_id, caller_eoa=other.starknet_contract)
 
         async def test_should_fail_to_double_burn(self, erc_721, other, token_id):
-            await erc_721.mint(other.address, token_id, caller_eoa=other)
+            await erc_721.mint(
+                other.address, token_id, caller_eoa=other.starknet_contract
+            )
 
-            await erc_721.burn(token_id, caller_eoa=other)
+            await erc_721.burn(token_id, caller_eoa=other.starknet_contract)
 
             with evm_error("NOT_MINTED"):
-                await erc_721.burn(token_id, caller_eoa=other)
+                await erc_721.burn(token_id, caller_eoa=other.starknet_contract)
 
     class TestApprove:
         async def test_should_approve(self, erc_721, others, token_id):
-            await erc_721.mint(others[0].address, token_id, caller_eoa=others[0])
-            await erc_721.approve(others[1].address, token_id, caller_eoa=others[0])
+            await erc_721.mint(
+                others[0].address, token_id, caller_eoa=others[0].starknet_contract
+            )
+            await erc_721.approve(
+                others[1].address, token_id, caller_eoa=others[0].starknet_contract
+            )
             assert await erc_721.getApproved(token_id) == others[1].address
 
         async def test_should_approve_all(self, erc_721, others):
             await erc_721.setApprovalForAll(
-                others[1].address, True, caller_eoa=others[0]
+                others[1].address, True, caller_eoa=others[0].starknet_contract
             )
 
             assert (
@@ -151,29 +163,35 @@ class TestERC721:
                 await erc_721.approve(
                     others[1].address,
                     token_id,
-                    caller_eoa=others[0],
+                    caller_eoa=others[0].starknet_contract,
                 )
 
         async def test_should_fail_to_approve_unauthorized(
             self, erc_721, others, token_id
         ):
-            await erc_721.mint(others[0].address, token_id, caller_eoa=others[0])
+            await erc_721.mint(
+                others[0].address, token_id, caller_eoa=others[0].starknet_contract
+            )
             with evm_error("NOT_AUTHORIZED"):
                 await erc_721.approve(
                     others[1].address,
                     token_id,
-                    caller_eoa=others[2],
+                    caller_eoa=others[2].starknet_contract,
                 )
 
     class TestTransferFrom:
         async def test_should_transfer_from(self, erc_721, others, token_id):
-            await erc_721.mint(others[1].address, token_id, caller_eoa=others[0])
-            await erc_721.approve(others[2].address, token_id, caller_eoa=others[1])
+            await erc_721.mint(
+                others[1].address, token_id, caller_eoa=others[0].starknet_contract
+            )
+            await erc_721.approve(
+                others[2].address, token_id, caller_eoa=others[1].starknet_contract
+            )
             await erc_721.transferFrom(
                 others[1].address,
                 others[2].address,
                 token_id,
-                caller_eoa=others[1],
+                caller_eoa=others[1].starknet_contract,
             )
 
             approved = await erc_721.getApproved(token_id)
@@ -190,12 +208,14 @@ class TestERC721:
             receiver_balance_before = await erc_721.balanceOf(other.address)
             sender_balance_before = await erc_721.balanceOf(owner.address)
 
-            await erc_721.mint(owner.address, token_id, caller_eoa=owner)
+            await erc_721.mint(
+                owner.address, token_id, caller_eoa=owner.starknet_contract
+            )
             await erc_721.transferFrom(
                 owner.address,
                 other.address,
                 token_id,
-                caller_eoa=owner,
+                caller_eoa=owner.starknet_contract,
             )
 
             approved = await erc_721.getApproved(token_id)
@@ -212,17 +232,19 @@ class TestERC721:
             receiver_balance_before = await erc_721.balanceOf(others[1].address)
             sender_balance_before = await erc_721.balanceOf(others[0].address)
 
-            await erc_721.mint(others[0].address, token_id, caller_eoa=others[0])
+            await erc_721.mint(
+                others[0].address, token_id, caller_eoa=others[0].starknet_contract
+            )
 
             await erc_721.setApprovalForAll(
-                others[1].address, True, caller_eoa=others[0]
+                others[1].address, True, caller_eoa=others[0].starknet_contract
             )
 
             await erc_721.transferFrom(
                 others[0].address,
                 others[1].address,
                 token_id,
-                caller_eoa=others[0],
+                caller_eoa=others[0].starknet_contract,
             )
 
             approved = await erc_721.getApproved(token_id)
@@ -244,46 +266,52 @@ class TestERC721:
                     others[0].address,
                     others[1].address,
                     token_id,
-                    caller_eoa=others[0],
+                    caller_eoa=others[0].starknet_contract,
                 )
 
         async def test_should_fail_to_transfer_from_wrong_from(
             self, erc_721, others, token_id
         ):
-            await erc_721.mint(others[1].address, token_id, caller_eoa=others[1])
+            await erc_721.mint(
+                others[1].address, token_id, caller_eoa=others[1].starknet_contract
+            )
             with evm_error():
                 await erc_721.transferFrom(
                     others[0].address,
                     others[2].address,
                     token_id,
-                    caller_eoa=others[0],
+                    caller_eoa=others[0].starknet_contract,
                 )
 
         async def test_should_fail_to_transfer_from_to_zero(
             self, erc_721, other, token_id
         ):
-            await erc_721.mint(other.address, token_id, caller_eoa=other)
+            await erc_721.mint(
+                other.address, token_id, caller_eoa=other.starknet_contract
+            )
             with evm_error("INVALID_RECIPIENT"):
                 await erc_721.transferFrom(
                     other.address,
                     ZERO_ADDRESS,
                     token_id,
-                    caller_eoa=other,
+                    caller_eoa=other.starknet_contract,
                 )
 
         async def test_should_fail_to_transfer_from_not_owner(
             self, erc_721, others, token_id
         ):
-            await erc_721.mint(others[0].address, token_id, caller_eoa=others[0])
+            await erc_721.mint(
+                others[0].address, token_id, caller_eoa=others[0].starknet_contract
+            )
             await erc_721.setApprovalForAll(
-                others[1].address, False, caller_eoa=others[0]
+                others[1].address, False, caller_eoa=others[0].starknet_contract
             )
             with evm_error("NOT_AUTHORIZED"):
                 await erc_721.transferFrom(
                     others[0].address,
                     others[2].address,
                     token_id,
-                    caller_eoa=others[1],
+                    caller_eoa=others[1].starknet_contract,
                 )
 
     class TestSafeTransferFrom:
@@ -293,17 +321,19 @@ class TestERC721:
             receiver_balance_before = await erc_721.balanceOf(others[1].address)
             sender_balance_before = await erc_721.balanceOf(others[0].address)
 
-            await erc_721.mint(others[0].address, token_id, caller_eoa=others[0])
+            await erc_721.mint(
+                others[0].address, token_id, caller_eoa=others[0].starknet_contract
+            )
 
             await erc_721.setApprovalForAll(
-                others[1].address, True, caller_eoa=others[0]
+                others[1].address, True, caller_eoa=others[0].starknet_contract
             )
 
             await erc_721.safeTransferFrom(
                 others[0].address,
                 others[1].address,
                 token_id,
-                caller_eoa=others[0],
+                caller_eoa=others[0].starknet_contract,
             )
 
             approved = await erc_721.getApproved(token_id)
@@ -324,17 +354,19 @@ class TestERC721:
             receiver_balance_before = await erc_721.balanceOf(recipient_address)
             sender_balance_before = await erc_721.balanceOf(others[0].address)
 
-            await erc_721.mint(others[0].address, token_id, caller_eoa=others[0])
+            await erc_721.mint(
+                others[0].address, token_id, caller_eoa=others[0].starknet_contract
+            )
 
             await erc_721.setApprovalForAll(
-                others[1].address, True, caller_eoa=others[0]
+                others[1].address, True, caller_eoa=others[0].starknet_contract
             )
 
             await erc_721.safeTransferFrom(
                 others[0].address,
                 recipient_address,
                 token_id,
-                caller_eoa=others[1],
+                caller_eoa=others[1].starknet_contract,
             )
 
             approved = await erc_721.getApproved(token_id)
@@ -366,10 +398,12 @@ class TestERC721:
             receiver_balance_before = await erc_721.balanceOf(recipient_address)
             sender_balance_before = await erc_721.balanceOf(others[0].address)
 
-            await erc_721.mint(others[0].address, token_id, caller_eoa=others[0])
+            await erc_721.mint(
+                others[0].address, token_id, caller_eoa=others[0].starknet_contract
+            )
 
             await erc_721.setApprovalForAll(
-                others[1].address, True, caller_eoa=others[0]
+                others[1].address, True, caller_eoa=others[0].starknet_contract
             )
 
             data = b"testing 123"
@@ -379,7 +413,7 @@ class TestERC721:
                 recipient_address,
                 token_id,
                 data,
-                caller_eoa=others[1],
+                caller_eoa=others[1].starknet_contract,
             )
 
             approved = await erc_721.getApproved(token_id)
@@ -411,14 +445,16 @@ class TestERC721:
         ):
             recipient_address = erc_721_non_recipient.address
 
-            await erc_721.mint(other.address, token_id, caller_eoa=other)
+            await erc_721.mint(
+                other.address, token_id, caller_eoa=other.starknet_contract
+            )
 
             with evm_error():
                 await erc_721.safeTransferFrom(
                     other.address,
                     recipient_address,
                     token_id,
-                    caller_eoa=other,
+                    caller_eoa=other.starknet_contract,
                 )
 
         async def test_should_fail_to_safe_transfer_from_to_NonERC721Recipient_with_data(
@@ -426,7 +462,9 @@ class TestERC721:
         ):
             recipient_address = erc_721_non_recipient.address
 
-            await erc_721.mint(other.address, token_id, caller_eoa=other)
+            await erc_721.mint(
+                other.address, token_id, caller_eoa=other.starknet_contract
+            )
 
             with evm_error():
                 await erc_721.safeTransferFrom2(
@@ -434,14 +472,16 @@ class TestERC721:
                     recipient_address,
                     token_id,
                     b"testing 123",
-                    caller_eoa=other,
+                    caller_eoa=other.starknet_contract,
                 )
 
         async def test_should_fail_to_safe_transfer_from_to_RevertingERC721Recipient(
             self, erc_721, erc_721_reverting_recipient, other, token_id
         ):
             recipient_address = erc_721_reverting_recipient.address
-            await erc_721.mint(other.address, token_id, caller_eoa=other)
+            await erc_721.mint(
+                other.address, token_id, caller_eoa=other.starknet_contract
+            )
 
             selector = keccak(text="onERC721Received(address,address,uint256,bytes)")[
                 :4
@@ -451,7 +491,7 @@ class TestERC721:
                     other.address,
                     recipient_address,
                     token_id,
-                    caller_eoa=other,
+                    caller_eoa=other.starknet_contract,
                 )
 
         async def test_should_fail_to_safe_transfer_from_to_RevertingERC721Recipient_with_data(
@@ -459,7 +499,9 @@ class TestERC721:
         ):
             recipient_address = erc_721_reverting_recipient.address
 
-            await erc_721.mint(other.address, token_id, caller_eoa=other)
+            await erc_721.mint(
+                other.address, token_id, caller_eoa=other.starknet_contract
+            )
             selector = keccak(text="onERC721Received(address,address,uint256,bytes)")[
                 :4
             ]
@@ -469,7 +511,7 @@ class TestERC721:
                     recipient_address,
                     token_id,
                     b"testing 123",
-                    caller_eoa=other,
+                    caller_eoa=other.starknet_contract,
                 )
 
         async def test_should_fail_to_safe_transfer_from_to_ERC721RecipientWithWrongReturnData(
@@ -477,13 +519,15 @@ class TestERC721:
         ):
             recipient_address = erc_721_recipient_with_wrong_return_data.address
 
-            await erc_721.mint(other.address, token_id, caller_eoa=other)
+            await erc_721.mint(
+                other.address, token_id, caller_eoa=other.starknet_contract
+            )
             with evm_error("UNSAFE_RECIPIENT"):
                 await erc_721.safeTransferFrom(
                     other.address,
                     recipient_address,
                     token_id,
-                    caller_eoa=other,
+                    caller_eoa=other.starknet_contract,
                 )
 
         async def test_should_fail_to_safe_transfer_from_to_ERC721RecipientWithWrongReturnData_with_data(
@@ -491,7 +535,9 @@ class TestERC721:
         ):
             recipient_address = erc_721_recipient_with_wrong_return_data.address
 
-            await erc_721.mint(other.address, token_id, caller_eoa=other)
+            await erc_721.mint(
+                other.address, token_id, caller_eoa=other.starknet_contract
+            )
 
             with evm_error("UNSAFE_RECIPIENT"):
                 await erc_721.safeTransferFrom2(
@@ -499,14 +545,16 @@ class TestERC721:
                     recipient_address,
                     token_id,
                     b"testing 123",
-                    caller_eoa=other,
+                    caller_eoa=other.starknet_contract,
                 )
 
     class TestSafeMint:
         async def test_should_safe_mint_to_EOA(self, erc_721, other, token_id):
             balance_before = await erc_721.balanceOf(other.address)
 
-            await erc_721.safeMint(other.address, token_id, caller_eoa=other)
+            await erc_721.safeMint(
+                other.address, token_id, caller_eoa=other.starknet_contract
+            )
 
             balance_after = await erc_721.balanceOf(other.address)
             nft_owner = await erc_721.ownerOf(token_id)
@@ -520,7 +568,9 @@ class TestERC721:
             recipient_address = erc_721_recipient.address
 
             balance_before = await erc_721.balanceOf(recipient_address)
-            await erc_721.safeMint(recipient_address, token_id, caller_eoa=owner)
+            await erc_721.safeMint(
+                recipient_address, token_id, caller_eoa=owner.starknet_contract
+            )
 
             balance_after = await erc_721.balanceOf(recipient_address)
             nft_owner = await erc_721.ownerOf(token_id)
@@ -549,7 +599,7 @@ class TestERC721:
                 recipient_address,
                 token_id,
                 data,
-                caller_eoa=owner,
+                caller_eoa=owner.starknet_contract,
             )
 
             balance_after = await erc_721.balanceOf(recipient_address)
@@ -577,7 +627,7 @@ class TestERC721:
                 await erc_721.safeMint(
                     recipient_address,
                     token_id,
-                    caller_eoa=other,
+                    caller_eoa=other.starknet_contract,
                 )
 
         async def test_should_fail_to_safe_mint_to_NonERC721Recipient_with_data(
@@ -590,7 +640,7 @@ class TestERC721:
                     recipient_address,
                     token_id,
                     b"testing 123",
-                    caller_eoa=other,
+                    caller_eoa=other.starknet_contract,
                 )
 
         async def test_should_fail_to_safe_mint_to_RevertingERC721Recipient(
@@ -602,7 +652,7 @@ class TestERC721:
                 await erc_721.safeMint(
                     recipient_address,
                     token_id,
-                    caller_eoa=other,
+                    caller_eoa=other.starknet_contract,
                 )
 
         async def test_should_fail_to_safe_mint_to_RevertingERC721Recipient_with_data(
@@ -615,7 +665,7 @@ class TestERC721:
                     recipient_address,
                     token_id,
                     b"testing 123",
-                    caller_eoa=other,
+                    caller_eoa=other.starknet_contract,
                 )
 
         async def test_should_fail_to_safe_mint_to_ERC721RecipientWithWrongReturnData(
@@ -627,7 +677,7 @@ class TestERC721:
                 await erc_721.safeMint(
                     recipient_address,
                     token_id,
-                    caller_eoa=other,
+                    caller_eoa=other.starknet_contract,
                 )
 
         async def test_should_fail_to_safe_mint_to_ERC721RecipientWithWrongReturnData_with_data(
@@ -640,5 +690,5 @@ class TestERC721:
                     recipient_address,
                     token_id,
                     b"testing 123",
-                    caller_eoa=other,
+                    caller_eoa=other.starknet_contract,
                 )

@@ -32,7 +32,7 @@ class TestUniswapV2ERC20:
     class TestApprove:
         async def test_should_set_allowance(self, token_a, owner, other):
             receipt = await token_a.approve(
-                other.address, TEST_AMOUNT, caller_eoa=owner
+                other.address, TEST_AMOUNT, caller_eoa=owner.starknet_contract
             )
             events = token_a.events.parse_starknet_events(receipt.events)
             assert events["Approval"] == [
@@ -50,7 +50,7 @@ class TestUniswapV2ERC20:
             self, token_a, owner, other
         ):
             receipt = await token_a.transfer(
-                other.address, TEST_AMOUNT, caller_eoa=owner
+                other.address, TEST_AMOUNT, caller_eoa=owner.starknet_contract
             )
             events = token_a.events.parse_starknet_events(receipt.events)
             assert events["Transfer"] == [
@@ -68,22 +68,29 @@ class TestUniswapV2ERC20:
         ):
             with evm_error():
                 await token_a.transfer(
-                    other.address, TOTAL_SUPPLY + 1, caller_eoa=owner
+                    other.address, TOTAL_SUPPLY + 1, caller_eoa=owner.starknet_contract
                 )
 
         async def test_should_fail_when_amount_is_greater_than_balance_and_balance_zero(
             self, token_a, owner, other
         ):
             with evm_error():
-                await token_a.transfer(owner.address, 1, caller_eoa=other)
+                await token_a.transfer(
+                    owner.address, 1, caller_eoa=other.starknet_contract
+                )
 
     class TestTransferFrom:
         async def test_should_transfer_token_when_signer_is_approved(
             self, token_a, owner, other
         ):
-            await token_a.approve(other.address, TEST_AMOUNT, caller_eoa=owner)
+            await token_a.approve(
+                other.address, TEST_AMOUNT, caller_eoa=owner.starknet_contract
+            )
             receipt = await token_a.transferFrom(
-                owner.address, other.address, TEST_AMOUNT, caller_eoa=other
+                owner.address,
+                other.address,
+                TEST_AMOUNT,
+                caller_eoa=other.starknet_contract,
             )
             events = token_a.events.parse_starknet_events(receipt.events)
             assert events["Transfer"] == [
@@ -97,9 +104,14 @@ class TestUniswapV2ERC20:
         async def test_should_transfer_token_when_signer_is_approved_max_uint(
             self, token_a, owner, other
         ):
-            await token_a.approve(other.address, MAX_INT, caller_eoa=owner)
+            await token_a.approve(
+                other.address, MAX_INT, caller_eoa=owner.starknet_contract
+            )
             receipt = await token_a.transferFrom(
-                owner.address, other.address, TEST_AMOUNT, caller_eoa=other
+                owner.address,
+                other.address,
+                TEST_AMOUNT,
+                caller_eoa=other.starknet_contract,
             )
             events = token_a.events.parse_starknet_events(receipt.events)
             assert events["Transfer"] == [
@@ -134,7 +146,7 @@ class TestUniswapV2ERC20:
                 v,
                 r,
                 s,
-                caller_eoa=owner,
+                caller_eoa=owner.starknet_contract,
             )
             events = token_a.events.parse_starknet_events(receipt.events)
             assert events["Approval"] == [

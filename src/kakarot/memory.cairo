@@ -8,7 +8,7 @@ from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.dict import DictAccess, dict_read, dict_write
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
-from starkware.cairo.common.math import split_int, unsigned_div_rem, assert_nn
+from starkware.cairo.common.math import split_int, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
@@ -196,8 +196,8 @@ namespace Memory {
         dict_write{dict_ptr=word_dict}(chunk_index_f, x_f * mask_f + w_f_l);
 
         // Write blocks.
-        let (word_dict) = store_aligned_words(
-            word_dict, chunk_index_i + 1, chunk_index_f, element + 16 - offset_in_chunk_i
+        store_aligned_words{dict_ptr=word_dict}(
+            chunk_index_i + 1, chunk_index_f, element + 16 - offset_in_chunk_i
         );
 
         return (
@@ -207,11 +207,11 @@ namespace Memory {
         );
     }
 
-    func store_aligned_words{range_check_ptr}(
-        word_dict: DictAccess*, chunk_index: felt, chunk_index_f: felt, element: felt*
-    ) -> (word_dict: DictAccess*) {
+    func store_aligned_words{range_check_ptr, dict_ptr: DictAccess*}(
+        chunk_index: felt, chunk_index_f: felt, element: felt*
+    ) {
         if (chunk_index == chunk_index_f) {
-            return (word_dict=word_dict);
+            return ();
         }
         let current = (
             element[0] * 256 ** 15 +
@@ -231,12 +231,9 @@ namespace Memory {
             element[14] * 256 ** 1 +
             element[15] * 256 ** 0
         );
-        dict_write{dict_ptr=word_dict}(chunk_index, current);
+        dict_write(chunk_index, current);
         return store_aligned_words(
-            word_dict=word_dict,
-            chunk_index=chunk_index + 1,
-            chunk_index_f=chunk_index_f,
-            element=&element[16],
+            chunk_index=chunk_index + 1, chunk_index_f=chunk_index_f, element=&element[16]
         );
     }
 
@@ -346,8 +343,8 @@ namespace Memory {
         Helpers.split_word(w_f_h, offset_in_chunk_f, element + element_len - offset_in_chunk_f);
 
         // Get blocks.
-        let (word_dict) = load_aligned_words(
-            word_dict, chunk_index_i + 1, chunk_index_f, element + 16 - offset_in_chunk_i
+        load_aligned_words{dict_ptr=word_dict}(
+            chunk_index_i + 1, chunk_index_f, element + 16 - offset_in_chunk_i
         );
 
         return (
@@ -357,21 +354,16 @@ namespace Memory {
         );
     }
 
-    func load_aligned_words{range_check_ptr}(
-        word_dict: DictAccess*, chunk_index: felt, chunk_index_f: felt, element: felt*
-    ) -> (word_dict: DictAccess*) {
+    func load_aligned_words{range_check_ptr, dict_ptr: DictAccess*}(
+        chunk_index: felt, chunk_index_f: felt, element: felt*
+    ) {
         if (chunk_index == chunk_index_f) {
-            return (word_dict=word_dict);
+            return ();
         }
-        let original_word_dict = word_dict;
-        let (value) = dict_read{dict_ptr=word_dict}(chunk_index);
-        let word_dict = original_word_dict + 3;
+        let (value) = dict_read(chunk_index);
         Helpers.split_word_128(value, element);
         return load_aligned_words(
-            word_dict=word_dict,
-            chunk_index=chunk_index + 1,
-            chunk_index_f=chunk_index_f,
-            element=&element[16],
+            chunk_index=chunk_index + 1, chunk_index_f=chunk_index_f, element=&element[16]
         );
     }
 

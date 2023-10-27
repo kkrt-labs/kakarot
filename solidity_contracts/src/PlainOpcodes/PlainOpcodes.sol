@@ -72,6 +72,10 @@ contract PlainOpcodes {
         return address(counter).staticcall(data);
     }
 
+    function opcodeStaticCallToAddress(address target, bytes memory data) public view returns (bool, bytes memory) {
+        return target.staticcall(data);
+    }
+
     function opcodeCall() public {
         counter.inc();
     }

@@ -62,7 +62,12 @@ class EvmTransactionError(Exception):
 
 
 @functools.lru_cache()
-def get_contract(contract_app: str, contract_name: str, address=None) -> Web3Contract:
+def get_contract(
+    contract_app: str,
+    contract_name: str,
+    address=None,
+    caller_eoa: Optional[Account] = None,
+) -> Web3Contract:
     all_compilation_outputs = [
         json.load(open(file))
         for file in Path(FOUNDRY_FILE["profile"]["default"]["out"]).glob(
@@ -108,7 +113,7 @@ def get_contract(contract_app: str, contract_name: str, address=None) -> Web3Con
 
     try:
         for fun in contract.functions:
-            setattr(contract, fun, MethodType(_wrap_kakarot(fun), contract))
+            setattr(contract, fun, MethodType(_wrap_kakarot(fun, caller_eoa), contract))
     except NoABIFunctionsFound:
         pass
     contract.events.parse_starknet_events = MethodType(_parse_events, contract.events)
@@ -119,8 +124,8 @@ async def deploy(
     contract_app: str, contract_name: str, *args, **kwargs
 ) -> Web3Contract:
     logger.info(f"⏳ Deploying {contract_name}")
-    contract = get_contract(contract_app, contract_name)
     caller_eoa = kwargs.pop("caller_eoa", None)
+    contract = get_contract(contract_app, contract_name, caller_eoa=caller_eoa)
     max_fee = kwargs.pop("max_fee", None)
     value = kwargs.pop("value", 0)
     receipt, response, success = await eth_send_transaction(
@@ -192,7 +197,7 @@ def _get_matching_logs_for_event(event_abi, log_receipts) -> List[dict]:
     return logs
 
 
-def _wrap_kakarot(fun: str):
+def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
     """Wrap a contract function call with the Kakarot contract."""
 
     async def _wrapper(self, *args, **kwargs):
@@ -200,7 +205,7 @@ def _wrap_kakarot(fun: str):
         gas_price = kwargs.pop("gas_price", 1_000)
         gas_limit = kwargs.pop("gas_limit", 1_000_000_000)
         value = kwargs.pop("value", 0)
-        caller_eoa = kwargs.pop("caller_eoa", None)
+        caller_eoa_ = kwargs.pop("caller_eoa", caller_eoa)
         max_fee = kwargs.pop("max_fee", None)
         calldata = self.get_function_by_name(fun)(
             *args, **kwargs
@@ -208,7 +213,11 @@ def _wrap_kakarot(fun: str):
 
         if abi["stateMutability"] in ["pure", "view"]:
             kakarot_contract = await _get_starknet_contract("kakarot")
-            origin = int(caller_eoa.address, 16) if caller_eoa else int(EVM_ADDRESS, 16)
+            origin = (
+                int(caller_eoa_.signer.public_key.to_address(), 16)
+                if caller_eoa_
+                else int(EVM_ADDRESS, 16)
+            )
             result = await kakarot_contract.functions["eth_call"].call(
                 origin=origin,
                 to=int(self.address, 16),
@@ -231,7 +240,7 @@ def _wrap_kakarot(fun: str):
             value=value,
             gas=gas_limit,
             data=calldata,
-            caller_eoa=caller_eoa.starknet_contract if caller_eoa else None,
+            caller_eoa=caller_eoa_ if caller_eoa_ else None,
             max_fee=max_fee,
         )
         if success == 0:
@@ -251,7 +260,7 @@ async def _contract_exists(address: int) -> bool:
         return False
 
 
-async def get_eoa(private_key=None, amount=0.1) -> Account:
+async def get_eoa(private_key=None, amount=10) -> Account:
     private_key = private_key or keys.PrivateKey(bytes.fromhex(EVM_PRIVATE_KEY[2:]))
     starknet_address = await deploy_and_fund_evm_address(
         private_key.public_key.to_checksum_address(), amount
@@ -360,3 +369,55 @@ async def fund_address(address: Union[str, int], amount: float):
         f"ℹ️  Funding EVM address {address} at Starknet address {hex(starknet_address)}"
     )
     await _fund_starknet_address(starknet_address, amount)
+
+
+async def store_bytecode(bytecode: Union[str, bytes], **kwargs):
+    bytecode = (
+        bytecode
+        if isinstance(bytecode, bytes)
+        else bytes.fromhex(bytecode.replace("0x", ""))
+    )
+
+    PUSH1 = "60"
+    PUSH2 = "61"
+    CODECOPY = "39"
+    RETURN = "f3"
+    # Generate a simple bytecode that just returns the target one
+    # The offset is first put as a placeholder with string 'os', then
+    # replaced by the actual offset of the target bytecode
+    deploy_bytecode = f"""
+    {PUSH2} {len(bytecode):04x}
+    {PUSH1} os
+    {PUSH1} 00
+    {CODECOPY}
+    {PUSH2} {len(bytecode):04x}
+    {PUSH1} 00
+    {RETURN}
+    {bytecode.hex()}
+    """.replace(
+        "\n", ""
+    ).replace(
+        " ", ""
+    )
+    index = deploy_bytecode.index(bytecode.hex()) // 2
+    deploy_bytecode = bytes.fromhex(deploy_bytecode.replace("os", f"{index:02x}"))
+    assert deploy_bytecode[index:] == bytecode
+    receipt, response, success = await eth_send_transaction(
+        to=0, data=deploy_bytecode, **kwargs
+    )
+    assert success
+    starknet_address, evm_address = response
+    stored_bytecode = await get_bytecode(evm_address)
+    assert stored_bytecode == bytecode
+    return evm_address
+
+
+async def get_bytecode(address: Union[int, str]):
+    starknet_address = await _compute_starknet_address(address)
+    return bytes(
+        (
+            await _call_starknet(
+                "contract_account", "bytecode", address=starknet_address
+            )
+        ).bytecode
+    )

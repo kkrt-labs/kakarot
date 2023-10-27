@@ -72,7 +72,7 @@ async def addresses(max_fee) -> List[Wallet]:
             Wallet(
                 address=private_key.public_key.to_checksum_address(),
                 private_key=private_key,
-                # deploying an account with enough ETH to pass ~1000 tx
+                # deploying an account with enough ETH to pass ~10 tx
                 starknet_contract=await get_eoa(
                     private_key, amount=100 * max_fee / 1e18
                 ),
@@ -82,7 +82,18 @@ async def addresses(max_fee) -> List[Wallet]:
 
 
 @pytest_asyncio.fixture(scope="session")
-def owner(addresses):
+async def owner(addresses, eth_balance_of):
+    """
+    Return the main caller of all tests.
+    Because owner is making most of the call, we make sure that at the beginning
+    of the test session that they have a lot of ETH.
+    """
+    account = addresses[0]
+    current_balance = await eth_balance_of(account.address)
+    if current_balance / 1e18 < 10:
+        from scripts.utils.starknet import fund_address
+
+        await fund_address(account.starknet_contract.address, 10)
     return addresses[0]
 
 
@@ -314,10 +325,12 @@ def is_account_deployed(starknet, compute_starknet_address):
 
 
 @pytest.fixture
-def eth_send_transaction(max_fee):
+def eth_send_transaction(max_fee, owner):
     """
     Send a decoded transaction to Kakarot.
     """
     from scripts.utils.kakarot import eth_send_transaction
 
-    return partial(eth_send_transaction, max_fee=max_fee)
+    return partial(
+        eth_send_transaction, max_fee=max_fee, caller_eoa=owner.starknet_contract
+    )

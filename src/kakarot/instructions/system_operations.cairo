@@ -772,18 +772,18 @@ namespace CreateHelper {
         let is_collision = Account.has_code_or_nonce(account);
         let account = Account.set_nonce(account, 1);
 
-        if (is_collision != 0) {
-            let (revert_reason_len, revert_reason) = Errors.addressCollision();
-            tempvar ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         // Update calling context before creating sub context
         let ctx = ExecutionContext.update_memory(ctx, memory);
         let ctx = ExecutionContext.increment_gas_used(
             ctx, gas_cost + SystemOperations.GAS_COST_CREATE
         );
         let ctx = ExecutionContext.update_state(ctx, state);
+
+        if (is_collision != 0) {
+            let (revert_reason_len, revert_reason) = Errors.addressCollision();
+            tempvar ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
 
         // Create sub context with copied state
         let state = State.copy(ctx.state);

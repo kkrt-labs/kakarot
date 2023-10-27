@@ -35,7 +35,9 @@ class TestERC20:
             total_supply_before = await erc_20.totalSupply()
             balance_before = await erc_20.balanceOf(other.address)
 
-            await erc_20.mint(other.address, TEST_SUPPLY, caller_eoa=owner)
+            await erc_20.mint(
+                other.address, TEST_SUPPLY, caller_eoa=owner.starknet_contract
+            )
 
             total_supply_after = await erc_20.totalSupply()
             balance_after = await erc_20.balanceOf(other.address)
@@ -45,12 +47,16 @@ class TestERC20:
 
     class TestBurn:
         async def test_should_burn(self, erc_20, owner, other):
-            await erc_20.mint(other.address, TEST_SUPPLY, caller_eoa=owner)
+            await erc_20.mint(
+                other.address, TEST_SUPPLY, caller_eoa=owner.starknet_contract
+            )
 
             total_supply_before = await erc_20.totalSupply()
             balance_before = await erc_20.balanceOf(other.address)
 
-            await erc_20.burn(other.address, TEST_SUPPLY, caller_eoa=owner)
+            await erc_20.burn(
+                other.address, TEST_SUPPLY, caller_eoa=owner.starknet_contract
+            )
 
             total_supply_after = await erc_20.totalSupply()
             balance_after = await erc_20.balanceOf(other.address)
@@ -62,7 +68,9 @@ class TestERC20:
         async def test_should_approve(self, erc_20, owner, other):
             allowance_before = await erc_20.allowance(owner.address, other.address)
 
-            assert await erc_20.approve(other.address, TEST_SUPPLY, caller_eoa=owner)
+            assert await erc_20.approve(
+                other.address, TEST_SUPPLY, caller_eoa=owner.starknet_contract
+            )
 
             allowance_after = await erc_20.allowance(owner.address, other.address)
 
@@ -70,7 +78,9 @@ class TestERC20:
 
     class TestTransfer:
         async def test_should_transfer(self, erc_20, owner, other):
-            await erc_20.mint(owner.address, TEST_SUPPLY, caller_eoa=owner)
+            await erc_20.mint(
+                owner.address, TEST_SUPPLY, caller_eoa=owner.starknet_contract
+            )
 
             balance_sender_before = await erc_20.balanceOf(owner.address)
             balance_receiver_before = await erc_20.balanceOf(other.address)
@@ -78,7 +88,7 @@ class TestERC20:
             assert await erc_20.transfer(
                 other.address,
                 TEST_SUPPLY,
-                caller_eoa=owner,
+                caller_eoa=owner.starknet_contract,
             )
 
             balance_sender_after = await erc_20.balanceOf(owner.address)
@@ -90,13 +100,15 @@ class TestERC20:
         async def test_transfer_should_fail_when_insufficient_balance(
             self, erc_20, owner, other
         ):
-            await erc_20.mint(owner.address, TEST_AMOUNT, caller_eoa=owner)
+            await erc_20.mint(
+                owner.address, TEST_AMOUNT, caller_eoa=owner.starknet_contract
+            )
             balance_sender_before = await erc_20.balanceOf(owner.address)
             with evm_error():
                 await erc_20.transfer(
                     other.address,
                     balance_sender_before + 1,
-                    caller_eoa=owner,
+                    caller_eoa=owner.starknet_contract,
                 )
 
     class TestTransferFrom:
@@ -112,7 +124,7 @@ class TestERC20:
             await erc_20.mint(
                 from_wallet.address,
                 TEST_SUPPLY,
-                caller_eoa=owner,
+                caller_eoa=owner.starknet_contract,
             )
 
             balance_sender_before = await erc_20.balanceOf(from_wallet.address)
@@ -121,13 +133,13 @@ class TestERC20:
             await erc_20.approve(
                 owner.address,
                 initial_allowance,
-                caller_eoa=from_wallet,
+                caller_eoa=from_wallet.starknet_contract,
             )
             assert await erc_20.transferFrom(
                 from_wallet.address,
                 to_wallet.address,
                 TEST_SUPPLY,
-                caller_eoa=owner,
+                caller_eoa=owner.starknet_contract,
             )
 
             balance_sender_after = await erc_20.balanceOf(from_wallet.address)
@@ -143,28 +155,36 @@ class TestERC20:
         async def test_transfer_from_should_fail_when_insufficient_allowance(
             self, erc_20, owner, other, others
         ):
-            await erc_20.mint(other.address, TEST_SUPPLY, caller_eoa=owner)
-            await erc_20.approve(owner.address, TEST_AMOUNT, caller_eoa=other)
+            await erc_20.mint(
+                other.address, TEST_SUPPLY, caller_eoa=owner.starknet_contract
+            )
+            await erc_20.approve(
+                owner.address, TEST_AMOUNT, caller_eoa=other.starknet_contract
+            )
             with evm_error():
                 await erc_20.transferFrom(
                     other.address,
                     others[1].address,
                     TEST_SUPPLY,
-                    caller_eoa=owner,
+                    caller_eoa=owner.starknet_contract,
                 )
 
         async def test_transfer_from_should_fail_when_insufficient_balance(
             self, erc_20, owner, other, others
         ):
-            await erc_20.mint(other.address, TEST_AMOUNT, caller_eoa=owner)
+            await erc_20.mint(
+                other.address, TEST_AMOUNT, caller_eoa=owner.starknet_contract
+            )
             balance_other = await erc_20.balanceOf(other.address)
-            await erc_20.approve(owner.address, balance_other + 1, caller_eoa=other)
+            await erc_20.approve(
+                owner.address, balance_other + 1, caller_eoa=other.starknet_contract
+            )
             with evm_error():
                 await erc_20.transferFrom(
                     other.address,
                     others[1].address,
                     balance_other + 1,
-                    caller_eoa=owner,
+                    caller_eoa=owner.starknet_contract,
                 )
 
     class TestPermit:
@@ -191,7 +211,7 @@ class TestERC20:
                 v,
                 r,
                 s,
-                caller_eoa=owner,
+                caller_eoa=owner.starknet_contract,
             )
             events = erc_20.events.parse_starknet_events(receipt.events)
 
@@ -229,7 +249,7 @@ class TestERC20:
                     v,
                     r,
                     s,
-                    caller_eoa=owner,
+                    caller_eoa=owner.starknet_contract,
                 )
 
         async def test_permit_should_fail_with_bad_deadline(
@@ -259,7 +279,7 @@ class TestERC20:
                     v,
                     r,
                     s,
-                    caller_eoa=owner,
+                    caller_eoa=owner.starknet_contract,
                 )
 
         async def test_permit_should_fail_on_replay(self, erc_20, owner, other):
@@ -285,7 +305,7 @@ class TestERC20:
                 v,
                 r,
                 s,
-                caller_eoa=owner,
+                caller_eoa=owner.starknet_contract,
             )
 
             with evm_error("INVALID_SIGNER"):
@@ -297,5 +317,5 @@ class TestERC20:
                     v,
                     r,
                     s,
-                    caller_eoa=owner,
+                    caller_eoa=owner.starknet_contract,
                 )
