@@ -6,23 +6,16 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_unsigned_div_rem
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.bool import FALSE
-from starkware.cairo.common.dict import (
-    DictAccess,
-    dict_new,
-    dict_read,
-    dict_squash,
-    dict_update,
-    dict_write,
-)
+from starkware.cairo.common.bool import FALSE, TRUE
+from starkware.cairo.common.dict import DictAccess, dict_new, dict_read, dict_write
 from starkware.cairo.common.registers import get_fp_and_pc
 
 from kakarot.errors import Errors
 from kakarot.execution_context import ExecutionContext
-from kakarot.interfaces.interfaces import IContractAccount
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
+from kakarot.state import State
 from utils.utils import Helpers
 
 // @title Exchange operations opcodes.
@@ -349,74 +342,21 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        if (ctx.read_only != FALSE) {
+        if (ctx.call_context.read_only != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
-            let ctx = ExecutionContext.revert(ctx, revert_reason, revert_reason_len);
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
             return ctx;
         }
 
-        let stack = ctx.stack;
+        let (stack, popped) = Stack.pop_n(self=ctx.stack, n=2);
 
-        // ------- 1. Get starknet address
-        let starknet_contract_address: felt = ctx.starknet_contract_address;
-
-        // ----- 2. Pop 2 values: key and value
-
-        // Stack input:
-        // 0 - key: key of memory.
-        // 1 - value: value for given key.
-        let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        // Update context stack.
+        let key = popped[0];  // Uint256*
+        let value = popped + Uint256.SIZE;  // Uint256*
+        let state = State.write_storage(ctx.state, ctx.call_context.address, key, value);
+        let ctx = ExecutionContext.update_state(ctx, state);
         let ctx = ExecutionContext.update_stack(ctx, stack);
-
-        let key = popped[0];
-        let value = popped[1];
-
-        // 3. Call Write storage on contract with starknet address
-        with_attr error_message("Contract call failed") {
-            let (local prior_value: Uint256) = IContractAccount.storage(
-                contract_address=starknet_contract_address, key=key
-            );
-
-            IContractAccount.write_storage(
-                contract_address=starknet_contract_address, key=key, value=value
-            );
-        }
-
-        tempvar key_val = new model.KeyValue(key, prior_value);
-        let revert_contract_state_dict_end = ctx.revert_contract_state.dict_end;
-
-        let (maybe_written) = dict_read{dict_ptr=revert_contract_state_dict_end}(key=key.low);
-
-        // we only want to track the initial state of a written value relative to the beginning of the execution context, which is the very first write to the dictionary
-        // we initialize a default dictionary with the default value as zero.
-        // we check if return value of a read is zero to mark whether we want to write the prior value in this case or not.
-        if (maybe_written != 0) {
-            // if the value is not zero, then we treat it as a pointer to a keyvalue struct,
-            // meaning that the prior state was already written, so we do no writing
-
-            // Increment gas used.
-            let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SSTORE);
-            let ctx = ExecutionContext.update_revert_contract_state(
-                ctx, revert_contract_state_dict_end
-            );
-            return ctx;
-        } else {
-            // otherwise, there has been no write yet for this given context,
-            // so this prior is the prior to the entire execution context
-            // so we *do* write the keyvalue struct pointer to the dict
-            dict_write{dict_ptr=revert_contract_state_dict_end}(
-                key=key.low, new_value=cast(key_val, felt)
-            );
-
-            let ctx = ExecutionContext.update_revert_contract_state(
-                ctx, revert_contract_state_dict_end
-            );
-
-            // Increment gas used.
-            let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SSTORE);
-            return ctx;
-        }
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SSTORE);
+        return ctx;
     }
 
     // @notice SLOAD operation
@@ -435,29 +375,11 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        let stack = ctx.stack;
-
-        // ------- 1. Get starknet address
-        let starknet_contract_address: felt = ctx.starknet_contract_address;
-
-        // ----- 2. Pop 1 value: key
-
-        // Stack input:
-        // key: key of memory.
-        let (stack, local key) = Stack.pop(stack);
-        // local value: Uint256;
-        // 3. Get the data from storage
-
-        let (local value: Uint256) = IContractAccount.storage(
-            contract_address=starknet_contract_address, key=key
-        );
-
-        let stack: model.Stack* = Stack.push(stack, value);
-
-        // Update context stack.
+        let (stack, key) = Stack.pop(ctx.stack);
+        let (state, value) = State.read_storage(ctx.state, ctx.call_context.address, key);
+        let stack = Stack.push(stack, value);
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SLOAD);
+        let ctx = ExecutionContext.update_state(ctx, state);
         return ctx;
     }
 
@@ -481,7 +403,7 @@ namespace MemoryOperations {
         let stack: model.Stack* = ctx.stack;
 
         // Compute remaining gas.
-        let remaining_gas = ctx.gas_limit - ctx.gas_used - GAS_COST_GAS;
+        let remaining_gas = ctx.call_context.gas_limit - ctx.gas_used - GAS_COST_GAS;
         let stack: model.Stack* = Stack.push(ctx.stack, Uint256(remaining_gas, 0));
 
         // Update context stack.

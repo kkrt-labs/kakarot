@@ -4,7 +4,7 @@
 
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.invoke import invoke
 from starkware.cairo.common.math import assert_nn
@@ -15,6 +15,7 @@ from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
+from kakarot.account import Account
 from kakarot.errors import Errors
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.block_information import BlockInformation
@@ -27,17 +28,12 @@ from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.push_operations import PushOperations
 from kakarot.instructions.sha3 import Sha3
 from kakarot.instructions.stop_and_arithmetic_operations import StopAndArithmeticOperations
-from kakarot.instructions.system_operations import (
-    CallHelper,
-    CreateHelper,
-    SelfDestructHelper,
-    SystemOperations,
-)
-from kakarot.interfaces.interfaces import IAccount
+from kakarot.instructions.system_operations import CallHelper, CreateHelper, SystemOperations
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.precompiles.precompiles import Precompiles
 from kakarot.stack import Stack
+from kakarot.state import State
 from utils.utils import Helpers
 
 // @title EVM instructions processing.
@@ -50,9 +46,11 @@ namespace EVM {
         return_data: felt*,
         return_data_len: felt,
         gas_used: felt,
-        starknet_contract_address: felt,
-        evm_contract_address: felt,
+        address: model.Address*,
         reverted: felt,
+        state: State.Summary*,
+        call_context: model.CallContext*,
+        program_counter: felt,
     }
 
     // @notice Decode the current opcode and execute associated function.
@@ -620,44 +618,25 @@ namespace EVM {
     }(ctx: model.ExecutionContext*) -> Summary* {
         alloc_locals;
 
-        let ctx: model.ExecutionContext* = decode_and_execute(ctx=ctx);
+        if (ctx.stopped != FALSE) {
+            let ctx_summary = ExecutionContext.finalize(ctx);
+            let is_root: felt = ExecutionContext.is_empty(self=ctx_summary.calling_context);
+            if (is_root != FALSE) {
+                let evm_summary = finalize(ctx_summary);
+                return evm_summary;
+            }
 
-        if (ctx.stopped == FALSE) {
-            return run(ctx=ctx);
+            if (ctx_summary.call_context.is_create != 0) {
+                let ctx = CreateHelper.finalize_calling_context(ctx_summary);
+                return run(ctx);
+            } else {
+                let ctx = CallHelper.finalize_calling_context(ctx_summary);
+                return run(ctx);
+            }
         }
 
-        let summary = ExecutionContext.finalize(ctx);
-        let is_root: felt = ExecutionContext.is_empty(self=summary.calling_context);
-        if (is_root != FALSE) {
-            return finalize(summary);
-        }
-
-        let is_precompile = Precompiles.is_precompile(address=summary.evm_contract_address);
-        if (is_precompile != FALSE) {
-            let ctx = CallHelper.finalize_calling_context(summary);
-            return run(ctx=ctx);
-        }
-        let (bytecode_len) = IAccount.bytecode_len(
-            contract_address=summary.starknet_contract_address
-        );
-
-        let has_return_data = is_not_zero(summary.return_data_len);
-        let has_empty_return_data = (1 - has_return_data);
-
-        let is_eao = Helpers.is_address_caller(summary.starknet_contract_address);
-
-        // If the starknet contract of the execution context has
-        // no bytecode,
-        // is not an EOA,
-        // and has return data
-        // then we treat it as at the end of a CREATE/CREATE2 opcode.
-        if (bytecode_len + is_eao + has_empty_return_data == 0) {
-            let ctx = CreateHelper.finalize_calling_context(summary);
-            return run(ctx=ctx);
-        } else {
-            let ctx = CallHelper.finalize_calling_context(summary);
-            return run(ctx=ctx);
-        }
+        let ctx = decode_and_execute(ctx);
+        return run(ctx);
     }
 
     // @notice A placeholder for opcodes that don't exist
@@ -670,36 +649,63 @@ namespace EVM {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         let (revert_reason_len, revert_reason) = Errors.unknownOpcode();
-        let ctx = ExecutionContext.revert(
-            self=ctx, revert_reason=revert_reason, size=revert_reason_len
-        );
+        let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
         return ctx;
     }
 
     // @notice Finalizes a transaction.
     // @param ctx_summary The pointer to the execution context summary.
     // @return Summary The pointer to the transaction Summary.
-    func finalize{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx_summary: ExecutionContext.Summary*) -> Summary* {
+    func finalize{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx_summary: ExecutionContext.Summary*
+    ) -> Summary* {
         alloc_locals;
-
-        Helpers.erase_contracts(
-            ctx_summary.selfdestruct_contracts_len, ctx_summary.selfdestruct_contracts
-        );
-
-        return new Summary(
+        let state_summary = Internals._get_state_summary(ctx_summary);
+        tempvar summary: Summary* = new Summary(
             memory=ctx_summary.memory,
             stack=ctx_summary.stack,
             return_data=ctx_summary.return_data,
             return_data_len=ctx_summary.return_data_len,
             gas_used=ctx_summary.gas_used,
-            starknet_contract_address=ctx_summary.starknet_contract_address,
-            evm_contract_address=ctx_summary.evm_contract_address,
+            address=ctx_summary.address,
             reverted=ctx_summary.reverted,
+            state=state_summary,
+            call_context=ctx_summary.call_context,
+            program_counter=ctx_summary.program_counter,
         );
+
+        return summary;
+    }
+}
+
+namespace Internals {
+    func _get_state_summary{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        ctx_summary: ExecutionContext.Summary*
+    ) -> State.Summary* {
+        alloc_locals;
+        // In case of a deploy tx, we need to store the return_data in the Account
+        if (ctx_summary.call_context.is_create != FALSE) {
+            let (state, account) = State.get_account(ctx_summary.state, ctx_summary.address);
+            let account = Account.set_code(
+                account, ctx_summary.return_data_len, ctx_summary.return_data
+            );
+            let state = State.set_account(state, ctx_summary.address, account);
+            tempvar state = state;
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+            // Else the state is just the returned state of the ExecutionContext
+        } else {
+            tempvar state = ctx_summary.state;
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+        }
+        tempvar syscall_ptr = syscall_ptr;
+        tempvar pedersen_ptr = pedersen_ptr;
+        tempvar range_check_ptr = range_check_ptr;
+
+        let state_summary = State.finalize(state);
+        return state_summary;
     }
 }

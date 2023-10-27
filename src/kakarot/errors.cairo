@@ -396,4 +396,83 @@ namespace Errors {
         assert [error + 34] = address;  //
         return (35, error);
     }
+
+    func balanceError() -> (error_len: felt, error: felt*) {
+        let (error) = get_label_location(balance_error_message);
+        return (40, error);
+
+        balance_error_message:
+        dw 'K';
+        dw 'a';
+        dw 'k';
+        dw 'a';
+        dw 'r';
+        dw 'o';
+        dw 't';
+        dw ':';
+        dw ' ';
+        dw 't';
+        dw 'r';
+        dw 'a';
+        dw 'n';
+        dw 's';
+        dw 'f';
+        dw 'e';
+        dw 'r';
+        dw ' ';
+        dw 'a';
+        dw 'm';
+        dw 'o';
+        dw 'u';
+        dw 'n';
+        dw 't';
+        dw ' ';
+        dw 'e';
+        dw 'x';
+        dw 'c';
+        dw 'e';
+        dw 'e';
+        dw 'd';
+        dw 's';
+        dw ' ';
+        dw 'b';
+        dw 'a';
+        dw 'l';
+        dw 'a';
+        dw 'n';
+        dw 'c';
+        dw 'e';
+    }
+
+    func addressCollision() -> (error_len: felt, error: felt*) {
+        let (error) = get_label_location(address_collision_error_message);
+        return (25, error);
+
+        address_collision_error_message:
+        dw 'K';
+        dw 'a';
+        dw 'k';
+        dw 'a';
+        dw 'r';
+        dw 'o';
+        dw 't';
+        dw ':';
+        dw ' ';
+        dw 'a';
+        dw 'd';
+        dw 'd';
+        dw 'r';
+        dw 'e';
+        dw 's';
+        dw 's';
+        dw 'C';
+        dw 'o';
+        dw 'l';
+        dw 'l';
+        dw 'i';
+        dw 's';
+        dw 'i';
+        dw 'o';
+        dw 'n';
+    }
 }

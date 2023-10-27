@@ -7,7 +7,7 @@ from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import get_caller_address
 
-from kakarot.accounts.library import Accounts
+from kakarot.account import Account
 from kakarot.constants import account_proxy_class_hash, externally_owned_account_class_hash
 from kakarot.library import native_token_address, Kakarot
 from kakarot.interfaces.interfaces import IAccount
@@ -38,7 +38,7 @@ func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     evm_address: felt
 ) -> (contract_address: felt) {
-    let (contract_address_) = Accounts.compute_starknet_address(evm_address);
+    let (contract_address_) = Account.compute_starknet_address(evm_address);
     return (contract_address=contract_address_);
 }
 
@@ -47,7 +47,7 @@ func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
 func get_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     evm_address: felt
 ) -> (starknet_address: felt) {
-    return Accounts.get_starknet_address(evm_address);
+    return Account.get_registered_starknet_address(evm_address);
 }
 
 // @notice Deploy a new externally owned account.
@@ -73,8 +73,6 @@ func eth_call{
     data: felt*,
 ) -> (return_data_len: felt, return_data: felt*, success: felt) {
     alloc_locals;
-    // Do the transfer
-    Kakarot.transfer(origin, to, value);
 
     // Mock only the execution part
     let (local return_data) = alloc();

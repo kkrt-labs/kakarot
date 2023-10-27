@@ -28,23 +28,24 @@ func test__init__should_return_an_empty_execution_context{
     assert [calldata] = '';
 
     // When
-    local call_context: model.CallContext* = new model.CallContext(
-        bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
-    );
+    tempvar address = new model.Address(0, 0);
     let calling_ctx = ExecutionContext.init_empty();
-    let (return_data: felt*) = alloc();
-    let result: model.ExecutionContext* = ExecutionContext.init(
-        call_context,
-        starknet_contract_address=0,
-        evm_contract_address=0,
-        origin=0,
+    local call_context: model.CallContext* = new model.CallContext(
+        bytecode=bytecode,
+        bytecode_len=bytecode_len,
+        calldata=calldata,
+        calldata_len=1,
+        value=0,
         gas_limit=Constants.TRANSACTION_GAS_LIMIT,
         gas_price=0,
+        origin=address,
         calling_context=calling_ctx,
-        return_data_len=0,
-        return_data=return_data,
+        address=address,
         read_only=0,
+        is_create=0,
     );
+
+    let result: model.ExecutionContext* = ExecutionContext.init(call_context);
 
     // Then
     assert result.call_context.bytecode = bytecode;
@@ -55,8 +56,8 @@ func test__init__should_return_an_empty_execution_context{
     assert result.stack.len_16bytes = 0;
     assert result.memory.bytes_len = 0;
     assert result.gas_used = 0;
-    assert result.gas_limit = Constants.TRANSACTION_GAS_LIMIT;  // TODO: Add support for gas limit
-    assert result.gas_price = 0;
+    assert result.call_context.gas_limit = Constants.TRANSACTION_GAS_LIMIT;  // TODO: Add support for gas limit
+    assert result.call_context.gas_price = 0;
     return ();
 }
 

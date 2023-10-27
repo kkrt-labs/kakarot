@@ -117,7 +117,7 @@ class TestContractAccount:
             initial_nonce = (await contract_account.get_nonce().call()).result.nonce
 
             # Increment nonce
-            await contract_account.increment_nonce().execute(
+            await contract_account.set_nonce(initial_nonce + 1).execute(
                 caller_address=kakarot.contract_address
             )
 
@@ -131,6 +131,6 @@ class TestContractAccount:
             self, contract_account: StarknetContract, kakarot
         ):
             with cairo_error():
-                await contract_account.increment_nonce().execute(
+                await contract_account.set_nonce(0).execute(
                     caller_address=kakarot.contract_address + 1
                 )

@@ -27,3 +27,12 @@ async def plain_opcodes(deploy_solidity_contract, counter, owner):
         counter.address,
         caller_eoa=owner.starknet_contract,
     )
+
+
+@pytest_asyncio.fixture(scope="package")
+async def revert_on_fallbacks(deploy_solidity_contract, owner):
+    return await deploy_solidity_contract(
+        "PlainOpcodes",
+        "ContractRevertOnFallbackAndReceive",
+        caller_eoa=owner.starknet_contract,
+    )

@@ -40,23 +40,24 @@ namespace TestHelpers {
 
         let (calldata) = alloc();
         assert [calldata] = '';
-        local call_context: model.CallContext* = new model.CallContext(
-            bytecode=bytecode, bytecode_len=bytecode_len, calldata=calldata, calldata_len=1, value=0
-        );
         let root_context = ExecutionContext.init_empty();
-        let return_data: felt* = alloc();
-        let ctx: model.ExecutionContext* = ExecutionContext.init(
-            call_context,
-            starknet_contract_address=starknet_contract_address,
-            evm_contract_address=evm_contract_address,
-            origin=0,
+        tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
+        tempvar origin = new model.Address(0, 0);
+        local call_context: model.CallContext* = new model.CallContext(
+            bytecode=bytecode,
+            bytecode_len=bytecode_len,
+            calldata=calldata,
+            calldata_len=1,
+            value=0,
             gas_limit=Constants.TRANSACTION_GAS_LIMIT,
             gas_price=0,
+            origin=origin,
             calling_context=root_context,
-            return_data_len=0,
-            return_data=return_data,
+            address=address,
             read_only=FALSE,
+            is_create=FALSE,
         );
+        let ctx: model.ExecutionContext* = ExecutionContext.init(call_context);
         return ctx;
     }
 
@@ -123,7 +124,7 @@ namespace TestHelpers {
         bytecode_len: felt, bytecode: felt*, return_data_len: felt, return_data: felt*
     ) -> model.ExecutionContext* {
         let ctx: model.ExecutionContext* = init_context(bytecode_len, bytecode);
-        let ctx = ExecutionContext.update_return_data(ctx, return_data_len, return_data);
+        let ctx = ExecutionContext.stop(ctx, return_data_len, return_data, FALSE);
         return ctx;
     }
 
@@ -188,30 +189,24 @@ namespace TestHelpers {
         return assert_array_equal(array_0_len - 1, array_0 + 1, array_1_len - 1, array_1 + 1);
     }
 
-    func assert_call_context_equal(
-        call_context_0: model.CallContext*, call_context_1: model.CallContext*
-    ) {
-        assert call_context_0.value = call_context_1.value;
-        assert_array_equal(
-            call_context_0.bytecode_len,
-            call_context_0.bytecode,
-            call_context_1.bytecode_len,
-            call_context_1.bytecode,
-        );
-        assert_array_equal(
-            call_context_0.calldata_len,
-            call_context_0.calldata,
-            call_context_1.calldata_len,
-            call_context_1.calldata,
-        );
+    func assert_call_context_equal(ctx_0: model.CallContext*, ctx_1: model.CallContext*) {
+        assert ctx_0.value = ctx_1.value;
+        assert_array_equal(ctx_0.bytecode_len, ctx_0.bytecode, ctx_1.bytecode_len, ctx_1.bytecode);
+        assert_array_equal(ctx_0.calldata_len, ctx_0.calldata, ctx_1.calldata_len, ctx_1.calldata);
+
+        assert ctx_0.gas_limit = ctx_1.gas_limit;
+        assert ctx_0.address.starknet = ctx_1.address.starknet;
+        assert ctx_0.gas_price = ctx_1.gas_price;
+        assert ctx_0.address.evm = ctx_1.address.evm;
+        assert_execution_context_equal(ctx_0.calling_context, ctx_1.calling_context);
         return ();
     }
 
     func assert_execution_context_equal(
         ctx_0: model.ExecutionContext*, ctx_1: model.ExecutionContext*
     ) {
-        let is_context_0_root = ExecutionContext.is_empty(ctx_0.calling_context);
-        let is_context_1_root = ExecutionContext.is_empty(ctx_1.calling_context);
+        let is_context_0_root = ExecutionContext.is_empty(ctx_0.call_context.calling_context);
+        let is_context_1_root = ExecutionContext.is_empty(ctx_1.call_context.calling_context);
         assert is_context_0_root = is_context_1_root;
         if (is_context_0_root != FALSE) {
             return ();
@@ -228,12 +223,7 @@ namespace TestHelpers {
         // TODO: Implement assert_dict_access_equal and finalize this helper once Stack and Memory are stabilized
         // assert ctx_0.stack = ctx_1.stack;
         // assert ctx_0.memory = ctx_1.memory;
-
-        assert ctx_0.gas_limit = ctx_1.gas_limit;
-        assert ctx_0.gas_price = ctx_1.gas_price;
-        assert ctx_0.starknet_contract_address = ctx_1.starknet_contract_address;
-        assert ctx_0.evm_contract_address = ctx_1.evm_contract_address;
-        return assert_execution_context_equal(ctx_0.calling_context, ctx_1.calling_context);
+        return ();
     }
 
     func print_uint256(val: Uint256) {
@@ -281,7 +271,7 @@ namespace TestHelpers {
             print(f"{ids.execution_context.gas_limit=}")
             print(f"{ids.execution_context.gas_price}")
             print(f"{ids.execution_context.starknet_contract_address=}")
-            print(f"{ids.execution_context.evm_contract_address=}")
+            print(f"{ids.execution_context.address.evm=}")
         %}
         return ();
     }

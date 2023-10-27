@@ -3,13 +3,13 @@
 %lang starknet
 
 // Starkware dependencies
+from openzeppelin.access.ownable.library import Ownable
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 
 // Local dependencies
 from kakarot.accounts.contract.library import ContractAccount
-from kakarot.accounts.library import Accounts
-from openzeppelin.access.ownable.library import Ownable
+from kakarot.account import Account
 
 // @title EVM smart contract account representation.
 
@@ -61,23 +61,32 @@ func bytecode_len{
 }
 
 // @notice Store a key-value pair.
-// @param key The bytes32 storage key.
+// @param key The storage address, with storage_var being storage_(key: Uint256)
 // @param value The bytes32 stored value.
 @external
 func write_storage{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(key: Uint256, value: Uint256) {
-    return ContractAccount.write_storage(key, value);
+}(storage_addr: felt, value: Uint256) {
+    return ContractAccount.write_storage(storage_addr, value);
+}
+
+// @notice Selfdestruct whatever can be
+// @dev It's not possible to remove a contract in Starknet
+@external
+func selfdestruct{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    return ContractAccount.selfdestruct();
 }
 
 // @notice Read a given storage key
-// @param key The bytes32 storage key.
+// @param key The storage address, with storage_var being storage_(key: Uint256)
 // @return value The stored value if the key exists, 0 otherwise.
 @view
 func storage{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(key: Uint256) -> (value: Uint256) {
-    return ContractAccount.storage(key);
+}(storage_addr: felt) -> (value: Uint256) {
+    return ContractAccount.storage(storage_addr);
 }
 
 // @notice This function checks if the account was initialized.
@@ -96,8 +105,16 @@ func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     return ContractAccount.get_nonce();
 }
 
-// @notice This function increases the contract account nonce by 1
+// @notice This function set the contract account nonce
 @external
-func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    return ContractAccount.increment_nonce();
+func set_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(nonce: felt) {
+    return ContractAccount.set_nonce(nonce);
+}
+
+// @notice Returns the account type
+@view
+func account_type{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    type: felt
+) {
+    return ('CA',);
 }

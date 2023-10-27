@@ -3,18 +3,21 @@
 %lang starknet
 
 // Starkware dependencies
+from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
-from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import get_caller_address
 
 // Local dependencies
+from kakarot.account import Account
+from kakarot.evm import EVM
 from kakarot.library import Kakarot
+from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.memory import Memory
-from kakarot.accounts.library import Accounts
-from kakarot.interfaces.interfaces import IAccount
+from kakarot.state import State
+from utils.utils import Helpers
 
 // Constructor
 @constructor
@@ -102,7 +105,7 @@ func get_deploy_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     evm_address: felt
 ) -> (contract_address: felt) {
-    return Accounts.compute_starknet_address(evm_address);
+    return Account.compute_starknet_address(evm_address);
 }
 
 // @notice Returns the registered starknet address for a given EVM address.
@@ -113,7 +116,7 @@ func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
 func get_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     evm_address: felt
 ) -> (starknet_address: felt) {
-    return Accounts.get_starknet_address(evm_address);
+    return Account.get_registered_starknet_address(evm_address);
 }
 
 // @notice Deploy a new externally owned account.
@@ -151,8 +154,13 @@ func eth_call{
     data_len: felt,
     data: felt*,
 ) -> (return_data_len: felt, return_data: felt*, success: felt) {
-    Kakarot.assert_view();
-    return Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
+    let summary = Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
+    let result = (summary.return_data_len, summary.return_data, 1 - summary.reverted);
+    if (to == 0) {
+        return (2, cast(summary.address, felt*), 1 - summary.reverted);
+    } else {
+        return result;
+    }
 }
 
 // @notice The eth_send_transaction function as described in the spec,
@@ -176,5 +184,19 @@ func eth_send_transaction{
     alloc_locals;
     let (local starknet_caller_address) = get_caller_address();
     let (local origin) = Kakarot.safe_get_evm_address(starknet_caller_address);
-    return Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
+    let summary = Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
+    let result = (summary.return_data_len, summary.return_data, 1 - summary.reverted);
+
+    if (summary.reverted != FALSE) {
+        return result;
+    }
+
+    State.commit(summary.state);
+
+    if (to == 0) {
+        // Overwrite return_data with deployed addresses
+        return (2, cast(summary.address, felt*), 1 - summary.reverted);
+    }
+
+    return result;
 }

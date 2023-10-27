@@ -25,7 +25,7 @@ func test__precompiles_should_throw_on_out_of_bounds{
 }(address: felt) {
     // When
     let result = Precompiles.run(
-        address=address,
+        evm_address=address,
         calldata_len=0,
         calldata=cast(0, felt*),
         value=0,
@@ -46,7 +46,7 @@ func test__not_implemented_precompile_should_raise_with_detailed_error_message{
 }(address: felt) {
     // When
     let result = Precompiles.not_implemented_precompile(
-        address=address, _input_len=0, _input=cast(0, felt*)
+        evm_address=address, _input_len=0, _input=cast(0, felt*)
     );
 
     return ();
@@ -57,9 +57,23 @@ func test__run_should_return_a_stopped_execution_context{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(address: felt) {
     // When
-    let calling_context = ExecutionContext.init_empty();
+    tempvar call_context = new model.CallContext(
+        bytecode=cast(0, felt*),
+        bytecode_len=0,
+        calldata=cast(0, felt*),
+        calldata_len=0,
+        value=0,
+        gas_limit=0,
+        gas_price=0,
+        origin=cast(0, model.Address*),
+        calling_context=cast(0, model.ExecutionContext*),
+        address=cast(0, model.Address*),
+        read_only=0,
+        is_create=0,
+    );
+    let calling_context = ExecutionContext.init(call_context);
     let result = Precompiles.run(
-        address=address,
+        evm_address=address,
         calldata_len=0,
         calldata=cast(0, felt*),
         value=0,

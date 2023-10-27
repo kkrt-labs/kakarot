@@ -2,6 +2,7 @@
 pragma solidity >=0.8.0;
 
 import "./RevertTestCases.sol";
+import "./Counter.sol";
 
 interface ICounter {
     function count() external view returns (uint256);
@@ -31,6 +32,11 @@ contract PlainOpcodes {
     event Log3(address indexed owner, address indexed spender, uint256 value);
     event Log4(address indexed owner, address indexed spender, uint256 indexed value);
 
+    event SentSome(address to, uint256 amount, bool success);
+    event NonceIncreased(uint256 nonce);
+
+    mapping(address => uint256) public nonces;
+
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
@@ -41,6 +47,10 @@ contract PlainOpcodes {
     /*//////////////////////////////////////////////////////////////
                             FUNCTIONS FOR OPCODES
     //////////////////////////////////////////////////////////////*/
+    function incrementMapping() public {
+        emit NonceIncreased(nonces[msg.sender]++);
+    }
+
     function opcodeBlockHash(uint256 blockNumber) public view returns (bytes32 _blockhash) {
         return (blockhash(blockNumber));
     }
@@ -110,6 +120,24 @@ contract PlainOpcodes {
         emit Create2Address(_address);
     }
 
+    function createCounterAndCall() public returns (address counter_) {
+        bytes memory bytecode = type(Counter).creationCode;
+        assembly {
+            counter_ := create(0, add(bytecode, 32), mload(bytecode))
+        }
+        ICounter(counter_).count();
+        emit CreateAddress(counter_);
+    }
+
+    function createCounterAndInvoke() public returns (address counter_) {
+        bytes memory bytecode = type(Counter).creationCode;
+        assembly {
+            counter_ := create(0, add(bytecode, 32), mload(bytecode))
+        }
+        ICounter(counter_).inc();
+        emit CreateAddress(counter_);
+    }
+
     function requireNotZero(uint256 value) external pure {
         require(value != 0, "ZERO_VALUE");
     }
@@ -151,10 +179,13 @@ contract PlainOpcodes {
 
     function sendSome(address payable to, uint256 amount) public {
         bool success = to.send(amount);
-        require(success, "failed to send");
+        emit SentSome(to, amount, success);
     }
 
-    function kill(address payable to) public {
+    function kill(address payable to) public payable {
         selfdestruct(to);
     }
+
+    receive() external payable {}
+    fallback() external payable {}
 }

@@ -28,7 +28,7 @@ from kakarot.stack import Stack
 namespace Precompiles {
     // @notice Executes a precompile at a given precompile address
     // @dev Associates gas used and precompile return values to a execution subcontext
-    // @param address The precompile address to be executed
+    // @param evm_address The precompile evm_address to be executed
     // @param calldata_len The calldata length
     // @param calldata The calldata.
     // @param value The value.
@@ -40,7 +40,7 @@ namespace Precompiles {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(
-        address: felt,
+        evm_address: felt,
         calldata_len: felt,
         calldata: felt*,
         value: felt,
@@ -48,42 +48,31 @@ namespace Precompiles {
     ) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Execute the precompile at a given address
-        let (output_len, output, gas_used) = _exec_precompile(address, calldata_len, calldata);
-
-        let (local revert_contract_state_dict_start) = default_dict_new(0);
-        tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
-            revert_contract_state_dict_start, revert_contract_state_dict_start
-        );
+        // Execute the precompile at a given evm_address
+        let (output_len, output, gas_used) = _exec_precompile(evm_address, calldata_len, calldata);
 
         // Build returned execution context
         let stack = Stack.init();
         let memory = Memory.init();
-        local sub_ctx: model.ExecutionContext* = new model.ExecutionContext(
-            call_context=cast(0, model.CallContext*),
-            program_counter=0,
-            stopped=TRUE,
-            return_data=output,
-            return_data_len=output_len,
-            stack=stack,
-            memory=memory,
-            gas_used=gas_used,
-            gas_limit=0,
+        tempvar address = new model.Address(0, evm_address);
+        tempvar call_context = new model.CallContext(
+            bytecode=cast(0, felt*),
+            bytecode_len=0,
+            calldata=cast(0, felt*),
+            calldata_len=0,
+            value=0,
+            gas_limit=Constants.TRANSACTION_GAS_LIMIT,
             gas_price=0,
-            starknet_contract_address=0,
-            evm_contract_address=address,
-            origin=calling_context.origin,
+            origin=calling_context.call_context.origin,
             calling_context=calling_context,
-            selfdestruct_contracts_len=0,
-            selfdestruct_contracts=cast(0, felt*),
-            events_len=0,
-            events=cast(0, model.Event*),
-            create_addresses_len=0,
-            create_addresses=cast(0, felt*),
-            revert_contract_state=revert_contract_state,
-            reverted=FALSE,
+            address=address,
             read_only=FALSE,
+            is_create=FALSE,
         );
+        let sub_ctx = ExecutionContext.init(call_context);
+        let sub_ctx = ExecutionContext.update_state(sub_ctx, calling_context.state);
+        let sub_ctx = ExecutionContext.stop(sub_ctx, output_len, output, FALSE);
+        let sub_ctx = ExecutionContext.increment_gas_used(sub_ctx, gas_used);
 
         return sub_ctx;
     }
@@ -92,9 +81,9 @@ namespace Precompiles {
         return is_not_zero(address) * is_le(address, Constants.LAST_PRECOMPILE_ADDRESS);
     }
 
-    // @notice Executes associated function of precompiled address.
+    // @notice Executes associated function of precompiled evm_address.
     // @dev This function uses an internal jump table to execute the corresponding precompile impmentation.
-    // @param address The precompile address.
+    // @param evm_address The precompile evm_address.
     // @param input_len The length of the input array.
     // @param input The input array.
     // @return output_len The output length.
@@ -105,23 +94,23 @@ namespace Precompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, input_len: felt, input: felt*) -> (
+    }(evm_address: felt, input_len: felt, input: felt*) -> (
         output_len: felt, output: felt*, gas_used: felt
     ) {
         // Compute the corresponding offset in the jump table:
-        // count 1 for "next line" and 3 steps per precompile address: call, precompile, ret
-        tempvar offset = 1 + 3 * address;
+        // count 1 for "next line" and 3 steps per precompile evm_address: call, precompile, ret
+        tempvar offset = 1 + 3 * evm_address;
 
         // Prepare arguments
         [ap] = syscall_ptr, ap++;
         [ap] = pedersen_ptr, ap++;
         [ap] = range_check_ptr, ap++;
         [ap] = bitwise_ptr, ap++;
-        [ap] = address, ap++;
+        [ap] = evm_address, ap++;
         [ap] = input_len, ap++;
         [ap] = input, ap++;
 
-        // call precompile address
+        // call precompile evm_address
         jmp rel offset;
         call unknown_precompile;  // 0x0
         ret;
@@ -147,7 +136,7 @@ namespace Precompiles {
 
     // @notice A placeholder for precompile that are not implemented yet.
     // @dev Halts execution.
-    // @param address The address.
+    // @param evm_address The evm_address.
     // @param _input_len The length of the input array.
     // @param _input The input array.
     func unknown_precompile{
@@ -155,8 +144,8 @@ namespace Precompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, _input_len: felt, _input: felt*) {
-        with_attr error_message("Kakarot: UnknownPrecompile {address}") {
+    }(evm_address: felt, _input_len: felt, _input: felt*) {
+        with_attr error_message("Kakarot: UnknownPrecompile {evm_address}") {
             assert 0 = 1;
         }
         return ();
@@ -164,7 +153,7 @@ namespace Precompiles {
 
     // @notice A placeholder for precompile that are not implemented yet.
     // @dev Halts execution.
-    // @param address The address.
+    // @param evm_address The evm_address.
     // @param _input_len The length of the input array.
     // @param _input The input array.
     func not_implemented_precompile{
@@ -172,8 +161,8 @@ namespace Precompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, _input_len: felt, _input: felt*) {
-        with_attr error_message("Kakarot: NotImplementedPrecompile {address}") {
+    }(evm_address: felt, _input_len: felt, _input: felt*) {
+        with_attr error_message("Kakarot: NotImplementedPrecompile {evm_address}") {
             assert 0 = 1;
         }
         return ();
@@ -181,7 +170,7 @@ namespace Precompiles {
 
     // @notice A placeholder for precompile that are not implemented yet.
     // @dev Halts execution.
-    // @param address The address.
+    // @param evm_address The evm_address.
     // @param _input_len The length of the input array.
     // @param _input The input array.
     func not_whitelisted_precompile{
@@ -189,8 +178,8 @@ namespace Precompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(address: felt, _input_len: felt, _input: felt*) {
-        with_attr error_message("Kakarot: NotWhitelistedPrecompile {address}") {
+    }(evm_address: felt, _input_len: felt, _input: felt*) {
+        with_attr error_message("Kakarot: NotWhitelistedPrecompile {evm_address}") {
             assert 0 = 1;
         }
         return ();

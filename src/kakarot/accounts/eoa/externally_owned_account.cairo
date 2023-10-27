@@ -8,7 +8,7 @@ from starkware.starknet.common.syscalls import get_tx_info, get_caller_address
 from starkware.cairo.common.math import assert_le
 
 from kakarot.accounts.eoa.library import ExternallyOwnedAccount
-from kakarot.accounts.library import Accounts
+from kakarot.account import Account
 
 // Externally Owned Account initializer
 @external
@@ -135,4 +135,12 @@ func bytecode_len{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> (len: felt) {
     return (len=0);
+}
+
+// @notice Returns the account type
+@view
+func account_type{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    type: felt
+) {
+    return ('EOA',);
 }

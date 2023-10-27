@@ -16,9 +16,8 @@ from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 from kakarot.memory import Memory
-from kakarot.constants import native_token_address
-from kakarot.interfaces.interfaces import IERC20, IAccount
-from kakarot.accounts.library import Accounts
+from kakarot.state import State
+from kakarot.account import Account
 
 // @title Environmental information opcodes.
 // @notice This file contains the functions to execute for environmental information opcodes.
@@ -59,11 +58,11 @@ namespace EnvironmentalInformation {
         alloc_locals;
 
         // Get the current execution contract from the context,
-        // convert to Uin256, and push to Stack.
-        let address = Helpers.to_uint256(ctx.evm_contract_address);
-        let stack: model.Stack* = Stack.push(self=ctx.stack, element=address);
+        // convert to Uint256, and push to Stack.
+        let address = Helpers.to_uint256(ctx.call_context.address.evm);
+        let stack: model.Stack* = Stack.push(ctx.stack, address);
         // Update the execution context.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_ADDRESS);
         return ctx;
@@ -86,25 +85,17 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Get the evm address.
-        let (stack: model.Stack*, address: Uint256) = Stack.pop(ctx.stack);
+        let (stack, address_uint256) = Stack.pop(ctx.stack);
 
-        let address_felt = Helpers.uint256_to_felt(address);
-        // Get the starknet account address from the evm account address
-        let (starknet_contract_address) = Accounts.compute_starknet_address(address_felt);
-        // Get the number of native tokens owned by the given starknet account
-        let (native_token_address_) = native_token_address.read();
-        let (balance: Uint256) = IERC20.balanceOf(
-            contract_address=native_token_address_, account=starknet_contract_address
-        );
+        let evm_address = Helpers.uint256_to_felt(address_uint256);
+        let (starknet_address) = Account.compute_starknet_address(evm_address);
+        tempvar address = new model.Address(starknet_address, evm_address);
+        let (state, balance) = State.read_balance(ctx.state, address);
+        let stack = Stack.push(stack, balance);
 
-        let stack: model.Stack* = Stack.push(stack, balance);
-
-        // Update the execution context.
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_BALANCE);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_state(ctx, state);
+        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_BALANCE);
         return ctx;
     }
 
@@ -125,11 +116,11 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let origin_address = Helpers.to_uint256(ctx.origin);
+        let origin_address = Helpers.to_uint256(ctx.call_context.origin.evm);
 
         // Update Context stack
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=origin_address);
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_ORIGIN);
         return ctx;
@@ -151,15 +142,19 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        let is_root = ExecutionContext.is_empty(ctx.calling_context);
-        let caller = (1 - is_root) * ctx.calling_context.evm_contract_address + is_root *
-            ctx.origin;
+        let calling_context = ctx.call_context.calling_context;
+        let is_root = ExecutionContext.is_empty(calling_context);
+        if (is_root == 0) {
+            tempvar caller = calling_context.call_context.address.evm;
+        } else {
+            tempvar caller = ctx.call_context.origin.evm;
+        }
         let evm_address_uint256 = Helpers.to_uint256(caller);
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=evm_address_uint256);
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CALLER);
         return ctx;
@@ -228,7 +223,7 @@ namespace EnvironmentalInformation {
         let stack: model.Stack* = Stack.push(self=stack, element=uint256_sliced_calldata);
 
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CALLDATALOAD);
         return ctx;
@@ -305,9 +300,9 @@ namespace EnvironmentalInformation {
         );
 
         // Update context memory.
-        let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
+        let ctx = ExecutionContext.update_memory(ctx, memory);
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CALLDATACOPY);
         return ctx;
@@ -335,7 +330,7 @@ namespace EnvironmentalInformation {
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CODESIZE);
         return ctx;
@@ -411,7 +406,7 @@ namespace EnvironmentalInformation {
         alloc_locals;
 
         // Get the gasprice.
-        let gas_price_felt = ctx.gas_price;
+        let gas_price_felt = ctx.call_context.gas_price;
         let gas_price_uint256 = Helpers.to_uint256(gas_price_felt);
 
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=gas_price_uint256);
@@ -446,17 +441,19 @@ namespace EnvironmentalInformation {
         // Stack input:
         // 0 - address: 20-byte address of the contract to query.
         let (stack, address_uint256) = Stack.pop(self=stack);
-        let address_felt = Helpers.uint256_to_felt(address_uint256);
-        let (bytecode_len) = Accounts.get_bytecode_len(address_felt);
+        let evm_address = Helpers.uint256_to_felt(address_uint256);
+        let (starknet_address) = Account.compute_starknet_address(evm_address);
+        tempvar address = new model.Address(starknet_address, evm_address);
+        let (state, account) = State.get_account(ctx.state, address);
 
         // bytecode_len cannot be greater than 24k in the EVM
-        let stack = Stack.push(stack, Uint256(low=bytecode_len, high=0));
+        let stack = Stack.push(stack, Uint256(low=account.code_len, high=0));
 
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_state(ctx, state);
 
         // TODO:distinction between warm and cold addresses determines dynamic cost
-        //  for now we assume a cold address, which sets dynamic cost to 2600
+        // for now we assume a cold address, which sets dynamic cost to 2600
         // see: https://www.evm.codes/about#accesssets
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_EXTCODESIZE);
 
@@ -493,8 +490,10 @@ namespace EnvironmentalInformation {
         let offset = popped[2];
         let size = popped[3];
 
-        let address_felt = Helpers.uint256_to_felt(address_uint256);
-        let (bytecode_len, bytecode) = Accounts.get_bytecode(address_felt);
+        let evm_address = Helpers.uint256_to_felt(address_uint256);
+        let (starknet_address) = Account.compute_starknet_address(evm_address);
+        tempvar address = new model.Address(starknet_address, evm_address);
+        let (state, account) = State.get_account(ctx.state, address);
 
         // Get bytecode slice from offset to size
         // in the case were
@@ -504,7 +503,7 @@ namespace EnvironmentalInformation {
         // with the requested `size` of zeroes
 
         let sliced_bytecode: felt* = Helpers.slice_data(
-            data_len=bytecode_len, data=bytecode, data_offset=offset.low, slice_len=size.low
+            data_len=account.code_len, data=account.code, data_offset=offset.low, slice_len=size.low
         );
 
         // Write bytecode slice to memory at dest_offset
@@ -515,10 +514,10 @@ namespace EnvironmentalInformation {
             self=ctx.memory, element_len=size.low, element=sliced_bytecode, offset=dest_offset.low
         );
 
-        // Update context memory.
-        let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_memory(ctx, memory);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_state(ctx, state);
+
         // Increment gas used.
         let (minimum_word_size) = Helpers.minimum_word_count(size.low);
 
@@ -554,7 +553,7 @@ namespace EnvironmentalInformation {
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_RETURNDATASIZE);
         return ctx;
@@ -603,9 +602,9 @@ namespace EnvironmentalInformation {
         );
 
         // Update context memory.
-        let ctx = ExecutionContext.update_memory(self=ctx, new_memory=memory);
+        let ctx = ExecutionContext.update_memory(ctx, memory);
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLDATACOPY);
         return ctx;
@@ -632,17 +631,19 @@ namespace EnvironmentalInformation {
 
         // Stack input:
         // 0 - address: 20-byte address of the contract to query.
-        let (stack, address_uint256) = Stack.pop(self=stack);
-        let address_felt = Helpers.uint256_to_felt(address_uint256);
-        let (bytecode_len, bytecode) = Accounts.get_bytecode(address_felt);
+        let (stack, address_uint256) = Stack.pop(stack);
+        let evm_address = Helpers.uint256_to_felt(address_uint256);
+        let (starknet_address) = Account.compute_starknet_address(evm_address);
+        tempvar address = new model.Address(starknet_address, evm_address);
+        let (state, account) = State.get_account(ctx.state, address);
 
         let (local dest: felt*) = alloc();
         // convert to little endian
         Helpers.bytes_to_bytes8_little_endian(
-            bytes_len=bytecode_len,
-            bytes=bytecode,
+            bytes_len=account.code_len,
+            bytes=account.code,
             index=0,
-            size=bytecode_len,
+            size=account.code_len,
             bytes8=0,
             bytes8_shift=0,
             dest=dest,
@@ -653,14 +654,16 @@ namespace EnvironmentalInformation {
         local keccak_ptr_start: felt* = keccak_ptr;
 
         with keccak_ptr {
-            let (result) = cairo_keccak_bigend(inputs=dest, n_bytes=bytecode_len);
+            let (result) = cairo_keccak_bigend(inputs=dest, n_bytes=account.code_len);
 
             finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
         }
 
-        let stack: model.Stack* = Stack.push(self=stack, element=result);
-        // Update context stack
+        let stack = Stack.push(stack, result);
+
         let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_state(ctx, state);
+
         // Increment gas used (COLD ACCESS)
         // see: https://www.evm.codes/about#accesssets
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_EXTCODEHASH);

@@ -11,12 +11,13 @@ from starkware.starknet.common.syscalls import get_block_number, get_block_times
 from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
-from kakarot.model import model
-from utils.utils import Helpers
-from kakarot.execution_context import ExecutionContext
-from kakarot.stack import Stack
 from kakarot.constants import Constants, native_token_address, blockhash_registry_address
-from kakarot.interfaces.interfaces import IERC20, IBlockhashRegistry
+from kakarot.execution_context import ExecutionContext
+from kakarot.interfaces.interfaces import IBlockhashRegistry
+from kakarot.model import model
+from kakarot.stack import Stack
+from kakarot.state import State
+from utils.utils import Helpers
 
 // @title BlockInformation information opcodes.
 // @notice This file contains the functions to execute for block information opcodes.
@@ -65,7 +66,7 @@ namespace BlockInformation {
 
             // Update the execution context.
             // Update context stack.
-            let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+            let ctx = ExecutionContext.update_stack(ctx, stack);
             // Increment gas used.
             let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_BLOCKHASH);
             return ctx;
@@ -82,7 +83,7 @@ namespace BlockInformation {
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_BLOCKHASH);
         return ctx;
@@ -110,7 +111,7 @@ namespace BlockInformation {
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_COINBASE);
         return ctx;
@@ -141,7 +142,7 @@ namespace BlockInformation {
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_TIMESTAMP);
         return ctx;
@@ -172,7 +173,7 @@ namespace BlockInformation {
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_NUMBER);
         return ctx;
@@ -200,7 +201,7 @@ namespace BlockInformation {
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_DIFFICULTY);
         return ctx;
@@ -222,12 +223,12 @@ namespace BlockInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         // Get the Gas Limit
-        let gas_limit = Helpers.to_uint256(val=ctx.gas_limit);
+        let gas_limit = Helpers.to_uint256(val=ctx.call_context.gas_limit);
         let stack: model.Stack* = Stack.push(self=ctx.stack, element=gas_limit);
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_GASLIMIT);
         return ctx;
@@ -254,7 +255,7 @@ namespace BlockInformation {
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CHAINID);
         return ctx;
@@ -277,16 +278,12 @@ namespace BlockInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
         // Get balance of current executing contract address balance and push to stack.
-        let (native_token_address_) = native_token_address.read();
-        let (balance: Uint256) = IERC20.balanceOf(
-            contract_address=native_token_address_, account=ctx.starknet_contract_address
-        );
-        let stack: model.Stack* = Stack.push(self=ctx.stack, element=balance);
+        let (state, balance) = State.read_balance(ctx.state, ctx.call_context.address);
+        let stack = Stack.push(self=ctx.stack, element=balance);
 
         // Update the execution context.
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
-        // Increment gas used.
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_state(ctx, state);
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SELFBALANCE);
         return ctx;
     }
@@ -313,7 +310,7 @@ namespace BlockInformation {
 
         // Update the execution context.
         // Update context stack.
-        let ctx = ExecutionContext.update_stack(self=ctx, new_stack=stack);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_BASEFEE);
         return ctx;

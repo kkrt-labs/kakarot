@@ -3,7 +3,6 @@
 %lang starknet
 
 // Starkware dependencies
-from kakarot.interfaces.interfaces import IERC20, IKakarot
 from openzeppelin.access.ownable.library import Ownable
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
@@ -11,6 +10,10 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256, uint256_not
+from starkware.starknet.common.syscalls import storage_read, storage_write
+from starkware.cairo.common.memset import memset
+
+from kakarot.interfaces.interfaces import IERC20, IKakarot
 
 // Storage
 
@@ -129,31 +132,63 @@ namespace ContractAccount {
     }
 
     // @notice This function is used to read the storage at a key.
-    // @param key The key to the stored value.
+    // @param key The storage key, which is hash_felts(cast(Uint256, felt*)) of the Uint256 storage key.
     // @return value The store value.
     func storage{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(key: Uint256) -> (value: Uint256) {
-        let value = storage_.read(key);
-        return value;
+    }(storage_addr: felt) -> (value: Uint256) {
+        let (low) = storage_read(address=storage_addr + 0);
+        let (high) = storage_read(address=storage_addr + 1);
+        let value = Uint256(low, high);
+        return (value,);
     }
 
     // @notice This function is used to write to the storage of the account.
-    // @param key The key to the value to store.
+    // @param key The storage key, which is hash_felts(cast(Uint256, felt*)) of the Uint256 storage key.
     // @param value The value to store.
     func write_storage{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(key: Uint256, value: Uint256) {
+    }(storage_addr: felt, value: Uint256) {
         // Access control check.
         Ownable.assert_only_owner();
         // Write State
-        storage_.write(key, value);
+        storage_write(address=storage_addr + 0, value=value.low);
+        storage_write(address=storage_addr + 1, value=value.high);
+        return ();
+    }
+
+    // @notice Selfdestruct whatever can be
+    // @dev It's not possible to remove a contract in Starknet
+    func selfdestruct{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }() {
+        alloc_locals;
+        // Access control check.
+        Ownable.assert_only_owner();
+        nonce.write(0);
+        is_initialized_.write(0);
+        evm_address.write(0);
+
+        // Bytecode could we erased more efficiently, there is no read to
+        // initialize a new memory segment.
+        let (bytecode_len) = bytecode_len_.read();
+        let (local bytecode: felt*) = alloc();
+        memset(bytecode, 0, bytecode_len);
+        write_bytecode(bytecode_len, bytecode);
+
+        bytecode_len_.write(0);
+
+        // TODO: clean also the storage
+
         return ();
     }
 
@@ -177,12 +212,13 @@ namespace ContractAccount {
         return nonce.read();
     }
 
-    // @notice This function increases the account nonce by 1
-    func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    // @notice This function set the account nonce
+    func set_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        new_nonce: felt
+    ) {
         // Access control check.
         Ownable.assert_only_owner();
-        let (current_nonce: felt) = nonce.read();
-        nonce.write(current_nonce + 1);
+        nonce.write(new_nonce);
         return ();
     }
 }

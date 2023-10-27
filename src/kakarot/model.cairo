@@ -32,47 +32,91 @@ namespace model {
         bytes_len: felt,
     }
 
+    // @dev In Cairo Zero, dict are list of DictAccess, ie that they can contain only felts. For having
+    //      dict of structs, we store in the dict pointers to the struct. List of structs are just list of
+    //      felt with inlined structs. Hence one has eventually
+    //      accounts := Dict<starknet_address, Account*>
+    //      events := List<Event>
+    //      balances := Dict<starknet_address, Uint256*>
+    //      transfers := List<Transfer>
+    //      Unlike in standard EVM, we need to store the native token transfers as well since we use the
+    //      Starknet's ETH and can't just set the balances
+    struct State {
+        accounts_start: DictAccess*,
+        accounts: DictAccess*,
+        events_len: felt,
+        events: Event*,
+        balances_start: DictAccess*,
+        balances: DictAccess*,
+        transfers_len: felt,
+        transfers: Transfer*,
+    }
+
+    // @notice The struct representing an EVM account.
+    // @dev We don't put the balance here to avoid loading the whole Account just for sending ETH
+    // @dev The address here is consequently an EVM address
+    struct Account {
+        address: felt,
+        code_len: felt,
+        code: felt*,
+        storage_start: DictAccess*,
+        storage: DictAccess*,
+        nonce: felt,
+        selfdestruct: felt,
+    }
+
+    // @notice The struct representing an EVM event.
+    // @dev The topics are indeed a first felt for the emitting EVM account, followed by a list of Uint256
+    struct Event {
+        topics_len: felt,
+        topics: felt*,
+        data_len: felt,
+        data: felt*,
+    }
+
+    // @dev A struct to save Starknet native ETH transfers to be made when finalizing a tx
+    struct Transfer {
+        sender: Address*,
+        recipient: Address*,
+        amount: Uint256,
+    }
+
+    // @dev Though one of the two address is enough, we store both to save on steps and simplify the usage.
+    struct Address {
+        starknet: felt,
+        evm: felt,
+    }
+
     // @notice info: https://www.evm.codes/about#calldata
     // @notice Struct storing data related to a call.
+    // @dev All CallContext fields are constant during a given call.
     // @param bytecode The executed bytecode.
     // @param bytecode_len The length of bytecode.
     // @param calldata byte The space where the data parameter of a transaction or call is held.
     // @param calldata_len The length of calldata.
     // @param value The amount of native token to transfer.
+    // @param gas_limit The gas limit for the call.
+    // @param gas_price The gas price for the call.
+    // @param origin The origin of the transaction.
+    // @param calling_context The parent context of the current execution context, can be empty when context
+    //                        is root context | see ExecutionContext.is_empty(ctx).
+    // @param address The address of the current EVM account. Note that the bytecode may not be the one
+    //        of the account in case of a CALLCODE or DELEGATECALL
+    // @param read_only if set to true, context cannot do any state modifying instructions or send ETH in the sub context.
+    // @param is_create if set to true, the call context is a CREATEs or deploy execution
     struct CallContext {
         bytecode: felt*,
         bytecode_len: felt,
         calldata: felt*,
         calldata_len: felt,
         value: felt,
-    }
-
-    // @notice A dictionary that keeps track of the prior-to-first-write-of-operating-execution-context value of a contract storage key so it can be reverted to if the writing execution context reverts.
-    // @param dict_start pointer to a DictAccess used to store the revert contract states's value at a contract storage key.
-    // @param dict_start The pointer to the end of the DictAccess array.
-    // @param dict_end The pointer to the end of the DictAccess array.
-    struct RevertContractState {
-        dict_start: DictAccess*,
-        dict_end: DictAccess*,
-    }
-
-    // @notice The prior-to-first-write-of-operating-execution-context value of a contract storage key in `RevertContractState`
-    // @param key The key of memory of contract storage (see `MemoryOperations.exec_sstore`).
-    // @param value The value of memory of contract storage (see `MemoryOperations.exec_sstore`).
-    struct KeyValue {
-        key: Uint256,
-        value: Uint256,
-    }
-
-    // TODO: possible to just import `EmitEvent` struct from `starkware.starknet.common.syscalls`
-    // @notice info: https://www.evm.codes/about#calldata
-    // @notice Struct storing data related to an event emitting, as in when calling `emit_event`
-    // @notice conveying the data as a struct is necessary because we want to delay the actual emitting until an execution context is completed and not reverted
-    struct Event {
-        keys_len: felt,
-        keys: Uint256*,
-        data_len: felt,
-        data: felt*,
+        gas_limit: felt,
+        gas_price: felt,
+        origin: Address*,
+        calling_context: ExecutionContext*,
+        address: Address*,
+        read_only: felt,
+        is_create: felt,
     }
 
     // @dev Stores all data relevant to the current execution context.
@@ -84,43 +128,17 @@ namespace model {
     // @param stack The current execution context stack.
     // @param memory The current execution context memory.
     // @param gas_used The gas consumed by the current state of the execution.
-    // @param gas_limit The maximum amount of gas for the execution.
-    // @param gas_price The amount to pay per unit of gas.
-    // @param starknet_contract_address The starknet address of the contract interacted with.
-    // @param evm_contract_address The evm address of the contract interacted with.
-    // @param calling_context The parent context of the current execution context, can be empty when context
-    //                        is root context | see ExecutionContext.is_empty(ctx).
-    // @param selfdestruct_contracts_len The destroy_contract length.
-    // @param selfdestruct_contracts The array of contracts to destroy at the end of the transaction.
-    // @param events_len The events length.
-    // @param events The events to be emitted upon a non-reverted stopped execution context.
-    // @param create_addresses_len The create_addresses length.
-    // @param create_addresses The addresses of contracts initialized by the create(2) opcodes that are deleted if the creating context is reverted.
-    // @param revert_contract_state A dictionary that keeps track of the prior-to-first-write value of a contract storage key so it can be reverted to if the writing execution context reverts.
-    // @param read_only if set to true, context cannot do any state modifying instructions or send ETH in the sub context.
+    // @param state The current journal of state updates.
     struct ExecutionContext {
+        state: State*,
         call_context: CallContext*,
-        program_counter: felt,
-        stopped: felt,
-        return_data: felt*,
-        return_data_len: felt,
         stack: Stack*,
         memory: Memory*,
+        return_data_len: felt,
+        return_data: felt*,
+        program_counter: felt,
+        stopped: felt,
         gas_used: felt,
-        gas_limit: felt,
-        gas_price: felt,
-        starknet_contract_address: felt,
-        evm_contract_address: felt,
-        origin: felt,
-        calling_context: ExecutionContext*,
-        selfdestruct_contracts_len: felt,
-        selfdestruct_contracts: felt*,
-        events_len: felt,
-        events: Event*,
-        create_addresses_len: felt,
-        create_addresses: felt*,
-        revert_contract_state: RevertContractState*,
         reverted: felt,
-        read_only: felt,
     }
 }

@@ -6,7 +6,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
 
 from kakarot.accounts.eoa.library import ExternallyOwnedAccount
-from kakarot.accounts.library import Accounts
+from kakarot.account import Account
 
 // Externally Owned Account initializer
 @external

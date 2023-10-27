@@ -7,7 +7,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.memcpy import memcpy
 
-from kakarot.accounts.library import Accounts
+from kakarot.account import Account
 from kakarot.interfaces.interfaces import IERC20, IKakarot
 from utils.eth_transaction import EthTransaction
 from utils.utils import Helpers

@@ -56,6 +56,9 @@ namespace IAccount {
 
     func bytecode() -> (bytecode_len: felt, bytecode: felt*) {
     }
+
+    func account_type() -> (type: felt) {
+    }
 }
 
 @contract_interface
@@ -63,16 +66,19 @@ namespace IContractAccount {
     func write_bytecode(bytecode_len: felt, bytecode: felt*) {
     }
 
-    func storage(key: Uint256) -> (value: Uint256) {
+    func storage(storage_addr: felt) -> (value: Uint256) {
     }
 
-    func write_storage(key: Uint256, value: Uint256) {
+    func write_storage(storage_addr: felt, value: Uint256) {
     }
 
     func get_nonce() -> (nonce: felt) {
     }
 
-    func increment_nonce() {
+    func set_nonce(nonce: felt) {
+    }
+
+    func selfdestruct() {
     }
 }
 

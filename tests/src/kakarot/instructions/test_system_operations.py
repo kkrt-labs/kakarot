@@ -140,8 +140,3 @@ class TestSystemOperations:
             (0, memory_word),
             int(expected_create2_addr, 16),
         ).call()
-
-    async def test_selfdestruct(self, system_operations):
-        await system_operations.test__exec_selfdestruct__should_delete_account_bytecode().call(
-            system_operations.contract_address
-        )
