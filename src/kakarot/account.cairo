@@ -289,7 +289,6 @@ namespace Account {
     // @param code_len The len of the code
     // @param code The code array
     func set_code(self: model.Account*, code_len: felt, code: felt*) -> model.Account* {
-        assert self.code_len = 0;
         return new model.Account(
             address=self.address,
             code_len=code_len,
