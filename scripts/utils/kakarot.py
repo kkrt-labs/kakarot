@@ -53,7 +53,7 @@ if not NETWORK["devnet"]:
 
 try:
     FOUNDRY_FILE = toml.loads((Path(__file__).parents[2] / "foundry.toml").read_text())
-except NameError:
+except (NameError, FileNotFoundError):
     FOUNDRY_FILE = toml.loads(Path("foundry.toml").read_text())
 
 
@@ -372,36 +372,44 @@ async def fund_address(address: Union[str, int], amount: float):
 
 
 async def store_bytecode(bytecode: Union[str, bytes], **kwargs):
+    """
+    Deploy a contract account through Kakarot with given bytecode as finally
+    stored bytecode.
+
+    Note: Deploying directly a contract account and using `write_bytecode` would not
+    produce an EVM contract registered in Kakarot and thus is not an option. We need
+    to have Kakarot deploying EVM contrats.
+    """
     bytecode = (
         bytecode
         if isinstance(bytecode, bytes)
         else bytes.fromhex(bytecode.replace("0x", ""))
     )
 
+    # Defines variables for used opcodes to make it easier to write the mnemonic
     PUSH1 = "60"
     PUSH2 = "61"
     CODECOPY = "39"
     RETURN = "f3"
-    # Generate a simple bytecode that just returns the target one
-    # The offset is first put as a placeholder with string 'os', then
-    # replaced by the actual offset of the target bytecode
-    deploy_bytecode = f"""
+    # The deploy_bytecode is crafted such that:
+    # - append at the end of the run bytecode the target bytecode
+    # - load this chunk of code in memory using CODECOPY
+    # - return this data in RETURN
+    #
+    # Bytecode usage
+    # - CODECOPY(len, offset, destOffset): set memory such that memory[destOffset:destOffset + len] = code[offset:offset + len]
+    # - RETURN(len, offset): return memory[offset:offset + len]
+    deploy_bytecode = bytes.fromhex(
+        f"""
     {PUSH2} {len(bytecode):04x}
-    {PUSH1} os
+    {PUSH1} 0e
     {PUSH1} 00
     {CODECOPY}
     {PUSH2} {len(bytecode):04x}
     {PUSH1} 00
     {RETURN}
-    {bytecode.hex()}
-    """.replace(
-        "\n", ""
-    ).replace(
-        " ", ""
+    {bytecode.hex()}"""
     )
-    index = deploy_bytecode.index(bytecode.hex()) // 2
-    deploy_bytecode = bytes.fromhex(deploy_bytecode.replace("os", f"{index:02x}"))
-    assert deploy_bytecode[index:] == bytecode
     receipt, response, success = await eth_send_transaction(
         to=0, data=deploy_bytecode, **kwargs
     )
