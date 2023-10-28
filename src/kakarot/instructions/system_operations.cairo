@@ -230,8 +230,8 @@ namespace SystemOperations {
         );
         if (ctx.call_context.read_only * sub_ctx.call_context.value != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
+            let sub_ctx = ExecutionContext.stop(sub_ctx, revert_reason_len, revert_reason, TRUE);
+            return sub_ctx;
         }
 
         let (value_high, value_low) = split_felt(sub_ctx.call_context.value);
