@@ -111,4 +111,10 @@ contract PlainOpcodesTest is Test {
         (bool success,) = plainOpcodes.opcodeStaticCall2();
         assert(!success);
     }
+
+    function testStaticCallToCallToInc() public view {
+        bytes memory data = abi.encodeWithSelector(bytes4(keccak256("opcodeCall()")));
+        (bool success,) = plainOpcodes.opcodeStaticCallToAddress(address(plainOpcodes), data);
+        assert(!success);
+    }
 }
