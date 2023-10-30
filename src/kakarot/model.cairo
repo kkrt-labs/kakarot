@@ -10,14 +10,14 @@ namespace model {
     // @notice Info: https://www.evm.codes/about#stack
     // @notice Stack with a 1024 items maximum size. Each item is a 256 bits word. The stack is used by most
     // @notice opcodes to consume their parameters from.
-    // @dev Each word is represented by two 128bits (16bytes) chunks.
-    // @param word_dict_start pointer to a DictAccess array used to store the stack's value at a given index.
-    // @param word_dict pointer to the end of the DictAccess array.
-    // @param len_16_bytes length of the DictAccess array.
+    // @dev The dict stores a pointer to the word (a Uint256).
+    // @param size The size of the Stack.
+    // @param dict_ptr_start pointer to a DictAccess array used to store the stack's value at a given index.
+    // @param dict_ptr pointer to the end of the DictAccess array.
     struct Stack {
-        word_dict_start: DictAccess*,
-        word_dict: DictAccess*,
-        len_16bytes: felt,
+        dict_ptr_start: DictAccess*,
+        dict_ptr: DictAccess*,
+        size: felt,
     }
 
     // @notice info: https://www.evm.codes/about#memory

@@ -202,8 +202,8 @@ namespace Account {
     // @return The updated Account
     // @return The read value
     func read_storage{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Account*, address: model.Address*, key: Uint256
-    ) -> (model.Account*, Uint256) {
+        self: model.Account*, address: model.Address*, key: Uint256*
+    ) -> (model.Account*, Uint256*) {
         alloc_locals;
         let storage = self.storage;
         let (local storage_addr) = Internals._storage_addr(key);
@@ -222,7 +222,7 @@ namespace Account {
                 self.nonce,
                 self.selfdestruct,
             );
-            return (self, [value_ptr]);
+            return (self, value_ptr);
         }
 
         // Case reading from Starknet storage
@@ -255,7 +255,7 @@ namespace Account {
             self.nonce,
             self.selfdestruct,
         );
-        return (self, [value_ptr]);
+        return (self, value_ptr);
     }
 
     // @notice Update a storage key with the given value
@@ -263,7 +263,7 @@ namespace Account {
     // @param key The pointer to the Uint256 storage key
     // @param value The pointer to the Uint256 value
     func write_storage{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Account*, key: Uint256, value: Uint256*
+        self: model.Account*, key: Uint256*, value: Uint256*
     ) -> model.Account* {
         alloc_locals;
         local storage: DictAccess* = self.storage;
@@ -454,10 +454,10 @@ namespace Internals {
     // @notice Compute the storage address of the given key when the storage var interface is
     //         storage_(key: Uint256)
     // @dev    Just the generated addr method when compiling the contract_account
-    func _storage_addr{pedersen_ptr: HashBuiltin*, range_check_ptr}(key: Uint256) -> (res: felt) {
+    func _storage_addr{pedersen_ptr: HashBuiltin*, range_check_ptr}(key: Uint256*) -> (res: felt) {
         let res = 1510236440068827666686527023008568026372765124888307403567795291192307314167;
-        let (res) = hash2{hash_ptr=pedersen_ptr}(res, cast(&key, felt*)[0]);
-        let (res) = hash2{hash_ptr=pedersen_ptr}(res, cast(&key, felt*)[1]);
+        let (res) = hash2{hash_ptr=pedersen_ptr}(res, cast(key, felt*)[0]);
+        let (res) = hash2{hash_ptr=pedersen_ptr}(res, cast(key, felt*)[1]);
         let (res) = normalize_address(addr=res);
         return (res=res);
     }

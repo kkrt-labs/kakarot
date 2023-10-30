@@ -32,10 +32,10 @@ func test__exec_pc__should_update_after_incrementing{
 
     // Then
     assert result.gas_used = 2;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(increment - 1, 0);
+    assert index0.low = increment - 1;
+    assert index0.high = 0;
     return ();
 }
 
@@ -48,10 +48,13 @@ func test__exec_pop_should_pop_an_item_from_execution_context{
     let (bytecode) = alloc();
     let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
     // Given
-    let stack: model.Stack* = Stack.init();
+    let stack = Stack.init();
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
+    tempvar item_1 = new Uint256(1, 0);
+    tempvar item_0 = new Uint256(2, 0);
+
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx = ExecutionContext.update_stack(ctx, stack);
 
     // When
@@ -59,10 +62,9 @@ func test__exec_pop_should_pop_an_item_from_execution_context{
 
     // Then
     assert result.gas_used = 2;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert_uint256_eq(index0, Uint256(1, 0));
+    assert_uint256_eq([index0], Uint256(1, 0));
     return ();
 }
 
@@ -75,13 +77,19 @@ func test__exec_mload_should_load_a_value_from_memory{
     let (bytecode) = alloc();
     let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
     // Given
-    let stack: model.Stack* = Stack.init();
+    let stack = Stack.init();
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    tempvar item_1 = new Uint256(1, 0);
+    tempvar item_0 = new Uint256(0, 0);
+
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
+
     let ctx = ExecutionContext.update_stack(ctx, stack);
     let ctx = MemoryOperations.exec_mstore(ctx);
-    let stack: model.Stack* = Stack.push(ctx.stack, Uint256(0, 0));
+
+    tempvar item_0 = new Uint256(0, 0);
+    let stack = Stack.push(ctx.stack, item_0);
     let ctx = ExecutionContext.update_stack(ctx, stack);
 
     // When
@@ -91,10 +99,9 @@ func test__exec_mload_should_load_a_value_from_memory{
 
     // Then
     assert gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert_uint256_eq(index0, Uint256(1, 0));
+    assert_uint256_eq([index0], Uint256(1, 0));
     return ();
 }
 
@@ -108,13 +115,19 @@ func test__exec_mload_should_load_a_value_from_memory_with_memory_expansion{
     let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
     let test_offset = 16;
     // Given
-    let stack: model.Stack* = Stack.init();
+    let stack = Stack.init();
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    tempvar item_1 = new Uint256(1, 0);
+    tempvar item_0 = new Uint256(0, 0);
+
+    let stack: model.Stack* = Stack.push(stack, item_1);
+    let stack: model.Stack* = Stack.push(stack, item_0);
+
     let ctx = ExecutionContext.update_stack(ctx, stack);
     let ctx = MemoryOperations.exec_mstore(ctx);
-    let stack: model.Stack* = Stack.push(ctx.stack, Uint256(test_offset, 0));
+
+    tempvar offset = new Uint256(test_offset, 0);
+    let stack = Stack.push(ctx.stack, offset);
     let ctx = ExecutionContext.update_stack(ctx, stack);
 
     // When
@@ -124,10 +137,9 @@ func test__exec_mload_should_load_a_value_from_memory_with_memory_expansion{
 
     // Then
     assert gas_used = 6;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert_uint256_eq(index0, Uint256(0, 1));
+    assert_uint256_eq([index0], Uint256(0, 1));
     assert result.memory.bytes_len = test_offset + 32;
     return ();
 }
@@ -142,13 +154,18 @@ func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_ms
     let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
     let test_offset = 684;
     // Given
-    let stack: model.Stack* = Stack.init();
+    let stack = Stack.init();
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    tempvar item_1 = new Uint256(1, 0);
+    tempvar item_0 = new Uint256(0, 0);
+
+    let stack: model.Stack* = Stack.push(stack, item_1);
+    let stack: model.Stack* = Stack.push(stack, item_0);
+
     let ctx = ExecutionContext.update_stack(ctx, stack);
     let ctx = MemoryOperations.exec_mstore(ctx);
-    let stack: model.Stack* = Stack.push(ctx.stack, Uint256(test_offset, 0));
+    tempvar offset = new Uint256(test_offset, 0);
+    let stack = Stack.push(ctx.stack, offset);
     let ctx = ExecutionContext.update_stack(ctx, stack);
 
     // When
@@ -156,10 +173,9 @@ func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_ms
 
     // Then
     assert result.gas_used = 73;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert_uint256_eq(index0, Uint256(0, 0));
+    assert_uint256_eq([index0], Uint256(0, 0));
     assert result.memory.bytes_len = test_offset + 32;
     return ();
 }
@@ -173,7 +189,7 @@ func test__exec_gas_should_return_remaining_gas{
     let (bytecode) = alloc();
     let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
     // Given
-    let stack: model.Stack* = Stack.init();
+    let stack = Stack.init();
 
     let ctx = ExecutionContext.update_stack(ctx, stack);
 
@@ -184,11 +200,10 @@ func test__exec_gas_should_return_remaining_gas{
 
     // Then
     assert gas_used = 2;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, actual_remaining_gas) = Stack.peek(result.stack, 0);
     let expected_remaining_gas = Constants.TRANSACTION_GAS_LIMIT - gas_used;
     let expected_remaining_gas_uint256 = Uint256(expected_remaining_gas, 0);
-    assert_uint256_eq(actual_remaining_gas, expected_remaining_gas_uint256);
+    assert_uint256_eq([actual_remaining_gas], expected_remaining_gas_uint256);
     return ();
 }

@@ -134,9 +134,9 @@ class TestSystemOperations:
 
         await system_operations.test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_at_expected_address(
             evm_caller_address_int,
-            (offset, 0),
-            (size, 0),
-            (salt, 0),
+            offset,
+            size,
+            salt,
             (0, memory_word),
             int(expected_create2_addr, 16),
         ).call()

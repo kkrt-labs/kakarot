@@ -153,31 +153,13 @@ namespace TestHelpers {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(start: Uint256, n: felt, stack: model.Stack*) -> model.Stack* {
-        alloc_locals;
+    }(start: felt, n: felt, stack: model.Stack*) -> model.Stack* {
         if (n == 0) {
             return stack;
         }
 
-        uint256_check(start);
-        let updated_stack: model.Stack* = Stack.push(stack, start);
-        let (local element: Uint256, _) = uint256_add(start, Uint256(1, 0));
-        return push_elements_in_range_to_stack(element, n - 1, updated_stack);
-    }
-
-    func assert_stack_last_element_contains_uint256{range_check_ptr}(
-        stack: model.Stack*, value: Uint256
-    ) {
-        let (stack, result) = Stack.peek(stack, 0);
-        assert_uint256_eq(result, value);
-
-        return ();
-    }
-
-    func assert_stack_len_16bytes_equal{range_check_ptr}(stack: model.Stack*, len: felt) {
-        assert stack.len_16bytes / 2 = len;
-
-        return ();
+        let updated_stack: model.Stack* = Stack.push_uint128(stack, start);
+        return push_elements_in_range_to_stack(start + 1, n - 1, updated_stack);
     }
 
     func assert_array_equal(array_0_len: felt, array_0: felt*, array_1_len: felt, array_1: felt*) {

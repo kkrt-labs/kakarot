@@ -2,10 +2,8 @@ import pytest
 import pytest_asyncio
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.errors import cairo_error
 
-
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="session")
 async def stack(starknet: Starknet):
     class_hash = await starknet.deprecated_declare(
         source="./tests/src/kakarot/test_stack.cairo",
@@ -17,29 +15,28 @@ async def stack(starknet: Starknet):
 
 @pytest.mark.asyncio
 class TestStack:
-    async def test_everything_stack(self, stack):
-        await stack.test__init__should_return_an_empty_stack().call()
-        await stack.test__len__should_return_the_length_of_the_stack().call()
-        await stack.test__push__should_add_an_element_to_the_stack().call()
-        await stack.test__pop__should_pop_an_element_to_the_stack().call()
-        await stack.test__pop__should_pop_N_elements_to_the_stack().call()
+    class TestPeek:
+        async def test_should_return_stack_at_given_index__when_value_is_0(self, stack):
+            await stack.test__peek__should_return_stack_at_given_index__when_value_is_0().call()
 
-        with cairo_error("Kakarot: StackUnderflow"):
-            await stack.test__pop__should_fail__when_stack_underflow_pop().call()
+        async def test_should_return_stack_at_given_index__when_value_is_1(self, stack):
+            await stack.test__peek__should_return_stack_at_given_index__when_value_is_1().call()
 
-        with cairo_error("Kakarot: StackUnderflow"):
-            await stack.test__pop__should_fail__when_stack_underflow_pop_n().call()
+    class TestInit:
+        async def test_should_return_an_empty_stack(self, stack):
+            await stack.test__init__should_return_an_empty_stack().call()
 
-        await stack.test__peek__should_return_stack_at_given_index__when_value_is_0().call()
-        await stack.test__peek__should_return_stack_at_given_index__when_value_is_1().call()
+    class TestPush:
+        async def test_should_add_an_element_to_the_stack(self, stack):
+            await stack.test__push__should_add_an_element_to_the_stack().call()
 
-        with cairo_error("Kakarot: StackUnderflow"):
-            await stack.test__peek__should_fail_when_underflow().call()
+    class TestPop:
+        async def test_should_pop_an_element_to_the_stack(self, stack):
+            await stack.test__pop__should_pop_an_element_to_the_stack().call()
 
-        await stack.test__swap__should_swap_2_stacks().call()
+        async def test_should_pop_N_elements_to_the_stack(self, stack):
+            await stack.test__pop__should_pop_N_elements_to_the_stack().call()
 
-        with cairo_error("Kakarot: StackUnderflow"):
-            await stack.test__swap__should_fail__when_index_1_is_underflow().call()
-
-        with cairo_error("Kakarot: StackUnderflow"):
-            await stack.test__swap__should_fail__when_index_2_is_underflow().call()
+    class TestSwap:
+        async def test_should_swap_2_stacks(self, stack):
+            await stack.test__swap__should_swap_2_stacks().call()

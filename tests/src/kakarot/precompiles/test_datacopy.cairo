@@ -55,12 +55,12 @@ func test__datacopy_via_staticcall{
     let stack: model.Stack* = Stack.init();
     let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
     let (address_high, address_low) = split_felt(PrecompileDataCopy.PRECOMPILE_ADDRESS);
-    let address = Uint256(address_low, address_high);
-    let args_offset = Uint256(31, 0);
-    let args_size = Uint256(1, 0);
+    tempvar address = new Uint256(address_low, address_high);
+    tempvar args_offset = new Uint256(31, 0);
+    tempvar args_size = new Uint256(1, 0);
 
-    tempvar ret_offset = Uint256(63, 0);
-    tempvar ret_size = Uint256(1, 0);
+    tempvar ret_offset = new Uint256(63, 0);
+    tempvar ret_size = new Uint256(1, 0);
 
     let stack = Stack.push(stack, ret_size);
     let stack = Stack.push(stack, ret_offset);
@@ -69,8 +69,8 @@ func test__datacopy_via_staticcall{
     let stack = Stack.push(stack, address);
     let stack = Stack.push(stack, gas);
 
-    tempvar preset_memory = Uint256(low=0xFF, high=0);
-    let memory_offset = Uint256(0, 0);
+    tempvar preset_memory = new Uint256(low=0xFF, high=0);
+    tempvar memory_offset = new Uint256(0, 0);
     let stack = Stack.push(stack, preset_memory);
 
     let stack = Stack.push(stack, memory_offset);
@@ -84,7 +84,7 @@ func test__datacopy_via_staticcall{
 
     // Put the result alone on the stack
     let result = MemoryOperations.exec_pop(result);
-    let stack = Stack.push(result.stack, Uint256(32, 0));
+    let stack = Stack.push_uint128(result.stack, 32);
     let result = ExecutionContext.update_stack(result, stack);
     let result = MemoryOperations.exec_mload(result);
     let (stack, stack_result) = Stack.peek(result.stack, 0);

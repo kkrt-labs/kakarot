@@ -125,7 +125,7 @@ namespace Kakarot {
         let state = ctx.state;
         // Handle value
         let amount = Helpers.to_uint256(value);
-        let transfer = model.Transfer(origin, address, amount);
+        let transfer = model.Transfer(origin, address, [amount]);
         let (state, success) = State.add_transfer(state, transfer);
 
         // Check collision
@@ -294,7 +294,7 @@ namespace Kakarot {
             contract_address=native_token_address,
             sender=starknet_contract_address,
             recipient=caller_address,
-            amount=amount,
+            amount=[amount],
         );
 
         return (starknet_contract_address=starknet_contract_address);

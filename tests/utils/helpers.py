@@ -40,20 +40,6 @@ def extract_memory_from_execute(result):
     return mem
 
 
-def extract_stack_from_execute(result):
-    stack = [0] * int(result.stack_len / 2)
-    for i in range(0, result.stack_len * 3, 6):
-        k = result.stack_accesses[i]  # Word index.
-        index = int(k / 2)
-        assert result.stack_accesses[i + 1] == 0  # Initial value.
-        high = result.stack_accesses[i + 2]  # Final value.
-        assert result.stack_accesses[i + 4] == 0  # Initial value.
-        low = result.stack_accesses[i + 5]  # Final value.
-        stack[index] = 2**128 * high + low
-
-    return stack
-
-
 # The following helpers are translated from https://github.com/Uniswap/v2-core/blob/master/test/shared/utilities.ts
 def expand_to_18_decimals(n: int) -> int:
     return n * 10**18

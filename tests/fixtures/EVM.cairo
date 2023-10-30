@@ -24,7 +24,7 @@ from kakarot.constants import (
     account_proxy_class_hash,
     Constants,
 )
-from utils.dict import dict_keys
+from utils.dict import dict_keys, dict_values
 
 // Constructor
 @constructor
@@ -83,9 +83,11 @@ func evm_call{
 ) -> (
     block_number: felt,
     block_timestamp: felt,
-    stack_accesses_len: felt,
-    stack_accesses: felt*,
-    stack_len: felt,
+    stack_size: felt,
+    stack_keys_len: felt,
+    stack_keys: felt*,
+    stack_values_len: felt,
+    stack_values: Uint256*,
     memory_accesses_len: felt,
     memory_accesses: felt*,
     memory_bytes_len: felt,
@@ -104,7 +106,13 @@ func evm_call{
     let (local block_timestamp) = get_block_timestamp();
     let summary = execute(origin, value, bytecode_len, bytecode, calldata_len, calldata);
 
-    let stack_accesses_len = summary.stack.squashed_end - summary.stack.squashed_start;
+    let (stack_keys_len, stack_keys) = dict_keys(
+        summary.stack.squashed_start, summary.stack.squashed_end
+    );
+    let (stack_values_len, stack_values) = dict_values(
+        summary.stack.squashed_start, summary.stack.squashed_end
+    );
+
     let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
 
     // Return only accounts keys, ie. touched starknet addresses
@@ -115,9 +123,11 @@ func evm_call{
     return (
         block_number=block_number,
         block_timestamp=block_timestamp,
-        stack_accesses_len=stack_accesses_len,
-        stack_accesses=summary.stack.squashed_start,
-        stack_len=summary.stack.len_16bytes,
+        stack_size=summary.stack.size,
+        stack_keys_len=stack_keys_len,
+        stack_keys=stack_keys,
+        stack_values_len=stack_values_len,
+        stack_values=stack_values,
         memory_accesses_len=memory_accesses_len,
         memory_accesses=summary.memory.squashed_start,
         memory_bytes_len=summary.memory.bytes_len,

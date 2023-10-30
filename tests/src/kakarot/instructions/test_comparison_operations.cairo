@@ -21,10 +21,13 @@ func test__exec_lt__should_pop_0_and_1_and_push_0__when_0_not_lt_1{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
+    tempvar item_0 = new Uint256(2, 0);
+    tempvar item_1 = new Uint256(1, 0);
+
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -32,10 +35,10 @@ func test__exec_lt__should_pop_0_and_1_and_push_0__when_0_not_lt_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(0, 0);
+    assert index0.low = 0;
+    assert index0.high = 0;
     return ();
 }
 
@@ -46,10 +49,12 @@ func test__exec_lt__should_pop_0_and_1_and_push_1__when_0_lt_1{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(1, 0);
+    tempvar item_1 = new Uint256(2, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -57,10 +62,10 @@ func test__exec_lt__should_pop_0_and_1_and_push_1__when_0_lt_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(1, 0);
+    assert index0.low = 1;
+    assert index0.high = 0;
     return ();
 }
 
@@ -71,10 +76,12 @@ func test__exec_gt__should_pop_0_and_1_and_push_0__when_0_not_gt_1{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(1, 0);
+    tempvar item_1 = new Uint256(2, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -82,10 +89,10 @@ func test__exec_gt__should_pop_0_and_1_and_push_0__when_0_not_gt_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(0, 0);
+    assert index0.low = 0;
+    assert index0.high = 0;
     return ();
 }
 
@@ -96,10 +103,12 @@ func test__exec_gt__should_pop_0_and_1_and_push_1__when_0_gt_1{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(2, 0);
+    tempvar item_1 = new Uint256(1, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -107,10 +116,10 @@ func test__exec_gt__should_pop_0_and_1_and_push_1__when_0_gt_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(1, 0);
+    assert index0.low = 1;
+    assert index0.high = 0;
     return ();
 }
 
@@ -121,10 +130,12 @@ func test__exec_slt__should_pop_0_and_1_and_push_0__when_0_not_slt_1{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(2, 0);
+    tempvar item_1 = new Uint256(1, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -132,10 +143,10 @@ func test__exec_slt__should_pop_0_and_1_and_push_0__when_0_not_slt_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(0, 0);
+    assert index0.low = 0;
+    assert index0.high = 0;
     return ();
 }
 
@@ -146,10 +157,12 @@ func test__exec_slt__should_pop_0_and_1_and_push_1__when_0_slt_1{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(1, 0);
+    tempvar item_1 = new Uint256(2, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -157,10 +170,10 @@ func test__exec_slt__should_pop_0_and_1_and_push_1__when_0_slt_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(1, 0);
+    assert index0.low = 1;
+    assert index0.high = 0;
     return ();
 }
 
@@ -171,10 +184,12 @@ func test__exec_sgt__should_pop_0_and_1_and_push_0__when_0_not_sgt_1{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(1, 0);
+    tempvar item_1 = new Uint256(2, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -182,10 +197,10 @@ func test__exec_sgt__should_pop_0_and_1_and_push_0__when_0_not_sgt_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(0, 0);
+    assert index0.low = 0;
+    assert index0.high = 0;
     return ();
 }
 
@@ -196,10 +211,12 @@ func test__exec_sgt__should_pop_0_and_1_and_push_1__when_0_sgt_1{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(2, 0);
+    tempvar item_1 = new Uint256(1, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -207,10 +224,10 @@ func test__exec_sgt__should_pop_0_and_1_and_push_1__when_0_sgt_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(1, 0);
+    assert index0.low = 1;
+    assert index0.high = 0;
     return ();
 }
 
@@ -221,10 +238,12 @@ func test__exec_eq__should_pop_0_and_1_and_push_0__when_0_not_eq_1{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(1, 0);
+    tempvar item_1 = new Uint256(2, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -232,10 +251,10 @@ func test__exec_eq__should_pop_0_and_1_and_push_0__when_0_not_eq_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(0, 0);
+    assert index0.low = 0;
+    assert index0.high = 0;
     return ();
 }
 
@@ -246,10 +265,12 @@ func test__exec_eq__should_pop_0_and_1_and_push_1__when_0_eq_1{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(2, 0);
+    tempvar item_1 = new Uint256(2, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -257,10 +278,10 @@ func test__exec_eq__should_pop_0_and_1_and_push_1__when_0_eq_1{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(1, 0);
+    assert index0.low = 1;
+    assert index0.high = 0;
     return ();
 }
 
@@ -271,9 +292,10 @@ func test__exec_iszero__should_pop_0_and_push_0__when_0_is_not_zero{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(1, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -281,10 +303,10 @@ func test__exec_iszero__should_pop_0_and_push_0__when_0_is_not_zero{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(0, 0);
+    assert index0.low = 0;
+    assert index0.high = 0;
     return ();
 }
 
@@ -295,9 +317,10 @@ func test__exec_iszero__should_pop_0_and_push_1__when_0_is_zero{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(0, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -305,10 +328,10 @@ func test__exec_iszero__should_pop_0_and_push_1__when_0_is_zero{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(1, 0);
+    assert index0.low = 1;
+    assert index0.high = 0;
     return ();
 }
 
@@ -319,10 +342,12 @@ func test__exec_and__should_pop_0_and_1_and_push_0__when_0_and_1_are_not_true{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(1, 0);
+    tempvar item_1 = new Uint256(0, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -330,10 +355,10 @@ func test__exec_and__should_pop_0_and_1_and_push_0__when_0_and_1_are_not_true{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(0, 0);
+    assert index0.low = 0;
+    assert index0.high = 0;
     return ();
 }
 
@@ -344,10 +369,12 @@ func test__exec_and__should_pop_0_and_1_and_push_1__when_0_and_1_are_true{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(1, 0);
+    tempvar item_1 = new Uint256(1, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -355,10 +382,10 @@ func test__exec_and__should_pop_0_and_1_and_push_1__when_0_and_1_are_true{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(1, 0);
+    assert index0.low = 1;
+    assert index0.high = 0;
     return ();
 }
 
@@ -369,10 +396,14 @@ func test__exec_and__should_pop_0_and_1_and_push_0x89__when_0_is_0xC9_and_1_is_0
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(0xC9, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(0xBD, 0));
+    tempvar item_0 = new Uint256(0xbd, 0);
+    tempvar item_1 = new Uint256(0xc9, 0);
+
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
+
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -380,10 +411,10 @@ func test__exec_and__should_pop_0_and_1_and_push_0x89__when_0_is_0xC9_and_1_is_0
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(0x89, 0);
+    assert index0.low = 0x89;
+    assert index0.high = 0;
     return ();
 }
 
@@ -394,10 +425,12 @@ func test__exec_or__should_pop_0_and_1_and_push_0__when_0_or_1_are_not_true{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(0, 0);
+    tempvar item_1 = new Uint256(0, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -405,10 +438,10 @@ func test__exec_or__should_pop_0_and_1_and_push_0__when_0_or_1_are_not_true{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(0, 0);
+    assert index0.low = 0;
+    assert index0.high = 0;
     return ();
 }
 
@@ -419,10 +452,12 @@ func test__exec_or__should_pop_0_and_1_and_push_1__when_0_or_1_are_true{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(1, 0);
+    tempvar item_1 = new Uint256(0, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -430,10 +465,10 @@ func test__exec_or__should_pop_0_and_1_and_push_1__when_0_or_1_are_true{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(1, 0);
+    assert index0.low = 1;
+    assert index0.high = 0;
     return ();
 }
 
@@ -444,10 +479,12 @@ func test__exec_or__should_pop_0_and_1_and_push_0xCD__when_0_is_0x89_and_1_is_0x
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(0xc5, 0);
+    tempvar item_1 = new Uint256(0x89, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(0x89, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(0xC5, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -455,10 +492,10 @@ func test__exec_or__should_pop_0_and_1_and_push_0xCD__when_0_is_0x89_and_1_is_0x
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(0xCD, 0);
+    assert index0.low = 0xcd;
+    assert index0.high = 0;
     return ();
 }
 
@@ -469,10 +506,12 @@ func test__exec_xor__should_pop_0_and_1_and_push_0__when_0_and_1_are_true{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(1, 0);
+    tempvar item_1 = new Uint256(1, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -480,10 +519,10 @@ func test__exec_xor__should_pop_0_and_1_and_push_0__when_0_and_1_are_true{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(0, 0);
+    assert index0.low = 0;
+    assert index0.high = 0;
     return ();
 }
 
@@ -494,10 +533,12 @@ func test__exec_xor__should_pop_0_and_1_and_push_0__when_0_and_1_are_not_true{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(0, 0);
+    tempvar item_1 = new Uint256(0, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -505,10 +546,10 @@ func test__exec_xor__should_pop_0_and_1_and_push_0__when_0_and_1_are_not_true{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(0, 0);
+    assert index0.low = 0;
+    assert index0.high = 0;
     return ();
 }
 
@@ -519,10 +560,12 @@ func test__exec_xor__should_pop_0_and_1_and_push_1__when_0_is_true_and_1_is_not_
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(0, 0);
+    tempvar item_1 = new Uint256(1, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -530,10 +573,10 @@ func test__exec_xor__should_pop_0_and_1_and_push_1__when_0_is_true_and_1_is_not_
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(1, 0);
+    assert index0.low = 1;
+    assert index0.high = 0;
     return ();
 }
 
@@ -544,10 +587,12 @@ func test__exec_xor__should_pop_0_and_1_and_push_1__when_0_is_not_true_and_1_is_
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(1, 0);
+    tempvar item_1 = new Uint256(0, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -555,10 +600,10 @@ func test__exec_xor__should_pop_0_and_1_and_push_1__when_0_is_not_true_and_1_is_
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(1, 0);
+    assert index0.low = 1;
+    assert index0.high = 0;
     return ();
 }
 
@@ -569,10 +614,12 @@ func test__exec_xor__should_pop_0_and_1_and_push_0x64__when_0_is_0xB9_and_1_is_0
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    tempvar item_0 = new Uint256(0xdd, 0);
+    tempvar item_1 = new Uint256(0xb9, 0);
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(0xB9, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(0xDD, 0));
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -580,10 +627,10 @@ func test__exec_xor__should_pop_0_and_1_and_push_0x64__when_0_is_0xB9_and_1_is_0
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(0x64, 0);
+    assert index0.low = 0x64;
+    assert index0.high = 0;
     return ();
 }
 
@@ -594,10 +641,14 @@ func test__exec_byte__should_pop_0_and_1_and_push_0__when_0_is_less_than_16_byte
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(0xFFEEDDCCBBAA998877665544332211, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(23, 0));
+    tempvar item_0 = new Uint256(23, 0);
+    tempvar item_1 = new Uint256(0xFFEEDDCCBBAA998877665544332211, 0);
+
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
+
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -605,10 +656,10 @@ func test__exec_byte__should_pop_0_and_1_and_push_0__when_0_is_less_than_16_byte
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(0x99, 0);
+    assert index0.low = 0x99;
+    assert index0.high = 0;
     return ();
 }
 
@@ -619,10 +670,14 @@ func test__exec_byte__should_pop_0_and_1_and_push_0__when_0_is_larger_than_16_by
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0x123456789ABCDEF0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(8, 0));
+    tempvar item_0 = new Uint256(8, 0);
+    tempvar item_1 = new Uint256(0, 0x123456789ABCDEF0);
+
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
+
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -630,10 +685,10 @@ func test__exec_byte__should_pop_0_and_1_and_push_0__when_0_is_larger_than_16_by
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(0x12, 0);
+    assert index0.low = 0x12;
+    assert index0.high = 0;
     return ();
 }
 
@@ -644,10 +699,14 @@ func test__exec_shl__should_pop_0_and_1_and_push_left_shift{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(4, 0));
+    tempvar item_0 = new Uint256(4, 0);
+    tempvar item_1 = new Uint256(2, 0);
+
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
+
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -655,10 +714,10 @@ func test__exec_shl__should_pop_0_and_1_and_push_left_shift{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(32, 0);
+    assert index0.low = 32;
+    assert index0.high = 0;
     return ();
 }
 
@@ -669,10 +728,14 @@ func test__exec_shr__should_pop_0_and_1_and_push_right_shift{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(4, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
+    tempvar item_0 = new Uint256(2, 0);
+    tempvar item_1 = new Uint256(4, 0);
+
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
+
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -680,10 +743,10 @@ func test__exec_shr__should_pop_0_and_1_and_push_right_shift{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(1, 0);
+    assert index0.low = 1;
+    assert index0.high = 0;
     return ();
 }
 
@@ -694,10 +757,14 @@ func test__exec_sar__should_pop_0_and_1_and_push_shr{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
 
-    let stack: model.Stack* = Stack.push(stack, Uint256(4, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
+    tempvar item_0 = new Uint256(2, 0);
+    tempvar item_1 = new Uint256(4, 0);
+
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
+
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
 
     // When
@@ -705,9 +772,9 @@ func test__exec_sar__should_pop_0_and_1_and_push_shr{
 
     // Then
     assert result.gas_used = 3;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(1, 0);
+    assert index0.low = 1;
+    assert index0.high = 0;
     return ();
 }

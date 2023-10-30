@@ -3,11 +3,11 @@
 %lang starknet
 
 // Starkware dependencies
+from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
 from starkware.cairo.common.dict import DictAccess, dict_read, dict_write
 from starkware.cairo.common.math import assert_le, unsigned_div_rem
-from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
@@ -20,20 +20,17 @@ from utils.utils import Helpers
 namespace Stack {
     // Summary of stack. Created upon finalization of the stack.
     struct Summary {
-        len_16bytes: felt,
         squashed_start: DictAccess*,
         squashed_end: DictAccess*,
+        size: felt,
     }
 
     // @notice Initialize the stack.
     // @return The pointer to the stack.
-    // TODO: Maybe use Stack elements directly instead of bytes
     func init() -> model.Stack* {
         alloc_locals;
-        let (word_dict_start: DictAccess*) = default_dict_new(0);
-        return new model.Stack(
-            word_dict_start=word_dict_start, word_dict=word_dict_start, len_16bytes=0
-        );
+        let (dict_ptr_start: DictAccess*) = default_dict_new(0);
+        return new model.Stack(dict_ptr_start, dict_ptr_start, 0);
     }
 
     // @notice Finalizes the stack.
@@ -41,123 +38,68 @@ namespace Stack {
     // @return summary The pointer to the stack Summary.
     func finalize{range_check_ptr}(self: model.Stack*) -> Summary* {
         let (squashed_start, squashed_end) = default_dict_finalize(
-            self.word_dict_start, self.word_dict, 0
+            self.dict_ptr_start, self.dict_ptr, 0
         );
-        return new Summary(
-            len_16bytes=self.len_16bytes, squashed_start=squashed_start, squashed_end=squashed_end
-        );
+        return new Summary(squashed_start, squashed_end, self.size);
     }
 
     // @notice Store an element into the stack.
     // @param self The pointer to the stack.
     // @param element The element to push.
-    // @param offset The offset to store the element at.
     // @return stack The new pointer to the stack.
-    func push{range_check_ptr}(self: model.Stack*, element: Uint256) -> model.Stack* {
-        let word_dict = self.word_dict;
-        let position_zero = self.len_16bytes;
-
-        if (position_zero == Constants.STACK_MAX_DEPTH * 2 + 2) {
-            with_attr error_message("Kakarot: StackOverflow") {
-                assert 1 = 0;
-            }
+    func push{range_check_ptr}(self: model.Stack*, element: Uint256*) -> model.Stack* {
+        let dict_ptr = self.dict_ptr;
+        with dict_ptr {
+            dict_write(self.size, cast(element, felt));
         }
 
-        // Add Uint256 low and high to Dict
-        dict_write{dict_ptr=word_dict}(position_zero, element.high);
-        dict_write{dict_ptr=word_dict}(position_zero + 1, element.low);
+        return new model.Stack(self.dict_ptr_start, dict_ptr, self.size + 1);
+    }
 
-        // Return new Stack
-        return (
-            new model.Stack(
-                word_dict_start=self.word_dict_start,
-                word_dict=word_dict,
-                len_16bytes=self.len_16bytes + 2,
-            )
-        );
+    // @notice Store a uint128 into the stack.
+    // @param self The pointer to the stack.
+    // @param element The element to push.
+    // @return stack The new pointer to the stack.
+    func push_uint128{range_check_ptr}(self: model.Stack*, element: felt) -> model.Stack* {
+        tempvar item = new Uint256(element, 0);
+
+        return push(self, item);
     }
 
     // @notice Pop N elements from the stack.
     // @param self The pointer to the stack.
     // @param n The len of elements to pop.
-    // @return new_stack The new pointer to the stack.
+    // @return stack The new pointer to the stack.
     // @return elements The pointer to the first popped element.
     func pop_n{range_check_ptr}(self: model.Stack*, n: felt) -> (
-        new_stack: model.Stack*, elements: Uint256*
+        stack: model.Stack*, elements: Uint256*
     ) {
         alloc_locals;
-        let word_dict = self.word_dict;
-        let position_zero = self.len_16bytes;
+        let dict_ptr = self.dict_ptr;
 
-        // Check if there is underflow
-        with_attr error_message("Kakarot: StackUnderflow") {
-            assert_le(n * 2, position_zero);
+        let (local items: felt*) = alloc();
+        with dict_ptr {
+            Internals._read_n(index=self.size - 1, n=n, output=items);
         }
 
-        let (new_elements: Uint256*) = alloc();
-
-        // Generate an array of Uint256* to return
-        let (word_dict) = stack_to_uint256(
-            word_dict=word_dict, stack_len=position_zero, n=n * 2, output=new_elements
-        );
-
-        // Return Stack with updated Len
-        let popped_len = 2 * n;
         return (
-            new model.Stack(
-                word_dict_start=self.word_dict_start,
-                word_dict=word_dict,
-                len_16bytes=self.len_16bytes - popped_len,
-            ),
-            new_elements,
+            new model.Stack(self.dict_ptr_start, dict_ptr, self.size - n), cast(items, Uint256*)
         );
-    }
-
-    func stack_to_uint256{range_check_ptr}(
-        word_dict: DictAccess*, stack_len: felt, n: felt, output: Uint256*
-    ) -> (word_dict: DictAccess*) {
-        if (n == 0) {
-            return (word_dict=word_dict);
-        }
-
-        // Get Low and High of element at position N
-        let (el_high) = dict_read{dict_ptr=word_dict}(stack_len - n);
-        let (el_low) = dict_read{dict_ptr=word_dict}(stack_len - n + 1);
-
-        // Save Uint256 value in array
-        let n_index = n / 2 - 1;
-        assert output[n_index] = Uint256(low=el_low, high=el_high);
-
-        return stack_to_uint256(word_dict=word_dict, stack_len=stack_len, n=n - 2, output=output);
     }
 
     // @notice Pop an element from the stack.
     // @param self The pointer to the stack.
-    // @return new_stack The new pointer to the stack.
+    // @return stack The new pointer to the stack.
     // @return element The popped element.
-    func pop{range_check_ptr}(self: model.Stack*) -> (new_stack: model.Stack*, element: Uint256) {
-        let word_dict = self.word_dict;
-        let position_zero = self.len_16bytes;
-        // Check if stack will underflow
+    func pop{range_check_ptr}(self: model.Stack*) -> (stack: model.Stack*, element: Uint256*) {
+        let dict_ptr = self.dict_ptr;
 
-        if (position_zero == 0) {
-            with_attr error_message("Kakarot: StackUnderflow") {
-                assert 1 = 0;
-            }
+        with dict_ptr {
+            let (pointer) = dict_read(self.size - 1);
         }
 
-        // Read and Copy element at position 1(first on stack)
-        let (el_high) = dict_read{dict_ptr=word_dict}(position_zero - 2);
-        let (el_low) = dict_read{dict_ptr=word_dict}(position_zero - 1);
-
-        // Update and return Stack
         return (
-            new model.Stack(
-                word_dict_start=self.word_dict_start,
-                word_dict=word_dict,
-                len_16bytes=self.len_16bytes - 2,
-            ),
-            Uint256(low=el_low, high=el_high),
+            new model.Stack(self.dict_ptr_start, dict_ptr, self.size - 1), cast(pointer, Uint256*)
         );
     }
 
@@ -168,26 +110,15 @@ namespace Stack {
     // @return self The new pointer to the stack.
     // @return value The element at the given index.
     func peek{range_check_ptr}(self: model.Stack*, stack_index: felt) -> (
-        self: model.Stack*, value: Uint256
+        self: model.Stack*, value: Uint256*
     ) {
-        let word_dict = self.word_dict;
-        let position_zero = self.len_16bytes;
-        // Check if there is underflow
-        with_attr error_message("Kakarot: StackUnderflow") {
-            assert_le(stack_index * 2, position_zero);
+        let dict_ptr = self.dict_ptr;
+
+        with dict_ptr {
+            let (pointer) = dict_read(self.size - 1 - stack_index);
         }
-        // Read element at position "stack_index"
-        let (el_high) = dict_read{dict_ptr=word_dict}(position_zero - stack_index * 2 - 2);
-        let (el_low) = dict_read{dict_ptr=word_dict}(position_zero - stack_index * 2 - 1);
-        // Return element
-        return (
-            new model.Stack(
-                word_dict_start=self.word_dict_start,
-                word_dict=word_dict,
-                len_16bytes=self.len_16bytes,
-            ),
-            Uint256(low=el_low, high=el_high),
-        );
+
+        return (new model.Stack(self.dict_ptr_start, dict_ptr, self.size), cast(pointer, Uint256*));
     }
 
     // @notice Swap two elements in the stack.
@@ -196,34 +127,31 @@ namespace Stack {
     // @param i The index of the second element to swap.
     // @return stack The new pointer to the stack.
     func swap_i{range_check_ptr}(self: model.Stack*, i: felt) -> model.Stack* {
-        let word_dict = self.word_dict;
-        let position_zero = self.len_16bytes;
+        let dict_ptr = self.dict_ptr;
 
-        // Check if there is underflow
-        with_attr error_message("Kakarot: StackUnderflow") {
-            assert_le(i * 2, position_zero);
+        with dict_ptr {
+            let (pointer_top) = dict_read(self.size - 1);
+            let (pointer_i) = dict_read(self.size - 1 - i);
+
+            dict_write(self.size - 1, pointer_i);
+            dict_write(self.size - 1 - i, pointer_top);
         }
 
-        // Read elements at stack position 1
-        let (el1_high) = dict_read{dict_ptr=word_dict}(position_zero - 2);
-        let (el1_low) = dict_read{dict_ptr=word_dict}(position_zero - 1);
-        // Read elements at stack position N
-        let (el2_high) = dict_read{dict_ptr=word_dict}(position_zero - i * 2);
-        let (el2_low) = dict_read{dict_ptr=word_dict}(position_zero - i * 2 + 1);
+        return (new model.Stack(self.dict_ptr_start, dict_ptr, self.size));
+    }
+}
 
-        // Swap elements
-        dict_write{dict_ptr=word_dict}(position_zero - 2, el2_high);
-        dict_write{dict_ptr=word_dict}(position_zero - 1, el2_low);
-        dict_write{dict_ptr=word_dict}((position_zero - i * 2), el1_high);
-        dict_write{dict_ptr=word_dict}((position_zero - i * 2 + 1), el1_low);
+namespace Internals {
+    func _read_n{range_check_ptr, dict_ptr: DictAccess*}(index: felt, n: felt, output: felt*) {
+        if (n == 0) {
+            return ();
+        }
 
-        // Return Stack
-        return (
-            new model.Stack(
-                word_dict_start=self.word_dict_start,
-                word_dict=word_dict,
-                len_16bytes=self.len_16bytes,
-            )
-        );
+        let (pointer) = dict_read(index);
+        let item = cast(pointer, felt*);
+        assert [output] = [item];
+        assert [output + 1] = [item + 1];
+
+        return _read_n(index - 1, n - 1, output + 2);
     }
 }

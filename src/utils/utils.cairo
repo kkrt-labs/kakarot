@@ -31,9 +31,9 @@ from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_upd
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
 namespace Helpers {
-    func to_uint256{range_check_ptr}(val: felt) -> Uint256 {
+    func to_uint256{range_check_ptr}(val: felt) -> Uint256* {
         let (high, low) = split_felt(val);
-        let res = Uint256(low, high);
+        tempvar res = new Uint256(low, high);
         return res;
     }
 

@@ -9,15 +9,19 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.bool import TRUE, FALSE
+from starkware.cairo.common.math_cmp import is_le
 
 // Internal dependencies
-from kakarot.model import model
-from utils.utils import Helpers
-from kakarot.execution_context import ExecutionContext
-from kakarot.stack import Stack
-from kakarot.memory import Memory
-from kakarot.state import State
 from kakarot.account import Account
+from kakarot.errors import Errors
+from kakarot.execution_context import ExecutionContext
+from kakarot.memory import Memory
+from kakarot.model import model
+from kakarot.stack import Stack
+from kakarot.state import State
+from utils.utils import Helpers
+from kakarot.constants import Constants
 
 // @title Environmental information opcodes.
 // @notice This file contains the functions to execute for environmental information opcodes.
@@ -57,6 +61,12 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
+            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         // Get the current execution contract from the context,
         // convert to Uint256, and push to Stack.
         let address = Helpers.to_uint256(ctx.call_context.address.evm);
@@ -85,13 +95,20 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        if (ctx.stack.size == 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let (stack, address_uint256) = Stack.pop(ctx.stack);
 
-        let evm_address = Helpers.uint256_to_felt(address_uint256);
+        let evm_address = Helpers.uint256_to_felt([address_uint256]);
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
         let (state, balance) = State.read_balance(ctx.state, address);
-        let stack = Stack.push(stack, balance);
+        tempvar item = new Uint256(balance.low, balance.high);
+        let stack = Stack.push(stack, item);
 
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_state(ctx, state);
@@ -115,6 +132,12 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
+
+        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
+            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
 
         let origin_address = Helpers.to_uint256(ctx.call_context.origin.evm);
 
@@ -142,6 +165,13 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
+
+        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
+            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let calling_context = ctx.call_context.calling_context;
         let is_root = ExecutionContext.is_empty(calling_context);
         if (is_root == 0) {
@@ -174,7 +204,13 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let uint256_value: Uint256 = Helpers.to_uint256(ctx.call_context.value);
+        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
+            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
+        let uint256_value = Helpers.to_uint256(ctx.call_context.value);
         let stack: model.Stack* = Stack.push(ctx.stack, uint256_value);
 
         // Update the execution context.
@@ -202,6 +238,12 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        if (ctx.stack.size == 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let stack = ctx.stack;
 
         // Stack input:
@@ -217,10 +259,11 @@ namespace EnvironmentalInformation {
         let sliced_calldata: felt* = Helpers.slice_data(
             data_len=calldata_len, data=calldata, data_offset=calldata_offset.low, slice_len=32
         );
-        let uint256_sliced_calldata: Uint256 = Helpers.bytes32_to_uint256(sliced_calldata);
+        let uint256_sliced_calldata = Helpers.bytes32_to_uint256(sliced_calldata);
 
         // Push CallData word onto stack
-        let stack: model.Stack* = Stack.push(self=stack, element=uint256_sliced_calldata);
+        tempvar item = new Uint256(uint256_sliced_calldata.low, uint256_sliced_calldata.high);
+        let stack: model.Stack* = Stack.push(stack, item);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -244,8 +287,13 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let calldata_size = Helpers.to_uint256(ctx.call_context.calldata_len);
-        let stack: model.Stack* = Stack.push(ctx.stack, calldata_size);
+        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
+            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
+        let stack: model.Stack* = Stack.push_uint128(ctx.stack, ctx.call_context.calldata_len);
 
         // Update the execution context.
         // Update context stack.
@@ -271,6 +319,13 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
+
+        let stack_underflow = is_le(ctx.stack.size, 2);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
 
         let stack = ctx.stack;
 
@@ -323,10 +378,16 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
+            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         // Get the bytecode size.
         let code_size = Helpers.to_uint256(ctx.call_context.bytecode_len);
 
-        let stack: model.Stack* = Stack.push(self=ctx.stack, element=code_size);
+        let stack: model.Stack* = Stack.push_uint128(ctx.stack, ctx.call_context.bytecode_len);
 
         // Update the execution context.
         // Update context stack.
@@ -352,6 +413,13 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
+
+        let stack_underflow = is_le(ctx.stack.size, 2);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
 
         let stack = ctx.stack;
 
@@ -405,11 +473,14 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Get the gasprice.
-        let gas_price_felt = ctx.call_context.gas_price;
-        let gas_price_uint256 = Helpers.to_uint256(gas_price_felt);
+        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
+            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
 
-        let stack: model.Stack* = Stack.push(self=ctx.stack, element=gas_price_uint256);
+        // Get the gasprice.
+        let stack: model.Stack* = Stack.push_uint128(ctx.stack, ctx.call_context.gas_price);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -436,18 +507,24 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        if (ctx.stack.size == 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let stack = ctx.stack;
 
         // Stack input:
         // 0 - address: 20-byte address of the contract to query.
         let (stack, address_uint256) = Stack.pop(self=stack);
-        let evm_address = Helpers.uint256_to_felt(address_uint256);
+        let evm_address = Helpers.uint256_to_felt([address_uint256]);
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
         let (state, account) = State.get_account(ctx.state, address);
 
         // bytecode_len cannot be greater than 24k in the EVM
-        let stack = Stack.push(stack, Uint256(low=account.code_len, high=0));
+        let stack = Stack.push_uint128(stack, account.code_len);
 
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_state(ctx, state);
@@ -476,6 +553,13 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
+
+        let stack_underflow = is_le(ctx.stack.size, 3);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
 
         let stack = ctx.stack;
 
@@ -547,9 +631,14 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
+            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         // Get return data size.
-        let return_data_size = Helpers.to_uint256(ctx.return_data_len);
-        let stack: model.Stack* = Stack.push(self=ctx.stack, element=return_data_size);
+        let stack: model.Stack* = Stack.push_uint128(ctx.stack, ctx.return_data_len);
 
         // Update the execution context.
         // Update context stack.
@@ -575,6 +664,13 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
+
+        let stack_underflow = is_le(ctx.stack.size, 2);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
 
         let stack = ctx.stack;
 
@@ -627,12 +723,18 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        if (ctx.stack.size == 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let stack = ctx.stack;
 
         // Stack input:
         // 0 - address: 20-byte address of the contract to query.
         let (stack, address_uint256) = Stack.pop(stack);
-        let evm_address = Helpers.uint256_to_felt(address_uint256);
+        let evm_address = Helpers.uint256_to_felt([address_uint256]);
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
         let (state, account) = State.get_account(ctx.state, address);
@@ -655,11 +757,12 @@ namespace EnvironmentalInformation {
 
         with keccak_ptr {
             let (result) = cairo_keccak_bigend(inputs=dest, n_bytes=account.code_len);
-
-            finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
         }
 
-        let stack = Stack.push(stack, result);
+        finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
+
+        tempvar hash = new Uint256(result.low, result.high);
+        let stack = Stack.push(stack, hash);
 
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_state(ctx, state);
