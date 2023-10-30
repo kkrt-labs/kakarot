@@ -100,33 +100,35 @@ class TestPlainOpcodes:
             }
 
         async def test_should_emit_log0_with_no_data(self, plain_opcodes, owner):
-            receipt = await plain_opcodes.opcodeLog0(caller_eoa=owner)
+            receipt = await plain_opcodes.opcodeLog0(caller_eoa=owner.starknet_contract)
             events = plain_opcodes.events.parse_starknet_events(receipt.events)
             assert events["Log0"] == [{}]
 
         async def test_should_emit_log0_with_data(self, plain_opcodes, owner, event):
-            receipt = await plain_opcodes.opcodeLog0Value(caller_eoa=owner)
+            receipt = await plain_opcodes.opcodeLog0Value(
+                caller_eoa=owner.starknet_contract
+            )
             events = plain_opcodes.events.parse_starknet_events(receipt.events)
             assert events["Log0Value"] == [{"value": event["value"]}]
 
         async def test_should_emit_log1(self, plain_opcodes, owner, event):
-            receipt = await plain_opcodes.opcodeLog1(caller_eoa=owner)
+            receipt = await plain_opcodes.opcodeLog1(caller_eoa=owner.starknet_contract)
             events = plain_opcodes.events.parse_starknet_events(receipt.events)
             assert events["Log1"] == [{"value": event["value"]}]
 
         async def test_should_emit_log2(self, plain_opcodes, owner, event):
-            receipt = await plain_opcodes.opcodeLog2(caller_eoa=owner)
+            receipt = await plain_opcodes.opcodeLog2(caller_eoa=owner.starknet_contract)
             events = plain_opcodes.events.parse_starknet_events(receipt.events)
             del event["spender"]
             assert events["Log2"] == [event]
 
         async def test_should_emit_log3(self, plain_opcodes, owner, event):
-            receipt = await plain_opcodes.opcodeLog3(caller_eoa=owner)
+            receipt = await plain_opcodes.opcodeLog3(caller_eoa=owner.starknet_contract)
             events = plain_opcodes.events.parse_starknet_events(receipt.events)
             assert events["Log3"] == [event]
 
         async def test_should_emit_log4(self, plain_opcodes, owner, event):
-            receipt = await plain_opcodes.opcodeLog4(caller_eoa=owner)
+            receipt = await plain_opcodes.opcodeLog4(caller_eoa=owner.starknet_contract)
             events = plain_opcodes.events.parse_starknet_events(receipt.events)
             assert events["Log4"] == [event]
 
@@ -151,7 +153,7 @@ class TestPlainOpcodes:
             receipt = await plain_opcodes.create(
                 bytecode=counter.constructor().data_in_transaction,
                 count=count,
-                caller_eoa=owner,
+                caller_eoa=owner.starknet_contract,
             )
             events = plain_opcodes.events.parse_starknet_events(receipt.events)
             assert len(events["CreateAddress"]) == count
@@ -178,7 +180,7 @@ class TestPlainOpcodes:
             receipt = await plain_opcodes.create(
                 bytecode=bytecode,
                 count=1,
-                caller_eoa=owner,
+                caller_eoa=owner.starknet_contract,
             )
 
             events = plain_opcodes.events.parse_starknet_events(receipt.events)
@@ -234,7 +236,7 @@ class TestPlainOpcodes:
             receipt = await plain_opcodes.create2(
                 bytecode=counter.constructor().data_in_transaction,
                 salt=salt,
-                caller_eoa=owner,
+                caller_eoa=owner.starknet_contract,
             )
             events = plain_opcodes.events.parse_starknet_events(receipt.events)
             assert len(events["Create2Address"]) == 1
@@ -276,12 +278,16 @@ class TestPlainOpcodes:
             self, plain_opcodes, owner
         ):
             with evm_error("FAIL"):
-                await plain_opcodes.newContractConstructorRevert(caller_eoa=owner)
+                await plain_opcodes.newContractConstructorRevert(
+                    caller_eoa=owner.starknet_contract
+                )
 
         async def test_should_revert_via_call(
             self, plain_opcodes, get_solidity_contract, owner
         ):
-            receipt = await plain_opcodes.contractCallRevert(caller_eoa=owner)
+            receipt = await plain_opcodes.contractCallRevert(
+                caller_eoa=owner.starknet_contract
+            )
 
             reverting_contract = get_solidity_contract(
                 "PlainOpcodes", "ContractRevertsOnMethodCall"
@@ -295,7 +301,9 @@ class TestPlainOpcodes:
         async def test_should_return_owner_as_origin_and_sender(
             self, plain_opcodes, owner
         ):
-            origin, sender = await plain_opcodes.originAndSender(caller_eoa=owner)
+            origin, sender = await plain_opcodes.originAndSender(
+                caller_eoa=owner.starknet_contract
+            )
             assert origin == sender == owner.address
 
         async def test_should_return_owner_as_origin_and_caller_as_sender(
@@ -304,7 +312,7 @@ class TestPlainOpcodes:
             receipt = await caller.call(
                 target=plain_opcodes.address,
                 payload=plain_opcodes.encodeABI("originAndSender"),
-                caller_eoa=owner,
+                caller_eoa=owner.starknet_contract,
             )
             events = caller.events.parse_starknet_events(receipt.events)
             assert len(events["Call"]) == 1
@@ -333,7 +341,9 @@ class TestPlainOpcodes:
             )
             sender_balance_before = await eth_balance_of(plain_opcodes.starknet_address)
 
-            await plain_opcodes.sendSome(other.address, amount, caller_eoa=owner)
+            await plain_opcodes.sendSome(
+                other.address, amount, caller_eoa=owner.starknet_contract
+            )
 
             receiver_balance_after = await eth_balance_of(
                 other.starknet_contract.address
@@ -351,7 +361,9 @@ class TestPlainOpcodes:
 
             sender_balance_before = await eth_balance_of(plain_opcodes.starknet_address)
             receipt = await plain_opcodes.sendSome(
-                other.address, sender_balance_before + 1, caller_eoa=owner
+                other.address,
+                sender_balance_before + 1,
+                caller_eoa=owner.starknet_contract,
             )
             events = plain_opcodes.events.parse_starknet_events(receipt.events)
             assert events["SentSome"] == [

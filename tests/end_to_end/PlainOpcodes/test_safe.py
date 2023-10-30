@@ -17,18 +17,22 @@ class TestSafe:
     class TestReceive:
         async def test_should_receive_eth(self, safe, owner):
             balance_before = await safe.balance()
-            await safe.deposit(value=ACCOUNT_BALANCE, caller_eoa=owner)
+            await safe.deposit(
+                value=ACCOUNT_BALANCE, caller_eoa=owner.starknet_contract
+            )
             balance_after = await safe.balance()
             assert balance_after - balance_before == ACCOUNT_BALANCE
 
     class TestWithdrawTransfer:
         async def test_should_withdraw_transfer_eth(self, safe, owner, eth_balance_of):
-            await safe.deposit(value=ACCOUNT_BALANCE, caller_eoa=owner)
+            await safe.deposit(
+                value=ACCOUNT_BALANCE, caller_eoa=owner.starknet_contract
+            )
 
             safe_balance = await safe.balance()
             owner_balance_before = await eth_balance_of(owner.address)
 
-            receipt = await safe.withdrawTransfer(caller_eoa=owner)
+            receipt = await safe.withdrawTransfer(caller_eoa=owner.starknet_contract)
 
             owner_balance_after = await eth_balance_of(owner.address)
             assert await safe.balance() == 0
@@ -39,12 +43,14 @@ class TestSafe:
 
     class TestWithdrawCall:
         async def test_should_withdraw_call_eth(self, safe, owner, eth_balance_of):
-            await safe.deposit(value=ACCOUNT_BALANCE, caller_eoa=owner)
+            await safe.deposit(
+                value=ACCOUNT_BALANCE, caller_eoa=owner.starknet_contract
+            )
 
             safe_balance = await safe.balance()
             owner_balance_before = await eth_balance_of(owner.address)
 
-            receipt = await safe.withdrawCall(caller_eoa=owner)
+            receipt = await safe.withdrawCall(caller_eoa=owner.starknet_contract)
 
             owner_balance_after = await eth_balance_of(owner.address)
             assert await safe.balance() == 0
@@ -58,6 +64,9 @@ class TestSafe:
             self, safe, deploy_solidity_contract, owner
         ):
             safe = await deploy_solidity_contract(
-                "PlainOpcodes", "Safe", caller_eoa=owner.starknet_contract, value=1
+                "PlainOpcodes",
+                "Safe",
+                caller_eoa=owner.starknet_contract,
+                value=1,
             )
             assert await safe.balance() == 1
