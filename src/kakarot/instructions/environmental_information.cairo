@@ -107,8 +107,7 @@ namespace EnvironmentalInformation {
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
         let (state, balance) = State.read_balance(ctx.state, address);
-        tempvar item = new Uint256(balance.low, balance.high);
-        let stack = Stack.push(stack, item);
+        let stack = Stack.push_uint256(stack, balance);
 
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_state(ctx, state);
@@ -262,8 +261,7 @@ namespace EnvironmentalInformation {
         let uint256_sliced_calldata = Helpers.bytes32_to_uint256(sliced_calldata);
 
         // Push CallData word onto stack
-        tempvar item = new Uint256(uint256_sliced_calldata.low, uint256_sliced_calldata.high);
-        let stack: model.Stack* = Stack.push(stack, item);
+        let stack: model.Stack* = Stack.push_uint256(stack, uint256_sliced_calldata);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);

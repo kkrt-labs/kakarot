@@ -54,8 +54,6 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        let fp_and_pc = get_fp_and_pc();
-        local __fp__: felt* = fp_and_pc.fp_val;
 
         if (ctx.stack.size == 0) {
             let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
@@ -70,10 +68,10 @@ namespace MemoryOperations {
         let (stack, offset) = Stack.pop(stack);
 
         // Read word from memory at offset
-        let (new_memory, local value, cost) = Memory.load(self=ctx.memory, offset=offset.low);
+        let (new_memory, value, cost) = Memory.load(self=ctx.memory, offset=offset.low);
 
         // Push word to the stack
-        let stack: model.Stack* = Stack.push(stack, &value);
+        let stack: model.Stack* = Stack.push_uint256(stack, value);
 
         // Update context memory.
         let ctx = ExecutionContext.update_memory(ctx, new_memory);

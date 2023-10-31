@@ -100,8 +100,7 @@ namespace StopAndArithmeticOperations {
 
         // Stack output:
         // a + b: integer result of the addition modulo 2^256
-        tempvar item = new Uint256(result.low, result.high);
-        let stack = Stack.push(stack, item);
+        let stack = Stack.push_uint256(stack, result);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_ADD);
         return ctx;
     }
@@ -143,8 +142,7 @@ namespace StopAndArithmeticOperations {
 
         // Stack output:
         // a * b: integer result of the multiplication modulo 2^256
-        tempvar item = new Uint256(result.low, result.high);
-        let stack = Stack.push(stack, item);
+        let stack = Stack.push_uint256(stack, result);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_MUL);
         return ctx;
     }
@@ -186,8 +184,7 @@ namespace StopAndArithmeticOperations {
 
         // Stack output:
         // a - b: integer result of the subtraction modulo 2^256
-        tempvar item = new Uint256(result.low, result.high);
-        let stack = Stack.push(stack, item);
+        let stack = Stack.push_uint256(stack, result);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_SUB);
         return ctx;
     }
@@ -229,8 +226,7 @@ namespace StopAndArithmeticOperations {
 
         // Stack output:
         // a / b: integer result of the division modulo 2^256
-        tempvar item = new Uint256(result.low, result.high);
-        let stack = Stack.push(stack, item);
+        let stack = Stack.push_uint256(stack, result);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_DIV);
         return ctx;
     }
@@ -272,8 +268,7 @@ namespace StopAndArithmeticOperations {
 
         // Stack output:
         // a / b: signed integer result of the division modulo 2^256
-        tempvar item = new Uint256(result.low, result.high);
-        let stack = Stack.push(stack, item);
+        let stack = Stack.push_uint256(stack, result);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_SDIV);
         return ctx;
     }
@@ -315,8 +310,7 @@ namespace StopAndArithmeticOperations {
 
         // Stack output:
         // a % b:  integer result of the a % b
-        tempvar item = new Uint256(rem.low, rem.high);
-        let stack = Stack.push(stack, item);
+        let stack = Stack.push_uint256(stack, rem);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_MOD);
         return ctx;
     }
@@ -358,8 +352,7 @@ namespace StopAndArithmeticOperations {
 
         // Stack output:
         // a % b:  signed integer result of the a % b
-        tempvar item = new Uint256(rem.low, rem.high);
-        let stack = Stack.push(stack, item);
+        let stack = Stack.push_uint256(stack, rem);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_SMOD);
         return ctx;
     }
@@ -405,8 +398,7 @@ namespace StopAndArithmeticOperations {
 
         // Stack output:
         // integer result of a + b % c
-        tempvar item = new Uint256(rem.low, rem.high);
-        let stack = Stack.push(stack, item);
+        let stack = Stack.push_uint256(stack, rem);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_ADDMOD);
         return ctx;
     }
@@ -450,8 +442,7 @@ namespace StopAndArithmeticOperations {
 
         // Stack output:
         // integer result of the a * b % c
-        tempvar item = new Uint256(rem.low, rem.high);
-        let stack = Stack.push(stack, item);
+        let stack = Stack.push_uint256(stack, rem);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_MULMOD);
         return ctx;
     }
@@ -493,8 +484,7 @@ namespace StopAndArithmeticOperations {
 
         // Stack output:
         // integer result of a ** b
-        tempvar item = new Uint256(result.low, result.high);
-        let stack = Stack.push(stack, item);
+        let stack = Stack.push_uint256(stack, result);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_EXP);
         return ctx;
     }

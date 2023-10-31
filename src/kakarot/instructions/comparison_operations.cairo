@@ -360,11 +360,10 @@ namespace ComparisonOperations {
 
         // a & b: the bitwise AND result.
         let (result) = uint256_and(a, b);
-        tempvar item = new Uint256(result.low, result.high);
 
         // Stack output:
         // a & b: the bitwise AND result.
-        let stack: model.Stack* = Stack.push(self=stack, element=item);
+        let stack = Stack.push_uint256(stack, result);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -408,11 +407,10 @@ namespace ComparisonOperations {
 
         // a & b: the bitwise AND result.
         let (result) = uint256_or(a, b);
-        tempvar item = new Uint256(result.low, result.high);
 
         // Stack output:
         // a & b: the bitwise AND result.
-        let stack: model.Stack* = Stack.push(self=stack, element=item);
+        let stack = Stack.push_uint256(stack, result);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -454,11 +452,10 @@ namespace ComparisonOperations {
 
         // a & b: the bitwise XOR result.
         let (result) = uint256_xor([a], [b]);
-        tempvar item = new Uint256(result.low, result.high);
 
         // Stack output:
         // a & b: the bitwise XOR result.
-        let stack: model.Stack* = Stack.push(self=stack, element=item);
+        let stack = Stack.push_uint256(stack, result);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -504,13 +501,11 @@ namespace ComparisonOperations {
         let (right) = uint256_sub(Uint256(248, 0), mul);
         let (shift_right) = uint256_shr(value, right);
         let (result) = uint256_and(shift_right, Uint256(0xFF, 0));
-        tempvar item = new Uint256(result.low, result.high);
 
         // Stack output:
         // The result of the shift operation.
-        let stack: model.Stack* = Stack.push(self=stack, element=item);
+        let stack = Stack.push_uint256(stack, result);
 
-        // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_BYTE);
@@ -552,13 +547,10 @@ namespace ComparisonOperations {
 
         // Left shift `value` by `shift`.
         let (result) = uint256_shl(a=value, b=shift);
-        tempvar item = new Uint256(result.low, result.high);
 
         // Stack output:
         // The result of the shift operation.
-        let stack: model.Stack* = Stack.push(self=stack, element=item);
-
-        // Update context stack.
+        let stack = Stack.push_uint256(stack, result);
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SHL);
@@ -600,13 +592,10 @@ namespace ComparisonOperations {
 
         // Right shift `value` by `shift`.
         let (result) = uint256_shr(a=value, b=shift);
-        tempvar item = new Uint256(result.low, result.high);
 
         // Stack output:
         // The result of the shift operation.
-        let stack: model.Stack* = Stack.push(self=stack, element=item);
-
-        // Update context stack.
+        let stack = Stack.push_uint256(stack, result);
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SHR);
@@ -678,11 +667,10 @@ namespace ComparisonOperations {
         let (step2) = uint256_shr(step1, shift);
         // `sign & x >> n ^ sign`
         let (result) = uint256_xor(step2, sign);
-        tempvar item = new Uint256(result.low, result.high);
 
         // Stack output:
         // The result of the shift operation.
-        let stack: model.Stack* = Stack.push(self=stack, element=item);
+        let stack = Stack.push_uint256(stack, result);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -721,11 +709,10 @@ namespace ComparisonOperations {
 
         // Bitwise NOT operation
         let (result) = uint256_not([a]);
-        tempvar item = new Uint256(result.low, result.high);
 
         // Stack output:
         // The result of the shift operation.
-        let stack: model.Stack* = Stack.push(self=stack, element=item);
+        let stack = Stack.push_uint256(stack, result);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);

@@ -48,8 +48,7 @@ namespace PushOperations {
         local len = (1 - out_of_bounds) * i + out_of_bounds * (ctx.call_context.bytecode_len - pc);
 
         let stack_element = Helpers.bytes_i_to_uint256(ctx.call_context.bytecode + pc, len);
-        tempvar item = new Uint256(stack_element.low, stack_element.high);
-        let stack = Stack.push(ctx.stack, item);
+        let stack = Stack.push_uint256(ctx.stack, stack_element);
 
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let i_is_not_zero = is_not_zero(i);

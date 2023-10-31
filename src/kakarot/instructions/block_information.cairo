@@ -223,9 +223,7 @@ namespace BlockInformation {
         }
 
         // Get the Difficulty.
-        let difficulty = Helpers.to_uint256(val=0);
-
-        let stack: model.Stack* = Stack.push(self=ctx.stack, element=difficulty);
+        let stack: model.Stack* = Stack.push_uint128(ctx.stack, 0);
 
         // Update the execution context.
         // Update context stack.
@@ -292,8 +290,7 @@ namespace BlockInformation {
             return ctx;
         }
 
-        let chain_id = Helpers.to_uint256(val=Constants.CHAIN_ID);
-        let stack: model.Stack* = Stack.push(self=ctx.stack, element=chain_id);
+        let stack: model.Stack* = Stack.push_uint128(ctx.stack, Constants.CHAIN_ID);
 
         // Update the execution context.
         // Update context stack.

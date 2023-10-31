@@ -3,11 +3,12 @@
 %lang starknet
 
 // Starkware dependencies
-from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
 from starkware.cairo.common.dict import DictAccess, dict_read, dict_write
 from starkware.cairo.common.math import assert_le, unsigned_div_rem
+from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
@@ -64,6 +65,17 @@ namespace Stack {
         tempvar item = new Uint256(element, 0);
 
         return push(self, item);
+    }
+
+    // @notice Store a uint128 into the stack.
+    // @param self The pointer to the stack.
+    // @param element The element to push.
+    // @return stack The new pointer to the stack.
+    func push_uint256{range_check_ptr}(self: model.Stack*, element: Uint256) -> model.Stack* {
+        alloc_locals;
+        let fp_and_pc = get_fp_and_pc();
+        local __fp__: felt* = fp_and_pc.fp_val;
+        return push(self, &element);
     }
 
     // @notice Pop N elements from the stack.
