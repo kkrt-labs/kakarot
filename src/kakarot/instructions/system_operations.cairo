@@ -60,6 +60,13 @@ namespace SystemOperations {
             return ctx;
         }
 
+        let stack_underflow = is_le(ctx.stack.size, 2);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         // Stack input:
         // 0 - value: value in wei to send to the new account
         // 1 - offset: byte offset in the memory in bytes (initialization code)
@@ -98,6 +105,13 @@ namespace SystemOperations {
 
         if (ctx.call_context.read_only != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
+        let stack_underflow = is_le(ctx.stack.size, 3);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
             let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
             return ctx;
         }
@@ -155,6 +169,13 @@ namespace SystemOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         // Stack input:
         // 0 - offset: byte offset in the memory in bytes
         // 1 - size: byte size to copy
@@ -188,6 +209,13 @@ namespace SystemOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
+
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
 
         // Stack input:
         // 0 - offset: byte offset in the memory in bytes
@@ -228,6 +256,10 @@ namespace SystemOperations {
         let sub_ctx = CallHelper.init_sub_context(
             ctx=ctx, with_value=TRUE, read_only=ctx.call_context.read_only, self_call=FALSE
         );
+        if (sub_ctx.reverted != 0) {
+            return sub_ctx;
+        }
+
         if (ctx.call_context.read_only * sub_ctx.call_context.value != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
             let ctx = sub_ctx.call_context.calling_context;
@@ -338,14 +370,26 @@ namespace SystemOperations {
             return ctx;
         }
 
-        // Stack input:
-        // 0 - address: account to send the current balance to
+        if (ctx.stack.size == 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
 
         // Transfer funds
-        let (stack, address) = Stack.pop(ctx.stack);
-        let (_, address_high) = unsigned_div_rem(address.high, 2 ** 32);
-        let address = Uint256(address_high, address.low);
+        let (stack, popped) = Stack.pop(ctx.stack);
+        let (_, address_high) = unsigned_div_rem(popped.high, 2 ** 32);
+        let address = Uint256(popped.low, address_high);
         let recipient_evm_address = Helpers.uint256_to_felt(address);
+
+        // Remove this when https://eips.ethereum.org/EIPS/eip-6780 is validated
+        if (recipient_evm_address == ctx.call_context.address.evm) {
+            tempvar is_recipient_self = TRUE;
+        } else {
+            tempvar is_recipient_self = FALSE;
+        }
+        let recipient_evm_address = (1 - is_recipient_self) * recipient_evm_address;
+
         let (recipient_starknet_address) = Account.compute_starknet_address(recipient_evm_address);
         tempvar recipient = new model.Address(recipient_starknet_address, recipient_evm_address);
         let (state, balance) = State.read_balance(ctx.state, ctx.call_context.address);
@@ -390,6 +434,7 @@ namespace CallHelper {
         ctx: model.ExecutionContext*, call_args: CallArgs
     ) {
         alloc_locals;
+
         // Note: We don't pop ret_offset and ret_size here but at the end of the sub context
         // See finalize_calling_context
         let (stack, popped) = Stack.pop_n(self=ctx.stack, n=4 + with_value);
@@ -434,6 +479,14 @@ namespace CallHelper {
         ctx: model.ExecutionContext*, with_value: felt, read_only: felt, self_call: felt
     ) -> model.ExecutionContext* {
         alloc_locals;
+
+        let stack_underflow = is_le(ctx.stack.size, with_value + 3);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let (ctx, local call_args) = CallHelper.prepare_args(ctx, with_value);
 
         // Check if the called address is a precompiled contract
@@ -492,13 +545,13 @@ namespace CallHelper {
         alloc_locals;
 
         // Pop ret_offset and ret_size
+        // See init_sub_context, the Stack here is guaranteed to have enough items
         let (stack, popped) = Stack.pop_n(self=summary.calling_context.stack, n=2);
         let ret_offset = 2 ** 128 * popped[0].high + popped[0].low;
         let ret_size = 2 ** 128 * popped[1].high + popped[1].low;
 
         // Put status in stack
-        let status = Uint256(low=1 - summary.reverted, high=0);
-        let stack = Stack.push(stack, status);
+        let stack = Stack.push_uint128(stack, 1 - summary.reverted);
 
         // Store RETURN_DATA in memory
         let return_data = Helpers.slice_data(
@@ -830,9 +883,8 @@ namespace CreateHelper {
 
         // Stack output: the address of the deployed contract, 0 if the deployment failed.
         let (address_high, address_low) = split_felt(summary.address.evm * (1 - summary.reverted));
-        let stack = Stack.push(
-            summary.calling_context.stack, Uint256(low=address_low, high=address_high)
-        );
+        tempvar address = new Uint256(low=address_low, high=address_high);
+        let stack = Stack.push(summary.calling_context.stack, address);
 
         // Re-create the calling context with updated stack and return_data
         tempvar ctx = new model.ExecutionContext(

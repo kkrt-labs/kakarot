@@ -4,11 +4,15 @@
 
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.bool import TRUE, FALSE
 
 // Internal dependencies
 from kakarot.model import model
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
+from kakarot.errors import Errors
+from kakarot.constants import Constants
 
 // @title Duplication operations opcodes.
 // @notice This file contains the functions to execute for duplication operations opcodes.
@@ -25,19 +29,24 @@ namespace DuplicationOperations {
     ) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Get stack from context.
-        let stack: model.Stack* = ctx.stack;
+        let stack_underflow = is_le(ctx.stack.size, i - 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
+            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
 
-        // Get the value top i-th stack item.
-        let (stack, element) = Stack.peek(self=stack, stack_index=i - 1);
+        let (stack, element) = Stack.peek(ctx.stack, i - 1);
+        let stack = Stack.push(stack, element);
 
-        // Duplicate the element to the top of the stack.
-        let stack = Stack.push(self=stack, element=element);
-
-        // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_DUP);
+
         return ctx;
     }
 

@@ -11,7 +11,6 @@ from tests.end_to_end.bytecodes import test_cases
 from tests.utils.constants import PRE_FUND_AMOUNT
 from tests.utils.helpers import (
     extract_memory_from_execute,
-    extract_stack_from_execute,
     generate_random_evm_address,
     hex_string_to_bytes_array,
 )
@@ -58,11 +57,10 @@ class TestKakarot:
                     bytecode=hex_string_to_bytes_array(params["code"]),
                     calldata=hex_string_to_bytes_array(params["calldata"]),
                 )
-            stack_result = extract_stack_from_execute(result)
             memory_result = extract_memory_from_execute(result)
 
             assert result.success == params["success"]
-            assert stack_result == (
+            assert result.stack_values[: result.stack_size] == (
                 [
                     int(x)
                     for x in params["stack"]

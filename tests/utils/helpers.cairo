@@ -15,6 +15,7 @@ from starkware.cairo.common.uint256 import (
     uint256_eq,
     assert_uint256_eq,
 )
+from starkware.cairo.common.dict_access import DictAccess
 
 // Internal dependencies
 from kakarot.constants import Constants
@@ -153,31 +154,13 @@ namespace TestHelpers {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(start: Uint256, n: felt, stack: model.Stack*) -> model.Stack* {
-        alloc_locals;
+    }(start: felt, n: felt, stack: model.Stack*) -> model.Stack* {
         if (n == 0) {
             return stack;
         }
 
-        uint256_check(start);
-        let updated_stack: model.Stack* = Stack.push(stack, start);
-        let (local element: Uint256, _) = uint256_add(start, Uint256(1, 0));
-        return push_elements_in_range_to_stack(element, n - 1, updated_stack);
-    }
-
-    func assert_stack_last_element_contains_uint256{range_check_ptr}(
-        stack: model.Stack*, value: Uint256
-    ) {
-        let (stack, result) = Stack.peek(stack, 0);
-        assert_uint256_eq(result, value);
-
-        return ();
-    }
-
-    func assert_stack_len_16bytes_equal{range_check_ptr}(stack: model.Stack*, len: felt) {
-        assert stack.len_16bytes / 2 = len;
-
-        return ();
+        let updated_stack: model.Stack* = Stack.push_uint128(stack, start);
+        return push_elements_in_range_to_stack(start + 1, n - 1, updated_stack);
     }
 
     func assert_array_equal(array_0_len: felt, array_0: felt*, array_1_len: felt, array_1: felt*) {
@@ -228,50 +211,64 @@ namespace TestHelpers {
 
     func print_uint256(val: Uint256) {
         %{
-            low = memory[ids.val.address_]
-            high = memory[ids.val.address_ + 1]
+            low = ids.val.low
+            high = ids.val.high
             print(f"Uint256(low={low}, high={high}) = {2 ** 128 * high + low}")
         %}
         return ();
     }
 
-    func print_array(arr_len: felt, arr: felt*) {
+    func print_array(name: felt, arr_len: felt, arr: felt*) {
         %{
-            print(f"{ids.arr_len=}")
-            for i in range(ids.arr_len):
-                print(f"arr[{i}]={memory[ids.arr + i]}")
+            print(bytes.fromhex(f"{ids.name:062x}").decode().replace('\x00',''))
+            arr = [memory[ids.arr + i] for i in range(ids.arr_len)]
+            print(arr)
+        %}
+        return ();
+    }
+
+    func print_dict(name: felt, dict_ptr: DictAccess*, pointer_size: felt) {
+        %{
+            print(bytes.fromhex(f"{ids.name:062x}").decode().replace('\x00',''))
+            data = __dict_manager.get_dict(ids.dict_ptr)
+            print(
+                {k: v if isinstance(v, int) else [memory[v + i] for i in range(ids.pointer_size)] for k, v in data.items()}
+            )
         %}
         return ();
     }
 
     func print_call_context(call_context: model.CallContext*) {
         %{ print("print_call_context") %}
-        %{ print(f"{ids.call_context.value=}") %}
-        %{ print("calldata") %}
-        print_array(call_context.calldata_len, call_context.calldata);
-        %{ print("bytecode") %}
-        print_array(call_context.bytecode_len, call_context.bytecode);
+        print_array('calldata', call_context.calldata_len, call_context.calldata);
+        print_array('bytecode', call_context.bytecode_len, call_context.bytecode);
+        %{
+            print(f"{ids.call_context.gas_limit=}")
+            print(f"{ids.call_context.gas_price=}")
+            print(f"{ids.call_context.origin.evm=:040x}")
+            print(f"{ids.call_context.origin.starknet=:064x}")
+            print(f"{ids.call_context.address.evm=:040x}")
+            print(f"{ids.call_context.address.starknet=:064x}")
+            print(f"{ids.call_context.read_only=}")
+            print(f"{ids.call_context.is_create=}")
+        %}
         return ();
     }
 
     func print_execution_context(execution_context: model.ExecutionContext*) {
         %{ print("print_execution_context") %}
+
         print_call_context(execution_context.call_context);
+        print_dict('stack', execution_context.stack.dict_ptr, Uint256.SIZE);
+
+        print_array(
+            'return_data', execution_context.return_data_len, execution_context.return_data
+        );
         %{
             print(f"{ids.execution_context.program_counter=}")
             print(f"{ids.execution_context.stopped=}")
-        %}
-        %{ print("return_data") %}
-        print_array(execution_context.return_data_len, execution_context.return_data);
-        // TODO: See note above for stack and memory
-        // stack
-        // memory
-        %{
             print(f"{ids.execution_context.gas_used=}")
-            print(f"{ids.execution_context.gas_limit=}")
-            print(f"{ids.execution_context.gas_price}")
-            print(f"{ids.execution_context.starknet_contract_address=}")
-            print(f"{ids.execution_context.address.evm=}")
+            print(f"{ids.execution_context.reverted=}")
         %}
         return ();
     }

@@ -6,8 +6,9 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
 from starkware.cairo.common.dict import dict_write, dict_read
 from starkware.cairo.common.dict_access import DictAccess
+from starkware.cairo.common.uint256 import Uint256
 
-from utils.dict import dict_keys, default_dict_copy
+from utils.dict import dict_keys, default_dict_copy, dict_values
 
 @external
 func test__dict_keys__should_return_keys{
@@ -82,6 +83,45 @@ func test__default_dict_copy__should_return_copied_dict{range_check_ptr}() {
         let (value) = dict_read(key + 10);
         assert value = default_value;
     }
+
+    return ();
+}
+
+@external
+func test__dict_values__should_return_values{range_check_ptr}() {
+    alloc_locals;
+    let (local dict_start) = default_dict_new(0);
+    tempvar value_a = new Uint256(2, 0);
+    tempvar value_tmp = new Uint256(3, 0);
+    tempvar value_b = new Uint256(4, 0);
+    tempvar value_c = new Uint256(5, 0);
+    let dict_ptr = dict_start;
+
+    with dict_ptr {
+        dict_write(0xa, cast(value_a, felt));
+        dict_write(0xb, cast(value_tmp, felt));
+        dict_write(0xb, cast(value_b, felt));
+        dict_read(0xb);
+        dict_write(0xc, cast(value_c, felt));
+    }
+
+    let (values_len, values) = dict_values(dict_start, dict_ptr);
+
+    assert values_len = 5;
+    assert values[0] = value_a[0];
+    assert values[1] = value_tmp[0];
+    assert values[2] = value_b[0];
+    assert values[3] = value_b[0];
+    assert values[4] = value_c[0];
+
+    let (squashed_start, squashed_end) = default_dict_finalize(dict_start, dict_ptr, 0);
+
+    let (values_len, values) = dict_values(squashed_start, squashed_end);
+
+    assert values_len = 3;
+    assert values[0] = value_a[0];
+    assert values[1] = value_b[0];
+    assert values[2] = value_c[0];
 
     return ();
 }

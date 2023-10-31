@@ -78,7 +78,7 @@ namespace EVM {
         }
 
         // Compute the corresponding offset in the jump table:
-        // count 1 for "next line" and 4 steps per opcode: call, opcode, ret
+        // count 1 for "next line" and 3 steps per opcode: call, opcode, ret
         tempvar offset = 1 + 3 * opcode;
 
         // move program counter + 1 after opcode is read

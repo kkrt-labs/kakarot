@@ -15,6 +15,7 @@ from starkware.cairo.common.uint256 import (
     uint256_unsigned_div_rem,
     uint256_mul_div_mod,
 )
+from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.alloc import alloc
 
@@ -22,6 +23,7 @@ from starkware.cairo.common.alloc import alloc
 from kakarot.model import model
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
+from kakarot.errors import Errors
 
 // @title Arithmetic operations opcodes.
 // @notice This contract contains the functions to execute for arithmetic operations opcodes.
@@ -78,6 +80,13 @@ namespace StopAndArithmeticOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         // Stack input:
         // 0 - a: first integer value to add.
         // 1 - b: second integer value to add.
@@ -91,7 +100,7 @@ namespace StopAndArithmeticOperations {
 
         // Stack output:
         // a + b: integer result of the addition modulo 2^256
-        let stack: model.Stack* = Stack.push(self=stack, element=result);
+        let stack = Stack.push_uint256(stack, result);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_ADD);
         return ctx;
     }
@@ -113,6 +122,13 @@ namespace StopAndArithmeticOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         // Stack input:
         // 0 - a: first integer value to multiply.
         // 1 - b: second integer value to multiply.
@@ -126,7 +142,7 @@ namespace StopAndArithmeticOperations {
 
         // Stack output:
         // a * b: integer result of the multiplication modulo 2^256
-        let stack: model.Stack* = Stack.push(stack, result);
+        let stack = Stack.push_uint256(stack, result);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_MUL);
         return ctx;
     }
@@ -148,6 +164,13 @@ namespace StopAndArithmeticOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         // Stack input:
         // 0 - a: first integer value to sub.
         // 1 - b: second integer value to sub.
@@ -161,7 +184,7 @@ namespace StopAndArithmeticOperations {
 
         // Stack output:
         // a - b: integer result of the subtraction modulo 2^256
-        let stack: model.Stack* = Stack.push(self=stack, element=result);
+        let stack = Stack.push_uint256(stack, result);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_SUB);
         return ctx;
     }
@@ -183,6 +206,13 @@ namespace StopAndArithmeticOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         // Stack input:
         // 0 - a: numerator.
         // 1 - b: denominator.
@@ -196,7 +226,7 @@ namespace StopAndArithmeticOperations {
 
         // Stack output:
         // a / b: integer result of the division modulo 2^256
-        let stack: model.Stack* = Stack.push(self=stack, element=result);
+        let stack = Stack.push_uint256(stack, result);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_DIV);
         return ctx;
     }
@@ -218,6 +248,13 @@ namespace StopAndArithmeticOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         // Stack input:
         // 0 - a: numerator.
         // 1 - b: denominator.
@@ -231,7 +268,7 @@ namespace StopAndArithmeticOperations {
 
         // Stack output:
         // a / b: signed integer result of the division modulo 2^256
-        let stack: model.Stack* = Stack.push(self=stack, element=result);
+        let stack = Stack.push_uint256(stack, result);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_SDIV);
         return ctx;
     }
@@ -253,6 +290,13 @@ namespace StopAndArithmeticOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         // Stack input:
         // 0 - a: number.
         // 1 - b: modulo.
@@ -266,7 +310,7 @@ namespace StopAndArithmeticOperations {
 
         // Stack output:
         // a % b:  integer result of the a % b
-        let stack: model.Stack* = Stack.push(self=stack, element=rem);
+        let stack = Stack.push_uint256(stack, rem);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_MOD);
         return ctx;
     }
@@ -288,6 +332,13 @@ namespace StopAndArithmeticOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         // Stack input:
         // 0 - a: number.
         // 1 - b: modulo.
@@ -301,7 +352,7 @@ namespace StopAndArithmeticOperations {
 
         // Stack output:
         // a % b:  signed integer result of the a % b
-        let stack: model.Stack* = Stack.push(self=stack, element=rem);
+        let stack = Stack.push_uint256(stack, rem);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_SMOD);
         return ctx;
     }
@@ -323,6 +374,13 @@ namespace StopAndArithmeticOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 2);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         // Stack input:
         // 0 - a: number.
         // 1 - b: number.
@@ -340,7 +398,7 @@ namespace StopAndArithmeticOperations {
 
         // Stack output:
         // integer result of a + b % c
-        let stack: model.Stack* = Stack.push(self=stack, element=rem);
+        let stack = Stack.push_uint256(stack, rem);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_ADDMOD);
         return ctx;
     }
@@ -362,6 +420,13 @@ namespace StopAndArithmeticOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 2);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         // Stack input:
         // 0 - a: number.
         // 1 - b: number.
@@ -377,7 +442,7 @@ namespace StopAndArithmeticOperations {
 
         // Stack output:
         // integer result of the a * b % c
-        let stack: model.Stack* = Stack.push(self=stack, element=rem);
+        let stack = Stack.push_uint256(stack, rem);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_MULMOD);
         return ctx;
     }
@@ -399,6 +464,13 @@ namespace StopAndArithmeticOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         // Stack input:
         // 0 - a: number.
         // 1 - b: exponent.
@@ -412,7 +484,7 @@ namespace StopAndArithmeticOperations {
 
         // Stack output:
         // integer result of a ** b
-        let stack: model.Stack* = Stack.push(self=stack, element=result);
+        let stack = Stack.push_uint256(stack, result);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_EXP);
         return ctx;
     }
@@ -434,16 +506,23 @@ namespace StopAndArithmeticOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         // Stack input:
         // 0 - a: number.
         // 1 - b: exponent.
         let stack = ctx.stack;
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let b = popped[0];
-        let a = popped[1];
+        let a = popped + Uint256.SIZE;
 
         // Value is already a uint256
-        let stack: model.Stack* = Stack.push(self=stack, element=a);
+        let stack = Stack.push(self=stack, element=a);
         let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_SIGNEXTEND);
         return ctx;
     }

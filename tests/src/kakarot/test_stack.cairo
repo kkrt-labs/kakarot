@@ -7,6 +7,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import assert_uint256_eq
 
 // Local dependencies
 from utils.utils import Helpers
@@ -19,25 +20,10 @@ func test__init__should_return_an_empty_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // When
-    let result: model.Stack* = Stack.init();
+    let result = Stack.init();
 
     // Then
-    assert result.len_16bytes = 0;
-    return ();
-}
-
-@external
-func test__len__should_return_the_length_of_the_stack{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    let stack: model.Stack* = Stack.init();
-
-    // When
-    let result: felt = stack.len_16bytes / 2;
-
-    // Then
-    assert result = 0;
+    assert result.size = 0;
     return ();
 }
 
@@ -46,14 +32,13 @@ func test__push__should_add_an_element_to_the_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
-    let stack: model.Stack* = Stack.init();
+    let stack = Stack.init();
 
     // When
-    let result: model.Stack* = Stack.push(stack, Uint256(1, 0));
+    let result = Stack.push_uint128(stack, 1);
 
     // Then
-    let len: felt = result.len_16bytes / 2;
-    assert len = 1;
+    assert result.size = 1;
     return ();
 }
 
@@ -62,17 +47,21 @@ func test__pop__should_pop_an_element_to_the_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
-    let stack: model.Stack* = Stack.init();
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
+    tempvar item_0 = new Uint256(1, 0);
+    tempvar item_1 = new Uint256(2, 0);
+    tempvar item_2 = new Uint256(3, 0);
+
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_2);
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
 
     // When
     let (stack, element) = Stack.pop(stack);
 
     // Then
-    assert element = Uint256(3, 0);
-    assert stack.len_16bytes = (3 - 1) * 2;
+    assert stack.size = 2;
+    assert_uint256_eq([element], [item_0]);
     return ();
 }
 
@@ -80,45 +69,26 @@ func test__pop__should_pop_an_element_to_the_stack{
 func test__pop__should_pop_N_elements_to_the_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
+    alloc_locals;
     // Given
-    let stack: model.Stack* = Stack.init();
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
+    tempvar item_0 = new Uint256(1, 0);
+    tempvar item_1 = new Uint256(2, 0);
+    tempvar item_2 = new Uint256(3, 0);
+
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_2);
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
 
     // When
-    let (stack, elements) = Stack.pop_n(stack, 3);
+    let (stack, local elements) = Stack.pop_n(stack, 3);
 
     // Then
-    assert elements[0] = Uint256(3, 0);
-    assert elements[1] = Uint256(2, 0);
-    assert elements[2] = Uint256(1, 0);
-    assert stack.len_16bytes = 0;
-    return ();
-}
+    assert_uint256_eq(elements[0], Uint256(1, 0));
+    assert_uint256_eq(elements[1], Uint256(2, 0));
+    assert_uint256_eq(elements[2], Uint256(3, 0));
 
-@external
-func test__pop__should_fail__when_stack_underflow_pop{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    let stack: model.Stack* = Stack.init();
-
-    // When & Then
-    let (stack, element) = Stack.pop(stack);
-    return ();
-}
-
-@external
-func test__pop__should_fail__when_stack_underflow_pop_n{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    let stack: model.Stack* = Stack.init();
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-
-    // When & Then
-    let (stack, elements) = Stack.pop_n(stack, 2);
+    assert stack.size = 0;
     return ();
 }
 
@@ -127,16 +97,20 @@ func test__peek__should_return_stack_at_given_index__when_value_is_0{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
-    let stack: model.Stack* = Stack.init();
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
+    tempvar item_0 = new Uint256(1, 0);
+    tempvar item_1 = new Uint256(2, 0);
+    tempvar item_2 = new Uint256(3, 0);
+
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_2);
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
 
     // When
     let (stack, result) = Stack.peek(stack, 0);
 
     // Then
-    assert result = Uint256(3, 0);
+    assert_uint256_eq([result], [item_0]);
     return ();
 }
 
@@ -145,28 +119,20 @@ func test__peek__should_return_stack_at_given_index__when_value_is_1{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
-    let stack: model.Stack* = Stack.init();
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
+    tempvar item_0 = new Uint256(1, 0);
+    tempvar item_1 = new Uint256(2, 0);
+    tempvar item_2 = new Uint256(3, 0);
+
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_2);
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
 
     // When
     let (stack, result) = Stack.peek(stack, 1);
 
     // Then
-    assert result = Uint256(2, 0);
-    return ();
-}
-
-@external
-func test__peek__should_fail_when_underflow{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    let stack: model.Stack* = Stack.init();
-
-    // When & Then
-    let (stack, result) = Stack.peek(stack, 1);
+    assert_uint256_eq([result], [item_1]);
     return ();
 }
 
@@ -176,56 +142,30 @@ func test__swap__should_swap_2_stacks{
 }() {
     // Given
     alloc_locals;
-    let stack: model.Stack* = Stack.init();
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(2, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(4, 0));
-    let (stack, index3) = Stack.peek(stack, 3);
-    assert index3 = Uint256(1, 0);
-    let (stack, index2) = Stack.peek(stack, 2);
-    assert index2 = Uint256(2, 0);
-    let (stack, index1) = Stack.peek(stack, 1);
-    assert index1 = Uint256(3, 0);
-    let (stack, index0) = Stack.peek(stack, 0);
-    assert index0 = Uint256(4, 0);
+
+    // Given
+    tempvar item_0 = new Uint256(1, 0);
+    tempvar item_1 = new Uint256(2, 0);
+    tempvar item_2 = new Uint256(3, 0);
+    tempvar item_3 = new Uint256(4, 0);
+
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_3);
+    let stack = Stack.push(stack, item_2);
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
 
     // When
     let result = Stack.swap_i(stack, i=3);
 
     // Then
     let (stack, index3) = Stack.peek(result, 3);
-    assert index3 = Uint256(1, 0);
+    assert_uint256_eq([index3], [item_0]);
     let (stack, index2) = Stack.peek(stack, 2);
-    assert index2 = Uint256(4, 0);
+    assert_uint256_eq([index2], [item_2]);
     let (stack, index1) = Stack.peek(stack, 1);
-    assert index1 = Uint256(3, 0);
+    assert_uint256_eq([index1], [item_1]);
     let (stack, index0) = Stack.peek(stack, 0);
-    assert index0 = Uint256(2, 0);
-    return ();
-}
-
-@external
-func test__swap__should_fail__when_index_1_is_underflow{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    let stack: model.Stack* = Stack.init();
-
-    // When & Then
-    let result = Stack.swap_i(stack, 1);
-    return ();
-}
-
-@external
-func test__swap__should_fail__when_index_2_is_underflow{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    let stack: model.Stack* = Stack.init();
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-
-    // When & Then
-    let result = Stack.swap_i(stack, 2);
+    assert_uint256_eq([index0], [item_3]);
     return ();
 }

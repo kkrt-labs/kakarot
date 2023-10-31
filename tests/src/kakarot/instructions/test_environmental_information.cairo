@@ -15,11 +15,7 @@ from starkware.starknet.common.syscalls import get_contract_address
 from openzeppelin.token.erc20.library import ERC20
 
 // Local dependencies
-from utils.utils import Helpers
-from kakarot.model import model
-from kakarot.interfaces.interfaces import IKakarot, IContractAccount
-from kakarot.stack import Stack
-from kakarot.memory import Memory
+from kakarot.account import Account
 from kakarot.constants import (
     Constants,
     contract_account_class_hash,
@@ -27,12 +23,16 @@ from kakarot.constants import (
     native_token_address,
 )
 from kakarot.execution_context import ExecutionContext
-from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.environmental_information import EnvironmentalInformation
-from tests.utils.helpers import TestHelpers
-from kakarot.library import Kakarot
-from kakarot.account import Account
+from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.system_operations import CreateHelper
+from kakarot.interfaces.interfaces import IKakarot, IContractAccount
+from kakarot.library import Kakarot
+from kakarot.memory import Memory
+from kakarot.model import model
+from kakarot.stack import Stack
+from tests.utils.helpers import TestHelpers
+from utils.utils import Helpers
 
 @constructor
 func constructor{
@@ -109,10 +109,10 @@ func test__exec_address__should_push_address_to_stack{
 
     // Then
     assert result.gas_used = 2;
-    let len: felt = result.stack.len_16bytes / 2;
-    assert len = 1;
+    assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0 = Uint256(420, 0);
+    assert index0.low = 420;
+    assert index0.high = 0;
     return ();
 }
 
@@ -128,9 +128,8 @@ func test__exec_extcodesize__should_handle_address_with_no_code{
     let (local starknet_contract_address) = Account.deploy(
         contract_account_class_hash_, evm_contract_address
     );
-    let evm_contract_address_uint256 = Helpers.to_uint256(evm_contract_address);
+    let address = Helpers.to_uint256(evm_contract_address);
 
-    let address = evm_contract_address_uint256;
     let stack = Stack.init();
     let stack = Stack.push(stack, address);
 
@@ -174,12 +173,16 @@ func test__exec_extcodecopy__should_handle_address_with_code{
     let evm_contract_address_uint256 = Helpers.to_uint256(evm_contract_address);
 
     // make a deployed registry contract available
+    tempvar item_3 = new Uint256(size, 0);  // size
+    tempvar item_2 = new Uint256(offset, 0);  // offset
+    tempvar item_1 = new Uint256(dest_offset, 0);  // dest_offset
+    tempvar item_0 = evm_contract_address_uint256;  // address
 
-    let stack: model.Stack* = Stack.init();
-    let stack: model.Stack* = Stack.push(stack, Uint256(size, 0));  // size
-    let stack: model.Stack* = Stack.push(stack, Uint256(offset, 0));  // offset
-    let stack: model.Stack* = Stack.push(stack, Uint256(dest_offset, 0));  // dest_offset
-    let stack: model.Stack* = Stack.push(stack, evm_contract_address_uint256);  // address
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_3);  // size
+    let stack = Stack.push(stack, item_2);  // offset
+    let stack = Stack.push(stack, item_1);  // dest_offset
+    let stack = Stack.push(stack, item_0);  // address
 
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(
         bytecode_len, bytecode, stack
@@ -196,7 +199,7 @@ func test__exec_extcodecopy__should_handle_address_with_code{
     let result = EnvironmentalInformation.exec_extcodecopy(ctx);
 
     // Then
-    assert result.stack.len_16bytes = 0;
+    assert result.stack.size = 0;
     assert result.gas_used = 3 * minimum_word_size + memory_expansion_cost + address_access_cost;
 
     let (output_array) = alloc();
@@ -221,11 +224,17 @@ func test__exec_extcodecopy__should_handle_address_with_no_code{
     );
     let evm_contract_address_uint256 = Helpers.to_uint256(evm_contract_address);
 
-    let stack: model.Stack* = Stack.init();
-    let stack: model.Stack* = Stack.push(stack, Uint256(3, 0));  // size
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));  // offset
-    let stack: model.Stack* = Stack.push(stack, Uint256(32, 0));  // dest_offset
-    let stack: model.Stack* = Stack.push(stack, evm_contract_address_uint256);  // address
+    tempvar item_3 = new Uint256(3, 0);  // size
+    tempvar item_2 = new Uint256(1, 0);  // offset
+    tempvar item_1 = new Uint256(32, 0);  // dest_offset
+    tempvar item_0 = evm_contract_address_uint256;  // address
+
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_3);  // size
+    let stack = Stack.push(stack, item_2);  // offset
+    let stack = Stack.push(stack, item_1);  // dest_offset
+    let stack = Stack.push(stack, item_0);  // address
+
     let (bytecode) = alloc();
     let bytecode_len = 0;
 
@@ -245,7 +254,7 @@ func test__exec_extcodecopy__should_handle_address_with_no_code{
 
     // Then
     // ensure stack is consumed/updated
-    assert result.stack.len_16bytes = 0;
+    assert result.stack.size = 0;
 
     assert result.gas_used = expected_gas;
 
@@ -277,7 +286,7 @@ func test__exec_gasprice{
 
     // Then
     assert result.gas_used = 2;
-    assert_uint256_eq(gasprice, expected_gas_price_uint256);
+    assert_uint256_eq([gasprice], [expected_gas_price_uint256]);
 
     return ();
 }
@@ -302,10 +311,15 @@ func test__returndatacopy{
     // size: byte size to copy.
     // offset: byte offset in the return data from the last executed sub context to copy.
     // destOffset: byte offset in the memory where the result will be copied.
-    let stack: model.Stack* = Stack.init();
-    let stack: model.Stack* = Stack.push(stack, Uint256(32, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    tempvar item_2 = new Uint256(32, 0);
+    tempvar item_1 = new Uint256(0, 0);
+    tempvar item_0 = new Uint256(0, 0);
+
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_2);
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
+
     let ctx = ExecutionContext.update_stack(ctx, stack);
 
     // When
@@ -319,10 +333,15 @@ func test__returndatacopy{
     assert ctx.gas_used = 3;
 
     // Pushing parameters for another RETURNDATACOPY
-    let stack: model.Stack* = Stack.init();
-    let stack: model.Stack* = Stack.push(stack, Uint256(1, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(31, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(32, 0));
+    tempvar item_2 = new Uint256(1, 0);
+    tempvar item_1 = new Uint256(31, 0);
+    tempvar item_0 = new Uint256(32, 0);
+
+    let stack = Stack.init();
+    let stack = Stack.push(stack, item_2);
+    let stack = Stack.push(stack, item_1);
+    let stack = Stack.push(stack, item_0);
+
     let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
     let ctx: model.ExecutionContext* = ExecutionContext.update_memory(ctx, memory);
 
@@ -352,7 +371,7 @@ func test__exec_extcodehash__should_handle_invalid_address{
 
     let bytecode_len = 0;
     let (bytecode) = alloc();
-    let address = Uint256(0xDEAD, 0);
+    tempvar address = new Uint256(0xDEAD, 0);
     let stack = Stack.init();
     let stack = Stack.push(stack, address);
 
@@ -386,8 +405,7 @@ func test__exec_extcodehash__should_handle_address_with_code{
         contract_account_class_hash_, evm_contract_address
     );
     IContractAccount.write_bytecode(starknet_contract_address, bytecode_len, bytecode);
-    let evm_contract_address_uint256 = Helpers.to_uint256(evm_contract_address);
-    let address = evm_contract_address_uint256;
+    let address = Helpers.to_uint256(evm_contract_address);
     let stack = Stack.init();
     let stack = Stack.push(stack, address);
 

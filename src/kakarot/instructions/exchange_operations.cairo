@@ -30,7 +30,7 @@ namespace ExchangeOperations {
         let stack: model.Stack* = ctx.stack;
 
         // Get the value top i-th stack item.
-        let stack = Stack.swap_i(self=stack, i=i + 1);
+        let stack = Stack.swap_i(self=stack, i=i);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);

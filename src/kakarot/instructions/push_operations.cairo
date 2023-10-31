@@ -5,11 +5,16 @@
 // Starkware dependencies
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math_cmp import is_not_zero
+from starkware.cairo.common.math_cmp import is_not_zero, is_le
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.bool import FALSE, TRUE
 
 // Internal dependencies
 from kakarot.model import model
+from kakarot.constants import Constants
+from kakarot.errors import Errors
 from utils.utils import Helpers
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
@@ -31,24 +36,26 @@ namespace PushOperations {
     ) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Get stack from context.
-        let stack: model.Stack* = ctx.stack;
+        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
+            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
 
-        // Read i bytes.
-        let (ctx, data) = ExecutionContext.read_code(self=ctx, len=i);
+        let pc = ctx.program_counter;
+        // Copy code slice
+        let out_of_bounds = is_le(ctx.call_context.bytecode_len, pc + i);
+        local len = (1 - out_of_bounds) * i + out_of_bounds * (ctx.call_context.bytecode_len - pc);
 
-        // Convert to Uint256.
-        let stack_element: Uint256 = Helpers.bytes_i_to_uint256(val=data, i=i);
+        let stack_element = Helpers.bytes_i_to_uint256(ctx.call_context.bytecode + pc, len);
+        let stack = Stack.push_uint256(ctx.stack, stack_element);
 
-        // Push to the stack.
-        let stack: model.Stack* = Stack.push(stack, stack_element);
-
-        // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
         let i_is_not_zero = is_not_zero(i);
-        // Gascost for push0 is 2; all else are 3
         let ctx = ExecutionContext.increment_gas_used(ctx, BASE_GAS_COST + i_is_not_zero);
+        // Move program counter
+        let ctx = ExecutionContext.increment_program_counter(ctx, len);
+
         return ctx;
     }
 

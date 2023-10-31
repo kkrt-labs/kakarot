@@ -40,7 +40,7 @@ func test__copy__should_return_new_account_with_same_attributes{
     alloc_locals;
     // Given
     let account = Account.init(evm_address, code_len, code, nonce);
-    let key = Uint256(1, 2);
+    tempvar key = new Uint256(1, 2);
     tempvar value = new Uint256(3, 4);
     let account = Account.write_storage(account, key, value);
 
@@ -61,13 +61,13 @@ func test__copy__should_return_new_account_with_same_attributes{
     assert storage_len = storage_copy_len;
     tempvar address = new model.Address(0, evm_address);
     let (account_copy, value_copy) = Account.read_storage(account_copy, address, key);
-    assert_uint256_eq([value], value_copy);
+    assert_uint256_eq([value], [value_copy]);
 
     // Updating copy doesn't update original
     tempvar new_value = new Uint256(5, 6);
     let account_copy = Account.write_storage(account_copy, key, new_value);
     let (account, value_original) = Account.read_storage(account, address, key);
-    assert_uint256_eq([value], value_original);
+    assert_uint256_eq([value], [value_original]);
 
     return ();
 }
@@ -79,7 +79,7 @@ func test__finalize__should_return_summary{
     // Given
     alloc_locals;
     let account = Account.init(evm_address, code_len, code, nonce);
-    let key = Uint256(1, 2);
+    tempvar key = new Uint256(1, 2);
     tempvar value = new Uint256(3, 4);
     tempvar address = new model.Address(0, evm_address);
     let account = Account.write_storage(account, key, value);
@@ -98,7 +98,7 @@ func test__finalize__should_return_summary{
     let (account, value_summary) = Account.read_storage(
         cast(summary, model.Account*), address, key
     );
-    assert_uint256_eq(value_read, value_summary);
+    assert_uint256_eq([value_read], [value_summary]);
 
     return ();
 }
@@ -109,7 +109,7 @@ func test__finalize__should_return_summary_with_no_default_dict{
 }(evm_address: felt, code_len: felt, code: felt*, nonce: felt) {
     // Given
     alloc_locals;
-    tempvar key = Uint256(1, 2);
+    tempvar key = new Uint256(1, 2);
     tempvar address = new model.Address(0, evm_address);
     let account = Account.init(evm_address, code_len, code, nonce);
 
@@ -137,13 +137,13 @@ func test__write_storage__should_store_value_at_key{
     let account = Account.init(0, 0, code, 0);
 
     // When
-    let account = Account.write_storage(account, key, &value);
+    let account = Account.write_storage(account, &key, &value);
 
     // Then
     let storage_len = account.storage - account.storage_start;
     assert storage_len = DictAccess.SIZE;
-    let (account, value_read) = Account.read_storage(account, address, key);
-    assert_uint256_eq(value_read, value);
+    let (account, value_read) = Account.read_storage(account, address, &key);
+    assert_uint256_eq([value_read], value);
 
     return ();
 }

@@ -18,11 +18,14 @@ from starkware.cairo.common.uint256 import (
     uint256_mul,
     uint256_sub,
 )
+from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.bool import TRUE, FALSE
 
 // Internal dependencies
 from kakarot.model import model
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
+from kakarot.errors import Errors
 
 const BIT_MASK = 2 ** 127;
 
@@ -63,6 +66,12 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
 
         let stack = ctx.stack;
 
@@ -78,11 +87,9 @@ namespace ComparisonOperations {
 
         // Stack output:
         // a < b: integer result of comparison a less than b
-        let stack: model.Stack* = Stack.push(self=stack, element=Uint256(result, 0));
+        let stack: model.Stack* = Stack.push_uint128(stack, result);
 
-        // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_LT);
         return ctx;
     }
@@ -104,6 +111,13 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let stack = ctx.stack;
 
         // Stack input:
@@ -118,7 +132,7 @@ namespace ComparisonOperations {
 
         // Stack output:
         // a < b: integer result of comparison a less than b
-        let stack: model.Stack* = Stack.push(stack, Uint256(result, 0));
+        let stack: model.Stack* = Stack.push_uint128(stack, result);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -144,6 +158,13 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let stack = ctx.stack;
 
         // Stack input:
@@ -158,7 +179,7 @@ namespace ComparisonOperations {
 
         // Stack output:
         // a < b: integer result of comparison a less than b
-        let stack: model.Stack* = Stack.push(self=stack, element=Uint256(result, 0));
+        let stack: model.Stack* = Stack.push_uint128(stack, result);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -184,6 +205,13 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let stack = ctx.stack;
 
         // Stack input:
@@ -198,7 +226,7 @@ namespace ComparisonOperations {
 
         // Stack output:
         // a < b: integer result of comparison a less than b
-        let stack: model.Stack* = Stack.push(self=stack, element=Uint256(result, 0));
+        let stack: model.Stack* = Stack.push_uint128(stack, result);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -224,6 +252,13 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let stack = ctx.stack;
 
         // Stack input:
@@ -238,7 +273,7 @@ namespace ComparisonOperations {
 
         // Stack output:
         // a == b: 1 if the left side is equal to the right side, 0 otherwise.
-        let stack: model.Stack* = Stack.push(self=stack, element=Uint256(result, 0));
+        let stack: model.Stack* = Stack.push_uint128(stack, result);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -252,7 +287,7 @@ namespace ComparisonOperations {
     // @custom:since Frontier
     // @custom:group Comparison & Bitwise Logic Operations
     // @custom:gas 3
-    // @custom:stack_consumed_elements 2
+    // @custom:stack_consumed_elements 1
     // @custom:stack_produced_elements 1
     // @param ctx The pointer to the execution context.
     // @return ExecutionContext The pointer to the execution context.
@@ -264,6 +299,12 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        if (ctx.stack.size == 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let stack = ctx.stack;
 
         // Stack input:
@@ -271,11 +312,11 @@ namespace ComparisonOperations {
         let (stack, a) = Stack.pop(stack);
 
         // a == 0: 1 if a is 0, 0 otherwise.
-        let (result) = uint256_eq(a=a, b=Uint256(0, 0));
+        let (result) = uint256_eq(a=[a], b=Uint256(0, 0));
 
         // Stack output:
         // a == 0: 1 if a is 0, 0 otherwise.
-        let stack: model.Stack* = Stack.push(self=stack, element=Uint256(result, 0));
+        let stack: model.Stack* = Stack.push_uint128(stack, result);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -301,6 +342,13 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let stack = ctx.stack;
 
         // Stack input
@@ -315,7 +363,7 @@ namespace ComparisonOperations {
 
         // Stack output:
         // a & b: the bitwise AND result.
-        let stack: model.Stack* = Stack.push(self=stack, element=result);
+        let stack = Stack.push_uint256(stack, result);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -341,6 +389,13 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let stack = ctx.stack;
 
         // Stack input
@@ -355,7 +410,7 @@ namespace ComparisonOperations {
 
         // Stack output:
         // a & b: the bitwise AND result.
-        let stack: model.Stack* = Stack.push(self=stack, element=result);
+        let stack = Stack.push_uint256(stack, result);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -380,6 +435,13 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let stack = ctx.stack;
 
         // Stack input
@@ -389,11 +451,11 @@ namespace ComparisonOperations {
         let (stack, b) = Stack.pop(stack);
 
         // a & b: the bitwise XOR result.
-        let (result) = uint256_xor(a, b);
+        let (result) = uint256_xor([a], [b]);
 
         // Stack output:
         // a & b: the bitwise XOR result.
-        let stack: model.Stack* = Stack.push(self=stack, element=result);
+        let stack = Stack.push_uint256(stack, result);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -418,13 +480,21 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let stack = ctx.stack;
 
         // Stack input:
         // 0 - i: offset.
         // 1 - x: value.
-        let (stack, offset) = Stack.pop(stack);
-        let (stack, value) = Stack.pop(stack);
+        let (stack, popped) = Stack.pop_n(self=stack, n=2);
+        let offset = popped[0];
+        let value = popped[1];
 
         // compute y = (x >> (248 - i * 8)) & 0xFF
         let (mul, _) = uint256_mul(offset, Uint256(8, 0));
@@ -434,9 +504,8 @@ namespace ComparisonOperations {
 
         // Stack output:
         // The result of the shift operation.
-        let stack: model.Stack* = Stack.push(self=stack, element=result);
+        let stack = Stack.push_uint256(stack, result);
 
-        // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_BYTE);
@@ -460,6 +529,13 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let stack = ctx.stack;
 
         // Stack input:
@@ -474,9 +550,7 @@ namespace ComparisonOperations {
 
         // Stack output:
         // The result of the shift operation.
-        let stack: model.Stack* = Stack.push(self=stack, element=result);
-
-        // Update context stack.
+        let stack = Stack.push_uint256(stack, result);
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SHL);
@@ -500,6 +574,13 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let stack = ctx.stack;
 
         // Stack input:
@@ -514,9 +595,7 @@ namespace ComparisonOperations {
 
         // Stack output:
         // The result of the shift operation.
-        let stack: model.Stack* = Stack.push(self=stack, element=result);
-
-        // Update context stack.
+        let stack = Stack.push_uint256(stack, result);
         let ctx = ExecutionContext.update_stack(ctx, stack);
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SHR);
@@ -539,6 +618,14 @@ namespace ComparisonOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
+
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let stack = ctx.stack;
 
         // Stack input:
@@ -583,7 +670,7 @@ namespace ComparisonOperations {
 
         // Stack output:
         // The result of the shift operation.
-        let stack: model.Stack* = Stack.push(self=stack, element=result);
+        let stack = Stack.push_uint256(stack, result);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -608,6 +695,12 @@ namespace ComparisonOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        if (ctx.stack.size == 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let stack = ctx.stack;
 
         // Stack input:
@@ -615,11 +708,11 @@ namespace ComparisonOperations {
         let (stack, a) = Stack.pop(stack);
 
         // Bitwise NOT operation
-        let (result) = uint256_not(a);
+        let (result) = uint256_not([a]);
 
         // Stack output:
         // The result of the shift operation.
-        let stack: model.Stack* = Stack.push(self=stack, element=result);
+        let stack = Stack.push_uint256(stack, result);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);

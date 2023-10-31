@@ -9,6 +9,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.dict import DictAccess, dict_new, dict_read, dict_write
 from starkware.cairo.common.registers import get_fp_and_pc
+from starkware.cairo.common.math_cmp import is_le
 
 from kakarot.errors import Errors
 from kakarot.execution_context import ExecutionContext
@@ -17,6 +18,7 @@ from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.state import State
 from utils.utils import Helpers
+from kakarot.constants import Constants
 
 // @title Exchange operations opcodes.
 // @notice This file contains the functions to execute for memory operations opcodes.
@@ -53,6 +55,12 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        if (ctx.stack.size == 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let stack = ctx.stack;
 
         // Stack input:
@@ -63,7 +71,7 @@ namespace MemoryOperations {
         let (new_memory, value, cost) = Memory.load(self=ctx.memory, offset=offset.low);
 
         // Push word to the stack
-        let stack: model.Stack* = Stack.push(stack, value);
+        let stack: model.Stack* = Stack.push_uint256(stack, value);
 
         // Update context memory.
         let ctx = ExecutionContext.update_memory(ctx, new_memory);
@@ -91,6 +99,13 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
+
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
 
         let stack = ctx.stack;
 
@@ -126,9 +141,13 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        let pc = Helpers.to_uint256(ctx.program_counter - 1);
+        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
+            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
 
-        let stack: model.Stack* = Stack.push(ctx.stack, pc);
+        let stack: model.Stack* = Stack.push_uint128(ctx.stack, ctx.program_counter - 1);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -151,10 +170,13 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        let len = ctx.memory.bytes_len;
-        let msize = Helpers.to_uint256(len);
+        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
+            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
 
-        let stack: model.Stack* = Stack.push(ctx.stack, msize);
+        let stack = Stack.push_uint128(ctx.stack, ctx.memory.bytes_len);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -178,6 +200,12 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
+
+        if (ctx.stack.size == 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
 
         let stack = ctx.stack;
 
@@ -208,6 +236,13 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let stack = ctx.stack;
 
         // Stack input:
@@ -234,7 +269,7 @@ namespace MemoryOperations {
     // @dev Serves as a check that JUMP or JUMPI was executed correctly. We only update gas used.
     // @custom:since Frontier
     // @custom:group Stack Memory Storage and Flow operations.
-    // @custom:stack_produced_elements 1
+    // @custom:stack_produced_elements 0
     // @param ctx The pointer to the execution context
     // @return ExecutionContext Updated execution context.
     func exec_jumpdest{
@@ -266,6 +301,12 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        if (ctx.stack.size == 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         // Get stack from context.
         let stack: model.Stack* = ctx.stack;
 
@@ -295,6 +336,13 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
+
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
 
         let stack = ctx.stack;
 
@@ -348,9 +396,16 @@ namespace MemoryOperations {
             return ctx;
         }
 
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let (stack, popped) = Stack.pop_n(self=ctx.stack, n=2);
 
-        let key = popped[0];  // Uint256*
+        let key = popped;  // Uint256*
         let value = popped + Uint256.SIZE;  // Uint256*
         let state = State.write_storage(ctx.state, ctx.call_context.address, key, value);
         let ctx = ExecutionContext.update_state(ctx, state);
@@ -375,6 +430,13 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
+
+        if (ctx.stack.size == 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let (stack, key) = Stack.pop(ctx.stack);
         let (state, value) = State.read_storage(ctx.state, ctx.call_context.address, key);
         let stack = Stack.push(stack, value);
@@ -399,12 +461,18 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
+            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         // Get stack from context.
         let stack: model.Stack* = ctx.stack;
 
         // Compute remaining gas.
         let remaining_gas = ctx.call_context.gas_limit - ctx.gas_used - GAS_COST_GAS;
-        let stack: model.Stack* = Stack.push(ctx.stack, Uint256(remaining_gas, 0));
+        let stack: model.Stack* = Stack.push_uint128(ctx.stack, remaining_gas);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);

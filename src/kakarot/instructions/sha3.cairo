@@ -9,12 +9,13 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.pow import pow
-from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.bool import FALSE, TRUE
 
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
+from kakarot.errors import Errors
 from utils.utils import Helpers
 
 // @title Sha3 opcodes.
@@ -40,6 +41,13 @@ namespace Sha3 {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
+
+        let stack_underflow = is_le(ctx.stack.size, 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
 
         let stack = ctx.stack;
 
@@ -72,10 +80,11 @@ namespace Sha3 {
 
         with keccak_ptr {
             let (result) = cairo_keccak_bigend(inputs=dest, n_bytes=length.low);
-
-            finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
         }
-        let stack: model.Stack* = Stack.push(self=stack, element=result);
+        finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
+
+        tempvar hash = new Uint256(result.low, result.high);
+        let stack = Stack.push(stack, hash);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);

@@ -7,6 +7,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import emit_event
+from starkware.cairo.common.math_cmp import is_le
 
 // Internal dependencies
 from kakarot.errors import Errors
@@ -36,6 +37,13 @@ namespace LoggingOperations {
 
         if (ctx.call_context.read_only != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
+        let stack_underflow = is_le(ctx.stack.size, topics_len + 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
             let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
             return ctx;
         }

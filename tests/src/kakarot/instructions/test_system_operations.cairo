@@ -110,14 +110,14 @@ func test__exec_return_should_return_context_with_updated_return_data{
     let stack: model.Stack* = Stack.init();
 
     // When
-    let stack: model.Stack* = Stack.push(stack, Uint256(return_data, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    let stack: model.Stack* = Stack.push_uint128(stack, return_data);
+    let stack: model.Stack* = Stack.push_uint128(stack, 0);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
     let ctx: model.ExecutionContext* = MemoryOperations.exec_mstore(ctx);
 
     // Then
-    let stack: model.Stack* = Stack.push(ctx.stack, Uint256(32, 0));
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));
+    let stack: model.Stack* = Stack.push_uint128(ctx.stack, 32);
+    let stack: model.Stack* = Stack.push_uint128(stack, 0);
     let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
     let ctx: model.ExecutionContext* = SystemOperations.exec_return(ctx);
 
@@ -136,8 +136,8 @@ func test__exec_revert{
 ) {
     // Given
     alloc_locals;
-    let reason_uint256 = Uint256(low=reason_low, high=reason_high);
-    local offset: Uint256 = Uint256(32, 0);
+    tempvar reason_uint256 = new Uint256(low=reason_low, high=reason_high);
+    tempvar offset = new Uint256(32, 0);
 
     let (bytecode) = alloc();
     let stack: model.Stack* = Stack.init();
@@ -146,8 +146,8 @@ func test__exec_revert{
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
     let ctx: model.ExecutionContext* = MemoryOperations.exec_mstore(ctx);
 
-    let stack: model.Stack* = Stack.push(ctx.stack, Uint256(size, 0));  // size
-    let stack: model.Stack* = Stack.push(stack, Uint256(0, 0));  // offset is 0 to have the reason at 0x20
+    let stack: model.Stack* = Stack.push_uint128(ctx.stack, size);  // size
+    let stack: model.Stack* = Stack.push_uint128(stack, 0);  // offset is 0 to have the reason at 0x20
 
     let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
 
@@ -182,12 +182,12 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     let stack: model.Stack* = Stack.init();
     let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
     let (address_high, address_low) = split_felt(callee_evm_contract_address);
-    let address = Uint256(address_low, address_high);
-    tempvar value = Uint256(2, 0);
-    let args_offset = Uint256(3, 0);
-    let args_size = Uint256(4, 0);
-    tempvar ret_offset = Uint256(5, 0);
-    tempvar ret_size = Uint256(6, 0);
+    tempvar address = new Uint256(address_low, address_high);
+    tempvar value = new Uint256(2, 0);
+    tempvar args_offset = new Uint256(3, 0);
+    tempvar args_size = new Uint256(4, 0);
+    tempvar ret_offset = new Uint256(5, 0);
+    tempvar ret_size = new Uint256(6, 0);
     let stack = Stack.push(stack, ret_size);
     let stack = Stack.push(stack, ret_offset);
     let stack = Stack.push(stack, args_size);
@@ -198,8 +198,8 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     // Put some value in memory as it is used for calldata with args_size and args_offset
     // Word is 0x 11 22 33 44 55 66 77 88 00 00 ... 00
     // calldata should be 0x 44 55 66 77
-    let memory_word = Uint256(low=0, high=0x11223344556677880000000000000000);
-    let memory_offset = Uint256(0, 0);
+    tempvar memory_word = new Uint256(low=0, high=0x11223344556677880000000000000000);
+    tempvar memory_offset = new Uint256(0, 0);
     let stack = Stack.push(stack, memory_word);
     let stack = Stack.push(stack, memory_offset);
     let (bytecode) = alloc();
@@ -276,12 +276,12 @@ func test__exec_call__should_transfer_value{
     let stack: model.Stack* = Stack.init();
     let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
     let (address_high, address_low) = split_felt(callee_evm_contract_address);
-    let address = Uint256(address_low, address_high);
-    tempvar value = Uint256(2, 0);
-    let args_offset = Uint256(3, 0);
-    let args_size = Uint256(4, 0);
-    tempvar ret_offset = Uint256(5, 0);
-    tempvar ret_size = Uint256(6, 0);
+    tempvar address = new Uint256(address_low, address_high);
+    tempvar value = new Uint256(2, 0);
+    tempvar args_offset = new Uint256(3, 0);
+    tempvar args_size = new Uint256(4, 0);
+    tempvar ret_offset = new Uint256(5, 0);
+    tempvar ret_size = new Uint256(6, 0);
     let stack = Stack.push(stack, ret_size);
     let stack = Stack.push(stack, ret_offset);
     let stack = Stack.push(stack, args_size);
@@ -289,8 +289,8 @@ func test__exec_call__should_transfer_value{
     let stack = Stack.push(stack, value);
     let stack = Stack.push(stack, address);
     let stack = Stack.push(stack, gas);
-    let memory_word = Uint256(low=0, high=22774453838368691922685013100469420032);
-    let memory_offset = Uint256(0, 0);
+    tempvar memory_word = new Uint256(low=0, high=22774453838368691922685013100469420032);
+    tempvar memory_offset = new Uint256(0, 0);
     let stack = Stack.push(stack, memory_word);
     let stack = Stack.push(stack, memory_offset);
     let (bytecode) = alloc();
@@ -337,12 +337,12 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
     let stack: model.Stack* = Stack.init();
     let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
     let (address_high, address_low) = split_felt(callee_evm_contract_address);
-    let address = Uint256(address_low, address_high);
-    tempvar value = Uint256(2, 0);
-    let args_offset = Uint256(3, 0);
-    let args_size = Uint256(4, 0);
-    tempvar ret_offset = Uint256(5, 0);
-    tempvar ret_size = Uint256(6, 0);
+    tempvar address = new Uint256(address_low, address_high);
+    tempvar value = new Uint256(2, 0);
+    tempvar args_offset = new Uint256(3, 0);
+    tempvar args_size = new Uint256(4, 0);
+    tempvar ret_offset = new Uint256(5, 0);
+    tempvar ret_size = new Uint256(6, 0);
     let stack = Stack.push(stack, ret_size);
     let stack = Stack.push(stack, ret_offset);
     let stack = Stack.push(stack, args_size);
@@ -353,8 +353,8 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
     // Put some value in memory as it is used for calldata with args_size and args_offset
     // Word is 0x 11 22 33 44 55 66 77 88 00 00 ... 00
     // calldata should be 0x 44 55 66 77
-    let memory_word = Uint256(low=0, high=22774453838368691922685013100469420032);
-    let memory_offset = Uint256(0, 0);
+    tempvar memory_word = new Uint256(low=0, high=22774453838368691922685013100469420032);
+    tempvar memory_offset = new Uint256(0, 0);
     let stack = Stack.push(stack, memory_word);
     let stack = Stack.push(stack, memory_offset);
     let (bytecode) = alloc();
@@ -425,12 +425,12 @@ func test__exec_callcode__should_transfer_value{
     let stack: model.Stack* = Stack.init();
     let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
     let (address_high, address_low) = split_felt(callee_evm_contract_address);
-    let address = Uint256(address_low, address_high);
-    tempvar value = Uint256(2, 0);
-    let args_offset = Uint256(3, 0);
-    let args_size = Uint256(4, 0);
-    tempvar ret_offset = Uint256(5, 0);
-    tempvar ret_size = Uint256(6, 0);
+    tempvar address = new Uint256(address_low, address_high);
+    tempvar value = new Uint256(2, 0);
+    tempvar args_offset = new Uint256(3, 0);
+    tempvar args_size = new Uint256(4, 0);
+    tempvar ret_offset = new Uint256(5, 0);
+    tempvar ret_size = new Uint256(6, 0);
     let stack = Stack.push(stack, ret_size);
     let stack = Stack.push(stack, ret_offset);
     let stack = Stack.push(stack, args_size);
@@ -438,8 +438,8 @@ func test__exec_callcode__should_transfer_value{
     let stack = Stack.push(stack, value);
     let stack = Stack.push(stack, address);
     let stack = Stack.push(stack, gas);
-    let memory_word = Uint256(low=0, high=22774453838368691922685013100469420032);
-    let memory_offset = Uint256(0, 0);
+    tempvar memory_word = new Uint256(low=0, high=22774453838368691922685013100469420032);
+    tempvar memory_offset = new Uint256(0, 0);
     let stack = Stack.push(stack, memory_word);
     let stack = Stack.push(stack, memory_offset);
     let (bytecode) = alloc();
@@ -484,11 +484,11 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
     let stack: model.Stack* = Stack.init();
     let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
     let (address_high, address_low) = split_felt(evm_contract_address);
-    let address = Uint256(address_low, address_high);
-    let args_offset = Uint256(3, 0);
-    let args_size = Uint256(4, 0);
-    tempvar ret_offset = Uint256(5, 0);
-    tempvar ret_size = Uint256(6, 0);
+    tempvar address = new Uint256(address_low, address_high);
+    tempvar args_offset = new Uint256(3, 0);
+    tempvar args_size = new Uint256(4, 0);
+    tempvar ret_offset = new Uint256(5, 0);
+    tempvar ret_size = new Uint256(6, 0);
     let stack = Stack.push(stack, ret_size);
     let stack = Stack.push(stack, ret_offset);
     let stack = Stack.push(stack, args_size);
@@ -498,8 +498,8 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
     // Put some value in memory as it is used for calldata with args_size and args_offset
     // Word is 0x 11 22 33 44 55 66 77 88 00 00 ... 00
     // calldata should be 0x 44 55 66 77
-    let memory_word = Uint256(low=0, high=22774453838368691922685013100469420032);
-    let memory_offset = Uint256(0, 0);
+    tempvar memory_word = new Uint256(low=0, high=22774453838368691922685013100469420032);
+    tempvar memory_offset = new Uint256(0, 0);
     let stack = Stack.push(stack, memory_word);
     let stack = Stack.push(stack, memory_offset);
     let (bytecode) = alloc();
@@ -558,11 +558,11 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
     let stack: model.Stack* = Stack.init();
     let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
     let (address_high, address_low) = split_felt(evm_contract_address);
-    let address = Uint256(address_low, address_high);
-    let args_offset = Uint256(3, 0);
-    let args_size = Uint256(4, 0);
-    tempvar ret_offset = Uint256(5, 0);
-    tempvar ret_size = Uint256(6, 0);
+    tempvar address = new Uint256(address_low, address_high);
+    tempvar args_offset = new Uint256(3, 0);
+    tempvar args_size = new Uint256(4, 0);
+    tempvar ret_offset = new Uint256(5, 0);
+    tempvar ret_size = new Uint256(6, 0);
     let stack = Stack.push(stack, ret_size);
     let stack = Stack.push(stack, ret_offset);
     let stack = Stack.push(stack, args_size);
@@ -572,8 +572,8 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
     // Put some value in memory as it is used for calldata with args_size and args_offset
     // Word is 0x 11 22 33 44 55 66 77 88 00 00 ... 00
     // calldata should be 0x 44 55 66 77
-    let memory_word = Uint256(low=0, high=22774453838368691922685013100469420032);
-    let memory_offset = Uint256(0, 0);
+    tempvar memory_word = new Uint256(low=0, high=22774453838368691922685013100469420032);
+    tempvar memory_offset = new Uint256(0, 0);
     let stack = Stack.push(stack, memory_word);
     let stack = Stack.push(stack, memory_offset);
     let (bytecode) = alloc();
@@ -623,9 +623,9 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
 
     // Fill the stack with exec_create args
     let stack: model.Stack* = Stack.init();
-    tempvar value = Uint256(1, 0);
-    let offset = Uint256(3, 0);
-    let size = Uint256(4, 0);
+    tempvar value = new Uint256(1, 0);
+    tempvar offset = new Uint256(3, 0);
+    tempvar size = new Uint256(4, 0);
     let stack = Stack.push(stack, size);
     let stack = Stack.push(stack, offset);
     let stack = Stack.push(stack, value);
@@ -633,8 +633,8 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
     // Put some value in memory as it is used for bytecode with size and offset
     // Word is 0x 11 22 33 44 55 66 77 88 00 00 ... 00
     // bytecode should be 0x 44 55 66 77
-    let memory_word = Uint256(low=0, high=0x11223344556677880000000000000000);
-    let memory_offset = Uint256(0, 0);
+    tempvar memory_word = new Uint256(low=0, high=0x11223344556677880000000000000000);
+    tempvar memory_offset = new Uint256(0, 0);
     let stack = Stack.push(stack, memory_word);
     let stack = Stack.push(stack, memory_offset);
     let bytecode_len = 0;
@@ -680,7 +680,7 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
 
     // Then
     let (stack, address) = Stack.peek(ctx.stack, 0);
-    let evm_contract_address = Helpers.uint256_to_felt(address);
+    let evm_contract_address = Helpers.uint256_to_felt([address]);
     assert evm_contract_address = sub_ctx.call_context.address.evm;
     assert sub_ctx.call_context.address.evm = expected_create_address;
     let (state, account) = State.get_account(ctx.state, sub_ctx.call_context.address);
@@ -707,9 +707,9 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
     evm_caller_address: felt,
-    bytecode_offset: Uint256,
-    bytecode_size: Uint256,
-    nonce: Uint256,
+    bytecode_offset: felt,
+    bytecode_size: felt,
+    nonce: felt,
     memory_word: Uint256,
     expected_create2_address: felt,
 ) {
@@ -717,18 +717,16 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
 
     // Fill the stack with exec_create2 args
     let stack: model.Stack* = Stack.init();
-    tempvar value = Uint256(1, 0);
-    let offset = bytecode_offset;
-    let size = bytecode_size;
-    let nonce = nonce;
-    let stack = Stack.push(stack, nonce);
-    let stack = Stack.push(stack, size);
-    let stack = Stack.push(stack, offset);
+    tempvar value = new Uint256(1, 0);
+    let stack = Stack.push_uint128(stack, nonce);
+    let stack = Stack.push_uint128(stack, bytecode_size);
+    let stack = Stack.push_uint128(stack, bytecode_offset);
     let stack = Stack.push(stack, value);
 
     // Put some value in memory as it is used for byte
-    let memory_offset = Uint256(0, 0);
-    let stack = Stack.push(stack, memory_word);
+    tempvar word = new Uint256(memory_word.low, memory_word.high);
+    tempvar memory_offset = new Uint256(0, 0);
+    let stack = Stack.push(stack, word);
     let stack = Stack.push(stack, memory_offset);
     let bytecode_len = 0;
     let (bytecode: felt*) = alloc();
@@ -770,7 +768,7 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
 
     // Then
     let (stack, address) = Stack.peek(ctx.stack, 0);
-    let evm_contract_address = Helpers.uint256_to_felt(address);
+    let evm_contract_address = Helpers.uint256_to_felt([address]);
     assert evm_contract_address = sub_ctx.call_context.address.evm;
     assert sub_ctx.call_context.address.evm = expected_create2_address;
     let state = ctx.state;
@@ -781,79 +779,3 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
 
     return ();
 }
-
-// @external
-// func test__exec_selfdestruct__should_add_account_to_state{
-//     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-// }() {
-//     alloc_locals;
-
-// // Create sub_ctx writing directly in memory because need to update calling_context
-//     let (bytecode) = alloc();
-//     let stack: model.Stack* = Stack.init();
-//     let memory: model.Memory* = Memory.init();
-//     let (bytecode) = alloc();
-//     let (return_data) = alloc();
-//     assert [return_data] = 0;
-//     assert [return_data + 1] = 10;
-//     let (selfdestructs) = alloc();
-//     let (calldata) = alloc();
-//     assert [calldata] = '';
-//     local call_context: model.CallContext* = new model.CallContext(
-//         bytecode=bytecode, bytecode_len=0, calldata=calldata, calldata_len=1, value=0
-//     );
-//     let stack = Stack.push(stack, Uint256(10, 0));
-//     let (local revert_contract_state_dict_start) = default_dict_new(0);
-//     tempvar revert_contract_state: model.RevertContractState* = new model.RevertContractState(
-//         revert_contract_state_dict_start, revert_contract_state_dict_start
-//     );
-
-// // Simulate contract creation
-//     let (contract_account_class_hash_) = contract_account_class_hash.read();
-//     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
-//     let (local starknet_contract_address) = Account.deploy(
-//         contract_account_class_hash_, evm_contract_address
-//     );
-
-// // Fill contract bytecode
-//     let (bytecode) = alloc();
-//     assert [bytecode] = 1907;
-//     IContractAccount.write_bytecode(
-//         contract_address=starknet_contract_address, bytecode_len=1, bytecode=bytecode
-//     );
-
-// tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
-//     // Create context
-//     let (sub_ctx: felt*) = alloc();
-//     let sub_ctx_object: model.ExecutionContext* = cast(sub_ctx, model.ExecutionContext*);
-
-// assert [sub_ctx + 0] = cast(call_context, felt);  // call_context
-//     assert [sub_ctx + 1] = 0;  // program_counter
-//     assert [sub_ctx + 2] = 0;  // stopped
-//     assert [sub_ctx + 3] = cast(return_data + 1, felt);  // return_data
-//     assert [sub_ctx + 4] = 1;  // return_data_len
-//     assert [sub_ctx + 5] = cast(stack, felt);  // stack
-//     assert [sub_ctx + 6] = cast(memory, felt);  // memory
-//     assert [sub_ctx + 7] = 0;  // gas_used
-//     assert [sub_ctx + 8] = 0;  // gas_limit
-//     assert [sub_ctx + 9] = 0;  // intrinsic_gas_cost
-//     assert [sub_ctx + 10] = cast(address, felt);  // address
-//     assert [sub_ctx + 12] = 0;  // origin
-//     assert [sub_ctx + 13] = 0;  // calling_context
-//     assert [sub_ctx + 14] = 0;  // selfdestructs_len
-//     assert [sub_ctx + 15] = cast(selfdestructs, felt);  // selfdestructs
-//     assert [sub_ctx + 17] = cast(0, felt);  // state
-//     assert [sub_ctx + 21] = 0;  // reverted
-//     assert [sub_ctx + 22] = 0;  // read only
-
-// // When
-//     let sub_ctx_object: model.ExecutionContext* = SystemOperations.exec_selfdestruct(
-//         sub_ctx_object
-//     );
-
-// // Then
-//     assert_non_zero(sub_ctx.selfdestructs_len);
-//     let address = [sub_ctx.selfdestructs + sub_ctx.selfdestructs_len - 1];
-//     assert address = sub_ctx_object.address.starknet;
-//     return ();
-// }

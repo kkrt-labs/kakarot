@@ -214,7 +214,7 @@ namespace State {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.State*, address: model.Address*, key: Uint256) -> (model.State*, Uint256) {
+    }(self: model.State*, address: model.Address*, key: Uint256*) -> (model.State*, Uint256*) {
         alloc_locals;
         let (self, account) = get_account(self, address);
         let (account, value) = Account.read_storage(account, address, key);
@@ -228,7 +228,7 @@ namespace State {
     // @param key The pointer to the Uint256 storage key
     // @param value The pointer to the Uint256 value
     func write_storage{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.State*, address: model.Address*, key: Uint256, value: Uint256*
+        self: model.State*, address: model.Address*, key: Uint256*, value: Uint256*
     ) -> model.State* {
         alloc_locals;
         let (self, account) = get_account(self, address);

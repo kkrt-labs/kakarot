@@ -8,7 +8,7 @@ async def duplication_operations(starknet: Starknet):
     class_hash = await starknet.deprecated_declare(
         source="./tests/src/kakarot/instructions/test_duplication_operations.cairo",
         cairo_path=["src"],
-        disable_hint_validation=False,
+        disable_hint_validation=True,
     )
     return await starknet.deploy(class_hash=class_hash.class_hash)
 

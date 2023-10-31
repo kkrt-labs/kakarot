@@ -187,26 +187,6 @@ namespace ExecutionContext {
         );
     }
 
-    // @notice Read and return data from bytecode.
-    // @dev The data is read from the bytecode from the current program counter.
-    // @param self The pointer to the execution context.
-    // @param len The size of the data to read.
-    // @return self The pointer to the updated execution context.
-    // @return output The data read from the bytecode.
-    func read_code(self: model.ExecutionContext*, len: felt) -> (
-        self: model.ExecutionContext*, output: felt*
-    ) {
-        alloc_locals;
-        // Get current pc value
-        let pc = self.program_counter;
-        let (output: felt*) = alloc();
-        // Copy code slice
-        memcpy(dst=output, src=self.call_context.bytecode + pc, len=len);
-        // Move program counter
-        let self = ExecutionContext.increment_program_counter(self=self, inc_value=len);
-        return (self=self, output=output);
-    }
-
     // @notice Update the stack of the current execution context.
     // @dev The stack is updated with the given stack.
     // @param self The pointer to the execution context.
