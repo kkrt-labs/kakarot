@@ -18,6 +18,7 @@ from starkware.cairo.common.uint256 import (
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.registers import get_label_location
 
 // Internal dependencies
 from kakarot.model import model
@@ -28,26 +29,6 @@ from kakarot.errors import Errors
 // @title Arithmetic operations opcodes.
 // @notice This contract contains the functions to execute for arithmetic operations opcodes.
 namespace StopAndArithmeticOperations {
-    // Define constants.
-    const GAS_COST_ADD = 3;
-    const GAS_COST_MUL = 5;
-    const GAS_COST_SUB = 3;
-    const GAS_COST_DIV = 5;
-    const GAS_COST_SDIV = 5;
-    const GAS_COST_MOD = 5;
-    const GAS_COST_SMOD = 5;
-    const GAS_COST_ADDMOD = 8;
-    const GAS_COST_MULMOD = 8;
-    const GAS_COST_EXP = 10;
-    const GAS_COST_SIGNEXTEND = 5;
-
-    // @notice 0x00 - STOP
-    // @dev Halts execution
-    // @custom:since Frontier
-    // @custom:group Stop and Arithmetic Operations
-    // @custom:gas 0
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext Updated execution context.
     func exec_stop{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -63,15 +44,6 @@ namespace StopAndArithmeticOperations {
         return ctx;
     }
 
-    // @notice 0x01 - ADD
-    // @dev Addition operation
-    // @custom:since Frontier
-    // @custom:group Stop and Arithmetic Operations
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 2
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext The pointer to the execution context.
     func exec_add{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -79,41 +51,10 @@ namespace StopAndArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-
-        let stack_underflow = is_le(ctx.stack.size, 1);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
-        // Stack input:
-        // 0 - a: first integer value to add.
-        // 1 - b: second integer value to add.
-        let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[0];
-        let b = popped[1];
-
-        // Compute the addition
-        let (result, _) = uint256_add(a, b);
-
-        // Stack output:
-        // a + b: integer result of the addition modulo 2^256
-        let stack = Stack.push_uint256(stack, result);
-        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_ADD);
-        return ctx;
+        let opcode = Internals.get_opcode(0x01);
+        return Internals.exec_arithmetic_operation(ctx, opcode);
     }
 
-    // @notice 0x02 - MUL
-    // @dev Multiplication operation
-    // @custom:since Frontier
-    // @custom:group Stop and Arithmetic Operations
-    // @custom:gas 5
-    // @custom:stack_consumed_elements 2
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext The pointer to the execution context.
     func exec_mul{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -121,41 +62,10 @@ namespace StopAndArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-
-        let stack_underflow = is_le(ctx.stack.size, 1);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
-        // Stack input:
-        // 0 - a: first integer value to multiply.
-        // 1 - b: second integer value to multiply.
-        let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[0];
-        let b = popped[1];
-
-        // Compute the multiplication
-        let (result, _) = uint256_mul(a, b);
-
-        // Stack output:
-        // a * b: integer result of the multiplication modulo 2^256
-        let stack = Stack.push_uint256(stack, result);
-        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_MUL);
-        return ctx;
+        let opcode = Internals.get_opcode(0x02);
+        return Internals.exec_arithmetic_operation(ctx, opcode);
     }
 
-    // @notice 0x03 - SUB
-    // @dev Subtraction operation
-    // @custom:since Frontier
-    // @custom:group Stop and Arithmetic Operations
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 2
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext The pointer to the execution context.
     func exec_sub{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -163,41 +73,10 @@ namespace StopAndArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-
-        let stack_underflow = is_le(ctx.stack.size, 1);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
-        // Stack input:
-        // 0 - a: first integer value to sub.
-        // 1 - b: second integer value to sub.
-        let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[0];
-        let b = popped[1];
-
-        // Compute the subtraction
-        let (result) = uint256_sub(a, b);
-
-        // Stack output:
-        // a - b: integer result of the subtraction modulo 2^256
-        let stack = Stack.push_uint256(stack, result);
-        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_SUB);
-        return ctx;
+        let opcode = Internals.get_opcode(0x03);
+        return Internals.exec_arithmetic_operation(ctx, opcode);
     }
 
-    // @notice 0x04 - DIV
-    // @dev Division operation
-    // @custom:since Frontier
-    // @custom:group Stop and Arithmetic Operations
-    // @custom:gas 5
-    // @custom:stack_consumed_elements 2
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext The pointer to the execution context.
     func exec_div{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -205,41 +84,10 @@ namespace StopAndArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-
-        let stack_underflow = is_le(ctx.stack.size, 1);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
-        // Stack input:
-        // 0 - a: numerator.
-        // 1 - b: denominator.
-        let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[0];
-        let b = popped[1];
-
-        // Compute the division
-        let (result, _) = uint256_unsigned_div_rem(a, b);
-
-        // Stack output:
-        // a / b: integer result of the division modulo 2^256
-        let stack = Stack.push_uint256(stack, result);
-        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_DIV);
-        return ctx;
+        let opcode = Internals.get_opcode(0x04);
+        return Internals.exec_arithmetic_operation(ctx, opcode);
     }
 
-    // @notice 0x05 - SDIV
-    // @dev Signed division operation
-    // @custom:since Frontier
-    // @custom:group Stop and Arithmetic Operations
-    // @custom:gas 5
-    // @custom:stack_consumed_elements 2
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext The pointer to the execution context.
     func exec_sdiv{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -247,41 +95,10 @@ namespace StopAndArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-
-        let stack_underflow = is_le(ctx.stack.size, 1);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
-        // Stack input:
-        // 0 - a: numerator.
-        // 1 - b: denominator.
-        let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[0];
-        let b = popped[1];
-
-        // Compute the division
-        let (result, _) = uint256_signed_div_rem(a, b);
-
-        // Stack output:
-        // a / b: signed integer result of the division modulo 2^256
-        let stack = Stack.push_uint256(stack, result);
-        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_SDIV);
-        return ctx;
+        let opcode = Internals.get_opcode(0x05);
+        return Internals.exec_arithmetic_operation(ctx, opcode);
     }
 
-    // @notice 0x06 - MOD
-    // @dev Modulo operation
-    // @custom:since Frontier
-    // @custom:group Stop and Arithmetic Operations
-    // @custom:gas 5
-    // @custom:stack_consumed_elements 2
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext The pointer to the execution context.
     func exec_mod{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -289,41 +106,10 @@ namespace StopAndArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-
-        let stack_underflow = is_le(ctx.stack.size, 1);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
-        // Stack input:
-        // 0 - a: number.
-        // 1 - b: modulo.
-        let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[0];
-        let b = popped[1];
-
-        // Compute the modulo
-        let (_, rem) = uint256_unsigned_div_rem(a, b);
-
-        // Stack output:
-        // a % b:  integer result of the a % b
-        let stack = Stack.push_uint256(stack, rem);
-        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_MOD);
-        return ctx;
+        let opcode = Internals.get_opcode(0x06);
+        return Internals.exec_arithmetic_operation(ctx, opcode);
     }
 
-    // @notice 0x07 - SMOD
-    // @dev Signed modulo operation
-    // @custom:since Frontier
-    // @custom:group Stop and Arithmetic Operations
-    // @custom:gas 5
-    // @custom:stack_consumed_elements 2
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext The pointer to the execution context.
     func exec_smod{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -331,41 +117,10 @@ namespace StopAndArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-
-        let stack_underflow = is_le(ctx.stack.size, 1);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
-        // Stack input:
-        // 0 - a: number.
-        // 1 - b: modulo.
-        let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[0];
-        let b = popped[1];
-
-        // Compute the signed modulo
-        let (_, rem) = uint256_signed_div_rem(a, b);
-
-        // Stack output:
-        // a % b:  signed integer result of the a % b
-        let stack = Stack.push_uint256(stack, rem);
-        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_SMOD);
-        return ctx;
+        let opcode = Internals.get_opcode(0x07);
+        return Internals.exec_arithmetic_operation(ctx, opcode);
     }
 
-    // @notice 0x08 - ADDMOD
-    // @dev Addition modulo operation
-    // @custom:since Frontier
-    // @custom:group Stop and Arithmetic Operations
-    // @custom:gas 8
-    // @custom:stack_consumed_elements 2
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext The pointer to the execution context.
     func exec_addmod{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -373,45 +128,10 @@ namespace StopAndArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-
-        let stack_underflow = is_le(ctx.stack.size, 2);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
-        // Stack input:
-        // 0 - a: number.
-        // 1 - b: number.
-        // 1 - c: modulo.
-        let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(self=stack, n=3);
-        let a = popped[0];
-        let b = popped[1];
-        let c = popped[2];
-
-        // Compute the addition
-        let (result, _) = uint256_add(a, b);
-        // Compute the modulo
-        let (_, rem) = uint256_unsigned_div_rem(result, c);
-
-        // Stack output:
-        // integer result of a + b % c
-        let stack = Stack.push_uint256(stack, rem);
-        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_ADDMOD);
-        return ctx;
+        let opcode = Internals.get_opcode(0x08);
+        return Internals.exec_arithmetic_operation(ctx, opcode);
     }
 
-    // @notice 0x09 - MULMOD
-    // @dev Multiplication modulo operation
-    // @custom:since Frontier
-    // @custom:group Stop and Arithmetic Operations
-    // @custom:gas 8
-    // @custom:stack_consumed_elements 2
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext The pointer to the execution context.
     func exec_mulmod{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -419,43 +139,10 @@ namespace StopAndArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-
-        let stack_underflow = is_le(ctx.stack.size, 2);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
-        // Stack input:
-        // 0 - a: number.
-        // 1 - b: number.
-        // 1 - c: modulos.
-        let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(self=stack, n=3);
-        let a = popped[0];
-        let b = popped[1];
-        let c = popped[2];
-
-        // Compute the mul mod
-        let (_, _, rem) = uint256_mul_div_mod(a, b, c);
-
-        // Stack output:
-        // integer result of the a * b % c
-        let stack = Stack.push_uint256(stack, rem);
-        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_MULMOD);
-        return ctx;
+        let opcode = Internals.get_opcode(0x09);
+        return Internals.exec_arithmetic_operation(ctx, opcode);
     }
 
-    // @notice 0x0A - EXP
-    // @dev Exp operation
-    // @custom:since Frontier
-    // @custom:group Stop and Arithmetic Operations
-    // @custom:gas 10
-    // @custom:stack_consumed_elements 2
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext The pointer to the execution context.
     func exec_exp{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -463,41 +150,10 @@ namespace StopAndArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-
-        let stack_underflow = is_le(ctx.stack.size, 1);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
-        // Stack input:
-        // 0 - a: number.
-        // 1 - b: exponent.
-        let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(self=stack, n=2);
-        let a = popped[0];
-        let b = popped[1];
-
-        // Compute the addition
-        let result = internal_exp(a, b);
-
-        // Stack output:
-        // integer result of a ** b
-        let stack = Stack.push_uint256(stack, result);
-        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_EXP);
-        return ctx;
+        let opcode = Internals.get_opcode(0x0a);
+        return Internals.exec_arithmetic_operation(ctx, opcode);
     }
 
-    // @notice 0x0B - SIGNEXTEND
-    // @dev Exp operation
-    // @custom:since Frontier
-    // @custom:group Stop and Arithmetic Operations
-    // @custom:gas 5
-    // @custom:stack_consumed_elements 2
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext The pointer to the execution context.
     func exec_signextend{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -505,26 +161,259 @@ namespace StopAndArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
+        let opcode = Internals.get_opcode(0x0b);
+        return Internals.exec_arithmetic_operation(ctx, opcode);
+    }
+}
 
-        let stack_underflow = is_le(ctx.stack.size, 1);
+namespace Internals {
+    func get_opcode(index: felt) -> model.Opcode* {
+        let (opcode: model.Opcode*) = get_label_location(opcodes);
+        return opcode + index * model.Opcode.SIZE;
+
+        // See model.Opcode
+        // number
+        // gas
+        // stack_input
+        // stack_diff
+        // static_disabled
+        opcodes:
+        // STOP;
+        dw 0x00;
+        dw 0;
+        dw 0;
+        dw 0;
+        dw 0;
+        // ADD;
+        dw 0x01;
+        dw 3;
+        dw 2;
+        dw -1;
+        dw 0;
+        // MUL;
+        dw 0x02;
+        dw 5;
+        dw 2;
+        dw -1;
+        dw 0;
+        // SUB;
+        dw 0x03;
+        dw 3;
+        dw 2;
+        dw -1;
+        dw 0;
+        // DIV;
+        dw 0x04;
+        dw 5;
+        dw 2;
+        dw -1;
+        dw 0;
+        // SDIV;
+        dw 0x05;
+        dw 5;
+        dw 2;
+        dw -1;
+        dw 0;
+        // MOD;
+        dw 0x06;
+        dw 5;
+        dw 2;
+        dw -1;
+        dw 0;
+        // SMOD;
+        dw 0x07;
+        dw 5;
+        dw 2;
+        dw -1;
+        dw 0;
+        // ADDMOD;
+        dw 0x08;
+        dw 8;
+        dw 3;
+        dw -2;
+        dw 0;
+        // MULMOD;
+        dw 0x09;
+        dw 8;
+        dw 3;
+        dw -2;
+        dw 0;
+        // EXP;
+        dw 0x0A;
+        dw 10;
+        dw 2;
+        dw -1;
+        dw 0;
+        // SIGNEXTEND;
+        dw 0x0B;
+        dw 5;
+        dw 2;
+        dw -1;
+        dw 0;
+    }
+
+    func exec_arithmetic_operation{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*, opcode: model.Opcode*) -> model.ExecutionContext* {
+        alloc_locals;
+
+        let stack_underflow = is_le(ctx.stack.size, opcode.stack_input - 1);
         if (stack_underflow != 0) {
             let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
             let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
             return ctx;
         }
 
-        // Stack input:
-        // 0 - a: number.
-        // 1 - b: exponent.
-        let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(self=stack, n=2);
+        let (local stack, popped) = Stack.pop_n(ctx.stack, opcode.stack_input);
+
+        // offset is 1 (new line) + 4 (call + op + jmp + end) per opcode
+        // opcode is offset from by 0x1 (index of the first opcode)
+        tempvar offset = 1 + 4 * (opcode.number - 0x1);
+
+        // Prepare arguments
+        [ap] = range_check_ptr, ap++;
+        [ap] = popped, ap++;
+
+        // call opcode
+        jmp rel offset;
+        call add;  // 0x1
+        jmp end;
+        call mul;  // 0x2
+        jmp end;
+        call sub;  // 0x3
+        jmp end;
+        call div;  // 0x4
+        jmp end;
+        call sdiv;  // 0x5
+        jmp end;
+        call mod;  // 0x6
+        jmp end;
+        call smod;  // 0x7
+        jmp end;
+        call addmod;  // 0x8
+        jmp end;
+        call mulmod;  // 0x9
+        jmp end;
+        call exp;  // 0xa
+        jmp end;
+        call signextend;  // 0xb
+        jmp end;
+
+        end:
+        // Parse results from call
+        // All the implementation share the same return signature, which is range_check_ptr in implicit args
+        // and a Uint256 for the value
+        let range_check_ptr = [ap - 3];
+        let result = Uint256([ap - 2], [ap - 1]);
+
+        // Rebind args with fp
+        // Function args are in [fp - n - 2: fp - 2]
+        // local stack is the only local of the function, so at [fp]
+        let syscall_ptr = cast([fp - 8], felt*);
+        let pedersen_ptr = cast([fp - 7], HashBuiltin*);
+        let bitwise_ptr = cast([fp - 5], BitwiseBuiltin*);
+        let ctx = cast([fp - 4], model.ExecutionContext*);
+        let opcode = cast([fp - 3], model.Opcode*);
+        let stack = cast([fp], model.Stack*);
+
+        // Finalize opcode
+        let stack = Stack.push_uint256(stack, result);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=opcode.gas);
+        return ctx;
+    }
+
+    func add{range_check_ptr}(popped: Uint256*) -> Uint256 {
+        let a = popped[0];
+        let b = popped[1];
+
+        let (result, _) = uint256_add(a, b);
+        return result;
+    }
+
+    func mul{range_check_ptr}(popped: Uint256*) -> Uint256 {
+        let a = popped[0];
+        let b = popped[1];
+
+        let (result, _) = uint256_mul(a, b);
+        return result;
+    }
+
+    func sub{range_check_ptr}(popped: Uint256*) -> Uint256 {
+        let a = popped[0];
+        let b = popped[1];
+
+        let (result) = uint256_sub(a, b);
+        return result;
+    }
+
+    func div{range_check_ptr}(popped: Uint256*) -> Uint256 {
+        let a = popped[0];
+        let b = popped[1];
+
+        let (result, _) = uint256_unsigned_div_rem(a, b);
+        return result;
+    }
+
+    func sdiv{range_check_ptr}(popped: Uint256*) -> Uint256 {
+        let a = popped[0];
+        let b = popped[1];
+
+        let (result, _) = uint256_signed_div_rem(a, b);
+        return result;
+    }
+
+    func mod{range_check_ptr}(popped: Uint256*) -> Uint256 {
+        let a = popped[0];
+        let b = popped[1];
+
+        let (_, result) = uint256_unsigned_div_rem(a, b);
+        return result;
+    }
+
+    func smod{range_check_ptr}(popped: Uint256*) -> Uint256 {
+        let a = popped[0];
+        let b = popped[1];
+
+        let (_, result) = uint256_signed_div_rem(a, b);
+        return result;
+    }
+
+    func addmod{range_check_ptr}(popped: Uint256*) -> Uint256 {
+        let a = popped[0];
+        let b = popped[1];
+        let c = popped[2];
+
+        let (sum, _) = uint256_add(a, b);
+        let (_, result) = uint256_unsigned_div_rem(sum, c);
+
+        return result;
+    }
+
+    func mulmod{range_check_ptr}(popped: Uint256*) -> Uint256 {
+        let a = popped[0];
+        let b = popped[1];
+        let c = popped[2];
+
+        let (_, _, result) = uint256_mul_div_mod(a, b, c);
+        return result;
+    }
+
+    func exp{range_check_ptr}(popped: Uint256*) -> Uint256 {
+        let a = popped[0];
+        let b = popped[1];
+
+        return internal_exp(a, b);
+    }
+
+    func signextend{range_check_ptr}(popped: Uint256*) -> Uint256 {
         let b = popped[0];
         let a = popped + Uint256.SIZE;
 
-        // Value is already a uint256
-        let stack = Stack.push(self=stack, element=a);
-        let ctx = apply_context_changes(ctx=ctx, stack=stack, gas_cost=GAS_COST_SIGNEXTEND);
-        return ctx;
+        return [a];
     }
 
     // @notice Internal exponentiation of two 256-bit integers from the stack.
@@ -533,8 +422,8 @@ namespace StopAndArithmeticOperations {
     // @param b The exponent.
     // @return The result of the exponentiation.
     func internal_exp{range_check_ptr}(a: Uint256, b: Uint256) -> Uint256 {
-        let one_uint: Uint256 = Uint256(1, 0);
-        let zero_uint: Uint256 = Uint256(0, 0);
+        let one_uint = Uint256(1, 0);
+        let zero_uint = Uint256(0, 0);
 
         let (is_b_one) = uint256_eq(b, zero_uint);
         if (is_b_one != FALSE) {
@@ -548,20 +437,5 @@ namespace StopAndArithmeticOperations {
         let temp_pow = internal_exp(a=a, b=b_minus_one);
         let (res, _) = uint256_mul(a, temp_pow);
         return res;
-    }
-
-    // @notice Apply changes to the execution context.
-    // @param ctx The pointer to the execution context.
-    // @param stack The pointer to the stack.
-    // @param gas_cost The gas cost to increment.
-    // @return ExecutionContext The pointer to the execution context.
-    func apply_context_changes(
-        ctx: model.ExecutionContext*, stack: model.Stack*, gas_cost: felt
-    ) -> model.ExecutionContext* {
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=gas_cost);
-        return ctx;
     }
 }
