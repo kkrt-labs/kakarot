@@ -17,364 +17,13 @@ from kakarot.instructions.stop_and_arithmetic_operations import StopAndArithmeti
 from tests.utils.helpers import TestHelpers
 
 @external
-func test__exec_add__should_add_0_and_1{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let (bytecode) = alloc();
-    let stack = Stack.init();
-
-    tempvar item_2 = new Uint256(1, 0);
-    tempvar item_1 = new Uint256(2, 0);
-    tempvar item_0 = new Uint256(3, 0);
-
-    let stack = Stack.push(stack, item_2);
-    let stack = Stack.push(stack, item_1);
-    let stack = Stack.push(stack, item_0);
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
-
-    // When
-    let result = StopAndArithmeticOperations.exec_add(ctx);
-
-    // Then
-    assert result.gas_used = 3;
-    assert result.stack.size = 2;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0.low = 5;
-    assert index0.high = 0;
-    let (stack, index1) = Stack.peek(stack, 1);
-    assert index1.low = 1;
-    assert index1.high = 0;
-    return ();
-}
-
-@external
-func test__exec_mul__should_mul_0_and_1{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let (bytecode) = alloc();
-    let stack = Stack.init();
-
-    tempvar item_2 = new Uint256(1, 0);
-    tempvar item_1 = new Uint256(2, 0);
-    tempvar item_0 = new Uint256(3, 0);
-
-    let stack = Stack.push(stack, item_2);
-    let stack = Stack.push(stack, item_1);
-    let stack = Stack.push(stack, item_0);
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
-
-    // When
-    let result = StopAndArithmeticOperations.exec_mul(ctx);
-
-    // Then
-    assert result.gas_used = 5;
-    assert result.stack.size = 2;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0.low = 6;
-    assert index0.high = 0;
-    let (stack, index1) = Stack.peek(stack, 1);
-    assert index1.low = 1;
-    assert index1.high = 0;
-    return ();
-}
-
-@external
-func test__exec_sub__should_sub_0_and_1{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let (bytecode) = alloc();
-    let stack = Stack.init();
-
-    tempvar item_2 = new Uint256(1, 0);
-    tempvar item_1 = new Uint256(2, 0);
-    tempvar item_0 = new Uint256(3, 0);
-
-    let stack = Stack.push(stack, item_2);
-    let stack = Stack.push(stack, item_1);
-    let stack = Stack.push(stack, item_0);
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
-
-    // When
-    let result = StopAndArithmeticOperations.exec_sub(ctx);
-
-    // Then
-    assert result.gas_used = 3;
-    assert result.stack.size = 2;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0.low = 1;
-    assert index0.high = 0;
-    let (stack, index1) = Stack.peek(stack, 1);
-    assert index1.low = 1;
-    assert index1.high = 0;
-    return ();
-}
-
-@external
-func test__exec_div__should_div_0_and_1{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let (bytecode) = alloc();
-    let stack = Stack.init();
-
-    tempvar item_2 = new Uint256(1, 0);
-    tempvar item_1 = new Uint256(2, 0);
-    tempvar item_0 = new Uint256(3, 0);
-
-    let stack = Stack.push(stack, item_2);
-    let stack = Stack.push(stack, item_1);
-    let stack = Stack.push(stack, item_0);
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
-
-    // When
-    let result = StopAndArithmeticOperations.exec_div(ctx);
-
-    // Then
-    assert result.gas_used = 5;
-    assert result.stack.size = 2;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0.low = 1;
-    assert index0.high = 0;
-    let (stack, index1) = Stack.peek(stack, 1);
-    assert index1.low = 1;
-    assert index1.high = 0;
-    return ();
-}
-
-@external
-func test__exec_sdiv__should_signed_div_0_and_1{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let (bytecode) = alloc();
-    let stack = Stack.init();
-
-    tempvar item_2 = new Uint256(1, 0);
-    tempvar item_1 = new Uint256(2, 0);
-    tempvar item_0 = new Uint256(3, 0);
-
-    let stack = Stack.push(stack, item_2);
-    let stack = Stack.push(stack, item_1);
-    let stack = Stack.push(stack, item_0);
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
-
-    // When
-    let result = StopAndArithmeticOperations.exec_sdiv(ctx);
-
-    // Then
-    assert result.gas_used = 5;
-    assert result.stack.size = 2;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0.low = 1;
-    assert index0.high = 0;
-    let (stack, index1) = Stack.peek(stack, 1);
-    assert index1.low = 1;
-    assert index1.high = 0;
-    return ();
-}
-
-@external
-func test__exec_mod__should_mod_0_and_1{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let (bytecode) = alloc();
-    let stack = Stack.init();
-
-    tempvar item_2 = new Uint256(1, 0);
-    tempvar item_1 = new Uint256(2, 0);
-    tempvar item_0 = new Uint256(3, 0);
-
-    let stack = Stack.push(stack, item_2);
-    let stack = Stack.push(stack, item_1);
-    let stack = Stack.push(stack, item_0);
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
-
-    // When
-    let result = StopAndArithmeticOperations.exec_mod(ctx);
-
-    // Then
-    assert result.gas_used = 5;
-    assert result.stack.size = 2;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0.low = 1;
-    assert index0.high = 0;
-    let (stack, index1) = Stack.peek(stack, 1);
-    assert index1.low = 1;
-    assert index1.high = 0;
-    return ();
-}
-
-@external
-func test__exec_smod__should_smod_0_and_1{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let (bytecode) = alloc();
-    let stack = Stack.init();
-
-    tempvar item_2 = new Uint256(1, 0);
-    tempvar item_1 = new Uint256(2, 0);
-    tempvar item_0 = new Uint256(3, 0);
-
-    let stack = Stack.push(stack, item_2);
-    let stack = Stack.push(stack, item_1);
-    let stack = Stack.push(stack, item_0);
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
-
-    // When
-    let result = StopAndArithmeticOperations.exec_smod(ctx);
-
-    // Then
-    assert result.gas_used = 5;
-    assert result.stack.size = 2;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0.low = 1;
-    assert index0.high = 0;
-    let (stack, index1) = Stack.peek(stack, 1);
-    assert index1.low = 1;
-    assert index1.high = 0;
-    return ();
-}
-
-@external
-func test__exec_addmod__should_add_0_and_1_and_div_rem_by_2{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let (bytecode) = alloc();
-    let stack = Stack.init();
-
-    tempvar item_2 = new Uint256(2, 0);
-    tempvar item_1 = new Uint256(2, 0);
-    tempvar item_0 = new Uint256(3, 0);
-
-    let stack = Stack.push(stack, item_2);
-    let stack = Stack.push(stack, item_1);
-    let stack = Stack.push(stack, item_0);
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
-
-    // When
-    let result = StopAndArithmeticOperations.exec_addmod(ctx);
-
-    // Then
-    assert result.gas_used = 8;
-    assert result.stack.size = 1;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0.low = 1;
-    assert index0.high = 0;
-    return ();
-}
-
-@external
-func test__exec_mulmod__should_mul_0_and_1_and_div_rem_by_2{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let (bytecode) = alloc();
-    let stack = Stack.init();
-
-    tempvar item_2 = new Uint256(1, 0);
-    tempvar item_1 = new Uint256(2, 0);
-    tempvar item_0 = new Uint256(3, 0);
-
-    let stack = Stack.push(stack, item_2);
-    let stack = Stack.push(stack, item_1);
-    let stack = Stack.push(stack, item_0);
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
-
-    // When
-    let result = StopAndArithmeticOperations.exec_mulmod(ctx);
-
-    // Then
-    assert result.gas_used = 8;
-    assert result.stack.size = 1;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0.low = 0;
-    assert index0.high = 0;
-    return ();
-}
-
-@external
-func test__exec_exp__should_exp_0_and_1{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let (bytecode) = alloc();
-    let stack = Stack.init();
-
-    tempvar item_2 = new Uint256(1, 0);
-    tempvar item_1 = new Uint256(2, 0);
-    tempvar item_0 = new Uint256(3, 0);
-
-    let stack = Stack.push(stack, item_2);
-    let stack = Stack.push(stack, item_1);
-    let stack = Stack.push(stack, item_0);
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
-
-    // When
-    let result = StopAndArithmeticOperations.exec_exp(ctx);
-
-    // Then
-    assert result.gas_used = 10;
-    assert result.stack.size = 2;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0.low = 9;
-    assert index0.high = 0;
-    return ();
-}
-
-@external
-func test__exec_signextend__should_signextend_0_and_1{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let (bytecode) = alloc();
-    let stack = Stack.init();
-
-    tempvar item_2 = new Uint256(1, 0);
-    tempvar item_1 = new Uint256(2, 0);
-    tempvar item_0 = new Uint256(3, 0);
-
-    let stack = Stack.push(stack, item_2);
-    let stack = Stack.push(stack, item_1);
-    let stack = Stack.push(stack, item_0);
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
-
-    // When
-    let result = StopAndArithmeticOperations.exec_signextend(ctx);
-
-    // Then
-    assert result.gas_used = 5;
-    assert result.stack.size = 2;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0.low = 2;
-    assert index0.high = 0;
-    return ();
-}
-
-@external
 func test__exec_stop{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     alloc_locals;
 
     let (bytecode) = alloc();
-    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
+    let ctx = TestHelpers.init_context(0, bytecode);
     assert ctx.stopped = FALSE;
 
     let stopped_ctx = StopAndArithmeticOperations.exec_stop(ctx);
@@ -382,5 +31,30 @@ func test__exec_stop{
     assert stopped_ctx.stopped = TRUE;
     assert stopped_ctx.return_data_len = 0;
 
+    return ();
+}
+
+@external
+func test__exec_arithmetic_operation{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(opcode: felt, stack_len: felt, stack: Uint256*, expected_result: Uint256) {
+    // Given
+    alloc_locals;
+    let (bytecode) = alloc();
+    assert [bytecode] = opcode;
+    let stack_ = Stack.init();
+
+    let stack_ = Stack.push_uint256(stack_, stack[2]);
+    let stack_ = Stack.push_uint256(stack_, stack[1]);
+    let stack_ = Stack.push_uint256(stack_, stack[0]);
+    let ctx = TestHelpers.init_context_with_stack(1, bytecode, stack_);
+    let ctx = ExecutionContext.increment_program_counter(ctx, 1);
+
+    // When
+    let ctx = StopAndArithmeticOperations.exec_arithmetic_operation(ctx);
+
+    // Then
+    let (_, result) = Stack.peek(ctx.stack, 0);
+    assert result[0] = expected_result;
     return ();
 }

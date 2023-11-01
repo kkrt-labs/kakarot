@@ -95,27 +95,27 @@ namespace EVM {
         jmp rel offset;
         call StopAndArithmeticOperations.exec_stop;  // 0x0
         ret;
-        call StopAndArithmeticOperations.exec_add;  // 0x1
+        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0x1
         ret;
-        call StopAndArithmeticOperations.exec_mul;  // 0x2
+        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0x2
         ret;
-        call StopAndArithmeticOperations.exec_sub;  // 0x3
+        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0x3
         ret;
-        call StopAndArithmeticOperations.exec_div;  // 0x4
+        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0x4
         ret;
-        call StopAndArithmeticOperations.exec_sdiv;  // 0x5
+        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0x5
         ret;
-        call StopAndArithmeticOperations.exec_mod;  // 0x6
+        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0x6
         ret;
-        call StopAndArithmeticOperations.exec_smod;  // 0x7
+        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0x7
         ret;
-        call StopAndArithmeticOperations.exec_addmod;  // 0x8
+        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0x8
         ret;
-        call StopAndArithmeticOperations.exec_mulmod;  // 0x9
+        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0x9
         ret;
-        call StopAndArithmeticOperations.exec_exp;  // 0xa
+        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0xa
         ret;
-        call StopAndArithmeticOperations.exec_signextend;  // 0xb
+        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0xb
         ret;
         call unknown_opcode;  // 0xc
         ret;

@@ -475,4 +475,28 @@ namespace Errors {
         dw 'o';
         dw 'n';
     }
+
+    func outOfGas() -> (error_len: felt, error: felt*) {
+        let (error) = get_label_location(oog_error_message);
+        return (17, error);
+
+        oog_error_message:
+        dw 'K';
+        dw 'a';
+        dw 'k';
+        dw 'a';
+        dw 'r';
+        dw 'o';
+        dw 't';
+        dw ':';
+        dw ' ';
+        dw 'o';
+        dw 'u';
+        dw 't';
+        dw 'O';
+        dw 'f';
+        dw 'G';
+        dw 'a';
+        dw 's';
+    }
 }

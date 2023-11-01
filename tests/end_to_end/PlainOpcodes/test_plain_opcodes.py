@@ -401,7 +401,7 @@ class TestPlainOpcodes:
         ):
             receipt, response, success = await eth_send_transaction(
                 to=revert_on_fallbacks.address,
-                gas=0,
+                gas=200_000,
                 data=data,
                 value=value,
                 caller_eoa=addresses[2].starknet_contract,
