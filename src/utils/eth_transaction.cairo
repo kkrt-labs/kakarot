@@ -61,7 +61,9 @@ namespace EthTransaction {
         // 1 + s_len bytes for s = 1 byte for len (<= 32) + length in bytes for s word
         // This signature_len depends on CHAIN_ID, which is currently 0x 4b 4b 52 54
         local signature_start_index = 6;
-        local signature_len = 1 + 4 + 1 + sub_items[signature_start_index + 1].data_len + 1 + sub_items[signature_start_index + 2].data_len;
+        tempvar r_len = sub_items[signature_start_index + 1].data_len;
+        tempvar s_len = sub_items[signature_start_index + 2].data_len;
+        local signature_len = 1 + 4 + 1 + r_len + 1 + s_len;
 
         // 1. extract v, r, s
         let (v) = Helpers.bytes_to_felt(
@@ -69,10 +71,10 @@ namespace EthTransaction {
         );
         let v = (v - 2 * Constants.CHAIN_ID - 35);
         let r = Helpers.bytes_i_to_uint256(
-            sub_items[signature_start_index + 1].data, sub_items[signature_start_index + 1].data_len
+            sub_items[signature_start_index + 1].data, r_len
         );
         let s = Helpers.bytes_i_to_uint256(
-            sub_items[signature_start_index + 2].data, sub_items[signature_start_index + 2].data_len
+            sub_items[signature_start_index + 2].data, s_len
         );
 
         // 2. Encode signed tx data
