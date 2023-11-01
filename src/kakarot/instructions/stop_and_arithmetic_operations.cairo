@@ -259,7 +259,6 @@ namespace Internals {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*, opcode: model.Opcode*) -> model.ExecutionContext* {
         alloc_locals;
-        local stack: model.Stack*;
 
         let stack_underflow = is_le(ctx.stack.size, opcode.stack_input - 1);
         if (stack_underflow != 0) {
@@ -268,9 +267,10 @@ namespace Internals {
             return ctx;
         }
 
-        let (_stack, popped) = Stack.pop_n(ctx.stack, opcode.stack_input);
+        let (local stack, popped) = Stack.pop_n(ctx.stack, opcode.stack_input);
 
-        assert stack = _stack;
+        // offset is 1 (new line) + 4 (call + op + jmp + end) per opcode
+        // opcode is offset from by 0x1 (index of the first opcode)
         tempvar offset = 1 + 4 * (opcode.number - 0x1);
 
         // Prepare arguments
@@ -304,21 +304,23 @@ namespace Internals {
 
         end:
         // Parse results from call
+        // All the implementation share the same return signature, which is range_check_ptr in implicit args
+        // and a Uint256 for the value
         let range_check_ptr = [ap - 3];
-        tempvar result = new Uint256([ap - 2], [ap - 1]);
+        let result = Uint256([ap - 2], [ap - 1]);
 
-        // Retrieve stack from locals
-        let stack = cast([fp], model.Stack*);
-
-        // Rebind function args with fp
+        // Rebind args with fp
+        // Function args are in [fp - n - 2: fp - 2]
+        // local stack is the only local of the function, so at [fp]
         let syscall_ptr = cast([fp - 8], felt*);
         let pedersen_ptr = cast([fp - 7], HashBuiltin*);
         let bitwise_ptr = cast([fp - 5], BitwiseBuiltin*);
         let ctx = cast([fp - 4], model.ExecutionContext*);
         let opcode = cast([fp - 3], model.Opcode*);
+        let stack = cast([fp], model.Stack*);
 
         // Finalize opcode
-        let stack = Stack.push(stack, result);
+        let stack = Stack.push_uint256(stack, result);
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=opcode.gas);
         return ctx;
