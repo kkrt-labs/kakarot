@@ -61,8 +61,8 @@ namespace EthTransaction {
         // 1 + s_len bytes for s = 1 byte for len (<= 32) + length in bytes for s word
         // This signature_len depends on CHAIN_ID, which is currently 0x 4b 4b 52 54
         local signature_start_index = 6;
-        tempvar r_len = sub_items[signature_start_index + 1].data_len;
-        tempvar s_len = sub_items[signature_start_index + 2].data_len;
+        let r_len = sub_items[signature_start_index + 1].data_len;
+        let s_len = sub_items[signature_start_index + 2].data_len;
         local signature_len = 1 + 4 + 1 + r_len + 1 + s_len;
 
         // 1. extract v, r, s
