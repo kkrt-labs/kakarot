@@ -70,12 +70,8 @@ namespace EthTransaction {
             sub_items[signature_start_index].data_len, sub_items[signature_start_index].data, 0
         );
         let v = (v - 2 * Constants.CHAIN_ID - 35);
-        let r = Helpers.bytes_i_to_uint256(
-            sub_items[signature_start_index + 1].data, r_len
-        );
-        let s = Helpers.bytes_i_to_uint256(
-            sub_items[signature_start_index + 2].data, s_len
-        );
+        let r = Helpers.bytes_i_to_uint256(sub_items[signature_start_index + 1].data, r_len);
+        let s = Helpers.bytes_i_to_uint256(sub_items[signature_start_index + 2].data, s_len);
 
         // 2. Encode signed tx data
         // Copy encoded data from input
