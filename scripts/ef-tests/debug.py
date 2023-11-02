@@ -29,7 +29,7 @@ def get_test_file():
         (content, str(file_path))
         for file_path in TESTS_PATH.glob("**/*.json")
         for name, content in json.load(open(file_path)).items()
-        if name == TEST_NAME and content["network"] == "Shanghai"
+        if TEST_NAME in name and content["network"] == "Shanghai"
     ]
 
     if len(tests) == 0:
