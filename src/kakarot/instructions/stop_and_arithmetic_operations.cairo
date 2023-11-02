@@ -18,7 +18,7 @@ from starkware.cairo.common.uint256 import (
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.registers import get_label_location
+from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
 
 // Internal dependencies
 from kakarot.model import model
@@ -50,13 +50,21 @@ namespace StopAndArithmeticOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        // See evm.cairo, pc is increased before entering the opcode
-        let pc = ctx.program_counter - 1;
-        let opcode_number = [ctx.call_context.bytecode + pc];
 
         local opcode: model.Opcode*;
-        let (opcodes: model.Opcode*) = get_label_location(opcodes_params);
-        assert opcode = opcodes + opcode_number * model.Opcode.SIZE;
+
+        // See evm.cairo, pc is increased before entering the opcode
+        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter - 1];
+
+        // To cast the codeoffset opcodes_label to a model.Opcode*, we need to use it to offset
+        // the current pc. We get the pc from the `get_fp_and_pc` util and assign a codeoffset (pc_label) to it.
+        // In short, this boilds down to: opcode = pc + offset - pc = offset
+        let (_, pc) = get_fp_and_pc();
+
+        pc_label:
+        assert opcode = cast(
+            pc + (opcodes_label - pc_label) + opcode_number * model.Opcode.SIZE, model.Opcode*
+        );
 
         let stack_underflow = is_le(ctx.stack.size, opcode.stack_input - 1);
         if (stack_underflow != 0) {
@@ -128,47 +136,6 @@ namespace StopAndArithmeticOperations {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.increment_gas_used(ctx, opcode.gas);
         return ctx;
-
-        // See model.Opcode
-        // gas
-        // stack_input
-        opcodes_params:
-        // STOP;
-        dw 0;
-        dw 0;
-        // ADD;
-        dw 3;
-        dw 2;
-        // MUL;
-        dw 5;
-        dw 2;
-        // SUB;
-        dw 3;
-        dw 2;
-        // DIV;
-        dw 5;
-        dw 2;
-        // SDIV;
-        dw 5;
-        dw 2;
-        // MOD;
-        dw 5;
-        dw 2;
-        // SMOD;
-        dw 5;
-        dw 2;
-        // ADDMOD;
-        dw 8;
-        dw 3;
-        // MULMOD;
-        dw 8;
-        dw 3;
-        // EXP;
-        dw 10;
-        dw 2;
-        // SIGNEXTEND;
-        dw 5;
-        dw 2;
     }
 }
 
@@ -286,3 +253,44 @@ namespace Internals {
         return res;
     }
 }
+
+// See model.Opcode
+// gas
+// stack_input
+opcodes_label:
+// STOP;
+dw 0;
+dw 0;
+// ADD;
+dw 3;
+dw 2;
+// MUL;
+dw 5;
+dw 2;
+// SUB;
+dw 3;
+dw 2;
+// DIV;
+dw 5;
+dw 2;
+// SDIV;
+dw 5;
+dw 2;
+// MOD;
+dw 5;
+dw 2;
+// SMOD;
+dw 5;
+dw 2;
+// ADDMOD;
+dw 8;
+dw 3;
+// MULMOD;
+dw 8;
+dw 3;
+// EXP;
+dw 10;
+dw 2;
+// SIGNEXTEND;
+dw 5;
+dw 2;
