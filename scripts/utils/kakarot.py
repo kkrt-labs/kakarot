@@ -279,8 +279,8 @@ async def get_eoa(private_key=None, amount=10) -> Account:
 
 async def eth_send_transaction(
     to: Union[int, str],
-    gas: int,
     data: Union[str, bytes],
+    gas: int = 21_000,
     value: Union[int, str] = 0,
     caller_eoa: Optional[Account] = None,
     max_fee: Optional[int] = None,

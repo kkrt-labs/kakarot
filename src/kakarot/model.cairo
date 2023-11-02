@@ -143,16 +143,10 @@ namespace model {
     }
 
     // @dev Stores the constant data of an opcode
-    // @param number The number of the opcode
     // @param gas The minimum gas used by the opcode (not including possible dynamic gas)
     // @param stack_input The number of parameters popped from the stack
-    // @param stack_diff The stack's size diff due to this opcode
-    // @param static_disabled Whether this opcode is disabled during static calls
     struct Opcode {
-        number: felt,
         gas: felt,
         stack_input: felt,
-        stack_diff: felt,
-        static_disabled: felt,
     }
 }

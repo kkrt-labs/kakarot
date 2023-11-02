@@ -2,6 +2,9 @@ import pytest
 import pytest_asyncio
 from starkware.starknet.testing.starknet import Starknet
 
+from tests.utils.constants import Opcodes
+from tests.utils.uint256 import int_to_uint256
+
 
 @pytest_asyncio.fixture(scope="module")
 async def arithmetic_operations(starknet: Starknet):
@@ -14,45 +17,33 @@ async def arithmetic_operations(starknet: Starknet):
 
 
 @pytest.mark.asyncio
-class TestArithmeticOperations:
-    async def test__exec_add__should_add_0_and_1(self, arithmetic_operations):
-        await arithmetic_operations.test__exec_add__should_add_0_and_1().call()
+class TestStopAndArithmeticOperations:
+    class TestStop:
+        async def test__exec_stop(self, arithmetic_operations):
+            await arithmetic_operations.test__exec_stop().call()
 
-    async def test__exec_mul__should_mul_0_and_1(self, arithmetic_operations):
-        await arithmetic_operations.test__exec_mul__should_mul_0_and_1().call()
-
-    async def test__exec_sub__should_sub_0_and_1(self, arithmetic_operations):
-        await arithmetic_operations.test__exec_sub__should_sub_0_and_1().call()
-
-    async def test__exec_div__should_div_0_and_1(self, arithmetic_operations):
-        await arithmetic_operations.test__exec_div__should_div_0_and_1().call()
-
-    async def test__exec_sdiv__should_signed_div_0_and_1(self, arithmetic_operations):
-        await arithmetic_operations.test__exec_sdiv__should_signed_div_0_and_1().call()
-
-    async def test__exec_mod__should_mod_0_and_1(self, arithmetic_operations):
-        await arithmetic_operations.test__exec_mod__should_mod_0_and_1().call()
-
-    async def test__exec_smod__should_smod_0_and_1(self, arithmetic_operations):
-        await arithmetic_operations.test__exec_smod__should_smod_0_and_1().call()
-
-    async def test__exec_addmod__should_add_0_and_1_and_div_rem_by_2(
-        self, arithmetic_operations
-    ):
-        await arithmetic_operations.test__exec_addmod__should_add_0_and_1_and_div_rem_by_2().call()
-
-    async def test__exec_mulmod__should_mul_0_and_1_and_div_rem_by_2(
-        self, arithmetic_operations
-    ):
-        await arithmetic_operations.test__exec_mulmod__should_mul_0_and_1_and_div_rem_by_2().call()
-
-    async def test__exec_exp__should_exp_0_and_1(self, arithmetic_operations):
-        await arithmetic_operations.test__exec_exp__should_exp_0_and_1().call()
-
-    async def test__exec_signextend__should_signextend_0_and_1(
-        self, arithmetic_operations
-    ):
-        await arithmetic_operations.test__exec_signextend__should_signextend_0_and_1().call()
-
-    async def test__exec_stop(self, arithmetic_operations):
-        await arithmetic_operations.test__exec_stop().call()
+    class TestArithmeticOperations:
+        @pytest.mark.parametrize(
+            "opcode,stack,expected_result",
+            [
+                (Opcodes.ADD, [3, 2, 1], 3 + 2),
+                (Opcodes.MUL, [3, 2, 1], 3 * 2),
+                (Opcodes.SUB, [3, 2, 1], 3 - 2),
+                (Opcodes.DIV, [3, 2, 1], 3 // 2),
+                (Opcodes.SDIV, [3, 2, 1], 3 // 2),
+                (Opcodes.MOD, [3, 2, 1], 3 % 2),
+                (Opcodes.SMOD, [3, 2, 1], 3 % 2),
+                (Opcodes.ADDMOD, [3, 2, 2], (3 + 2) % 2),
+                (Opcodes.MULMOD, [3, 2, 2], (3 * 2) % 2),
+                (Opcodes.EXP, [3, 2, 1], (3**2)),
+                (Opcodes.SIGNEXTEND, [3, 2, 1], 2),
+            ],
+        )
+        async def test__exec_arithmetic_operation(
+            self, arithmetic_operations, opcode, stack, expected_result
+        ):
+            await arithmetic_operations.test__exec_arithmetic_operation(
+                opcode,
+                [int_to_uint256(v) for v in stack],
+                int_to_uint256(expected_result),
+            ).call()
