@@ -57,19 +57,21 @@ namespace EthTransaction {
         // Verify signature
         // The signature is at the end of the rlp encoded list and takes
         // 5 bytes for v = 1 byte for len (=4) + 4 bytes for {0,1} + CHAIN_ID * 2 + 35
-        // 33 bytes for r = 1 byte for len (=32) + 32 bytes for r word
-        // 33 bytes for s = 1 byte for len (=32) + 32 bytes for s word
+        // 1 + r_len bytes for r = 1 byte for len (<= 32) + length in bytes for r word
+        // 1 + s_len bytes for s = 1 byte for len (<= 32) + length in bytes for s word
         // This signature_len depends on CHAIN_ID, which is currently 0x 4b 4b 52 54
-        local signature_len = 1 + 4 + 1 + 32 + 1 + 32;
         local signature_start_index = 6;
+        let r_len = sub_items[signature_start_index + 1].data_len;
+        let s_len = sub_items[signature_start_index + 2].data_len;
+        local signature_len = 1 + 4 + 1 + r_len + 1 + s_len;
 
         // 1. extract v, r, s
         let (v) = Helpers.bytes_to_felt(
             sub_items[signature_start_index].data_len, sub_items[signature_start_index].data, 0
         );
         let v = (v - 2 * Constants.CHAIN_ID - 35);
-        let r = Helpers.bytes32_to_uint256(sub_items[signature_start_index + 1].data);
-        let s = Helpers.bytes32_to_uint256(sub_items[signature_start_index + 2].data);
+        let r = Helpers.bytes_i_to_uint256(sub_items[signature_start_index + 1].data, r_len);
+        let s = Helpers.bytes_i_to_uint256(sub_items[signature_start_index + 2].data, s_len);
 
         // 2. Encode signed tx data
         // Copy encoded data from input
