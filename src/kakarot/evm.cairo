@@ -283,71 +283,71 @@ namespace EVM {
         ret;
         call unknown_opcode;  // 0x5e
         ret;
-        call PushOperations.exec_push0;  // 0x5f
+        call PushOperations.exec_push;  // 0x5f
         ret;
-        call PushOperations.exec_push1;  // 0x60
+        call PushOperations.exec_push;  // 0x60
         ret;
-        call PushOperations.exec_push2;  // 0x61
+        call PushOperations.exec_push;  // 0x61
         ret;
-        call PushOperations.exec_push3;  // 0x62
+        call PushOperations.exec_push;  // 0x62
         ret;
-        call PushOperations.exec_push4;  // 0x63
+        call PushOperations.exec_push;  // 0x63
         ret;
-        call PushOperations.exec_push5;  // 0x64
+        call PushOperations.exec_push;  // 0x64
         ret;
-        call PushOperations.exec_push6;  // 0x65
+        call PushOperations.exec_push;  // 0x65
         ret;
-        call PushOperations.exec_push7;  // 0x66
+        call PushOperations.exec_push;  // 0x66
         ret;
-        call PushOperations.exec_push8;  // 0x67
+        call PushOperations.exec_push;  // 0x67
         ret;
-        call PushOperations.exec_push9;  // 0x68
+        call PushOperations.exec_push;  // 0x68
         ret;
-        call PushOperations.exec_push10;  // 0x69
+        call PushOperations.exec_push;  // 0x69
         ret;
-        call PushOperations.exec_push11;  // 0x6a
+        call PushOperations.exec_push;  // 0x6a
         ret;
-        call PushOperations.exec_push12;  // 0x6b
+        call PushOperations.exec_push;  // 0x6b
         ret;
-        call PushOperations.exec_push13;  // 0x6c
+        call PushOperations.exec_push;  // 0x6c
         ret;
-        call PushOperations.exec_push14;  // 0x6d
+        call PushOperations.exec_push;  // 0x6d
         ret;
-        call PushOperations.exec_push15;  // 0x6e
+        call PushOperations.exec_push;  // 0x6e
         ret;
-        call PushOperations.exec_push16;  // 0x6f
+        call PushOperations.exec_push;  // 0x6f
         ret;
-        call PushOperations.exec_push17;  // 0x70
+        call PushOperations.exec_push;  // 0x70
         ret;
-        call PushOperations.exec_push18;  // 0x71
+        call PushOperations.exec_push;  // 0x71
         ret;
-        call PushOperations.exec_push19;  // 0x72
+        call PushOperations.exec_push;  // 0x72
         ret;
-        call PushOperations.exec_push20;  // 0x73
+        call PushOperations.exec_push;  // 0x73
         ret;
-        call PushOperations.exec_push21;  // 0x74
+        call PushOperations.exec_push;  // 0x74
         ret;
-        call PushOperations.exec_push22;  // 0x75
+        call PushOperations.exec_push;  // 0x75
         ret;
-        call PushOperations.exec_push23;  // 0x76
+        call PushOperations.exec_push;  // 0x76
         ret;
-        call PushOperations.exec_push24;  // 0x77
+        call PushOperations.exec_push;  // 0x77
         ret;
-        call PushOperations.exec_push25;  // 0x78
+        call PushOperations.exec_push;  // 0x78
         ret;
-        call PushOperations.exec_push26;  // 0x79
+        call PushOperations.exec_push;  // 0x79
         ret;
-        call PushOperations.exec_push27;  // 0x7a
+        call PushOperations.exec_push;  // 0x7a
         ret;
-        call PushOperations.exec_push28;  // 0x7b
+        call PushOperations.exec_push;  // 0x7b
         ret;
-        call PushOperations.exec_push29;  // 0x7c
+        call PushOperations.exec_push;  // 0x7c
         ret;
-        call PushOperations.exec_push30;  // 0x7d
+        call PushOperations.exec_push;  // 0x7d
         ret;
-        call PushOperations.exec_push31;  // 0x7e
+        call PushOperations.exec_push;  // 0x7e
         ret;
-        call PushOperations.exec_push32;  // 0x7f
+        call PushOperations.exec_push;  // 0x7f
         ret;
         call DuplicationOperations.exec_dup1;  // 0x80
         ret;
