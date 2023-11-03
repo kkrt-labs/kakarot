@@ -311,12 +311,9 @@ namespace State {
     // @dev Try to read from local dict, and read from ETH contract otherwise
     // @param self The pointer to the State
     // @param address The pointer to the Address
-    func read_balance{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.State*, address: model.Address*) -> (state: model.State*, balance: Uint256) {
+    func read_balance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.State*, address: model.Address*
+    ) -> (state: model.State*, balance: Uint256) {
         let balances = self.balances;
         let (pointer) = dict_read{dict_ptr=balances}(key=address.starknet);
         if (pointer != 0) {

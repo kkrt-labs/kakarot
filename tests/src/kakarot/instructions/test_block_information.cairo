@@ -39,203 +39,33 @@ func constructor{
     return ();
 }
 
-@view
-func test__blockhash_should_push_blockhash_to_stack{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given # 1
-    alloc_locals;
-    let fp_and_pc = get_fp_and_pc();
-    local __fp__: felt* = fp_and_pc.fp_val;
-
-    let (bytecode) = alloc();
-    let stack = Stack.init();
-
-    let (local block_number_: Uint256) = block_number.read();
-
-    let stack = Stack.push(stack, &block_number_);
-    let ctx = TestHelpers.init_context_with_stack(0, bytecode, stack);
-
-    // When
-    let result = BlockInformation.exec_blockhash(ctx);
-
-    // Then
-    assert result.gas_used = 20;
-    assert result.stack.size = 1;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    let (blockhash_) = blockhash.read();
-    let value = Helpers.to_uint256(val=blockhash_);
-    assert_uint256_eq([index0], [value]);
-
-    // Given # 2
-    let (bytecode) = alloc();
-    let stack = Stack.init();
-
-    let (current_block_number: felt) = get_block_number();
-    let out_of_range_block = current_block_number - 260;
-    assert_nn(out_of_range_block);
-    let out_of_range_block_uint256 = Helpers.to_uint256(val=out_of_range_block);
-    let stack = Stack.push(stack, out_of_range_block_uint256);
-    let ctx = TestHelpers.init_context_with_stack(0, bytecode, stack);
-
-    // When
-    let result = BlockInformation.exec_blockhash(ctx);
-
-    // Then
-    assert result.gas_used = 20;
-    assert result.stack.size = 1;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0.low = 0;
-    assert index0.high = 0;
-
-    return ();
-}
-
-@view
-func test__chainId__should_push_chain_id_to_stack{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let (bytecode) = alloc();
-    let ctx = TestHelpers.init_context(0, bytecode);
-
-    // When
-    let result = BlockInformation.exec_chainid(ctx);
-
-    // Then
-    assert result.gas_used = 2;
-    assert result.stack.size = 1;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0.low = 1263227476;
-    assert index0.high = 0;
-    return ();
-}
-
 @external
-func test__coinbase_should_push_coinbase_address_to_stack{
+func test__exec_block_information{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
+}(opcode: felt, stack_len: felt, stack: Uint256*) -> (
+    result: Uint256, timestamp: felt, block_number: felt
+) {
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let ctx = TestHelpers.init_context(0, bytecode);
+    assert [bytecode] = opcode;
+    let stack_ = Stack.init();
+    if (stack_len != 0) {
+        let stack_ = Stack.push_uint256(stack_, stack[0]);
+        tempvar range_check_ptr = range_check_ptr;
+    } else {
+        let stack_ = stack_;
+        tempvar range_check_ptr = range_check_ptr;
+    }
+    let ctx = TestHelpers.init_context_with_stack(1, bytecode, stack_);
+    let ctx = ExecutionContext.increment_program_counter(ctx, 1);
 
     // When
-    let result = BlockInformation.exec_coinbase(ctx);
+    let ctx = BlockInformation.exec_block_information(ctx);
 
     // Then
-    assert result.gas_used = 2;
-    assert result.stack.size = 1;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    let coinbase_address = Helpers.to_uint256(Constants.MOCK_COINBASE_ADDRESS);
-    assert_uint256_eq([index0], [coinbase_address]);
-    return ();
-}
-
-@external
-func test__timestamp_should_push_block_timestamp_to_stack{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let (bytecode) = alloc();
-    let ctx = TestHelpers.init_context(0, bytecode);
-
-    // When
-    let result = BlockInformation.exec_timestamp(ctx);
-
-    // Then
-    assert result.gas_used = 2;
-    assert result.stack.size = 1;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    let (current_timestamp) = get_block_timestamp();
-    let block_timestamp = Helpers.to_uint256(current_timestamp);
-    assert_uint256_eq([index0], [block_timestamp]);
-    return ();
-}
-
-@external
-func test__number_should_push_block_number_to_stack{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let (bytecode) = alloc();
-    let ctx = TestHelpers.init_context(0, bytecode);
-
-    // When
-    let result = BlockInformation.exec_number(ctx);
-
-    // Then
-    assert result.gas_used = 2;
-    assert result.stack.size = 1;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    let (current_block) = get_block_number();
-    let block_number = Helpers.to_uint256(current_block);
-    assert_uint256_eq([index0], [block_number]);
-    return ();
-}
-
-@external
-func test__gaslimit_should_push_gaslimit_to_stack{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let (bytecode) = alloc();
-    let ctx = TestHelpers.init_context(0, bytecode);
-
-    // When
-    let result = BlockInformation.exec_gaslimit(ctx);
-
-    // Then
-    assert result.gas_used = 2;
-    assert result.stack.size = 1;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    let gas_limit = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
-    assert_uint256_eq([index0], [gas_limit]);
-    return ();
-}
-
-@external
-func test__difficulty_should_push_difficulty_to_stack{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let (bytecode) = alloc();
-    let ctx = TestHelpers.init_context(0, bytecode);
-
-    // When
-    let result = BlockInformation.exec_difficulty(ctx);
-
-    // Then
-    assert result.gas_used = 2;
-    assert result.stack.size = 1;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    let difficulty = Helpers.to_uint256(0);
-    assert_uint256_eq([index0], [difficulty]);
-    return ();
-}
-
-@external
-func test__basefee_should_push_basefee_to_stack{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let (bytecode) = alloc();
-    let ctx = TestHelpers.init_context(0, bytecode);
-
-    // When
-    let result = BlockInformation.exec_basefee(ctx);
-
-    // Then
-    assert result.gas_used = 2;
-    assert result.stack.size = 1;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    let basefee = Helpers.to_uint256(0);
-    assert_uint256_eq([index0], [basefee]);
-    return ();
+    let (timestamp) = get_block_timestamp();
+    let (block_number) = get_block_number();
+    let (_, result) = Stack.peek(ctx.stack, 0);
+    return (result[0], timestamp, block_number);
 }

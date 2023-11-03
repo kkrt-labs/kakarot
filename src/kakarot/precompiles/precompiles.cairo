@@ -61,7 +61,7 @@ namespace Precompiles {
             calldata=cast(0, felt*),
             calldata_len=0,
             value=0,
-            gas_limit=Constants.TRANSACTION_GAS_LIMIT,
+            gas_limit=calling_context.call_context.gas_limit,
             gas_price=0,
             origin=calling_context.call_context.origin,
             calling_context=calling_context,
