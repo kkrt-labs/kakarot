@@ -275,10 +275,7 @@ namespace Kakarot {
     // @param evm_contract_address The evm address that is mapped to the newly deployed starknet contract address.
     // @return starknet_contract_address The newly deployed starknet contract address.
     func deploy_externally_owned_account{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     }(evm_contract_address: felt) -> (starknet_contract_address: felt) {
         alloc_locals;
 

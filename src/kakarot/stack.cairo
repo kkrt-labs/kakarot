@@ -29,7 +29,6 @@ namespace Stack {
     // @notice Initialize the stack.
     // @return The pointer to the stack.
     func init() -> model.Stack* {
-        alloc_locals;
         let (dict_ptr_start: DictAccess*) = default_dict_new(0);
         return new model.Stack(dict_ptr_start, dict_ptr_start, 0);
     }

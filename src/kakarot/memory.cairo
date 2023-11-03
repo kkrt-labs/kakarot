@@ -39,7 +39,6 @@ namespace Memory {
     // @notice Initialize the memory.
     // @return memory The pointer to the memory.
     func init() -> model.Memory* {
-        alloc_locals;
         let (word_dict_start: DictAccess*) = default_dict_new(0);
         return new model.Memory(
             word_dict_start=word_dict_start, word_dict=word_dict_start, bytes_len=0
