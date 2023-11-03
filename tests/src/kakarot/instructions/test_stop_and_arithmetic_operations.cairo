@@ -42,11 +42,7 @@ func test__exec_arithmetic_operation{
     alloc_locals;
     let (bytecode) = alloc();
     assert [bytecode] = opcode;
-    let stack_ = Stack.init();
-
-    let stack_ = Stack.push_uint256(stack_, stack[2]);
-    let stack_ = Stack.push_uint256(stack_, stack[1]);
-    let stack_ = Stack.push_uint256(stack_, stack[0]);
+    let stack_ = TestHelpers.init_stack_with_values(stack_len, stack);
     let ctx = TestHelpers.init_context_with_stack(1, bytecode, stack_);
     let ctx = ExecutionContext.increment_program_counter(ctx, 1);
 

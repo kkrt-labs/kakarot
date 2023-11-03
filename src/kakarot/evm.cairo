@@ -349,37 +349,37 @@ namespace EVM {
         ret;
         call PushOperations.exec_push;  // 0x7f
         ret;
-        call DuplicationOperations.exec_dup1;  // 0x80
+        call DuplicationOperations.exec_dup;  // 0x80
         ret;
-        call DuplicationOperations.exec_dup2;  // 0x81
+        call DuplicationOperations.exec_dup;  // 0x81
         ret;
-        call DuplicationOperations.exec_dup3;  // 0x82
+        call DuplicationOperations.exec_dup;  // 0x82
         ret;
-        call DuplicationOperations.exec_dup4;  // 0x83
+        call DuplicationOperations.exec_dup;  // 0x83
         ret;
-        call DuplicationOperations.exec_dup5;  // 0x84
+        call DuplicationOperations.exec_dup;  // 0x84
         ret;
-        call DuplicationOperations.exec_dup6;  // 0x85
+        call DuplicationOperations.exec_dup;  // 0x85
         ret;
-        call DuplicationOperations.exec_dup7;  // 0x86
+        call DuplicationOperations.exec_dup;  // 0x86
         ret;
-        call DuplicationOperations.exec_dup8;  // 0x87
+        call DuplicationOperations.exec_dup;  // 0x87
         ret;
-        call DuplicationOperations.exec_dup9;  // 0x88
+        call DuplicationOperations.exec_dup;  // 0x88
         ret;
-        call DuplicationOperations.exec_dup10;  // 0x89
+        call DuplicationOperations.exec_dup;  // 0x89
         ret;
-        call DuplicationOperations.exec_dup11;  // 0x8a
+        call DuplicationOperations.exec_dup;  // 0x8a
         ret;
-        call DuplicationOperations.exec_dup12;  // 0x8b
+        call DuplicationOperations.exec_dup;  // 0x8b
         ret;
-        call DuplicationOperations.exec_dup13;  // 0x8c
+        call DuplicationOperations.exec_dup;  // 0x8c
         ret;
-        call DuplicationOperations.exec_dup14;  // 0x8d
+        call DuplicationOperations.exec_dup;  // 0x8d
         ret;
-        call DuplicationOperations.exec_dup15;  // 0x8e
+        call DuplicationOperations.exec_dup;  // 0x8e
         ret;
-        call DuplicationOperations.exec_dup16;  // 0x8f
+        call DuplicationOperations.exec_dup;  // 0x8f
         ret;
         call ExchangeOperations.exec_swap1;  // 0x90
         ret;

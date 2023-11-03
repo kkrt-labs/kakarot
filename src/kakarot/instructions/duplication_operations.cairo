@@ -24,19 +24,34 @@ namespace DuplicationOperations {
     // @dev Duplicate the top i-th stack item to the top of the stack.
     // @param ctx The pointer to the execution context.
     // @return ExecutionContext Updated execution context.
-    func exec_dup_i{range_check_ptr}(
-        ctx: model.ExecutionContext*, i: felt
-    ) -> model.ExecutionContext* {
+    func exec_dup{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
+
+        let out_of_gas = is_le(ctx.call_context.gas_limit, ctx.gas_used + GAS_COST_DUP - 1);
+        if (out_of_gas != 0) {
+            let (revert_reason_len, revert_reason) = Errors.outOfGas();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
+        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
+            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
+        // See evm.cairo, pc is increased before entering the opcode
+        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter - 1];
+        let i = opcode_number - 0x7F;
 
         let stack_underflow = is_le(ctx.stack.size, i - 1);
         if (stack_underflow != 0) {
             let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
-            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
             let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
             return ctx;
         }
@@ -47,294 +62,6 @@ namespace DuplicationOperations {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_DUP);
 
-        return ctx;
-    }
-
-    // @notice DUP1 operation
-    // @dev Duplicate the top stack item to the top of the stack.
-    // @custom:since Frontier
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext Updated execution context.
-    func exec_dup1{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_dup_i(ctx=ctx, i=1);
-        return ctx;
-    }
-
-    // @notice DUP2 operation
-    // @dev Duplicate the top 2nd stack item to the top of the stack.
-    // @custom:since Frontier
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext Updated execution context.
-    func exec_dup2{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_dup_i(ctx=ctx, i=2);
-        return ctx;
-    }
-
-    // @notice DUP3 operation
-    // @dev Duplicate the top 3rd stack item to the top of the stack.
-    // @custom:since Frontier
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext Updated execution context.
-    func exec_dup3{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_dup_i(ctx=ctx, i=3);
-        return ctx;
-    }
-
-    // @notice DUP4 operation
-    // @dev Duplicate the top 4th stack item to the top of the stack.
-    // @custom:since Frontier
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext Updated execution context.
-    func exec_dup4{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_dup_i(ctx=ctx, i=4);
-        return ctx;
-    }
-
-    // @notice DUP5 operation
-    // @dev Duplicate the top 5th stack item to the top of the stack.
-    // @custom:since Frontier
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext Updated execution context.
-    func exec_dup5{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_dup_i(ctx=ctx, i=5);
-        return ctx;
-    }
-
-    // @notice DUP6 operation
-    // @dev Duplicate the top 6th stack item to the top of the stack.
-    // @custom:since Frontier
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext Updated execution context.
-    func exec_dup6{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_dup_i(ctx=ctx, i=6);
-        return ctx;
-    }
-
-    // @notice DUP7 operation
-    // @dev Duplicate the top 7th stack item to the top of the stack.
-    // @custom:since Frontier
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext Updated execution context.
-    func exec_dup7{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_dup_i(ctx=ctx, i=7);
-        return ctx;
-    }
-
-    // @notice DUP8 operation
-    // @dev Duplicate the top 8th stack item to the top of the stack.
-    // @custom:since Frontier
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext Updated execution context.
-    func exec_dup8{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_dup_i(ctx=ctx, i=8);
-        return ctx;
-    }
-
-    // @notice DUP9 operation
-    // @dev Duplicate the top 9th stack item to the top of the stack.
-    // @custom:since Frontier
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext Updated execution context.
-    func exec_dup9{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_dup_i(ctx=ctx, i=9);
-        return ctx;
-    }
-
-    // @notice DUP10 operation
-    // @dev Duplicate the top 10th stack item to the top of the stack.
-    // @custom:since Frontier
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext Updated execution context.
-    func exec_dup10{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_dup_i(ctx=ctx, i=10);
-        return ctx;
-    }
-
-    // @notice DUP11 operation
-    // @dev Duplicate the top 11th stack item to the top of the stack.
-    // @custom:since Frontier
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext Updated execution context.
-    func exec_dup11{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_dup_i(ctx=ctx, i=11);
-        return ctx;
-    }
-
-    // @notice DUP12 operation
-    // @dev Duplicate the top 12th stack item to the top of the stack.
-    // @custom:since Frontier
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext Updated execution context.
-    func exec_dup12{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_dup_i(ctx=ctx, i=12);
-        return ctx;
-    }
-
-    // @notice DUP13 operation
-    // @dev Duplicate the top 13th stack item to the top of the stack.
-    // @custom:since Frontier
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext Updated execution context.
-    func exec_dup13{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_dup_i(ctx=ctx, i=13);
-        return ctx;
-    }
-
-    // @notice DUP14 operation
-    // @dev Duplicate the top 14th stack item to the top of the stack.
-    // @custom:since Frontier
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext Updated execution context.
-    func exec_dup14{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_dup_i(ctx=ctx, i=14);
-        return ctx;
-    }
-
-    // @notice DUP15 operation
-    // @dev Duplicate the top 15th stack item to the top of the stack.
-    // @custom:since Frontier
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext Updated execution context.
-    func exec_dup15{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_dup_i(ctx=ctx, i=15);
-        return ctx;
-    }
-
-    // @notice DUP16 operation
-    // @dev Duplicate the top 16th stack item to the top of the stack.
-    // @custom:since Frontier
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext Updated execution context.
-    func exec_dup16{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_dup_i(ctx=ctx, i=16);
         return ctx;
     }
 }
