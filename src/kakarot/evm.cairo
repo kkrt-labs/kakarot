@@ -221,23 +221,23 @@ namespace EVM {
         ret;
         call EnvironmentalInformation.exec_extcodehash;  // 0x3f
         ret;
-        call BlockInformation.exec_blockhash;  // 0x40
+        call BlockInformation.exec_block_information;  // 0x40
         ret;
-        call BlockInformation.exec_coinbase;  // 0x41
+        call BlockInformation.exec_block_information;  // 0x41
         ret;
-        call BlockInformation.exec_timestamp;  // 0x42
+        call BlockInformation.exec_block_information;  // 0x42
         ret;
-        call BlockInformation.exec_number;  // 0x43
+        call BlockInformation.exec_block_information;  // 0x43
         ret;
-        call BlockInformation.exec_difficulty;  // 0x44
+        call BlockInformation.exec_block_information;  // 0x44
         ret;
-        call BlockInformation.exec_gaslimit;  // 0x45
+        call BlockInformation.exec_block_information;  // 0x45
         ret;
-        call BlockInformation.exec_chainid;  // 0x46
+        call BlockInformation.exec_block_information;  // 0x46
         ret;
-        call BlockInformation.exec_selfbalance;  // 0x47
+        call BlockInformation.exec_block_information;  // 0x47
         ret;
-        call BlockInformation.exec_basefee;  // 0x48
+        call BlockInformation.exec_block_information;  // 0x48
         ret;
         call unknown_opcode;  // 0x49
         ret;
