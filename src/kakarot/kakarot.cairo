@@ -124,7 +124,7 @@ func get_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
 // @return starknet_contract_address The newly deployed starknet contract address.
 @external
 func deploy_externally_owned_account{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 }(evm_address: felt) -> (starknet_contract_address: felt) {
     return Kakarot.deploy_externally_owned_account(evm_address);
 }

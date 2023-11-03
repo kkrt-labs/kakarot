@@ -65,12 +65,7 @@ namespace ExecutionContext {
     // @dev Initialize the execution context of a specific contract.
     // @param call_context The call_context (see model.CallContext) to be executed.
     // @return ExecutionContext The initialized execution context.
-    func init{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(call_context: model.CallContext*) -> model.ExecutionContext* {
+    func init(call_context: model.CallContext*) -> model.ExecutionContext* {
         let stack = Stack.init();
         let memory = Memory.init();
         let state = State.init();
@@ -161,12 +156,7 @@ namespace ExecutionContext {
     //      TL;DR: ensure that the prover used values that are consistent with the dictionary.
     // @param self The pointer to the execution context.
     // @return Summary The pointer to the execution Summary.
-    func finalize{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.ExecutionContext*) -> Summary* {
+    func finalize{range_check_ptr}(self: model.ExecutionContext*) -> Summary* {
         alloc_locals;
         let memory_summary = Memory.finalize(self.memory);
         let stack_summary = Stack.finalize(self.stack);
