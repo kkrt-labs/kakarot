@@ -23,7 +23,12 @@ from kakarot.stack import Stack
 namespace PushOperations {
     const BASE_GAS_COST = 2;
 
-    func exec_push{range_check_ptr}(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+    func exec_push{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
         if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
