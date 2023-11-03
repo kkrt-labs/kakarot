@@ -46,6 +46,7 @@ namespace BlockInformation {
         // To cast the codeoffset opcodes_label to a model.Opcode*, we need to use it to offset
         // the current pc. We get the pc from the `get_fp_and_pc` util and assign a codeoffset (pc_label) to it.
         // In short, this boilds down to: opcode = pc + offset - pc = offset
+        // The following lines are equivalent but cheaper than `get_label_location`.
         let (_, pc) = get_fp_and_pc();
 
         pc_label:
