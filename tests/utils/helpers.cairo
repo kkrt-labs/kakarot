@@ -77,11 +77,11 @@ namespace TestHelpers {
         let stack_len = [ap - 2];
         let stack = cast([ap - 1], Uint256*);
 
-        let stack_ = Stack.push(stack_, stack);
+        let stack_ = Stack.push(stack_, stack + (stack_len - 1) * Uint256.SIZE);
 
         let range_check_ptr = [ap - 2];
         tempvar stack_len = stack_len - 1;
-        tempvar stack = stack + Uint256.SIZE;
+        tempvar stack = stack;
 
         static_assert range_check_ptr == [ap - 4];
         static_assert stack_ == [ap - 3];

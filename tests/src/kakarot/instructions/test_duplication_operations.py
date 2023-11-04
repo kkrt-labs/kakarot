@@ -21,4 +21,4 @@ class TestDupOperations:
         (result,) = (
             await duplication_operations.test__exec_dup(i, stack).call()
         ).result
-        assert result == stack[-i]
+        assert result == stack[i - 1]
