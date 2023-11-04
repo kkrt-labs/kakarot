@@ -63,33 +63,18 @@ namespace BlockInformation {
         }
         assert range_check = range_check_ptr;
 
-        if (opcode_number == 0x40) {
-            jmp blockhash;
-        }
-        if (opcode_number == 0x41) {
-            jmp coinbase;
-        }
-        if (opcode_number == 0x42) {
-            jmp timestamp;
-        }
-        if (opcode_number == 0x43) {
-            jmp number;
-        }
-        if (opcode_number == 0x44) {
-            jmp prevrandao;
-        }
-        if (opcode_number == 0x45) {
-            jmp gaslimit;
-        }
-        if (opcode_number == 0x46) {
-            jmp chainid;
-        }
-        if (opcode_number == 0x47) {
-            jmp selfbalance;
-        }
-        if (opcode_number == 0x48) {
-            jmp basefee;
-        }
+        tempvar offset = 2 * (opcode_number - 0x40) + 1;
+
+        jmp rel offset;
+        jmp blockhash;
+        jmp coinbase;
+        jmp timestamp;
+        jmp number;
+        jmp prevrandao;
+        jmp gaslimit;
+        jmp chainid;
+        jmp selfbalance;
+        jmp basefee;
 
         blockhash:
         let syscall_ptr = cast([fp - 7], felt*);
