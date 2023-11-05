@@ -5,7 +5,7 @@
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_le
-from starkware.cairo.common.bool import TRUE, FALSE
+from starkware.cairo.common.bool import TRUE
 
 // Internal dependencies
 from kakarot.model import model
@@ -15,7 +15,6 @@ from kakarot.errors import Errors
 from kakarot.constants import Constants
 
 // @title Duplication operations opcodes.
-// @notice This file contains the functions to execute for duplication operations opcodes.
 namespace DuplicationOperations {
     // Define constants.
     const GAS_COST_DUP = 3;

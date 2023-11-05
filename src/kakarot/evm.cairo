@@ -381,37 +381,37 @@ namespace EVM {
         ret;
         call DuplicationOperations.exec_dup;  // 0x8f
         ret;
-        call ExchangeOperations.exec_swap1;  // 0x90
+        call ExchangeOperations.exec_swap;  // 0x90
         ret;
-        call ExchangeOperations.exec_swap2;  // 0x91
+        call ExchangeOperations.exec_swap;  // 0x91
         ret;
-        call ExchangeOperations.exec_swap3;  // 0x92
+        call ExchangeOperations.exec_swap;  // 0x92
         ret;
-        call ExchangeOperations.exec_swap4;  // 0x93
+        call ExchangeOperations.exec_swap;  // 0x93
         ret;
-        call ExchangeOperations.exec_swap5;  // 0x94
+        call ExchangeOperations.exec_swap;  // 0x94
         ret;
-        call ExchangeOperations.exec_swap6;  // 0x95
+        call ExchangeOperations.exec_swap;  // 0x95
         ret;
-        call ExchangeOperations.exec_swap7;  // 0x96
+        call ExchangeOperations.exec_swap;  // 0x96
         ret;
-        call ExchangeOperations.exec_swap8;  // 0x97
+        call ExchangeOperations.exec_swap;  // 0x97
         ret;
-        call ExchangeOperations.exec_swap9;  // 0x98
+        call ExchangeOperations.exec_swap;  // 0x98
         ret;
-        call ExchangeOperations.exec_swap10;  // 0x99
+        call ExchangeOperations.exec_swap;  // 0x99
         ret;
-        call ExchangeOperations.exec_swap11;  // 0x9a
+        call ExchangeOperations.exec_swap;  // 0x9a
         ret;
-        call ExchangeOperations.exec_swap12;  // 0x9b
+        call ExchangeOperations.exec_swap;  // 0x9b
         ret;
-        call ExchangeOperations.exec_swap13;  // 0x9c
+        call ExchangeOperations.exec_swap;  // 0x9c
         ret;
-        call ExchangeOperations.exec_swap14;  // 0x9d
+        call ExchangeOperations.exec_swap;  // 0x9d
         ret;
-        call ExchangeOperations.exec_swap15;  // 0x9e
+        call ExchangeOperations.exec_swap;  // 0x9e
         ret;
-        call ExchangeOperations.exec_swap16;  // 0x9f
+        call ExchangeOperations.exec_swap;  // 0x9f
         ret;
         call LoggingOperations.exec_log_0;  // 0xa0
         ret;
