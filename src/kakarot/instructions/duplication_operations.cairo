@@ -30,8 +30,6 @@ namespace DuplicationOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-
         let out_of_gas = is_le(ctx.call_context.gas_limit, ctx.gas_used + GAS_COST_DUP - 1);
         if (out_of_gas != 0) {
             let (revert_reason_len, revert_reason) = Errors.outOfGas();
