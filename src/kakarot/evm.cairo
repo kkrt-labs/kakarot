@@ -413,15 +413,15 @@ namespace EVM {
         ret;
         call ExchangeOperations.exec_swap;  // 0x9f
         ret;
-        call LoggingOperations.exec_log_0;  // 0xa0
+        call LoggingOperations.exec_log;  // 0xa0
         ret;
-        call LoggingOperations.exec_log_1;  // 0xa1
+        call LoggingOperations.exec_log;  // 0xa1
         ret;
-        call LoggingOperations.exec_log_2;  // 0xa2
+        call LoggingOperations.exec_log;  // 0xa2
         ret;
-        call LoggingOperations.exec_log_3;  // 0xa3
+        call LoggingOperations.exec_log;  // 0xa3
         ret;
-        call LoggingOperations.exec_log_4;  // 0xa4
+        call LoggingOperations.exec_log;  // 0xa4
         ret;
         call unknown_opcode;  // 0xa5
         ret;
