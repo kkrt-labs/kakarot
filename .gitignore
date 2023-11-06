@@ -29,6 +29,7 @@ build
 lint.sarif
 kakarot.code-workspace
 coverage/*
+resources/*
 
 # Scripts artifacts
 blockhashes.json
