@@ -19,7 +19,6 @@ from kakarot.account import Account
 from kakarot.errors import Errors
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.block_information import BlockInformation
-from kakarot.instructions.comparison_operations import ComparisonOperations
 from kakarot.instructions.duplication_operations import DuplicationOperations
 from kakarot.instructions.environmental_information import EnvironmentalInformation
 from kakarot.instructions.exchange_operations import ExchangeOperations
@@ -27,7 +26,7 @@ from kakarot.instructions.logging_operations import LoggingOperations
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.push_operations import PushOperations
 from kakarot.instructions.sha3 import Sha3
-from kakarot.instructions.stop_and_arithmetic_operations import StopAndArithmeticOperations
+from kakarot.instructions.stop_and_math_operations import StopAndMathOperations
 from kakarot.instructions.system_operations import CallHelper, CreateHelper, SystemOperations
 from kakarot.memory import Memory
 from kakarot.model import model
@@ -93,29 +92,29 @@ namespace EVM {
 
         // call opcode
         jmp rel offset;
-        call StopAndArithmeticOperations.exec_stop;  // 0x0
+        call StopAndMathOperations.exec_stop;  // 0x0
         ret;
-        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0x1
+        call StopAndMathOperations.exec_math_operation;  // 0x1
         ret;
-        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0x2
+        call StopAndMathOperations.exec_math_operation;  // 0x2
         ret;
-        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0x3
+        call StopAndMathOperations.exec_math_operation;  // 0x3
         ret;
-        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0x4
+        call StopAndMathOperations.exec_math_operation;  // 0x4
         ret;
-        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0x5
+        call StopAndMathOperations.exec_math_operation;  // 0x5
         ret;
-        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0x6
+        call StopAndMathOperations.exec_math_operation;  // 0x6
         ret;
-        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0x7
+        call StopAndMathOperations.exec_math_operation;  // 0x7
         ret;
-        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0x8
+        call StopAndMathOperations.exec_math_operation;  // 0x8
         ret;
-        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0x9
+        call StopAndMathOperations.exec_math_operation;  // 0x9
         ret;
-        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0xa
+        call StopAndMathOperations.exec_math_operation;  // 0xa
         ret;
-        call StopAndArithmeticOperations.exec_arithmetic_operation;  // 0xb
+        call StopAndMathOperations.exec_math_operation;  // 0xb
         ret;
         call unknown_opcode;  // 0xc
         ret;
@@ -125,33 +124,33 @@ namespace EVM {
         ret;
         call unknown_opcode;  // 0xf
         ret;
-        call ComparisonOperations.exec_lt;  // 0x10
+        call StopAndMathOperations.exec_math_operation;  // 0x10
         ret;
-        call ComparisonOperations.exec_gt;  // 0x11
+        call StopAndMathOperations.exec_math_operation;  // 0x11
         ret;
-        call ComparisonOperations.exec_slt;  // 0x12
+        call StopAndMathOperations.exec_math_operation;  // 0x12
         ret;
-        call ComparisonOperations.exec_sgt;  // 0x13
+        call StopAndMathOperations.exec_math_operation;  // 0x13
         ret;
-        call ComparisonOperations.exec_eq;  // 0x14
+        call StopAndMathOperations.exec_math_operation;  // 0x14
         ret;
-        call ComparisonOperations.exec_iszero;  // 0x15
+        call StopAndMathOperations.exec_math_operation;  // 0x15
         ret;
-        call ComparisonOperations.exec_and;  // 0x16
+        call StopAndMathOperations.exec_math_operation;  // 0x16
         ret;
-        call ComparisonOperations.exec_or;  // 0x17
+        call StopAndMathOperations.exec_math_operation;  // 0x17
         ret;
-        call ComparisonOperations.exec_xor;  // 0x18
+        call StopAndMathOperations.exec_math_operation;  // 0x18
         ret;
-        call ComparisonOperations.exec_not;  // 0x19
+        call StopAndMathOperations.exec_math_operation;  // 0x19
         ret;
-        call ComparisonOperations.exec_byte;  // 0x1a
+        call StopAndMathOperations.exec_math_operation;  // 0x1a
         ret;
-        call ComparisonOperations.exec_shl;  // 0x1b
+        call StopAndMathOperations.exec_math_operation;  // 0x1b
         ret;
-        call ComparisonOperations.exec_shr;  // 0x1c
+        call StopAndMathOperations.exec_math_operation;  // 0x1c
         ret;
-        call ComparisonOperations.exec_sar;  // 0x1d
+        call StopAndMathOperations.exec_math_operation;  // 0x1d
         ret;
         call unknown_opcode;  // 0x1e
         ret;
