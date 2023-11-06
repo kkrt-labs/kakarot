@@ -101,21 +101,6 @@ namespace TestHelpers {
         return ctx;
     }
 
-    // @notice Init an execution context where bytecode has "bytecode_count" entries of "value".
-    func init_context_with_bytecode{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(bytecode_count: felt, value: felt) -> model.ExecutionContext* {
-        alloc_locals;
-
-        let (bytecode) = alloc();
-        array_fill(bytecode, bytecode_count, value);
-
-        return init_context(bytecode_count, bytecode);
-    }
-
     func init_context_with_return_data{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
