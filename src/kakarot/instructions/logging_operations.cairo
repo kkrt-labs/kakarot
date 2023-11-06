@@ -30,9 +30,12 @@ namespace LoggingOperations {
     // @param ctx The pointer to the execution context
     // @param Topic length.
     // @return ExecutionContext The pointer to the execution context.
-    func exec_log_i{syscall_ptr: felt*, range_check_ptr}(
-        ctx: model.ExecutionContext*, topics_len: felt
-    ) -> model.ExecutionContext* {
+    func exec_log{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
         if (ctx.call_context.read_only != FALSE) {
@@ -40,6 +43,17 @@ namespace LoggingOperations {
             let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
             return ctx;
         }
+
+        let out_of_gas = is_le(ctx.call_context.gas_limit, ctx.gas_used + GAS_LOG_STATIC - 1);
+        if (out_of_gas != 0) {
+            let (revert_reason_len, revert_reason) = Errors.outOfGas();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
+        // See evm.cairo, pc is increased before entering the opcode
+        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter - 1];
+        let topics_len = opcode_number - 0xa0;
 
         let stack_underflow = is_le(ctx.stack.size, topics_len + 1);
         if (stack_underflow != 0) {
@@ -74,86 +88,6 @@ namespace LoggingOperations {
 
         // Increment gas used.
         let ctx = ExecutionContext.increment_gas_used(ctx, gas_cost + GAS_LOG_STATIC);
-        return ctx;
-    }
-
-    // @notice LOG0 operation.
-    // @dev Append log record with no topic.
-    // @custom:since Frontier
-    // @custom:group Logging Operations
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext The pointer to the execution context.
-    func exec_log_0{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_log_i(ctx, 0);
-        return ctx;
-    }
-
-    // @notice LOG1 operation.
-    // @dev Append log record with 1 topic.
-    // @custom:since Frontier
-    // @custom:group Logging Operations
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext The pointer to the execution context.
-    func exec_log_1{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_log_i(ctx, 1);
-        return ctx;
-    }
-
-    // @notice LOG2 operation.
-    // @dev Append log record with 2 topics.
-    // @custom:since Frontier
-    // @custom:group Logging Operations
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext The pointer to the execution context.
-    func exec_log_2{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_log_i(ctx, 2);
-        return ctx;
-    }
-
-    // @notice LOG3 operation.
-    // @dev Append log record with 3 topics.
-    // @custom:since Frontier
-    // @custom:group Logging Operations
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext The pointer to the execution context.
-    func exec_log_3{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_log_i(ctx, 3);
-        return ctx;
-    }
-
-    // @notice LOG4 operation.
-    // @dev Append log record with 4 topics.
-    // @custom:since Frontier
-    // @custom:group Logging Operations
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext The pointer to the execution context.
-    func exec_log_4{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = exec_log_i(ctx, 4);
         return ctx;
     }
 }
