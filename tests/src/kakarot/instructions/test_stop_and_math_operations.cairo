@@ -13,7 +13,7 @@ from utils.utils import Helpers
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.execution_context import ExecutionContext
-from kakarot.instructions.stop_and_arithmetic_operations import StopAndArithmeticOperations
+from kakarot.instructions.stop_and_math_operations import StopAndMathOperations
 from tests.utils.helpers import TestHelpers
 
 @external
@@ -26,7 +26,7 @@ func test__exec_stop{
     let ctx = TestHelpers.init_context(0, bytecode);
     assert ctx.stopped = FALSE;
 
-    let stopped_ctx = StopAndArithmeticOperations.exec_stop(ctx);
+    let stopped_ctx = StopAndMathOperations.exec_stop(ctx);
 
     assert stopped_ctx.stopped = TRUE;
     assert stopped_ctx.return_data_len = 0;
@@ -35,7 +35,7 @@ func test__exec_stop{
 }
 
 @external
-func test__exec_arithmetic_operation{
+func test__exec_math_operation{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(opcode: felt, stack_len: felt, stack: Uint256*, expected_result: Uint256) {
     // Given
@@ -47,7 +47,7 @@ func test__exec_arithmetic_operation{
     let ctx = ExecutionContext.increment_program_counter(ctx, 1);
 
     // When
-    let ctx = StopAndArithmeticOperations.exec_arithmetic_operation(ctx);
+    let ctx = StopAndMathOperations.exec_math_operation(ctx);
 
     // Then
     let (_, result) = Stack.peek(ctx.stack, 0);
