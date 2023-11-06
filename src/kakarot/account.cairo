@@ -22,8 +22,8 @@ from starkware.cairo.common.hash_state import (
     hash_update_with_hashchain,
 )
 
-from kakarot.constants import (
-    Constants,
+from kakarot.constants import Constants
+from kakarot.storages import (
     account_proxy_class_hash,
     native_token_address,
     contract_account_class_hash,

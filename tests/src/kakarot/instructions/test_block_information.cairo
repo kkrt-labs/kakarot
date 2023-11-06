@@ -14,7 +14,8 @@ from starkware.cairo.common.registers import get_fp_and_pc
 from utils.utils import Helpers
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.constants import Constants, blockhash_registry_address
+from kakarot.constants import Constants
+from kakarot.storages import blockhash_registry_address
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.block_information import BlockInformation
 from tests.utils.helpers import TestHelpers

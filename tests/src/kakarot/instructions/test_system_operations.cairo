@@ -15,7 +15,8 @@ from starkware.starknet.common.syscalls import deploy, get_contract_address
 from openzeppelin.token.erc20.library import ERC20
 
 // Local dependencies
-from kakarot.constants import (
+from kakarot.constants import Constants
+from kakarot.storages import (
     Constants,
     native_token_address,
     contract_account_class_hash,

@@ -17,12 +17,12 @@ from kakarot.library import Kakarot
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.state import Internals as State
-from kakarot.constants import (
+from kakarot.constants import Constants
+from kakarot.storages import (
     native_token_address,
     contract_account_class_hash,
     blockhash_registry_address,
     account_proxy_class_hash,
-    Constants,
 )
 from utils.dict import dict_keys, dict_values
 

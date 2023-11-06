@@ -8,7 +8,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import get_caller_address
 
 from kakarot.account import Account
-from kakarot.constants import account_proxy_class_hash, externally_owned_account_class_hash
+from kakarot.storages import account_proxy_class_hash, externally_owned_account_class_hash
 from kakarot.library import native_token_address, Kakarot
 from kakarot.interfaces.interfaces import IAccount
 

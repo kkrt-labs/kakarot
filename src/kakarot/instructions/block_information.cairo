@@ -12,7 +12,8 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
 
 // Internal dependencies
-from kakarot.constants import Constants, blockhash_registry_address
+from kakarot.storages import blockhash_registry_address
+from kakarot.constants import Constants
 from kakarot.execution_context import ExecutionContext
 from kakarot.interfaces.interfaces import IBlockhashRegistry
 from kakarot.model import model

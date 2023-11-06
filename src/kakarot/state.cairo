@@ -17,7 +17,7 @@ from starkware.starknet.common.syscalls import call_contract
 from starkware.starknet.common.syscalls import emit_event
 
 from kakarot.account import Account
-from kakarot.constants import native_token_address, contract_account_class_hash
+from kakarot.storages import native_token_address, contract_account_class_hash
 from kakarot.interfaces.interfaces import IERC20
 from kakarot.model import model
 from utils.dict import default_dict_copy

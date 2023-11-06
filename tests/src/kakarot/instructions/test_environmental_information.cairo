@@ -16,8 +16,8 @@ from openzeppelin.token.erc20.library import ERC20
 
 // Local dependencies
 from kakarot.account import Account
-from kakarot.constants import (
-    Constants,
+from kakarot.constants import Constants
+from kakarot.storages import (
     contract_account_class_hash,
     account_proxy_class_hash,
     native_token_address,

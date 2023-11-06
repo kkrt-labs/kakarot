@@ -20,7 +20,8 @@ from starkware.cairo.common.registers import get_fp_and_pc
 
 // Internal dependencies
 from kakarot.account import Account
-from kakarot.constants import contract_account_class_hash, native_token_address, Constants
+from kakarot.storages import contract_account_class_hash, native_token_address
+from kakarot.constants import Constants
 from kakarot.errors import Errors
 from kakarot.execution_context import ExecutionContext
 from kakarot.memory import Memory
