@@ -349,69 +349,69 @@ namespace EVM {
         ret;
         call PushOperations.exec_push;  // 0x7f
         ret;
-        call DuplicationOperations.exec_dup1;  // 0x80
+        call DuplicationOperations.exec_dup;  // 0x80
         ret;
-        call DuplicationOperations.exec_dup2;  // 0x81
+        call DuplicationOperations.exec_dup;  // 0x81
         ret;
-        call DuplicationOperations.exec_dup3;  // 0x82
+        call DuplicationOperations.exec_dup;  // 0x82
         ret;
-        call DuplicationOperations.exec_dup4;  // 0x83
+        call DuplicationOperations.exec_dup;  // 0x83
         ret;
-        call DuplicationOperations.exec_dup5;  // 0x84
+        call DuplicationOperations.exec_dup;  // 0x84
         ret;
-        call DuplicationOperations.exec_dup6;  // 0x85
+        call DuplicationOperations.exec_dup;  // 0x85
         ret;
-        call DuplicationOperations.exec_dup7;  // 0x86
+        call DuplicationOperations.exec_dup;  // 0x86
         ret;
-        call DuplicationOperations.exec_dup8;  // 0x87
+        call DuplicationOperations.exec_dup;  // 0x87
         ret;
-        call DuplicationOperations.exec_dup9;  // 0x88
+        call DuplicationOperations.exec_dup;  // 0x88
         ret;
-        call DuplicationOperations.exec_dup10;  // 0x89
+        call DuplicationOperations.exec_dup;  // 0x89
         ret;
-        call DuplicationOperations.exec_dup11;  // 0x8a
+        call DuplicationOperations.exec_dup;  // 0x8a
         ret;
-        call DuplicationOperations.exec_dup12;  // 0x8b
+        call DuplicationOperations.exec_dup;  // 0x8b
         ret;
-        call DuplicationOperations.exec_dup13;  // 0x8c
+        call DuplicationOperations.exec_dup;  // 0x8c
         ret;
-        call DuplicationOperations.exec_dup14;  // 0x8d
+        call DuplicationOperations.exec_dup;  // 0x8d
         ret;
-        call DuplicationOperations.exec_dup15;  // 0x8e
+        call DuplicationOperations.exec_dup;  // 0x8e
         ret;
-        call DuplicationOperations.exec_dup16;  // 0x8f
+        call DuplicationOperations.exec_dup;  // 0x8f
         ret;
-        call ExchangeOperations.exec_swap1;  // 0x90
+        call ExchangeOperations.exec_swap;  // 0x90
         ret;
-        call ExchangeOperations.exec_swap2;  // 0x91
+        call ExchangeOperations.exec_swap;  // 0x91
         ret;
-        call ExchangeOperations.exec_swap3;  // 0x92
+        call ExchangeOperations.exec_swap;  // 0x92
         ret;
-        call ExchangeOperations.exec_swap4;  // 0x93
+        call ExchangeOperations.exec_swap;  // 0x93
         ret;
-        call ExchangeOperations.exec_swap5;  // 0x94
+        call ExchangeOperations.exec_swap;  // 0x94
         ret;
-        call ExchangeOperations.exec_swap6;  // 0x95
+        call ExchangeOperations.exec_swap;  // 0x95
         ret;
-        call ExchangeOperations.exec_swap7;  // 0x96
+        call ExchangeOperations.exec_swap;  // 0x96
         ret;
-        call ExchangeOperations.exec_swap8;  // 0x97
+        call ExchangeOperations.exec_swap;  // 0x97
         ret;
-        call ExchangeOperations.exec_swap9;  // 0x98
+        call ExchangeOperations.exec_swap;  // 0x98
         ret;
-        call ExchangeOperations.exec_swap10;  // 0x99
+        call ExchangeOperations.exec_swap;  // 0x99
         ret;
-        call ExchangeOperations.exec_swap11;  // 0x9a
+        call ExchangeOperations.exec_swap;  // 0x9a
         ret;
-        call ExchangeOperations.exec_swap12;  // 0x9b
+        call ExchangeOperations.exec_swap;  // 0x9b
         ret;
-        call ExchangeOperations.exec_swap13;  // 0x9c
+        call ExchangeOperations.exec_swap;  // 0x9c
         ret;
-        call ExchangeOperations.exec_swap14;  // 0x9d
+        call ExchangeOperations.exec_swap;  // 0x9d
         ret;
-        call ExchangeOperations.exec_swap15;  // 0x9e
+        call ExchangeOperations.exec_swap;  // 0x9e
         ret;
-        call ExchangeOperations.exec_swap16;  // 0x9f
+        call ExchangeOperations.exec_swap;  // 0x9f
         ret;
         call LoggingOperations.exec_log_0;  // 0xa0
         ret;

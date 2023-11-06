@@ -91,12 +91,7 @@ namespace Sha3 {
         let ctx = ExecutionContext.update_memory(ctx, memory);
 
         // Increment gas used.
-        let (minimum_word_size) = Helpers.minimum_word_count(length.low);
-        let dynamic_gas = 6 * minimum_word_size + gas_cost;
-
-        let ctx = ExecutionContext.increment_gas_used(
-            self=ctx, inc_value=GAS_COST_SHA3 + dynamic_gas
-        );
+        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SHA3);
 
         return ctx;
     }
