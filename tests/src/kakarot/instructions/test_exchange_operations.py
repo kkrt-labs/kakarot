@@ -17,7 +17,7 @@ async def exchange_operations(starknet: Starknet):
 class TestSwapOperations:
     @pytest.mark.parametrize("i", range(1, 17))
     async def test__exec_swap(self, exchange_operations, i):
-        stack = [(v, 0) for v in range(16)]
+        stack = [(v, 0) for v in range(17)]
         (top, swapped) = (
             await exchange_operations.test__exec_swap(i, stack).call()
         ).result
