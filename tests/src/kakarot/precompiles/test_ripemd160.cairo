@@ -23,7 +23,7 @@ func test__ripemd160{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(msg_len: felt, msg: felt*) -> (hash_len: felt, hash: felt*) {
     alloc_locals;
-    let (hash_len, hash, _) = PrecompileRIPEMD160.run(
+    let (hash_len, hash, gas, reverted) = PrecompileRIPEMD160.run(
         PrecompileRIPEMD160.PRECOMPILE_ADDRESS, msg_len, msg
     );
 

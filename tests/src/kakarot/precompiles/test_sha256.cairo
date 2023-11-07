@@ -17,7 +17,7 @@ func test__sha256{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(data_len: felt, data: felt*) -> (hash_len: felt, hash: felt*) {
     alloc_locals;
-    let (hash_len, hash, gas_used) = PrecompileSHA256.run(
+    let (hash_len, hash, gas_used, reverted) = PrecompileSHA256.run(
         PrecompileSHA256.PRECOMPILE_ADDRESS, data_len, data
     );
     let (minimum_word_size) = Helpers.minimum_word_count(data_len);

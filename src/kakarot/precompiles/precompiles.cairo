@@ -12,6 +12,7 @@ from starkware.cairo.common.math_cmp import is_le, is_not_zero
 // Internal dependencies
 from kakarot.constants import Constants
 from kakarot.execution_context import ExecutionContext
+from kakarot.errors import Errors
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.precompiles.blake2f import PrecompileBlake2f
@@ -48,9 +49,6 @@ namespace Precompiles {
     ) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Execute the precompile at a given evm_address
-        let (output_len, output, gas_used) = _exec_precompile(evm_address, calldata_len, calldata);
-
         // Build returned execution context
         let stack = Stack.init();
         let memory = Memory.init();
@@ -71,7 +69,12 @@ namespace Precompiles {
         );
         let sub_ctx = ExecutionContext.init(call_context);
         let sub_ctx = ExecutionContext.update_state(sub_ctx, calling_context.state);
-        let sub_ctx = ExecutionContext.stop(sub_ctx, output_len, output, FALSE);
+
+        // Execute the precompile at a given evm_address
+        let (output_len, output, gas_used, reverted) = _exec_precompile(
+            evm_address, calldata_len, calldata
+        );
+        let sub_ctx = ExecutionContext.stop(sub_ctx, output_len, output, reverted);
 
         return sub_ctx;
     }
@@ -88,13 +91,14 @@ namespace Precompiles {
     // @return output_len The output length.
     // @return output The output array.
     // @return gas_used The gas usage of precompile.
+    // @return reverted Whether the precompile ran successfully or not
     func _exec_precompile{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(evm_address: felt, input_len: felt, input: felt*) -> (
-        output_len: felt, output: felt*, gas_used: felt
+        output_len: felt, output: felt*, gas_used: felt, reverted: felt
     ) {
         // Compute the corresponding offset in the jump table:
         // count 1 for "next line" and 3 steps per precompile evm_address: call, precompile, ret
@@ -143,11 +147,11 @@ namespace Precompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(evm_address: felt, _input_len: felt, _input: felt*) {
-        with_attr error_message("Kakarot: UnknownPrecompile {evm_address}") {
-            assert 0 = 1;
-        }
-        return ();
+    }(evm_address: felt, _input_len: felt, _input: felt*) -> (
+        output_len: felt, output: felt*, gas_used: felt, reverted: felt
+    ) {
+        let (revert_reason_len, revert_reason) = Errors.unknownPrecompile(evm_address);
+        return (revert_reason_len, revert_reason, 0, 1);
     }
 
     // @notice A placeholder for precompile that are not implemented yet.
@@ -160,11 +164,11 @@ namespace Precompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(evm_address: felt, _input_len: felt, _input: felt*) {
-        with_attr error_message("Kakarot: NotImplementedPrecompile {evm_address}") {
-            assert 0 = 1;
-        }
-        return ();
+    }(evm_address: felt, _input_len: felt, _input: felt*) -> (
+        output_len: felt, output: felt*, gas_used: felt, reverted: felt
+    ) {
+        let (revert_reason_len, revert_reason) = Errors.notImplementedPrecompile(evm_address);
+        return (revert_reason_len, revert_reason, 0, 1);
     }
 
     // @notice A placeholder for precompile that are not implemented yet.
@@ -177,10 +181,10 @@ namespace Precompiles {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(evm_address: felt, _input_len: felt, _input: felt*) {
-        with_attr error_message("Kakarot: NotWhitelistedPrecompile {evm_address}") {
-            assert 0 = 1;
-        }
-        return ();
+    }(evm_address: felt, _input_len: felt, _input: felt*) -> (
+        output_len: felt, output: felt*, gas_used: felt, reverted: felt
+    ) {
+        let (revert_reason_len, revert_reason) = Errors.notImplementedPrecompile(evm_address);
+        return (revert_reason_len, revert_reason, 0, 1);
     }
 }

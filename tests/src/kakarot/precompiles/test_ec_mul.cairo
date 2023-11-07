@@ -56,7 +56,7 @@ func test__ecmul_impl{
     Helpers.fill_array(x_bytes_len, x_bytes, input);
     Helpers.fill_array(y_bytes_len, y_bytes, input + 32);
     Helpers.fill_array(scalar_bytes_len, scalar_bytes, input + 64);
-    let (output_len, output: felt*, gas_used) = PrecompileEcMul.run(
+    let (output_len, output: felt*, gas_used, reverted) = PrecompileEcMul.run(
         PrecompileEcMul.PRECOMPILE_ADDRESS, input_len, input
     );
 

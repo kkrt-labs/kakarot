@@ -6,7 +6,6 @@ import pytest_asyncio
 from eth._utils.blake2.compression import TMessageBlock, blake2b_compress
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.errors import cairo_error
 from tests.utils.helpers import pack_64_bits_little
 
 
@@ -24,16 +23,16 @@ async def blake2f(starknet: Starknet):
 @pytest.mark.BLAKE2F
 class TestBlake2f:
     async def test_should_fail_when_input_len_is_not_213(self, blake2f):
-        with cairo_error(
-            "Kakarot: blake2f failed with incorrect input_len: 212 instead of 213"
-        ):
+        (output,) = (
             await blake2f.test_should_fail_when_input_is_not_213().call()
+        ).result
+        assert bytes(output).decode() == "Precompile: wrong input_len"
 
     async def test_should_fail_when_flag_is_not_0_or_1(self, blake2f):
-        with cairo_error(
-            "Kakarot: blake2f failed with incorrect flag: 2 instead of 0 or 1"
-        ):
+        (output,) = (
             await blake2f.test_should_fail_when_flag_is_not_0_or_1().call()
+        ).result
+        assert bytes(output).decode() == "Precompile: flag error"
 
     @pytest.mark.parametrize("f", [0, 1])
     @pytest.mark.parametrize("seed", [0, 1, 2, 3, 4])

@@ -32,7 +32,7 @@ namespace PrecompileModExpUint256 {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(_address: felt, input_len: felt, input: felt*) -> (
-        output_len: felt, output: felt*, gas_used: felt
+        output_len: felt, output: felt*, gas_used: felt, reverted: felt
     ) {
         alloc_locals;
 
@@ -63,6 +63,6 @@ namespace PrecompileModExpUint256 {
             b_size, m_size, e_size, b, e, m
         );
 
-        return (output_len=bytes_len, output=bytes, gas_used=gas_cost);
+        return (bytes_len, bytes, gas_cost, 0);
     }
 }
