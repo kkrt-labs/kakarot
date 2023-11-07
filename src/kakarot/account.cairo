@@ -125,16 +125,27 @@ namespace Account {
                 return ();
             }
 
-            // Deploy accounts
-            let (class_hash) = contract_account_class_hash.read();
-            deploy(class_hash, self.address);
-            // Write bytecode
-            IContractAccount.write_bytecode(starknet_address, self.code_len, self.code);
-            // Set nonce
-            IContractAccount.set_nonce(starknet_address, self.nonce);
-            // Save storages
-            Internals._save_storage(starknet_address, self.storage_start, self.storage);
-            return ();
+            // Just casting the Summary into an Account to apply has_code_or_nonce
+            // cf Summary note: like an Account, but frozen after squashing all dicts
+            // There is no reason to have has_code_or_nonce available in the public API
+            // for Account.Summary, but safe to use here
+            let code_or_nonce = has_code_or_nonce(cast(self, model.Account*));
+
+            if (code_or_nonce != FALSE) {
+                // Deploy accounts
+                let (class_hash) = contract_account_class_hash.read();
+                deploy(class_hash, self.address);
+                // Write bytecode
+                IContractAccount.write_bytecode(starknet_address, self.code_len, self.code);
+                // Set nonce
+                IContractAccount.set_nonce(starknet_address, self.nonce);
+                // Save storages
+                Internals._save_storage(starknet_address, self.storage_start, self.storage);
+                return ();
+            } else {
+                // Touched an undeployed address in a CALL, do nothing
+                return ();
+            }
         }
 
         // Case existing Account and SELFDESTRUCT
