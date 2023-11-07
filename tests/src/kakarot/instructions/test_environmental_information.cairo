@@ -107,8 +107,7 @@ func test__exec_address__should_push_address_to_stack{
     // When
     let result = EnvironmentalInformation.exec_address(ctx);
 
-    // Then
-    assert result.gas_used = 2;
+    // The
     assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
     assert index0.low = 420;
@@ -139,9 +138,6 @@ func test__exec_extcodesize__should_handle_address_with_no_code{
         bytecode_len, bytecode, stack
     );
 
-    // we are hardcoding an assumption of 'cold' address access, for now.
-    let expected_gas = 2600;
-
     // When
     let ctx = EnvironmentalInformation.exec_extcodesize(ctx);
 
@@ -149,8 +145,6 @@ func test__exec_extcodesize__should_handle_address_with_no_code{
     let (stack, extcodesize) = Stack.peek(ctx.stack, 0);
     assert extcodesize.low = 0;
     assert extcodesize.high = 0;
-
-    assert ctx.gas_used = expected_gas;
 
     return ();
 }
@@ -200,7 +194,6 @@ func test__exec_extcodecopy__should_handle_address_with_code{
 
     // Then
     assert result.stack.size = 0;
-    assert result.gas_used = 3 * minimum_word_size + memory_expansion_cost + address_access_cost;
 
     let (output_array) = alloc();
     Memory._load_n(result.memory, size, output_array, dest_offset);
@@ -256,8 +249,6 @@ func test__exec_extcodecopy__should_handle_address_with_no_code{
     // ensure stack is consumed/updated
     assert result.stack.size = 0;
 
-    assert result.gas_used = expected_gas;
-
     assert [output_array] = 0;
     assert [output_array + 1] = 0;
     assert [output_array + 2] = 0;
@@ -284,8 +275,7 @@ func test__exec_gasprice{
     let result = EnvironmentalInformation.exec_gasprice(ctx);
     let (stack, gasprice) = Stack.peek(result.stack, 0);
 
-    // Then
-    assert result.gas_used = 2;
+    // The
     assert_uint256_eq([gasprice], [expected_gas_price_uint256]);
 
     return ();
@@ -330,7 +320,6 @@ func test__returndatacopy{
     assert_uint256_eq(
         data, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)
     );
-    assert ctx.gas_used = 3;
 
     // Pushing parameters for another RETURNDATACOPY
     tempvar item_2 = new Uint256(1, 0);
@@ -386,8 +375,6 @@ func test__exec_extcodehash__should_handle_invalid_address{
     let (stack, extcodehash) = Stack.peek(result.stack, 0);
     assert extcodehash.low = 0;
     assert extcodehash.high = 0;
-    // 'cold' address access
-    assert result.gas_used = 2600;
 
     return ();
 }
@@ -420,8 +407,6 @@ func test__exec_extcodehash__should_handle_address_with_code{
     let (stack, extcodehash) = Stack.peek(result.stack, 0);
     assert extcodehash.low = expected_hash_low;
     assert extcodehash.high = expected_hash_high;
-    // 'cold' address access
-    assert result.gas_used = 2600;
 
     return ();
 }

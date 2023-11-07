@@ -31,25 +31,8 @@ namespace BlockInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-        local range_check: felt;
-        local opcode: model.Opcode*;
-
         // See evm.cairo, pc is increased before entering the opcode
         let opcode_number = [ctx.call_context.bytecode + ctx.program_counter - 1];
-
-        // To cast the codeoffset opcodes_label to a model.Opcode*, we need to use it to offset
-        // the current pc. We get the pc from the `get_fp_and_pc` util and assign a codeoffset (pc_label) to it.
-        // In short, this boilds down to: opcode = pc + offset - pc = offset
-        // The following lines are equivalent but cheaper than `get_label_location`.
-        let (_, pc) = get_fp_and_pc();
-
-        pc_label:
-        assert opcode = cast(
-            pc + (opcodes_label - pc_label) + opcode_number * model.Opcode.SIZE, model.Opcode*
-        );
-
-        assert range_check = range_check_ptr;
 
         tempvar offset = 2 * (opcode_number - 0x40) + 1;
 
@@ -67,7 +50,7 @@ namespace BlockInformation {
         blockhash:
         let syscall_ptr = cast([fp - 7], felt*);
         let pedersen_ptr = cast([fp - 6], HashBuiltin*);
-        let range_check_ptr = [fp];
+        let range_check_ptr = [fp - 5];
         let ctx = cast([fp - 3], model.ExecutionContext*);
         let (ctx, result) = Internals.blockhash(ctx);
         jmp end;
@@ -75,7 +58,7 @@ namespace BlockInformation {
         coinbase:
         tempvar syscall_ptr = cast([fp - 7], felt*);
         tempvar pedersen_ptr = cast([fp - 6], HashBuiltin*);
-        tempvar range_check_ptr = [fp];
+        tempvar range_check_ptr = [fp - 5];
         tempvar ctx = cast([fp - 3], model.ExecutionContext*);
         tempvar result = Uint256(
             0xacdffe0cf08e20ed8ba10ea97a487004, 0x388ca486b82e20cc81965d056b4cdca
@@ -87,7 +70,7 @@ namespace BlockInformation {
         let (block_timestamp) = get_block_timestamp();
         tempvar syscall_ptr = cast([ap - 2], felt*);
         tempvar pedersen_ptr = cast([fp - 6], HashBuiltin*);
-        tempvar range_check_ptr = [fp];
+        tempvar range_check_ptr = [fp - 5];
         tempvar ctx = cast([fp - 3], model.ExecutionContext*);
         tempvar result = Uint256(block_timestamp, 0);
         jmp end;
@@ -97,7 +80,7 @@ namespace BlockInformation {
         let (block_number) = get_block_number();
         tempvar syscall_ptr = cast([ap - 2], felt*);
         tempvar pedersen_ptr = cast([fp - 6], HashBuiltin*);
-        tempvar range_check_ptr = [fp];
+        tempvar range_check_ptr = [fp - 5];
         tempvar ctx = cast([fp - 3], model.ExecutionContext*);
         tempvar result = Uint256(block_number, 0);
         jmp end;
@@ -105,7 +88,7 @@ namespace BlockInformation {
         prevrandao:
         tempvar syscall_ptr = cast([fp - 7], felt*);
         tempvar pedersen_ptr = cast([fp - 6], HashBuiltin*);
-        tempvar range_check_ptr = [fp];
+        tempvar range_check_ptr = [fp - 5];
         tempvar ctx = cast([fp - 3], model.ExecutionContext*);
         tempvar result = Uint256(0, 0);
         jmp end;
@@ -115,7 +98,7 @@ namespace BlockInformation {
         tempvar gas_limit = ctx.call_context.gas_limit;
         tempvar syscall_ptr = cast([fp - 7], felt*);
         tempvar pedersen_ptr = cast([fp - 6], HashBuiltin*);
-        tempvar range_check_ptr = [fp];
+        tempvar range_check_ptr = [fp - 5];
         tempvar ctx = cast([fp - 3], model.ExecutionContext*);
         tempvar result = Uint256(gas_limit, 0);
         jmp end;
@@ -123,7 +106,7 @@ namespace BlockInformation {
         chainid:
         tempvar syscall_ptr = cast([fp - 7], felt*);
         tempvar pedersen_ptr = cast([fp - 6], HashBuiltin*);
-        tempvar range_check_ptr = [fp];
+        tempvar range_check_ptr = [fp - 5];
         tempvar ctx = cast([fp - 3], model.ExecutionContext*);
         tempvar result = Uint256(Constants.CHAIN_ID, 0);
         jmp end;
@@ -131,7 +114,7 @@ namespace BlockInformation {
         selfbalance:
         let syscall_ptr = cast([fp - 7], felt*);
         let pedersen_ptr = cast([fp - 6], HashBuiltin*);
-        let range_check_ptr = [fp];
+        let range_check_ptr = [fp - 5];
         let ctx = cast([fp - 3], model.ExecutionContext*);
         let (ctx, result) = Internals.selfbalance(ctx);
         jmp end;
@@ -139,14 +122,13 @@ namespace BlockInformation {
         basefee:
         tempvar syscall_ptr = cast([fp - 7], felt*);
         tempvar pedersen_ptr = cast([fp - 6], HashBuiltin*);
-        tempvar range_check_ptr = [fp];
+        tempvar range_check_ptr = [fp - 5];
         tempvar ctx = cast([fp - 3], model.ExecutionContext*);
         tempvar result = Uint256(0, 0);
         jmp end;
 
         end:
         // Rebind unused args with fp
-        let opcode = cast([fp + 1], model.Opcode*);
         let bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
 
         // Rebind used args with ap

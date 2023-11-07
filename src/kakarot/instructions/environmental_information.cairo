@@ -44,7 +44,7 @@ namespace EnvironmentalInformation {
         // Get the current execution contract from the context,
         // convert to Uint256, and push to Stack.
         let address = Helpers.to_uint256(ctx.call_context.address.evm);
-        let stack: model.Stack* = Stack.push(ctx.stack, address);
+        let stack = Stack.push(ctx.stack, address);
         // Update the execution context.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         return ctx;
@@ -97,7 +97,7 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         let origin_address = Helpers.to_uint256(ctx.call_context.origin.evm);
 
-        let stack: model.Stack* = Stack.push(self=ctx.stack, element=origin_address);
+        let stack = Stack.push(self=ctx.stack, element=origin_address);
         let ctx = ExecutionContext.update_stack(ctx, stack);
         return ctx;
     }
@@ -125,10 +125,7 @@ namespace EnvironmentalInformation {
             tempvar caller = ctx.call_context.origin.evm;
         }
         let evm_address_uint256 = Helpers.to_uint256(caller);
-        let stack: model.Stack* = Stack.push(self=ctx.stack, element=evm_address_uint256);
-
-        // Update the execution context.
-        // Update context stack.
+        let stack = Stack.push(ctx.stack, evm_address_uint256);
         let ctx = ExecutionContext.update_stack(ctx, stack);
         return ctx;
     }
@@ -148,7 +145,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         let uint256_value = Helpers.to_uint256(ctx.call_context.value);
-        let stack: model.Stack* = Stack.push(ctx.stack, uint256_value);
+        let stack = Stack.push(ctx.stack, uint256_value);
 
         let ctx = ExecutionContext.update_stack(ctx, stack);
         return ctx;
@@ -189,7 +186,7 @@ namespace EnvironmentalInformation {
         let uint256_sliced_calldata = Helpers.bytes32_to_uint256(sliced_calldata);
 
         // Push CallData word onto stack
-        let stack: model.Stack* = Stack.push_uint256(stack, uint256_sliced_calldata);
+        let stack = Stack.push_uint256(stack, uint256_sliced_calldata);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -211,7 +208,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let stack: model.Stack* = Stack.push_uint128(ctx.stack, ctx.call_context.calldata_len);
+        let stack = Stack.push_uint128(ctx.stack, ctx.call_context.calldata_len);
 
         // Update the execution context.
         // Update context stack.
@@ -288,7 +285,7 @@ namespace EnvironmentalInformation {
         // Get the bytecode size.
         let code_size = Helpers.to_uint256(ctx.call_context.bytecode_len);
 
-        let stack: model.Stack* = Stack.push_uint128(ctx.stack, ctx.call_context.bytecode_len);
+        let stack = Stack.push_uint128(ctx.stack, ctx.call_context.bytecode_len);
 
         // Update the execution context.
         // Update context stack.
@@ -362,7 +359,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         // Get the gasprice.
-        let stack: model.Stack* = Stack.push_uint128(ctx.stack, ctx.call_context.gas_price);
+        let stack = Stack.push_uint128(ctx.stack, ctx.call_context.gas_price);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -483,7 +480,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         // Get return data size.
-        let stack: model.Stack* = Stack.push_uint128(ctx.stack, ctx.return_data_len);
+        let stack = Stack.push_uint128(ctx.stack, ctx.return_data_len);
 
         // Update the execution context.
         // Update context stack.
