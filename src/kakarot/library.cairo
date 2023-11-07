@@ -12,7 +12,7 @@ from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 from starkware.cairo.common.math_cmp import is_not_zero
 
 from kakarot.account import Account
-from kakarot.constants import (
+from kakarot.storages import (
     account_proxy_class_hash,
     blockhash_registry_address,
     contract_account_class_hash,

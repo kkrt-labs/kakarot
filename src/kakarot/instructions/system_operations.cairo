@@ -20,7 +20,8 @@ from starkware.cairo.common.registers import get_fp_and_pc
 
 // Internal dependencies
 from kakarot.account import Account
-from kakarot.constants import contract_account_class_hash, native_token_address, Constants
+from kakarot.storages import contract_account_class_hash, native_token_address
+from kakarot.constants import Constants
 from kakarot.errors import Errors
 from kakarot.execution_context import ExecutionContext
 from kakarot.memory import Memory
@@ -34,11 +35,6 @@ from utils.utils import Helpers
 // @title System operations opcodes.
 // @notice This file contains the functions to execute for system operations opcodes.
 namespace SystemOperations {
-    // Gas cost generated from using a CALL opcode (CALL, STATICCALL, etc.) with positive value parameter
-    const GAS_COST_POSITIVE_VALUE = 9000;
-    // Gas cost generated from accessing a "cold" address in the network: https://www.evm.codes/about#accesssets
-    const GAS_COST_COLD_ADDRESS_ACCESS = 2600;
-    const GAS_COST_CREATE = 32000;
     // @notice CREATE operation.
     // @custom:since Frontier
     // @custom:group System Operations
@@ -60,13 +56,6 @@ namespace SystemOperations {
             return ctx;
         }
 
-        let stack_underflow = is_le(ctx.stack.size, 2);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         // Stack input:
         // 0 - value: value in wei to send to the new account
         // 1 - offset: byte offset in the memory in bytes (initialization code)
@@ -81,7 +70,6 @@ namespace SystemOperations {
         let word_size_gas = 6 * minimum_word_size;
 
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=word_size_gas);
 
         let sub_ctx = CreateHelper.initialize_sub_context(ctx=ctx, popped_len=3, popped=popped);
 
@@ -105,13 +93,6 @@ namespace SystemOperations {
 
         if (ctx.call_context.read_only != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
-        let stack_underflow = is_le(ctx.stack.size, 3);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
             let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
             return ctx;
         }
@@ -169,13 +150,6 @@ namespace SystemOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let stack_underflow = is_le(ctx.stack.size, 1);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         // Stack input:
         // 0 - offset: byte offset in the memory in bytes
         // 1 - size: byte size to copy
@@ -188,7 +162,6 @@ namespace SystemOperations {
 
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_memory(ctx, memory);
-        let ctx = ExecutionContext.increment_gas_used(ctx, gas_cost);
         let ctx = ExecutionContext.stop(ctx, size.low, return_data, FALSE);
 
         return ctx;
@@ -210,13 +183,6 @@ namespace SystemOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let stack_underflow = is_le(ctx.stack.size, 1);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         // Stack input:
         // 0 - offset: byte offset in the memory in bytes
         // 1 - size: byte size to copy
@@ -230,7 +196,6 @@ namespace SystemOperations {
 
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_memory(ctx, memory);
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=gas_cost);
         let ctx = ExecutionContext.stop(ctx, size.low, return_data, TRUE);
         return ctx;
     }
@@ -370,12 +335,6 @@ namespace SystemOperations {
             return ctx;
         }
 
-        if (ctx.stack.size == 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         // Transfer funds
         let (stack, popped) = Stack.pop(ctx.stack);
         let (_, address_high) = unsigned_div_rem(popped.high, 2 ** 32);
@@ -479,13 +438,6 @@ namespace CallHelper {
         ctx: model.ExecutionContext*, with_value: felt, read_only: felt, self_call: felt
     ) -> model.ExecutionContext* {
         alloc_locals;
-
-        let stack_underflow = is_le(ctx.stack.size, with_value + 3);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
 
         let (ctx, local call_args) = CallHelper.prepare_args(ctx, with_value);
 
@@ -828,9 +780,6 @@ namespace CreateHelper {
 
         // Update calling context before creating sub context
         let ctx = ExecutionContext.update_memory(ctx, memory);
-        let ctx = ExecutionContext.increment_gas_used(
-            ctx, gas_cost + SystemOperations.GAS_COST_CREATE
-        );
         let ctx = ExecutionContext.update_state(ctx, state);
 
         if (is_collision != 0) {

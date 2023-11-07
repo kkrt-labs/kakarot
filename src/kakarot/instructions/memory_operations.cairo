@@ -25,19 +25,6 @@ from kakarot.constants import Constants
 // @author @LucasLvy @abdelhamidbakhta
 // @custom:namespace MemoryOperations
 namespace MemoryOperations {
-    const GAS_COST_MLOAD = 3;
-    const GAS_COST_MSTORE = 3;
-    const GAS_COST_PC = 2;
-    const GAS_COST_MSIZE = 2;
-    const GAS_COST_JUMP = 8;
-    const GAS_COST_JUMPI = 10;
-    const GAS_COST_JUMPDEST = 1;
-    const GAS_COST_POP = 2;
-    const GAS_COST_MSTORE8 = 3;
-    const GAS_COST_SSTORE = 100;
-    const GAS_COST_SLOAD = 100;
-    const GAS_COST_GAS = 2;
-
     // @notice MLOAD operation
     // @dev Load word from memory and push to stack.
     // @custom:since Frontier
@@ -55,12 +42,6 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        if (ctx.stack.size == 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         let stack = ctx.stack;
 
         // Stack input:
@@ -77,8 +58,6 @@ namespace MemoryOperations {
         let ctx = ExecutionContext.update_memory(ctx, new_memory);
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MLOAD + cost);
 
         return ctx;
     }
@@ -100,13 +79,6 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let stack_underflow = is_le(ctx.stack.size, 1);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         let stack = ctx.stack;
 
         // Stack input:
@@ -123,8 +95,6 @@ namespace MemoryOperations {
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MSTORE);
         return ctx;
     }
 
@@ -140,19 +110,10 @@ namespace MemoryOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
-            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         let stack: model.Stack* = Stack.push_uint128(ctx.stack, ctx.program_counter - 1);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_PC);
         return ctx;
     }
 
@@ -169,19 +130,10 @@ namespace MemoryOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
-            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         let stack = Stack.push_uint128(ctx.stack, ctx.memory.bytes_len);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MSIZE);
         return ctx;
     }
 
@@ -199,23 +151,9 @@ namespace MemoryOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-
-        if (ctx.stack.size == 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
-        let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - offset: offset in the deployed code where execution will continue from
-        let (stack, offset) = Stack.pop(stack);
-
-        let ctx = ExecutionContext.jump(ctx, offset.low);
+        let (stack, offset) = Stack.pop(ctx.stack);
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_JUMP);
+        let ctx = ExecutionContext.jump(ctx, offset.low);
         return ctx;
     }
 
@@ -236,13 +174,6 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let stack_underflow = is_le(ctx.stack.size, 1);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         let stack = ctx.stack;
 
         // Stack input:
@@ -253,7 +184,6 @@ namespace MemoryOperations {
         let skip_condition = popped[1];
 
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_JUMPI);
 
         // If skip_condition is 0, then don't jump
         let (skip_condition_is_zero) = uint256_eq(Uint256(0, 0), skip_condition);
@@ -266,7 +196,7 @@ namespace MemoryOperations {
     }
 
     // @notice JUMPDEST operation
-    // @dev Serves as a check that JUMP or JUMPI was executed correctly. We only update gas used.
+    // @dev Serves as a check that JUMP or JUMPI was executed correctly.
     // @custom:since Frontier
     // @custom:group Stack Memory Storage and Flow operations.
     // @custom:stack_produced_elements 0
@@ -279,9 +209,6 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_JUMPDEST);
-
         return ctx;
     }
 
@@ -299,14 +226,6 @@ namespace MemoryOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-
-        if (ctx.stack.size == 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         // Get stack from context.
         let stack: model.Stack* = ctx.stack;
 
@@ -315,8 +234,6 @@ namespace MemoryOperations {
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_POP);
         return ctx;
     }
 
@@ -336,13 +253,6 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-
-        let stack_underflow = is_le(ctx.stack.size, 1);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
 
         let stack = ctx.stack;
 
@@ -368,8 +278,6 @@ namespace MemoryOperations {
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_MSTORE8);
         return ctx;
     }
 
@@ -396,13 +304,6 @@ namespace MemoryOperations {
             return ctx;
         }
 
-        let stack_underflow = is_le(ctx.stack.size, 1);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         let (stack, popped) = Stack.pop_n(self=ctx.stack, n=2);
 
         let key = popped;  // Uint256*
@@ -410,7 +311,6 @@ namespace MemoryOperations {
         let state = State.write_storage(ctx.state, ctx.call_context.address, key, value);
         let ctx = ExecutionContext.update_state(ctx, state);
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_SSTORE);
         return ctx;
     }
 
@@ -430,12 +330,6 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-
-        if (ctx.stack.size == 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
 
         let (stack, key) = Stack.pop(ctx.stack);
         let (state, value) = State.read_storage(ctx.state, ctx.call_context.address, key);
@@ -460,25 +354,16 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-
-        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
-            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         // Get stack from context.
         let stack: model.Stack* = ctx.stack;
 
         // Compute remaining gas.
-        let remaining_gas = ctx.call_context.gas_limit - ctx.gas_used - GAS_COST_GAS;
+        let remaining_gas = ctx.call_context.gas_limit - ctx.gas_used;
         let stack: model.Stack* = Stack.push_uint128(ctx.stack, remaining_gas);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_GAS);
         return ctx;
     }
 }

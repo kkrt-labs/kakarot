@@ -20,9 +20,6 @@ from utils.utils import Helpers
 // @title Logging operations opcodes.
 // @notice This file contains the functions to execute for logging operations opcodes.
 namespace LoggingOperations {
-    // Define constants.
-    const GAS_LOG_STATIC = 350;
-
     // @notice Generic logging operation
     // @dev Append log record with n topics.
     // @custom:since Frontier
@@ -44,23 +41,9 @@ namespace LoggingOperations {
             return ctx;
         }
 
-        let out_of_gas = is_le(ctx.call_context.gas_limit, ctx.gas_used + GAS_LOG_STATIC - 1);
-        if (out_of_gas != 0) {
-            let (revert_reason_len, revert_reason) = Errors.outOfGas();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         // See evm.cairo, pc is increased before entering the opcode
         let opcode_number = [ctx.call_context.bytecode + ctx.program_counter - 1];
         let topics_len = opcode_number - 0xa0;
-
-        let stack_underflow = is_le(ctx.stack.size, topics_len + 1);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
 
         // Get stack from context.
         let stack: model.Stack* = ctx.stack;
@@ -86,8 +69,6 @@ namespace LoggingOperations {
         // Update context stack.
         let ctx = ExecutionContext.update_memory(ctx, memory);
 
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, gas_cost + GAS_LOG_STATIC);
         return ctx;
     }
 }

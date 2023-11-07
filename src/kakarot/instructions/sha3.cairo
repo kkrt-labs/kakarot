@@ -23,8 +23,6 @@ from utils.utils import Helpers
 // @author @LucasLvy
 // @custom:namespace Sha3
 namespace Sha3 {
-    const GAS_COST_SHA3 = 30;
-
     // @notice SHA3.
     // @dev Hashes n memory elements at m memory offset.
     // @custom:since Frontier
@@ -41,13 +39,6 @@ namespace Sha3 {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-
-        let stack_underflow = is_le(ctx.stack.size, 1);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
 
         let stack = ctx.stack;
 
@@ -89,9 +80,6 @@ namespace Sha3 {
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_memory(ctx, memory);
-
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_SHA3);
 
         return ctx;
     }

@@ -31,7 +31,6 @@ func test__exec_pc__should_update_after_incrementing{
     let result = MemoryOperations.exec_pc(ctx);
 
     // Then
-    assert result.gas_used = 2;
     assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
     assert index0.low = increment - 1;
@@ -61,7 +60,6 @@ func test__exec_pop_should_pop_an_item_from_execution_context{
     let result = MemoryOperations.exec_pop(ctx);
 
     // Then
-    assert result.gas_used = 2;
     assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
     assert_uint256_eq([index0], Uint256(1, 0));
@@ -93,12 +91,9 @@ func test__exec_mload_should_load_a_value_from_memory{
     let ctx = ExecutionContext.update_stack(ctx, stack);
 
     // When
-    local gas_used_before = ctx.gas_used;
     let result = MemoryOperations.exec_mload(ctx);
-    local gas_used = result.gas_used - gas_used_before;
 
     // Then
-    assert gas_used = 3;
     assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
     assert_uint256_eq([index0], Uint256(1, 0));
@@ -131,12 +126,9 @@ func test__exec_mload_should_load_a_value_from_memory_with_memory_expansion{
     let ctx = ExecutionContext.update_stack(ctx, stack);
 
     // When
-    local gas_used_before = ctx.gas_used;
     let result = MemoryOperations.exec_mload(ctx);
-    local gas_used = result.gas_used - gas_used_before;
 
     // Then
-    assert gas_used = 6;
     assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
     assert_uint256_eq([index0], Uint256(0, 1));
@@ -172,7 +164,6 @@ func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_ms
     let result = MemoryOperations.exec_mload(ctx);
 
     // Then
-    assert result.gas_used = 73;
     assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
     assert_uint256_eq([index0], Uint256(0, 0));
@@ -194,15 +185,12 @@ func test__exec_gas_should_return_remaining_gas{
     let ctx = ExecutionContext.update_stack(ctx, stack);
 
     // When
-    local gas_used_before = ctx.gas_used;
     let result = MemoryOperations.exec_gas(ctx);
-    local gas_used = result.gas_used - gas_used_before;
 
     // Then
-    assert gas_used = 2;
     assert result.stack.size = 1;
     let (stack, actual_remaining_gas) = Stack.peek(result.stack, 0);
-    let expected_remaining_gas = Constants.TRANSACTION_GAS_LIMIT - gas_used;
+    let expected_remaining_gas = Constants.TRANSACTION_GAS_LIMIT - result.gas_used;
     let expected_remaining_gas_uint256 = Uint256(expected_remaining_gas, 0);
     assert_uint256_eq([actual_remaining_gas], expected_remaining_gas_uint256);
     return ();

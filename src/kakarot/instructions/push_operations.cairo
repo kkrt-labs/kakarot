@@ -21,8 +21,6 @@ from kakarot.stack import Stack
 
 // @title Push operations opcodes.
 namespace PushOperations {
-    const BASE_GAS_COST = 2;
-
     func exec_push{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -31,26 +29,9 @@ namespace PushOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
-            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         // See evm.cairo, pc is increased before entering the opcode
         let opcode_number = [ctx.call_context.bytecode + ctx.program_counter - 1];
         let i = opcode_number - 0x5f;
-        let is_not_push_0 = is_not_zero(i);
-        let gas = BASE_GAS_COST + is_not_push_0;
-
-        let out_of_gas = is_le(ctx.call_context.gas_limit, ctx.gas_used + gas - 1);
-        if (out_of_gas != 0) {
-            let (revert_reason_len, revert_reason) = Errors.outOfGas();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
-        let ctx = ExecutionContext.increment_gas_used(ctx, gas);
 
         // Copy code slice
         let pc = ctx.program_counter;

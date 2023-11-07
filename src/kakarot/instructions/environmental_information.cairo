@@ -26,24 +26,6 @@ from kakarot.constants import Constants
 // @title Environmental information opcodes.
 // @notice This file contains the functions to execute for environmental information opcodes.
 namespace EnvironmentalInformation {
-    // Define constants.
-    const GAS_COST_ADDRESS = 2;
-    const GAS_COST_BALANCE = 100;
-    const GAS_COST_ORIGIN = 2;
-    const GAS_COST_CALLER = 2;
-    const GAS_COST_CALLVALUE = 2;
-    const GAS_COST_CALLDATALOAD = 3;
-    const GAS_COST_CALLDATASIZE = 2;
-    const GAS_COST_CALLDATACOPY = 3;
-    const GAS_COST_CODESIZE = 2;
-    const GAS_COST_CODECOPY = 3;
-    const GAS_COST_GASPRICE = 2;
-    const GAS_COST_EXTCODESIZE = 2600;
-    const GAS_COST_EXTCODECOPY = 2600;
-    const GAS_COST_RETURNDATASIZE = 2;
-    const GAS_COST_RETURNDATACOPY = 3;
-    const GAS_COST_EXTCODEHASH = 2600;
-
     // @notice ADDRESS operation.
     // @dev Get address of currently executing account.
     // @custom:since Frontier
@@ -59,22 +41,12 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-
-        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
-            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         // Get the current execution contract from the context,
         // convert to Uint256, and push to Stack.
         let address = Helpers.to_uint256(ctx.call_context.address.evm);
-        let stack: model.Stack* = Stack.push(ctx.stack, address);
+        let stack = Stack.push(ctx.stack, address);
         // Update the execution context.
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_ADDRESS);
         return ctx;
     }
 
@@ -95,12 +67,6 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        if (ctx.stack.size == 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         let (stack, address_uint256) = Stack.pop(ctx.stack);
 
         let evm_address = Helpers.uint256_to_felt([address_uint256]);
@@ -111,7 +77,6 @@ namespace EnvironmentalInformation {
 
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_state(ctx, state);
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_BALANCE);
         return ctx;
     }
 
@@ -130,21 +95,10 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-
-        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
-            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         let origin_address = Helpers.to_uint256(ctx.call_context.origin.evm);
 
-        // Update Context stack
-        let stack: model.Stack* = Stack.push(self=ctx.stack, element=origin_address);
+        let stack = Stack.push(self=ctx.stack, element=origin_address);
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_ORIGIN);
         return ctx;
     }
 
@@ -163,14 +117,6 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-
-        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
-            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         let calling_context = ctx.call_context.calling_context;
         let is_root = ExecutionContext.is_empty(calling_context);
         if (is_root == 0) {
@@ -179,13 +125,8 @@ namespace EnvironmentalInformation {
             tempvar caller = ctx.call_context.origin.evm;
         }
         let evm_address_uint256 = Helpers.to_uint256(caller);
-        let stack: model.Stack* = Stack.push(self=ctx.stack, element=evm_address_uint256);
-
-        // Update the execution context.
-        // Update context stack.
+        let stack = Stack.push(ctx.stack, evm_address_uint256);
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CALLER);
         return ctx;
     }
 
@@ -203,20 +144,10 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
-            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         let uint256_value = Helpers.to_uint256(ctx.call_context.value);
-        let stack: model.Stack* = Stack.push(ctx.stack, uint256_value);
+        let stack = Stack.push(ctx.stack, uint256_value);
 
-        // Update the execution context.
-        // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLVALUE);
         return ctx;
     }
 
@@ -237,12 +168,6 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        if (ctx.stack.size == 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         let stack = ctx.stack;
 
         // Stack input:
@@ -261,12 +186,10 @@ namespace EnvironmentalInformation {
         let uint256_sliced_calldata = Helpers.bytes32_to_uint256(sliced_calldata);
 
         // Push CallData word onto stack
-        let stack: model.Stack* = Stack.push_uint256(stack, uint256_sliced_calldata);
+        let stack = Stack.push_uint256(stack, uint256_sliced_calldata);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CALLDATALOAD);
         return ctx;
     }
 
@@ -285,19 +208,11 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
-            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
-        let stack: model.Stack* = Stack.push_uint128(ctx.stack, ctx.call_context.calldata_len);
+        let stack = Stack.push_uint128(ctx.stack, ctx.call_context.calldata_len);
 
         // Update the execution context.
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLDATASIZE);
         return ctx;
     }
 
@@ -317,13 +232,6 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-
-        let stack_underflow = is_le(ctx.stack.size, 2);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
 
         let stack = ctx.stack;
 
@@ -356,8 +264,6 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_memory(ctx, memory);
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CALLDATACOPY);
         return ctx;
     }
 
@@ -376,22 +282,14 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
-            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         // Get the bytecode size.
         let code_size = Helpers.to_uint256(ctx.call_context.bytecode_len);
 
-        let stack: model.Stack* = Stack.push_uint128(ctx.stack, ctx.call_context.bytecode_len);
+        let stack = Stack.push_uint128(ctx.stack, ctx.call_context.bytecode_len);
 
         // Update the execution context.
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_CODESIZE);
         return ctx;
     }
 
@@ -411,13 +309,6 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-
-        let stack_underflow = is_le(ctx.stack.size, 2);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
 
         let stack = ctx.stack;
 
@@ -449,8 +340,6 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_memory(ctx, memory);
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CODECOPY);
         return ctx;
     }
 
@@ -469,21 +358,11 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-
-        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
-            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         // Get the gasprice.
-        let stack: model.Stack* = Stack.push_uint128(ctx.stack, ctx.call_context.gas_price);
+        let stack = Stack.push_uint128(ctx.stack, ctx.call_context.gas_price);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_GASPRICE);
 
         return ctx;
     }
@@ -505,12 +384,6 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        if (ctx.stack.size == 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         let stack = ctx.stack;
 
         // Stack input:
@@ -526,11 +399,6 @@ namespace EnvironmentalInformation {
 
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_state(ctx, state);
-
-        // TODO:distinction between warm and cold addresses determines dynamic cost
-        // for now we assume a cold address, which sets dynamic cost to 2600
-        // see: https://www.evm.codes/about#accesssets
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_EXTCODESIZE);
 
         return ctx;
     }
@@ -551,13 +419,6 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-
-        let stack_underflow = is_le(ctx.stack.size, 3);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
 
         let stack = ctx.stack;
 
@@ -600,17 +461,6 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_state(ctx, state);
 
-        // Increment gas used.
-        let (minimum_word_size) = Helpers.minimum_word_count(size.low);
-
-        // TODO:distinction between warm and cold addresses determines `address_access_cost`
-        // for now we assume a cold address, which sets `address_access_cost` to 2600
-        // see: https://www.evm.codes/about#accesssets
-
-        let ctx = ExecutionContext.increment_gas_used(
-            self=ctx, inc_value=3 * minimum_word_size + memory_expansion_cost + GAS_COST_EXTCODECOPY
-        );
-
         return ctx;
     }
 
@@ -629,20 +479,12 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        if (ctx.stack.size == Constants.STACK_MAX_DEPTH) {
-            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
         // Get return data size.
-        let stack: model.Stack* = Stack.push_uint128(ctx.stack, ctx.return_data_len);
+        let stack = Stack.push_uint128(ctx.stack, ctx.return_data_len);
 
         // Update the execution context.
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_RETURNDATASIZE);
         return ctx;
     }
 
@@ -662,13 +504,6 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-
-        let stack_underflow = is_le(ctx.stack.size, 2);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
 
         let stack = ctx.stack;
 
@@ -699,8 +534,6 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_memory(ctx, memory);
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        // Increment gas used.
-        let ctx = ExecutionContext.increment_gas_used(ctx, GAS_COST_CALLDATACOPY);
         return ctx;
     }
 
@@ -720,12 +553,6 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
-
-        if (ctx.stack.size == 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
 
         let stack = ctx.stack;
 
@@ -765,9 +592,6 @@ namespace EnvironmentalInformation {
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_state(ctx, state);
 
-        // Increment gas used (COLD ACCESS)
-        // see: https://www.evm.codes/about#accesssets
-        let ctx = ExecutionContext.increment_gas_used(self=ctx, inc_value=GAS_COST_EXTCODEHASH);
         return ctx;
     }
 }
