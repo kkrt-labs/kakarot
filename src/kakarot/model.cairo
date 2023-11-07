@@ -143,10 +143,17 @@ namespace model {
     }
 
     // @dev Stores the constant data of an opcode
+    // @dev Stores the constant data of an opcode
+    // @param number The opcode number
     // @param gas The minimum gas used by the opcode (not including possible dynamic gas)
-    // @param stack_input The number of parameters popped from the stack
+    // @param stack_input The number of inputs popped from the stack.
+    // @param stack_size_min The minimal size of the Stack for this opcode.
+    // @param stack_size_diff The difference between the stack size after and before
     struct Opcode {
+        number: felt,
         gas: felt,
         stack_input: felt,
+        stack_size_min: felt,
+        stack_size_diff: felt,
     }
 }

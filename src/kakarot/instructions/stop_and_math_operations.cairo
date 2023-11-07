@@ -27,6 +27,7 @@ from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
 
+from kakarot.constants import opcodes_label
 from kakarot.model import model
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
@@ -73,19 +74,6 @@ namespace StopAndMathOperations {
         assert opcode = cast(
             pc + (opcodes_label - pc_label) + opcode_number * model.Opcode.SIZE, model.Opcode*
         );
-
-        let stack_underflow = is_le(ctx.stack.size, opcode.stack_input - 1);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-        let out_of_gas = is_le(ctx.call_context.gas_limit, ctx.gas_used + opcode.gas - 1);
-        if (out_of_gas != 0) {
-            let (revert_reason_len, revert_reason) = Errors.outOfGas();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
 
         let (local stack, popped) = Stack.pop_n(ctx.stack, opcode.stack_input);
 
@@ -148,7 +136,6 @@ namespace StopAndMathOperations {
         // Finalize opcode
         let stack = Stack.push_uint256(stack, result);
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        let ctx = ExecutionContext.increment_gas_used(ctx, opcode.gas);
         return ctx;
 
         ADD:
@@ -471,95 +458,3 @@ namespace StopAndMathOperations {
         jmp end;
     }
 }
-
-// See model.Opcode
-// gas
-// stack_input
-opcodes_label:
-// STOP;
-dw 0;
-dw 0;
-// ADD;
-dw 3;
-dw 2;
-// MUL;
-dw 5;
-dw 2;
-// SUB;
-dw 3;
-dw 2;
-// DIV;
-dw 5;
-dw 2;
-// SDIV;
-dw 5;
-dw 2;
-// MOD;
-dw 5;
-dw 2;
-// SMOD;
-dw 5;
-dw 2;
-// ADDMOD;
-dw 8;
-dw 3;
-// MULMOD;
-dw 8;
-dw 3;
-// EXP;
-dw 10;
-dw 2;
-// SIGNEXTEND;
-dw 5;
-dw 2;
-// INVALID
-dw 0;
-dw 0;
-dw 0;
-dw 0;
-dw 0;
-dw 0;
-dw 0;
-dw 0;
-// LT
-dw 3;
-dw 2;
-// GT
-dw 3;
-dw 2;
-// SLT
-dw 3;
-dw 2;
-// SGT
-dw 3;
-dw 2;
-// EQ
-dw 3;
-dw 2;
-// ISZERO
-dw 3;
-dw 1;
-// AND
-dw 3;
-dw 2;
-// OR
-dw 3;
-dw 2;
-// XOR
-dw 3;
-dw 2;
-// NOT
-dw 3;
-dw 1;
-// BYTE
-dw 3;
-dw 2;
-// SHL
-dw 3;
-dw 2;
-// SHR
-dw 3;
-dw 2;
-// SAR
-dw 3;
-dw 2;

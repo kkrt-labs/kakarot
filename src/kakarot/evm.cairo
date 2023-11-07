@@ -3,19 +3,14 @@
 %lang starknet
 
 // Starkware dependencies
-from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.invoke import invoke
-from starkware.cairo.common.math import assert_nn
-from starkware.cairo.common.math_cmp import is_le, is_not_zero
-from starkware.cairo.common.memcpy import memcpy
-from starkware.cairo.common.registers import get_ap
-from starkware.cairo.common.registers import get_label_location
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
 
 // Internal dependencies
 from kakarot.account import Account
+from kakarot.constants import opcodes_label, Constants
 from kakarot.errors import Errors
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.block_information import BlockInformation
@@ -56,7 +51,7 @@ namespace EVM {
     // @dev The function uses an internal jump table to execute the corresponding opcode
     // @param ctx The pointer to the execution context.
     // @return ExecutionContext The pointer to the updated execution context.
-    func decode_and_execute{
+    func exec_opcode{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
@@ -64,24 +59,60 @@ namespace EVM {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Retrieve the current program counter.
+        // Get the current opcode number
         let pc = ctx.program_counter;
-        local opcode;
+        local opcode: model.Opcode*;
 
         let is_pc_ge_code_len = is_le(ctx.call_context.bytecode_len, pc);
-
+        local opcode_number;
         if (is_pc_ge_code_len != FALSE) {
-            assert opcode = 0;
+            assert opcode_number = 0;
         } else {
-            assert opcode = [ctx.call_context.bytecode + pc];
+            assert opcode_number = [ctx.call_context.bytecode + pc];
         }
+
+        // Get the corresponding opcode data
+        // To cast the codeoffset opcodes_label to a model.Opcode*, we need to use it to offset
+        // the current pc. We get the pc from the `get_fp_and_pc` util and assign a codeoffset (pc_label) to it.
+        // In short, this boils down to: opcode = pc + offset - pc = offset
+        let (_, cairo_pc) = get_fp_and_pc();
+
+        pc_label:
+        assert opcode = cast(
+            cairo_pc + (opcodes_label - pc_label) + opcode_number * model.Opcode.SIZE, model.Opcode*
+        );
+
+        // Check stack over/under flow
+        let stack_underflow = is_le(ctx.stack.size, opcode.stack_size_min - 1);
+        if (stack_underflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+        let stack_overflow = is_le(
+            Constants.STACK_MAX_DEPTH, ctx.stack.size + opcode.stack_size_diff + 1
+        );
+        if (stack_overflow != 0) {
+            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
+        // Check static gas
+        let out_of_gas = is_le(ctx.call_context.gas_limit, ctx.gas_used + opcode.gas - 1);
+        if (out_of_gas != 0) {
+            let (revert_reason_len, revert_reason) = Errors.outOfGas();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
+        // Update ctx
+        let ctx = ExecutionContext.increment_program_counter(self=ctx, inc_value=1);
+        let ctx = ExecutionContext.increment_gas_used(ctx, opcode.gas);
 
         // Compute the corresponding offset in the jump table:
         // count 1 for "next line" and 3 steps per opcode: call, opcode, ret
-        tempvar offset = 1 + 3 * opcode;
-
-        // move program counter + 1 after opcode is read
-        let ctx = ExecutionContext.increment_program_counter(self=ctx, inc_value=1);
+        tempvar offset = 1 + 3 * opcode_number;
 
         // Prepare arguments
         [ap] = syscall_ptr, ap++;
@@ -634,7 +665,7 @@ namespace EVM {
             }
         }
 
-        let ctx = decode_and_execute(ctx);
+        let ctx = exec_opcode(ctx);
         return run(ctx);
     }
 
