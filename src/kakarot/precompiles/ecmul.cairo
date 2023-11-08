@@ -33,7 +33,7 @@ namespace PrecompileEcMul {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(_address: felt, input_len: felt, input: felt*) -> (
-        output_len: felt, output: felt*, gas_used: felt
+        output_len: felt, output: felt*, gas_used: felt, reverted: felt
     ) {
         alloc_locals;
 
@@ -50,6 +50,6 @@ namespace PrecompileEcMul {
         // We fill `output + bytes_x_len` ptr with `bytes_y` elements
         Helpers.fill_array(bytes_y_len, bytes_y, output + bytes_x_len);
 
-        return (G1POINT_BYTES_LEN * 2, output, GAS_COST_EC_MUL);
+        return (G1POINT_BYTES_LEN * 2, output, GAS_COST_EC_MUL, 0);
     }
 }

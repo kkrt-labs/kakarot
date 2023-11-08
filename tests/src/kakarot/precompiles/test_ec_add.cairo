@@ -3,7 +3,6 @@
 %lang starknet
 
 // Starkware dependencies
-from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
@@ -50,7 +49,7 @@ func test__ecadd_impl{
     Helpers.fill_array(
         bytes_expected_y_len, bytes_expected_y, bytes_expected_result + bytes_expected_x_len
     );
-    let (output_len, output: felt*, gas_used) = PrecompileEcAdd.run(
+    let (output_len, output: felt*, gas_used, reverted) = PrecompileEcAdd.run(
         PrecompileEcAdd.PRECOMPILE_ADDRESS, calldata_len, calldata
     );
 

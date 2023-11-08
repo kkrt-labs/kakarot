@@ -13,6 +13,7 @@ from starkware.cairo.common.cairo_secp.signature import (
 
 // Internal dependencies
 from utils.utils import Helpers
+from kakarot.errors import Errors
 
 // @title EcRecover Precompile related functions.
 // @notice This file contains the logic required to run the ec_recover precompile
@@ -35,21 +36,22 @@ namespace PrecompileEcRecover {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(_address: felt, input_len: felt, input: felt*) -> (
-        output_len: felt, output: felt*, gas_used: felt
+        output_len: felt, output: felt*, gas_used: felt, reverted: felt
     ) {
         alloc_locals;
 
-        with_attr error_message(
-                "EcRecover: received wrong number of bytes in input: {input_len} instead of 4*32") {
-            assert input_len = 4 * 32;
+        if (input_len != 4 * 32) {
+            let (revert_reason_len, revert_reason) = Errors.precompileInputError();
+            return (revert_reason_len, revert_reason, 0, 1);
         }
 
         let hash = Helpers.bytes32_to_bigint(input);
         let v_uint256 = Helpers.bytes32_to_uint256(input + 32);
         let v = Helpers.uint256_to_felt(v_uint256);
 
-        with_attr error_message("EcRecover: Recovery identifier should be either 27 or 28") {
-            assert (v - 27) * (v - 28) = 0;
+        if ((v - 27) * (v - 28) != 0) {
+            let (revert_reason_len, revert_reason) = Errors.precompileFlagError();
+            return (revert_reason_len, revert_reason, 0, 1);
         }
 
         let r = Helpers.bytes32_to_bigint(input + 32 * 2);
@@ -68,6 +70,6 @@ namespace PrecompileEcRecover {
         let (output) = alloc();
         Helpers.split_word(public_address, 32, output);
 
-        return (32, output, GAS_COST_EC_RECOVER);
+        return (32, output, GAS_COST_EC_RECOVER, 0);
     }
 }

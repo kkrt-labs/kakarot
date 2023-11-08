@@ -43,7 +43,7 @@ namespace PrecompileRIPEMD160 {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(_address: felt, input_len: felt, input: felt*) -> (
-        output_len: felt, output: felt*, gas_used: felt
+        output_len: felt, output: felt*, gas_used: felt, reverted: felt
     ) {
         alloc_locals;
         let (local buf: felt*) = alloc();
@@ -76,7 +76,7 @@ namespace PrecompileRIPEMD160 {
 
         // 5. return bytes hash code.
         let (minimum_word_size) = Helpers.minimum_word_count(input_len);
-        return (32, arr_x - 12, 120 * minimum_word_size + GAS_COST_RIPEMD160);
+        return (32, arr_x - 12, 120 * minimum_word_size + GAS_COST_RIPEMD160, 0);
     }
 }
 

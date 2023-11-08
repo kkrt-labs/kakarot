@@ -15,24 +15,24 @@ from tests.utils.helpers import TestHelpers
 @external
 func test_should_fail_when_input_len_is_not_128{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
+}() -> (output_len: felt, output: felt*) {
     alloc_locals;
     let (input) = alloc();
     let input_len = 0;
-    PrecompileEcRecover.run(PrecompileEcRecover.PRECOMPILE_ADDRESS, input_len, input);
-    return ();
+    let result = PrecompileEcRecover.run(PrecompileEcRecover.PRECOMPILE_ADDRESS, input_len, input);
+    return (result.output_len, result.output);
 }
 
 @external
 func test_should_fail_when_recovery_identifier_is_neither_27_nor_28{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
+}() -> (output_len: felt, output: felt*) {
     alloc_locals;
     let (input) = alloc();
     let input_len = 128;
     TestHelpers.array_fill(input, input_len, 1);
-    PrecompileEcRecover.run(PrecompileEcRecover.PRECOMPILE_ADDRESS, input_len, input);
-    return ();
+    let result = PrecompileEcRecover.run(PrecompileEcRecover.PRECOMPILE_ADDRESS, input_len, input);
+    return (result.output_len, result.output);
 }
 
 @external
@@ -50,7 +50,7 @@ func test_should_return_evm_address_in_bytes32{
     // fill r, s
     TestHelpers.array_fill(input + 64, 64, 1);
 
-    let (output_len, output, gas) = PrecompileEcRecover.run(
+    let (output_len, output, gas, reverted) = PrecompileEcRecover.run(
         PrecompileEcRecover.PRECOMPILE_ADDRESS, input_len, input
     );
     assert output_len = 32;
@@ -203,7 +203,7 @@ func test_should_return_evm_address_for_playground_example{
     assert input[127] = 218;
     let input_len = 128;
 
-    let (output_len, output, gas) = PrecompileEcRecover.run(
+    let (output_len, output, gas, reverted) = PrecompileEcRecover.run(
         PrecompileEcRecover.PRECOMPILE_ADDRESS, input_len, input
     );
 

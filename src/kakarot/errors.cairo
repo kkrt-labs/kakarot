@@ -352,7 +352,7 @@ namespace Errors {
         assert [error + 24] = 108;  // l
         assert [error + 25] = 101;  // e
         assert [error + 26] = 32;  // " "
-        assert [error + 27] = address;  //
+        assert [error + 27] = '0' + address;  // convert uint address to str
         return (28, error);
     }
 
@@ -393,7 +393,7 @@ namespace Errors {
         assert [error + 31] = 108;  // l
         assert [error + 32] = 101;  // e
         assert [error + 33] = 32;  //
-        assert [error + 34] = address;  //
+        assert [error + 34] = '0' + address;  //
         return (35, error);
     }
 
@@ -498,5 +498,68 @@ namespace Errors {
         dw 'G';
         dw 'a';
         dw 's';
+    }
+
+    func precompileInputError() -> (error_len: felt, error: felt*) {
+        let (error) = get_label_location(precompile_input_error_message);
+        return (27, error);
+
+        precompile_input_error_message:
+        dw 'P';
+        dw 'r';
+        dw 'e';
+        dw 'c';
+        dw 'o';
+        dw 'm';
+        dw 'p';
+        dw 'i';
+        dw 'l';
+        dw 'e';
+        dw ':';
+        dw ' ';
+        dw 'w';
+        dw 'r';
+        dw 'o';
+        dw 'n';
+        dw 'g';
+        dw ' ';
+        dw 'i';
+        dw 'n';
+        dw 'p';
+        dw 'u';
+        dw 't';
+        dw '_';
+        dw 'l';
+        dw 'e';
+        dw 'n';
+    }
+
+    func precompileFlagError() -> (error_len: felt, error: felt*) {
+        let (error) = get_label_location(precompile_flag_error);
+        return (22, error);
+
+        precompile_flag_error:
+        dw 'P';
+        dw 'r';
+        dw 'e';
+        dw 'c';
+        dw 'o';
+        dw 'm';
+        dw 'p';
+        dw 'i';
+        dw 'l';
+        dw 'e';
+        dw ':';
+        dw ' ';
+        dw 'f';
+        dw 'l';
+        dw 'a';
+        dw 'g';
+        dw ' ';
+        dw 'e';
+        dw 'r';
+        dw 'r';
+        dw 'o';
+        dw 'r';
     }
 }

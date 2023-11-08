@@ -43,7 +43,7 @@ namespace PrecompileSHA256 {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(_address: felt, input_len: felt, input: felt*) -> (
-        output_len: felt, output: felt*, gas_used: felt
+        output_len: felt, output: felt*, gas_used: felt, reverted: felt
     ) {
         alloc_locals;
 
@@ -82,7 +82,7 @@ namespace PrecompileSHA256 {
             8, hash, 0, hash_bytes_array
         );
         let (minimum_word_size) = Helpers.minimum_word_count(input_len);
-        return (32, hash_bytes_array, 12 * minimum_word_size + GAS_COST_SHA256);
+        return (32, hash_bytes_array, 12 * minimum_word_size + GAS_COST_SHA256, 0);
     }
 }
 

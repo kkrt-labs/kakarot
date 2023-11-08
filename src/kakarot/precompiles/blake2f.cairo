@@ -12,6 +12,7 @@ from starkware.cairo.common.math_cmp import is_nn, is_le
 from starkware.cairo.common.bool import FALSE
 
 // Internal dependencies
+from kakarot.errors import Errors
 from utils.utils import Helpers
 
 // @title Blake2f Precompile related functions.
@@ -34,7 +35,7 @@ namespace PrecompileBlake2f {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(_address: felt, input_len: felt, input: felt*) -> (
-        output_len: felt, output: felt*, gas_used: felt
+        output_len: felt, output: felt*, gas_used: felt, reverted: felt
     ) {
         alloc_locals;
         local rounds_bytes_len = 4;
@@ -45,16 +46,16 @@ namespace PrecompileBlake2f {
         local f_bytes_offset = 212;
 
         // Check input length
-        with_attr error_message(
-                "Kakarot: blake2f failed with incorrect input_len: {input_len} instead of 213") {
-            assert input_len = 213;
+        if (input_len != 213) {
+            let (revert_reason_len, revert_reason) = Errors.precompileInputError();
+            return (revert_reason_len, revert_reason, 0, 1);
         }
 
         // Check the flag
         tempvar f = input[f_bytes_offset];
-        with_attr error_message(
-                "Kakarot: blake2f failed with incorrect flag: {f} instead of 0 or 1") {
-            assert f = f * f;
+        if (f != f * f) {
+            let (revert_reason_len, revert_reason) = Errors.precompileFlagError();
+            return (revert_reason_len, revert_reason, 0, 1);
         }
 
         let rounds = Helpers.load_word(rounds_bytes_len, input);
@@ -81,7 +82,7 @@ namespace PrecompileBlake2f {
         Helpers.split_word_little(compressed[6], word_bytes_len, output + 6 * word_bytes_len);
         Helpers.split_word_little(compressed[7], word_bytes_len, output + 7 * word_bytes_len);
 
-        return (word_bytes_len * 8, output, rounds);
+        return (word_bytes_len * 8, output, rounds, 0);
     }
 }
 

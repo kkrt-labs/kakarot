@@ -26,7 +26,7 @@ func test__modexp_impl{
 }(data_len: felt, data: felt*) -> (result: felt, gas_cost: felt) {
     alloc_locals;
 
-    let (output_len, output, gas_used) = PrecompileModExpUint256.run(
+    let (output_len, output, gas_used, reverted) = PrecompileModExpUint256.run(
         PrecompileModExpUint256.PRECOMPILE_ADDRESS, data_len, data
     );
 
