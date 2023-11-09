@@ -5,7 +5,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
-from starkware.cairo.common.dict import dict_read, dict_write
+from starkware.cairo.common.dict import dict_read, dict_write, dict_squash
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_update, hash_felts
 from starkware.cairo.common.math import assert_not_zero
@@ -13,8 +13,7 @@ from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256, uint256_add, uint256_sub, uint256_le
 from starkware.starknet.common.storage import normalize_address
-from starkware.starknet.common.syscalls import call_contract
-from starkware.starknet.common.syscalls import emit_event
+from starkware.starknet.common.syscalls import call_contract, emit_event, get_contract_address
 
 from kakarot.account import Account
 from kakarot.storages import native_token_address, contract_account_class_hash
@@ -122,6 +121,7 @@ namespace State {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(self: Summary*) {
+        alloc_locals;
         // Accounts
         Internals._commit_accounts(self.accounts_start, self.accounts);
 
@@ -130,7 +130,11 @@ namespace State {
 
         // Transfers
         let (native_token_address_) = native_token_address.read();
-        Internals._transfer_eth(native_token_address_, self.transfers_len, self.transfers);
+        let accounts = self.accounts;
+        Internals._transfer_eth{accounts=accounts}(
+            native_token_address_, self.transfers_len, self.transfers
+        );
+        dict_squash(self.accounts_start, accounts);
 
         return ();
     }
@@ -435,17 +439,34 @@ namespace Internals {
     //      Kakarot is not authorized for accounts that are created and SELDESTRUCT in the same transaction
     // @param transfers_len The length of the transfers array.
     // @param transfers The array of Transfer.
-    func _transfer_eth{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        token_address: felt, transfers_len: felt, transfers: model.Transfer*
-    ) {
+    func _transfer_eth{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, accounts: DictAccess*
+    }(token_address: felt, transfers_len: felt, transfers: model.Transfer*) {
         if (transfers_len == 0) {
             return ();
         }
 
         let transfer = [transfers];
-        IERC20.transferFrom(
-            token_address, transfer.sender.starknet, transfer.recipient.starknet, transfer.amount
-        );
+
+        let (kakarot_address) = get_contract_address();
+        let (pointer) = dict_read{dict_ptr=accounts}(key=transfer.recipient.starknet);
+        let recipient = cast(pointer, model.Account*);
+        let recipient_address = recipient.selfdestruct * kakarot_address + (
+            1 - recipient.selfdestruct
+        ) * transfer.recipient.starknet;
+        let (pointer) = dict_read{dict_ptr=accounts}(key=transfer.sender.starknet);
+        let sender = cast(pointer, model.Account*);
+        let sender_address = sender.selfdestruct * kakarot_address + (1 - sender.selfdestruct) *
+            transfer.sender.starknet;
+
+        // The default ERC20.transferFrom implementation raises even if sender = caller
+        // when there is no prior approval
+        if (sender_address == kakarot_address) {
+            IERC20.transfer(token_address, recipient_address, transfer.amount);
+            return _transfer_eth(token_address, transfers_len - 1, transfers + model.Transfer.SIZE);
+        }
+
+        IERC20.transferFrom(token_address, sender_address, recipient_address, transfer.amount);
         return _transfer_eth(token_address, transfers_len - 1, transfers + model.Transfer.SIZE);
     }
 }

@@ -126,6 +126,8 @@ namespace Kakarot {
         // Handle value
         let amount = Helpers.to_uint256(value);
         let transfer = model.Transfer(origin, address, [amount]);
+        let origin_account = Account.fetch_or_create(origin);
+        let state = State.set_account(state, origin, origin_account);
         let (state, success) = State.add_transfer(state, transfer);
 
         // Check collision
