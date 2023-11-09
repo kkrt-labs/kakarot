@@ -10,6 +10,7 @@ from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.math_cmp import is_le, is_not_zero
 
 // Internal dependencies
+from kakarot.account import Account
 from kakarot.constants import Constants
 from kakarot.execution_context import ExecutionContext
 from kakarot.errors import Errors
@@ -52,7 +53,8 @@ namespace Precompiles {
         // Build returned execution context
         let stack = Stack.init();
         let memory = Memory.init();
-        tempvar address = new model.Address(0, evm_address);
+        let (starknet_address) = Account.compute_starknet_address(evm_address);
+        tempvar address = new model.Address(starknet_address, evm_address);
         tempvar call_context = new model.CallContext(
             bytecode=cast(0, felt*),
             bytecode_len=0,

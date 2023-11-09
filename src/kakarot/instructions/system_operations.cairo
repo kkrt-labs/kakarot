@@ -10,7 +10,7 @@ from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, fina
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.memcpy import memcpy
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, uint256_eq
 from starkware.starknet.common.syscalls import (
     deploy as deploy_syscall,
     get_contract_address,
@@ -234,6 +234,11 @@ namespace SystemOperations {
 
         let (value_high, value_low) = split_felt(sub_ctx.call_context.value);
         tempvar value = Uint256(value_low, value_high);
+        let (is_zero) = uint256_eq(value, Uint256(0, 0));
+        if (is_zero != 0) {
+            return sub_ctx;
+        }
+
         let calling_context = sub_ctx.call_context.calling_context;
         let transfer = model.Transfer(
             calling_context.call_context.address, sub_ctx.call_context.address, value

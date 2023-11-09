@@ -337,7 +337,7 @@ async def eth_send_transaction(
     return receipt, response, success
 
 
-async def _compute_starknet_address(address: Union[str, int]):
+async def compute_starknet_address(address: Union[str, int]):
     evm_address = int(address, 16) if isinstance(address, str) else address
     kakarot_contract = await _get_starknet_contract("kakarot")
     return (
@@ -364,7 +364,7 @@ async def deploy_and_fund_evm_address(evm_address: str, amount: float):
 
 
 async def fund_address(address: Union[str, int], amount: float):
-    starknet_address = await _compute_starknet_address(address)
+    starknet_address = await compute_starknet_address(address)
     logger.info(
         f"ℹ️  Funding EVM address {address} at Starknet address {hex(starknet_address)}"
     )
@@ -421,7 +421,7 @@ async def store_bytecode(bytecode: Union[str, bytes], **kwargs):
 
 
 async def get_bytecode(address: Union[int, str]):
-    starknet_address = await _compute_starknet_address(address)
+    starknet_address = await compute_starknet_address(address)
     return bytes(
         (
             await _call_starknet(
