@@ -126,16 +126,17 @@ namespace Kakarot {
         // Handle value
         let amount = Helpers.to_uint256(value);
         let transfer = model.Transfer(origin, address, [amount]);
-        let origin_account = Account.fetch_or_create(origin);
-        let state = State.set_account(state, origin, origin_account);
         let (state, success) = State.add_transfer(state, transfer);
 
         // Check collision
         let is_registered = Account.is_registered(address.evm);
         let is_collision = is_registered * is_deploy_tx;
 
-        // Nonce is set to 1 in case of deploy_tx
+        // Handle accounts
+        let origin_account = Account.fetch_or_create(origin);
+        let state = State.set_account(state, origin, origin_account);
         let account = Account.fetch_or_create(address);
+        // Nonce is set to 1 in case of deploy_tx
         let nonce = account.nonce * (1 - is_deploy_tx) + is_deploy_tx;
         let account = Account.set_nonce(account, nonce);
         let state = State.set_account(state, address, account);
