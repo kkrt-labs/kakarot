@@ -67,7 +67,6 @@ namespace PrecompileEcRecover {
         );
 
         if (is_public_key_invalid != FALSE) {
-            let (empty) = alloc();
             return (32, input, GAS_COST_EC_RECOVER, 0);
         }
 
