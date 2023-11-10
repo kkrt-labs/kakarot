@@ -356,9 +356,7 @@ namespace SystemOperations {
 
         let (recipient_starknet_address) = Account.compute_starknet_address(recipient_evm_address);
         tempvar recipient = new model.Address(recipient_starknet_address, recipient_evm_address);
-        // Touching recipient to load its account in the state for final eth transfer
-        let (state, _) = State.get_account(ctx.state, recipient);
-        let (state, balance) = State.read_balance(state, ctx.call_context.address);
+        let (state, balance) = State.read_balance(ctx.state, ctx.call_context.address);
         let transfer = model.Transfer(
             sender=ctx.call_context.address, recipient=recipient, amount=balance
         );

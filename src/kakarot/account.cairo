@@ -120,11 +120,6 @@ namespace Account {
 
         // Case new Account
         if (starknet_account_exists == 0) {
-            // If SELFDESTRUCT, just do nothing
-            if (self.selfdestruct != 0) {
-                return ();
-            }
-
             // Just casting the Summary into an Account to apply has_code_or_nonce
             // cf Summary note: like an Account, but frozen after squashing all dicts
             // There is no reason to have has_code_or_nonce available in the public API
@@ -135,6 +130,11 @@ namespace Account {
                 // Deploy accounts
                 let (class_hash) = contract_account_class_hash.read();
                 deploy(class_hash, self.address);
+                // If SELFDESTRUCT, stops here to leave the account empty
+                if (self.selfdestruct != 0) {
+                    return ();
+                }
+
                 // Write bytecode
                 IContractAccount.write_bytecode(starknet_address, self.code_len, self.code);
                 // Set nonce
