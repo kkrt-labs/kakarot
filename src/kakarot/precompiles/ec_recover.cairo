@@ -86,9 +86,9 @@ namespace PrecompileEcRecover {
 
 namespace EcRecoverHelpers {
     func ec_point_equal(point_0: EcPoint, point_1: EcPoint) -> (is_equal: felt) {
-        if (point_0.x.d0 == point_1.x.d0 and point_0.x.d1 == point_1.x.d1 and
-            point_0.x.d2 == point_1.x.d2 and point_0.y.d0 == point_1.y.d0 and
-            point_0.y.d1 == point_1.y.d1 and point_0.y.d2 == point_1.y.d2) {
+        if (point_0.x.d0 == point_1.x.d0 and point_0.y.d0 == point_1.y.d0 and
+            point_0.x.d1 == point_1.x.d1 and point_0.y.d1 == point_1.y.d1 and
+            point_0.x.d2 == point_1.x.d2 and point_0.y.d2 == point_1.y.d2) {
             return (is_equal=1);
         }
         return (is_equal=0);
