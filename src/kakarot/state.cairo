@@ -449,15 +449,22 @@ namespace Internals {
         let transfer = [transfers];
 
         let (kakarot_address) = get_contract_address();
+
         let (pointer) = dict_read{dict_ptr=accounts}(key=transfer.recipient.starknet);
         let recipient = cast(pointer, model.Account*);
-        let recipient_address = recipient.selfdestruct * kakarot_address + (
-            1 - recipient.selfdestruct
+        let is_recipient_registered = Account.is_registered(recipient.address);
+        let use_kakarot_for_recipient = recipient.selfdestruct * (1 - is_recipient_registered);
+        let recipient_address = use_kakarot_for_recipient * kakarot_address + (
+            1 - use_kakarot_for_recipient
         ) * transfer.recipient.starknet;
+
         let (pointer) = dict_read{dict_ptr=accounts}(key=transfer.sender.starknet);
         let sender = cast(pointer, model.Account*);
-        let sender_address = sender.selfdestruct * kakarot_address + (1 - sender.selfdestruct) *
-            transfer.sender.starknet;
+        let is_sender_registered = Account.is_registered(sender.address);
+        let use_kakarot_for_sender = sender.selfdestruct * (1 - is_sender_registered);
+        let sender_address = use_kakarot_for_sender * kakarot_address + (
+            1 - use_kakarot_for_sender
+        ) * transfer.sender.starknet;
 
         // The default ERC20.transferFrom implementation raises even if sender = caller
         // when there is no prior approval
