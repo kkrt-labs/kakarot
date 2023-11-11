@@ -6,6 +6,9 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import finalize_keccak
+from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.cairo_secp.ec import EcPoint
+from starkware.cairo.common.cairo_secp.bigint import BigInt3
 from starkware.cairo.common.cairo_secp.signature import (
     recover_public_key,
     public_key_point_to_eth_address,
@@ -59,6 +62,13 @@ namespace PrecompileEcRecover {
 
         // v - 27, see recover_public_key comment
         let (public_key_point) = recover_public_key(hash, r, s, v - 27);
+        let (is_public_key_invalid) = EcRecoverHelpers.ec_point_equal(
+            public_key_point, EcPoint(BigInt3(0, 0, 0), BigInt3(0, 0, 0))
+        );
+
+        if (is_public_key_invalid != FALSE) {
+            return (32, input, GAS_COST_EC_RECOVER, 0);
+        }
 
         let (keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
@@ -71,5 +81,16 @@ namespace PrecompileEcRecover {
         Helpers.split_word(public_address, 32, output);
 
         return (32, output, GAS_COST_EC_RECOVER, 0);
+    }
+}
+
+namespace EcRecoverHelpers {
+    func ec_point_equal(point_0: EcPoint, point_1: EcPoint) -> (is_equal: felt) {
+        if (point_0.x.d0 == point_1.x.d0 and point_0.y.d0 == point_1.y.d0 and
+            point_0.x.d1 == point_1.x.d1 and point_0.y.d1 == point_1.y.d1 and
+            point_0.x.d2 == point_1.x.d2 and point_0.y.d2 == point_1.y.d2) {
+            return (is_equal=1);
+        }
+        return (is_equal=0);
     }
 }
