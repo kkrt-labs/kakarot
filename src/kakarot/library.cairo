@@ -129,11 +129,10 @@ namespace Kakarot {
         let (state, success) = State.add_transfer(state, transfer);
 
         // Check collision
-        let is_registered = Account.is_registered(address.evm);
-        let is_collision = is_registered * is_deploy_tx;
-
-        // Nonce is set to 1 in case of deploy_tx
         let account = Account.fetch_or_create(address);
+        let code_or_nonce = Account.has_code_or_nonce(account);
+        let is_collision = code_or_nonce * is_deploy_tx;
+        // Nonce is set to 1 in case of deploy_tx
         let nonce = account.nonce * (1 - is_deploy_tx) + is_deploy_tx;
         let account = Account.set_nonce(account, nonce);
         let state = State.set_account(state, address, account);
