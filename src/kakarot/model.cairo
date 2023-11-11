@@ -37,7 +37,6 @@ namespace model {
     //      felt with inlined structs. Hence one has eventually
     //      accounts := Dict<starknet_address, Account*>
     //      events := List<Event>
-    //      balances := Dict<starknet_address, Uint256*>
     //      transfers := List<Transfer>
     //      Unlike in standard EVM, we need to store the native token transfers as well since we use the
     //      Starknet's ETH and can't just set the balances
@@ -46,8 +45,6 @@ namespace model {
         accounts: DictAccess*,
         events_len: felt,
         events: Event*,
-        balances_start: DictAccess*,
-        balances: DictAccess*,
         transfers_len: felt,
         transfers: Transfer*,
     }
@@ -62,6 +59,7 @@ namespace model {
         storage_start: DictAccess*,
         storage: DictAccess*,
         nonce: felt,
+        balance: Uint256*,
         selfdestruct: felt,
     }
 

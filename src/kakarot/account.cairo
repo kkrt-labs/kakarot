@@ -28,7 +28,7 @@ from kakarot.storages import (
     native_token_address,
     contract_account_class_hash,
 )
-from kakarot.interfaces.interfaces import IAccount, IContractAccount
+from kakarot.interfaces.interfaces import IAccount, IContractAccount, IERC20
 from kakarot.model import model
 from utils.dict import default_dict_copy
 from utils.utils import Helpers
@@ -50,6 +50,7 @@ namespace Account {
         storage_start: DictAccess*,
         storage: DictAccess*,
         nonce: felt,
+        balance: Uint256*,
         selfdestruct: felt,
     }
 
@@ -61,7 +62,9 @@ namespace Account {
     // @param nonce The initial nonce
     // @return The updated state
     // @return The account
-    func init(address: felt, code_len: felt, code: felt*, nonce: felt) -> model.Account* {
+    func init(
+        address: felt, code_len: felt, code: felt*, nonce: felt, balance: Uint256*
+    ) -> model.Account* {
         let (storage_start) = default_dict_new(0);
         return new model.Account(
             address=address,
@@ -70,6 +73,7 @@ namespace Account {
             storage_start=storage_start,
             storage=storage_start,
             nonce=nonce,
+            balance=balance,
             selfdestruct=0,
         );
     }
@@ -85,6 +89,7 @@ namespace Account {
             storage_start=storage_start,
             storage=storage,
             nonce=self.nonce,
+            balance=self.balance,
             selfdestruct=self.selfdestruct,
         );
     }
@@ -101,6 +106,7 @@ namespace Account {
             storage_start=storage_start,
             storage=storage,
             nonce=self.nonce,
+            balance=self.balance,
             selfdestruct=self.selfdestruct,
         );
     }
@@ -177,10 +183,15 @@ namespace Account {
         alloc_locals;
         let starknet_account_exists = is_registered(address.evm);
 
+        let balance = read_balance(address);
+        tempvar balance_ptr = new Uint256(balance.low, balance.high);
+
         // Case touching a non deployed account
         if (starknet_account_exists == 0) {
             let (bytecode: felt*) = alloc();
-            let account = Account.init(address=address.evm, code_len=0, code=bytecode, nonce=0);
+            let account = Account.init(
+                address=address.evm, code_len=0, code=bytecode, nonce=0, balance=balance_ptr
+            );
             return account;
         }
 
@@ -191,7 +202,9 @@ namespace Account {
             // There is no way to access the nonce of an EOA currently
             // But putting 1 shouldn't have any impact and is safer than 0
             // since has_code_or_nonce is used in some places to trigger collision
-            let account = Account.init(address=address.evm, code_len=0, code=bytecode, nonce=1);
+            let account = Account.init(
+                address=address.evm, code_len=0, code=bytecode, nonce=1, balance=balance_ptr
+            );
             return account;
         }
 
@@ -199,7 +212,11 @@ namespace Account {
         let (bytecode_len, bytecode) = IAccount.bytecode(contract_address=address.starknet);
         let (nonce) = IContractAccount.get_nonce(contract_address=address.starknet);
         let account = Account.init(
-            address=address.evm, code_len=bytecode_len, code=bytecode, nonce=nonce
+            address=address.evm,
+            code_len=bytecode_len,
+            code=bytecode,
+            nonce=nonce,
+            balance=balance_ptr,
         );
         return account;
     }
@@ -231,6 +248,7 @@ namespace Account {
                 self.storage_start,
                 storage,
                 self.nonce,
+                self.balance,
                 self.selfdestruct,
             );
             return (self, value_ptr);
@@ -264,6 +282,7 @@ namespace Account {
             self.storage_start,
             storage,
             self.nonce,
+            self.balance,
             self.selfdestruct,
         );
         return (self, value_ptr);
@@ -287,6 +306,7 @@ namespace Account {
             self.storage_start,
             storage,
             self.nonce,
+            self.balance,
             self.selfdestruct,
         );
         return self;
@@ -307,6 +327,7 @@ namespace Account {
             storage_start=self.storage_start,
             storage=self.storage,
             nonce=self.nonce,
+            balance=self.balance,
             selfdestruct=self.selfdestruct,
         );
     }
@@ -322,6 +343,34 @@ namespace Account {
             storage_start=self.storage_start,
             storage=self.storage,
             nonce=nonce,
+            balance=self.balance,
+            selfdestruct=self.selfdestruct,
+        );
+    }
+
+    // @notice Read the balance of an account without loading the Account
+    // @param address The address of the account
+    // @return the Uint256 balance
+    func read_balance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        address: model.Address*
+    ) -> Uint256 {
+        let (native_token_address_) = native_token_address.read();
+        let (balance) = IERC20.balanceOf(native_token_address_, address.starknet);
+        return balance;
+    }
+
+    // @notice Set the balance of the Account
+    // @param self The pointer to the Account
+    // @param balance The new balance
+    func set_balance(self: model.Account*, balance: Uint256*) -> model.Account* {
+        return new model.Account(
+            address=self.address,
+            code_len=self.code_len,
+            code=self.code,
+            storage_start=self.storage_start,
+            storage=self.storage,
+            nonce=self.nonce,
+            balance=balance,
             selfdestruct=self.selfdestruct,
         );
     }
@@ -337,6 +386,7 @@ namespace Account {
             storage_start=self.storage_start,
             storage=self.storage,
             nonce=self.nonce,
+            balance=self.balance,
             selfdestruct=1,
         );
     }

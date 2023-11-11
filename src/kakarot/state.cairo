@@ -30,8 +30,6 @@ namespace State {
         accounts: DictAccess*,
         events_len: felt,
         events: model.Event*,
-        balances_start: DictAccess*,
-        balances: DictAccess*,
         transfers_len: felt,
         transfers: model.Transfer*,
     }
@@ -39,7 +37,6 @@ namespace State {
     // @dev Create a new empty State
     func init() -> model.State* {
         let (accounts_start) = default_dict_new(0);
-        let (balances_start) = default_dict_new(0);
         let (events: model.Event*) = alloc();
         let (transfers: model.Transfer*) = alloc();
         return new model.State(
@@ -47,8 +44,6 @@ namespace State {
             accounts=accounts_start,
             events_len=0,
             events=events,
-            balances_start=balances_start,
-            balances=balances_start,
             transfers_len=0,
             transfers=transfers,
         );
@@ -63,9 +58,6 @@ namespace State {
         // for each account, storage is a new memory segment
         Internals._copy_accounts{accounts=accounts}(accounts_start, accounts);
 
-        // balances values are immutable so no need for an Internals._copy_balances
-        let (balances_start, balances) = default_dict_copy(self.balances_start, self.balances);
-
         let (local events: felt*) = alloc();
         memcpy(dst=events, src=self.events, len=self.events_len * model.Event.SIZE);
 
@@ -77,8 +69,6 @@ namespace State {
             accounts=accounts,
             events_len=self.events_len,
             events=cast(events, model.Event*),
-            balances_start=balances_start,
-            balances=balances,
             transfers_len=self.transfers_len,
             transfers=cast(transfers, model.Transfer*),
         );
@@ -97,17 +87,11 @@ namespace State {
         // Squash again to keep only one Account.Summary per key
         let (local accounts_start, accounts) = default_dict_finalize(accounts_start, accounts, 0);
 
-        let (balances_start, balances) = default_dict_finalize(
-            self.balances_start, self.balances, 0
-        );
-
         return new Summary(
             accounts_start=accounts_start,
             accounts=accounts,
             events_len=self.events_len,
             events=self.events,
-            balances_start=balances_start,
-            balances=balances,
             transfers_len=self.transfers_len,
             transfers=self.transfers,
         );
@@ -157,8 +141,6 @@ namespace State {
                 accounts=accounts,
                 events_len=self.events_len,
                 events=self.events,
-                balances_start=self.balances_start,
-                balances=self.balances,
                 transfers_len=self.transfers_len,
                 transfers=self.transfers,
             );
@@ -173,8 +155,6 @@ namespace State {
                 accounts=accounts,
                 events_len=self.events_len,
                 events=self.events,
-                balances_start=self.balances_start,
-                balances=self.balances,
                 transfers_len=self.transfers_len,
                 transfers=self.transfers,
             );
@@ -196,8 +176,6 @@ namespace State {
             accounts=accounts,
             events_len=self.events_len,
             events=self.events,
-            balances_start=self.balances_start,
-            balances=self.balances,
             transfers_len=self.transfers_len,
             transfers=self.transfers,
         );
@@ -249,8 +227,6 @@ namespace State {
             accounts=self.accounts,
             events_len=self.events_len + 1,
             events=self.events,
-            balances_start=self.balances_start,
-            balances=self.balances,
             transfers_len=self.transfers_len,
             transfers=self.transfers,
         );
@@ -272,35 +248,35 @@ namespace State {
         let fp_and_pc = get_fp_and_pc();
         local __fp__: felt* = fp_and_pc.fp_val;
 
-        let (self, sender_balance_prev) = read_balance(self, transfer.sender);
-        let (success) = uint256_le(transfer.amount, sender_balance_prev);
+        let (self, sender) = get_account(self, transfer.sender);
+        let (success) = uint256_le(transfer.amount, [sender.balance]);
 
         if (success == 0) {
             return (self, success);
         }
 
-        let (self, recipient_balance_prev) = read_balance(self, transfer.recipient);
-        let (local sender_balance_new) = uint256_sub(sender_balance_prev, transfer.amount);
+        let (self, recipient) = get_account(self, transfer.recipient);
+
+        let (local sender_balance_new) = uint256_sub([sender.balance], transfer.amount);
         let (local recipient_balance_new, carry) = uint256_add(
-            recipient_balance_prev, transfer.amount
+            [recipient.balance], transfer.amount
         );
 
-        let balances = self.balances;
-        dict_write{dict_ptr=balances}(
-            key=transfer.sender.starknet, new_value=cast(&sender_balance_new, felt)
-        );
-        dict_write{dict_ptr=balances}(
-            key=transfer.recipient.starknet, new_value=cast(&recipient_balance_new, felt)
+        let sender = Account.set_balance(sender, &sender_balance_new);
+        let recipient = Account.set_balance(recipient, &recipient_balance_new);
+
+        let accounts = self.accounts;
+        dict_write{dict_ptr=accounts}(key=transfer.sender.starknet, new_value=cast(sender, felt));
+        dict_write{dict_ptr=accounts}(
+            key=transfer.recipient.starknet, new_value=cast(recipient, felt)
         );
         assert self.transfers[self.transfers_len] = transfer;
 
         tempvar state = new model.State(
             accounts_start=self.accounts_start,
-            accounts=self.accounts,
+            accounts=accounts,
             events_len=self.events_len,
             events=self.events,
-            balances_start=self.balances_start,
-            balances=balances,
             transfers_len=self.transfers_len + 1,
             transfers=self.transfers,
         );
@@ -314,36 +290,21 @@ namespace State {
     func read_balance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.State*, address: model.Address*
     ) -> (state: model.State*, balance: Uint256) {
-        let balances = self.balances;
-        let (pointer) = dict_read{dict_ptr=balances}(key=address.starknet);
+        let accounts = self.accounts;
+        let (pointer) = dict_read{dict_ptr=accounts}(key=address.starknet);
+        tempvar self = new model.State(
+            accounts_start=self.accounts_start,
+            accounts=accounts,
+            events_len=self.events_len,
+            events=self.events,
+            transfers_len=self.transfers_len,
+            transfers=self.transfers,
+        );
         if (pointer != 0) {
-            let balance_ptr = cast(pointer, Uint256*);
-            tempvar self = new model.State(
-                accounts_start=self.accounts_start,
-                accounts=self.accounts,
-                events_len=self.events_len,
-                events=self.events,
-                balances_start=self.balances_start,
-                balances=balances,
-                transfers_len=self.transfers_len,
-                transfers=self.transfers,
-            );
-            return (self, [balance_ptr]);
+            let account = cast(pointer, model.Account*);
+            return (self, [account.balance]);
         } else {
-            let (native_token_address_) = native_token_address.read();
-            let (balance) = IERC20.balanceOf(native_token_address_, address.starknet);
-            tempvar balance_ptr = new Uint256(balance.low, balance.high);
-            dict_write{dict_ptr=balances}(key=address.starknet, new_value=cast(balance_ptr, felt));
-            tempvar self = new model.State(
-                accounts_start=self.accounts_start,
-                accounts=self.accounts,
-                events_len=self.events_len,
-                events=self.events,
-                balances_start=self.balances_start,
-                balances=balances,
-                transfers_len=self.transfers_len,
-                transfers=self.transfers,
-            );
+            let balance = Account.read_balance(address);
             return (self, balance);
         }
     }
@@ -377,6 +338,12 @@ namespace Internals {
     ) {
         if (accounts_start == accounts_end) {
             return ();
+        }
+
+        // Skip account if it has indeed never been fetched
+        // but only touched for balance read
+        if (accounts_start.new_value == 0) {
+            return _finalize_accounts(accounts_start + DictAccess.SIZE, accounts_end);
         }
 
         let account = cast(accounts_start.new_value, model.Account*);
