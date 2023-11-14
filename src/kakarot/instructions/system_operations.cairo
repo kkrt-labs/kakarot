@@ -708,6 +708,8 @@ namespace CreateHelper {
         return (create2_address,);
     }
 
+    // @notice Pre-compute the evm address of a contract account before deploying it.
+    // @dev Side-effect: increment the nonce of the deployer account.
     func get_evm_address{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -724,6 +726,7 @@ namespace CreateHelper {
         alloc_locals;
         let (state, account) = State.get_account(state, address);
         let nonce = account.nonce;
+        // Increment nonce of deployer account
         let account = Account.set_nonce(account, nonce + 1);
         let state = State.set_account(state, address, account);
 
@@ -771,7 +774,7 @@ namespace CreateHelper {
             ctx.state, ctx.call_context.address, popped_len, popped, size.low, bytecode
         );
         let (starknet_contract_address) = Account.compute_starknet_address(evm_contract_address);
-        tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
+        tempvar target_address = new model.Address(starknet_contract_address, evm_contract_address);
 
         // Create Account with empty bytecode
         let (state, account) = State.get_account(state, address);
@@ -781,17 +784,31 @@ namespace CreateHelper {
         let ctx = ExecutionContext.update_memory(ctx, memory);
         let ctx = ExecutionContext.update_state(ctx, state);
 
+        // Handle collision
         if (is_collision != 0) {
-            let (revert_reason_len, revert_reason) = Errors.addressCollision();
-            tempvar ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            // push 0 to the stack and return early
+            let stack = Stack.push_uint128(ctx.stack, 0);
+            let ctx = ExecutionContext.update_stack(ctx, stack);
+            return ctx;
+        }
+
+        // Handle transfer
+        let (state, balance) = State.read_balance(ctx.state, ctx.call_context.address);
+        let transfer = model.Transfer(
+            sender=ctx.call_context.address, recipient=target_address, amount=balance
+        );
+        let (state, success) = State.add_transfer(state, transfer);
+        let ctx = ExecutionContext.update_state(ctx, state);
+        if (success == 0) {
+            // push 0 to the stack and return early
+            let stack = Stack.push_uint128(ctx.stack, 0);
+            let ctx = ExecutionContext.update_stack(ctx, stack);
             return ctx;
         }
 
         // Create sub context with copied state
         let state = State.copy(ctx.state);
-        let (state, account) = State.get_account(state, address);
-        let account = Account.set_nonce(account, 1);
-        let state = State.set_account(state, address, account);
+        let state = State.set_account(state, target_address, account);
         let (calldata: felt*) = alloc();
         tempvar call_context: model.CallContext* = new model.CallContext(
             bytecode=bytecode,
@@ -803,7 +820,7 @@ namespace CreateHelper {
             gas_price=ctx.call_context.gas_price,
             origin=ctx.call_context.origin,
             calling_context=ctx,
-            address=address,
+            address=target_address,
             read_only=FALSE,
             is_create=TRUE,
         );
