@@ -33,7 +33,7 @@ from kakarot.model import model
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 from kakarot.errors import Errors
-from utils.uint256 import uint256_exp
+from utils.uint256 import uint256_exp, uint256_signextend
 
 // @title Stop and Math operations opcodes.
 // @notice Math operations gathers Arithmetic and Comparison operations
@@ -261,49 +261,15 @@ namespace StopAndMathOperations {
         // x = 11100100, b = 1
         // Extend x to be two bytes:
         // x = 11111111 10101010
-        let range_check_ptr = [ap - 2];
         let bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        let range_check_ptr = [ap - 2];
         let popped = cast([ap - 1], Uint256*);
 
-        // The size in bytes of the value to be extended.
-        let b = popped[0];
-        let x = popped[1];
-
-        tempvar res_low;
-        tempvar res_high;
-        // If b > 31, then the result is x.
-        let (x_fits_in_evm_word) = uint256_lt(b, Uint256(32, 0));
-        if (x_fits_in_evm_word == 0) {
-            res_low = x.low;
-            res_high = x.high;
-        } else {
-            let (mul, _) = uint256_mul(b, Uint256(8, 0));
-            let (sign_bit_position, _) = uint256_add(mul, Uint256(7, 0));
-            let (s) = uint256_pow2(sign_bit_position);
-            let (sign_bit, _) = uint256_unsigned_div_rem(x, s);
-            let (x_is_negative) = uint256_and(sign_bit, Uint256(1, 0));
-            let (mask) = uint256_sub(s, Uint256(1, 0));
-            let (x_is_positive) = uint256_eq(x_is_negative, Uint256(0, 0));
-
-            // If x is positive (i.e. its sign bit is 0), then the result is x & mask and not x,
-            // Because if b is smaller than the actual size of x, we "truncate" x.
-            // Said another way, b is the source of truth on the size in bytes of x.
-            // e.g. if x = 01111111 01111111 and b = 1, then the result is 00000000 01111111.
-            if (x_is_positive == 1) {
-                let (value) = uint256_and(x, mask);
-                res_low = value.low;
-                res_high = value.high;
-            } else {
-                let (not_mask) = uint256_not(mask);
-                let (value) = uint256_or(x, not_mask);
-                res_low = value.low;
-                res_high = value.high;
-            }
-        }
+        let value = uint256_signextend(popped[1], popped[0]);
 
         tempvar bitwise_ptr = bitwise_ptr;
         tempvar range_check_ptr = range_check_ptr;
-        tempvar result = Uint256(res_low, res_high);
+        tempvar result = value;
         jmp end;
 
         INVALID:
