@@ -21,6 +21,7 @@ from starkware.cairo.common.uint256 import (
     uint256_sub,
     uint256_unsigned_div_rem,
     uint256_xor,
+    uint256_pow2,
 )
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.bool import FALSE, TRUE
@@ -250,14 +251,62 @@ namespace StopAndMathOperations {
         jmp end;
 
         SIGNEXTEND:
+        // Examples:
+        // SignExtend 85
+        // x = 01010101, b = 1
+        // Extend x to be two bytes:
+        // x = 00000000 01010101
+        // ---
+        // SignExtend -28
+        // x = 11100100, b = 1
+        // Extend x to be two bytes:
+        // x = 11111111 10101010
         let range_check_ptr = [ap - 2];
+        let bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
         let popped = cast([ap - 1], Uint256*);
+        // We reassign `bitwise_ptr` to avoid `Reference 'bitwise_ptr' was revoked`
+        tempvar bitwise_pointer = bitwise_ptr;
+        tempvar range_check_pointer = range_check_ptr;
 
-        // TODO: see https://github.com/kkrt-labs/kakarot/issues/677
+        // The size in bytes of the value to be extended.
+        let b = popped[0];
+        let x = popped[1];
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
-        tempvar range_check_ptr = range_check_ptr;
-        tempvar result = Uint256(popped[1].low, popped[1].high);
+        tempvar res_low;
+        tempvar res_high;
+        // If b > 31, then the result is x.
+        let (x_fits_in_evm_word) = uint256_lt(b, Uint256(32, 0));
+        if (x_fits_in_evm_word == 0) {
+            res_low = x.low;
+            res_high = x.high;
+        } else {
+            let (mul, _) = uint256_mul(b, Uint256(8, 0));
+            let (sign_bit_position, _) = uint256_add(mul, Uint256(7, 0));
+            let (s) = uint256_pow2(sign_bit_position);
+            let (sign_bit, _) = uint256_unsigned_div_rem(x, s);
+            let (x_is_negative) = uint256_and(sign_bit, Uint256(1, 0));
+            let (mask) = uint256_sub(s, Uint256(1, 0));
+            let (x_is_positive) = uint256_eq(x_is_negative, Uint256(0, 0));
+
+            // If x is positive (i.e. its sign bit is 0), then the result is x & mask and not x,
+            // Because if b is smaller than the actual size of x, we "truncate" x.
+            // Said another way, b is the source of truth on the size in bytes of x.
+            // e.g. if x = 01111111 01111111 and b = 1, then the result is 00000000 01111111.
+            if (x_is_positive == 1) {
+                let (value) = uint256_and(x, mask);
+                res_low = value.low;
+                res_high = value.high;
+            } else {
+                let (not_mask) = uint256_not(mask);
+                let (value) = uint256_or(x,not_mask);
+                res_low = value.low;
+                res_high = value.high;
+            }
+        }
+
+        tempvar bitwise_ptr = cast(bitwise_pointer, BitwiseBuiltin*);
+        tempvar range_check_ptr = range_check_pointer;
+        tempvar result = Uint256(res_low, res_high);
         jmp end;
 
         INVALID:

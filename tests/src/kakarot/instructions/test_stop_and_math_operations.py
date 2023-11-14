@@ -37,7 +37,20 @@ class TestStopMathOperations:
                 (Opcodes.MULMOD, [3, 2, 2], (3 * 2) % 2),
                 (Opcodes.EXP, [3, 2], (3**2)),
                 (Opcodes.EXP, [3, 1], (3**1)),
-                (Opcodes.SIGNEXTEND, [3, 2, 1], 2),
+                (
+                    Opcodes.SIGNEXTEND,
+                    [
+                        0x01,
+                        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0001,
+                        3,
+                    ],
+                    0x01,
+                ),
+                (
+                    Opcodes.SIGNEXTEND,
+                    [0x00, 0xFF, 3],
+                    0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
+                ),
                 (Opcodes.LT, [2, 1], 0),
                 (Opcodes.LT, [1, 2], 1),
                 (Opcodes.GT, [2, 1], 1),
