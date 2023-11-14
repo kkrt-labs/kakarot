@@ -298,7 +298,7 @@ namespace StopAndMathOperations {
                 res_high = value.high;
             } else {
                 let (not_mask) = uint256_not(mask);
-                let (value) = uint256_or(x,not_mask);
+                let (value) = uint256_or(x, not_mask);
                 res_low = value.low;
                 res_high = value.high;
             }
