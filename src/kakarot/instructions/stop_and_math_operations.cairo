@@ -31,7 +31,7 @@ from kakarot.model import model
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 from kakarot.errors import Errors
-from utils.uint256 import uint256_exp, uint256_signextend
+from utils.uint256 import uint256_fast_exp, uint256_signextend
 
 // @title Stop and Math operations opcodes.
 // @notice Math operations gathers Arithmetic and Comparison operations
@@ -240,10 +240,11 @@ namespace StopAndMathOperations {
         EXP:
         let range_check_ptr = [ap - 2];
         let popped = cast([ap - 1], Uint256*);
-
-        let result = uint256_exp(popped[0], popped[1]);
-
         tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+
+        let result = uint256_fast_exp(popped[0], popped[1]);
+
+        tempvar bitwise_ptr = bitwise_ptr;
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(result.low, result.high);
         jmp end;

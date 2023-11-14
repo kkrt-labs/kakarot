@@ -37,6 +37,12 @@ class TestStopMathOperations:
                 (Opcodes.MULMOD, [3, 2, 2], (3 * 2) % 2),
                 (Opcodes.EXP, [3, 2], (3**2)),
                 (Opcodes.EXP, [3, 1], (3**1)),
+                (Opcodes.EXP, [3, 0], (3**0)),
+                (
+                    Opcodes.EXP,
+                    [0xFF, 0x11],
+                    (0xFF**0x11),
+                ),
                 (
                     Opcodes.SIGNEXTEND,
                     [
