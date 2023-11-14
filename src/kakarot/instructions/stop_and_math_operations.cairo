@@ -264,9 +264,6 @@ namespace StopAndMathOperations {
         let range_check_ptr = [ap - 2];
         let bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
         let popped = cast([ap - 1], Uint256*);
-        // We reassign `bitwise_ptr` to avoid `Reference 'bitwise_ptr' was revoked`
-        tempvar bitwise_pointer = bitwise_ptr;
-        tempvar range_check_pointer = range_check_ptr;
 
         // The size in bytes of the value to be extended.
         let b = popped[0];
@@ -304,8 +301,8 @@ namespace StopAndMathOperations {
             }
         }
 
-        tempvar bitwise_ptr = cast(bitwise_pointer, BitwiseBuiltin*);
-        tempvar range_check_ptr = range_check_pointer;
+        tempvar bitwise_ptr = bitwise_ptr;
+        tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(res_low, res_high);
         jmp end;
 
