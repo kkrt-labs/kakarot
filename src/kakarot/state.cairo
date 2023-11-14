@@ -213,6 +213,16 @@ namespace State {
         let fp_and_pc = get_fp_and_pc();
         local __fp__: felt* = fp_and_pc.fp_val;
 
+        // Early return if the sender is the recipient
+        if (transfer.sender == transfer.recipient) {
+            return (self, 1);
+        }
+        // Early return if the amount is 0
+        let (null_transfer) = uint256_eq(transfer.amount, Uint256(0, 0));
+        if (null_transfer != 0) {
+            return (self, 1);
+        }
+
         let (self, sender) = get_account(self, transfer.sender);
         let (success) = uint256_le(transfer.amount, [sender.balance]);
 

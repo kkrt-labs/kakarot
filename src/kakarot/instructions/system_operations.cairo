@@ -793,9 +793,8 @@ namespace CreateHelper {
         }
 
         // Handle transfer
-        let (state, balance) = State.read_balance(ctx.state, ctx.call_context.address);
         let transfer = model.Transfer(
-            sender=ctx.call_context.address, recipient=target_address, amount=balance
+            sender=ctx.call_context.address, recipient=target_address, amount=value
         );
         let (state, success) = State.add_transfer(state, transfer);
         let ctx = ExecutionContext.update_state(ctx, state);
