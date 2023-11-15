@@ -251,25 +251,15 @@ namespace StopAndMathOperations {
         jmp end;
 
         SIGNEXTEND:
-        // Examples:
-        // SignExtend 85
-        // x = 01010101, b = 1
-        // Extend x to be two bytes:
-        // x = 00000000 01010101
-        // ---
-        // SignExtend -28
-        // x = 11100100, b = 1
-        // Extend x to be two bytes:
-        // x = 11111111 10101010
         let bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
         let range_check_ptr = [ap - 2];
         let popped = cast([ap - 1], Uint256*);
 
-        let value = uint256_signextend(popped[1], popped[0]);
+        let result = uint256_signextend(popped[1], popped[0]);
 
         tempvar bitwise_ptr = bitwise_ptr;
         tempvar range_check_ptr = range_check_ptr;
-        tempvar result = value;
+        tempvar result = result;
         jmp end;
 
         INVALID:
