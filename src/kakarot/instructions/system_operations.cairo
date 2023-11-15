@@ -726,7 +726,6 @@ namespace CreateHelper {
         alloc_locals;
         let (state, account) = State.get_account(state, address);
         let nonce = account.nonce;
-        // Increment nonce of deployer account
         let account = Account.set_nonce(account, nonce + 1);
         let state = State.set_account(state, address, account);
 
@@ -774,7 +773,7 @@ namespace CreateHelper {
             ctx.state, ctx.call_context.address, popped_len, popped, size.low, bytecode
         );
         let (starknet_contract_address) = Account.compute_starknet_address(evm_contract_address);
-        tempvar target_address = new model.Address(starknet_contract_address, evm_contract_address);
+        tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
 
         // Create Account with empty bytecode
         let (state, account) = State.get_account(state, address);
@@ -794,7 +793,7 @@ namespace CreateHelper {
 
         // Handle transfer
         let transfer = model.Transfer(
-            sender=ctx.call_context.address, recipient=target_address, amount=value
+            sender=ctx.call_context.address, recipient=address, amount=value
         );
         let (state, success) = State.add_transfer(state, transfer);
         let ctx = ExecutionContext.update_state(ctx, state);
@@ -807,7 +806,7 @@ namespace CreateHelper {
 
         // Create sub context with copied state
         let state = State.copy(ctx.state);
-        let state = State.set_account(state, target_address, account);
+        let state = State.set_account(state, address, account);
         let (calldata: felt*) = alloc();
         tempvar call_context: model.CallContext* = new model.CallContext(
             bytecode=bytecode,
@@ -819,7 +818,7 @@ namespace CreateHelper {
             gas_price=ctx.call_context.gas_price,
             origin=ctx.call_context.origin,
             calling_context=ctx,
-            address=target_address,
+            address=address,
             read_only=FALSE,
             is_create=TRUE,
         );
