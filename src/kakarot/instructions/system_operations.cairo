@@ -229,10 +229,6 @@ namespace SystemOperations {
 
         let (value_high, value_low) = split_felt(sub_ctx.call_context.value);
         tempvar value = Uint256(value_low, value_high);
-        let (is_zero) = uint256_eq(value, Uint256(0, 0));
-        if (is_zero != 0) {
-            return sub_ctx;
-        }
 
         let calling_context = sub_ctx.call_context.calling_context;
         let transfer = model.Transfer(
@@ -783,22 +779,18 @@ namespace CreateHelper {
         let ctx = ExecutionContext.update_memory(ctx, memory);
         let ctx = ExecutionContext.update_state(ctx, state);
 
-        // Handle collision
         if (is_collision != 0) {
-            // push 0 to the stack and return early
             let stack = Stack.push_uint128(ctx.stack, 0);
             let ctx = ExecutionContext.update_stack(ctx, stack);
             return ctx;
         }
 
-        // Handle transfer
         let transfer = model.Transfer(
             sender=ctx.call_context.address, recipient=address, amount=value
         );
         let (state, success) = State.add_transfer(state, transfer);
         let ctx = ExecutionContext.update_state(ctx, state);
         if (success == 0) {
-            // push 0 to the stack and return early
             let stack = Stack.push_uint128(ctx.stack, 0);
             let ctx = ExecutionContext.update_stack(ctx, stack);
             return ctx;
