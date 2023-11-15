@@ -43,7 +43,6 @@ func uint256_signextend{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
     x: Uint256, b: Uint256
 ) -> Uint256 {
     alloc_locals;
-    // If b > 31, then the result is x.
     let (x_fits_in_evm_word) = uint256_lt(b, Uint256(32, 0));
     if (x_fits_in_evm_word == 0) {
         return x;
