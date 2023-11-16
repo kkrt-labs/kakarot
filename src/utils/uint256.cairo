@@ -1,14 +1,11 @@
 from starkware.cairo.common.uint256 import (
     Uint256,
     uint256_eq,
-    uint256_le,
     uint256_sub,
-    uint256_mul, uint256_unsigned_div_rem, uint256_and,
-    uint256_add,
-    uint256_pow2,
+    uint256_mul,
+    uint256_unsigned_div_rem,
 )
 from starkware.cairo.common.bool import FALSE
-from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 
 // @notice Internal exponentiation of two 256-bit integers.
 // @dev The result is modulo 2^256.
@@ -62,9 +59,7 @@ func uint256_signextend{range_check_ptr}(x: Uint256, byte_num: Uint256) -> Uint2
 // @param value - The base.
 // @param exponent - The exponent.
 // @return The result of the exponentiation.
-func uint256_fast_exp{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
-    value: Uint256, exponent: Uint256
-) -> Uint256 {
+func uint256_fast_exp{range_check_ptr}(value: Uint256, exponent: Uint256) -> Uint256 {
     alloc_locals;
 
     let one = Uint256(1, 0);

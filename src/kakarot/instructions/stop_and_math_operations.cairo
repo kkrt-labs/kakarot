@@ -240,11 +240,10 @@ namespace StopAndMathOperations {
         EXP:
         let range_check_ptr = [ap - 2];
         let popped = cast([ap - 1], Uint256*);
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
 
         let result = uint256_fast_exp(popped[0], popped[1]);
 
-        tempvar bitwise_ptr = bitwise_ptr;
+        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(result.low, result.high);
         jmp end;
