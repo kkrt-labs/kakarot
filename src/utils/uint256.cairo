@@ -51,15 +51,15 @@ func uint256_signextend{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
 
     let (s) = uint256_pow2(Uint256(sign_bit_position, 0));
     let (sign_bit, value) = uint256_unsigned_div_rem(x, s);
-    let (x_is_negative) = uint256_and(sign_bit, Uint256(1, 0));
-    let (x_is_positive) = uint256_eq(x_is_negative, Uint256(0, 0));
+    let (_, x_is_negative) = uint256_unsigned_div_rem(sign_bit, Uint256(2, 0));
 
-    if (x_is_positive == 1) {
+    if (x_is_negative.low == 0) {
         return value;
     }
 
     let (mask) = uint256_sub(s, Uint256(1, 0));
-    let (not_mask) = uint256_not(mask);
-    let (value) = uint256_or(x, not_mask);
+    let max_uint256 = Uint256(2 ** 128 - 1, 2 ** 128 - 1);
+    let (padding) = uint256_sub(max_uint256, mask);
+    let (value, _) = uint256_add(value, padding);
     return value;
 }
