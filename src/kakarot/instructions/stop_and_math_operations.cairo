@@ -8,7 +8,6 @@ from starkware.cairo.common.uint256 import (
     uint256_add,
     uint256_and,
     uint256_eq,
-    uint256_le,
     uint256_lt,
     uint256_mul_div_mod,
     uint256_mul,
@@ -21,7 +20,6 @@ from starkware.cairo.common.uint256 import (
     uint256_sub,
     uint256_unsigned_div_rem,
     uint256_xor,
-    uint256_pow2,
 )
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.bool import FALSE, TRUE
