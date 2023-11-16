@@ -705,7 +705,6 @@ namespace CreateHelper {
     }
 
     // @notice Pre-compute the evm address of a contract account before deploying it.
-    // @dev Side-effect: increment the nonce of the deployer account.
     func get_evm_address{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -722,8 +721,6 @@ namespace CreateHelper {
         alloc_locals;
         let (state, account) = State.get_account(state, address);
         let nonce = account.nonce;
-        let account = Account.set_nonce(account, nonce + 1);
-        let state = State.set_account(state, address, account);
 
         // create2 context pops 4 off the stack, create pops 3
         // so we use popped_len to derive the way we should handle
@@ -754,15 +751,16 @@ namespace CreateHelper {
     }(ctx: model.ExecutionContext*, popped_len: felt, popped: Uint256*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Load CallContext bytecode code from memory
         let value = popped[0];
         let offset = popped[1];
         let size = popped[2];
 
+        // Load CallContext bytecode code from memory
         let (bytecode: felt*) = alloc();
         let (memory, gas_cost) = Memory.load_n(
             self=ctx.memory, element_len=size.low, element=bytecode, offset=offset.low
         );
+        let ctx = ExecutionContext.update_memory(ctx, memory);
 
         // Get target account
         let (state, evm_contract_address) = get_evm_address(
@@ -770,20 +768,6 @@ namespace CreateHelper {
         );
         let (starknet_contract_address) = Account.compute_starknet_address(evm_contract_address);
         tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
-
-        // Create Account with empty bytecode
-        let (state, account) = State.get_account(state, address);
-        let is_collision = Account.has_code_or_nonce(account);
-
-        // Update calling context before creating sub context
-        let ctx = ExecutionContext.update_memory(ctx, memory);
-        let ctx = ExecutionContext.update_state(ctx, state);
-
-        if (is_collision != 0) {
-            let stack = Stack.push_uint128(ctx.stack, 0);
-            let ctx = ExecutionContext.update_stack(ctx, stack);
-            return ctx;
-        }
 
         let transfer = model.Transfer(
             sender=ctx.call_context.address, recipient=address, amount=value
@@ -795,6 +779,20 @@ namespace CreateHelper {
             let ctx = ExecutionContext.update_stack(ctx, stack);
             return ctx;
         }
+
+        let (state, sender) = State.get_account(state, ctx.call_context.address);
+        let sender = Account.set_nonce(sender, sender.nonce + 1);
+        let state = State.set_account(state, ctx.call_context.address, sender);
+        let ctx = ExecutionContext.update_state(ctx, state);
+
+        let account = Account.fetch_or_create(address);
+        let is_collision = Account.has_code_or_nonce(account);
+        if (is_collision != 0) {
+            let stack = Stack.push_uint128(ctx.stack, 0);
+            let ctx = ExecutionContext.update_stack(ctx, stack);
+            return ctx;
+        }
+        let account = Account.set_nonce(account, 1);
 
         // Create sub context with copied state
         let state = State.copy(ctx.state);
