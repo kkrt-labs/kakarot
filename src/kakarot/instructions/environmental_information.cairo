@@ -564,6 +564,18 @@ namespace EnvironmentalInformation {
         tempvar address = new model.Address(starknet_address, evm_address);
         let (state, account) = State.get_account(ctx.state, address);
 
+        // Relevant cases:
+        // https://github.com/ethereum/go-ethereum/blob/master/core/vm/instructions.go#L392
+        let (state, balance) = State.read_balance(state, address);
+        let has_code_or_nonce = Account.has_code_or_nonce(account);
+        let empty_account = has_code_or_nonce + balance.low;
+        if (empty_account == 0) {
+            let stack = Stack.push_uint128(stack, 0);
+            let ctx = ExecutionContext.update_stack(ctx, stack);
+            let ctx = ExecutionContext.update_state(ctx, state);
+            return ctx;
+        }
+
         let (local dest: felt*) = alloc();
         // convert to little endian
         Helpers.bytes_to_bytes8_little_endian(
