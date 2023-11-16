@@ -51,6 +51,11 @@ class TestStopMathOperations:
                     [0x00, 0xFF, 3],
                     0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,
                 ),
+                (
+                    Opcodes.SIGNEXTEND,
+                    [0x20, 0xFF, 3],
+                    0xFF,
+                ),
                 (Opcodes.LT, [2, 1], 0),
                 (Opcodes.LT, [1, 2], 1),
                 (Opcodes.GT, [2, 1], 1),

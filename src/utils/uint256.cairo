@@ -34,23 +34,23 @@ func uint256_exp{range_check_ptr}(a: Uint256, b: Uint256) -> Uint256 {
     return res;
 }
 
-// @notice Performs sign extension on a Uint256 number.
+// @notice Extend a signed number which fits in N bytes to 32 bytes.
 // @param x The number to be sign extended.
-// @param b The size in bytes minus one of x to consider.
+// @param byte_num The size in bytes minus one of x to consider.
 // @return The result of sign extending x from position b.
 // If b > 31, the result is x. Otherwise, the sign bit is extended from position b.
 func uint256_signextend{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
-    x: Uint256, b: Uint256
+    x: Uint256, byte_num: Uint256
 ) -> Uint256 {
     alloc_locals;
-    let (x_fits_in_evm_word) = uint256_lt(b, Uint256(32, 0));
-    if (x_fits_in_evm_word == 0) {
+    let (byte_num_gt_word_size) = uint256_le(Uint256(32, 0), byte_num);
+    if (byte_num_gt_word_size != 0) {
         return x;
     }
 
-    let (mul, _) = uint256_mul(b, Uint256(8, 0));
-    let (sign_bit_position, _) = uint256_add(mul, Uint256(7, 0));
-    let (s) = uint256_pow2(sign_bit_position);
+    let sign_bit_position = byte_num.low * 8 + 7;
+
+    let (s) = uint256_pow2(Uint256(sign_bit_position, 0));
     let (sign_bit, _) = uint256_unsigned_div_rem(x, s);
     let (x_is_negative) = uint256_and(sign_bit, Uint256(1, 0));
     let (mask) = uint256_sub(s, Uint256(1, 0));
