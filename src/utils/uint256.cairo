@@ -4,13 +4,9 @@ from starkware.cairo.common.uint256 import (
     uint256_le,
     uint256_sub,
     uint256_mul,
-    uint256_lt,
     uint256_add,
     uint256_pow2,
     uint256_unsigned_div_rem,
-    uint256_and,
-    uint256_or,
-    uint256_not,
 )
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
@@ -38,9 +34,7 @@ func uint256_exp{range_check_ptr}(a: Uint256, b: Uint256) -> Uint256 {
 // @param x The number to be sign extended.
 // @param byte_num The size in bytes minus one of x to consider.
 // @returns x if byteNum > 31, or x interpreted as a signed number with sign-bit at (byte_num*8+7), extended to the full 256 bits
-func uint256_signextend{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
-    x: Uint256, byte_num: Uint256
-) -> Uint256 {
+func uint256_signextend{range_check_ptr}(x: Uint256, byte_num: Uint256) -> Uint256 {
     alloc_locals;
     let (byte_num_gt_word_size) = uint256_le(Uint256(32, 0), byte_num);
     if (byte_num_gt_word_size != 0) {

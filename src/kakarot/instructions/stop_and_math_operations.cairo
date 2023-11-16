@@ -251,13 +251,12 @@ namespace StopAndMathOperations {
         jmp end;
 
         SIGNEXTEND:
-        let bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
         let range_check_ptr = [ap - 2];
         let popped = cast([ap - 1], Uint256*);
 
         let result = uint256_signextend(popped[1], popped[0]);
 
-        tempvar bitwise_ptr = bitwise_ptr;
+        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = result;
         jmp end;
