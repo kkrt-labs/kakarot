@@ -80,18 +80,16 @@ func uint256_fast_exp{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
         return value;
     }
 
-    let (exponent_is_odd) = uint256_and(exponent, one);
-    if (exponent_is_odd.low != FALSE) {
-        let (exponent_minus_one) = uint256_sub(exponent, one);
-        let (half_exponent, _) = uint256_unsigned_div_rem(exponent_minus_one, Uint256(2, 0));
-        let pow = uint256_fast_exp(value, half_exponent);
+    let (half_exponent, is_odd) = uint256_unsigned_div_rem(exponent, Uint256(2, 0));
+    let pow = uint256_fast_exp(value, half_exponent);
+
+    if (is_odd.low != FALSE) {
         let (res, _) = uint256_mul(pow, pow);
         let (res, _) = uint256_mul(res, value);
         return res;
-    } else {
-        let (half_exponent, _) = uint256_unsigned_div_rem(exponent, Uint256(2, 0));
-        let pow = uint256_fast_exp(value, half_exponent);
-        let (res, _) = uint256_mul(pow, pow);
-        return res;
     }
+
+    let pow = uint256_fast_exp(value, half_exponent);
+    let (res, _) = uint256_mul(pow, pow);
+    return res;
 }
