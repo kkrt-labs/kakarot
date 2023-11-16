@@ -50,20 +50,15 @@ func uint256_signextend{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
     let sign_bit_position = byte_num.low * 8 + 7;
 
     let (s) = uint256_pow2(Uint256(sign_bit_position, 0));
-    let (sign_bit, _) = uint256_unsigned_div_rem(x, s);
+    let (sign_bit, value) = uint256_unsigned_div_rem(x, s);
     let (x_is_negative) = uint256_and(sign_bit, Uint256(1, 0));
-    let (mask) = uint256_sub(s, Uint256(1, 0));
     let (x_is_positive) = uint256_eq(x_is_negative, Uint256(0, 0));
 
-    // If x is positive (i.e. its sign bit is 0), then the result is x & mask and not x,
-    // Because if b is smaller than the actual size of x, we "truncate" x.
-    // Said another way, b is the source of truth on the size in bytes of x.
-    // e.g. if x = 01111111 01111111 and b = 1, then the result is 00000000 01111111.
     if (x_is_positive == 1) {
-        let (value) = uint256_and(x, mask);
         return value;
     }
 
+    let (mask) = uint256_sub(s, Uint256(1, 0));
     let (not_mask) = uint256_not(mask);
     let (value) = uint256_or(x, not_mask);
     return value;
