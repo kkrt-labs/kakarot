@@ -10,7 +10,12 @@ from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, fina
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.memcpy import memcpy
-from starkware.cairo.common.uint256 import Uint256, uint256_eq
+from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_lt
+from starkware.starknet.common.syscalls import (
+    deploy as deploy_syscall,
+    get_contract_address,
+    get_tx_info,
+)
 from starkware.cairo.common.registers import get_fp_and_pc
 
 // Internal dependencies
@@ -769,12 +774,10 @@ namespace CreateHelper {
         let (starknet_contract_address) = Account.compute_starknet_address(evm_contract_address);
         tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
 
-        let transfer = model.Transfer(
-            sender=ctx.call_context.address, recipient=address, amount=value
-        );
-        let (state, success) = State.add_transfer(state, transfer);
+        let (state, balance) = State.read_balance(state, ctx.call_context.address);
         let ctx = ExecutionContext.update_state(ctx, state);
-        if (success == 0) {
+        let (insufficient_balance) = uint256_lt(balance, value);
+        if (insufficient_balance != 0) {
             let stack = Stack.push_uint128(ctx.stack, 0);
             let ctx = ExecutionContext.update_stack(ctx, stack);
             return ctx;
@@ -813,6 +816,17 @@ namespace CreateHelper {
             is_create=TRUE,
         );
         let sub_ctx = ExecutionContext.init(call_context);
+
+        let transfer = model.Transfer(
+            sender=ctx.call_context.address, recipient=address, amount=value
+        );
+        let (state, success) = State.add_transfer(state, transfer);
+
+        if (success == 0) {
+            let (revert_reason_len, revert_reason) = Errors.balanceError();
+            let sub_ctx = ExecutionContext.stop(sub_ctx, revert_reason_len, revert_reason, TRUE);
+            return sub_ctx;
+        }
         let sub_ctx = ExecutionContext.update_state(sub_ctx, state);
 
         return sub_ctx;

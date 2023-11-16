@@ -615,7 +615,7 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
 
     // Fill the stack with exec_create args
     let stack: model.Stack* = Stack.init();
-    tempvar value = new Uint256(1, 0);
+    tempvar value = new Uint256(0, 0);
     tempvar offset = new Uint256(3, 0);
     tempvar size = new Uint256(4, 0);
     let stack = Stack.push(stack, size);
@@ -709,7 +709,7 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
 
     // Fill the stack with exec_create2 args
     let stack: model.Stack* = Stack.init();
-    tempvar value = new Uint256(1, 0);
+    tempvar value = new Uint256(0, 0);
     let stack = Stack.push_uint128(stack, nonce);
     let stack = Stack.push_uint128(stack, bytecode_size);
     let stack = Stack.push_uint128(stack, bytecode_offset);
