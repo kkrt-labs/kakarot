@@ -562,14 +562,14 @@ namespace EnvironmentalInformation {
         let evm_address = Helpers.uint256_to_felt([address_uint256]);
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
-        let (state, account) = State.get_account(ctx.state, address);
 
+        let (state, account) = State.get_account(ctx.state, address);
+        let has_code_or_nonce = Account.has_code_or_nonce(account);
+        let (state, balance) = State.read_balance(state, address);
+        let account_exists = has_code_or_nonce + balance.low;
         // Relevant cases:
         // https://github.com/ethereum/go-ethereum/blob/master/core/vm/instructions.go#L392
-        let (state, balance) = State.read_balance(state, address);
-        let has_code_or_nonce = Account.has_code_or_nonce(account);
-        let empty_account = has_code_or_nonce + balance.low;
-        if (empty_account == 0) {
+        if (account_exists == 0) {
             let stack = Stack.push_uint128(stack, 0);
             let ctx = ExecutionContext.update_stack(ctx, stack);
             let ctx = ExecutionContext.update_state(ctx, state);
