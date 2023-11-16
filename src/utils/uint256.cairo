@@ -9,7 +9,6 @@ from starkware.cairo.common.uint256 import (
     uint256_unsigned_div_rem,
 )
 from starkware.cairo.common.bool import FALSE
-from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 
 // @notice Internal exponentiation of two 256-bit integers.
 // @dev The result is modulo 2^256.
