@@ -8,7 +8,6 @@ from starkware.cairo.common.uint256 import (
     uint256_add,
     uint256_and,
     uint256_eq,
-    uint256_le,
     uint256_lt,
     uint256_mul_div_mod,
     uint256_mul,
@@ -32,7 +31,7 @@ from kakarot.model import model
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 from kakarot.errors import Errors
-from utils.uint256 import uint256_exp
+from utils.uint256 import uint256_exp, uint256_signextend
 
 // @title Stop and Math operations opcodes.
 // @notice Math operations gathers Arithmetic and Comparison operations
@@ -253,11 +252,11 @@ namespace StopAndMathOperations {
         let range_check_ptr = [ap - 2];
         let popped = cast([ap - 1], Uint256*);
 
-        // TODO: see https://github.com/kkrt-labs/kakarot/issues/677
+        let result = uint256_signextend(popped[1], popped[0]);
 
         tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
-        tempvar result = Uint256(popped[1].low, popped[1].high);
+        tempvar result = result;
         jmp end;
 
         INVALID:
