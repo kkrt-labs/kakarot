@@ -37,8 +37,7 @@ func uint256_exp{range_check_ptr}(a: Uint256, b: Uint256) -> Uint256 {
 // @notice Extend a signed number which fits in N bytes to 32 bytes.
 // @param x The number to be sign extended.
 // @param byte_num The size in bytes minus one of x to consider.
-// @return The result of sign extending x from position b.
-// If b > 31, the result is x. Otherwise, the sign bit is extended from position b.
+// @returns x if byteNum > 31, or x interpreted as a signed number with sign-bit at (byte_num*8+7), extended to the full 256 bits
 func uint256_signextend{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
     x: Uint256, byte_num: Uint256
 ) -> Uint256 {
