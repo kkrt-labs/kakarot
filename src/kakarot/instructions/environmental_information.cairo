@@ -358,10 +358,11 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        // Get the gasprice.
+        // TODO: since gas_price is a felt, it might panic when being cast to a Uint256.low,
+        // Add check gas_price < 2 ** 128
+        // `split_felt` might be too expensive for this if we know gas_price < 2 ** 128
         let stack = Stack.push_uint128(ctx.stack, ctx.call_context.gas_price);
 
-        // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
         return ctx;

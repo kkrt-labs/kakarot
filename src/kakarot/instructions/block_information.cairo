@@ -120,11 +120,18 @@ namespace BlockInformation {
         jmp end;
 
         basefee:
+        // Since Kakarot does not implement EIP1559,
+        // there is no priority fee, therefore gasPrice == baseFeePerGas
+        let ctx = cast([fp - 3], model.ExecutionContext*);
+        tempvar gas_price = ctx.call_context.gas_price;
         tempvar syscall_ptr = cast([fp - 7], felt*);
         tempvar pedersen_ptr = cast([fp - 6], HashBuiltin*);
         tempvar range_check_ptr = [fp - 5];
         tempvar ctx = cast([fp - 3], model.ExecutionContext*);
-        tempvar result = Uint256(0, 0);
+        // TODO: since gas_price is a felt, it might panic when being cast to a Uint256.low,
+        // Add check gas_price < 2 ** 128 at creation of ExecutionContext
+        // `split_felt` might be too expensive for this if we know gas_price < 2 ** 128
+        tempvar result = Uint256(gas_price, 0);
         jmp end;
 
         end:
