@@ -37,11 +37,10 @@ from utils.utils import Helpers
 @constructor
 func constructor{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(contract_account_class_hash_: felt, account_proxy_class_hash_) {
+}(native_token_address_: felt, contract_account_class_hash_: felt, account_proxy_class_hash_) {
+    native_token_address.write(native_token_address_);
     account_proxy_class_hash.write(account_proxy_class_hash_);
     contract_account_class_hash.write(contract_account_class_hash_);
-    let (contract_address: felt) = get_contract_address();
-    native_token_address.write(contract_address);
     return ();
 }
 

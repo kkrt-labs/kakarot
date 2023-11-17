@@ -8,7 +8,7 @@ from starkware.starknet.testing.starknet import Starknet
 
 @pytest_asyncio.fixture(scope="module")
 async def environmental_information(
-    starknet: Starknet, contract_account_class, account_proxy_class
+    starknet: Starknet, eth, contract_account_class, account_proxy_class
 ):
     class_hash = await starknet.deprecated_declare(
         source="./tests/src/kakarot/instructions/test_environmental_information.cairo",
@@ -18,6 +18,7 @@ async def environmental_information(
     return await starknet.deploy(
         class_hash=class_hash.class_hash,
         constructor_calldata=[
+            eth.contract_address,
             contract_account_class.class_hash,
             account_proxy_class.class_hash,
         ],
