@@ -6,9 +6,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.dict_access import DictAccess
-from starkware.cairo.common.hash import hash2
 from starkware.cairo.common.uint256 import Uint256
-from starkware.starknet.common.storage import normalize_address
 from starkware.starknet.common.syscalls import (
     emit_event,
     get_contract_address,
@@ -73,6 +71,25 @@ namespace Starknet {
         evm_to_starknet_address.write(evm_address, starknet_address);
         return (account_address=starknet_address);
     }
+
+    // @notice Return the bytecode of a given account
+    // @dev Return empty if the account is not deployed
+    // @param evm_address The address of the account
+    // @return bytecode_len The len of the bytecode
+    // @return bytecode The bytecode
+    func get_bytecode{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        evm_address: felt
+    ) -> (bytecode_len: felt, bytecode: felt*) {
+        let (starknet_address) = evm_to_starknet_address.read(evm_address);
+
+        if (starknet_address == 0) {
+            let (bytecode: felt*) = alloc();
+            return (0, bytecode);
+        }
+
+        let (bytecode_len, bytecode) = IAccount.bytecode(starknet_address);
+        return (bytecode_len, bytecode);
+    }
 }
 
 namespace Internals {
@@ -88,7 +105,7 @@ namespace Internals {
             return ();
         }
 
-        let starknet_address = accounts_start.key;
+        let (starknet_address) = Account.compute_starknet_address(accounts_start.key);
         let account = cast(accounts_start.new_value, Account.Summary*);
         _commit_account(account, starknet_address);
 
@@ -215,16 +232,5 @@ namespace Internals {
         );
 
         return _save_storage(starknet_address, storage_start + DictAccess.SIZE, storage_end);
-    }
-
-    // @notice Compute the storage address of the given key when the storage var interface is
-    //         storage_(key: Uint256)
-    // @dev    Just the generated addr method when compiling the contract_account
-    func _storage_addr{pedersen_ptr: HashBuiltin*, range_check_ptr}(key: Uint256*) -> (res: felt) {
-        let res = 1510236440068827666686527023008568026372765124888307403567795291192307314167;
-        let (res) = hash2{hash_ptr=pedersen_ptr}(res, cast(key, felt*)[0]);
-        let (res) = hash2{hash_ptr=pedersen_ptr}(res, cast(key, felt*)[1]);
-        let (res) = normalize_address(addr=res);
-        return (res=res);
     }
 }

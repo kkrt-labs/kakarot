@@ -93,14 +93,14 @@ namespace Kakarot {
 
         let is_regular_tx = is_not_zero(to);
         let is_deploy_tx = 1 - is_regular_tx;
-        let account = Account.fetch_or_create(address);
+        let (bytecode_len, bytecode) = Starknet.get_bytecode(address.evm);
 
         let summary = EVM.execute(
             address,
             is_deploy_tx,
             origin_address,
-            account.code_len,
-            account.code,
+            bytecode_len,
+            bytecode,
             data_len,
             data,
             value,

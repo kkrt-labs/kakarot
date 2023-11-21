@@ -766,7 +766,7 @@ namespace CreateHelper {
             self=ctx.memory, element_len=size.low, element=bytecode, offset=offset.low
         );
 
-        // Get new account address
+        // Get target account
         let (state, evm_contract_address) = get_evm_address(
             ctx.state, ctx.call_context.address, popped_len, popped, size.low, bytecode
         );
@@ -774,9 +774,8 @@ namespace CreateHelper {
         tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
 
         // Create Account with empty bytecode
-        let account = Account.fetch_or_create(address);
+        let (state, account) = State.get_account(state, address);
         let is_collision = Account.has_code_or_nonce(account);
-        let account = Account.set_nonce(account, 1);
 
         // Update calling context before creating sub context
         let ctx = ExecutionContext.update_memory(ctx, memory);
@@ -790,6 +789,8 @@ namespace CreateHelper {
 
         // Create sub context with copied state
         let state = State.copy(ctx.state);
+        let (state, account) = State.get_account(state, address);
+        let account = Account.set_nonce(account, 1);
         let state = State.set_account(state, address, account);
         let (calldata: felt*) = alloc();
         tempvar call_context: model.CallContext* = new model.CallContext(

@@ -102,7 +102,7 @@ namespace State {
     ) -> (model.State*, model.Account*) {
         alloc_locals;
         let accounts = self.accounts;
-        let (pointer) = dict_read{dict_ptr=accounts}(key=address.starknet);
+        let (pointer) = dict_read{dict_ptr=accounts}(key=address.evm);
 
         // Return from local storage if found
         if (pointer != 0) {
@@ -120,7 +120,7 @@ namespace State {
             // Otherwise read values from contract storage
             local accounts: DictAccess* = accounts;
             let account = Account.fetch_or_create(address);
-            dict_write{dict_ptr=accounts}(key=address.starknet, new_value=cast(account, felt));
+            dict_write{dict_ptr=accounts}(key=address.evm, new_value=cast(account, felt));
             tempvar state = new model.State(
                 accounts_start=self.accounts_start,
                 accounts=accounts,
@@ -141,7 +141,7 @@ namespace State {
         self: model.State*, address: model.Address*, account: model.Account*
     ) -> model.State* {
         let accounts = self.accounts;
-        dict_write{dict_ptr=accounts}(key=address.starknet, new_value=cast(account, felt));
+        dict_write{dict_ptr=accounts}(key=address.evm, new_value=cast(account, felt));
         return new model.State(
             accounts_start=self.accounts_start,
             accounts=accounts,
@@ -231,10 +231,8 @@ namespace State {
         let recipient = Account.set_balance(recipient, &recipient_balance_new);
 
         let accounts = self.accounts;
-        dict_write{dict_ptr=accounts}(key=transfer.sender.starknet, new_value=cast(sender, felt));
-        dict_write{dict_ptr=accounts}(
-            key=transfer.recipient.starknet, new_value=cast(recipient, felt)
-        );
+        dict_write{dict_ptr=accounts}(key=transfer.sender.evm, new_value=cast(sender, felt));
+        dict_write{dict_ptr=accounts}(key=transfer.recipient.evm, new_value=cast(recipient, felt));
         assert self.transfers[self.transfers_len] = transfer;
 
         tempvar state = new model.State(
@@ -256,7 +254,7 @@ namespace State {
         self: model.State*, address: model.Address*
     ) -> (state: model.State*, balance: Uint256) {
         let accounts = self.accounts;
-        let (pointer) = dict_read{dict_ptr=accounts}(key=address.starknet);
+        let (pointer) = dict_read{dict_ptr=accounts}(key=address.evm);
         tempvar self = new model.State(
             accounts_start=self.accounts_start,
             accounts=accounts,

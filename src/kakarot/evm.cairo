@@ -740,7 +740,7 @@ namespace EVM {
         let (state, success) = State.add_transfer(state, transfer);
 
         // Check collision
-        let account = Account.fetch_or_create(address);
+        let (state, account) = State.get_account(state, address);
         let code_or_nonce = Account.has_code_or_nonce(account);
         let is_collision = code_or_nonce * is_deploy_tx;
         // Nonce is set to 1 in case of deploy_tx

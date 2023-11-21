@@ -15,6 +15,7 @@ from starkware.starknet.common.syscalls import deploy, get_contract_address
 from openzeppelin.token.erc20.library import ERC20
 
 // Local dependencies
+from data_availability.starknet import Starknet
 from kakarot.constants import Constants
 from kakarot.storages import (
     native_token_address,
@@ -170,11 +171,11 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (caller_evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (caller_starknet_contract_address) = Account.deploy(
+    let (caller_starknet_contract_address) = Starknet.deploy(
         contract_account_class_hash_, caller_evm_contract_address
     );
     let (callee_evm_contract_address) = CreateHelper.get_create_address(1, 0);
-    let (callee_starknet_contract_address) = Account.deploy(
+    let (callee_starknet_contract_address) = Starknet.deploy(
         contract_account_class_hash_, callee_evm_contract_address
     );
 
@@ -258,14 +259,14 @@ func test__exec_call__should_transfer_value{
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (caller_evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (caller_starknet_contract_address) = Account.deploy(
+    let (caller_starknet_contract_address) = Starknet.deploy(
         contract_account_class_hash_, caller_evm_contract_address
     );
     tempvar caller_address = new model.Address(
         caller_starknet_contract_address, caller_evm_contract_address
     );
     let (callee_evm_contract_address) = CreateHelper.get_create_address(1, 0);
-    let (callee_starknet_contract_address) = Account.deploy(
+    let (callee_starknet_contract_address) = Starknet.deploy(
         contract_account_class_hash_, callee_evm_contract_address
     );
     tempvar callee_address = new model.Address(
@@ -327,11 +328,11 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (caller_evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (caller_starknet_contract_address) = Account.deploy(
+    let (caller_starknet_contract_address) = Starknet.deploy(
         contract_account_class_hash_, caller_evm_contract_address
     );
     let (callee_evm_contract_address) = CreateHelper.get_create_address(1, 0);
-    let (_) = Account.deploy(contract_account_class_hash_, callee_evm_contract_address);
+    let (_) = Starknet.deploy(contract_account_class_hash_, callee_evm_contract_address);
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
@@ -407,14 +408,14 @@ func test__exec_callcode__should_transfer_value{
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (caller_evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (caller_starknet_contract_address) = Account.deploy(
+    let (caller_starknet_contract_address) = Starknet.deploy(
         contract_account_class_hash_, caller_evm_contract_address
     );
     tempvar caller_address = new model.Address(
         caller_starknet_contract_address, caller_evm_contract_address
     );
     let (callee_evm_contract_address) = CreateHelper.get_create_address(1, 0);
-    let (callee_starknet_contract_address) = Account.deploy(
+    let (callee_starknet_contract_address) = Starknet.deploy(
         contract_account_class_hash_, callee_evm_contract_address
     );
     tempvar callee_address = new model.Address(
@@ -476,7 +477,7 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (local starknet_contract_address) = Account.deploy(
+    let (local starknet_contract_address) = Starknet.deploy(
         contract_account_class_hash_, evm_contract_address
     );
 
@@ -550,7 +551,7 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (local starknet_contract_address) = Account.deploy(
+    let (local starknet_contract_address) = Starknet.deploy(
         contract_account_class_hash_, evm_contract_address
     );
 
