@@ -13,10 +13,8 @@ from starkware.starknet.common.syscalls import get_block_number, get_block_times
 
 // Local dependencies
 from kakarot.evm import EVM
-from kakarot.library import Kakarot
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.state import Internals as State
 from kakarot.constants import Constants
 from kakarot.storages import (
     native_token_address,
@@ -24,6 +22,7 @@ from kakarot.storages import (
     blockhash_registry_address,
     account_proxy_class_hash,
 )
+from data_availability.starknet import Internals as Starknet
 from utils.dict import dict_keys, dict_values
 
 // Constructor
@@ -55,7 +54,7 @@ func execute{
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
     tempvar address = new model.Address(1, 1);
-    let summary = Kakarot.execute(
+    let summary = EVM.execute(
         address=address,
         is_deploy_tx=0,
         origin=&origin,
@@ -164,6 +163,6 @@ func evm_execute{
 
     // We just emit the events as committing the accounts is out of the scope of these EVM
     // tests and requires a real CallContext.address (not Address(1, 1))
-    State._emit_events(summary.state.events_len, summary.state.events);
+    Starknet._emit_events(summary.state.events_len, summary.state.events);
     return result;
 }

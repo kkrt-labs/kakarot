@@ -12,8 +12,6 @@ from starkware.cairo.common.hash import hash2
 from starkware.cairo.common.math_cmp import is_not_zero
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
-from starkware.starknet.common.storage import normalize_address
-from starkware.starknet.common.syscalls import deploy as deploy_syscall, get_contract_address
 from starkware.cairo.common.hash_state import (
     hash_finalize,
     hash_init,
@@ -21,6 +19,8 @@ from starkware.cairo.common.hash_state import (
     hash_update_single,
     hash_update_with_hashchain,
 )
+from starkware.starknet.common.storage import normalize_address
+from starkware.starknet.common.syscalls import get_contract_address
 
 from kakarot.constants import Constants
 from kakarot.storages import (
@@ -30,16 +30,9 @@ from kakarot.storages import (
 )
 from kakarot.interfaces.interfaces import IAccount, IContractAccount, IERC20
 from kakarot.model import model
+from kakarot.storages import evm_to_starknet_address
 from utils.dict import default_dict_copy
 from utils.utils import Helpers
-
-@event
-func evm_contract_deployed(evm_contract_address: felt, starknet_contract_address: felt) {
-}
-
-@storage_var
-func evm_to_starknet_address(evm_address: felt) -> (starknet_address: felt) {
-}
 
 namespace Account {
     // @dev Like an Account, but frozen after squashing all dicts
@@ -109,68 +102,6 @@ namespace Account {
             balance=self.balance,
             selfdestruct=self.selfdestruct,
         );
-    }
-
-    // @notice Commit the account to the storage backend at given address
-    // @dev Account is deployed here if it doesn't exist already
-    // @dev Works on Account.Summary to make sure only finalized accounts are committed.
-    // @param self The pointer to the Account
-    // @param starknet_address A starknet address to commit to
-    // @notice Iterate through the storage dict and update the Starknet storage
-    func commit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: Summary*, starknet_address: felt
-    ) {
-        alloc_locals;
-
-        let starknet_account_exists = is_registered(self.address);
-
-        // Case new Account
-        if (starknet_account_exists == 0) {
-            // Just casting the Summary into an Account to apply has_code_or_nonce
-            // cf Summary note: like an Account, but frozen after squashing all dicts
-            // There is no reason to have has_code_or_nonce available in the public API
-            // for Account.Summary, but safe to use here
-            let code_or_nonce = has_code_or_nonce(cast(self, model.Account*));
-
-            if (code_or_nonce != FALSE) {
-                // Deploy accounts
-                let (class_hash) = contract_account_class_hash.read();
-                deploy(class_hash, self.address);
-                // If SELFDESTRUCT, stops here to leave the account empty
-                if (self.selfdestruct != 0) {
-                    return ();
-                }
-
-                // Write bytecode
-                IContractAccount.write_bytecode(starknet_address, self.code_len, self.code);
-                // Set nonce
-                IContractAccount.set_nonce(starknet_address, self.nonce);
-                // Save storages
-                Internals._save_storage(starknet_address, self.storage_start, self.storage);
-                return ();
-            } else {
-                // Touched an undeployed address in a CALL, do nothing
-                return ();
-            }
-        }
-
-        // Case existing Account and SELFDESTRUCT
-        if (self.selfdestruct != 0) {
-            IContractAccount.selfdestruct(contract_address=starknet_address);
-            return ();
-        }
-
-        let (account_type) = IAccount.account_type(contract_address=starknet_address);
-        if (account_type == 'EOA') {
-            return ();
-        }
-
-        // Set nonce
-        IContractAccount.set_nonce(starknet_address, self.nonce);
-        // Save storages
-        Internals._save_storage(starknet_address, self.storage_start, self.storage);
-
-        return ();
     }
 
     // @notice fetch an account from Starknet
@@ -441,33 +372,6 @@ namespace Account {
         return (contract_address=contract_address);
     }
 
-    // @notice Deploy a new account proxy
-    // @dev Deploy an instance of an account
-    // @param evm_address The Ethereum address which will be controlling the account
-    // @param class_hash The hash of the implemented account (eoa/contract)
-    // @return account_address The Starknet Account Proxy address
-    func deploy{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        class_hash: felt, evm_address: felt
-    ) -> (account_address: felt) {
-        alloc_locals;
-        let (kakarot_address: felt) = get_contract_address();
-        let (_account_proxy_class_hash: felt) = account_proxy_class_hash.read();
-        let (constructor_calldata: felt*) = alloc();
-        let (starknet_address) = deploy_syscall(
-            _account_proxy_class_hash,
-            contract_address_salt=evm_address,
-            constructor_calldata_size=0,
-            constructor_calldata=constructor_calldata,
-            deploy_from_zero=0,
-        );
-        assert constructor_calldata[0] = kakarot_address;
-        assert constructor_calldata[1] = evm_address;
-        IAccount.initialize(starknet_address, class_hash, 2, constructor_calldata);
-        evm_contract_deployed.emit(evm_address, starknet_address);
-        evm_to_starknet_address.write(evm_address, starknet_address);
-        return (account_address=starknet_address);
-    }
-
     // @notice Tells if an account has code_len > 0 or nonce > 0
     // @dev See https://github.com/ethereum/execution-specs/blob/3fe6514f2d9d234e760d11af883a47c1263eff51/src/ethereum/shanghai/state.py#L352
     // @param self The pointer to the Account
@@ -493,25 +397,6 @@ namespace Account {
 }
 
 namespace Internals {
-    // @notice Iterates through the storage dict and update Contract Account storage.
-    // @param starknet_address The address of the Starknet account to save into.
-    // @param storage_start The dict start pointer
-    // @param storage_end The dict end pointer
-    func _save_storage{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        starknet_address: felt, storage_start: DictAccess*, storage_end: DictAccess*
-    ) {
-        if (storage_start == storage_end) {
-            return ();
-        }
-        let value = cast(storage_start.new_value, Uint256*);
-
-        IContractAccount.write_storage(
-            contract_address=starknet_address, storage_addr=storage_start.key, value=[value]
-        );
-
-        return _save_storage(starknet_address, storage_start + DictAccess.SIZE, storage_end);
-    }
-
     // @notice Compute the storage address of the given key when the storage var interface is
     //         storage_(key: Uint256)
     // @dev    Just the generated addr method when compiling the contract_account

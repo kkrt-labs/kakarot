@@ -11,11 +11,6 @@ from starkware.cairo.common.math import split_felt, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256, uint256_eq
-from starkware.starknet.common.syscalls import (
-    deploy as deploy_syscall,
-    get_contract_address,
-    get_tx_info,
-)
 from starkware.cairo.common.registers import get_fp_and_pc
 
 // Internal dependencies

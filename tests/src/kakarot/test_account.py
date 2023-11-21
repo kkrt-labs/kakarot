@@ -20,24 +20,26 @@ async def account(starknet: Starknet):
 class TestAccount:
     class TestInit:
         @pytest.mark.parametrize(
-            "address, code, nonce", [(0, [], 0), (2**160 - 1, [1, 2, 3], 1)]
+            "address, code, nonce, balance",
+            [(0, [], 0, 0), (2**160 - 1, [1, 2, 3], 1, 1)],
         )
         async def test_should_return_account_with_default_dict_as_storage(
-            self, account, address, code, nonce
+            self, account, address, code, nonce, balance
         ):
             await account.test__init__should_return_account_with_default_dict_as_storage(
-                address, code, nonce
+                address, code, nonce, balance
             ).call()
 
     class TestCopy:
         @pytest.mark.parametrize(
-            "address, code, nonce", [(0, [], 0), (2**160 - 1, [1, 2, 3], 1)]
+            "address, code, nonce, balance",
+            [(0, [], 0, 0), (2**160 - 1, [1, 2, 3], 1, 1)],
         )
-        async def test_should_return_account_with_default_dict_as_storage(
-            self, account, address, code, nonce
+        async def test_should_return_new_account_with_same_attributes(
+            self, account, address, code, nonce, balance
         ):
             await account.test__copy__should_return_new_account_with_same_attributes(
-                address, code, nonce
+                address, code, nonce, balance
             ).call()
 
     class TestFinalize:

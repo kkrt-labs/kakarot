@@ -10,13 +10,13 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import get_caller_address
 
 // Local dependencies
+from data_availability.starknet import Starknet
 from kakarot.account import Account
 from kakarot.evm import EVM
 from kakarot.library import Kakarot
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.state import State
 from utils.utils import Helpers
 
 // Constructor
@@ -191,7 +191,7 @@ func eth_send_transaction{
         return result;
     }
 
-    State.commit(summary.state);
+    Starknet.commit(summary.state);
 
     if (to == 0) {
         // Overwrite return_data with deployed addresses

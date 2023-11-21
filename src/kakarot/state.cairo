@@ -3,22 +3,15 @@
 %lang starknet
 
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
 from starkware.cairo.common.dict import dict_read, dict_write
 from starkware.cairo.common.dict_access import DictAccess
-from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_update, hash_felts
-from starkware.cairo.common.math import assert_not_zero
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256, uint256_add, uint256_sub, uint256_le
-from starkware.starknet.common.storage import normalize_address
-from starkware.starknet.common.syscalls import call_contract
-from starkware.starknet.common.syscalls import emit_event
 
 from kakarot.account import Account
-from kakarot.storages import native_token_address, contract_account_class_hash
-from kakarot.interfaces.interfaces import IERC20
 from kakarot.model import model
 from utils.dict import default_dict_copy
 from utils.utils import Helpers
@@ -97,28 +90,6 @@ namespace State {
         );
     }
 
-    // @notice Commit the current state to the underlying data backend (here, Starknet)
-    // @dev Works on State.Summary to make sure only finalized states are committed.
-    // @param self The pointer to the State
-    func commit{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(self: Summary*) {
-        // Accounts
-        Internals._commit_accounts(self.accounts_start, self.accounts);
-
-        // Events
-        Internals._emit_events(self.events_len, self.events);
-
-        // Transfers
-        let (native_token_address_) = native_token_address.read();
-        Internals._transfer_eth(native_token_address_, self.transfers_len, self.transfers);
-
-        return ();
-    }
-
     // @notice Get a given EVM Account
     // @dev Try to retrieve in the local Dict<Address*, Account*> first, and if not already here
     //      read the contract storage and cache the result.
@@ -187,12 +158,9 @@ namespace State {
     // @param self The pointer to the execution State.
     // @param address The pointer to the Address.
     // @param key The pointer to the storage key
-    func read_storage{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.State*, address: model.Address*, key: Uint256*) -> (model.State*, Uint256*) {
+    func read_storage{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.State*, address: model.Address*, key: Uint256*
+    ) -> (model.State*, Uint256*) {
         alloc_locals;
         let (self, account) = get_account(self, address);
         let (account, value) = Account.read_storage(account, address, key);
@@ -237,12 +205,9 @@ namespace State {
     // @param event The pointer to the Transfer
     // @return The updated State
     // @return The status of the transfer
-    func add_transfer{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(self: model.State*, transfer: model.Transfer) -> (model.State*, felt) {
+    func add_transfer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.State*, transfer: model.Transfer
+    ) -> (model.State*, felt) {
         alloc_locals;
         // See https://docs.cairo-lang.org/0.12.0/how_cairo_works/functions.html#retrieving-registers
         let fp_and_pc = get_fp_and_pc();
@@ -353,65 +318,5 @@ namespace Internals {
         );
 
         return _finalize_accounts(accounts_start + DictAccess.SIZE, accounts_end);
-    }
-
-    // @notice Iterate through the accounts dict and commit them
-    // @dev Account is deployed here if it doesn't exist already
-    // @param accounts_start The dict start pointer
-    // @param accounts_end The dict end pointer
-    func _commit_accounts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        accounts_start: DictAccess*, accounts_end: DictAccess*
-    ) {
-        alloc_locals;
-        if (accounts_start == accounts_end) {
-            return ();
-        }
-
-        let starknet_address = accounts_start.key;
-        let account = cast(accounts_start.new_value, Account.Summary*);
-        Account.commit(account, starknet_address);
-
-        _commit_accounts(accounts_start + DictAccess.SIZE, accounts_end);
-
-        return ();
-    }
-
-    // @notice Iterates through a list of events and emits them.
-    // @param events_len The length of the events array.
-    // @param events The array of Event structs that are emitted via the `emit_event` syscall.
-    func _emit_events{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        events_len: felt, events: model.Event*
-    ) {
-        alloc_locals;
-
-        if (events_len == 0) {
-            return ();
-        }
-
-        let event: model.Event = [events];
-        emit_event(
-            keys_len=event.topics_len, keys=event.topics, data_len=event.data_len, data=event.data
-        );
-
-        _emit_events(events_len - 1, events + model.Event.SIZE);
-        return ();
-    }
-
-    // @notice Iterates through a list of Transfer and makes them
-    // @dev Transfers are made last so as to have all accounts created beforehand.
-    // @param transfers_len The length of the transfers array.
-    // @param transfers The array of Transfer.
-    func _transfer_eth{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        token_address: felt, transfers_len: felt, transfers: model.Transfer*
-    ) {
-        if (transfers_len == 0) {
-            return ();
-        }
-
-        let transfer = [transfers];
-        IERC20.transferFrom(
-            token_address, transfer.sender.starknet, transfer.recipient.starknet, transfer.amount
-        );
-        return _transfer_eth(token_address, transfers_len - 1, transfers + model.Transfer.SIZE);
     }
 }

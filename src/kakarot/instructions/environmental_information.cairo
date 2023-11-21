@@ -7,7 +7,6 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
-from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math_cmp import is_le
