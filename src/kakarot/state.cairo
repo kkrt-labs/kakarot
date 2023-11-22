@@ -9,7 +9,7 @@ from starkware.cairo.common.dict import dict_read, dict_write
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_fp_and_pc
-from starkware.cairo.common.uint256 import Uint256, uint256_add, uint256_sub, uint256_le
+from starkware.cairo.common.uint256 import Uint256, uint256_add, uint256_sub, uint256_le, uint256_eq
 
 from kakarot.account import Account
 from kakarot.model import model
