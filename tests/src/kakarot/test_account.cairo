@@ -18,14 +18,17 @@ from kakarot.account import Account
 @external
 func test__init__should_return_account_with_default_dict_as_storage{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(address: felt, code_len: felt, code: felt*, nonce: felt) {
+}(address: felt, code_len: felt, code: felt*, nonce: felt, balance_low: felt) {
     // When
-    let account = Account.init(address, code_len, code, nonce);
+    tempvar balance = new Uint256(balance_low, 0);
+    let account = Account.init(address, code_len, code, nonce, balance);
 
     // Then
     assert account.address = address;
     assert account.code_len = code_len;
     assert account.nonce = nonce;
+    assert account.balance.low = balance_low;
+    assert account.balance.high = 0;
     assert account.selfdestruct = 0;
     let storage = account.storage;
     let (value) = dict_read{dict_ptr=storage}(0xdead);
@@ -36,10 +39,11 @@ func test__init__should_return_account_with_default_dict_as_storage{
 @external
 func test__copy__should_return_new_account_with_same_attributes{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(evm_address: felt, code_len: felt, code: felt*, nonce: felt) {
+}(evm_address: felt, code_len: felt, code: felt*, nonce: felt, balance_low: felt) {
     alloc_locals;
     // Given
-    let account = Account.init(evm_address, code_len, code, nonce);
+    tempvar balance = new Uint256(balance_low, 0);
+    let account = Account.init(evm_address, code_len, code, nonce, balance);
     tempvar key = new Uint256(1, 2);
     tempvar value = new Uint256(3, 4);
     let account = Account.write_storage(account, key, value);
@@ -53,6 +57,8 @@ func test__copy__should_return_new_account_with_same_attributes{
     assert account.address = account_copy.address;
     assert account.code_len = account_copy.code_len;
     assert account.nonce = account_copy.nonce;
+    assert account.balance.low = balance_low;
+    assert account.balance.high = 0;
     assert account.selfdestruct = account_copy.selfdestruct;
 
     // Same storage
@@ -78,7 +84,8 @@ func test__finalize__should_return_summary{
 }(evm_address: felt, code_len: felt, code: felt*, nonce: felt) {
     // Given
     alloc_locals;
-    let account = Account.init(evm_address, code_len, code, nonce);
+    tempvar balance = new Uint256(0, 0);
+    let account = Account.init(evm_address, code_len, code, nonce, balance);
     tempvar key = new Uint256(1, 2);
     tempvar value = new Uint256(3, 4);
     tempvar address = new model.Address(0, evm_address);
@@ -111,7 +118,8 @@ func test__finalize__should_return_summary_with_no_default_dict{
     alloc_locals;
     tempvar key = new Uint256(1, 2);
     tempvar address = new model.Address(0, evm_address);
-    let account = Account.init(evm_address, code_len, code, nonce);
+    tempvar balance = new Uint256(0, 0);
+    let account = Account.init(evm_address, code_len, code, nonce, balance);
 
     // When
     let summary = Account.finalize(account);
@@ -134,7 +142,8 @@ func test__write_storage__should_store_value_at_key{
     local __fp__: felt* = fp_and_pc.fp_val;
     tempvar address = new model.Address(0, 0);
     let (local code: felt*) = alloc();
-    let account = Account.init(0, 0, code, 0);
+    tempvar balance = new Uint256(0, 0);
+    let account = Account.init(0, 0, code, 0, balance);
 
     // When
     let account = Account.write_storage(account, &key, &value);
@@ -153,7 +162,8 @@ func test__has_code_or_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
     nonce: felt, code_len: felt, code: felt*
 ) -> (has_code_or_nonce: felt) {
     // Given
-    let account = Account.init(0, code_len, code, nonce);
+    tempvar balance = new Uint256(0, 0);
+    let account = Account.init(0, code_len, code, nonce, balance);
 
     // When
     let result = Account.has_code_or_nonce(account);

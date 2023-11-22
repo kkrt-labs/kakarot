@@ -11,11 +11,6 @@ from starkware.cairo.common.math import split_felt, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256, uint256_eq
-from starkware.starknet.common.syscalls import (
-    deploy as deploy_syscall,
-    get_contract_address,
-    get_tx_info,
-)
 from starkware.cairo.common.registers import get_fp_and_pc
 
 // Internal dependencies
@@ -356,9 +351,9 @@ namespace SystemOperations {
 
         let (recipient_starknet_address) = Account.compute_starknet_address(recipient_evm_address);
         tempvar recipient = new model.Address(recipient_starknet_address, recipient_evm_address);
-        let (state, balance) = State.read_balance(ctx.state, ctx.call_context.address);
+        let (state, account) = State.get_account(ctx.state, ctx.call_context.address);
         let transfer = model.Transfer(
-            sender=ctx.call_context.address, recipient=recipient, amount=balance
+            sender=ctx.call_context.address, recipient=recipient, amount=[account.balance]
         );
         let (state, success) = State.add_transfer(state, transfer);
 
@@ -771,7 +766,7 @@ namespace CreateHelper {
             self=ctx.memory, element_len=size.low, element=bytecode, offset=offset.low
         );
 
-        // Get new account address
+        // Get target account
         let (state, evm_contract_address) = get_evm_address(
             ctx.state, ctx.call_context.address, popped_len, popped, size.low, bytecode
         );
@@ -779,9 +774,8 @@ namespace CreateHelper {
         tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
 
         // Create Account with empty bytecode
-        let account = Account.fetch_or_create(address);
+        let (state, account) = State.get_account(state, address);
         let is_collision = Account.has_code_or_nonce(account);
-        let account = Account.set_nonce(account, 1);
 
         // Update calling context before creating sub context
         let ctx = ExecutionContext.update_memory(ctx, memory);
@@ -795,6 +789,8 @@ namespace CreateHelper {
 
         // Create sub context with copied state
         let state = State.copy(ctx.state);
+        let (state, account) = State.get_account(state, address);
+        let account = Account.set_nonce(account, 1);
         let state = State.set_account(state, address, account);
         let (calldata: felt*) = alloc();
         tempvar call_context: model.CallContext* = new model.CallContext(

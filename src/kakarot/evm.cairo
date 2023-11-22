@@ -3,6 +3,7 @@
 %lang starknet
 
 // Starkware dependencies
+from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_le
@@ -667,6 +668,104 @@ namespace EVM {
 
         let ctx = exec_opcode(ctx);
         return run(ctx);
+    }
+
+    // @notice Run the given bytecode with the given calldata and parameters
+    // @param address The target account address
+    // @param is_deploy_tx Whether the transaction is a deploy tx or not
+    // @param origin The caller EVM address
+    // @param bytecode_len The length of the bytecode
+    // @param bytecode The bytecode run
+    // @param calldata_len The length of the calldata
+    // @param calldata The calldata of the execution
+    // @param value The value of the execution
+    // @param gas_limit The gas limit of the execution
+    // @param gas_price The gas price for the execution
+    func execute{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(
+        address: model.Address*,
+        is_deploy_tx: felt,
+        origin: model.Address*,
+        bytecode_len: felt,
+        bytecode: felt*,
+        calldata_len: felt,
+        calldata: felt*,
+        value: felt,
+        gas_limit: felt,
+        gas_price: felt,
+    ) -> Summary* {
+        alloc_locals;
+
+        // If is_deploy_tx is TRUE, then
+        // bytecode is data and data is empty
+        // else, bytecode and data are kept as is
+        let bytecode_len = calldata_len * is_deploy_tx + bytecode_len * (1 - is_deploy_tx);
+        let calldata_len = calldata_len * (1 - is_deploy_tx);
+        if (is_deploy_tx != 0) {
+            let (empty: felt*) = alloc();
+            tempvar bytecode = calldata;
+            tempvar calldata = empty;
+        } else {
+            tempvar bytecode = bytecode;
+            tempvar calldata = calldata;
+        }
+
+        let root_context = ExecutionContext.init_empty();
+        tempvar call_context = new model.CallContext(
+            bytecode=bytecode,
+            bytecode_len=bytecode_len,
+            calldata=calldata,
+            calldata_len=calldata_len,
+            value=value,
+            gas_limit=gas_limit,
+            gas_price=gas_price,
+            origin=origin,
+            calling_context=root_context,
+            address=address,
+            read_only=FALSE,
+            is_create=is_deploy_tx,
+        );
+
+        let ctx = ExecutionContext.init(call_context);
+        let ctx = ExecutionContext.add_intrinsic_gas_cost(ctx);
+
+        let state = ctx.state;
+        // Handle value
+        let amount = Helpers.to_uint256(value);
+        let transfer = model.Transfer(origin, address, [amount]);
+        let (state, success) = State.add_transfer(state, transfer);
+
+        // Check collision
+        let (state, account) = State.get_account(state, address);
+        let code_or_nonce = Account.has_code_or_nonce(account);
+        let is_collision = code_or_nonce * is_deploy_tx;
+        // Nonce is set to 1 in case of deploy_tx
+        let nonce = account.nonce * (1 - is_deploy_tx) + is_deploy_tx;
+        let account = Account.set_nonce(account, nonce);
+        let state = State.set_account(state, address, account);
+
+        let ctx = ExecutionContext.update_state(ctx, state);
+
+        if (is_collision != 0) {
+            let (revert_reason_len, revert_reason) = Errors.addressCollision();
+            tempvar ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+        } else {
+            tempvar ctx = ctx;
+        }
+
+        if (success == 0) {
+            let (revert_reason_len, revert_reason) = Errors.balanceError();
+            tempvar ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+        } else {
+            tempvar ctx = ctx;
+        }
+
+        let summary = run(ctx);
+        return summary;
     }
 
     // @notice A placeholder for opcodes that don't exist

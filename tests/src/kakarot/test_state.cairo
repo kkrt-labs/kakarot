@@ -10,11 +10,28 @@ from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from starkware.cairo.common.math import assert_not_equal
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.registers import get_fp_and_pc
+from starkware.starknet.common.syscalls import get_contract_address
 
 // Local dependencies
 from kakarot.model import model
 from kakarot.state import State
 from kakarot.account import Account
+from kakarot.storages import native_token_address
+
+// Add a balanceOf for the accounts
+@constructor
+func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
+    let (contract_address) = get_contract_address();
+    native_token_address.write(contract_address);
+    return ();
+}
+
+@view
+func balanceOf{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(account: felt) -> (
+    balance: Uint256
+) {
+    return (Uint256(0, 0),);
+}
 
 @external
 func test__init__should_return_state_with_default_dicts{
@@ -26,15 +43,10 @@ func test__init__should_return_state_with_default_dicts{
     // Then
     assert state.accounts - state.accounts_start = 0;
     assert state.events_len = 0;
-    assert state.balances - state.balances_start = 0;
     assert state.transfers_len = 0;
 
     let accounts = state.accounts;
     let (value) = dict_read{dict_ptr=accounts}(0xdead);
-    assert value = 0;
-
-    let balances = state.balances;
-    let (value) = dict_read{dict_ptr=balances}(0xdead);
     assert value = 0;
 
     return ();
@@ -76,8 +88,6 @@ func test__copy__should_return_new_state_with_same_attributes{
         accounts=state.accounts,
         events_len=state.events_len,
         events=state.events,
-        balances_start=state.balances_start,
-        balances=state.balances,
         transfers_len=1,
         transfers=state.transfers,
     );

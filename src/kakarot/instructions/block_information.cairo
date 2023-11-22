@@ -181,8 +181,8 @@ namespace Internals {
     func selfbalance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         ctx: model.ExecutionContext*
     ) -> (model.ExecutionContext*, Uint256) {
-        let (state, balance) = State.read_balance(ctx.state, ctx.call_context.address);
+        let (state, account) = State.get_account(ctx.state, ctx.call_context.address);
         let ctx = ExecutionContext.update_state(ctx, state);
-        return (ctx, balance);
+        return (ctx, [account.balance]);
     }
 }

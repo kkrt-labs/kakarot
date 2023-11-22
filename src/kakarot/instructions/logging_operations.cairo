@@ -6,7 +6,6 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.starknet.common.syscalls import emit_event
 from starkware.cairo.common.math_cmp import is_le
 
 // Internal dependencies

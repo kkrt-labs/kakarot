@@ -6,15 +6,12 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.default_dict import default_dict_new
-from starkware.cairo.common.math import split_felt, assert_not_zero, assert_le
+from starkware.cairo.common.math import split_felt, assert_not_zero
 from starkware.cairo.common.uint256 import Uint256, uint256_sub
-from starkware.starknet.common.syscalls import deploy, get_contract_address
-
-// Third party dependencies
-from openzeppelin.token.erc20.library import ERC20
+from starkware.starknet.common.syscalls import get_contract_address
 
 // Local dependencies
+from data_availability.starknet import Starknet
 from kakarot.constants import Constants
 from kakarot.storages import (
     native_token_address,
@@ -24,8 +21,6 @@ from kakarot.storages import (
 from kakarot.execution_context import ExecutionContext
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.system_operations import SystemOperations, CallHelper, CreateHelper
-from kakarot.interfaces.interfaces import IContractAccount, IKakarot, IAccount, IERC20
-from kakarot.library import Kakarot
 from kakarot.account import Account
 from kakarot.model import model
 from kakarot.stack import Stack
@@ -60,7 +55,8 @@ func constructor{
 func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     native_token_address: felt
 ) {
-    return Kakarot.get_native_token();
+    let (native_token) = native_token_address.read();
+    return (native_token,);
 }
 
 // @dev mock function that returns the computed starknet address from an evm address
@@ -170,11 +166,11 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (caller_evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (caller_starknet_contract_address) = Account.deploy(
+    let (caller_starknet_contract_address) = Starknet.deploy(
         contract_account_class_hash_, caller_evm_contract_address
     );
     let (callee_evm_contract_address) = CreateHelper.get_create_address(1, 0);
-    let (callee_starknet_contract_address) = Account.deploy(
+    let (callee_starknet_contract_address) = Starknet.deploy(
         contract_account_class_hash_, callee_evm_contract_address
     );
 
@@ -195,9 +191,6 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     let stack = Stack.push(stack, value);
     let stack = Stack.push(stack, address);
     let stack = Stack.push(stack, gas);
-    // Put some value in memory as it is used for calldata with args_size and args_offset
-    // Word is 0x 11 22 33 44 55 66 77 88 00 00 ... 00
-    // calldata should be 0x 44 55 66 77
     tempvar memory_word = new Uint256(low=0, high=0x11223344556677880000000000000000);
     tempvar memory_offset = new Uint256(0, 0);
     let stack = Stack.push(stack, memory_word);
@@ -258,18 +251,12 @@ func test__exec_call__should_transfer_value{
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (caller_evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (caller_starknet_contract_address) = Account.deploy(
+    let (caller_starknet_contract_address) = Starknet.deploy(
         contract_account_class_hash_, caller_evm_contract_address
     );
-    tempvar caller_address = new model.Address(
-        caller_starknet_contract_address, caller_evm_contract_address
-    );
     let (callee_evm_contract_address) = CreateHelper.get_create_address(1, 0);
-    let (callee_starknet_contract_address) = Account.deploy(
+    let (callee_starknet_contract_address) = Starknet.deploy(
         contract_account_class_hash_, callee_evm_contract_address
-    );
-    tempvar callee_address = new model.Address(
-        callee_starknet_contract_address, callee_evm_contract_address
     );
 
     // Fill the stack with input data
@@ -289,18 +276,21 @@ func test__exec_call__should_transfer_value{
     let stack = Stack.push(stack, value);
     let stack = Stack.push(stack, address);
     let stack = Stack.push(stack, gas);
-    tempvar memory_word = new Uint256(low=0, high=22774453838368691922685013100469420032);
+    tempvar memory_word = new Uint256(low=0, high=0x11223344556677880000000000000000);
     tempvar memory_offset = new Uint256(0, 0);
     let stack = Stack.push(stack, memory_word);
     let stack = Stack.push(stack, memory_offset);
     let (bytecode) = alloc();
-    local bytecode_len = 0;
     let ctx = TestHelpers.init_context_at_address_with_stack(
-        caller_starknet_contract_address, caller_evm_contract_address, bytecode_len, bytecode, stack
+        caller_starknet_contract_address, caller_evm_contract_address, 0, bytecode, stack
     );
     let ctx = MemoryOperations.exec_mstore(ctx);
+
     // Get the balance of caller pre-call
-    let (state, caller_balance_prev) = State.read_balance(ctx.state, caller_address);
+    tempvar caller_address = new model.Address(
+        caller_starknet_contract_address, caller_evm_contract_address
+    );
+    let (state, caller_account_prev) = State.get_account(ctx.state, caller_address);
     let ctx = ExecutionContext.update_state(ctx, state);
 
     // When
@@ -309,11 +299,15 @@ func test__exec_call__should_transfer_value{
     // Then
     // get balances of caller and callee post-call
     let state = sub_ctx.state;
-    let (state, callee_balance) = State.read_balance(state, callee_address);
-    let (state, caller_balance_new) = State.read_balance(state, caller_address);
-    let (caller_diff_balance) = uint256_sub(caller_balance_prev, caller_balance_new);
-
-    assert callee_balance = Uint256(2, 0);
+    tempvar callee_address = new model.Address(
+        callee_starknet_contract_address, callee_evm_contract_address
+    );
+    let (state, callee_account) = State.get_account(state, callee_address);
+    let (state, caller_account_new) = State.get_account(state, caller_address);
+    let (caller_diff_balance) = uint256_sub(
+        [caller_account_prev.balance], [caller_account_new.balance]
+    );
+    assert [callee_account.balance] = Uint256(2, 0);
     assert caller_diff_balance = Uint256(2, 0);
     return ();
 }
@@ -327,11 +321,11 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (caller_evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (caller_starknet_contract_address) = Account.deploy(
+    let (caller_starknet_contract_address) = Starknet.deploy(
         contract_account_class_hash_, caller_evm_contract_address
     );
     let (callee_evm_contract_address) = CreateHelper.get_create_address(1, 0);
-    let (_) = Account.deploy(contract_account_class_hash_, callee_evm_contract_address);
+    let (_) = Starknet.deploy(contract_account_class_hash_, callee_evm_contract_address);
 
     // Fill the stack with input data
     let stack: model.Stack* = Stack.init();
@@ -353,7 +347,7 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
     // Put some value in memory as it is used for calldata with args_size and args_offset
     // Word is 0x 11 22 33 44 55 66 77 88 00 00 ... 00
     // calldata should be 0x 44 55 66 77
-    tempvar memory_word = new Uint256(low=0, high=22774453838368691922685013100469420032);
+    tempvar memory_word = new Uint256(low=0, high=0x11223344556677880000000000000000);
     tempvar memory_offset = new Uint256(0, 0);
     let stack = Stack.push(stack, memory_word);
     let stack = Stack.push(stack, memory_offset);
@@ -407,14 +401,14 @@ func test__exec_callcode__should_transfer_value{
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (caller_evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (caller_starknet_contract_address) = Account.deploy(
+    let (caller_starknet_contract_address) = Starknet.deploy(
         contract_account_class_hash_, caller_evm_contract_address
     );
     tempvar caller_address = new model.Address(
         caller_starknet_contract_address, caller_evm_contract_address
     );
     let (callee_evm_contract_address) = CreateHelper.get_create_address(1, 0);
-    let (callee_starknet_contract_address) = Account.deploy(
+    let (callee_starknet_contract_address) = Starknet.deploy(
         contract_account_class_hash_, callee_evm_contract_address
     );
     tempvar callee_address = new model.Address(
@@ -438,7 +432,7 @@ func test__exec_callcode__should_transfer_value{
     let stack = Stack.push(stack, value);
     let stack = Stack.push(stack, address);
     let stack = Stack.push(stack, gas);
-    tempvar memory_word = new Uint256(low=0, high=22774453838368691922685013100469420032);
+    tempvar memory_word = new Uint256(low=0, high=0x11223344556677880000000000000000);
     tempvar memory_offset = new Uint256(0, 0);
     let stack = Stack.push(stack, memory_word);
     let stack = Stack.push(stack, memory_offset);
@@ -450,7 +444,7 @@ func test__exec_callcode__should_transfer_value{
     let ctx = MemoryOperations.exec_mstore(ctx);
 
     // Get the balance of caller pre-call
-    let (state, caller_pre_balance) = State.read_balance(ctx.state, caller_address);
+    let (state, caller_pre_account) = State.get_account(ctx.state, caller_address);
     let ctx = ExecutionContext.update_state(ctx, state);
 
     // When
@@ -459,11 +453,9 @@ func test__exec_callcode__should_transfer_value{
     // Then
     // get balances of caller and callee post-call
     let state = sub_ctx.state;
-    let (state, caller_post_balance) = State.read_balance(state, caller_address);
-    let (state, callee_balance) = State.read_balance(state, callee_address);
-    let (caller_diff_balance) = uint256_sub(caller_pre_balance, caller_post_balance);
+    let (state, caller_post_account) = State.get_account(state, caller_address);
 
-    assert caller_post_balance = caller_pre_balance;
+    assert caller_post_account.balance = caller_pre_account.balance;
     return ();
 }
 
@@ -476,7 +468,7 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (local starknet_contract_address) = Account.deploy(
+    let (local starknet_contract_address) = Starknet.deploy(
         contract_account_class_hash_, evm_contract_address
     );
 
@@ -498,7 +490,7 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
     // Put some value in memory as it is used for calldata with args_size and args_offset
     // Word is 0x 11 22 33 44 55 66 77 88 00 00 ... 00
     // calldata should be 0x 44 55 66 77
-    tempvar memory_word = new Uint256(low=0, high=22774453838368691922685013100469420032);
+    tempvar memory_word = new Uint256(low=0, high=0x11223344556677880000000000000000);
     tempvar memory_offset = new Uint256(0, 0);
     let stack = Stack.push(stack, memory_word);
     let stack = Stack.push(stack, memory_offset);
@@ -550,7 +542,7 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
 
     let (contract_account_class_hash_) = contract_account_class_hash.read();
     let (evm_contract_address) = CreateHelper.get_create_address(0, 0);
-    let (local starknet_contract_address) = Account.deploy(
+    let (local starknet_contract_address) = Starknet.deploy(
         contract_account_class_hash_, evm_contract_address
     );
 
@@ -572,7 +564,7 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
     // Put some value in memory as it is used for calldata with args_size and args_offset
     // Word is 0x 11 22 33 44 55 66 77 88 00 00 ... 00
     // calldata should be 0x 44 55 66 77
-    tempvar memory_word = new Uint256(low=0, high=22774453838368691922685013100469420032);
+    tempvar memory_word = new Uint256(low=0, high=0x11223344556677880000000000000000);
     tempvar memory_offset = new Uint256(0, 0);
     let stack = Stack.push(stack, memory_word);
     let stack = Stack.push(stack, memory_offset);

@@ -25,3 +25,7 @@ func account_proxy_class_hash() -> (res: felt) {
 @storage_var
 func deploy_fee() -> (deploy_fee: felt) {
 }
+
+@storage_var
+func evm_to_starknet_address(evm_address: felt) -> (starknet_address: felt) {
+}

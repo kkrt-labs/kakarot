@@ -7,7 +7,6 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
-from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.math_cmp import is_le
@@ -72,8 +71,8 @@ namespace EnvironmentalInformation {
         let evm_address = Helpers.uint256_to_felt([address_uint256]);
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
-        let (state, balance) = State.read_balance(ctx.state, address);
-        let stack = Stack.push_uint256(stack, balance);
+        let (state, account) = State.get_account(ctx.state, address);
+        let stack = Stack.push_uint256(stack, [account.balance]);
 
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_state(ctx, state);
@@ -566,8 +565,8 @@ namespace EnvironmentalInformation {
 
         let (state, account) = State.get_account(ctx.state, address);
         let has_code_or_nonce = Account.has_code_or_nonce(account);
-        let (state, balance) = State.read_balance(state, address);
-        let account_exists = has_code_or_nonce + balance.low;
+        let (state, account) = State.get_account(state, address);
+        let account_exists = has_code_or_nonce + account.balance.low;
         // Relevant cases:
         // https://github.com/ethereum/go-ethereum/blob/master/core/vm/instructions.go#L392
         if (account_exists == 0) {
