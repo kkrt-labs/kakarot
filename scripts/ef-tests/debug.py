@@ -1,6 +1,8 @@
 import json
 import logging
 import os
+import subprocess
+import time
 from pathlib import Path
 
 import rlp
@@ -51,6 +53,24 @@ def get_test_file():
         return tests[0][0]
 
 
+def launch_anvil(data):
+    try:
+        block_genesis = get_genesis_block(data)
+        ts = block_genesis.header.timestamp
+        anvil = subprocess.Popen(
+            f"anvil --timestamp {ts}",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            shell=True,
+        )
+        # Wait for anvil to start
+        time.sleep(1)
+        return anvil
+    except Exception as e:
+        raise Exception("Could not launch anvil") from e
+
+
 def connect_anvil():
     w3 = Web3(Web3.HTTPProvider(RPC_ENDPOINT, request_kwargs={"timeout": 60}))
     if not w3.is_connected():
@@ -65,6 +85,15 @@ def set_pre_state(w3, data):
         w3.provider.make_request("anvil_setNonce", [address, account["nonce"]])
         for k, v in account["storage"].items():
             w3.provider.make_request("anvil_setStorage", [address, k, v])
+
+
+def get_genesis_block(data):
+    try:
+        block_rlp = data["genesisRLP"]
+        block = rlp.decode(bytes.fromhex(block_rlp[2:]), ShanghaiBlock)
+    except Exception as e:
+        raise Exception("Could not find genesis block in test data") from e
+    return block
 
 
 def get_block(data):
@@ -112,17 +141,26 @@ def check_post_state(w3, data):
 
 def main():
     test = get_test_file()
-    provider = connect_anvil()
 
-    # Set test state
-    set_pre_state(provider, test)
-    set_block(provider, test)
+    # Launch anvil
+    anvil = launch_anvil(test)
+    try:
+        provider = connect_anvil()
 
-    # Send transaction
-    tx_hash = send_transaction(provider, test)
+        # Set test state
+        set_pre_state(provider, test)
+        set_block(provider, test)
 
-    # Check post state
-    check_post_state(provider, test)
+        # Send transaction
+        tx_hash = send_transaction(provider, test)
+
+        # Check post state
+        check_post_state(provider, test)
+    except Exception as e:
+        raise e
+    finally:
+        # Terminate anvil
+        anvil.terminate()
 
     logger.info(f"Run `cast run {tx_hash} --debug` to debug transaction")
 
