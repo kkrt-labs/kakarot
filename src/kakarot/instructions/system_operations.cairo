@@ -351,9 +351,9 @@ namespace SystemOperations {
 
         let (recipient_starknet_address) = Account.compute_starknet_address(recipient_evm_address);
         tempvar recipient = new model.Address(recipient_starknet_address, recipient_evm_address);
-        let (state, balance) = State.read_balance(ctx.state, ctx.call_context.address);
+        let (state, account) = State.get_account(ctx.state, ctx.call_context.address);
         let transfer = model.Transfer(
-            sender=ctx.call_context.address, recipient=recipient, amount=balance
+            sender=ctx.call_context.address, recipient=recipient, amount=[account.balance]
         );
         let (state, success) = State.add_transfer(state, transfer);
 

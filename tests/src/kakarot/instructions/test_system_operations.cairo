@@ -290,7 +290,7 @@ func test__exec_call__should_transfer_value{
     tempvar caller_address = new model.Address(
         caller_starknet_contract_address, caller_evm_contract_address
     );
-    let (state, caller_balance_prev) = State.read_balance(ctx.state, caller_address);
+    let (state, caller_account_prev) = State.get_account(ctx.state, caller_address);
     let ctx = ExecutionContext.update_state(ctx, state);
 
     // When
@@ -302,11 +302,12 @@ func test__exec_call__should_transfer_value{
     tempvar callee_address = new model.Address(
         callee_starknet_contract_address, callee_evm_contract_address
     );
-    let (state, callee_balance) = State.read_balance(state, callee_address);
-    let (state, caller_balance_new) = State.read_balance(state, caller_address);
-    let (caller_diff_balance) = uint256_sub(caller_balance_prev, caller_balance_new);
-
-    assert callee_balance = Uint256(2, 0);
+    let (state, callee_account) = State.get_account(state, callee_address);
+    let (state, caller_account_new) = State.get_account(state, caller_address);
+    let (caller_diff_balance) = uint256_sub(
+        [caller_account_prev.balance], [caller_account_new.balance]
+    );
+    assert [callee_account.balance] = Uint256(2, 0);
     assert caller_diff_balance = Uint256(2, 0);
     return ();
 }
@@ -443,7 +444,7 @@ func test__exec_callcode__should_transfer_value{
     let ctx = MemoryOperations.exec_mstore(ctx);
 
     // Get the balance of caller pre-call
-    let (state, caller_pre_balance) = State.read_balance(ctx.state, caller_address);
+    let (state, caller_pre_account) = State.get_account(ctx.state, caller_address);
     let ctx = ExecutionContext.update_state(ctx, state);
 
     // When
@@ -452,11 +453,9 @@ func test__exec_callcode__should_transfer_value{
     // Then
     // get balances of caller and callee post-call
     let state = sub_ctx.state;
-    let (state, caller_post_balance) = State.read_balance(state, caller_address);
-    let (state, callee_balance) = State.read_balance(state, callee_address);
-    let (caller_diff_balance) = uint256_sub(caller_pre_balance, caller_post_balance);
+    let (state, caller_post_account) = State.get_account(state, caller_address);
 
-    assert caller_post_balance = caller_pre_balance;
+    assert caller_post_account.balance = caller_pre_account.balance;
     return ();
 }
 

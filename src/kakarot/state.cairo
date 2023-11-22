@@ -245,32 +245,6 @@ namespace State {
         );
         return (state, success);
     }
-
-    // @notice Get the balance of a given address
-    // @dev Try to read from local dict, and read from ETH contract otherwise
-    // @param self The pointer to the State
-    // @param address The pointer to the Address
-    func read_balance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.State*, address: model.Address*
-    ) -> (state: model.State*, balance: Uint256) {
-        let accounts = self.accounts;
-        let (pointer) = dict_read{dict_ptr=accounts}(key=address.evm);
-        tempvar self = new model.State(
-            accounts_start=self.accounts_start,
-            accounts=accounts,
-            events_len=self.events_len,
-            events=self.events,
-            transfers_len=self.transfers_len,
-            transfers=self.transfers,
-        );
-        if (pointer != 0) {
-            let account = cast(pointer, model.Account*);
-            return (self, [account.balance]);
-        } else {
-            let balance = Account.read_balance(address);
-            return (self, balance);
-        }
-    }
 }
 
 namespace Internals {
@@ -282,12 +256,6 @@ namespace Internals {
     ) {
         if (accounts_start == accounts_end) {
             return ();
-        }
-
-        // Skip account if it has indeed never been fetched
-        // but only touched for balance read
-        if (accounts_start.new_value == 0) {
-            return _finalize_accounts(accounts_start + DictAccess.SIZE, accounts_end);
         }
 
         let account = cast(accounts_start.new_value, model.Account*);
@@ -307,12 +275,6 @@ namespace Internals {
     ) {
         if (accounts_start == accounts_end) {
             return ();
-        }
-
-        // Skip account if it has indeed never been fetched
-        // but only touched for balance read
-        if (accounts_start.new_value == 0) {
-            return _finalize_accounts(accounts_start + DictAccess.SIZE, accounts_end);
         }
 
         let account = cast(accounts_start.new_value, model.Account*);
