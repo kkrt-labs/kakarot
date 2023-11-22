@@ -105,6 +105,12 @@ namespace Internals {
             return ();
         }
 
+        // Skip account if it has indeed never been fetched
+        // but only touched for balance read
+        if (accounts_start.new_value == 0) {
+            return _commit_accounts(accounts_start + DictAccess.SIZE, accounts_end);
+        }
+
         let (starknet_address) = Account.compute_starknet_address(accounts_start.key);
         let account = cast(accounts_start.new_value, Account.Summary*);
         _commit_account(account, starknet_address);

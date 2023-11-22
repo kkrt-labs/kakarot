@@ -284,6 +284,12 @@ namespace Internals {
             return ();
         }
 
+        // Skip account if it has indeed never been fetched
+        // but only touched for balance read
+        if (accounts_start.new_value == 0) {
+            return _finalize_accounts(accounts_start + DictAccess.SIZE, accounts_end);
+        }
+
         let account = cast(accounts_start.new_value, model.Account*);
         let account_summary = Account.copy(account);
         dict_write{dict_ptr=accounts}(
