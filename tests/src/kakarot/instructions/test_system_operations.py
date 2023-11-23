@@ -105,13 +105,20 @@ class TestSystemOperations:
             await mint(ZERO_ACCOUNT, 2)
             await system_operations.test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_stack().call()
 
-    async def test_create(self, system_operations):
+    async def test_create(self, system_operations, eth):
         salt = 0
         # given we start with the first anvil test account
         evm_caller_address = to_checksum_address(
             0xF39FD6E51AAD88F6F4CE6AB8827279CFFFB92266
         )
         expected_create_addr = get_create_address(evm_caller_address, salt)
+
+        starknet_contract_address = (
+            await system_operations.compute_starknet_address(
+                int(evm_caller_address, 16)
+            ).call()
+        ).result.contract_address
+        await eth.mint(starknet_contract_address, int_to_uint256(1)).execute()
 
         await system_operations.test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at_expected_address(
             int(evm_caller_address, 16),
@@ -133,7 +140,7 @@ class TestSystemOperations:
             int(expected_create_addr, 16),
         ).call()
 
-    async def test_create2(self, system_operations):
+    async def test_create2(self, system_operations, eth):
         # we store a memory word in memory
         # and have our bytecode as the memory read from an offset and size
         # we take that word at an offset and size and use it as the bytecode to determine the expected create2 evm contract address
@@ -143,17 +150,24 @@ class TestSystemOperations:
         size = 4
         salt = 5
         padded_salt = salt.to_bytes(32, byteorder="big")
-        evm_caller_address_int = 15
-        evm_caller_address_bytes = evm_caller_address_int.to_bytes(20, byteorder="big")
-        evm_caller_address = to_checksum_address(evm_caller_address_bytes)
+        evm_caller_address = to_checksum_address(
+            0xF39FD6E51AAD88F6F4CE6AB8827279CFFFB92266
+        )
         bytecode = to_bytes(memory_word)[offset : offset + size]
+
+        starknet_contract_address = (
+            await system_operations.compute_starknet_address(
+                int(evm_caller_address, 16)
+            ).call()
+        ).result.contract_address
+        await eth.mint(starknet_contract_address, int_to_uint256(1)).execute()
 
         expected_create2_addr = get_create2_address(
             evm_caller_address, padded_salt, bytecode
         )
 
         await system_operations.test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_at_expected_address(
-            evm_caller_address_int,
+            int(evm_caller_address, 16),
             offset,
             size,
             salt,
