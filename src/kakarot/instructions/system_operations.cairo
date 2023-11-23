@@ -358,6 +358,10 @@ namespace SystemOperations {
         let account = Account.selfdestruct(account);
         let state = State.set_account(state, ctx.call_context.address, account);
 
+        // Halt context
+        let (return_data: felt*) = alloc();
+        let ctx = ExecutionContext.stop(ctx, 0, return_data, FALSE);
+
         let ctx = ExecutionContext.update_state(ctx, state);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
