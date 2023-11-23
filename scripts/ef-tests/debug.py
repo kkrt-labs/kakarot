@@ -99,7 +99,8 @@ def set_pre_state(w3, data):
         w3.provider.make_request("anvil_setNonce", [address, account["nonce"]])
         for k, v in account["storage"].items():
             w3.provider.make_request(
-                "anvil_setStorageAt", [address, f"0x{k[2:]:0>64}", f"0x{v[2:]:0>64}"]
+                "anvil_setStorageAt",
+                [address, f"0x{int(k, 16):064x}", f"0x{int(v, 16):064x}"],
             )
 
 
