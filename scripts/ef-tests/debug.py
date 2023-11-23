@@ -1,6 +1,9 @@
 import json
 import logging
 import os
+import signal
+import subprocess
+import time
 from pathlib import Path
 
 import rlp
@@ -22,6 +25,37 @@ if TEST_NAME is None:
     raise ValueError("Please set TEST_NAME")
 TEST_PARENT_FOLDER = os.getenv("TEST_PARENT_FOLDER")
 RPC_ENDPOINT = "http://127.0.0.1:8545"
+
+
+class AnvilHandler:
+    def __init__(self, data):
+        try:
+            block_genesis = get_genesis_block(data)
+            ts = block_genesis.header.timestamp
+            anvil = subprocess.Popen(
+                f"anvil --timestamp {ts} --hardfork shanghai",
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                shell=True,
+            )
+            # Wait for anvil to start
+            time.sleep(1)
+        except Exception as e:
+            raise Exception("Could not launch anvil") from e
+        self.anvil = anvil
+
+    def wait(self):
+        signal.signal(signal.SIGTERM, self.signal_handler)
+        signal.signal(signal.SIGINT, self.signal_handler)
+        logger.info("Anvil still running... (press Ctrl+C to stop)")
+        while True:
+            time.sleep(1)
+
+    def signal_handler(self, signum, _):
+        logger.warning(f"Signal {signum} received, shutting down anvil...")
+        self.anvil.terminate()
+        exit(0)
 
 
 def get_test_file():
@@ -64,7 +98,19 @@ def set_pre_state(w3, data):
         w3.provider.make_request("anvil_setBalance", [address, account["balance"]])
         w3.provider.make_request("anvil_setNonce", [address, account["nonce"]])
         for k, v in account["storage"].items():
-            w3.provider.make_request("anvil_setStorage", [address, k, v])
+            w3.provider.make_request(
+                "anvil_setStorageAt",
+                [address, f"0x{int(k, 16):064x}", f"0x{int(v, 16):064x}"],
+            )
+
+
+def get_genesis_block(data):
+    try:
+        block_rlp = data["genesisRLP"]
+        block = rlp.decode(bytes.fromhex(block_rlp[2:]), ShanghaiBlock)
+    except Exception as e:
+        raise Exception("Could not find genesis block in test data") from e
+    return block
 
 
 def get_block(data):
@@ -78,12 +124,11 @@ def get_block(data):
 
 def set_block(w3, data):
     block = get_block(data)
-    w3.provider.make_request(
-        "anvil_setCoinbase", [int.from_bytes(block.header.coinbase, "little")]
-    )
+    w3.provider.make_request("anvil_setCoinbase", [block.header.coinbase.hex()])
     w3.provider.make_request(
         "anvil_setNextBlockBaseFeePerGas", [block.header.base_fee_per_gas]
     )
+    w3.provider.make_request("evm_setBlockGasLimit", [block.header.gas_limit])
 
 
 def send_transaction(w3, data):
@@ -98,13 +143,19 @@ def check_post_state(w3, data):
     for address, account in data["postState"].items():
         address = Web3.to_checksum_address(address)
         try:
-            assert w3.eth.get_balance(address) == int(account["balance"], 16)
-            assert w3.eth.get_transaction_count(address) == int(account["nonce"], 16)
-            assert w3.eth.get_code(address) == bytes.fromhex(account["code"][2:])
+            assert w3.eth.get_balance(address) == int(
+                account["balance"], 16
+            ), f'balance error: {w3.eth.get_balance(address)} != {int(account["balance"], 16)}'
+            assert w3.eth.get_transaction_count(address) == int(
+                account["nonce"], 16
+            ), f"nonce error: {w3.eth.get_transaction_count(address)} != {int(account['nonce'], 16)}"
+            assert w3.eth.get_code(address) == bytes.fromhex(
+                account["code"][2:]
+            ), f'code error: {w3.eth.get_code(address)} != {bytes.fromhex(account["code"][2:])}'
             for k, v in account["storage"].items():
                 assert int.from_bytes(w3.eth.get_storage_at(address, k), "big") == int(
                     v, 16
-                )
+                ), f'storage error at key {k}: {int.from_bytes(w3.eth.get_storage_at(address, k), "big")} != {int(v, 16)}'
         except Exception as e:
             raise ValueError(f"Post state does not match for {address}, got {e}") from e
     logger.info("Post state is valid")
@@ -112,19 +163,31 @@ def check_post_state(w3, data):
 
 def main():
     test = get_test_file()
-    provider = connect_anvil()
 
-    # Set test state
-    set_pre_state(provider, test)
-    set_block(provider, test)
+    # Launch anvil
+    handler = AnvilHandler(test)
+    try:
+        provider = connect_anvil()
 
-    # Send transaction
-    tx_hash = send_transaction(provider, test)
+        # Set test state
+        set_pre_state(provider, test)
+        set_block(provider, test)
 
-    # Check post state
-    check_post_state(provider, test)
+        # Send transaction
+        tx_hash = send_transaction(provider, test)
 
-    logger.info(f"Run `cast run {tx_hash} --debug` to debug transaction")
+        # Check post state
+        check_post_state(provider, test)
+    except Exception as e:
+        handler.anvil.terminate()
+        raise e
+
+    logger.info(
+        f"Run `cast run {tx_hash} --debug --rpc-url {RPC_ENDPOINT}` to debug transaction"
+    )
+
+    # Wait for sig term to stop anvil
+    handler.wait()
 
 
 if __name__ == "__main__":
