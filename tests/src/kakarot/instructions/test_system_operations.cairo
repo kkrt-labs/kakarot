@@ -8,7 +8,6 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import split_felt, assert_not_zero
 from starkware.cairo.common.uint256 import Uint256, uint256_sub
-from starkware.starknet.common.syscalls import get_contract_address
 
 // Local dependencies
 from data_availability.starknet import Starknet
@@ -632,7 +631,7 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
     let bytecode_len = 0;
     let (bytecode: felt*) = alloc();
     // As this test contract is mocking the contract account we have to set this contract address as the starknet_contract_address.
-    let (contract_address: felt) = get_contract_address();
+    let (contract_address: felt) = Account.compute_starknet_address(evm_caller_address);
     let ctx = TestHelpers.init_context_at_address_with_stack(
         contract_address, evm_caller_address, bytecode_len, bytecode, stack
     );
@@ -680,6 +679,11 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
         account.code_len, account.code, return_data_len, sub_ctx.return_data
     );
 
+    tempvar sender_address = new model.Address(contract_address, evm_caller_address);
+    let (state, sender) = State.get_account(state, sender_address);
+    assert [sender.balance] = Uint256(0, 0);
+    assert [account.balance] = Uint256(1, 0);
+
     return ();
 }
 
@@ -722,7 +726,8 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     let stack = Stack.push(stack, memory_offset);
     let bytecode_len = 0;
     let (bytecode: felt*) = alloc();
-    let (contract_address: felt) = get_contract_address();
+    let (contract_address: felt) = Account.compute_starknet_address(evm_caller_address);
+    tempvar sender_address = new model.Address(contract_address, evm_caller_address);
     let ctx = TestHelpers.init_context_at_address_with_stack(
         contract_address, evm_caller_address, bytecode_len, bytecode, stack
     );
@@ -768,6 +773,11 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     TestHelpers.assert_array_equal(
         account.code_len, account.code, return_data_len, sub_ctx.return_data
     );
+
+    let (state, sender) = State.get_account(state, sender_address);
+
+    assert [sender.balance] = Uint256(0, 0);
+    assert [account.balance] = Uint256(1, 0);
 
     return ();
 }

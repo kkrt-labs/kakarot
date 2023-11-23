@@ -9,7 +9,7 @@ from starkware.cairo.common.dict import dict_read, dict_write
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_fp_and_pc
-from starkware.cairo.common.uint256 import Uint256, uint256_add, uint256_sub, uint256_le
+from starkware.cairo.common.uint256 import Uint256, uint256_add, uint256_sub, uint256_le, uint256_eq
 
 from kakarot.account import Account
 from kakarot.model import model
@@ -212,6 +212,15 @@ namespace State {
         // See https://docs.cairo-lang.org/0.12.0/how_cairo_works/functions.html#retrieving-registers
         let fp_and_pc = get_fp_and_pc();
         local __fp__: felt* = fp_and_pc.fp_val;
+
+        if (transfer.sender == transfer.recipient) {
+            return (self, 1);
+        }
+
+        let (null_transfer) = uint256_eq(transfer.amount, Uint256(0, 0));
+        if (null_transfer != 0) {
+            return (self, 1);
+        }
 
         let (self, sender) = get_account(self, transfer.sender);
         let (success) = uint256_le(transfer.amount, [sender.balance]);
