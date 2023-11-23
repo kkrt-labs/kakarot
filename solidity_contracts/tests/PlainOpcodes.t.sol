@@ -79,7 +79,7 @@ contract PlainOpcodesTest is Test {
         assertEq(_address_1, address(0));
     }
 
-    function testSelfDestructAndCreateAgainCollision() public {
+    function testCreate2CollisionReturnsZeroAddress() public {
         bytes memory bytecode = type(ContractWithSelfdestructMethod).creationCode;
         uint256 salt = 1234;
         address _address_0;
