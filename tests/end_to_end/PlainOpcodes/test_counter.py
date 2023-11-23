@@ -18,47 +18,49 @@ class TestCounter:
             assert await counter.count() == 0
 
     class TestInc:
-        async def test_should_increase_count(self, counter, owner):
-            await counter.reset(caller_eoa=owner.starknet_contract)
-            await counter.inc(caller_eoa=owner.starknet_contract)
+        async def test_should_increase_count(self, counter):
+            await counter.reset()
+            await counter.inc()
             assert await counter.count() == 1
 
     class TestDec:
-        async def test_should_raise_from_modifier_when_count_is_0(self, counter, owner):
-            await counter.reset(caller_eoa=owner.starknet_contract)
+        async def test_should_raise_from_modifier_when_count_is_0(self, counter):
+            await counter.reset()
             with evm_error("count should be strictly greater than 0"):
-                await counter.dec(caller_eoa=owner.starknet_contract)
+                await counter.dec()
 
-        @pytest.mark.xfail(
-            reason="https://github.com/kkrt-labs/kakarot/issues/683",
-        )
-        async def test_should_raise_from_vm_when_count_is_0(self, counter, owner):
-            await counter.reset(caller_eoa=owner.starknet_contract)
+        async def test_should_return_uint256_max(self, counter):
+            await counter.reset()
+            await counter.decUnchecked()
+            assert await counter.count() == 2**256 - 1
+
+        async def test_should_revert_when_dec_count_zero(self, counter):
+            await counter.reset()
             with evm_error():
-                await counter.decUnchecked(caller_eoa=owner.starknet_contract)
+                await counter.decUnsafe()
 
-        async def test_should_decrease_count(self, counter, owner):
-            await counter.reset(caller_eoa=owner.starknet_contract)
-            await counter.inc(caller_eoa=owner.starknet_contract)
-            await counter.dec(caller_eoa=owner.starknet_contract)
+        async def test_should_decrease_count(self, counter):
+            await counter.reset()
+            await counter.inc()
+            await counter.dec()
             assert await counter.count() == 0
 
-        async def test_should_decrease_count_unchecked(self, counter, owner):
-            await counter.reset(caller_eoa=owner.starknet_contract)
-            await counter.inc(caller_eoa=owner.starknet_contract)
-            await counter.decUnchecked(caller_eoa=owner.starknet_contract)
+        async def test_should_decrease_count_unchecked(self, counter):
+            await counter.reset()
+            await counter.inc()
+            await counter.decUnchecked()
             assert await counter.count() == 0
 
-        async def test_should_decrease_count_in_place(self, counter, owner):
-            await counter.reset(caller_eoa=owner.starknet_contract)
-            await counter.inc(caller_eoa=owner.starknet_contract)
-            await counter.decInPlace(caller_eoa=owner.starknet_contract)
+        async def test_should_decrease_count_in_place(self, counter):
+            await counter.reset()
+            await counter.inc()
+            await counter.decInPlace()
             assert await counter.count() == 0
 
     class TestReset:
-        async def test_should_set_count_to_0(self, counter, owner):
-            await counter.inc(caller_eoa=owner.starknet_contract)
-            await counter.reset(caller_eoa=owner.starknet_contract)
+        async def test_should_set_count_to_0(self, counter):
+            await counter.inc()
+            await counter.reset()
             assert await counter.count() == 0
 
     class TestDeploymentWithValue:
@@ -73,12 +75,12 @@ class TestCounter:
         async def test_should_set_counter_to_iterations_with_for_loop(
             self, counter, owner, iterations
         ):
-            await counter.incForLoop(iterations, caller_eoa=owner.starknet_contract)
+            await counter.incForLoop(iterations)
             assert await counter.count() == iterations
 
         @pytest.mark.parametrize("iterations", [0, 50, 200])
         async def test_should_set_counter_to_iterations_with_while_loop(
             self, counter, owner, iterations
         ):
-            await counter.incWhileLoop(iterations, caller_eoa=owner.starknet_contract)
+            await counter.incWhileLoop(iterations)
             assert await counter.count() == iterations
