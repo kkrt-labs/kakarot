@@ -63,17 +63,35 @@ contract PlainOpcodesTest is Test {
         assert(keccak256(bytes(errorMessage)) == keccak256("FAIL"));
     }
 
-    function testSelfDestructAndCreateAgain() public {
+    function testSelfDestructAndCreateAgainCollisionAfterKill() public {
         bytes memory bytecode = type(ContractWithSelfdestructMethod).creationCode;
         uint256 salt = 1234;
-        address addr = plainOpcodes.create2(bytecode, salt);
-        ContractWithSelfdestructMethod contract_ = ContractWithSelfdestructMethod(addr);
-        contract_.inc();
+        address _address_0;
+        assembly {
+            _address_0 := create2(0, add(bytecode, 32), mload(bytecode), salt)
+        }
+        ContractWithSelfdestructMethod contract_ = ContractWithSelfdestructMethod(_address_0);
         contract_.kill();
-        plainOpcodes.create2(bytecode, salt);
-        contract_.inc();
-        uint256 count = contract_.count();
-        assertEq(count, 2);
+        address _address_1;
+        assembly {
+            _address_1 := create2(0, add(bytecode, 32), mload(bytecode), salt)
+        }
+        assertEq(_address_1, address(0));
+    }
+
+    function testCreate2CollisionReturnsZeroAddress() public {
+        bytes memory bytecode = type(ContractWithSelfdestructMethod).creationCode;
+        uint256 salt = 1234;
+        address _address_0;
+        assembly {
+            _address_0 := create2(0, add(bytecode, 32), mload(bytecode), salt)
+        }
+        assertGt(uint160(_address_0), 0);
+        address _address_1;
+        assembly {
+            _address_1 := create2(0, add(bytecode, 32), mload(bytecode), salt)
+        }
+        assertEq(_address_1, address(0));
     }
 
     function testCreate() public {

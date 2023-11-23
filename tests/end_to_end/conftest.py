@@ -334,3 +334,13 @@ def eth_send_transaction(max_fee, owner):
     return partial(
         eth_send_transaction, max_fee=max_fee, caller_eoa=owner.starknet_contract
     )
+
+
+@pytest.fixture
+def eth_get_code():
+    """
+    Send a decoded transaction to Kakarot.
+    """
+    from scripts.utils.kakarot import eth_get_code
+
+    return eth_get_code

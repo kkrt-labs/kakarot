@@ -173,6 +173,13 @@ namespace Internals {
         // Save storages
         Internals._save_storage(starknet_address, self.storage_start, self.storage);
 
+        // Update bytecode if required (SELFDESTRUCTed contract, redeployed)
+        let (bytecode_len) = IAccount.bytecode_len(starknet_address);
+        if (bytecode_len != self.code_len) {
+            IContractAccount.write_bytecode(starknet_address, self.code_len, self.code);
+            return ();
+        }
+
         return ();
     }
 

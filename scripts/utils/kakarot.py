@@ -415,12 +415,12 @@ async def store_bytecode(bytecode: Union[str, bytes], **kwargs):
     )
     assert success
     starknet_address, evm_address = response
-    stored_bytecode = await get_bytecode(evm_address)
+    stored_bytecode = await eth_get_code(evm_address)
     assert stored_bytecode == bytecode
     return evm_address
 
 
-async def get_bytecode(address: Union[int, str]):
+async def eth_get_code(address: Union[int, str]):
     starknet_address = await compute_starknet_address(address)
     return bytes(
         (

@@ -216,6 +216,40 @@ class TestPlainOpcodes:
             assert await counter.count() == 1
 
     class TestCreate2:
+        async def test_should_redeploy_after_selfdestruct(
+            self,
+            plain_opcodes,
+            get_solidity_contract,
+            owner,
+            eth_get_code,
+        ):
+            contract_with_selfdestruct = get_solidity_contract(
+                "PlainOpcodes", "ContractWithSelfdestructMethod"
+            )
+            salt = 12345
+            receipt = await plain_opcodes.create2(
+                bytecode=contract_with_selfdestruct.constructor().data_in_transaction,
+                salt=salt,
+                caller_eoa=owner.starknet_contract,
+            )
+            events = plain_opcodes.events.parse_starknet_events(receipt.events)
+            assert len(events["Create2Address"]) == 1
+            contract_with_selfdestruct = get_solidity_contract(
+                "PlainOpcodes",
+                "ContractWithSelfdestructMethod",
+                address=events["Create2Address"][0]["_address"],
+            )
+            assert await eth_get_code(contract_with_selfdestruct.address)
+            await contract_with_selfdestruct.kill()
+            assert not await eth_get_code(contract_with_selfdestruct.address)
+
+            await plain_opcodes.create2(
+                bytecode=contract_with_selfdestruct.constructor().data_in_transaction,
+                salt=salt,
+                caller_eoa=owner.starknet_contract,
+            )
+            assert await eth_get_code(contract_with_selfdestruct.address)
+
         async def test_should_deploy_bytecode_at_address(
             self,
             plain_opcodes,
