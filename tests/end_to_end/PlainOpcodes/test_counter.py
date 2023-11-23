@@ -27,17 +27,17 @@ class TestCounter:
         async def test_should_raise_from_modifier_when_count_is_0(self, counter):
             await counter.reset()
             with evm_error("count should be strictly greater than 0"):
-                await counter.dec()
+                await counter.decWithModifier()
 
         async def test_should_return_uint256_max(self, counter):
             await counter.reset()
             await counter.decUnchecked()
             assert await counter.count() == 2**256 - 1
 
-        async def test_should_revert_when_dec_count_zero(self, counter):
+        async def test_should_revert_when_count_zero(self, counter):
             await counter.reset()
             with evm_error():
-                await counter.decUnsafe()
+                await counter.dec()
 
         async def test_should_decrease_count(self, counter):
             await counter.reset()

@@ -17,22 +17,22 @@ contract Counter {
         count += 1;
     }
 
-    function dec() public greaterThanZero {
+    function dec() public {
         count -= 1;
     }
 
-    function decInPlace() public greaterThanZero {
+    function decInPlace() public {
         count--;
+    }
+
+    function decWithModifier() public greaterThanZero {
+        count -= 1;
     }
 
     function decUnchecked() public {
         unchecked {
             count -= 1;
         }
-    }
-
-    function decUnsafe() public {
-        count -= 1;
     }
 
     function reset() public {
