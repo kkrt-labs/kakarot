@@ -39,6 +39,7 @@ ipykernel = "^6.23.1"
 toml = "^0.10.2"
 async-lru = "^2.0.4"
 setuptools = "^68.2.0"
+pyperclip = "^1.8.2"
 
 [tool.pytest.ini_options]
 norecursedirs = "tests/integration/ef_tests/test_data"

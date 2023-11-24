@@ -1293,6 +1293,14 @@ python-versions = ">=3.6.8"
 diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
+name = "pyperclip"
+version = "1.8.2"
+description = "A cross-platform clipboard module for Python. (Only handles plain text for now.)"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "pysha3"
 version = "1.0.2"
 description = "SHA-3 (Keccak) for Python 2.7 - 3.5"
@@ -1757,7 +1765,7 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.10"
-content-hash = "a32ffeed504ab92df287f6d268574eb5b78974770a7d5495fd18dc08388208f4"
+content-hash = "1201a5a2e574827a30cc7d2682a14efd50957c1d545a088883a9c525f04072eb"
 
 [metadata.files]
 aiohttp = [
@@ -3034,6 +3042,9 @@ pygments = [
 pyparsing = [
     {file = "pyparsing-3.1.1-py3-none-any.whl", hash = "sha256:32c7c0b711493c72ff18a981d24f28aaf9c1fb7ed5e9667c9e84e3db623bdbfb"},
     {file = "pyparsing-3.1.1.tar.gz", hash = "sha256:ede28a1a32462f5a9705e07aea48001a08f7cf81a021585011deba701581a0db"},
+]
+pyperclip = [
+    {file = "pyperclip-1.8.2.tar.gz", hash = "sha256:105254a8b04934f0bc84e9c24eb360a591aaf6535c9def5f29d92af107a9bf57"},
 ]
 pysha3 = [
     {file = "pysha3-1.0.2-cp27-cp27m-manylinux1_i686.whl", hash = "sha256:6e6a84efb7856f5d760ee55cd2b446972cb7b835676065f6c4f694913ea8f8d9"},
