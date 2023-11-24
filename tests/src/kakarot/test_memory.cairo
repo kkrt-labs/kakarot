@@ -131,106 +131,6 @@ func test__load__should_load_an_element_from_the_memory_with_offset{
 }
 
 @external
-func test__expand__should_return_the_same_memory_and_no_cost{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let memory = Memory.init();
-    let value = Uint256(1, 0);
-    let (bytes_array_len, bytes_array) = Helpers.uint256_to_bytes_array(value);
-    let memory: model.Memory* = Memory.store_n(
-        self=memory, element_len=bytes_array_len, element=bytes_array, offset=0
-    );
-
-    // When
-    let (memory, cost) = Memory.expand(self=memory, length=0);
-
-    // Then
-    assert cost = 0;
-    assert memory.bytes_len = 32;
-    let (memory, value) = Memory._load(self=memory, offset=0);
-    assert value = Uint256(1, 0);
-
-    return ();
-}
-
-@external
-func test__expand__should_return_expanded_memory_and_cost{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let memory = Memory.init();
-    let value = Uint256(1, 0);
-    let (bytes_array_len, bytes_array) = Helpers.uint256_to_bytes_array(value);
-    let memory: model.Memory* = Memory.store_n(
-        self=memory, element_len=bytes_array_len, element=bytes_array, offset=0
-    );
-
-    // When
-    let (memory, cost) = Memory.expand(self=memory, length=1);
-
-    // Then
-    assert_nn(cost);
-    assert memory.bytes_len = 33;
-    let (memory, value) = Memory._load(self=memory, offset=0);
-    assert value = Uint256(1, 0);
-
-    return ();
-}
-
-@external
-func test__ensure_length__should_return_the_same_memory_and_no_cost{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let memory = Memory.init();
-    let value = Uint256(1, 0);
-    let (bytes_array_len, bytes_array) = Helpers.uint256_to_bytes_array(value);
-    let memory: model.Memory* = Memory.store_n(
-        self=memory, element_len=bytes_array_len, element=bytes_array, offset=0
-    );
-
-    // When
-    let (memory, cost) = Memory.ensure_length(self=memory, length=1);
-
-    // Then
-    assert cost = 0;
-    assert memory.bytes_len = 32;
-    let (memory, value) = Memory._load(self=memory, offset=0);
-    assert value = Uint256(1, 0);
-
-    return ();
-}
-
-@external
-func test__ensure_length__should_return_expanded_memory_and_cost{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let memory = Memory.init();
-    let value = Uint256(1, 0);
-    let (bytes_array_len, bytes_array) = Helpers.uint256_to_bytes_array(value);
-    let memory: model.Memory* = Memory.store_n(
-        self=memory, element_len=bytes_array_len, element=bytes_array, offset=0
-    );
-
-    // When
-    let (memory, cost) = Memory.ensure_length(self=memory, length=33);
-
-    // Then
-    assert_nn(cost);
-    assert memory.bytes_len = 33;
-    let (memory, value) = Memory._load(self=memory, offset=0);
-    assert value = Uint256(1, 0);
-
-    return ();
-}
-
-@external
 func test__expand_and_load__should_return_expanded_memory_and_element_and_cost{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
@@ -244,10 +144,9 @@ func test__expand_and_load__should_return_expanded_memory_and_element_and_cost{
     );
 
     // When
-    let (memory, loaded_element, cost) = Memory.load(self=memory, offset=32);
+    let (memory, loaded_element) = Memory.load(self=memory, offset=32);
 
     // Then
-    assert_nn(cost);
     assert memory.bytes_len = 64;
     let (memory, value) = Memory._load(self=memory, offset=0);
     assert value = Uint256(1, 0);

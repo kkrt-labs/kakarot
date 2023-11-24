@@ -153,7 +153,7 @@ namespace SystemOperations {
         let size = popped[1];
 
         let (local return_data: felt*) = alloc();
-        let (memory, gas_cost) = Memory.load_n(ctx.memory, size.low, return_data, offset.low);
+        let memory = Memory.load_n(ctx.memory, size.low, return_data, offset.low);
 
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_memory(ctx, memory);
@@ -187,7 +187,7 @@ namespace SystemOperations {
 
         // Load revert reason from offset
         let (return_data: felt*) = alloc();
-        let (memory, gas_cost) = Memory.load_n(ctx.memory, size.low, return_data, offset.low);
+        let memory = Memory.load_n(ctx.memory, size.low, return_data, offset.low);
 
         let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_memory(ctx, memory);
@@ -409,9 +409,7 @@ namespace CallHelper {
 
         // Load calldata from Memory
         let (calldata: felt*) = alloc();
-        let (memory, gas_cost) = Memory.load_n(
-            self=ctx.memory, element_len=args_size, element=calldata, offset=args_offset
-        );
+        let memory = Memory.load_n(ctx.memory, args_size, calldata, args_offset);
 
         let call_args = CallArgs(
             gas=gas, address=address, value=value, args_size=args_size, calldata=calldata
@@ -760,9 +758,7 @@ namespace CreateHelper {
         let size = popped[2];
 
         let (bytecode: felt*) = alloc();
-        let (memory, gas_cost) = Memory.load_n(
-            self=ctx.memory, element_len=size.low, element=bytecode, offset=offset.low
-        );
+        let memory = Memory.load_n(ctx.memory, size.low, bytecode, offset.low);
         let ctx = ExecutionContext.update_memory(ctx, memory);
 
         // Get target account

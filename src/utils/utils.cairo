@@ -683,6 +683,15 @@ namespace Helpers {
         }
     }
 
+    // @notice Returns the max value between a and b
+    func max{range_check_ptr}(a: felt, b: felt) -> felt {
+        if (is_le(a, b) == FALSE) {
+            return a;
+        } else {
+            return b;
+        }
+    }
+
     // @notice convert bytes to little endian
     func bytes_to_bytes8_little_endian{range_check_ptr}(
         bytes_len: felt,

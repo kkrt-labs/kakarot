@@ -42,21 +42,12 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let stack = ctx.stack;
+        let (stack, offset_uint256) = Stack.pop(ctx.stack);
+        let offset = Helpers.uint256_to_felt([offset_uint256]);
+        let (memory, value) = Memory.load(ctx.memory, offset);
+        let stack = Stack.push_uint256(stack, value);
 
-        // Stack input:
-        // 0 - offset: memory offset of the word we read.
-        let (stack, offset) = Stack.pop(stack);
-
-        // Read word from memory at offset
-        let (new_memory, value, cost) = Memory.load(self=ctx.memory, offset=offset.low);
-
-        // Push word to the stack
-        let stack: model.Stack* = Stack.push_uint256(stack, value);
-
-        // Update context memory.
-        let ctx = ExecutionContext.update_memory(ctx, new_memory);
-        // Update context stack.
+        let ctx = ExecutionContext.update_memory(ctx, memory);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
         return ctx;

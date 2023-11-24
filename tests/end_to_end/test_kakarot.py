@@ -57,7 +57,6 @@ class TestKakarot:
                     bytecode=hex_string_to_bytes_array(params["code"]),
                     calldata=hex_string_to_bytes_array(params["calldata"]),
                 )
-            memory_result = extract_memory_from_execute(result)
 
             assert result.success == params["success"]
             assert result.stack_values[: result.stack_size] == (
@@ -74,7 +73,9 @@ class TestKakarot:
                 if params["stack"]
                 else []
             )
-            assert memory_result == hex_string_to_bytes_array(params["memory"])
+            assert extract_memory_from_execute(result) == hex_string_to_bytes_array(
+                params["memory"]
+            )
             assert bytes(result.return_data).hex() == params["return_data"]
 
             events = params.get("events")
