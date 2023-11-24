@@ -444,16 +444,12 @@ namespace EnvironmentalInformation {
         // the bytecode len would be zero and the byte array empty,
         // which `Helpers.slice_data` would return an array
         // with the requested `size` of zeroes
-
         let sliced_bytecode: felt* = Helpers.slice_data(
             data_len=account.code_len, data=account.code, data_offset=offset.low, slice_len=size.low
         );
 
         // Write bytecode slice to memory at dest_offset
-        let (memory, memory_expansion_cost) = Memory.ensure_length(
-            self=ctx.memory, length=dest_offset.low + size.low
-        );
-        let memory: model.Memory* = Memory.store_n(
+        let memory = Memory.store_n(
             self=ctx.memory, element_len=size.low, element=sliced_bytecode, offset=dest_offset.low
         );
 
