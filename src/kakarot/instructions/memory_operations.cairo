@@ -44,6 +44,13 @@ namespace MemoryOperations {
 
         let (stack, offset_uint256) = Stack.pop(ctx.stack);
         let offset = Helpers.uint256_to_felt([offset_uint256]);
+
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset + 32);
+        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        if (ctx.reverted != FALSE) {
+            return ctx;
+        }
+
         let (memory, value) = Memory.load(ctx.memory, offset);
         let stack = Stack.push_uint256(stack, value);
 
@@ -79,6 +86,11 @@ namespace MemoryOperations {
         let offset = popped[0];
         let value = popped[1];
 
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + 32);
+        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        if (ctx.reverted != FALSE) {
+            return ctx;
+        }
         let memory: model.Memory* = Memory.store(self=ctx.memory, element=value, offset=offset.low);
 
         // Update context memory.
@@ -101,7 +113,7 @@ namespace MemoryOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let stack: model.Stack* = Stack.push_uint128(ctx.stack, ctx.program_counter - 1);
+        let stack = Stack.push_uint128(ctx.stack, ctx.program_counter);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -121,7 +133,7 @@ namespace MemoryOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let stack = Stack.push_uint128(ctx.stack, ctx.memory.bytes_len);
+        let stack = Stack.push_uint128(ctx.stack, ctx.memory.words_len * 32);
 
         // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -260,6 +272,11 @@ namespace MemoryOperations {
         assert [value_pointer] = remainder.low;
 
         // Store byte to memory at offset
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + 1);
+        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        if (ctx.reverted != FALSE) {
+            return ctx;
+        }
         let memory: model.Memory* = Memory.store_n(
             self=ctx.memory, element_len=1, element=value_pointer, offset=offset.low
         );

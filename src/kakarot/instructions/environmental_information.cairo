@@ -255,6 +255,11 @@ namespace EnvironmentalInformation {
         );
 
         // Write caldata slice to memory at offset
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + element_len.low);
+        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        if (ctx.reverted != FALSE) {
+            return ctx;
+        }
         let memory: model.Memory* = Memory.store_n(
             self=ctx.memory, element_len=element_len.low, element=sliced_calldata, offset=offset.low
         );
@@ -331,6 +336,11 @@ namespace EnvironmentalInformation {
         );
 
         // Write bytecode slice to memory at offset
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + element_len.low);
+        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        if (ctx.reverted != FALSE) {
+            return ctx;
+        }
         let memory: model.Memory* = Memory.store_n(
             self=ctx.memory, element_len=element_len.low, element=sliced_code, offset=offset.low
         );
@@ -449,9 +459,12 @@ namespace EnvironmentalInformation {
         );
 
         // Write bytecode slice to memory at dest_offset
-        let memory = Memory.store_n(
-            self=ctx.memory, element_len=size.low, element=sliced_bytecode, offset=dest_offset.low
-        );
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, dest_offset.low + size.low);
+        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        if (ctx.reverted != FALSE) {
+            return ctx;
+        }
+        let memory = Memory.store_n(ctx.memory, size.low, sliced_bytecode, dest_offset.low);
 
         let ctx = ExecutionContext.update_memory(ctx, memory);
         let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -519,6 +532,11 @@ namespace EnvironmentalInformation {
             slice_len=element_len.low,
         );
 
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + element_len.low);
+        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        if (ctx.reverted != FALSE) {
+            return ctx;
+        }
         let memory: model.Memory* = Memory.store_n(
             self=ctx.memory,
             element_len=element_len.low,

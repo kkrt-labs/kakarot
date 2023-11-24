@@ -82,19 +82,19 @@ func test__load__should_load_an_element_from_the_memory{
     );
 
     // When
-    let (memory, result) = Memory._load(memory, 0);
+    let (memory, result) = Memory.load(memory, 0);
 
     // Then
     assert_uint256_eq(result, Uint256(2, 1));
 
     // When
-    let (memory, result) = Memory._load(memory, 32);
+    let (memory, result) = Memory.load(memory, 32);
 
     // Then
     assert_uint256_eq(result, Uint256(4, 3));
 
     // When
-    let (memory, result) = Memory._load(memory, 16);
+    let (memory, result) = Memory.load(memory, 16);
 
     // Then
     assert_uint256_eq(result, Uint256(3, 2));
@@ -122,7 +122,7 @@ func test__load__should_load_an_element_from_the_memory_with_offset{
     );
 
     // When
-    let (memory, result) = Memory._load(memory, offset);
+    let (memory, result) = Memory.load(memory, offset);
 
     // Then
     assert_uint256_eq(result, Uint256(low, high));
@@ -148,10 +148,10 @@ func test__expand_and_load__should_return_expanded_memory_and_element_and_cost{
 
     // Then
     assert memory.bytes_len = 64;
-    let (memory, value) = Memory._load(self=memory, offset=0);
+    let (memory, value) = Memory.load(self=memory, offset=0);
     assert value = Uint256(1, 0);
 
-    let (_, value) = Memory._load(self=memory, offset=32);
+    let (_, value) = Memory.load(self=memory, offset=32);
     assert value = Uint256(0, 0);
     return ();
 }

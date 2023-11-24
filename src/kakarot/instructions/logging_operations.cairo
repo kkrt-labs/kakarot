@@ -41,7 +41,7 @@ namespace LoggingOperations {
         }
 
         // See evm.cairo, pc is increased before entering the opcode
-        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter - 1];
+        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter];
         let topics_len = opcode_number - 0xa0;
 
         // Pop offset + size.
@@ -49,10 +49,15 @@ namespace LoggingOperations {
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
         // Transform data + safety checks
-        let size = Helpers.uint256_to_felt(popped[1]);
-        let offset = Helpers.uint256_to_felt(popped[0]);
+        local offset = Helpers.uint256_to_felt(popped[0]);
+        local size = Helpers.uint256_to_felt(popped[1]);
 
         // Log topics by emitting a starknet event
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset + size);
+        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        if (ctx.reverted != FALSE) {
+            return ctx;
+        }
         let (data: felt*) = alloc();
         let memory = Memory.load_n(ctx.memory, size, data, offset);
         let ctx = ExecutionContext.update_memory(ctx, memory);

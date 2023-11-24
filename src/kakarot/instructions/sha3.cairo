@@ -44,6 +44,12 @@ namespace Sha3 {
         let offset = popped[0];
         let length = popped[1];
 
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + length.low);
+        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        if (ctx.reverted != FALSE) {
+            return ctx;
+        }
+
         let (bigendian_data: felt*) = alloc();
         let memory = Memory.load_n(ctx.memory, length.low, bigendian_data, offset.low);
 

@@ -233,9 +233,28 @@ namespace ExecutionContext {
     // @param self The pointer to the execution context.
     // @param inc_value The value to increment the gas used with.
     // @return ExecutionContext The pointer to the updated execution context.
-    func increment_gas_used(
+    func increment_gas_used{range_check_ptr}(
         self: model.ExecutionContext*, inc_value: felt
     ) -> model.ExecutionContext* {
+        let gas_used = self.gas_used + inc_value;
+        let out_of_gas = is_le(self.call_context.gas_limit, gas_used - 1);
+
+        if (out_of_gas != 0) {
+            let (revert_reason_len, revert_reason) = Errors.outOfGas();
+            return new model.ExecutionContext(
+                state=self.state,
+                call_context=self.call_context,
+                stack=self.stack,
+                memory=self.memory,
+                return_data_len=revert_reason_len,
+                return_data=revert_reason,
+                program_counter=self.program_counter,
+                stopped=TRUE,
+                gas_used=gas_used,
+                reverted=TRUE,
+            );
+        }
+
         return new model.ExecutionContext(
             state=self.state,
             call_context=self.call_context,
@@ -245,7 +264,7 @@ namespace ExecutionContext {
             return_data=self.return_data,
             program_counter=self.program_counter,
             stopped=self.stopped,
-            gas_used=self.gas_used + inc_value,
+            gas_used=gas_used,
             reverted=self.reverted,
         );
     }

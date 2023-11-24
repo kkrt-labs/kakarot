@@ -62,7 +62,7 @@ namespace StopAndMathOperations {
         local opcode: model.Opcode*;
 
         // See evm.cairo, pc is increased before entering the opcode
-        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter - 1];
+        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter];
 
         // To cast the codeoffset opcodes_label to a model.Opcode*, we need to use it to offset
         // the current pc. We get the pc from the `get_fp_and_pc` util and assign a codeoffset (pc_label) to it.

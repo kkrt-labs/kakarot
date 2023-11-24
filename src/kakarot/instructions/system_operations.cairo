@@ -152,6 +152,12 @@ namespace SystemOperations {
         let offset = popped[0];
         let size = popped[1];
 
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + size.low);
+        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        if (ctx.reverted != FALSE) {
+            return ctx;
+        }
+
         let (local return_data: felt*) = alloc();
         let memory = Memory.load_n(ctx.memory, size.low, return_data, offset.low);
 
@@ -184,6 +190,12 @@ namespace SystemOperations {
         let (stack, popped) = Stack.pop_n(self=ctx.stack, n=2);
         let offset = popped[0];
         let size = popped[1];
+
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + size.low);
+        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        if (ctx.reverted != FALSE) {
+            return ctx;
+        }
 
         // Load revert reason from offset
         let (return_data: felt*) = alloc();
@@ -370,62 +382,15 @@ namespace SystemOperations {
 }
 
 namespace CallHelper {
-    // @notice Helper for the CALLs ops family as they all do the same data preprocessing.
-
-    struct CallArgs {
-        gas: felt,
-        address: felt,
-        value: felt,
-        args_size: felt,
-        calldata: felt*,
-    }
-
-    // @dev: with_value arg lets specify if the call requires a value (CALL, CALLCODE) or not (STATICCALL, DELEGATECALL).
-    // @param ctx The pointer to the current ExecutionContext
-    // @param with_value Whether the call pops a value arg
-    // @return ExecutionContext The pointer to the context and call args.
-    func prepare_args{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*, with_value: felt) -> (
-        ctx: model.ExecutionContext*, call_args: CallArgs
-    ) {
-        alloc_locals;
-
-        // Note: We don't pop ret_offset and ret_size here but at the end of the sub context
-        // See finalize_calling_context
-        let (stack, popped) = Stack.pop_n(self=ctx.stack, n=4 + with_value);
-
-        let gas = 2 ** 128 * popped[0].high + popped[0].low;
-        let address = 2 ** 128 * popped[1].high + popped[1].low;
-        let stack_value = (2 ** 128 * popped[2].high + popped[2].low) * with_value;
-        // If the call op expects value to be on the stack, we return it
-        // Otherwise, the value is the calling call context value
-        let value = with_value * stack_value + (1 - with_value) * ctx.call_context.value;
-        let args_offset = 2 ** 128 * popped[2 + with_value].high + popped[2 + with_value].low;
-        let args_size = 2 ** 128 * popped[3 + with_value].high + popped[3 + with_value].low;
-
-        // Load calldata from Memory
-        let (calldata: felt*) = alloc();
-        let memory = Memory.load_n(ctx.memory, args_size, calldata, args_offset);
-
-        let call_args = CallArgs(
-            gas=gas, address=address, value=value, args_size=args_size, calldata=calldata
-        );
-
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        let ctx = ExecutionContext.update_memory(ctx, memory);
-
-        return (ctx, call_args);
-    }
-
-    // @notice The shared logic of the CALL ops, allowing CALL, CALLCODE, STATICCALL, and DELEGATECALL to share structure and parameterize whether the call requires a value (CALL, CALLCODE) and whether the returned sub context's is read only (STATICCODE)
+    // @notice The shared logic of the CALL ops, allowing CALL, CALLCODE, STATICCALL, and DELEGATECALL to
+    //         share structure and parameterize whether the call requires a value (CALL, CALLCODE) and
+    //         whether the returned sub context's is read only (STATICCODE)
     // @param calling_ctx The pointer to the calling execution context.
-    // @param with_value The boolean that determines whether the sub-context's calling context has a value read from the calling context's stack or the calling context's calling context.
+    // @param with_value The boolean that determines whether the sub-context's calling context has a value read
+    //        from the calling context's stack or the calling context's calling context.
     // @param read_only The boolean that determines whether state modifications can be executed from the sub-execution context.
-    // @param self_call A boolean to indicate whether the account to message-call into is self (address of the current executing account) or the call argument's address (address of the call's target account)
+    // @param self_call A boolean to indicate whether the account to message-call into is self (address of the current executing account)
+    //        or the call argument's address (address of the call's target account)
     // @return ExecutionContext The pointer to the sub context.
     func init_sub_context{
         syscall_ptr: felt*,
@@ -437,44 +402,90 @@ namespace CallHelper {
     ) -> model.ExecutionContext* {
         alloc_locals;
 
-        let (ctx, local call_args) = CallHelper.prepare_args(ctx, with_value);
+        // 1. Parse args from Stack
+        // Note: We don't pop ret_offset and ret_size here but at the end of the sub context
+        // See finalize_calling_context
+        // Pop ret_offset and ret_size
+        let (stack, popped) = Stack.pop_n(ctx.stack, 4 + with_value);
+        let (stack, ret_offset_uint256) = Stack.peek(stack, 0);
+        let (stack, ret_size_uint256) = Stack.peek(stack, 1);
 
+        let gas = 2 ** 128 * popped[0].high + popped[0].low;
+        let address = 2 ** 128 * popped[1].high + popped[1].low;
+        let stack_value = (2 ** 128 * popped[2].high + popped[2].low) * with_value;
+        // If the call op expects value to be on the stack, we return it
+        // Otherwise, the value is the calling call context value
+        let value = with_value * stack_value + (1 - with_value) * ctx.call_context.value;
+        let args_offset = 2 ** 128 * popped[2 + with_value].high + popped[2 + with_value].low;
+        let args_size = 2 ** 128 * popped[3 + with_value].high + popped[3 + with_value].low;
+        let ret_offset = 2 ** 128 * ret_offset_uint256.high + ret_offset_uint256.low;
+        let ret_size = 2 ** 128 * ret_size_uint256.high + ret_size_uint256.low;
+
+        // 2. Gas
+        let available_gas = ctx.call_context.gas_limit - ctx.gas_used;
+
+        // Memory expansion cost
+        let max_expansion_is_ret = is_le(args_offset + args_size, ret_offset + ret_size);
+        let max_expansion = max_expansion_is_ret * (ret_offset + ret_size) + (
+            1 - max_expansion_is_ret
+        ) * (args_offset + args_size);
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, max_expansion);
+        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        if (ctx.reverted != FALSE) {
+            return ctx;
+        }
+
+        // Max between given gas arg and max allowed gas := available_gas - (available_gas // 64)
+        let available_gas = available_gas - memory_expansion_cost;
+        let (gas_limit, _) = unsigned_div_rem(available_gas, 64);
+        let gas_limit = available_gas - gas_limit;
+        let gas_is_gas_limit = is_le(gas_limit, gas);
+        let gas = gas_is_gas_limit * gas_limit + (1 - gas_is_gas_limit) * gas;
+
+        // 3. Calldata
+        let (calldata: felt*) = alloc();
+        let memory = Memory.load_n(ctx.memory, args_size, calldata, args_offset);
+
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let ctx = ExecutionContext.update_memory(ctx, memory);
+
+        // 4. Build sub_ctx
         // Check if the called address is a precompiled contract
-        let is_precompile = Precompiles.is_precompile(address=call_args.address);
+        let is_precompile = Precompiles.is_precompile(address=address);
         if (is_precompile != FALSE) {
             let sub_ctx = Precompiles.run(
-                evm_address=call_args.address,
-                calldata_len=call_args.args_size,
-                calldata=call_args.calldata,
-                value=call_args.value,
+                evm_address=address,
+                calldata_len=args_size,
+                calldata=calldata,
+                value=value,
                 calling_context=ctx,
             );
 
             return sub_ctx;
         }
 
-        let (starknet_contract_address) = Account.compute_starknet_address(call_args.address);
-        tempvar call_address = new model.Address(starknet_contract_address, call_args.address);
+        let (starknet_contract_address) = Account.compute_starknet_address(address);
+        tempvar call_address = new model.Address(starknet_contract_address, address);
         let (state, account) = State.get_account(ctx.state, call_address);
         let ctx = ExecutionContext.update_state(ctx, state);
 
         if (self_call == FALSE) {
-            tempvar address = call_address;
+            tempvar call_context_address = call_address;
         } else {
-            tempvar address = ctx.call_context.address;
+            tempvar call_context_address = ctx.call_context.address;
         }
 
         tempvar call_context = new model.CallContext(
             bytecode=account.code,
             bytecode_len=account.code_len,
-            calldata=call_args.calldata,
-            calldata_len=call_args.args_size,
-            value=call_args.value,
-            gas_limit=call_args.gas,
+            calldata=calldata,
+            calldata_len=args_size,
+            value=value,
+            gas_limit=gas,
             gas_price=ctx.call_context.gas_price,
             origin=ctx.call_context.origin,
             calling_context=ctx,
-            address=address,
+            address=call_context_address,
             read_only=read_only,
             is_create=FALSE,
         );
@@ -757,6 +768,11 @@ namespace CreateHelper {
         let offset = popped[1];
         let size = popped[2];
 
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + size.low);
+        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        if (ctx.reverted != FALSE) {
+            return ctx;
+        }
         let (bytecode: felt*) = alloc();
         let memory = Memory.load_n(ctx.memory, size.low, bytecode, offset.low);
         let ctx = ExecutionContext.update_memory(ctx, memory);
