@@ -700,6 +700,13 @@ namespace EVM {
     ) -> Summary* {
         alloc_locals;
 
+        // Compute intrinsic gas usage
+        // See https://www.evm.codes/about#gascosts
+        let count = Helpers.count_nonzeroes(nonzeroes=0, idx=0, arr_len=calldata_len, arr=calldata);
+        let zeroes = calldata_len - count.nonzeroes;
+        let calldata_gas = zeroes * 4 + count.nonzeroes * 16;
+        let intrinsic_gas = 21000 + calldata_gas;
+
         // If is_deploy_tx is TRUE, then
         // bytecode is data and data is empty
         // else, bytecode and data are kept as is
@@ -709,9 +716,11 @@ namespace EVM {
             let (empty: felt*) = alloc();
             tempvar bytecode = calldata;
             tempvar calldata = empty;
+            tempvar intrinsic_gas = intrinsic_gas + 32000;
         } else {
             tempvar bytecode = bytecode;
             tempvar calldata = calldata;
+            tempvar intrinsic_gas = intrinsic_gas;
         }
 
         let root_context = ExecutionContext.init_empty();
@@ -730,8 +739,7 @@ namespace EVM {
             is_create=is_deploy_tx,
         );
 
-        let ctx = ExecutionContext.init(call_context);
-        let ctx = ExecutionContext.add_intrinsic_gas_cost(ctx);
+        let ctx = ExecutionContext.init(call_context, intrinsic_gas);
 
         let state = ctx.state;
         // Handle value

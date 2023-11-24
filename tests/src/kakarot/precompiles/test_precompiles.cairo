@@ -34,7 +34,7 @@ func test__precompiles_run{
         read_only=0,
         is_create=0,
     );
-    let calling_context = ExecutionContext.init(call_context);
+    let calling_context = ExecutionContext.init(call_context, 0);
     let result = Precompiles.run(
         evm_address=address,
         calldata_len=0,

@@ -65,7 +65,7 @@ namespace ExecutionContext {
     // @dev Initialize the execution context of a specific contract.
     // @param call_context The call_context (see model.CallContext) to be executed.
     // @return ExecutionContext The initialized execution context.
-    func init(call_context: model.CallContext*) -> model.ExecutionContext* {
+    func init(call_context: model.CallContext*, gas_used: felt) -> model.ExecutionContext* {
         let stack = Stack.init();
         let memory = Memory.init();
         let state = State.init();
@@ -80,24 +80,9 @@ namespace ExecutionContext {
             return_data=return_data,
             program_counter=0,
             stopped=FALSE,
-            gas_used=0,
+            gas_used=gas_used,
             reverted=FALSE,
         );
-    }
-
-    // @notice Compute the intrinsic gas cost of the current transaction.
-    // @dev Computes with the intrinsic gas cost based on per transaction constant and cost of input data (16 gas per non-zero byte and 4 gas per zero byte).
-    // @param self The execution context.
-    // @return intrinsic gas cost.
-    func add_intrinsic_gas_cost(self: model.ExecutionContext*) -> model.ExecutionContext* {
-        let calldata = self.call_context.calldata;
-        let calldata_len = self.call_context.calldata_len;
-        let count = Helpers.count_nonzeroes(nonzeroes=0, idx=0, arr_len=calldata_len, arr=calldata);
-        let zeroes = calldata_len - count.nonzeroes;
-        let calldata_cost = zeroes * 4 + count.nonzeroes * 16;
-        let cost = Constants.TRANSACTION_INTRINSIC_GAS_COST + calldata_cost;
-
-        return ExecutionContext.increment_gas_used(self, cost);
     }
 
     // @notice Return whether the current execution context is stopped.

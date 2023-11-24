@@ -92,7 +92,7 @@ func init_context{
     );
 
     // Initialize ExecutionContext
-    let ctx = ExecutionContext.init(call_context);
+    let ctx = ExecutionContext.init(call_context, 0);
     return ctx;
 }
 

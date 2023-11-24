@@ -45,7 +45,7 @@ func test__init__should_return_an_empty_execution_context{
         is_create=0,
     );
 
-    let result: model.ExecutionContext* = ExecutionContext.init(call_context);
+    let result: model.ExecutionContext* = ExecutionContext.init(call_context, 0);
 
     // Then
     assert result.call_context.bytecode = bytecode;

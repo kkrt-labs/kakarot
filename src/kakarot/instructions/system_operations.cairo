@@ -480,7 +480,7 @@ namespace CallHelper {
             read_only=read_only,
             is_create=FALSE,
         );
-        let sub_ctx = ExecutionContext.init(call_context);
+        let sub_ctx = ExecutionContext.init(call_context, 0);
         let state = State.copy(ctx.state);
         let sub_ctx = ExecutionContext.update_state(sub_ctx, state);
         return sub_ctx;
@@ -817,7 +817,7 @@ namespace CreateHelper {
             read_only=FALSE,
             is_create=TRUE,
         );
-        let sub_ctx = ExecutionContext.init(call_context);
+        let sub_ctx = ExecutionContext.init(call_context, 0);
 
         let transfer = model.Transfer(
             sender=ctx.call_context.address, recipient=address, amount=value
