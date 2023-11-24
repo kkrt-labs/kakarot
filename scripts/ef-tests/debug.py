@@ -6,6 +6,7 @@ import subprocess
 import time
 from pathlib import Path
 
+import pyperclip
 import rlp
 from dotenv import load_dotenv
 from eth.vm.forks.shanghai.blocks import ShanghaiBlock
@@ -182,9 +183,12 @@ def main():
         handler.anvil.terminate()
         raise e
 
-    logger.info(
-        f"Run `cast run {tx_hash} --debug --rpc-url {RPC_ENDPOINT}` to debug transaction"
-    )
+    logger.info("Running transaction:")
+    _ = subprocess.run(f"cast run {tx_hash}", shell=True)
+
+    command = f"cast run {tx_hash} --debug"
+    pyperclip.copy(command)
+    logger.info(f"Run `{command}` to debug transaction (copied in clipboard)")
 
     # Wait for sig term to stop anvil
     handler.wait()
