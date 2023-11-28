@@ -36,7 +36,6 @@ lint:
     - hadolint@2.12.0
     - isort@5.12.0
     - markdownlint@0.36.0
-    - osv-scanner@1.4.0
     - oxipng@8.0.0
     - prettier@3.0.3
     - ruff@0.0.290
@@ -44,7 +43,6 @@ lint:
     - shfmt@3.6.0
     - taplo@0.8.1
     - terrascan@1.18.3
-    - trivy@0.45.1
     - yamllint@1.32.0
   disabled:
     - trufflehog@3.56.0
