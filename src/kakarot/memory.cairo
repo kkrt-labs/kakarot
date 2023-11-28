@@ -289,8 +289,8 @@ namespace Memory {
     // @return cost The current expansion gas cost. 0 if no expansion is triggered.
     func expansion_cost{range_check_ptr}(self: model.Memory*, max_offset: felt) -> felt {
         alloc_locals;
-        let memory_expansion = is_le(self.words_len * 32, max_offset);
-        if (memory_expansion != FALSE) {
+        let memory_expansion = is_le(self.words_len * 32 - 1, max_offset);
+        if (memory_expansion == FALSE) {
             return 0;
         }
 
