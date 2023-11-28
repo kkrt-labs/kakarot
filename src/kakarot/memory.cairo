@@ -347,11 +347,20 @@ namespace Internals {
     }
 
     // @notice Compute the cost of the memory for a given words length.
+    // @dev To avoid range_check overflow, we compute words_len / 512
+    //      instead of words_len * words_len / 512. Then we recompute the
+    //      resulting quotient: x^2 = 512q + r becomes
+    //      x = 512 q0 + r0 => x^2 = 512(512 q0^2 + q0 r0) + r0^2
+    //      r0^2 = 512 q1 + r1
+    //      x^2 = 512(512 q0^2 + q0 r0 + q1) + r1
+    //      q = 512 * q0 * q0 + q0 * r0 + q1
     // @param words_len The given number of words (bytes32).
     // @return cost The associated gas cost.
     func cost{range_check_ptr}(words_len: felt) -> felt {
-        let (memory_cost, _) = unsigned_div_rem(words_len * words_len, 512);
-        let memory_cost = memory_cost + (3 * words_len);
+        let (q0, r0) = unsigned_div_rem(words_len, 512);
+        let (q1, r1) = unsigned_div_rem(r0 * r0, 512);
+
+        let memory_cost = 512 * q0 * q0 + q0 * r0 + q1 + (3 * words_len);
         return memory_cost;
     }
 }
