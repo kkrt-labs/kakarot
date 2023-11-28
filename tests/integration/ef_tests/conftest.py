@@ -21,7 +21,10 @@ def pytest_generate_tests(metafunc):
     Ethereum Foundation tests repository, see:
     https://github.com/kkrt-labs/kakarot/blob/main/.gitmodules#L7.
     """
-    if "ef_blockchain_test" not in metafunc.fixturenames:
+    if (
+        "ef_blockchain_test" not in metafunc.fixturenames
+        or os.getenv("EF_TESTS") is None
+    ):
         return
 
     if not EF_GENERAL_STATE_TEST_ROOT_PATH.exists():
