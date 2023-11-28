@@ -70,6 +70,7 @@ namespace Precompiles {
             is_create=FALSE,
         );
         let sub_ctx = ExecutionContext.init(call_context, 0);
+        let sub_ctx = ExecutionContext.increment_program_counter(sub_ctx, 1);
         let sub_ctx = ExecutionContext.update_state(sub_ctx, calling_context.state);
 
         // Execute the precompile at a given evm_address

@@ -632,6 +632,22 @@ namespace EVM {
         call SystemOperations.exec_selfdestruct;  // 0xff
         jmp end;
 
+        end_sub_ctx:
+        let syscall_ptr = cast([ap - 5], felt*);
+        let pedersen_ptr = cast([ap - 4], HashBuiltin*);
+        let range_check_ptr = [ap - 3];
+        let bitwise_ptr = cast([ap - 2], BitwiseBuiltin*);
+        let sub_ctx = cast([ap - 1], model.ExecutionContext*);
+
+        // Handle edge cases of CALLs and CREATEs
+        // pc != 0 means that the returned sub_ctx is not a new ctx
+        if (sub_ctx.program_counter == 0) {
+            return sub_ctx;
+        } else {
+            let ctx = ExecutionContext.increment_program_counter(sub_ctx, 1);
+            return ctx;
+        }
+
         end:
         let syscall_ptr = cast([ap - 5], felt*);
         let pedersen_ptr = cast([ap - 4], HashBuiltin*);
@@ -642,9 +658,6 @@ namespace EVM {
         let ctx = ExecutionContext.increment_program_counter(ctx, 1);
 
         return ctx;
-
-        end_sub_ctx:
-        ret;
     }
 
     // @notice Iteratively decode and execute the bytecode of an ExecutionContext
