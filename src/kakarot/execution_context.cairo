@@ -233,7 +233,7 @@ namespace ExecutionContext {
     // @param self The pointer to the execution context.
     // @param inc_value The value to increment the gas used with.
     // @return ExecutionContext The pointer to the updated execution context.
-    func increment_gas_used{range_check_ptr}(
+    func charge_gas{range_check_ptr}(
         self: model.ExecutionContext*, inc_value: felt
     ) -> model.ExecutionContext* {
         let gas_used = self.gas_used + inc_value;

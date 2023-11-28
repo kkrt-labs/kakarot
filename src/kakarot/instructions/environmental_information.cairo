@@ -256,7 +256,7 @@ namespace EnvironmentalInformation {
 
         // Write caldata slice to memory at offset
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + element_len.low);
-        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
         }
@@ -337,7 +337,7 @@ namespace EnvironmentalInformation {
 
         // Write bytecode slice to memory at offset
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + element_len.low);
-        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
         }
@@ -460,7 +460,7 @@ namespace EnvironmentalInformation {
 
         // Write bytecode slice to memory at dest_offset
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, dest_offset.low + size.low);
-        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
         }
@@ -533,7 +533,7 @@ namespace EnvironmentalInformation {
         );
 
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + element_len.low);
-        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
         }

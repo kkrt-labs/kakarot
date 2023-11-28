@@ -46,7 +46,7 @@ namespace MemoryOperations {
         let offset = Helpers.uint256_to_felt([offset_uint256]);
 
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset + 32);
-        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
         }
@@ -87,7 +87,7 @@ namespace MemoryOperations {
         let value = popped[1];
 
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + 32);
-        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
         }
@@ -273,7 +273,7 @@ namespace MemoryOperations {
 
         // Store byte to memory at offset
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + 1);
-        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
         }

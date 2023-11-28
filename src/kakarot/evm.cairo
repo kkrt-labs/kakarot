@@ -101,7 +101,7 @@ namespace EVM {
         }
 
         // Update static gas
-        let ctx = ExecutionContext.increment_gas_used(ctx, opcode.gas);
+        let ctx = ExecutionContext.charge_gas(ctx, opcode.gas);
         if (ctx.reverted != FALSE) {
             return ctx;
         }

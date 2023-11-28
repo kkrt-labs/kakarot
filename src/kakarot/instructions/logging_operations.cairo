@@ -54,7 +54,7 @@ namespace LoggingOperations {
 
         // Log topics by emitting a starknet event
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset + size);
-        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
         }

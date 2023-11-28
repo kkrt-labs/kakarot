@@ -153,7 +153,7 @@ namespace SystemOperations {
         let size = popped[1];
 
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + size.low);
-        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
         }
@@ -192,7 +192,7 @@ namespace SystemOperations {
         let size = popped[1];
 
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + size.low);
-        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
         }
@@ -430,7 +430,7 @@ namespace CallHelper {
             1 - max_expansion_is_ret
         ) * (args_offset + args_size);
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, max_expansion);
-        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
         }
@@ -769,7 +769,7 @@ namespace CreateHelper {
         let size = popped[2];
 
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + size.low);
-        let ctx = ExecutionContext.increment_gas_used(ctx, memory_expansion_cost);
+        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
         }
