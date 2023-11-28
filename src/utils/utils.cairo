@@ -157,17 +157,30 @@ namespace Helpers {
     // @param arr_len: length of array
     // @param arr: array whose nonzero elements are counted
     // @return nonzeroes: count of nonzero elements in an array
-    func count_nonzeroes(nonzeroes: felt, idx: felt, arr_len: felt, arr: felt*) -> (
-        nonzeroes: felt, index: felt, arr_len: felt, arr: felt*
-    ) {
-        if (idx == arr_len) {
-            return (nonzeroes, idx, arr_len, arr);
+    func count_not_zero(arr_len: felt, arr: felt*) -> felt {
+        if (arr_len == 0) {
+            return 0;
         }
 
-        let arr_element = [arr];
-        let not_zero = is_not_zero(arr_element);
-        let res = count_nonzeroes(nonzeroes + not_zero, idx + 1, arr_len, arr + 1);
-        return res;
+        tempvar len = arr_len;
+        tempvar count = 0;
+        tempvar arr = arr;
+
+        body:
+        let len = [ap - 3];
+        let count = [ap - 2];
+        let arr = cast([ap - 1], felt*);
+        let not_zero = is_not_zero([arr]);
+
+        tempvar len = len - 1;
+        tempvar count = count + not_zero;
+        tempvar arr = arr + 1;
+
+        jmp body if len != 0;
+
+        let count = [ap - 2];
+
+        return count;
     }
 
     // @notice: This helper returns the minimal number of EVM words for a given bytes length

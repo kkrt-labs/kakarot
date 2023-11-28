@@ -713,9 +713,9 @@ namespace EVM {
 
         // Compute intrinsic gas usage
         // See https://www.evm.codes/about#gascosts
-        let count = Helpers.count_nonzeroes(nonzeroes=0, idx=0, arr_len=calldata_len, arr=calldata);
-        let zeroes = calldata_len - count.nonzeroes;
-        let calldata_gas = zeroes * 4 + count.nonzeroes * 16;
+        let count = Helpers.count_not_zero(calldata_len, calldata);
+        let zeroes = calldata_len - count;
+        let calldata_gas = zeroes * 4 + count * 16;
         let intrinsic_gas = 21000 + calldata_gas;
 
         // If is_deploy_tx is TRUE, then
