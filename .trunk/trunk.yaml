@@ -50,6 +50,8 @@ lint:
   ignore:
     - linters: [bandit]
       paths: [tests, docker]
+    - linters: [codespell]
+      paths: [poetry.lock]
 actions:
   disabled:
     - trunk-announce
