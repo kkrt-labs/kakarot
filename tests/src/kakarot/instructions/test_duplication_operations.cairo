@@ -23,7 +23,6 @@ func test__exec_dup{
     let (bytecode) = alloc();
     assert [bytecode] = i + 0x7f;
     let ctx = TestHelpers.init_context_with_stack(1, bytecode, stack_);
-    let ctx = ExecutionContext.increment_program_counter(ctx, 1);
 
     // When
     let ctx = DuplicationOperations.exec_dup(ctx);

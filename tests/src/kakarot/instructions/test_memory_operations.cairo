@@ -132,7 +132,7 @@ func test__exec_mload_should_load_a_value_from_memory_with_memory_expansion{
     assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
     assert_uint256_eq([index0], Uint256(0, 1));
-    assert result.memory.bytes_len = test_offset + 32;
+    assert result.memory.words_len = 2;
     return ();
 }
 
@@ -167,7 +167,7 @@ func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_ms
     assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
     assert_uint256_eq([index0], Uint256(0, 0));
-    assert result.memory.bytes_len = test_offset + 32;
+    assert result.memory.words_len = 23;
     return ();
 }
 

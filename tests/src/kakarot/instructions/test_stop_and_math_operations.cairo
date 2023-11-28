@@ -44,7 +44,6 @@ func test__exec_math_operation{
     assert [bytecode] = opcode;
     let stack_ = TestHelpers.init_stack_with_values(stack_len, stack);
     let ctx = TestHelpers.init_context_with_stack(1, bytecode, stack_);
-    let ctx = ExecutionContext.increment_program_counter(ctx, 1);
 
     // When
     let ctx = StopAndMathOperations.exec_math_operation(ctx);

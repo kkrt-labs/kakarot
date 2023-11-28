@@ -17,7 +17,6 @@ async def memory(starknet: Starknet):
 class TestMemory:
     async def test_everything_memory(self, memory):
         await memory.test__init__should_return_an_empty_memory().call()
-        await memory.test__len__should_return_the_length_of_the_memory().call()
         await memory.test__store__should_add_an_element_to_the_memory().call()
         await memory.test__load__should_load_an_element_from_the_memory().call()
         await memory.test__load__should_load_an_element_from_the_memory_with_offset(

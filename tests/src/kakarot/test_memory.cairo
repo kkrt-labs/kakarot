@@ -19,25 +19,10 @@ func test__init__should_return_an_empty_memory{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // When
-    let result: model.Memory* = Memory.init();
+    let memory = Memory.init();
 
     // Then
-    assert result.bytes_len = 0;
-    return ();
-}
-
-@external
-func test__len__should_return_the_length_of_the_memory{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    let memory: model.Memory* = Memory.init();
-
-    // When
-    let result: felt = memory.bytes_len;
-
-    // Then
-    assert result = 0;
+    assert memory.words_len = 0;
     return ();
 }
 
@@ -57,8 +42,7 @@ func test__store__should_add_an_element_to_the_memory{
     );
 
     // Then
-    let len: felt = result.bytes_len;
-    assert len = 32;
+    assert memory.words_len = 32;
     return ();
 }
 
@@ -147,7 +131,7 @@ func test__expand_and_load__should_return_expanded_memory_and_element_and_cost{
     let (memory, loaded_element) = Memory.load(self=memory, offset=32);
 
     // Then
-    assert memory.bytes_len = 64;
+    assert memory.words_len = 2;
     let (memory, value) = Memory.load(self=memory, offset=0);
     assert value = Uint256(1, 0);
 
