@@ -422,8 +422,6 @@ namespace CallHelper {
         let ret_size = 2 ** 128 * ret_size_uint256.high + ret_size_uint256.low;
 
         // 2. Gas
-        let available_gas = ctx.call_context.gas_limit - ctx.gas_used;
-
         // Memory expansion cost
         let max_expansion_is_ret = is_le(args_offset + args_size, ret_offset + ret_size);
         let max_expansion = max_expansion_is_ret * (ret_offset + ret_size) + (
@@ -435,8 +433,11 @@ namespace CallHelper {
             return ctx;
         }
 
+        // Access list
+        // TODO
+
         // Max between given gas arg and max allowed gas := available_gas - (available_gas // 64)
-        let available_gas = available_gas - memory_expansion_cost;
+        let available_gas = ctx.call_context.gas_limit - ctx.gas_used;
         let (gas_limit, _) = unsigned_div_rem(available_gas, 64);
         let gas_limit = available_gas - gas_limit;
         let gas_is_gas_limit = is_le(gas_limit, gas);
