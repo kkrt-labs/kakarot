@@ -33,7 +33,7 @@ func test__exec_pc__should_update_after_incrementing{
     // Then
     assert result.stack.size = 1;
     let (stack, index0) = Stack.peek(result.stack, 0);
-    assert index0.low = increment - 1;
+    assert index0.low = increment;
     assert index0.high = 0;
     return ();
 }

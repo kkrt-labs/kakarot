@@ -59,7 +59,6 @@ func test__exec_block_information{
         tempvar range_check_ptr = range_check_ptr;
     }
     let ctx = TestHelpers.init_context_with_stack(1, bytecode, stack_);
-    let ctx = ExecutionContext.increment_program_counter(ctx, 1);
 
     // When
     let ctx = BlockInformation.exec_block_information(ctx);
