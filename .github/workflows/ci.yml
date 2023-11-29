@@ -132,13 +132,17 @@ jobs:
         run: make setup
       - uses: taiki-e/install-action@nextest
 
-      - name: Download Kakarot build artifacts
+      - name: Download Kakarot build artifacts in v0
         uses: actions/download-artifact@v3
         with:
           name: kakarot-build
-          path: ./lib/kakarot/build
+          path: ./build/v0
+      - name: Move ERC20
+        run: |
+          mkdir build/common
+          mv build/v0/fixtures/ERC20.json build/common
       - name: run tests
-        run: make ef-test
+        run: make ef-test-v0
 
   resources:
     runs-on: ubuntu-latest
