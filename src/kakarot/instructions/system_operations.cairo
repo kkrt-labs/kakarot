@@ -8,7 +8,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_le, is_nn
 from starkware.cairo.common.uint256 import Uint256, uint256_lt
 from starkware.cairo.common.registers import get_fp_and_pc
 
@@ -428,18 +428,20 @@ namespace CallHelper {
 
         // Max between given gas arg and max allowed gas := available_gas - (available_gas // 64)
         let available_gas = ctx.call_context.gas_limit - ctx.gas_used;
-        let (protocol_gas_limit, _) = unsigned_div_rem(available_gas, 64);
-        tempvar protocol_gas_limit = available_gas - protocol_gas_limit;
-        let (protocol_gas_limit_high, protocol_gas_limit_low) = split_felt(protocol_gas_limit);
-        let (gas_is_protocol_gas_limit) = uint256_lt(
-            Uint256(protocol_gas_limit_low, protocol_gas_limit_high), gas
+        let (max_message_call_gas, _) = unsigned_div_rem(available_gas, 64);
+        tempvar max_message_call_gas = available_gas - max_message_call_gas;
+        let (max_message_call_gas_high, max_message_call_gas_low) = split_felt(
+            max_message_call_gas
+        );
+        let (max_gas_is_message_call_gas) = uint256_lt(
+            Uint256(max_message_call_gas_low, max_message_call_gas_high), gas
         );
         local gas_limit;
-        if (gas_is_protocol_gas_limit == FALSE) {
+        if (max_gas_is_message_call_gas == FALSE) {
             // If gas is lower, it means that it fits in a felt and this is safe
             assert gas_limit = gas.low + gas.high * 2 ** 128;
         } else {
-            assert gas_limit = protocol_gas_limit;
+            assert gas_limit = max_message_call_gas;
         }
         // All the gas is charged upfront and remaining gis is refunded at the end
         let ctx = ExecutionContext.charge_gas(ctx, gas_limit + memory_expansion_cost);
@@ -775,11 +777,15 @@ namespace CreateHelper {
         let offset = popped[1];
         let size = popped[2];
 
+        // Gas
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + size.low);
-        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
+        let (init_code_gas, _) = unsigned_div_rem(size.low + 31, 31);
+        let init_code_gas = 2 * init_code_gas;
+        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost + init_code_gas);
         if (ctx.reverted != FALSE) {
             return ctx;
         }
+
         let (bytecode: felt*) = alloc();
         let memory = Memory.load_n(ctx.memory, size.low, bytecode, offset.low);
         let ctx = ExecutionContext.update_memory(ctx, memory);
@@ -800,6 +806,11 @@ namespace CreateHelper {
             let ctx = ExecutionContext.update_stack(ctx, stack);
             return ctx;
         }
+
+        let available_gas = ctx.call_context.gas_limit - ctx.gas_used;
+        let (gas_limit, _) = unsigned_div_rem(available_gas, 64);
+        let gas_limit = available_gas - gas_limit;
+        let ctx = ExecutionContext.charge_gas(ctx, gas_limit);
 
         let sender = Account.set_nonce(sender, sender.nonce + 1);
         let state = State.set_account(state, ctx.call_context.address, sender);
@@ -828,7 +839,7 @@ namespace CreateHelper {
             calldata=calldata,
             calldata_len=0,
             value=value.low,
-            gas_limit=ctx.call_context.gas_limit,
+            gas_limit=gas_limit,
             gas_price=ctx.call_context.gas_price,
             origin=ctx.call_context.origin,
             calling_context=ctx,
@@ -865,19 +876,20 @@ namespace CreateHelper {
     }(summary: ExecutionContext.Summary*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // code_deposit_code := 200 * deployed_code_size * BYTES_PER_FELT (as Kakarot packs bytes inside a felt)
-        // dynamic_gas :=  deployment_code_execution_cost + code_deposit_cost
-        // In the case of a reverted create context, the gas of the reverted context should be rolled back and not consumed
-        let gas = (summary.gas_used + 200 * summary.return_data_len * Constants.BYTES_PER_FELT) * (
-            1 - summary.reverted
-        );
+        // Charge final deposit gas
+        let code_deposit_cost = 200 * summary.return_data_len;
+        let remaining_gas = summary.call_context.gas_limit - summary.gas_used - code_deposit_cost;
+        let enough_gas = is_nn(remaining_gas);
+        let success = (1 - summary.reverted) * enough_gas;
 
         // Stack output: the address of the deployed contract, 0 if the deployment failed.
-        let (address_high, address_low) = split_felt(summary.address.evm * (1 - summary.reverted));
+        let (address_high, address_low) = split_felt(summary.address.evm * success);
         tempvar address = new Uint256(low=address_low, high=address_high);
         let stack = Stack.push(summary.calling_context.stack, address);
 
         // Re-create the calling context with updated stack and return_data
+        // Gas not used is returned when ctx is not reverted
+        // In the case of a reverted create context, the gas of the reverted context should be rolled back and not consumed
         tempvar ctx = new model.ExecutionContext(
             state=summary.calling_context.state,
             call_context=summary.calling_context.call_context,
@@ -887,12 +899,12 @@ namespace CreateHelper {
             return_data=summary.return_data,
             program_counter=summary.calling_context.program_counter,
             stopped=summary.calling_context.stopped,
-            gas_used=summary.calling_context.gas_used + summary.gas_used,
+            gas_used=summary.calling_context.gas_used - remaining_gas * success,
             reverted=summary.calling_context.reverted,
         );
 
         // REVERTED, just returns
-        if (summary.reverted != FALSE) {
+        if (success == FALSE) {
             return ctx;
         }
 
