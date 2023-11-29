@@ -405,7 +405,7 @@ namespace CallHelper {
         let (stack, ret_size_uint256) = Stack.peek(stack, 1);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        let gas = 2 ** 128 * popped[0].high + popped[0].low;
+        let gas = popped[0];
         let address = 2 ** 128 * popped[1].high + popped[1].low;
         let stack_value = (2 ** 128 * popped[2].high + popped[2].low) * with_value;
         // If the call op expects value to be on the stack, we return it
@@ -433,10 +433,16 @@ namespace CallHelper {
 
         // Max between given gas arg and max allowed gas := available_gas - (available_gas // 64)
         let available_gas = ctx.call_context.gas_limit - ctx.gas_used;
-        let (gas_limit, _) = unsigned_div_rem(available_gas, 64);
-        let gas_limit = available_gas - gas_limit;
-        let gas_is_gas_limit = is_le_felt(gas_limit, gas);
-        let gas_limit = gas_is_gas_limit * gas_limit + (1 - gas_is_gas_limit) * gas;
+        let (protocol_gas_limit, _) = unsigned_div_rem(available_gas, 64);
+        tempvar protocol_gas_limit = available_gas - protocol_gas_limit;
+        let (gas_is_protocol_gas_limit) = uint256_lt(Uint256(protocol_gas_limit, 0), gas);
+        local gas_limit;
+        if (gas_is_protocol_gas_limit == FALSE) {
+            // If gas is lower, it means that it fits in a felt and this is safe
+            assert gas_limit = gas.low + gas.high * 2 ** 128;
+        } else {
+            assert gas_limit = protocol_gas_limit;
+        }
 
         // 3. Calldata
         let (calldata: felt*) = alloc();
