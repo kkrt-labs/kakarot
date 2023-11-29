@@ -8,7 +8,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
+from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn, is_le_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256, uint256_lt
 from starkware.cairo.common.registers import get_fp_and_pc
@@ -440,8 +440,8 @@ namespace CallHelper {
         let available_gas = ctx.call_context.gas_limit - ctx.gas_used;
         let (gas_limit, _) = unsigned_div_rem(available_gas, 64);
         let gas_limit = available_gas - gas_limit;
-        let gas_is_gas_limit = is_le(gas_limit, gas);
-        let gas = gas_is_gas_limit * gas_limit + (1 - gas_is_gas_limit) * gas;
+        let gas_is_gas_limit = is_le_felt(gas_limit, gas);
+        let gas_limit = gas_is_gas_limit * gas_limit + (1 - gas_is_gas_limit) * gas;
 
         // 3. Calldata
         let (calldata: felt*) = alloc();
@@ -482,7 +482,7 @@ namespace CallHelper {
             calldata=calldata,
             calldata_len=args_size,
             value=value,
-            gas_limit=gas,
+            gas_limit=gas_limit,
             gas_price=ctx.call_context.gas_price,
             origin=ctx.call_context.origin,
             calling_context=ctx,

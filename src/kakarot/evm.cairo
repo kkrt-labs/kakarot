@@ -30,6 +30,7 @@ from kakarot.precompiles.precompiles import Precompiles
 from kakarot.stack import Stack
 from kakarot.state import State
 from utils.utils import Helpers
+from utils.array import count_not_zero
 
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.
@@ -726,7 +727,7 @@ namespace EVM {
 
         // Compute intrinsic gas usage
         // See https://www.evm.codes/about#gascosts
-        let count = Helpers.count_not_zero(calldata_len, calldata);
+        let count = count_not_zero(calldata_len, calldata);
         let zeroes = calldata_len - count;
         let calldata_gas = zeroes * 4 + count * 16;
         let intrinsic_gas = 21000 + calldata_gas;

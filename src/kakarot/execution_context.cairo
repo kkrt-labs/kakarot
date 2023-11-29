@@ -22,7 +22,7 @@ from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.state import State
 from utils.utils import Helpers
-
+from utils.bytes import felt_to_ascii
 // @title ExecutionContext related functions.
 // @notice This file contains functions related to the execution context.
 namespace ExecutionContext {
@@ -240,7 +240,9 @@ namespace ExecutionContext {
         let out_of_gas = is_le(self.call_context.gas_limit, gas_used - 1);
 
         if (out_of_gas != 0) {
-            let (revert_reason_len, revert_reason) = Errors.outOfGas();
+            let (revert_reason_len, revert_reason) = Errors.outOfGas(
+                self.call_context.gas_limit, gas_used
+            );
             return new model.ExecutionContext(
                 state=self.state,
                 call_context=self.call_context,

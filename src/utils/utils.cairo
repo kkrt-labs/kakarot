@@ -151,38 +151,6 @@ namespace Helpers {
         return (bytes_array_len, bytes_array);
     }
 
-    // @notice: This helper returns count of nonzero elements in an array
-    // @param nonzeroes: count of nonzero elements in an array
-    // @param idx: index that is recursively incremented of array
-    // @param arr_len: length of array
-    // @param arr: array whose nonzero elements are counted
-    // @return nonzeroes: count of nonzero elements in an array
-    func count_not_zero(arr_len: felt, arr: felt*) -> felt {
-        if (arr_len == 0) {
-            return 0;
-        }
-
-        tempvar len = arr_len;
-        tempvar count = 0;
-        tempvar arr = arr;
-
-        body:
-        let len = [ap - 3];
-        let count = [ap - 2];
-        let arr = cast([ap - 1], felt*);
-        let not_zero = is_not_zero([arr]);
-
-        tempvar len = len - 1;
-        tempvar count = count + not_zero;
-        tempvar arr = arr + 1;
-
-        jmp body if len != 0;
-
-        let count = [ap - 2];
-
-        return count;
-    }
-
     // @notice: This helper returns the minimal number of EVM words for a given bytes length
     // @param length: a given bytes length
     // @return res: the minimal number of EVM words
