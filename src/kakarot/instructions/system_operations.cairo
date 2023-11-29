@@ -8,8 +8,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn, is_le_felt
-from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.uint256 import Uint256, uint256_lt
 from starkware.cairo.common.registers import get_fp_and_pc
 
@@ -435,7 +434,10 @@ namespace CallHelper {
         let available_gas = ctx.call_context.gas_limit - ctx.gas_used;
         let (protocol_gas_limit, _) = unsigned_div_rem(available_gas, 64);
         tempvar protocol_gas_limit = available_gas - protocol_gas_limit;
-        let (gas_is_protocol_gas_limit) = uint256_lt(Uint256(protocol_gas_limit, 0), gas);
+        let (protocol_gas_limit_high, protocol_gas_limit_low) = split_felt(protocol_gas_limit);
+        let (gas_is_protocol_gas_limit) = uint256_lt(
+            Uint256(protocol_gas_limit_low, protocol_gas_limit_high), gas
+        );
         local gas_limit;
         if (gas_is_protocol_gas_limit == FALSE) {
             // If gas is lower, it means that it fits in a felt and this is safe
@@ -525,7 +527,7 @@ namespace CallHelper {
             summary.calling_context.memory, ret_size, return_data, ret_offset
         );
 
-        // Handle gas: gas not used is returned when ctx is not reverted
+        // Gas not used is returned when ctx is not reverted
         let remaining_gas = (summary.call_context.gas_limit - summary.gas_used) * (
             1 - summary.reverted
         );
