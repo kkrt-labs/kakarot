@@ -48,6 +48,7 @@ namespace MemoryOperations {
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset + 32);
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
+            let ctx = ExecutionContext.update_stack(ctx, stack);
             return ctx;
         }
 
@@ -77,27 +78,19 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - offset: memory offset of the work we save.
-        // 1 - value: value to store in memory.
-        let (stack, popped) = Stack.pop_n(self=stack, n=2);
+        let (stack, popped) = Stack.pop_n(ctx.stack, 2);
         let offset = popped[0];
         let value = popped[1];
+        let ctx = ExecutionContext.update_stack(ctx, stack);
 
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + 32);
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
         }
-        let memory: model.Memory* = Memory.store(self=ctx.memory, element=value, offset=offset.low);
-
-        // Update context memory.
+        let memory = Memory.store(self=ctx.memory, element=value, offset=offset.low);
         let ctx = ExecutionContext.update_memory(ctx, memory);
 
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
         return ctx;
     }
 
@@ -257,14 +250,10 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - offset: memory offset of the work we save.
-        // 1 - value: value from which the last byte will be extracted and stored in memory.
-        let (stack, popped) = Stack.pop_n(self=stack, n=2);
+        let (stack, popped) = Stack.pop_n(ctx.stack, 2);
         let offset = popped[0];
         let value = popped[1];
+        let ctx = ExecutionContext.update_stack(ctx, stack);
 
         // Extract last byte from stack value
         let (_, remainder) = uint256_unsigned_div_rem(value, Uint256(256, 0));
@@ -280,12 +269,8 @@ namespace MemoryOperations {
         let memory: model.Memory* = Memory.store_n(
             self=ctx.memory, element_len=1, element=value_pointer, offset=offset.low
         );
-
-        // Update context memory.
         let ctx = ExecutionContext.update_memory(ctx, memory);
 
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
         return ctx;
     }
 

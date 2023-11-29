@@ -145,12 +145,10 @@ namespace SystemOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Stack input:
-        // 0 - offset: byte offset in the memory in bytes
-        // 1 - size: byte size to copy
-        let (stack, popped) = Stack.pop_n(self=ctx.stack, n=2);
+        let (stack, popped) = Stack.pop_n(ctx.stack, 2);
         let offset = popped[0];
         let size = popped[1];
+        let ctx = ExecutionContext.update_stack(ctx, stack);
 
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + size.low);
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
@@ -161,7 +159,6 @@ namespace SystemOperations {
         let (local return_data: felt*) = alloc();
         let memory = Memory.load_n(ctx.memory, size.low, return_data, offset.low);
 
-        let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_memory(ctx, memory);
         let ctx = ExecutionContext.stop(ctx, size.low, return_data, FALSE);
 
@@ -184,12 +181,10 @@ namespace SystemOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Stack input:
-        // 0 - offset: byte offset in the memory in bytes
-        // 1 - size: byte size to copy
-        let (stack, popped) = Stack.pop_n(self=ctx.stack, n=2);
+        let (stack, popped) = Stack.pop_n(ctx.stack, 2);
         let offset = popped[0];
         let size = popped[1];
+        let ctx = ExecutionContext.update_stack(ctx, stack);
 
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + size.low);
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
@@ -201,7 +196,6 @@ namespace SystemOperations {
         let (return_data: felt*) = alloc();
         let memory = Memory.load_n(ctx.memory, size.low, return_data, offset.low);
 
-        let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_memory(ctx, memory);
         let ctx = ExecutionContext.stop(ctx, size.low, return_data, TRUE);
         return ctx;
@@ -409,6 +403,7 @@ namespace CallHelper {
         let (stack, popped) = Stack.pop_n(ctx.stack, 4 + with_value);
         let (stack, ret_offset_uint256) = Stack.peek(stack, 0);
         let (stack, ret_size_uint256) = Stack.peek(stack, 1);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
 
         let gas = 2 ** 128 * popped[0].high + popped[0].low;
         let address = 2 ** 128 * popped[1].high + popped[1].low;
@@ -446,8 +441,6 @@ namespace CallHelper {
         // 3. Calldata
         let (calldata: felt*) = alloc();
         let memory = Memory.load_n(ctx.memory, args_size, calldata, args_offset);
-
-        let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_memory(ctx, memory);
 
         // 4. Build sub_ctx

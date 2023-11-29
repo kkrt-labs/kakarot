@@ -243,6 +243,7 @@ namespace EnvironmentalInformation {
         let calldata_offset = popped[1];
         let element_len = popped[2];
 
+        let ctx = ExecutionContext.update_stack(ctx, stack);
         let calldata: felt* = ctx.call_context.calldata;
         let calldata_len: felt = ctx.call_context.calldata_len;
 
@@ -263,11 +264,8 @@ namespace EnvironmentalInformation {
         let memory: model.Memory* = Memory.store_n(
             self=ctx.memory, element_len=element_len.low, element=sliced_calldata, offset=offset.low
         );
-
-        // Update context memory.
         let ctx = ExecutionContext.update_memory(ctx, memory);
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+
         return ctx;
     }
 
@@ -324,6 +322,7 @@ namespace EnvironmentalInformation {
         let offset = popped[0];
         let code_offset = popped[1];
         let element_len = popped[2];
+        let ctx = ExecutionContext.update_stack(ctx, stack);
 
         // Get bytecode slice from code_offset to element_len
         let bytecode: felt* = ctx.call_context.bytecode;
@@ -345,10 +344,7 @@ namespace EnvironmentalInformation {
             self=ctx.memory, element_len=element_len.low, element=sliced_code, offset=offset.low
         );
 
-        // Update context memory.
         let ctx = ExecutionContext.update_memory(ctx, memory);
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
         return ctx;
     }
 
@@ -442,6 +438,7 @@ namespace EnvironmentalInformation {
         let dest_offset = popped[1];
         let offset = popped[2];
         let size = popped[3];
+        let ctx = ExecutionContext.update_stack(ctx, stack);
 
         let evm_address = Helpers.uint256_to_felt(address_uint256);
         let (starknet_address) = Account.compute_starknet_address(evm_address);
@@ -467,7 +464,6 @@ namespace EnvironmentalInformation {
         let memory = Memory.store_n(ctx.memory, size.low, sliced_bytecode, dest_offset.low);
 
         let ctx = ExecutionContext.update_memory(ctx, memory);
-        let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_state(ctx, state);
 
         return ctx;
@@ -524,6 +520,7 @@ namespace EnvironmentalInformation {
         let offset = popped[0];
         let return_data_offset = popped[1];
         let element_len = popped[2];
+        let ctx = ExecutionContext.update_stack(ctx, stack);
 
         let sliced_return_data: felt* = Helpers.slice_data(
             data_len=ctx.return_data_len,
@@ -543,11 +540,7 @@ namespace EnvironmentalInformation {
             element=sliced_return_data,
             offset=offset.low,
         );
-
-        // Update context memory.
         let ctx = ExecutionContext.update_memory(ctx, memory);
-        // Update context stack.
-        let ctx = ExecutionContext.update_stack(ctx, stack);
         return ctx;
     }
 

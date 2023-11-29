@@ -47,6 +47,7 @@ namespace Sha3 {
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + length.low);
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
+            let ctx = ExecutionContext.update_stack(ctx, stack);
             return ctx;
         }
 
