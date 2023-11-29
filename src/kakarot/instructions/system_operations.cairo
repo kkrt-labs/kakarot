@@ -525,6 +525,10 @@ namespace CallHelper {
             summary.calling_context.memory, ret_size, return_data, ret_offset
         );
 
+        // Handle gas: gas not used is returned when ctx is not reverted
+        let remaining_gas = (summary.call_context.gas_limit - summary.gas_used) * (
+            1 - summary.reverted
+        );
         tempvar ctx = new model.ExecutionContext(
             state=summary.calling_context.state,
             call_context=summary.calling_context.call_context,
@@ -534,7 +538,7 @@ namespace CallHelper {
             return_data=summary.return_data,
             program_counter=summary.calling_context.program_counter,
             stopped=summary.calling_context.stopped,
-            gas_used=summary.calling_context.gas_used + summary.gas_used,
+            gas_used=summary.calling_context.gas_used - remaining_gas,
             reverted=summary.calling_context.reverted,
         );
 

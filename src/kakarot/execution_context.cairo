@@ -252,7 +252,7 @@ namespace ExecutionContext {
                 return_data=revert_reason,
                 program_counter=self.program_counter,
                 stopped=TRUE,
-                gas_used=gas_used,
+                gas_used=self.call_context.gas_limit,
                 reverted=TRUE,
             );
         }
