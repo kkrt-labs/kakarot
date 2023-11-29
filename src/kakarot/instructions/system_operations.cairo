@@ -422,10 +422,6 @@ namespace CallHelper {
             1 - max_expansion_is_ret
         ) * (args_offset + args_size);
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, max_expansion);
-        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
-        if (ctx.reverted != FALSE) {
-            return ctx;
-        }
 
         // Access list
         // TODO
@@ -444,6 +440,11 @@ namespace CallHelper {
             assert gas_limit = gas.low + gas.high * 2 ** 128;
         } else {
             assert gas_limit = protocol_gas_limit;
+        }
+        // All the gas is charged upfront and remaining gis is refunded at the end
+        let ctx = ExecutionContext.charge_gas(ctx, gas_limit + memory_expansion_cost);
+        if (ctx.reverted != FALSE) {
+            return ctx;
         }
 
         // 3. Calldata
