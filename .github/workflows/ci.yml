@@ -146,7 +146,7 @@ jobs:
 
   resources:
     runs-on: ubuntu-latest
-    needs: tests
+    needs: ef-tests
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.9
