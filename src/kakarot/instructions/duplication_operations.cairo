@@ -27,7 +27,7 @@ namespace DuplicationOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         // See evm.cairo, pc is increased before entering the opcode
-        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter - 1];
+        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter];
         let i = opcode_number - 0x7F;
 
         let (stack, element) = Stack.peek(ctx.stack, i - 1);

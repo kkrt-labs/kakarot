@@ -151,25 +151,6 @@ namespace Helpers {
         return (bytes_array_len, bytes_array);
     }
 
-    // @notice: This helper returns count of nonzero elements in an array
-    // @param nonzeroes: count of nonzero elements in an array
-    // @param idx: index that is recursively incremented of array
-    // @param arr_len: length of array
-    // @param arr: array whose nonzero elements are counted
-    // @return nonzeroes: count of nonzero elements in an array
-    func count_nonzeroes(nonzeroes: felt, idx: felt, arr_len: felt, arr: felt*) -> (
-        nonzeroes: felt, index: felt, arr_len: felt, arr: felt*
-    ) {
-        if (idx == arr_len) {
-            return (nonzeroes, idx, arr_len, arr);
-        }
-
-        let arr_element = [arr];
-        let not_zero = is_not_zero(arr_element);
-        let res = count_nonzeroes(nonzeroes + not_zero, idx + 1, arr_len, arr + 1);
-        return res;
-    }
-
     // @notice: This helper returns the minimal number of EVM words for a given bytes length
     // @param length: a given bytes length
     // @return res: the minimal number of EVM words
@@ -680,6 +661,15 @@ namespace Helpers {
             return b;
         } else {
             return a;
+        }
+    }
+
+    // @notice Returns the max value between a and b
+    func max{range_check_ptr}(a: felt, b: felt) -> felt {
+        if (is_le(a, b) == FALSE) {
+            return a;
+        } else {
+            return b;
         }
     }
 

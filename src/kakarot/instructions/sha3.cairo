@@ -40,19 +40,19 @@ namespace Sha3 {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - offset: memory offset for the beginning of the hash.
-        // 1 - length: how many values we hash.
-        let (stack, popped) = Stack.pop_n(self=stack, n=2);
+        let (stack, popped) = Stack.pop_n(ctx.stack, 2);
         let offset = popped[0];
         let length = popped[1];
 
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + length.low);
+        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
+        if (ctx.reverted != FALSE) {
+            let ctx = ExecutionContext.update_stack(ctx, stack);
+            return ctx;
+        }
+
         let (bigendian_data: felt*) = alloc();
-        let (memory, gas_cost) = Memory.load_n(
-            self=ctx.memory, element_len=length.low, element=bigendian_data, offset=offset.low
-        );
+        let memory = Memory.load_n(ctx.memory, length.low, bigendian_data, offset.low);
 
         let (local dest: felt*) = alloc();
         Helpers.bytes_to_bytes8_little_endian(

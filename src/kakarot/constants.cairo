@@ -19,9 +19,6 @@ namespace Constants {
     // STACK
     const STACK_MAX_DEPTH = 1024;
 
-    // GAS METERING
-    const TRANSACTION_INTRINSIC_GAS_COST = 21000;
-
     // TRANSACTION
     // TODO: handle tx gas limit properly and remove this constant
     // Temporarily set tx gas limit to 1M gas

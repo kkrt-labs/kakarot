@@ -4,6 +4,7 @@ import logging
 import os
 import zipfile
 from pathlib import Path
+from typing import Union
 
 import pandas as pd
 import requests
@@ -14,8 +15,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def get_resources(
-    coverage_dir: Path = Path("coverage"), base_branch_name: str = "main"
+def get_artifacts(
+    name: Union[str, Path] = Path("coverage"), base_branch_name: str = "main"
 ):
     # Pull latest main artifacts
     response = requests.get(
@@ -28,7 +29,7 @@ def get_resources(
                 for artifact in response.json()["artifacts"]
             ]
         )
-        .loc[lambda df: df.name == "coverage"]
+        .loc[lambda df: df.name == name]
         .reindex(["head_branch", "updated_at", "archive_download_url"], axis=1)
         .sort_values(["head_branch", "updated_at"], ascending=False)
         .drop_duplicates(["head_branch"])
@@ -45,7 +46,7 @@ def get_resources(
         )
 
         z = zipfile.ZipFile(io.BytesIO(response.content))
-        z.extractall(coverage_dir / artifact["head_branch"])
+        z.extractall(Path(name) / artifact["head_branch"])
 
     return artifacts
 

@@ -26,7 +26,7 @@ namespace ExchangeOperations {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         // See evm.cairo, pc is increased before entering the opcode
-        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter - 1];
+        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter];
         let i = opcode_number - 0x8f;
         let stack = Stack.swap_i(ctx.stack, i);
         let ctx = ExecutionContext.update_stack(ctx, stack);

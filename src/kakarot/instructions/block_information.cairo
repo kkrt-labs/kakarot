@@ -31,8 +31,7 @@ namespace BlockInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        // See evm.cairo, pc is increased before entering the opcode
-        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter - 1];
+        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter];
 
         tempvar offset = 2 * (opcode_number - 0x40) + 1;
 

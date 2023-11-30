@@ -364,7 +364,7 @@ class TestPlainOpcodes:
             assert value == steps
 
     class TestTransfer:
-        async def test_send_some_should_send(
+        async def test_send_some_should_send_to_eoa(
             self, plain_opcodes, fund_starknet_address, eth_balance_of, owner, other
         ):
             amount = 1

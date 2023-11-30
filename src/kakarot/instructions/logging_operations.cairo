@@ -41,32 +41,27 @@ namespace LoggingOperations {
         }
 
         // See evm.cairo, pc is increased before entering the opcode
-        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter - 1];
+        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter];
         let topics_len = opcode_number - 0xa0;
 
-        // Get stack from context.
-        let stack: model.Stack* = ctx.stack;
-
         // Pop offset + size.
-        let (stack, popped) = Stack.pop_n(stack, topics_len + 2);
+        let (stack, popped) = Stack.pop_n(ctx.stack, topics_len + 2);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
         // Transform data + safety checks
-        let size = Helpers.uint256_to_felt(popped[1]);
-        let offset = Helpers.uint256_to_felt(popped[0]);
+        local offset = Helpers.uint256_to_felt(popped[0]);
+        local size = Helpers.uint256_to_felt(popped[1]);
 
         // Log topics by emitting a starknet event
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset + size);
+        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
+        if (ctx.reverted != FALSE) {
+            return ctx;
+        }
         let (data: felt*) = alloc();
-        let (memory, gas_cost) = Memory.load_n(
-            self=ctx.memory, element_len=size, element=data, offset=offset
-        );
-
-        let ctx = ExecutionContext.push_event(
-            self=ctx, topics_len=topics_len, topics=popped + 4, data_len=size, data=data
-        );
-
-        // Update context stack.
+        let memory = Memory.load_n(ctx.memory, size, data, offset);
         let ctx = ExecutionContext.update_memory(ctx, memory);
+        let ctx = ExecutionContext.push_event(ctx, topics_len, popped + 4, size, data);
 
         return ctx;
     }

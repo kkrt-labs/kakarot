@@ -22,7 +22,7 @@ from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.state import State
 from utils.utils import Helpers
-
+from utils.bytes import felt_to_ascii
 // @title ExecutionContext related functions.
 // @notice This file contains functions related to the execution context.
 namespace ExecutionContext {
@@ -65,7 +65,7 @@ namespace ExecutionContext {
     // @dev Initialize the execution context of a specific contract.
     // @param call_context The call_context (see model.CallContext) to be executed.
     // @return ExecutionContext The initialized execution context.
-    func init(call_context: model.CallContext*) -> model.ExecutionContext* {
+    func init(call_context: model.CallContext*, gas_used: felt) -> model.ExecutionContext* {
         let stack = Stack.init();
         let memory = Memory.init();
         let state = State.init();
@@ -80,24 +80,9 @@ namespace ExecutionContext {
             return_data=return_data,
             program_counter=0,
             stopped=FALSE,
-            gas_used=0,
+            gas_used=gas_used,
             reverted=FALSE,
         );
-    }
-
-    // @notice Compute the intrinsic gas cost of the current transaction.
-    // @dev Computes with the intrinsic gas cost based on per transaction constant and cost of input data (16 gas per non-zero byte and 4 gas per zero byte).
-    // @param self The execution context.
-    // @return intrinsic gas cost.
-    func add_intrinsic_gas_cost(self: model.ExecutionContext*) -> model.ExecutionContext* {
-        let calldata = self.call_context.calldata;
-        let calldata_len = self.call_context.calldata_len;
-        let count = Helpers.count_nonzeroes(nonzeroes=0, idx=0, arr_len=calldata_len, arr=calldata);
-        let zeroes = calldata_len - count.nonzeroes;
-        let calldata_cost = zeroes * 4 + count.nonzeroes * 16;
-        let cost = Constants.TRANSACTION_INTRINSIC_GAS_COST + calldata_cost;
-
-        return ExecutionContext.increment_gas_used(self, cost);
     }
 
     // @notice Return whether the current execution context is stopped.
@@ -248,9 +233,30 @@ namespace ExecutionContext {
     // @param self The pointer to the execution context.
     // @param inc_value The value to increment the gas used with.
     // @return ExecutionContext The pointer to the updated execution context.
-    func increment_gas_used(
+    func charge_gas{range_check_ptr}(
         self: model.ExecutionContext*, inc_value: felt
     ) -> model.ExecutionContext* {
+        let gas_used = self.gas_used + inc_value;
+        let out_of_gas = is_le(self.call_context.gas_limit, gas_used - 1);
+
+        if (out_of_gas != 0) {
+            let (revert_reason_len, revert_reason) = Errors.outOfGas(
+                self.call_context.gas_limit, gas_used
+            );
+            return new model.ExecutionContext(
+                state=self.state,
+                call_context=self.call_context,
+                stack=self.stack,
+                memory=self.memory,
+                return_data_len=revert_reason_len,
+                return_data=revert_reason,
+                program_counter=self.program_counter,
+                stopped=TRUE,
+                gas_used=self.call_context.gas_limit,
+                reverted=TRUE,
+            );
+        }
+
         return new model.ExecutionContext(
             state=self.state,
             call_context=self.call_context,
@@ -260,7 +266,7 @@ namespace ExecutionContext {
             return_data=self.return_data,
             program_counter=self.program_counter,
             stopped=self.stopped,
-            gas_used=self.gas_used + inc_value,
+            gas_used=gas_used,
             reverted=self.reverted,
         );
     }

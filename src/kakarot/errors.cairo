@@ -1,5 +1,8 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.registers import get_label_location
+from starkware.cairo.common.memcpy import memcpy
+
+from utils.bytes import felt_to_ascii
 
 namespace Errors {
     func stateModificationError() -> (error_len: felt, error: felt*) {
@@ -476,28 +479,53 @@ namespace Errors {
         dw 'n';
     }
 
-    func outOfGas() -> (error_len: felt, error: felt*) {
-        let (error) = get_label_location(oog_error_message);
-        return (17, error);
+    func outOfGas{range_check_ptr}(gas_limit: felt, gas_used: felt) -> (
+        error_len: felt, error: felt*
+    ) {
+        alloc_locals;
+        let (error: felt*) = alloc();
 
-        oog_error_message:
-        dw 'K';
-        dw 'a';
-        dw 'k';
-        dw 'a';
-        dw 'r';
-        dw 'o';
-        dw 't';
-        dw ':';
-        dw ' ';
-        dw 'o';
-        dw 'u';
-        dw 't';
-        dw 'O';
-        dw 'f';
-        dw 'G';
-        dw 'a';
-        dw 's';
+        let (gas_used_ascii_len, gas_used_ascii) = felt_to_ascii(gas_used);
+        let (gas_limit_ascii_len, gas_limit_ascii) = felt_to_ascii(gas_limit);
+
+        assert [error + 0] = 'K';
+        assert [error + 1] = 'a';
+        assert [error + 2] = 'k';
+        assert [error + 3] = 'a';
+        assert [error + 4] = 'r';
+        assert [error + 5] = 'o';
+        assert [error + 6] = 't';
+        assert [error + 7] = ':';
+        assert [error + 8] = ' ';
+        assert [error + 9] = 'o';
+        assert [error + 10] = 'u';
+        assert [error + 11] = 't';
+        assert [error + 12] = 'O';
+        assert [error + 13] = 'f';
+        assert [error + 14] = 'G';
+        assert [error + 15] = 'a';
+        assert [error + 16] = 's';
+        assert [error + 17] = ' ';
+        assert [error + 18] = 'l';
+        assert [error + 19] = 'i';
+        assert [error + 20] = 'm';
+        assert [error + 21] = 'i';
+        assert [error + 22] = 't';
+        assert [error + 23] = '=';
+
+        memcpy(error + 24, gas_limit_ascii, gas_limit_ascii_len);
+
+        assert [error + 24 + gas_limit_ascii_len + 0] = ',';
+        assert [error + 24 + gas_limit_ascii_len + 1] = ' ';
+        assert [error + 24 + gas_limit_ascii_len + 2] = 'u';
+        assert [error + 24 + gas_limit_ascii_len + 3] = 's';
+        assert [error + 24 + gas_limit_ascii_len + 4] = 'e';
+        assert [error + 24 + gas_limit_ascii_len + 5] = 'd';
+        assert [error + 24 + gas_limit_ascii_len + 6] = '=';
+
+        memcpy(error + 24 + gas_limit_ascii_len + 7, gas_used_ascii, gas_used_ascii_len);
+
+        return (24 + gas_limit_ascii_len + 7 + gas_used_ascii_len, error);
     }
 
     func precompileInputError() -> (error_len: felt, error: felt*) {

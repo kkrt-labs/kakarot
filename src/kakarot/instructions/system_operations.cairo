@@ -8,8 +8,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
-from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.math_cmp import is_le, is_nn
 from starkware.cairo.common.uint256 import Uint256, uint256_lt
 from starkware.cairo.common.registers import get_fp_and_pc
 
@@ -145,17 +144,20 @@ namespace SystemOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Stack input:
-        // 0 - offset: byte offset in the memory in bytes
-        // 1 - size: byte size to copy
-        let (stack, popped) = Stack.pop_n(self=ctx.stack, n=2);
+        let (stack, popped) = Stack.pop_n(ctx.stack, 2);
         let offset = popped[0];
         let size = popped[1];
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + size.low);
+        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
+        if (ctx.reverted != FALSE) {
+            return ctx;
+        }
 
         let (local return_data: felt*) = alloc();
-        let (memory, gas_cost) = Memory.load_n(ctx.memory, size.low, return_data, offset.low);
+        let memory = Memory.load_n(ctx.memory, size.low, return_data, offset.low);
 
-        let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_memory(ctx, memory);
         let ctx = ExecutionContext.stop(ctx, size.low, return_data, FALSE);
 
@@ -178,18 +180,21 @@ namespace SystemOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Stack input:
-        // 0 - offset: byte offset in the memory in bytes
-        // 1 - size: byte size to copy
-        let (stack, popped) = Stack.pop_n(self=ctx.stack, n=2);
+        let (stack, popped) = Stack.pop_n(ctx.stack, 2);
         let offset = popped[0];
         let size = popped[1];
+        let ctx = ExecutionContext.update_stack(ctx, stack);
+
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + size.low);
+        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
+        if (ctx.reverted != FALSE) {
+            return ctx;
+        }
 
         // Load revert reason from offset
         let (return_data: felt*) = alloc();
-        let (memory, gas_cost) = Memory.load_n(ctx.memory, size.low, return_data, offset.low);
+        let memory = Memory.load_n(ctx.memory, size.low, return_data, offset.low);
 
-        let ctx = ExecutionContext.update_stack(ctx, stack);
         let ctx = ExecutionContext.update_memory(ctx, memory);
         let ctx = ExecutionContext.stop(ctx, size.low, return_data, TRUE);
         return ctx;
@@ -370,64 +375,15 @@ namespace SystemOperations {
 }
 
 namespace CallHelper {
-    // @notice Helper for the CALLs ops family as they all do the same data preprocessing.
-
-    struct CallArgs {
-        gas: felt,
-        address: felt,
-        value: felt,
-        args_size: felt,
-        calldata: felt*,
-    }
-
-    // @dev: with_value arg lets specify if the call requires a value (CALL, CALLCODE) or not (STATICCALL, DELEGATECALL).
-    // @param ctx The pointer to the current ExecutionContext
-    // @param with_value Whether the call pops a value arg
-    // @return ExecutionContext The pointer to the context and call args.
-    func prepare_args{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*, with_value: felt) -> (
-        ctx: model.ExecutionContext*, call_args: CallArgs
-    ) {
-        alloc_locals;
-
-        // Note: We don't pop ret_offset and ret_size here but at the end of the sub context
-        // See finalize_calling_context
-        let (stack, popped) = Stack.pop_n(self=ctx.stack, n=4 + with_value);
-
-        let gas = 2 ** 128 * popped[0].high + popped[0].low;
-        let address = 2 ** 128 * popped[1].high + popped[1].low;
-        let stack_value = (2 ** 128 * popped[2].high + popped[2].low) * with_value;
-        // If the call op expects value to be on the stack, we return it
-        // Otherwise, the value is the calling call context value
-        let value = with_value * stack_value + (1 - with_value) * ctx.call_context.value;
-        let args_offset = 2 ** 128 * popped[2 + with_value].high + popped[2 + with_value].low;
-        let args_size = 2 ** 128 * popped[3 + with_value].high + popped[3 + with_value].low;
-
-        // Load calldata from Memory
-        let (calldata: felt*) = alloc();
-        let (memory, gas_cost) = Memory.load_n(
-            self=ctx.memory, element_len=args_size, element=calldata, offset=args_offset
-        );
-
-        let call_args = CallArgs(
-            gas=gas, address=address, value=value, args_size=args_size, calldata=calldata
-        );
-
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        let ctx = ExecutionContext.update_memory(ctx, memory);
-
-        return (ctx, call_args);
-    }
-
-    // @notice The shared logic of the CALL ops, allowing CALL, CALLCODE, STATICCALL, and DELEGATECALL to share structure and parameterize whether the call requires a value (CALL, CALLCODE) and whether the returned sub context's is read only (STATICCODE)
+    // @notice The shared logic of the CALL ops, allowing CALL, CALLCODE, STATICCALL, and DELEGATECALL to
+    //         share structure and parameterize whether the call requires a value (CALL, CALLCODE) and
+    //         whether the returned sub context's is read only (STATICCODE)
     // @param calling_ctx The pointer to the calling execution context.
-    // @param with_value The boolean that determines whether the sub-context's calling context has a value read from the calling context's stack or the calling context's calling context.
+    // @param with_value The boolean that determines whether the sub-context's calling context has a value read
+    //        from the calling context's stack or the calling context's calling context.
     // @param read_only The boolean that determines whether state modifications can be executed from the sub-execution context.
-    // @param self_call A boolean to indicate whether the account to message-call into is self (address of the current executing account) or the call argument's address (address of the call's target account)
+    // @param self_call A boolean to indicate whether the account to message-call into is self (address of the current executing account)
+    //        or the call argument's address (address of the call's target account)
     // @return ExecutionContext The pointer to the sub context.
     func init_sub_context{
         syscall_ptr: felt*,
@@ -439,48 +395,106 @@ namespace CallHelper {
     ) -> model.ExecutionContext* {
         alloc_locals;
 
-        let (ctx, local call_args) = CallHelper.prepare_args(ctx, with_value);
+        // 1. Parse args from Stack
+        // Note: We don't pop ret_offset and ret_size here but at the end of the sub context
+        // See finalize_calling_context
+        // Pop ret_offset and ret_size
+        let (stack, popped) = Stack.pop_n(ctx.stack, 4 + with_value);
+        let (stack, ret_offset_uint256) = Stack.peek(stack, 0);
+        let (stack, ret_size_uint256) = Stack.peek(stack, 1);
+        let ctx = ExecutionContext.update_stack(ctx, stack);
 
+        let gas = popped[0];
+        let address = 2 ** 128 * popped[1].high + popped[1].low;
+        let stack_value = (2 ** 128 * popped[2].high + popped[2].low) * with_value;
+        // If the call op expects value to be on the stack, we return it
+        // Otherwise, the value is the calling call context value
+        let value = with_value * stack_value + (1 - with_value) * ctx.call_context.value;
+        let args_offset = 2 ** 128 * popped[2 + with_value].high + popped[2 + with_value].low;
+        let args_size = 2 ** 128 * popped[3 + with_value].high + popped[3 + with_value].low;
+        let ret_offset = 2 ** 128 * ret_offset_uint256.high + ret_offset_uint256.low;
+        let ret_size = 2 ** 128 * ret_size_uint256.high + ret_size_uint256.low;
+
+        // 2. Gas
+        // Memory expansion cost
+        let max_expansion_is_ret = is_le(args_offset + args_size, ret_offset + ret_size);
+        let max_expansion = max_expansion_is_ret * (ret_offset + ret_size) + (
+            1 - max_expansion_is_ret
+        ) * (args_offset + args_size);
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, max_expansion);
+
+        // Access list
+        // TODO
+
+        // Max between given gas arg and max allowed gas := available_gas - (available_gas // 64)
+        let available_gas = ctx.call_context.gas_limit - ctx.gas_used;
+        let (max_message_call_gas, _) = unsigned_div_rem(available_gas, 64);
+        tempvar max_message_call_gas = available_gas - max_message_call_gas;
+        let (max_message_call_gas_high, max_message_call_gas_low) = split_felt(
+            max_message_call_gas
+        );
+        let (max_gas_is_message_call_gas) = uint256_lt(
+            Uint256(max_message_call_gas_low, max_message_call_gas_high), gas
+        );
+        local gas_limit;
+        if (max_gas_is_message_call_gas == FALSE) {
+            // If gas is lower, it means that it fits in a felt and this is safe
+            assert gas_limit = gas.low + gas.high * 2 ** 128;
+        } else {
+            assert gas_limit = max_message_call_gas;
+        }
+        // All the gas is charged upfront and remaining gis is refunded at the end
+        let ctx = ExecutionContext.charge_gas(ctx, gas_limit + memory_expansion_cost);
+        if (ctx.reverted != FALSE) {
+            return ctx;
+        }
+
+        // 3. Calldata
+        let (calldata: felt*) = alloc();
+        let memory = Memory.load_n(ctx.memory, args_size, calldata, args_offset);
+        let ctx = ExecutionContext.update_memory(ctx, memory);
+
+        // 4. Build sub_ctx
         // Check if the called address is a precompiled contract
-        let is_precompile = Precompiles.is_precompile(address=call_args.address);
+        let is_precompile = Precompiles.is_precompile(address=address);
         if (is_precompile != FALSE) {
             let sub_ctx = Precompiles.run(
-                evm_address=call_args.address,
-                calldata_len=call_args.args_size,
-                calldata=call_args.calldata,
-                value=call_args.value,
+                evm_address=address,
+                calldata_len=args_size,
+                calldata=calldata,
+                value=value,
                 calling_context=ctx,
             );
 
             return sub_ctx;
         }
 
-        let (starknet_contract_address) = Account.compute_starknet_address(call_args.address);
-        tempvar call_address = new model.Address(starknet_contract_address, call_args.address);
+        let (starknet_contract_address) = Account.compute_starknet_address(address);
+        tempvar call_address = new model.Address(starknet_contract_address, address);
         let (state, account) = State.get_account(ctx.state, call_address);
         let ctx = ExecutionContext.update_state(ctx, state);
 
         if (self_call == FALSE) {
-            tempvar address = call_address;
+            tempvar call_context_address = call_address;
         } else {
-            tempvar address = ctx.call_context.address;
+            tempvar call_context_address = ctx.call_context.address;
         }
 
         tempvar call_context = new model.CallContext(
             bytecode=account.code,
             bytecode_len=account.code_len,
-            calldata=call_args.calldata,
-            calldata_len=call_args.args_size,
-            value=call_args.value,
-            gas_limit=call_args.gas,
+            calldata=calldata,
+            calldata_len=args_size,
+            value=value,
+            gas_limit=gas_limit,
             gas_price=ctx.call_context.gas_price,
             origin=ctx.call_context.origin,
             calling_context=ctx,
-            address=address,
+            address=call_context_address,
             read_only=read_only,
             is_create=FALSE,
         );
-        let sub_ctx = ExecutionContext.init(call_context);
+        let sub_ctx = ExecutionContext.init(call_context, 0);
         let state = State.copy(ctx.state);
         let sub_ctx = ExecutionContext.update_state(sub_ctx, state);
         return sub_ctx;
@@ -516,6 +530,10 @@ namespace CallHelper {
             summary.calling_context.memory, ret_size, return_data, ret_offset
         );
 
+        // Gas not used is returned when ctx is not reverted
+        let remaining_gas = (summary.call_context.gas_limit - summary.gas_used) * (
+            1 - summary.reverted
+        );
         tempvar ctx = new model.ExecutionContext(
             state=summary.calling_context.state,
             call_context=summary.calling_context.call_context,
@@ -525,7 +543,7 @@ namespace CallHelper {
             return_data=summary.return_data,
             program_counter=summary.calling_context.program_counter,
             stopped=summary.calling_context.stopped,
-            gas_used=summary.calling_context.gas_used + summary.gas_used,
+            gas_used=summary.calling_context.gas_used - remaining_gas,
             reverted=summary.calling_context.reverted,
         );
 
@@ -759,10 +777,17 @@ namespace CreateHelper {
         let offset = popped[1];
         let size = popped[2];
 
+        // Gas
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + size.low);
+        let (init_code_gas, _) = unsigned_div_rem(size.low + 31, 31);
+        let init_code_gas = 2 * init_code_gas;
+        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost + init_code_gas);
+        if (ctx.reverted != FALSE) {
+            return ctx;
+        }
+
         let (bytecode: felt*) = alloc();
-        let (memory, gas_cost) = Memory.load_n(
-            self=ctx.memory, element_len=size.low, element=bytecode, offset=offset.low
-        );
+        let memory = Memory.load_n(ctx.memory, size.low, bytecode, offset.low);
         let ctx = ExecutionContext.update_memory(ctx, memory);
 
         // Get target account
@@ -781,6 +806,11 @@ namespace CreateHelper {
             let ctx = ExecutionContext.update_stack(ctx, stack);
             return ctx;
         }
+
+        let available_gas = ctx.call_context.gas_limit - ctx.gas_used;
+        let (gas_limit, _) = unsigned_div_rem(available_gas, 64);
+        let gas_limit = available_gas - gas_limit;
+        let ctx = ExecutionContext.charge_gas(ctx, gas_limit);
 
         let sender = Account.set_nonce(sender, sender.nonce + 1);
         let state = State.set_account(state, ctx.call_context.address, sender);
@@ -809,7 +839,7 @@ namespace CreateHelper {
             calldata=calldata,
             calldata_len=0,
             value=value.low,
-            gas_limit=ctx.call_context.gas_limit,
+            gas_limit=gas_limit,
             gas_price=ctx.call_context.gas_price,
             origin=ctx.call_context.origin,
             calling_context=ctx,
@@ -817,7 +847,7 @@ namespace CreateHelper {
             read_only=FALSE,
             is_create=TRUE,
         );
-        let sub_ctx = ExecutionContext.init(call_context);
+        let sub_ctx = ExecutionContext.init(call_context, 0);
 
         let transfer = model.Transfer(
             sender=ctx.call_context.address, recipient=address, amount=value
@@ -846,19 +876,20 @@ namespace CreateHelper {
     }(summary: ExecutionContext.Summary*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // code_deposit_code := 200 * deployed_code_size * BYTES_PER_FELT (as Kakarot packs bytes inside a felt)
-        // dynamic_gas :=  deployment_code_execution_cost + code_deposit_cost
-        // In the case of a reverted create context, the gas of the reverted context should be rolled back and not consumed
-        let gas = (summary.gas_used + 200 * summary.return_data_len * Constants.BYTES_PER_FELT) * (
-            1 - summary.reverted
-        );
+        // Charge final deposit gas
+        let code_deposit_cost = 200 * summary.return_data_len;
+        let remaining_gas = summary.call_context.gas_limit - summary.gas_used - code_deposit_cost;
+        let enough_gas = is_nn(remaining_gas);
+        let success = (1 - summary.reverted) * enough_gas;
 
         // Stack output: the address of the deployed contract, 0 if the deployment failed.
-        let (address_high, address_low) = split_felt(summary.address.evm * (1 - summary.reverted));
+        let (address_high, address_low) = split_felt(summary.address.evm * success);
         tempvar address = new Uint256(low=address_low, high=address_high);
         let stack = Stack.push(summary.calling_context.stack, address);
 
         // Re-create the calling context with updated stack and return_data
+        // Gas not used is returned when ctx is not reverted
+        // In the case of a reverted create context, the gas of the reverted context should be rolled back and not consumed
         tempvar ctx = new model.ExecutionContext(
             state=summary.calling_context.state,
             call_context=summary.calling_context.call_context,
@@ -868,12 +899,12 @@ namespace CreateHelper {
             return_data=summary.return_data,
             program_counter=summary.calling_context.program_counter,
             stopped=summary.calling_context.stopped,
-            gas_used=summary.calling_context.gas_used + summary.gas_used,
+            gas_used=summary.calling_context.gas_used - remaining_gas * success,
             reverted=summary.calling_context.reverted,
         );
 
         // REVERTED, just returns
-        if (summary.reverted != FALSE) {
+        if (success == FALSE) {
             return ctx;
         }
 

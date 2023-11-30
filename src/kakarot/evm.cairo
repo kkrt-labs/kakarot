@@ -6,7 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_le, is_not_zero
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
 
 // Internal dependencies
@@ -30,6 +30,7 @@ from kakarot.precompiles.precompiles import Precompiles
 from kakarot.stack import Stack
 from kakarot.state import State
 from utils.utils import Helpers
+from utils.array import count_not_zero
 
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.
@@ -60,12 +61,13 @@ namespace EVM {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        // Get the current opcode number
-        let pc = ctx.program_counter;
+        local opcode_number;
         local opcode: model.Opcode*;
 
+        // Get the current opcode number
+        let pc = ctx.program_counter;
+
         let is_pc_ge_code_len = is_le(ctx.call_context.bytecode_len, pc);
-        local opcode_number;
         if (is_pc_ge_code_len != FALSE) {
             assert opcode_number = 0;
         } else {
@@ -99,21 +101,15 @@ namespace EVM {
             return ctx;
         }
 
-        // Check static gas
-        let out_of_gas = is_le(ctx.call_context.gas_limit, ctx.gas_used + opcode.gas - 1);
-        if (out_of_gas != 0) {
-            let (revert_reason_len, revert_reason) = Errors.outOfGas();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+        // Update static gas
+        let ctx = ExecutionContext.charge_gas(ctx, opcode.gas);
+        if (ctx.reverted != FALSE) {
             return ctx;
         }
 
-        // Update ctx
-        let ctx = ExecutionContext.increment_program_counter(self=ctx, inc_value=1);
-        let ctx = ExecutionContext.increment_gas_used(ctx, opcode.gas);
-
         // Compute the corresponding offset in the jump table:
-        // count 1 for "next line" and 3 steps per opcode: call, opcode, ret
-        tempvar offset = 1 + 3 * opcode_number;
+        // count 1 for "next line" and 4 steps per opcode: call, opcode, jmp, end
+        tempvar offset = 1 + 4 * opcode_number;
 
         // Prepare arguments
         [ap] = syscall_ptr, ap++;
@@ -125,517 +121,544 @@ namespace EVM {
         // call opcode
         jmp rel offset;
         call StopAndMathOperations.exec_stop;  // 0x0
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x1
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x2
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x3
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x4
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x5
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x6
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x7
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x8
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x9
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0xa
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0xb
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xc
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xd
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xe
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xf
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x10
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x11
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x12
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x13
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x14
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x15
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x16
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x17
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x18
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x19
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x1a
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x1b
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x1c
-        ret;
+        jmp end;
         call StopAndMathOperations.exec_math_operation;  // 0x1d
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x1e
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x1f
-        ret;
+        jmp end;
         call Sha3.exec_sha3;  // 0x20
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x21
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x22
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x23
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x24
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x25
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x26
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x27
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x28
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x29
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x2a
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x2b
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x2c
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x2d
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x2e
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x2f
-        ret;
+        jmp end;
         call EnvironmentalInformation.exec_address;  // 0x30
-        ret;
+        jmp end;
         call EnvironmentalInformation.exec_balance;  // 0x31
-        ret;
+        jmp end;
         call EnvironmentalInformation.exec_origin;  // 0x32
-        ret;
+        jmp end;
         call EnvironmentalInformation.exec_caller;  // 0x33
-        ret;
+        jmp end;
         call EnvironmentalInformation.exec_callvalue;  // 0x34
-        ret;
+        jmp end;
         call EnvironmentalInformation.exec_calldataload;  // 0x35
-        ret;
+        jmp end;
         call EnvironmentalInformation.exec_calldatasize;  // 0x36
-        ret;
+        jmp end;
         call EnvironmentalInformation.exec_calldatacopy;  // 0x37
-        ret;
+        jmp end;
         call EnvironmentalInformation.exec_codesize;  // 0x38
-        ret;
+        jmp end;
         call EnvironmentalInformation.exec_codecopy;  // 0x39
-        ret;
+        jmp end;
         call EnvironmentalInformation.exec_gasprice;  // 0x3a
-        ret;
+        jmp end;
         call EnvironmentalInformation.exec_extcodesize;  // 0x3b
-        ret;
+        jmp end;
         call EnvironmentalInformation.exec_extcodecopy;  // 0x3c
-        ret;
+        jmp end;
         call EnvironmentalInformation.exec_returndatasize;  // 0x3d
-        ret;
+        jmp end;
         call EnvironmentalInformation.exec_returndatacopy;  // 0x3e
-        ret;
+        jmp end;
         call EnvironmentalInformation.exec_extcodehash;  // 0x3f
-        ret;
+        jmp end;
         call BlockInformation.exec_block_information;  // 0x40
-        ret;
+        jmp end;
         call BlockInformation.exec_block_information;  // 0x41
-        ret;
+        jmp end;
         call BlockInformation.exec_block_information;  // 0x42
-        ret;
+        jmp end;
         call BlockInformation.exec_block_information;  // 0x43
-        ret;
+        jmp end;
         call BlockInformation.exec_block_information;  // 0x44
-        ret;
+        jmp end;
         call BlockInformation.exec_block_information;  // 0x45
-        ret;
+        jmp end;
         call BlockInformation.exec_block_information;  // 0x46
-        ret;
+        jmp end;
         call BlockInformation.exec_block_information;  // 0x47
-        ret;
+        jmp end;
         call BlockInformation.exec_block_information;  // 0x48
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x49
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x4a
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x4b
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x4c
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x4d
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x4e
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x4f
-        ret;
+        jmp end;
         call MemoryOperations.exec_pop;  // 0x50
-        ret;
+        jmp end;
         call MemoryOperations.exec_mload;  // 0x51
-        ret;
+        jmp end;
         call MemoryOperations.exec_mstore;  // 0x52
-        ret;
+        jmp end;
         call MemoryOperations.exec_mstore8;  // 0x53
-        ret;
+        jmp end;
         call MemoryOperations.exec_sload;  // 0x54
-        ret;
+        jmp end;
         call MemoryOperations.exec_sstore;  // 0x55
-        ret;
+        jmp end;
         call MemoryOperations.exec_jump;  // 0x56
-        ret;
+        jmp end;
         call MemoryOperations.exec_jumpi;  // 0x57
-        ret;
+        jmp end;
         call MemoryOperations.exec_pc;  // 0x58
-        ret;
+        jmp end;
         call MemoryOperations.exec_msize;  // 0x59
-        ret;
+        jmp end;
         call MemoryOperations.exec_gas;  // 0x5a
-        ret;
+        jmp end;
         call MemoryOperations.exec_jumpdest;  // 0x5b
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x5c
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x5d
-        ret;
+        jmp end;
         call unknown_opcode;  // 0x5e
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x5f
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x60
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x61
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x62
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x63
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x64
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x65
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x66
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x67
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x68
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x69
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x6a
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x6b
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x6c
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x6d
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x6e
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x6f
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x70
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x71
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x72
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x73
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x74
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x75
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x76
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x77
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x78
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x79
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x7a
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x7b
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x7c
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x7d
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x7e
-        ret;
+        jmp end;
         call PushOperations.exec_push;  // 0x7f
-        ret;
+        jmp end;
         call DuplicationOperations.exec_dup;  // 0x80
-        ret;
+        jmp end;
         call DuplicationOperations.exec_dup;  // 0x81
-        ret;
+        jmp end;
         call DuplicationOperations.exec_dup;  // 0x82
-        ret;
+        jmp end;
         call DuplicationOperations.exec_dup;  // 0x83
-        ret;
+        jmp end;
         call DuplicationOperations.exec_dup;  // 0x84
-        ret;
+        jmp end;
         call DuplicationOperations.exec_dup;  // 0x85
-        ret;
+        jmp end;
         call DuplicationOperations.exec_dup;  // 0x86
-        ret;
+        jmp end;
         call DuplicationOperations.exec_dup;  // 0x87
-        ret;
+        jmp end;
         call DuplicationOperations.exec_dup;  // 0x88
-        ret;
+        jmp end;
         call DuplicationOperations.exec_dup;  // 0x89
-        ret;
+        jmp end;
         call DuplicationOperations.exec_dup;  // 0x8a
-        ret;
+        jmp end;
         call DuplicationOperations.exec_dup;  // 0x8b
-        ret;
+        jmp end;
         call DuplicationOperations.exec_dup;  // 0x8c
-        ret;
+        jmp end;
         call DuplicationOperations.exec_dup;  // 0x8d
-        ret;
+        jmp end;
         call DuplicationOperations.exec_dup;  // 0x8e
-        ret;
+        jmp end;
         call DuplicationOperations.exec_dup;  // 0x8f
-        ret;
+        jmp end;
         call ExchangeOperations.exec_swap;  // 0x90
-        ret;
+        jmp end;
         call ExchangeOperations.exec_swap;  // 0x91
-        ret;
+        jmp end;
         call ExchangeOperations.exec_swap;  // 0x92
-        ret;
+        jmp end;
         call ExchangeOperations.exec_swap;  // 0x93
-        ret;
+        jmp end;
         call ExchangeOperations.exec_swap;  // 0x94
-        ret;
+        jmp end;
         call ExchangeOperations.exec_swap;  // 0x95
-        ret;
+        jmp end;
         call ExchangeOperations.exec_swap;  // 0x96
-        ret;
+        jmp end;
         call ExchangeOperations.exec_swap;  // 0x97
-        ret;
+        jmp end;
         call ExchangeOperations.exec_swap;  // 0x98
-        ret;
+        jmp end;
         call ExchangeOperations.exec_swap;  // 0x99
-        ret;
+        jmp end;
         call ExchangeOperations.exec_swap;  // 0x9a
-        ret;
+        jmp end;
         call ExchangeOperations.exec_swap;  // 0x9b
-        ret;
+        jmp end;
         call ExchangeOperations.exec_swap;  // 0x9c
-        ret;
+        jmp end;
         call ExchangeOperations.exec_swap;  // 0x9d
-        ret;
+        jmp end;
         call ExchangeOperations.exec_swap;  // 0x9e
-        ret;
+        jmp end;
         call ExchangeOperations.exec_swap;  // 0x9f
-        ret;
+        jmp end;
         call LoggingOperations.exec_log;  // 0xa0
-        ret;
+        jmp end;
         call LoggingOperations.exec_log;  // 0xa1
-        ret;
+        jmp end;
         call LoggingOperations.exec_log;  // 0xa2
-        ret;
+        jmp end;
         call LoggingOperations.exec_log;  // 0xa3
-        ret;
+        jmp end;
         call LoggingOperations.exec_log;  // 0xa4
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xa5
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xa6
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xa7
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xa8
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xa9
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xaa
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xab
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xac
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xad
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xae
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xaf
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xb0
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xb1
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xb2
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xb3
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xb4
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xb5
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xb6
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xb7
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xb8
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xb9
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xba
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xbb
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xbc
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xbd
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xbe
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xbf
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xc0
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xc1
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xc2
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xc3
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xc4
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xc5
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xc6
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xc7
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xc8
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xc9
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xca
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xcb
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xcc
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xcd
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xce
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xcf
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xd0
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xd1
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xd2
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xd3
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xd4
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xd5
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xd6
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xd7
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xd8
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xd9
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xda
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xdb
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xdc
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xdd
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xde
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xdf
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xe0
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xe1
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xe2
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xe3
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xe4
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xe5
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xe6
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xe7
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xe8
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xe9
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xea
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xeb
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xec
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xed
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xee
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xef
-        ret;
+        jmp end;
         call SystemOperations.exec_create;  // 0xf0
-        ret;
+        jmp end_sub_ctx;
         call SystemOperations.exec_call;  // 0xf1
-        ret;
+        jmp end_sub_ctx;
         call SystemOperations.exec_callcode;  // 0xf2
-        ret;
+        jmp end_sub_ctx;
         call SystemOperations.exec_return;  // 0xf3
-        ret;
+        jmp end;
         call SystemOperations.exec_delegatecall;  // 0xf4
-        ret;
+        jmp end_sub_ctx;
         call SystemOperations.exec_create2;  // 0xf5
-        ret;
+        jmp end_sub_ctx;
         call unknown_opcode;  // 0xf6
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xf7
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xf8
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xf9
-        ret;
+        jmp end;
         call SystemOperations.exec_staticcall;  // 0xfa
-        ret;
+        jmp end_sub_ctx;
         call unknown_opcode;  // 0xfb
-        ret;
+        jmp end;
         call unknown_opcode;  // 0xfc
-        ret;
+        jmp end;
         call SystemOperations.exec_revert;  // 0xfd
-        ret;
+        jmp end;
         call SystemOperations.exec_invalid;  // 0xfe
-        ret;
+        jmp end;
         call SystemOperations.exec_selfdestruct;  // 0xff
-        ret;
+        jmp end;
+
+        end_sub_ctx:
+        let syscall_ptr = cast([ap - 5], felt*);
+        let pedersen_ptr = cast([ap - 4], HashBuiltin*);
+        let range_check_ptr = [ap - 3];
+        let bitwise_ptr = cast([ap - 2], BitwiseBuiltin*);
+        let sub_ctx = cast([ap - 1], model.ExecutionContext*);
+
+        // Handle edge cases of CALLs and CREATEs
+        // pc != 0 means that the returned sub_ctx is not a new ctx
+        if (sub_ctx.program_counter == 0) {
+            return sub_ctx;
+        } else {
+            let ctx = ExecutionContext.increment_program_counter(sub_ctx, 1);
+            return ctx;
+        }
+
+        end:
+        let syscall_ptr = cast([ap - 5], felt*);
+        let pedersen_ptr = cast([ap - 4], HashBuiltin*);
+        let range_check_ptr = [ap - 3];
+        let bitwise_ptr = cast([ap - 2], BitwiseBuiltin*);
+        let ctx = cast([ap - 1], model.ExecutionContext*);
+
+        let ctx = ExecutionContext.increment_program_counter(ctx, 1);
+
+        return ctx;
     }
 
     // @notice Iteratively decode and execute the bytecode of an ExecutionContext
@@ -651,7 +674,7 @@ namespace EVM {
 
         if (ctx.stopped != FALSE) {
             let ctx_summary = ExecutionContext.finalize(ctx);
-            let is_root: felt = ExecutionContext.is_empty(self=ctx_summary.calling_context);
+            let is_root = ExecutionContext.is_empty(ctx_summary.calling_context);
             if (is_root != FALSE) {
                 let evm_summary = finalize(ctx_summary);
                 return evm_summary;
@@ -659,9 +682,11 @@ namespace EVM {
 
             if (ctx_summary.call_context.is_create != 0) {
                 let ctx = CreateHelper.finalize_calling_context(ctx_summary);
+                let ctx = ExecutionContext.increment_program_counter(ctx, 1);
                 return run(ctx);
             } else {
                 let ctx = CallHelper.finalize_calling_context(ctx_summary);
+                let ctx = ExecutionContext.increment_program_counter(ctx, 1);
                 return run(ctx);
             }
         }
@@ -700,6 +725,13 @@ namespace EVM {
     ) -> Summary* {
         alloc_locals;
 
+        // Compute intrinsic gas usage
+        // See https://www.evm.codes/about#gascosts
+        let count = count_not_zero(calldata_len, calldata);
+        let zeroes = calldata_len - count;
+        let calldata_gas = zeroes * 4 + count * 16;
+        let intrinsic_gas = 21000 + calldata_gas;
+
         // If is_deploy_tx is TRUE, then
         // bytecode is data and data is empty
         // else, bytecode and data are kept as is
@@ -709,9 +741,11 @@ namespace EVM {
             let (empty: felt*) = alloc();
             tempvar bytecode = calldata;
             tempvar calldata = empty;
+            tempvar intrinsic_gas = intrinsic_gas + 32000;
         } else {
             tempvar bytecode = bytecode;
             tempvar calldata = calldata;
+            tempvar intrinsic_gas = intrinsic_gas;
         }
 
         let root_context = ExecutionContext.init_empty();
@@ -730,8 +764,7 @@ namespace EVM {
             is_create=is_deploy_tx,
         );
 
-        let ctx = ExecutionContext.init(call_context);
-        let ctx = ExecutionContext.add_intrinsic_gas_cost(ctx);
+        let ctx = ExecutionContext.init(call_context, intrinsic_gas);
 
         let state = ctx.state;
         // Handle value

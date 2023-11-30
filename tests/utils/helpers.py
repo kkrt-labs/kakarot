@@ -26,7 +26,7 @@ def hex_string_to_bytes_array(h: str):
 
 
 def extract_memory_from_execute(result):
-    mem = [0] * result.memory_bytes_len
+    mem = [0] * result.memory_words_len * 32
     for i in range(0, len(result.memory_accesses), 3):
         k = result.memory_accesses[i]  # Word index.
         assert result.memory_accesses[i + 1] == 0  # Initial value.

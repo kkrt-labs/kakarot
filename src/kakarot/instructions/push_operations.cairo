@@ -30,11 +30,11 @@ namespace PushOperations {
         alloc_locals;
 
         // See evm.cairo, pc is increased before entering the opcode
-        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter - 1];
+        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter];
         let i = opcode_number - 0x5f;
 
         // Copy code slice
-        let pc = ctx.program_counter;
+        let pc = ctx.program_counter + 1;
         let out_of_bounds = is_le(ctx.call_context.bytecode_len, pc + i);
         local len = (1 - out_of_bounds) * i + out_of_bounds * (ctx.call_context.bytecode_len - pc);
 

@@ -92,7 +92,7 @@ func init_context{
     );
 
     // Initialize ExecutionContext
-    let ctx = ExecutionContext.init(call_context);
+    let ctx = ExecutionContext.init(call_context, 0);
     return ctx;
 }
 
@@ -182,13 +182,6 @@ func test__exec_extcodecopy__should_handle_address_with_code{
         bytecode_len, bytecode, stack
     );
 
-    // we are hardcoding an assumption of 'cold' address access, for now.
-    let address_access_cost = 2600;
-    let (minimum_word_size) = Helpers.minimum_word_count(size);
-    let (_, memory_expansion_cost) = Memory.ensure_length(
-        self=ctx.memory, length=dest_offset + size
-    );
-
     // When
     let result = EnvironmentalInformation.exec_extcodecopy(ctx);
 
@@ -196,7 +189,7 @@ func test__exec_extcodecopy__should_handle_address_with_code{
     assert result.stack.size = 0;
 
     let (output_array) = alloc();
-    Memory._load_n(result.memory, size, output_array, dest_offset);
+    Memory.load_n(result.memory, size, output_array, dest_offset);
 
     return (memory_len=size, memory=output_array);
 }
@@ -243,7 +236,7 @@ func test__exec_extcodecopy__should_handle_address_with_no_code{
     // When
     let result = EnvironmentalInformation.exec_extcodecopy(ctx);
     let (output_array) = alloc();
-    Memory._load_n(result.memory, 3, output_array, 32);
+    Memory.load_n(result.memory, 3, output_array, 32);
 
     // Then
     // ensure stack is consumed/updated
@@ -316,7 +309,7 @@ func test__returndatacopy{
     let ctx: model.ExecutionContext* = EnvironmentalInformation.exec_returndatacopy(ctx);
 
     // Then
-    let (memory, data) = Memory._load(ctx.memory, 0);
+    let (memory, data) = Memory.load(ctx.memory, 0);
     assert_uint256_eq(
         data, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)
     );
@@ -339,13 +332,13 @@ func test__returndatacopy{
 
     // Then
     // check first 32 bytes
-    let (memory, data) = Memory._load(result.memory, 0);
+    let (memory, data) = Memory.load(result.memory, 0);
     assert_uint256_eq(
         data, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)
     );
     // check 1 byte more at offset 32
     let (output_array) = alloc();
-    Memory._load_n(memory, 1, output_array, 32);
+    Memory.load_n(memory, 1, output_array, 32);
     assert [output_array] = 0xFF;
 
     return ();

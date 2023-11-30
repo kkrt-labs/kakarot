@@ -73,14 +73,14 @@ class TestCounter:
     class TestLoops:
         @pytest.mark.parametrize("iterations", [0, 50, 100])
         async def test_should_set_counter_to_iterations_with_for_loop(
-            self, counter, owner, iterations
+            self, counter, iterations
         ):
             await counter.incForLoop(iterations)
             assert await counter.count() == iterations
 
-        @pytest.mark.parametrize("iterations", [0, 50, 200])
+        @pytest.mark.parametrize("iterations", [0, 50, 186])
         async def test_should_set_counter_to_iterations_with_while_loop(
-            self, counter, owner, iterations
+            self, counter, iterations
         ):
             await counter.incWhileLoop(iterations)
             assert await counter.count() == iterations

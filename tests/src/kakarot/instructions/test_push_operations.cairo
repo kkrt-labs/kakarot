@@ -26,7 +26,6 @@ func test__exec_push{
     memset(bytecode + 1, 0xff, i);
     let stack_ = Stack.init();
     let ctx = TestHelpers.init_context_with_stack(1 + i, bytecode, stack_);
-    let ctx = ExecutionContext.increment_program_counter(ctx, 1);
 
     let ctx = PushOperations.exec_push(ctx);
     let (stack, result) = Stack.peek(ctx.stack, 0);

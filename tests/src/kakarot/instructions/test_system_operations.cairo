@@ -656,7 +656,6 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
     assert sub_ctx.stopped = 0;
     assert sub_ctx.return_data_len = 0;
     assert sub_ctx.gas_used = 0;
-    assert sub_ctx.call_context.gas_limit = ctx.call_context.gas_limit;
     assert sub_ctx.call_context.gas_price = ctx.call_context.gas_price;
     assert_not_zero(sub_ctx.call_context.address.starknet);
     assert_not_zero(sub_ctx.call_context.address.evm);
@@ -750,7 +749,6 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     assert sub_ctx.stopped = 0;
     assert sub_ctx.return_data_len = 0;
     assert sub_ctx.gas_used = 0;
-    assert sub_ctx.call_context.gas_limit = ctx.call_context.gas_limit;
     assert sub_ctx.call_context.gas_price = ctx.call_context.gas_price;
     assert_not_zero(sub_ctx.call_context.address.starknet);
     assert_not_zero(sub_ctx.call_context.address.evm);

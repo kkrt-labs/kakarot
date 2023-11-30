@@ -25,11 +25,11 @@ namespace model {
     // @notice between transactions.
     // @param word_dict_start pointer to a DictAccess used to store the memory's value at a given index.
     // @param word_dict pointer to the end of the DictAccess array.
-    // @param bytes_len length of the DictAccess array.
+    // @param words_len number of words (bytes32).
     struct Memory {
         word_dict_start: DictAccess*,
         word_dict: DictAccess*,
-        bytes_len: felt,
+        words_len: felt,
     }
 
     // @dev In Cairo Zero, dict are list of DictAccess, ie that they can contain only felts. For having

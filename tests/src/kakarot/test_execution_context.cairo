@@ -45,7 +45,7 @@ func test__init__should_return_an_empty_execution_context{
         is_create=0,
     );
 
-    let result: model.ExecutionContext* = ExecutionContext.init(call_context);
+    let result: model.ExecutionContext* = ExecutionContext.init(call_context, 0);
 
     // Then
     assert result.call_context.bytecode = bytecode;
@@ -54,7 +54,7 @@ func test__init__should_return_an_empty_execution_context{
     assert result.program_counter = 0;
     assert result.stopped = FALSE;
     assert result.stack.size = 0;
-    assert result.memory.bytes_len = 0;
+    assert result.memory.words_len = 0;
     assert result.gas_used = 0;
     assert result.call_context.gas_limit = Constants.TRANSACTION_GAS_LIMIT;  // TODO: Add support for gas limit
     assert result.call_context.gas_price = 0;
