@@ -184,7 +184,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: resources
-          path: ./resources/resources.csv
+          path: resources
       - name: Check resources evolution
         run: |
           result=$(GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} make check-resources)
