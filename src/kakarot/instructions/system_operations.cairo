@@ -25,6 +25,7 @@ from kakarot.stack import Stack
 from kakarot.state import State
 from utils.rlp import RLP
 from utils.utils import Helpers
+from utils.uint256 import uint256_to_uint160
 
 // @title System operations opcodes.
 // @notice This file contains the functions to execute for system operations opcodes.
@@ -50,21 +51,8 @@ namespace SystemOperations {
             return ctx;
         }
 
-        // Stack input:
-        // 0 - value: value in wei to send to the new account
-        // 1 - offset: byte offset in the memory in bytes (initialization code)
-        // 2 - size: byte size to copy (size of initialization code)
         let (stack, popped) = Stack.pop_n(self=ctx.stack, n=3);
-        let size = popped[2];
-
-        // create dynamic gas:
-        // dynamic_gas = 6 * minimum_word_size + memory_expansion_cost + deployment_code_execution_cost + code_deposit_cost
-        // -> ``memory_expansion_cost + deployment_code_execution_cost + code_deposit_cost`` is handled inside ``initialize_sub_context``
-        let (minimum_word_size) = Helpers.minimum_word_count(size.low);
-        let word_size_gas = 6 * minimum_word_size;
-
         let ctx = ExecutionContext.update_stack(ctx, stack);
-
         let sub_ctx = CreateHelper.initialize_sub_context(ctx=ctx, popped_len=3, popped=popped);
 
         return sub_ctx;
@@ -91,15 +79,8 @@ namespace SystemOperations {
             return ctx;
         }
 
-        // Stack input:
-        // 0 - value: value in wei to send to the new account
-        // 1 - offset: byte offset in the memory in bytes (initialization code)
-        // 2 - size: byte size to copy (size of initialization code)
-        // 3 - salt: salt for address generation
         let (stack, popped) = Stack.pop_n(self=ctx.stack, n=4);
-
         let ctx = ExecutionContext.update_stack(ctx, stack);
-
         let sub_ctx = CreateHelper.initialize_sub_context(ctx=ctx, popped_len=4, popped=popped);
 
         return sub_ctx;
@@ -149,6 +130,11 @@ namespace SystemOperations {
         let size = popped[1];
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
+        if (offset.high + size.high != 0) {
+            let ctx = ExecutionContext.charge_gas(ctx, ctx.call_context.gas_limit);
+            return ctx;
+        }
+
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + size.low);
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
@@ -184,6 +170,11 @@ namespace SystemOperations {
         let offset = popped[0];
         let size = popped[1];
         let ctx = ExecutionContext.update_stack(ctx, stack);
+
+        if (offset.high + size.high != 0) {
+            let ctx = ExecutionContext.charge_gas(ctx, ctx.call_context.gas_limit);
+            return ctx;
+        }
 
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + size.low);
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
@@ -338,9 +329,7 @@ namespace SystemOperations {
 
         // Transfer funds
         let (stack, popped) = Stack.pop(ctx.stack);
-        let (_, address_high) = unsigned_div_rem(popped.high, 2 ** 32);
-        let address = Uint256(popped.low, address_high);
-        let recipient_evm_address = Helpers.uint256_to_felt(address);
+        let recipient_evm_address = uint256_to_uint160([popped]);
 
         // Remove this when https://eips.ethereum.org/EIPS/eip-6780 is validated
         if (recipient_evm_address == ctx.call_context.address.evm) {
@@ -400,25 +389,27 @@ namespace CallHelper {
         // See finalize_calling_context
         // Pop ret_offset and ret_size
         let (stack, popped) = Stack.pop_n(ctx.stack, 4 + with_value);
-        let (stack, ret_offset_uint256) = Stack.peek(stack, 0);
-        let (stack, ret_size_uint256) = Stack.peek(stack, 1);
+        let (stack, ret_offset) = Stack.peek(stack, 0);
+        let (stack, ret_size) = Stack.peek(stack, 1);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
+        // In case with_value is false, it just counts two times popped[3], which is fine
+        // since it needs to be 0 not to raise.
+        if (ret_offset.high + ret_size.high + popped[2].high + popped[3].high + popped[3 + with_value].high != 0) {
+            let ctx = ExecutionContext.charge_gas(ctx, ctx.call_context.gas_limit);
+            return ctx;
+        }
+
         let gas = popped[0];
-        let address = 2 ** 128 * popped[1].high + popped[1].low;
-        let stack_value = (2 ** 128 * popped[2].high + popped[2].low) * with_value;
-        // If the call op expects value to be on the stack, we return it
-        // Otherwise, the value is the calling call context value
-        let value = with_value * stack_value + (1 - with_value) * ctx.call_context.value;
-        let args_offset = 2 ** 128 * popped[2 + with_value].high + popped[2 + with_value].low;
-        let args_size = 2 ** 128 * popped[3 + with_value].high + popped[3 + with_value].low;
-        let ret_offset = 2 ** 128 * ret_offset_uint256.high + ret_offset_uint256.low;
-        let ret_size = 2 ** 128 * ret_size_uint256.high + ret_size_uint256.low;
+        let address = uint256_to_uint160(popped[1]);
+        let value = with_value * popped[2].low + (1 - with_value) * ctx.call_context.value;
+        let args_offset = popped[2 + with_value].low;
+        let args_size = popped[3 + with_value].low;
 
         // 2. Gas
         // Memory expansion cost
-        let max_expansion_is_ret = is_le(args_offset + args_size, ret_offset + ret_size);
-        let max_expansion = max_expansion_is_ret * (ret_offset + ret_size) + (
+        let max_expansion_is_ret = is_le(args_offset + args_size, ret_offset.low + ret_size.low);
+        let max_expansion = max_expansion_is_ret * (ret_offset.low + ret_size.low) + (
             1 - max_expansion_is_ret
         ) * (args_offset + args_size);
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, max_expansion);
@@ -513,8 +504,8 @@ namespace CallHelper {
         // Pop ret_offset and ret_size
         // See init_sub_context, the Stack here is guaranteed to have enough items
         let (stack, popped) = Stack.pop_n(self=summary.calling_context.stack, n=2);
-        let ret_offset = 2 ** 128 * popped[0].high + popped[0].low;
-        let ret_size = 2 ** 128 * popped[1].high + popped[1].low;
+        let ret_offset = popped[0].low;
+        let ret_size = popped[1].low;
 
         // Put status in stack
         let stack = Stack.push_uint128(stack, 1 - summary.reverted);

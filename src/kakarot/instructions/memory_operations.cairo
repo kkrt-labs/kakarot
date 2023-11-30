@@ -10,6 +10,7 @@ from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.dict import DictAccess, dict_new, dict_read, dict_write
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math import unsigned_div_rem
 
 from kakarot.errors import Errors
 from kakarot.execution_context import ExecutionContext
@@ -42,17 +43,22 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let (stack, offset_uint256) = Stack.pop(ctx.stack);
-        let offset = Helpers.uint256_to_felt([offset_uint256]);
+        let (stack, offset) = Stack.pop(ctx.stack);
 
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset + 32);
+        if (offset.high != 0) {
+            let ctx = ExecutionContext.update_stack(ctx, stack);
+            let ctx = ExecutionContext.charge_gas(ctx, ctx.call_context.gas_limit);
+            return ctx;
+        }
+
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + 32);
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             let ctx = ExecutionContext.update_stack(ctx, stack);
             return ctx;
         }
 
-        let (memory, value) = Memory.load(ctx.memory, offset);
+        let (memory, value) = Memory.load(ctx.memory, offset.low);
         let stack = Stack.push_uint256(stack, value);
 
         let ctx = ExecutionContext.update_memory(ctx, memory);
@@ -82,6 +88,11 @@ namespace MemoryOperations {
         let offset = popped[0];
         let value = popped[1];
         let ctx = ExecutionContext.update_stack(ctx, stack);
+
+        if (offset.high != 0) {
+            let ctx = ExecutionContext.charge_gas(ctx, ctx.call_context.gas_limit);
+            return ctx;
+        }
 
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + 32);
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
@@ -149,6 +160,13 @@ namespace MemoryOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         let (stack, offset) = Stack.pop(ctx.stack);
         let ctx = ExecutionContext.update_stack(ctx, stack);
+
+        if (offset.high != 0) {
+            let (revert_reason_len, revert_reason) = Errors.programCounterOutOfRange();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
+
         let ctx = ExecutionContext.jump(ctx, offset.low);
         return ctx;
     }
@@ -178,8 +196,13 @@ namespace MemoryOperations {
         let (stack, popped) = Stack.pop_n(self=stack, n=2);
         let offset = popped[0];
         let skip_condition = popped[1];
-
         let ctx = ExecutionContext.update_stack(ctx, stack);
+
+        if (offset.high != 0) {
+            let (revert_reason_len, revert_reason) = Errors.programCounterOutOfRange();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            return ctx;
+        }
 
         // If skip_condition is 0, then don't jump
         let (skip_condition_is_zero) = uint256_eq(Uint256(0, 0), skip_condition);
@@ -222,12 +245,7 @@ namespace MemoryOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        // Get stack from context.
-        let stack: model.Stack* = ctx.stack;
-
-        let (stack, _) = Stack.pop(stack);
-
-        // Update context stack.
+        let (stack, _) = Stack.pop(ctx.stack);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
         return ctx;
@@ -255,18 +273,23 @@ namespace MemoryOperations {
         let value = popped[1];
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        // Extract last byte from stack value
-        let (_, remainder) = uint256_unsigned_div_rem(value, Uint256(256, 0));
-        let (value_pointer: felt*) = alloc();
-        assert [value_pointer] = remainder.low;
+        if (offset.high != 0) {
+            let ctx = ExecutionContext.charge_gas(ctx, ctx.call_context.gas_limit);
+            return ctx;
+        }
 
-        // Store byte to memory at offset
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + 1);
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
         }
-        let memory: model.Memory* = Memory.store_n(
+
+        // Store byte to memory at offset
+        let (_, remainder) = unsigned_div_rem(value.low, 256);
+        let (value_pointer: felt*) = alloc();
+        assert [value_pointer] = remainder;
+
+        let memory = Memory.store_n(
             self=ctx.memory, element_len=1, element=value_pointer, offset=offset.low
         );
         let ctx = ExecutionContext.update_memory(ctx, memory);

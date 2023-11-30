@@ -44,6 +44,12 @@ namespace Sha3 {
         let offset = popped[0];
         let length = popped[1];
 
+        if (offset.high + length.high != 0) {
+            let ctx = ExecutionContext.update_stack(ctx, stack);
+            let ctx = ExecutionContext.charge_gas(ctx, ctx.call_context.gas_limit);
+            return ctx;
+        }
+
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + length.low);
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {

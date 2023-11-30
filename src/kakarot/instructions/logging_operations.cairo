@@ -46,22 +46,26 @@ namespace LoggingOperations {
 
         // Pop offset + size.
         let (stack, popped) = Stack.pop_n(ctx.stack, topics_len + 2);
+        let offset = popped[0];
+        let size = popped[1];
+
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        // Transform data + safety checks
-        local offset = Helpers.uint256_to_felt(popped[0]);
-        local size = Helpers.uint256_to_felt(popped[1]);
+        if (offset.high + size.high != 0) {
+            let ctx = ExecutionContext.charge_gas(ctx, ctx.call_context.gas_limit);
+            return ctx;
+        }
 
         // Log topics by emitting a starknet event
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset + size);
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + size.low);
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
         }
         let (data: felt*) = alloc();
-        let memory = Memory.load_n(ctx.memory, size, data, offset);
+        let memory = Memory.load_n(ctx.memory, size.low, data, offset.low);
         let ctx = ExecutionContext.update_memory(ctx, memory);
-        let ctx = ExecutionContext.push_event(ctx, topics_len, popped + 4, size, data);
+        let ctx = ExecutionContext.push_event(ctx, topics_len, popped + 4, size.low, data);
 
         return ctx;
     }
