@@ -136,8 +136,12 @@ jobs:
         run: |
           mkdir build/common
           mv build/v0/fixtures/ERC20.json build/common
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
       - name: run tests
-        run: make ef-test-v0
+        run: python scripts/compute_resources.py
       - name: upload resources
         uses: actions/upload-artifact@v3
         with:
