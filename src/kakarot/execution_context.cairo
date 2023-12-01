@@ -334,11 +334,8 @@ namespace ExecutionContext {
     func jump{range_check_ptr}(
         self: model.ExecutionContext*, new_pc_offset: felt
     ) -> model.ExecutionContext* {
-        alloc_locals;
-
-        let is_nn_pc = is_nn(new_pc_offset);
-        let is_le_bytecode_len = is_le(new_pc_offset, self.call_context.bytecode_len - 1);
-        if (is_nn_pc + is_le_bytecode_len != 2) {
+        let out_of_range = is_le(self.call_context.bytecode_len, new_pc_offset);
+        if (out_of_range != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.programCounterOutOfRange();
             let ctx = ExecutionContext.stop(self, revert_reason_len, revert_reason, TRUE);
             return ctx;
