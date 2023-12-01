@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_artifacts(
-    name: Union[str, Path] = Path("coverage"), base_branch_name: str = "main"
+    name: Union[str, Path] = Path("resources"), base_branch_name: str = "main"
 ):
     # Pull latest main artifacts
     response = requests.get(
@@ -29,7 +29,7 @@ def get_artifacts(
                 for artifact in response.json()["artifacts"]
             ]
         )
-        .loc[lambda df: df.name == name]
+        .loc[lambda df: df.name == str(name)]
         .reindex(["head_branch", "updated_at", "archive_download_url"], axis=1)
         .sort_values(["head_branch", "updated_at"], ascending=False)
         .drop_duplicates(["head_branch"])

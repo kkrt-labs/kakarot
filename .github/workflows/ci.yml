@@ -187,5 +187,5 @@ jobs:
           path: resources
       - name: Check resources evolution
         run: |
-          result=$(GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} make check-resources)
+          result=$(GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} make check-resources 2>&1)
           echo "$result" >> "$GITHUB_STEP_SUMMARY"
