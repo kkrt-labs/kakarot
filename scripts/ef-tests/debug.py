@@ -31,8 +31,8 @@ RPC_ENDPOINT = "http://127.0.0.1:8545"
 class AnvilHandler:
     def __init__(self, data):
         try:
-            block_genesis = get_genesis_block(data)
-            ts = block_genesis.header.timestamp
+            block = get_block(data)
+            ts = block.header.timestamp
             anvil = subprocess.Popen(
                 f"anvil --timestamp {ts} --hardfork shanghai",
                 stdout=subprocess.PIPE,
@@ -103,15 +103,6 @@ def set_pre_state(w3, data):
                 "anvil_setStorageAt",
                 [address, f"0x{int(k, 16):064x}", f"0x{int(v, 16):064x}"],
             )
-
-
-def get_genesis_block(data):
-    try:
-        block_rlp = data["genesisRLP"]
-        block = rlp.decode(bytes.fromhex(block_rlp[2:]), ShanghaiBlock)
-    except Exception as e:
-        raise Exception("Could not find genesis block in test data") from e
-    return block
 
 
 def get_block(data):
