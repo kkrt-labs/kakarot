@@ -193,10 +193,5 @@ func eth_send_transaction{
 
     Starknet.commit(summary.state);
 
-    if (to == 0) {
-        // Overwrite return_data with deployed addresses
-        return (2, cast(summary.address, felt*), 1 - summary.reverted);
-    }
-
     return result;
 }

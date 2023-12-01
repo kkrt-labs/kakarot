@@ -868,10 +868,11 @@ namespace CreateHelper {
         alloc_locals;
 
         // Charge final deposit gas
+        let code_size_limit = is_le(summary.return_data_len, 0x6000);
         let code_deposit_cost = 200 * summary.return_data_len;
         let remaining_gas = summary.call_context.gas_limit - summary.gas_used - code_deposit_cost;
         let enough_gas = is_nn(remaining_gas);
-        let success = (1 - summary.reverted) * enough_gas;
+        let success = (1 - summary.reverted) * enough_gas * code_size_limit;
 
         // Stack output: the address of the deployed contract, 0 if the deployment failed.
         let (address_high, address_low) = split_felt(summary.address.evm * success);
@@ -891,7 +892,7 @@ namespace CreateHelper {
             program_counter=summary.calling_context.program_counter,
             stopped=summary.calling_context.stopped,
             gas_used=summary.calling_context.gas_used - remaining_gas * success,
-            reverted=summary.calling_context.reverted,
+            reverted=1 - success,
         );
 
         // REVERTED, just returns
