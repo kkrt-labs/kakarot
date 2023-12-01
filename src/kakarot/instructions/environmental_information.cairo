@@ -333,7 +333,7 @@ namespace EnvironmentalInformation {
         let element_len = popped[2];
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        if (offset.high + code_offset.high + element_len.high != 0) {
+        if (offset.high + element_len.high != 0) {
             let ctx = ExecutionContext.charge_gas(ctx, ctx.call_context.gas_limit);
             return ctx;
         }
@@ -453,7 +453,7 @@ namespace EnvironmentalInformation {
         let size = popped[3];
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        if (dest_offset.high + offset.high + size.high != 0) {
+        if (dest_offset.high + size.high != 0) {
             let ctx = ExecutionContext.charge_gas(ctx, ctx.call_context.gas_limit);
             return ctx;
         }

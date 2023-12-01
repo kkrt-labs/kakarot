@@ -8,7 +8,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le, is_nn
+from starkware.cairo.common.math_cmp import is_le, is_nn, is_not_zero
 from starkware.cairo.common.uint256 import Uint256, uint256_lt
 from starkware.cairo.common.registers import get_fp_and_pc
 
@@ -393,16 +393,16 @@ namespace CallHelper {
         let (stack, ret_size) = Stack.peek(stack, 1);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        // In case with_value is false, it just counts two times popped[3], which is fine
-        // since it needs to be 0 not to raise.
-        if (ret_offset.high + ret_size.high + popped[2].high + popped[3].high + popped[3 + with_value].high != 0) {
+        if (ret_offset.high + ret_size.high + popped[2 + with_value].high + popped[3 + with_value].high != 0) {
             let ctx = ExecutionContext.charge_gas(ctx, ctx.call_context.gas_limit);
             return ctx;
         }
 
         let gas = popped[0];
         let address = uint256_to_uint160(popped[1]);
-        let value = with_value * popped[2].low + (1 - with_value) * ctx.call_context.value;
+        // TODO: handle value as uint256, need to refacto the exec_calls
+        let value = popped[2].low + popped[2].high * 2 ** 128;
+        let value = with_value * value + (1 - with_value) * ctx.call_context.value;
         let args_offset = popped[2 + with_value].low;
         let args_size = popped[3 + with_value].low;
 
@@ -413,6 +413,10 @@ namespace CallHelper {
             1 - max_expansion_is_ret
         ) * (args_offset + args_size);
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, max_expansion);
+
+        // Transfer gas cost
+        let transfer_gas_cost = is_not_zero(value);
+        let transfer_gas_cost = transfer_gas_cost * 9000;
 
         // Access list
         // TODO
@@ -435,7 +439,9 @@ namespace CallHelper {
             assert gas_limit = max_message_call_gas;
         }
         // All the gas is charged upfront and remaining gis is refunded at the end
-        let ctx = ExecutionContext.charge_gas(ctx, gas_limit + memory_expansion_cost);
+        let ctx = ExecutionContext.charge_gas(
+            ctx, gas_limit + memory_expansion_cost + transfer_gas_cost
+        );
         if (ctx.reverted != FALSE) {
             return ctx;
         }
