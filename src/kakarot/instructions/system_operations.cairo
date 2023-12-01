@@ -8,7 +8,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le, is_nn, is_not_zero
+from starkware.cairo.common.math_cmp import is_le, is_nn
 from starkware.cairo.common.uint256 import Uint256, uint256_lt
 from starkware.cairo.common.registers import get_fp_and_pc
 
@@ -401,8 +401,7 @@ namespace CallHelper {
         let gas = popped[0];
         let address = uint256_to_uint160(popped[1]);
         // TODO: handle value as uint256, need to refacto the exec_calls
-        let value = popped[2].low + popped[2].high * 2 ** 128;
-        let value = with_value * value + (1 - with_value) * ctx.call_context.value;
+        let value = with_value * popped[2].low + (1 - with_value) * ctx.call_context.value;
         let args_offset = popped[2 + with_value].low;
         let args_size = popped[3 + with_value].low;
 
@@ -414,12 +413,9 @@ namespace CallHelper {
         ) * (args_offset + args_size);
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, max_expansion);
 
-        // Transfer gas cost
-        let transfer_gas_cost = is_not_zero(value);
-        let transfer_gas_cost = transfer_gas_cost * 9000;
-
-        // Access list
         // TODO
+        // Transfer gas cost
+        // Access list
 
         // Max between given gas arg and max allowed gas := available_gas - (available_gas // 64)
         let available_gas = ctx.call_context.gas_limit - ctx.gas_used;
@@ -439,9 +435,7 @@ namespace CallHelper {
             assert gas_limit = max_message_call_gas;
         }
         // All the gas is charged upfront and remaining gis is refunded at the end
-        let ctx = ExecutionContext.charge_gas(
-            ctx, gas_limit + memory_expansion_cost + transfer_gas_cost
-        );
+        let ctx = ExecutionContext.charge_gas(ctx, gas_limit + memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
         }
