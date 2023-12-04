@@ -630,6 +630,7 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
     let stack = Stack.push(stack, memory_offset);
     let bytecode_len = 0;
     let (bytecode: felt*) = alloc();
+    assert [bytecode] = 0xf0;
     // As this test contract is mocking the contract account we have to set this contract address as the starknet_contract_address.
     let (contract_address: felt) = Account.compute_starknet_address(evm_caller_address);
     let ctx = TestHelpers.init_context_at_address_with_stack(
@@ -723,8 +724,9 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     tempvar memory_offset = new Uint256(0, 0);
     let stack = Stack.push(stack, word);
     let stack = Stack.push(stack, memory_offset);
-    let bytecode_len = 0;
+    let bytecode_len = 1;
     let (bytecode: felt*) = alloc();
+    assert [bytecode] = 0xf5;
     let (contract_address: felt) = Account.compute_starknet_address(evm_caller_address);
     tempvar sender_address = new model.Address(contract_address, evm_caller_address);
     let ctx = TestHelpers.init_context_at_address_with_stack(
@@ -735,7 +737,7 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     let ctx = MemoryOperations.exec_mstore(ctx);
 
     // When
-    let sub_ctx = SystemOperations.exec_create2(ctx);
+    let sub_ctx = SystemOperations.exec_create(ctx);
 
     // Then
     assert sub_ctx.call_context.bytecode_len = 4;
