@@ -1,7 +1,8 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.memset import memset
-from starkware.cairo.common.math_cmp import is_not_zero, is_le
+from starkware.cairo.common.math_cmp import is_not_zero, is_nn
+from starkware.cairo.common.bool import FALSE
 
 func reverse(arr_len: felt, arr: felt*) -> felt* {
     alloc_locals;
@@ -52,4 +53,31 @@ func count_not_zero(arr_len: felt, arr: felt*) -> felt {
     let count = [ap - 2];
 
     return count;
+}
+
+// @notice Fills slice with a slice of data.
+// @dev If the slice is out of bounds, the function pads with zeros.
+func slice{range_check_ptr}(slice: felt*, data_len: felt, data: felt*, offset: felt, size: felt) {
+    alloc_locals;
+
+    if (size == 0) {
+        return ();
+    }
+
+    let overlap = is_nn(data_len - offset);
+    if (overlap == FALSE) {
+        memset(dst=slice, value=0, n=size);
+        return ();
+    }
+
+    let max_len = (data_len - offset);
+    let is_within_bound = is_nn(max_len - size);
+    if (is_within_bound != FALSE) {
+        memcpy(dst=slice, src=data + offset, len=size);
+        return ();
+    }
+
+    memcpy(dst=slice, src=data + offset, len=max_len);
+    memset(dst=slice + max_len, value=0, n=size - max_len);
+    return ();
 }
