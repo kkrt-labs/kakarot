@@ -135,4 +135,8 @@ contract PlainOpcodesTest is Test {
         (bool success,) = plainOpcodes.opcodeStaticCallToAddress(address(plainOpcodes), data);
         assert(!success);
     }
+
+    function testNewContractConstructorRevert() public {
+        plainOpcodes.newContractConstructorRevert();
+    }
 }

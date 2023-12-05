@@ -12,7 +12,9 @@ from utils.array import reverse, count_not_zero, slice
 func test__reverse{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     arr_len: felt, arr: felt*
 ) -> (rev_len: felt, rev: felt*) {
-    let rev = reverse(arr_len, arr);
+    alloc_locals;
+    let (rev: felt*) = alloc();
+    reverse(rev, arr_len, arr);
     return (rev_len=arr_len, rev=rev);
 }
 

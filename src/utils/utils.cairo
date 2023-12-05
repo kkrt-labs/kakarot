@@ -28,6 +28,8 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_update
 
+from utils.bytes import uint256_to_bytes
+
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
 namespace Helpers {
@@ -147,8 +149,9 @@ namespace Helpers {
         bytes_array_len: felt, bytes_array: felt*
     ) {
         let (val_uint256: Uint256) = bigint_to_uint256(val);
-        let (bytes_array_len, bytes_array) = uint256_to_bytes_array(val_uint256);
-        return (bytes_array_len, bytes_array);
+        let (bytes: felt*) = alloc();
+        let (bytes_len, bytes) = uint256_to_bytes(bytes, val_uint256);
+        return (bytes_len, bytes);
     }
 
     // @notice: This helper returns the minimal number of EVM words for a given bytes length
@@ -183,129 +186,12 @@ namespace Helpers {
         return res;
     }
 
-    // @notice This function is used to make an arbitrary length array of same elements.
-    // @param arr: pointer to the first element
-    // @param value: value to place
-    // @param arr_len: number of elements to add.
-    func fill(arr_len: felt, arr: felt*, value: felt) {
-        if (arr_len == 0) {
-            return ();
-        }
-        assert [arr] = value;
-        return fill(arr_len - 1, arr + 1, value);
-    }
-
-    // @notice This function fills an empty array with elements from another array
-    // @param fill_len: number of elements to add
-    // @param input_arr: pointer to the input array
-    // @param output_arr: pointer to empty array to be filled with elements from input array
-    func fill_array(fill_len: felt, input_arr: felt*, output_arr: felt*) {
-        if (fill_len == 0) {
-            return ();
-        }
-        assert [output_arr] = [input_arr];
-        return fill_array(fill_len - 1, input_arr + 1, output_arr + 1);
-    }
-
-    func slice_data{range_check_ptr}(
-        data_len: felt, data: felt*, data_offset: felt, slice_len: felt
-    ) -> felt* {
-        alloc_locals;
-        local len: felt;
-        let (local new_data: felt*) = alloc();
-
-        // slice's len = min(slice_len, data_len-offset, 0)
-        // which corresponds to full, partial or empty overlap with data
-        // The result is zero-padded in case of partial or empty overlap.
-
-        let is_non_empty: felt = is_le(data_offset, data_len);
-        let max_len: felt = (data_len - data_offset) * is_non_empty;
-        let is_within_bound: felt = is_le(slice_len, max_len);
-        let len = max_len + (slice_len - max_len) * is_within_bound;
-
-        memcpy(dst=new_data, src=data + data_offset, len=len);
-        fill(arr_len=slice_len - len, arr=new_data + len, value=0);
-        return new_data;
-    }
-
-    func reverse(old_arr_len: felt, old_arr: felt*, new_arr_len: felt, new_arr: felt*) {
-        if (old_arr_len == 0) {
-            return ();
-        }
-        assert new_arr[old_arr_len - 1] = [old_arr];
-        return reverse(old_arr_len - 1, &old_arr[1], new_arr_len + 1, new_arr);
-    }
-
     // @notice This function is used to convert a uint256 to a felt.
     // @param val: value to convert.
     // @return: felt representation of the input.
     func uint256_to_felt{range_check_ptr}(val: Uint256) -> felt {
         uint256_check(val);
         return val.low + val.high * 2 ** 128;
-    }
-
-    // @notice This function is used to convert a uint256 to a bytes array represented by an array of felts (1 felt represents 1 byte).
-    // @param value: value to convert.
-    // @return: array length and felt array representation of the value.
-    func uint256_to_bytes_array{range_check_ptr}(value: Uint256) -> (
-        bytes_array_len: felt, bytes_array: felt*
-    ) {
-        alloc_locals;
-        // Split the stack popped value from Uint to bytes array
-        let (local temp_value: felt*) = alloc();
-        let (local value_as_bytes_array: felt*) = alloc();
-        split_int(value=value.high, n=16, base=2 ** 8, bound=2 ** 128, output=temp_value + 16);
-        split_int(value=value.low, n=16, base=2 ** 8, bound=2 ** 128, output=temp_value);
-        // Reverse the temp_value array into value_as_bytes_array as memory is arranged in big endian order.
-        reverse(old_arr_len=32, old_arr=temp_value, new_arr_len=32, new_arr=value_as_bytes_array);
-        return (bytes_array_len=32, bytes_array=value_as_bytes_array);
-    }
-
-    // @notice This function is a variant of `uint256_to_bytes_array` that encodes the uint256 with no padding
-    // @param value: value to convert.
-    // @param idx: index of res array
-    // @param res: resultant encoded bytearray, but in reverse order
-    // @param dest: reversed res, putting byte array in right order
-    // @return bytes array len
-    func uint256_to_bytes_no_padding{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
-        value: Uint256, idx: felt, res: felt*, dest: felt*
-    ) -> (bytes_len: felt) {
-        alloc_locals;
-        let (is_zero) = uint256_eq(value, Uint256(0, 0));
-        if (is_zero == FALSE) {
-            let (byte_uint256) = uint256_and(value, Uint256(low=255, high=0));
-            let byte = uint256_to_felt(byte_uint256);
-            assert [res] = byte;  // get the last 8 bits of the value
-            let (val_shifted_one_byte) = uint256_shr(value, Uint256(low=8, high=0));
-            let (bytes_len) = uint256_to_bytes_no_padding(
-                val_shifted_one_byte, idx + 1, res + 1, dest
-            );  // recursively call function with value shifted right by 8 bits
-            return (bytes_len=bytes_len);
-        }
-        reverse(old_arr_len=idx, old_arr=res - idx, new_arr_len=idx, new_arr=dest);
-        return (bytes_len=idx);
-    }
-
-    // @notice This function is like `uint256_to_bytes_array` except it writes the byte array to a given destination with the given offset and length
-    // @param value: value to convert.
-    // @param byte_array_offset: The starting offset of byte array that is copied to the destination array.
-    // @param byte_array_len: The length of byte array that is copied to the destination array.
-    // @param dest_offset: The offset of the destination array that the byte array is copied.
-    // @param dest_len: The length of the destination array.
-    // @param dest: The destination array
-    // @return: array length and felt array representation of the value.
-    func uint256_to_dest_bytes_array{range_check_ptr}(
-        value: Uint256,
-        byte_array_offset: felt,
-        byte_array_len: felt,
-        dest_offset: felt,
-        dest_len: felt,
-        dest: felt*,
-    ) -> (updated_dest_len: felt) {
-        alloc_locals;
-        let (_, bytes_array) = uint256_to_bytes_array(value);
-        memcpy(dst=dest + dest_offset, src=bytes_array + byte_array_offset, len=byte_array_len);
-        return (updated_dest_len=dest_len + byte_array_len);
     }
 
     // @notice Loads a sequence of bytes into a single felt in big-endian.
@@ -647,14 +533,6 @@ namespace Helpers {
         return ();
     }
 
-    // @notice Ceil a number of bits to the next word (32 bytes)
-    // ex: ceil_bytes_len_to_next_32_bytes_word(2) = 32
-    // ex: ceil_bytes_len_to_next_32_bytes_word(34) = 64
-    func ceil_bytes_len_to_next_32_bytes_word{range_check_ptr}(bytes_len: felt) -> felt {
-        let (q, _) = unsigned_div_rem(bytes_len + 31, 32);
-        return q * 32;
-    }
-
     // @notice Returns the min value between a and b
     func min{range_check_ptr}(a: felt, b: felt) -> felt {
         if (is_le(a, b) == FALSE) {
@@ -673,93 +551,6 @@ namespace Helpers {
         }
     }
 
-    // @notice convert bytes to little endian
-    func bytes_to_bytes8_little_endian{range_check_ptr}(
-        bytes_len: felt,
-        bytes: felt*,
-        index: felt,
-        size: felt,
-        bytes8: felt,
-        bytes8_shift: felt,
-        dest: felt*,
-        dest_index: felt,
-    ) {
-        alloc_locals;
-        if (index == size) {
-            return ();
-        }
-
-        local current_byte;
-        let out_of_bound = is_le(a=bytes_len, b=index);
-        if (out_of_bound != FALSE) {
-            current_byte = 0;
-        } else {
-            assert current_byte = [bytes + index];
-        }
-
-        let (pow256_address) = get_label_location(pow256_table);
-        let bit_shift = pow256_address[bytes8_shift];
-
-        let _bytes8 = bytes8 + bit_shift * current_byte;
-
-        let bytes8_full = is_le(a=7, b=bytes8_shift);
-        let end_of_loop = is_le(size, index + 1);
-        let write_to_dest = is_le(1, bytes8_full + end_of_loop);
-        if (write_to_dest != FALSE) {
-            assert dest[dest_index] = _bytes8;
-            return bytes_to_bytes8_little_endian(
-                bytes_len, bytes, index + 1, size, 0, 0, dest, dest_index + 1
-            );
-        }
-        return bytes_to_bytes8_little_endian(
-            bytes_len, bytes, index + 1, size, _bytes8, bytes8_shift + 1, dest, dest_index
-        );
-
-        pow256_table:
-        dw 1;
-        dw 256;
-        dw 65536;
-        dw 16777216;
-        dw 4294967296;
-        dw 1099511627776;
-        dw 281474976710656;
-        dw 72057594037927936;
-    }
-
-    // @notice transform a felt to big endian bytes
-    // @param value The initial felt
-    // @param bytes_len The number of bytes (used for recursion, set to 0)
-    // @param bytes The pointer to the bytes
-    // @return bytes_len The final length of the bytes array
-    func felt_to_bytes_little{range_check_ptr}(value: felt, bytes_len: felt, bytes: felt*) -> (
-        bytes_len: felt
-    ) {
-        let is_le_256 = is_le(value, 256);
-        if (is_le_256 != FALSE) {
-            assert [bytes] = value;
-            return (bytes_len=bytes_len + 1);
-        } else {
-            let (q, r) = unsigned_div_rem(value, 256);
-            assert [bytes] = r;
-            return felt_to_bytes_little(value=q, bytes_len=bytes_len + 1, bytes=bytes + 1);
-        }
-    }
-
-    // @notice transform a felt to little endian bytes
-    // @param value The initial felt
-    // @param bytes_len The number of bytes (used for recursion, set to 0)
-    // @param bytes The pointer to the bytes
-    // @return bytes_len The final length of the bytes array
-    func felt_to_bytes{range_check_ptr}(value: felt, bytes_len: felt, bytes: felt*) -> (
-        bytes_len: felt
-    ) {
-        alloc_locals;
-        let (local little: felt*) = alloc();
-        let little_res = felt_to_bytes_little(value, bytes_len, little);
-        reverse(little_res.bytes_len, little, little_res.bytes_len, bytes);
-        return little_res;
-    }
-
     // @notice transform multiple bytes into a single felt
     // @param data_len The length of the bytes
     // @param data The pointer to the bytes array
@@ -773,15 +564,6 @@ namespace Helpers {
         let byte: felt = data[0];
         let (res) = pow(256, e);
         return bytes_to_felt(data_len=data_len - 1, data=data + 1, n=n + byte * res);
-    }
-
-    // @notice Transforms a keccak hash to an ethereum address by taking last 20 bytes
-    // @param hash - The keccak hash.
-    // @return address - The address.
-    func keccak_hash_to_evm_contract_address{range_check_ptr}(hash: Uint256) -> felt {
-        let (_, r) = unsigned_div_rem(hash.high, 256 ** 4);
-        let address = hash.low + r * 2 ** 128;
-        return address;
     }
 
     // @notice transform multiple bytes into words of 32 bits (big endian)
@@ -840,23 +622,5 @@ namespace Helpers {
         return bytes4_array_to_bytes(
             data_len=data_len - 1, data=data + 1, bytes_len=bytes_len + 4, bytes=res
         );
-    }
-
-    // @notice Check if a starknet contract address is the caller of the transaction
-    // @dev use syscall to get caller address and compare it to the starknet contract address
-    // @param starknet_address The address of the Starknet contract
-    // @return felt 1 if the given starknet address is the caller
-    func is_address_caller{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(starknet_address: felt) -> felt {
-        let (caller_address) = get_caller_address();
-        if (caller_address == starknet_address) {
-            return 1;
-        } else {
-            return 0;
-        }
     }
 }

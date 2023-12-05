@@ -10,6 +10,7 @@ from starkware.cairo.common.memcpy import memcpy
 
 // Internal dependencies
 from utils.utils import Helpers
+from utils.uint256 import uint256_to_bytes
 from utils.modexp.modexp_utils import ModExpHelpersUint256
 
 // @title ModExpUint256 MVP Precompile related functions.
@@ -49,15 +50,7 @@ namespace PrecompileModExpUint256 {
         with_attr error_message("Kakarot: modexp failed") {
             let (result) = ModExpHelpersUint256.uint256_mod_exp(b, e, m);
         }
-        let bytes: felt* = alloc();
-        let (bytes_len_low) = Helpers.felt_to_bytes(result.low, 0, bytes);
-        let (bytes_len_high) = Helpers.felt_to_bytes(result.high, 0, bytes + bytes_len_low);
-        local bytes_len: felt;
-        if (result.high != 0) {
-            bytes_len = bytes_len_low + bytes_len_high;
-        } else {
-            bytes_len = bytes_len_low;
-        }
+        let (bytes_len, bytes) = uint256_to_bytes(result);
 
         let (gas_cost) = ModExpHelpersUint256.calculate_mod_exp_gas(
             b_size, m_size, e_size, b, e, m

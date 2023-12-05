@@ -6,6 +6,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_secp.bigint import BigInt3
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.memcpy import memcpy
 
 // Internal dependencies
 from utils.alt_bn128.alt_bn128_g1 import G1Point, ALT_BN128
@@ -50,8 +51,7 @@ namespace PrecompileEcAdd {
 
         let (bytes_x_len, output: felt*) = Helpers.bigint_to_bytes_array(result.x);
         let (bytes_y_len, bytes_y: felt*) = Helpers.bigint_to_bytes_array(result.y);
-        // We fill `output + bytes_x_len` ptr with `bytes_y` elements
-        Helpers.fill_array(bytes_y_len, bytes_y, output + bytes_x_len);
+        memcpy(output + bytes_x_len, bytes_y, bytes_y_len);
 
         return (G1POINT_BYTES_LEN * 2, output, GAS_COST_EC_ADD, 0);
     }

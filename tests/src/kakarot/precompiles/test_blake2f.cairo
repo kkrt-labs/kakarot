@@ -5,6 +5,7 @@
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.memcpy import memcpy
 
 // Local dependencies
 from utils.utils import Helpers
@@ -48,8 +49,8 @@ func test_should_return_blake2f_compression{
     alloc_locals;
     let (local input: felt*) = alloc();
     Helpers.split_word(rounds, 4, input);
-    Helpers.fill_array(h_len, h, input + 4);
-    Helpers.fill_array(m_len, m, input + 68);
+    memcpy(input + 4, h, h_len);
+    memcpy(input + 68, m, m_len);
     Helpers.split_word_little(t0, 8, input + 196);
     Helpers.split_word_little(t1, 8, input + 196 + 8);
     assert input[212] = f;

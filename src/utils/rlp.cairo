@@ -13,6 +13,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.uint256 import word_reverse_endian
 from utils.utils import Helpers
+from utils.bytes import felt_to_bytes
 
 // The namespace handling all RLP computation
 namespace RLP {
@@ -107,14 +108,13 @@ namespace RLP {
         let is_le_55 = is_le(data_len, 55);
         if (is_le_55 != FALSE) {
             assert rlp[0] = 0xc0 + data_len;
-            Helpers.fill_array(data_len, data, rlp + 1);
+            memcpy(rlp + 1, data, data_len);
             return (rlp_len=data_len + 1);
         } else {
-            let (local bytes: felt*) = alloc();
-            let (bytes_len) = Helpers.felt_to_bytes(data_len, 0, bytes);
+            let (bytes_len, bytes) = felt_to_bytes(data_len);
             assert rlp[0] = 0xf7 + bytes_len;
-            Helpers.fill_array(bytes_len, bytes, rlp + 1);
-            Helpers.fill_array(data_len, data, rlp + 1 + bytes_len);
+            memcpy(rlp + 1, bytes, bytes_len);
+            memcpy(rlp + 1 + bytes_len, data, data_len);
             return (rlp_len=data_len + 1 + bytes_len);
         }
     }
@@ -147,13 +147,7 @@ namespace RLP {
             return (rlp_len + 1,);
         } else {
             // otherwise, we need to convert the value to an unpadded byte array
-            let (local reversed_item_bytes: felt*) = alloc();
-            let (local item_bytes: felt*) = alloc();
-
-            let (item_high, item_low) = split_felt(item);
-            let (item_bytes_len) = Helpers.uint256_to_bytes_no_padding(
-                Uint256(low=item_low, high=item_high), 0, reversed_item_bytes, item_bytes
-            );
+            let (item_bytes_len, item_bytes) = felt_to_bytes(item);
 
             let (updated_rlp_len) = encode_byte_array(item_bytes_len, item_bytes, rlp_len, rlp);
             return (updated_rlp_len,);
@@ -178,7 +172,7 @@ namespace RLP {
         if (item_len_is_le_55 != FALSE) {
             // when the bytes array length is less than 55 bytes, we encode it with a single prefix
             assert [rlp + rlp_len] = 0x80 + byte_array_len;
-            Helpers.fill_array(byte_array_len, byte_array, rlp + rlp_len + 1);
+            memcpy(rlp + rlp_len + 1, byte_array, byte_array_len);
             return (rlp_len + byte_array_len + 1,);
         } else {
             // otherwise we encode in a prefix
@@ -187,13 +181,12 @@ namespace RLP {
             // the value of the length of item's byte representation
             // then the actual length of the bytes representation of item
             // then the element bytes (phew)
-            let (local item_len_bytes: felt*) = alloc();
             // note the subtle shift of terms: we are taking the value of the length of bytes of the item and converting it to bytes!
-            let (item_len_bytes_len) = Helpers.felt_to_bytes(byte_array_len, 0, item_len_bytes);
+            let (item_len_bytes_len, item_len_bytes) = felt_to_bytes(byte_array_len);
             assert [rlp + rlp_len] = 0xb7 + item_len_bytes_len;
-            Helpers.fill_array(item_len_bytes_len, item_len_bytes, rlp + rlp_len + 1);
+            memcpy(rlp + rlp_len + 1, item_len_bytes, item_len_bytes_len);
 
-            Helpers.fill_array(byte_array_len, byte_array, rlp + rlp_len + 1 + item_len_bytes_len);
+            memcpy(rlp + rlp_len + 1 + item_len_bytes_len, byte_array, byte_array_len);
 
             return (rlp_len + item_len_bytes_len + byte_array_len + 1,);
         }
