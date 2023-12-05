@@ -29,13 +29,6 @@ from utils.uint256 import uint256_to_uint160
 // @title System operations opcodes.
 // @notice This file contains the functions to execute for system operations opcodes.
 namespace SystemOperations {
-    // @notice CREATE operation.
-    // @custom:since Frontier
-    // @custom:group System Operations
-    // @custom:gas 0 + dynamic gas
-    // @custom:stack_consumed_elements 3
-    // @custom:stack_produced_elements 1
-    // @return ExecutionContext The pointer to the updated execution context.
     func exec_create{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

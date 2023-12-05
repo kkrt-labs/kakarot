@@ -222,12 +222,7 @@ namespace MemoryOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        // Get stack from context.
-        let stack: model.Stack* = ctx.stack;
-
-        let (stack, _) = Stack.pop(stack);
-
-        // Update context stack.
+        let (stack, _) = Stack.pop(ctx.stack);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
         return ctx;

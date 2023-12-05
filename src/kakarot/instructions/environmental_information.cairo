@@ -25,39 +25,18 @@ from utils.uint256 import uint256_to_uint160
 // @title Environmental information opcodes.
 // @notice This file contains the functions to execute for environmental information opcodes.
 namespace EnvironmentalInformation {
-    // @notice ADDRESS operation.
-    // @dev Get address of currently executing account.
-    // @custom:since Frontier
-    // @custom:group Environmental Information
-    // @custom:gas 2
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context
-    // @return ExecutionContext The pointer to the updated execution context.
     func exec_address{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        // Get the current execution contract from the context,
-        // convert to Uint256, and push to Stack.
         let address = Helpers.to_uint256(ctx.call_context.address.evm);
         let stack = Stack.push(ctx.stack, address);
-        // Update the execution context.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         return ctx;
     }
 
-    // @notice BALANCE opcode.
-    // @dev Get ETH balance of the specified address.
-    // @custom:since Frontier
-    // @custom:group Environmental Information
-    // @custom:gas 100 || 2600
-    // @custom:stack_consumed_elements 1
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context
-    // @return ExecutionContext The pointer to the updated execution context.
     func exec_balance{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -79,15 +58,6 @@ namespace EnvironmentalInformation {
         return ctx;
     }
 
-    // @notice ORIGIN operation.
-    // @dev Get execution origination address.
-    // @custom:since Frontier
-    // @custom:group Environmental Information
-    // @custom:gas 2
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context
-    // @return ExecutionContext The pointer to the updated execution context.
     func exec_origin{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -101,15 +71,6 @@ namespace EnvironmentalInformation {
         return ctx;
     }
 
-    // @notice CALLER operation.
-    // @dev Get caller address.
-    // @custom:since Frontier
-    // @custom:group Environmental Information
-    // @custom:gas 2
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context
-    // @return ExecutionContext The pointer to the updated execution context.
     func exec_caller{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -129,14 +90,6 @@ namespace EnvironmentalInformation {
         return ctx;
     }
 
-    // @notice CALLVALUE operation.
-    // @dev Get deposited value by the instruction/transaction responsible for this execution.
-    // @custom:since Frontier
-    // @custom:group Environmental Information
-    // @custom:gas 2
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @return ExecutionContext The pointer to the updated execution context.
     func exec_callvalue{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -150,15 +103,6 @@ namespace EnvironmentalInformation {
         return ctx;
     }
 
-    // @notice CALLDATALOAD operation.
-    // @dev Push a word from the calldata onto the stack.
-    // @custom:since Frontier
-    // @custom:group Environmental Information
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 1
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context
-    // @return ExecutionContext The pointer to the updated execution context.
     func exec_calldataload{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -184,23 +128,12 @@ namespace EnvironmentalInformation {
         );
         let uint256_sliced_calldata = Helpers.bytes32_to_uint256(sliced_calldata);
 
-        // Push CallData word onto stack
         let stack = Stack.push_uint256(stack, uint256_sliced_calldata);
-
-        // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
+
         return ctx;
     }
 
-    // @notice CALLDATASIZE operation.
-    // @dev Get the size of return data.
-    // @custom:since Frontier
-    // @custom:group Environmental Information
-    // @custom:gas 2
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context
-    // @return ExecutionContext The pointer to the updated execution context.
     func exec_calldatasize{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -208,22 +141,10 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         let stack = Stack.push_uint128(ctx.stack, ctx.call_context.calldata_len);
-
-        // Update the execution context.
-        // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         return ctx;
     }
 
-    // @notice CALLDATACOPY operation
-    // @dev Save word to memory.
-    // @custom:since Frontier
-    // @custom:group Stack Memory Storage and Flow operations.
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 3
-    // @custom:stack_produced_elements 0
-    // @param ctx The pointer to the execution context
-    // @return Updated execution context.
     func exec_calldatacopy{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -233,11 +154,6 @@ namespace EnvironmentalInformation {
         alloc_locals;
 
         let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - offset: memory offset of the work we save.
-        // 1 - calldata_offset: offset for calldata from where data will be copied.
-        // 2 - element_len: bytes length of the copied calldata.
         let (stack, popped) = Stack.pop_n(self=stack, n=3);
         let offset = popped[0];
         let calldata_offset = popped[1];
@@ -269,41 +185,17 @@ namespace EnvironmentalInformation {
         return ctx;
     }
 
-    // @notice CODESIZE operation.
-    // @dev Get size of bytecode running in current environment.
-    // @custom:since Frontier
-    // @custom:group Environmental Information
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context
-    // @return ExecutionContext The pointer to the updated execution context.
     func exec_codesize{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        // Get the bytecode size.
-        let code_size = Helpers.to_uint256(ctx.call_context.bytecode_len);
-
         let stack = Stack.push_uint128(ctx.stack, ctx.call_context.bytecode_len);
-
-        // Update the execution context.
-        // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         return ctx;
     }
 
-    // @notice CODECOPY (0x39) operation.
-    // @dev Copies slice of bytecode to memory
-    // @custom:since Frontier
-    // @custom:group Environmental Information
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 3
-    // @custom:stack_produced_elements 0
-    // @param ctx The pointer to the execution context
-    // @return ExecutionContext The pointer to the updated execution context.
     func exec_codecopy{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -313,11 +205,6 @@ namespace EnvironmentalInformation {
         alloc_locals;
 
         let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - offset: memory offset of the work we save.
-        // 1 - code_offset: offset for bytecode from where data will be copied.
-        // 2 - element_len: bytes length of the copied bytecode.
         let (stack, popped) = Stack.pop_n(self=stack, n=3);
         let offset = popped[0];
         let code_offset = popped[1];
@@ -348,15 +235,6 @@ namespace EnvironmentalInformation {
         return ctx;
     }
 
-    // @notice GASPRICE operation
-    // @dev Get price of gas in current environment
-    // @custom:since Frontier
-    // @custom:group Environmental Information
-    // @custom:gas 2
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context
-    // @return ExecutionContext The pointer to the updated execution context.
     func exec_gasprice{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -373,15 +251,6 @@ namespace EnvironmentalInformation {
         return ctx;
     }
 
-    // @notice EXTCODESIZE operation
-    // @dev Get size of an account’s code
-    // @custom:since Frontier
-    // @custom:group Environmental Information
-    // @custom:gas 100 || 2600
-    // @custom:stack_consumed_elements 1
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context
-    // @return ExecutionContext The pointer to the updated execution context.
     func exec_extcodesize{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -405,15 +274,6 @@ namespace EnvironmentalInformation {
         return ctx;
     }
 
-    // @notice EXTCODECOPY operation
-    // @dev Copy an account's code to memory
-    // @custom:since Frontier
-    // @custom:group Environmental Information
-    // @custom:gas 100 || 2600
-    // @custom:stack_consumed_elements 4
-    // @custom:stack_produced_elements 0
-    // @param ctx The pointer to the execution context
-    // @return ExecutionContext The pointer to the updated execution context.
     func exec_extcodecopy{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -457,39 +317,17 @@ namespace EnvironmentalInformation {
         return ctx;
     }
 
-    // @notice RETURNDATASIZE operation.
-    // @dev Get the size of return data.
-    // @custom:since Frontier
-    // @custom:group Environmental Information
-    // @custom:gas 2
-    // @custom:stack_consumed_elements 0
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context
-    // @return ExecutionContext The pointer to the updated execution context.
     func exec_returndatasize{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        // Get return data size.
         let stack = Stack.push_uint128(ctx.stack, ctx.return_data_len);
-
-        // Update the execution context.
-        // Update context stack.
         let ctx = ExecutionContext.update_stack(ctx, stack);
         return ctx;
     }
 
-    // @notice RETURNDATACOPY operation
-    // @dev Save word to memory.
-    // @custom:since Frontier
-    // @custom:group Stack Memory Storage and Flow operations.
-    // @custom:gas 3
-    // @custom:stack_consumed_elements 3
-    // @custom:stack_produced_elements 0
-    // @param ctx The pointer to the execution context
-    // @return ExecutionContext Updated execution context.
     func exec_returndatacopy{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -499,11 +337,6 @@ namespace EnvironmentalInformation {
         alloc_locals;
 
         let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - offset: memory offset of the work we save.
-        // 1 - code_offset: offset for bytecode from where data will be copied.
-        // 2 - element_len: bytes length of the copied bytecode.
         let (stack, popped) = Stack.pop_n(self=stack, n=3);
         let offset = popped[0];
         let return_data_offset = popped[1];
@@ -532,15 +365,6 @@ namespace EnvironmentalInformation {
         return ctx;
     }
 
-    // @notice EXTCODEHASH operation
-    // @dev Get hash of a contract's code
-    // @custom:since Frontier
-    // @custom:group Environmental Information
-    // @custom:gas 100 || 2600
-    // @custom:stack_consumed_elements 1
-    // @custom:stack_produced_elements 1
-    // @param ctx The pointer to the execution context
-    // @return ExecutionContext The pointer to the updated execution context
     func exec_extcodehash{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

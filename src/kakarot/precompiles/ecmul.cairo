@@ -47,7 +47,6 @@ namespace PrecompileEcMul {
 
         let (bytes_x_len, output: felt*) = Helpers.bigint_to_bytes_array(result.x);
         let (bytes_y_len, bytes_y: felt*) = Helpers.bigint_to_bytes_array(result.y);
-        // We fill `output + bytes_x_len` ptr with `bytes_y` elements
         Helpers.fill_array(bytes_y_len, bytes_y, output + bytes_x_len);
 
         return (G1POINT_BYTES_LEN * 2, output, GAS_COST_EC_MUL, 0);
