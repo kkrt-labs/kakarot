@@ -217,21 +217,16 @@ namespace EthTransaction {
             // > Note that the input is still treated as little endian.
             bytes_to_bytes8_little_endian(words, tx_data_len, tx_data);
             let (msg_hash) = cairo_keccak_bigend(inputs=words, n_bytes=tx_data_len);
-        }
-        finalize_keccak(keccak_ptr_start, keccak_ptr);
 
-        // Note: here, the validate process assumes an ECDSA signature, and r, s, v field
-        // Technically, the transaction type can determine the signature scheme.
-        let _is_legacy = is_legacy_tx(tx_data);
-        if (_is_legacy != FALSE) {
-            tempvar parity = (v - 2 * Constants.CHAIN_ID - 35);
-        } else {
-            tempvar parity = v;
-        }
+            // Note: here, the validate process assumes an ECDSA signature, and r, s, v field
+            // Technically, the transaction type can determine the signature scheme.
+            let _is_legacy = is_legacy_tx(tx_data);
+            if (_is_legacy != FALSE) {
+                tempvar parity = (v - 2 * Constants.CHAIN_ID - 35);
+            } else {
+                tempvar parity = v;
+            }
 
-        let (keccak_ptr: felt*) = alloc();
-        let keccak_ptr_start: felt* = keccak_ptr;
-        with keccak_ptr {
             verify_eth_signature_uint256(
                 msg_hash=msg_hash, r=r, s=s, v=parity, eth_address=address
             );
