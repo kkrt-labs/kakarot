@@ -207,6 +207,7 @@ namespace EthTransaction {
         assert nonce = account_nonce;
         assert chain_id = Constants.CHAIN_ID;
 
+
         let (local words: felt*) = alloc();
         let (keccak_ptr: felt*) = alloc();
         let keccak_ptr_start = keccak_ptr;
@@ -215,16 +216,7 @@ namespace EthTransaction {
             // > To use this function, split the input into words of 64 bits (little endian).
             // > Same as keccak, but outputs the hash in big endian representation.
             // > Note that the input is still treated as little endian.
-            Helpers.bytes_to_bytes8_little_endian(
-                bytes_len=tx_data_len,
-                bytes=tx_data,
-                index=0,
-                size=tx_data_len,
-                bytes8=0,
-                bytes8_shift=0,
-                dest=words,
-                dest_index=0,
-            );
+            bytes_to_bytes8_little_endian(words, tx_data_len, tx_data);
             let (msg_hash) = cairo_keccak_bigend(inputs=words, n_bytes=tx_data_len);
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
