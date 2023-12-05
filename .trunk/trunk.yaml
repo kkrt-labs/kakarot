@@ -1,6 +1,6 @@
 version: 0.1
 cli:
-  version: 1.16.2
+  version: 1.17.2
 plugins:
   sources:
     - id: trunk
@@ -45,8 +45,8 @@ lint:
     - terrascan@1.18.3
     - yamllint@1.32.0
   disabled:
-    - trufflehog@3.56.0
-    - bandit@1.7.5
+    - trufflehog
+    - bandit
   ignore:
     - linters: [bandit]
       paths: [tests, docker]

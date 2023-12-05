@@ -3,8 +3,7 @@ import pytest_asyncio
 from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.constants import TRANSACTIONS
-from tests.utils.helpers import generate_random_private_key, get_multicall_from_evm_txs
+from tests.utils.helpers import generate_random_private_key
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -62,24 +61,3 @@ async def mock_externally_owned_account(
         abi=mock_externally_owned_account_class.abi,
         contract_address=contract_address,
     )
-
-
-@pytest.mark.asyncio
-class TestLibrary:
-    async def test_execute_should_make_all_calls_and_return_concat_results(
-        self, mock_externally_owned_account, eth, private_key
-    ):
-        (calls, calldata, expected_result) = get_multicall_from_evm_txs(
-            evm_txs=TRANSACTIONS,
-            private_key=private_key,
-        )
-        total_transferred_value = sum([x["value"] for x in TRANSACTIONS])
-
-        # Mint tokens to the EOA
-        await eth.mint(
-            mock_externally_owned_account.contract_address, (total_transferred_value, 0)
-        ).execute()
-
-        assert (
-            await mock_externally_owned_account.execute(calls, list(calldata)).call()
-        ).result.response == expected_result

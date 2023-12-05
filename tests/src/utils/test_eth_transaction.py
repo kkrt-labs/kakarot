@@ -5,9 +5,14 @@ import pytest_asyncio
 from eth_account.account import Account
 from starkware.starknet.testing.starknet import Starknet
 
+from scripts.utils.starknet import int_to_uint256
 from tests.utils.constants import TRANSACTIONS
 from tests.utils.errors import cairo_error
-from tests.utils.helpers import generate_random_evm_address, generate_random_private_key
+from tests.utils.helpers import (
+    generate_random_evm_address,
+    generate_random_private_key,
+    rlp_encode_tx,
+)
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -37,8 +42,16 @@ class TestEthTransaction:
             private_key = generate_random_private_key()
             address = private_key.public_key.to_checksum_address()
             signed = Account.sign_transaction(transaction, private_key)
+
+            encoded_unsigned_tx = rlp_encode_tx(transaction)
+
             await eth_transaction.test__validate(
-                int(address, 16), transaction["nonce"], list(signed["rawTransaction"])
+                int(address, 16),
+                transaction["nonce"],
+                (int_to_uint256(signed.r)["low"], int_to_uint256(signed.r)["high"]),
+                (int_to_uint256(signed.s)["low"], int_to_uint256(signed.s)["high"]),
+                signed["v"],
+                list(encoded_unsigned_tx),
             ).call()
 
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
@@ -47,13 +60,28 @@ class TestEthTransaction:
         ):
             private_key = generate_random_private_key()
             address = private_key.public_key.to_checksum_address()
-            t = {**transaction, "chainId": 1}
-            signed = Account.sign_transaction(t, private_key)
+            transaction = {**transaction, "chainId": 1}
+            signed = Account.sign_transaction(transaction, private_key)
+
+            r = int_to_uint256(signed.r)
+            s = int_to_uint256(signed.s)
+
+            encoded_unsigned_tx = rlp_encode_tx(transaction)
+
             with cairo_error():
                 await eth_transaction.test__validate(
                     int(address, 16),
                     transaction["nonce"],
-                    list(signed["rawTransaction"]),
+                    (
+                        r["low"],
+                        r["high"],
+                    ),
+                    (
+                        s["low"],
+                        s["high"],
+                    ),
+                    signed["v"],
+                    list(encoded_unsigned_tx),
                 ).call()
 
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
@@ -64,10 +92,26 @@ class TestEthTransaction:
             address = int(generate_random_evm_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
 
+            r = int_to_uint256(signed.r)
+            s = int_to_uint256(signed.s)
+
+            encoded_unsigned_tx = rlp_encode_tx(transaction)
+
             assert address != int(private_key.public_key.to_address(), 16)
             with cairo_error():
                 await eth_transaction.test__validate(
-                    address, transaction["nonce"], list(signed["rawTransaction"])
+                    address,
+                    transaction["nonce"],
+                    (
+                        r["low"],
+                        r["high"],
+                    ),
+                    (
+                        s["low"],
+                        s["high"],
+                    ),
+                    signed["v"],
+                    list(encoded_unsigned_tx),
                 ).call()
 
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
@@ -78,8 +122,24 @@ class TestEthTransaction:
             address = int(generate_random_evm_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
 
+            r = int_to_uint256(signed.r)
+            s = int_to_uint256(signed.s)
+
+            encoded_unsigned_tx = rlp_encode_tx(transaction)
+
             assert address != int(private_key.public_key.to_address(), 16)
             with cairo_error():
                 await eth_transaction.test__validate(
-                    address, transaction["nonce"] + 1, list(signed["rawTransaction"])
+                    address,
+                    transaction["nonce"] + 1,
+                    (
+                        r["low"],
+                        r["high"],
+                    ),
+                    (
+                        s["low"],
+                        s["high"],
+                    ),
+                    signed["v"],
+                    list(encoded_unsigned_tx),
                 ).call()
