@@ -27,7 +27,7 @@ from utils.rlp import RLP
 from utils.utils import Helpers
 from utils.uint256 import uint256_to_uint160
 from utils.array import slice
-from utils.bytes import bytes_to_bytes8_little_endian
+from utils.bytes import bytes_to_bytes8_little_endian, felt_to_bytes20, uint256_to_bytes32
 // @title System operations opcodes.
 // @notice This file contains the functions to execute for system operations opcodes.
 namespace SystemOperations {
@@ -567,25 +567,11 @@ namespace CreateHelper {
         local keccak_ptr_start: felt* = keccak_ptr;
 
         let (local address_packed_bytes: felt*) = alloc();
-
-        // pack sender address, padded twenty bytes
-        // the address should be twenty bytes, so we skip the leading 12 elements
-        let (sender_address_high, sender_address_low) = split_felt(sender_address);
-
-        let (address_packed_bytes_len) = Helpers.uint256_to_dest_bytes_array(
-            value=Uint256(low=sender_address_low, high=sender_address_high),
-            byte_array_offset=12,
-            byte_array_len=Constants.ADDRESS_BYTES_LEN,
-            dest_offset=0,
-            dest_len=0,
-            dest=address_packed_bytes,
-        );
+        felt_to_bytes20(address_packed_bytes, sender_address);
 
         // encode address rlp
         let (local packed_bytes: felt*) = alloc();
-        let (packed_bytes_len) = RLP.encode_byte_array(
-            address_packed_bytes_len, address_packed_bytes, 0, packed_bytes
-        );
+        let (packed_bytes_len) = RLP.encode_byte_array(20, address_packed_bytes, 0, packed_bytes);
 
         // encode nonce rlp
         let (packed_bytes_len) = RLP.encode_felt(nonce, packed_bytes_len, packed_bytes);
@@ -631,58 +617,30 @@ namespace CreateHelper {
         let (local bytecode_bytes8: felt*) = alloc();
         bytes_to_bytes8_little_endian(bytecode_bytes8, bytecode_len, bytecode);
         with keccak_ptr {
-            // get keccak hash of bytecode
-            let (bytecode_hash_bigend) = cairo_keccak_bigend(
-                inputs=bytecode_bytes8, n_bytes=bytecode_len
-            );
-            // get keccak hash of
-            // marker + caller_address + salt + bytecode_hash
-            let (local packed_bytes: felt*) = alloc();
+            let (bytecode_hash) = cairo_keccak_bigend(bytecode_bytes8, bytecode_len);
+        }
 
-            // 0xff is by convention the marker involved in deterministic address creation for create2
-            let (packed_bytes_len) = Helpers.felt_to_bytes(0xff, 0, packed_bytes);
+        // get keccak hash of
+        // marker + caller_address + salt + bytecode_hash
+        let (local packed_bytes: felt*) = alloc();
 
-            // pack sender address, padded twenty bytes
-            // the address should be twenty bytes, so we skip the leading 12 elements
-            let (sender_address_high, sender_address_low) = split_felt(sender_address);
-            let (packed_bytes_len) = Helpers.uint256_to_dest_bytes_array(
-                value=Uint256(low=sender_address_low, high=sender_address_high),
-                byte_array_offset=12,
-                byte_array_len=Constants.ADDRESS_BYTES_LEN,
-                dest_offset=packed_bytes_len,
-                dest_len=packed_bytes_len,
-                dest=packed_bytes,
-            );
+        // 0xff is by convention the marker involved in deterministic address creation for create2
+        assert [packed_bytes] = 0xff;
+        felt_to_bytes20(packed_bytes + 1, sender_address);
+        uint256_to_bytes32(packed_bytes + 1 + 20, salt);
+        uint256_to_bytes32(packed_bytes + 1 + 20 + 32, bytecode_hash);
+        let packed_bytes_len = 1 + 20 + 32 + 32;
 
-            // pack salt, padded 32 bytes
-            let (packed_bytes_len) = Helpers.uint256_to_dest_bytes_array(
-                value=salt,
-                byte_array_offset=0,
-                byte_array_len=32,
-                dest_offset=packed_bytes_len,
-                dest_len=packed_bytes_len,
-                dest=packed_bytes,
-            );
+        let (local packed_bytes8: felt*) = alloc();
+        bytes_to_bytes8_little_endian(packed_bytes8, packed_bytes_len, packed_bytes);
 
-            // pack bytecode keccak hash, padded 32 bytes
-            let (packed_bytes_len) = Helpers.uint256_to_dest_bytes_array(
-                value=bytecode_hash_bigend,
-                byte_array_offset=0,
-                byte_array_len=32,
-                dest_offset=packed_bytes_len,
-                dest_len=packed_bytes_len,
-                dest=packed_bytes,
-            );
-
-            let (local packed_bytes8: felt*) = alloc();
-            bytes_to_bytes8_little_endian(packed_bytes8, packed_bytes_len, packed_bytes);
-
+        with keccak_ptr {
             let (create2_hash) = cairo_keccak_bigend(
                 inputs=packed_bytes8, n_bytes=packed_bytes_len
             );
-
-            finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
         }
+
+        finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
 
         let create2_address = uint256_to_uint160(create2_hash);
         return (create2_address,);

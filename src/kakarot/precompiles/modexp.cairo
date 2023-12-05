@@ -10,6 +10,7 @@ from starkware.cairo.common.alloc import alloc
 // Internal dependencies
 from utils.utils import Helpers
 from utils.modexp.modexp_utils import ModExpHelpersUint256
+from utils.bytes import uint256_to_bytes
 
 // @title ModExpUint256 MVP Precompile related functions.
 // @notice It is an MVP implementation since it only supports uint256 numbers with m_size<=16 and not bigint which requires bigint library in cairo 0.10.
@@ -49,14 +50,7 @@ namespace PrecompileModExpUint256 {
             let (result) = ModExpHelpersUint256.uint256_mod_exp(b, e, m);
         }
         let bytes: felt* = alloc();
-        let (bytes_len_low) = Helpers.felt_to_bytes(result.low, 0, bytes);
-        let (bytes_len_high) = Helpers.felt_to_bytes(result.high, 0, bytes + bytes_len_low);
-        local bytes_len: felt;
-        if (result.high != 0) {
-            bytes_len = bytes_len_low + bytes_len_high;
-        } else {
-            bytes_len = bytes_len_low;
-        }
+        let bytes_len = uint256_to_bytes(bytes, result);
 
         let (gas_cost) = ModExpHelpersUint256.calculate_mod_exp_gas(
             b_size, m_size, e_size, b, e, m
