@@ -207,7 +207,6 @@ namespace EthTransaction {
         assert nonce = account_nonce;
         assert chain_id = Constants.CHAIN_ID;
 
-
         let (local words: felt*) = alloc();
         let (keccak_ptr: felt*) = alloc();
         let keccak_ptr_start = keccak_ptr;
