@@ -6,6 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import unsigned_div_rem, assert_not_zero
+from starkware.cairo.common.memset import memset
 
 // Local dependencies
 from kakarot.precompiles.ec_recover import PrecompileEcRecover
@@ -30,7 +31,7 @@ func test_should_fail_when_recovery_identifier_is_neither_27_nor_28{
     alloc_locals;
     let (input) = alloc();
     let input_len = 128;
-    TestHelpers.array_fill(input, input_len, 1);
+    memset(input, 1, input_len);
     let result = PrecompileEcRecover.run(PrecompileEcRecover.PRECOMPILE_ADDRESS, input_len, input);
     return (result.output_len, result.output);
 }
@@ -43,12 +44,12 @@ func test_should_return_evm_address_in_bytes32{
     let (input) = alloc();
     let input_len = 128;
     // fill hash
-    TestHelpers.array_fill(input, 32, 1);
+    memset(input, 1, 32);
     // fill v
-    TestHelpers.array_fill(input + 32, 31, 0);
+    memset(input + 32, 0, 31);
     assert [input + 63] = 27;
     // fill r, s
-    TestHelpers.array_fill(input + 64, 64, 1);
+    memset(input + 64, 1, 64);
 
     let (output_len, output, gas, reverted) = PrecompileEcRecover.run(
         PrecompileEcRecover.PRECOMPILE_ADDRESS, input_len, input

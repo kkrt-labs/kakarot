@@ -32,7 +32,8 @@ func felt_to_ascii{range_check_ptr}(n: felt) -> (ascii_len: felt, ascii: felt*) 
     let ascii_len = [ap - 1];
     let ascii = cast([fp], felt*);
 
-    let ascii = reverse(ascii_len, ascii);
+    let (rev: felt*) = alloc();
+    reverse(rev, ascii_len, ascii);
 
-    return (ascii_len, ascii);
+    return (ascii_len, rev);
 }

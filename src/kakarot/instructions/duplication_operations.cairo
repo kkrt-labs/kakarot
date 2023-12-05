@@ -26,7 +26,6 @@ namespace DuplicationOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        // See evm.cairo, pc is increased before entering the opcode
         let opcode_number = [ctx.call_context.bytecode + ctx.program_counter];
         let i = opcode_number - 0x7F;
 

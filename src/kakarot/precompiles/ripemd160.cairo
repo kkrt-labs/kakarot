@@ -14,6 +14,7 @@ from starkware.cairo.common.default_dict import default_dict_new, default_dict_f
 from starkware.cairo.common.dict import dict_new, dict_read, dict_write, dict_squash
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.memset import memset
 
 // Internal dependencies
 from kakarot.model import model
@@ -50,7 +51,7 @@ namespace PrecompileRIPEMD160 {
         let (local arr_x: felt*) = alloc();
 
         // before starting fill arr_x with  0s to align on 32 bytes (hash length is 20bytes so 12 bytes to fill)
-        Helpers.fill(12, arr_x, 0);
+        memset(arr_x, 0, 12);
         let arr_x: felt* = arr_x + 12;
 
         // 1. init magic constants

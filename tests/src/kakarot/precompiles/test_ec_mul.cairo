@@ -8,6 +8,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from starkware.cairo.common.math import split_felt
+from starkware.cairo.common.memcpy import memcpy
 
 // Local dependencies
 from utils.utils import Helpers
@@ -47,15 +48,12 @@ func test__ecmul_impl{
     let (bytes_expected_y_len, bytes_expected_y: felt*) = Helpers.bigint_to_bytes_array(
         expected_point.y
     );
-    // We fill `bytes_expected_result + bytes_expected_x_len` ptr with `bytes_expected_y` elements
-    Helpers.fill_array(
-        bytes_expected_y_len, bytes_expected_y, bytes_expected_result + bytes_expected_x_len
-    );
+    memcpy(bytes_expected_result + bytes_expected_x_len, bytes_expected_y, bytes_expected_y_len);
     let input_len = 96;
     let (input: felt*) = alloc();
-    Helpers.fill_array(x_bytes_len, x_bytes, input);
-    Helpers.fill_array(y_bytes_len, y_bytes, input + 32);
-    Helpers.fill_array(scalar_bytes_len, scalar_bytes, input + 64);
+    memcpy(input, x_bytes, x_bytes_len);
+    memcpy(input + 32, y_bytes, y_bytes_len);
+    memcpy(input + 64, scalar_bytes, scalar_bytes_len);
     let (output_len, output: felt*, gas_used, reverted) = PrecompileEcMul.run(
         PrecompileEcMul.PRECOMPILE_ADDRESS, input_len, input
     );

@@ -7,6 +7,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from starkware.cairo.common.math import split_felt
+from starkware.cairo.common.memcpy import memcpy
 
 // Local dependencies
 from utils.utils import Helpers
@@ -45,10 +46,7 @@ func test__ecadd_impl{
     let (bytes_expected_y_len, bytes_expected_y: felt*) = Helpers.bigint_to_bytes_array(
         expected_point.y
     );
-    // We fill `bytes_expected_result + bytes_expected_x_len` ptr with `bytes_expected_y` elements
-    Helpers.fill_array(
-        bytes_expected_y_len, bytes_expected_y, bytes_expected_result + bytes_expected_x_len
-    );
+    memcpy(bytes_expected_result + bytes_expected_x_len, bytes_expected_y, bytes_expected_y_len);
     let (output_len, output: felt*, gas_used, reverted) = PrecompileEcAdd.run(
         PrecompileEcAdd.PRECOMPILE_ADDRESS, calldata_len, calldata
     );

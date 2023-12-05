@@ -8,6 +8,7 @@ from starkware.cairo.common.uint256 import (
     uint256_pow2,
     uint256_add,
 )
+from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.bool import FALSE
 
 // @notice Internal exponentiation of two 256-bit integers.
@@ -90,4 +91,13 @@ func uint256_fast_exp{range_check_ptr}(value: Uint256, exponent: Uint256) -> Uin
     let pow = uint256_fast_exp(value, half_exponent);
     let (res, _) = uint256_mul(pow, pow);
     return res;
+}
+
+// @notice Converts a 256-bit unsigned integer to a 160-bit unsigned integer.
+// @dev The result is modulo 2^160.
+// @param x The 256-bit unsigned integer.
+// @return The 160-bit unsigned integer.
+func uint256_to_uint160{range_check_ptr}(x: Uint256) -> felt {
+    let (_, high) = unsigned_div_rem(x.high, 2 ** 32);
+    return x.low + high * 2 ** 128;
 }

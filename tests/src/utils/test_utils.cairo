@@ -6,6 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
+from starkware.cairo.common.memset import memset
 
 // Local dependencies
 from utils.utils import Helpers
@@ -31,13 +32,13 @@ func test__bytes_i_to_uint256{
     assert_uint256_eq(uint256, Uint256(0x0102, 0));
 
     let (bytecode) = alloc();
-    TestHelpers.array_fill(bytecode, 20, 0xFF);
+    memset(bytecode, 0xFF, 20);
     let uint256 = Helpers.bytes_i_to_uint256(bytecode, 20);
 
     assert_uint256_eq(uint256, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFF));
 
     let (bytecode) = alloc();
-    TestHelpers.array_fill(bytecode, 16, 0xFF);
+    memset(bytecode, 0xFF, 16);
     let uint256 = Helpers.bytes_i_to_uint256(bytecode, 16);
 
     assert_uint256_eq(uint256, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0));

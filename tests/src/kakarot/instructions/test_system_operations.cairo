@@ -8,6 +8,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import split_felt, assert_not_zero
 from starkware.cairo.common.uint256 import Uint256, uint256_sub
+from starkware.cairo.common.memset import memset
 
 // Local dependencies
 from data_availability.starknet import Starknet
@@ -663,7 +664,7 @@ func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at
 
     // Fake a RETURN in sub_ctx then finalize
     let return_data_len = 65;
-    TestHelpers.array_fill(sub_ctx.return_data, return_data_len, 0xff);
+    memset(sub_ctx.return_data, 0xff, return_data_len);
     let sub_ctx = ExecutionContext.stop(sub_ctx, return_data_len, sub_ctx.return_data, FALSE);
     let summary = ExecutionContext.finalize(sub_ctx);
     let ctx = CreateHelper.finalize_calling_context(summary);
@@ -756,7 +757,7 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
 
     // Fake a RETURN in sub_ctx then finalize
     let return_data_len = 65;
-    TestHelpers.array_fill(sub_ctx.return_data, return_data_len, 0xff);
+    memset(sub_ctx.return_data, 0xff, return_data_len);
     let sub_ctx = ExecutionContext.stop(sub_ctx, return_data_len, sub_ctx.return_data, FALSE);
     let summary = ExecutionContext.finalize(sub_ctx);
     let ctx = CreateHelper.finalize_calling_context(summary);

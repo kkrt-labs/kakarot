@@ -10,6 +10,7 @@ from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from starkware.cairo.common.math import split_felt
 from starkware.starknet.common.syscalls import get_contract_address
+from starkware.cairo.common.memset import memset
 
 // Third party dependencies
 from openzeppelin.token.erc20.library import ERC20
@@ -285,7 +286,7 @@ func test__returndatacopy{
     let (return_data) = alloc();
     let return_data_len: felt = 32;
 
-    TestHelpers.array_fill(return_data, return_data_len, 0xFF);
+    memset(return_data, 0xFF, return_data_len);
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_return_data(
         0, bytecode, return_data_len, return_data
     );
