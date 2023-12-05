@@ -26,6 +26,8 @@ from kakarot.state import State
 from utils.rlp import RLP
 from utils.utils import Helpers
 from utils.uint256 import uint256_to_uint160
+from utils.array import slice
+
 // @title System operations opcodes.
 // @notice This file contains the functions to execute for system operations opcodes.
 namespace SystemOperations {
@@ -511,12 +513,8 @@ namespace CallHelper {
         let stack = Stack.push_uint128(stack, 1 - summary.reverted);
 
         // Store RETURN_DATA in memory
-        let return_data = Helpers.slice_data(
-            data_len=summary.return_data_len,
-            data=summary.return_data,
-            data_offset=0,
-            slice_len=ret_size,
-        );
+        let (return_data: felt*) = alloc();
+        slice(return_data, summary.return_data_len, summary.return_data, 0, ret_size);
         let memory = Memory.store_n(
             summary.calling_context.memory, ret_size, return_data, ret_offset
         );

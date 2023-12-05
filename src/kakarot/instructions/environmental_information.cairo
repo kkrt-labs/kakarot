@@ -22,6 +22,7 @@ from kakarot.state import State
 from utils.utils import Helpers
 from kakarot.constants import Constants
 from utils.uint256 import uint256_to_uint160
+from utils.array import slice
 // @title Environmental information opcodes.
 // @notice This file contains the functions to execute for environmental information opcodes.
 namespace EnvironmentalInformation {
@@ -111,24 +112,18 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - offset: calldata offset of the word we read (32 byte steps).
-        let (stack, calldata_offset) = Stack.pop(stack);
+        let (stack, offset) = Stack.pop(ctx.stack);
 
         let (sliced_calldata: felt*) = alloc();
-
-        let calldata: felt* = ctx.call_context.calldata;
-        let calldata_len: felt = ctx.call_context.calldata_len;
-
-        // read calldata at offset
-        let sliced_calldata: felt* = Helpers.slice_data(
-            data_len=calldata_len, data=calldata, data_offset=calldata_offset.low, slice_len=32
+        slice(
+            sliced_calldata,
+            ctx.call_context.calldata_len,
+            ctx.call_context.calldata,
+            offset.low,
+            32,
         );
-        let uint256_sliced_calldata = Helpers.bytes32_to_uint256(sliced_calldata);
-
-        let stack = Stack.push_uint256(stack, uint256_sliced_calldata);
+        let calldata = Helpers.bytes32_to_uint256(sliced_calldata);
+        let stack = Stack.push_uint256(stack, calldata);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
         return ctx;
@@ -160,15 +155,14 @@ namespace EnvironmentalInformation {
         let element_len = popped[2];
 
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        let calldata: felt* = ctx.call_context.calldata;
-        let calldata_len: felt = ctx.call_context.calldata_len;
 
-        // Get calldata slice from calldata_offset to element_len
-        let sliced_calldata: felt* = Helpers.slice_data(
-            data_len=calldata_len,
-            data=calldata,
-            data_offset=calldata_offset.low,
-            slice_len=element_len.low,
+        let (sliced_calldata: felt*) = alloc();
+        slice(
+            sliced_calldata,
+            ctx.call_context.calldata_len,
+            ctx.call_context.calldata,
+            calldata_offset.low,
+            element_len.low,
         );
 
         // Write caldata slice to memory at offset
@@ -211,14 +205,13 @@ namespace EnvironmentalInformation {
         let element_len = popped[2];
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        // Get bytecode slice from code_offset to element_len
-        let bytecode: felt* = ctx.call_context.bytecode;
-        let bytecode_len: felt = ctx.call_context.bytecode_len;
-        let sliced_code: felt* = Helpers.slice_data(
-            data_len=bytecode_len,
-            data=bytecode,
-            data_offset=code_offset.low,
-            slice_len=element_len.low,
+        let (local sliced_code: felt*) = alloc();
+        slice(
+            sliced_code,
+            ctx.call_context.bytecode_len,
+            ctx.call_context.bytecode,
+            code_offset.low,
+            element_len.low,
         );
 
         // Write bytecode slice to memory at offset
@@ -293,15 +286,8 @@ namespace EnvironmentalInformation {
         tempvar address = new model.Address(starknet_address, evm_address);
         let (state, account) = State.get_account(ctx.state, address);
 
-        // Get bytecode slice from offset to size
-        // in the case were
-        // evm address returns no bytecode or has no `starknet_contract_address`
-        // the bytecode len would be zero and the byte array empty,
-        // which `Helpers.slice_data` would return an array
-        // with the requested `size` of zeroes
-        let sliced_bytecode: felt* = Helpers.slice_data(
-            data_len=account.code_len, data=account.code, data_offset=offset.low, slice_len=size.low
-        );
+        let (sliced_bytecode: felt*) = alloc();
+        slice(sliced_bytecode, account.code_len, account.code, offset.low, size.low);
 
         // Write bytecode slice to memory at dest_offset
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, dest_offset.low + size.low);
@@ -343,11 +329,13 @@ namespace EnvironmentalInformation {
         let element_len = popped[2];
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        let sliced_return_data: felt* = Helpers.slice_data(
-            data_len=ctx.return_data_len,
-            data=ctx.return_data,
-            data_offset=return_data_offset.low,
-            slice_len=element_len.low,
+        let sliced_return_data: felt* = alloc();
+        slice(
+            sliced_return_data,
+            ctx.return_data_len,
+            ctx.return_data,
+            return_data_offset.low,
+            element_len.low,
         );
 
         let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + element_len.low);

@@ -29,6 +29,8 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_update
 
+from utils.array import reverse
+
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
 namespace Helpers {
@@ -184,35 +186,6 @@ namespace Helpers {
         return res;
     }
 
-    func slice_data{range_check_ptr}(
-        data_len: felt, data: felt*, data_offset: felt, slice_len: felt
-    ) -> felt* {
-        alloc_locals;
-        local len: felt;
-        let (local new_data: felt*) = alloc();
-
-        // slice's len = min(slice_len, data_len-offset, 0)
-        // which corresponds to full, partial or empty overlap with data
-        // The result is zero-padded in case of partial or empty overlap.
-
-        let is_non_empty: felt = is_le(data_offset, data_len);
-        let max_len: felt = (data_len - data_offset) * is_non_empty;
-        let is_within_bound: felt = is_le(slice_len, max_len);
-        let len = max_len + (slice_len - max_len) * is_within_bound;
-
-        memcpy(dst=new_data, src=data + data_offset, len=len);
-        memset(new_data + len, 0, slice_len - len);
-        return new_data;
-    }
-
-    func reverse(old_arr_len: felt, old_arr: felt*, new_arr_len: felt, new_arr: felt*) {
-        if (old_arr_len == 0) {
-            return ();
-        }
-        assert new_arr[old_arr_len - 1] = [old_arr];
-        return reverse(old_arr_len - 1, &old_arr[1], new_arr_len + 1, new_arr);
-    }
-
     // @notice This function is used to convert a uint256 to a felt.
     // @param val: value to convert.
     // @return: felt representation of the input.
@@ -230,11 +203,11 @@ namespace Helpers {
         alloc_locals;
         // Split the stack popped value from Uint to bytes array
         let (local temp_value: felt*) = alloc();
-        let (local value_as_bytes_array: felt*) = alloc();
         split_int(value=value.high, n=16, base=2 ** 8, bound=2 ** 128, output=temp_value + 16);
         split_int(value=value.low, n=16, base=2 ** 8, bound=2 ** 128, output=temp_value);
         // Reverse the temp_value array into value_as_bytes_array as memory is arranged in big endian order.
-        reverse(old_arr_len=32, old_arr=temp_value, new_arr_len=32, new_arr=value_as_bytes_array);
+        let (local value_as_bytes_array: felt*) = alloc();
+        reverse(value_as_bytes_array, 32, temp_value);
         return (bytes_array_len=32, bytes_array=value_as_bytes_array);
     }
 
@@ -259,7 +232,7 @@ namespace Helpers {
             );  // recursively call function with value shifted right by 8 bits
             return (bytes_len=bytes_len);
         }
-        reverse(old_arr_len=idx, old_arr=res - idx, new_arr_len=idx, new_arr=dest);
+        reverse(dest, idx, res - idx);
         return (bytes_len=idx);
     }
 
@@ -733,7 +706,7 @@ namespace Helpers {
         alloc_locals;
         let (local little: felt*) = alloc();
         let little_res = felt_to_bytes_little(value, bytes_len, little);
-        reverse(little_res.bytes_len, little, little_res.bytes_len, bytes);
+        reverse(bytes, little_res.bytes_len, little);
         return little_res;
     }
 
