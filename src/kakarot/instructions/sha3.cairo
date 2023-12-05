@@ -55,14 +55,14 @@ namespace Sha3 {
         let (bigendian_data: felt*) = alloc();
         let memory = Memory.load_n(ctx.memory, length.low, bigendian_data, offset.low);
 
-        let (local dest: felt*) = alloc();
-        bytes_to_bytes8_little_endian(dest, length.low, bigendian_data);
+        let (local dst: felt*) = alloc();
+        bytes_to_bytes8_little_endian(dst, length.low, bigendian_data);
 
         let (keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
 
         with keccak_ptr {
-            let (result) = cairo_keccak_bigend(inputs=dest, n_bytes=length.low);
+            let (result) = cairo_keccak_bigend(dst, length.low);
         }
         finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
 

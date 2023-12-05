@@ -87,8 +87,8 @@ namespace EnvironmentalInformation {
         } else {
             tempvar caller = ctx.call_context.origin.evm;
         }
-        let evm_address_uint256 = Helpers.to_uint256(caller);
-        let stack = Stack.push(ctx.stack, evm_address_uint256);
+        let address = Helpers.to_uint256(caller);
+        let stack = Stack.push(ctx.stack, address);
         let ctx = ExecutionContext.update_stack(ctx, stack);
         return ctx;
     }
@@ -99,10 +99,10 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let uint256_value = Helpers.to_uint256(ctx.call_context.value);
-        let stack = Stack.push(ctx.stack, uint256_value);
-
+        let value = Helpers.to_uint256(ctx.call_context.value);
+        let stack = Stack.push(ctx.stack, value);
         let ctx = ExecutionContext.update_stack(ctx, stack);
+
         return ctx;
     }
 
@@ -150,11 +150,10 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(self=stack, n=3);
-        let offset = popped[0];
-        let calldata_offset = popped[1];
-        let element_len = popped[2];
+        let (stack, popped) = Stack.pop_n(ctx.stack, 3);
+        let dest_offset = popped[0];
+        let offset = popped[1];
+        let size = popped[2];
 
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
@@ -163,19 +162,17 @@ namespace EnvironmentalInformation {
             sliced_calldata,
             ctx.call_context.calldata_len,
             ctx.call_context.calldata,
-            calldata_offset.low,
-            element_len.low,
+            offset.low,
+            size.low,
         );
 
-        // Write caldata slice to memory at offset
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + element_len.low);
+        // Write caldata slice to memory at dest_offset
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, dest_offset.low + size.low);
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
         }
-        let memory: model.Memory* = Memory.store_n(
-            self=ctx.memory, element_len=element_len.low, element=sliced_calldata, offset=offset.low
-        );
+        let memory = Memory.store_n(ctx.memory, size.low, sliced_calldata, dest_offset.low);
         let ctx = ExecutionContext.update_memory(ctx, memory);
 
         return ctx;
@@ -200,11 +197,10 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(self=stack, n=3);
-        let offset = popped[0];
-        let code_offset = popped[1];
-        let element_len = popped[2];
+        let (stack, popped) = Stack.pop_n(ctx.stack, 3);
+        let dest_offset = popped[0];
+        let offset = popped[1];
+        let size = popped[2];
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
         let (local sliced_code: felt*) = alloc();
@@ -212,19 +208,17 @@ namespace EnvironmentalInformation {
             sliced_code,
             ctx.call_context.bytecode_len,
             ctx.call_context.bytecode,
-            code_offset.low,
-            element_len.low,
+            offset.low,
+            size.low,
         );
 
-        // Write bytecode slice to memory at offset
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + element_len.low);
+        // Write bytecode slice to memory at dest_offset
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, dest_offset.low + size.low);
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
         }
-        let memory: model.Memory* = Memory.store_n(
-            self=ctx.memory, element_len=element_len.low, element=sliced_code, offset=offset.low
-        );
+        let memory = Memory.store_n(ctx.memory, size.low, sliced_code, dest_offset.low);
 
         let ctx = ExecutionContext.update_memory(ctx, memory);
         return ctx;
@@ -324,33 +318,21 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let stack = ctx.stack;
-        let (stack, popped) = Stack.pop_n(self=stack, n=3);
-        let offset = popped[0];
-        let return_data_offset = popped[1];
-        let element_len = popped[2];
+        let (stack, popped) = Stack.pop_n(ctx.stack, 3);
+        let dest_offset = popped[0];
+        let offset = popped[1];
+        let size = popped[2];
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
         let sliced_return_data: felt* = alloc();
-        slice(
-            sliced_return_data,
-            ctx.return_data_len,
-            ctx.return_data,
-            return_data_offset.low,
-            element_len.low,
-        );
+        slice(sliced_return_data, ctx.return_data_len, ctx.return_data, offset.low, size.low);
 
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + element_len.low);
+        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, dest_offset.low + size.low);
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
         }
-        let memory: model.Memory* = Memory.store_n(
-            self=ctx.memory,
-            element_len=element_len.low,
-            element=sliced_return_data,
-            offset=offset.low,
-        );
+        let memory = Memory.store_n(ctx.memory, size.low, sliced_return_data, dest_offset.low);
         let ctx = ExecutionContext.update_memory(ctx, memory);
         return ctx;
     }
@@ -381,14 +363,14 @@ namespace EnvironmentalInformation {
             return ctx;
         }
 
-        let (local dest: felt*) = alloc();
-        bytes_to_bytes8_little_endian(dest, account.code_len, account.code);
+        let (local dst: felt*) = alloc();
+        bytes_to_bytes8_little_endian(dst, account.code_len, account.code);
 
         let (keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
 
         with keccak_ptr {
-            let (result) = cairo_keccak_bigend(inputs=dest, n_bytes=account.code_len);
+            let (result) = cairo_keccak_bigend(dst, account.code_len);
         }
 
         finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);

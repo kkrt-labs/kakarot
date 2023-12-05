@@ -635,12 +635,10 @@ namespace CreateHelper {
         bytes_to_bytes8_little_endian(packed_bytes8, packed_bytes_len, packed_bytes);
 
         with keccak_ptr {
-            let (create2_hash) = cairo_keccak_bigend(
-                inputs=packed_bytes8, n_bytes=packed_bytes_len
-            );
+            let (create2_hash) = cairo_keccak_bigend(packed_bytes8, packed_bytes_len);
         }
 
-        finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
+        finalize_keccak(keccak_ptr_start, keccak_ptr);
 
         let create2_address = uint256_to_uint160(create2_hash);
         return (create2_address,);
