@@ -21,7 +21,7 @@ from kakarot.stack import Stack
 from kakarot.state import State
 from utils.utils import Helpers
 from kakarot.constants import Constants
-
+from utils.uint256 import uint256_to_uint160
 // @title Environmental information opcodes.
 // @notice This file contains the functions to execute for environmental information opcodes.
 namespace EnvironmentalInformation {
@@ -68,7 +68,7 @@ namespace EnvironmentalInformation {
 
         let (stack, address_uint256) = Stack.pop(ctx.stack);
 
-        let evm_address = Helpers.uint256_to_felt([address_uint256]);
+        let evm_address = uint256_to_uint160([address_uint256]);
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
         let (state, account) = State.get_account(ctx.state, address);
@@ -390,12 +390,8 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - address: 20-byte address of the contract to query.
-        let (stack, address_uint256) = Stack.pop(self=stack);
-        let evm_address = Helpers.uint256_to_felt([address_uint256]);
+        let (stack, address_uint256) = Stack.pop(ctx.stack);
+        let evm_address = uint256_to_uint160([address_uint256]);
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
         let (state, account) = State.get_account(ctx.state, address);
@@ -426,21 +422,13 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - address: 20-byte address of the contract to query.
-        // 1 - dest_offset: byte offset in the memory where the result will be copied.
-        // 2 - offset: byte offset in the code to copy.
-        // 3 - size: byte size to copy.
-        let (stack, popped) = Stack.pop_n(self=stack, n=4);
-        let address_uint256 = popped[0];
+        let (stack, popped) = Stack.pop_n(ctx.stack, 4);
         let dest_offset = popped[1];
         let offset = popped[2];
         let size = popped[3];
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        let evm_address = Helpers.uint256_to_felt(address_uint256);
+        let evm_address = uint256_to_uint160(popped[0]);
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
         let (state, account) = State.get_account(ctx.state, address);
@@ -561,12 +549,8 @@ namespace EnvironmentalInformation {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        let stack = ctx.stack;
-
-        // Stack input:
-        // 0 - address: 20-byte address of the contract to query.
-        let (stack, address_uint256) = Stack.pop(stack);
-        let evm_address = Helpers.uint256_to_felt([address_uint256]);
+        let (stack, address_uint256) = Stack.pop(ctx.stack);
+        let evm_address = uint256_to_uint160([address_uint256]);
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
 

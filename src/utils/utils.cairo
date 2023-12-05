@@ -775,15 +775,6 @@ namespace Helpers {
         return bytes_to_felt(data_len=data_len - 1, data=data + 1, n=n + byte * res);
     }
 
-    // @notice Transforms a keccak hash to an ethereum address by taking last 20 bytes
-    // @param hash - The keccak hash.
-    // @return address - The address.
-    func keccak_hash_to_evm_contract_address{range_check_ptr}(hash: Uint256) -> felt {
-        let (_, r) = unsigned_div_rem(hash.high, 256 ** 4);
-        let address = hash.low + r * 2 ** 128;
-        return address;
-    }
-
     // @notice transform multiple bytes into words of 32 bits (big endian)
     // @dev the input data must have length in multiples of 4
     // @dev you may use the function `fill` to pad it with zeros

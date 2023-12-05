@@ -25,7 +25,7 @@ from kakarot.stack import Stack
 from kakarot.state import State
 from utils.rlp import RLP
 from utils.utils import Helpers
-
+from utils.uint256 import uint256_to_uint160
 // @title System operations opcodes.
 // @notice This file contains the functions to execute for system operations opcodes.
 namespace SystemOperations {
@@ -338,9 +338,7 @@ namespace SystemOperations {
 
         // Transfer funds
         let (stack, popped) = Stack.pop(ctx.stack);
-        let (_, address_high) = unsigned_div_rem(popped.high, 2 ** 32);
-        let address = Uint256(popped.low, address_high);
-        let recipient_evm_address = Helpers.uint256_to_felt(address);
+        let recipient_evm_address = uint256_to_uint160([popped]);
 
         // Remove this when https://eips.ethereum.org/EIPS/eip-6780 is validated
         if (recipient_evm_address == ctx.call_context.address.evm) {
@@ -405,7 +403,7 @@ namespace CallHelper {
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
         let gas = popped[0];
-        let address = 2 ** 128 * popped[1].high + popped[1].low;
+        let address = uint256_to_uint160(popped[1]);
         let stack_value = (2 ** 128 * popped[2].high + popped[2].low) * with_value;
         // If the call op expects value to be on the stack, we return it
         // Otherwise, the value is the calling call context value
@@ -622,7 +620,7 @@ namespace CreateHelper {
             finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
         }
 
-        let create_address = Helpers.keccak_hash_to_evm_contract_address(create_hash);
+        let create_address = uint256_to_uint160(create_hash);
         return (create_address,);
     }
 
@@ -722,7 +720,7 @@ namespace CreateHelper {
             finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
         }
 
-        let create2_address = Helpers.keccak_hash_to_evm_contract_address(create2_hash);
+        let create2_address = uint256_to_uint160(create2_hash);
         return (create2_address,);
     }
 
