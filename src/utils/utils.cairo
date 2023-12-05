@@ -13,6 +13,7 @@ from starkware.cairo.common.math import (
 )
 from starkware.cairo.common.math_cmp import is_le, is_not_zero
 from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.memset import memset
 from starkware.cairo.common.pow import pow
 from starkware.cairo.common.uint256 import (
     Uint256,
@@ -183,30 +184,6 @@ namespace Helpers {
         return res;
     }
 
-    // @notice This function is used to make an arbitrary length array of same elements.
-    // @param arr: pointer to the first element
-    // @param value: value to place
-    // @param arr_len: number of elements to add.
-    func fill(arr_len: felt, arr: felt*, value: felt) {
-        if (arr_len == 0) {
-            return ();
-        }
-        assert [arr] = value;
-        return fill(arr_len - 1, arr + 1, value);
-    }
-
-    // @notice This function fills an empty array with elements from another array
-    // @param fill_len: number of elements to add
-    // @param input_arr: pointer to the input array
-    // @param output_arr: pointer to empty array to be filled with elements from input array
-    func fill_array(fill_len: felt, input_arr: felt*, output_arr: felt*) {
-        if (fill_len == 0) {
-            return ();
-        }
-        assert [output_arr] = [input_arr];
-        return fill_array(fill_len - 1, input_arr + 1, output_arr + 1);
-    }
-
     func slice_data{range_check_ptr}(
         data_len: felt, data: felt*, data_offset: felt, slice_len: felt
     ) -> felt* {
@@ -224,7 +201,7 @@ namespace Helpers {
         let len = max_len + (slice_len - max_len) * is_within_bound;
 
         memcpy(dst=new_data, src=data + data_offset, len=len);
-        fill(arr_len=slice_len - len, arr=new_data + len, value=0);
+        memset(new_data + len, 0, slice_len - len);
         return new_data;
     }
 
@@ -777,7 +754,6 @@ namespace Helpers {
 
     // @notice transform multiple bytes into words of 32 bits (big endian)
     // @dev the input data must have length in multiples of 4
-    // @dev you may use the function `fill` to pad it with zeros
     // @param data_len The length of the bytes
     // @param data The pointer to the bytes array
     // @param n_len used for recursion, set to 0

@@ -6,7 +6,6 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.memcpy import memcpy
 
 // Internal dependencies
 from utils.utils import Helpers

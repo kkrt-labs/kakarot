@@ -5,11 +5,12 @@
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.memset import memset
 
 // Local dependencies
 from utils.utils import Helpers
 from kakarot.precompiles.blake2f import PrecompileBlake2f
-from tests.utils.helpers import TestHelpers
 
 @external
 func test_should_fail_when_input_is_not_213{
@@ -32,7 +33,7 @@ func test_should_fail_when_flag_is_not_0_or_1{
     alloc_locals;
     let (input) = alloc();
     let input_len = 213;
-    TestHelpers.array_fill(input, input_len - 1, 0x00);
+    memset(input, input_len - 1, 0x00);
     assert input[212] = 0x02;
 
     let result = PrecompileBlake2f.run(0x09, input_len, input);
@@ -48,8 +49,8 @@ func test_should_return_blake2f_compression{
     alloc_locals;
     let (local input: felt*) = alloc();
     Helpers.split_word(rounds, 4, input);
-    Helpers.fill_array(h_len, h, input + 4);
-    Helpers.fill_array(m_len, m, input + 68);
+    memcpy(input + 4, h, h_len);
+    memcpy(input + 68, m, m_len);
     Helpers.split_word_little(t0, 8, input + 196);
     Helpers.split_word_little(t1, 8, input + 196 + 8);
     assert input[212] = f;

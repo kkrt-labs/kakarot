@@ -56,7 +56,7 @@ namespace PrecompileSHA256 {
         let (q: felt, r: felt) = unsigned_div_rem(input_len, 4);
         if (r != 0) {
             // Append zero elements at the end of array
-            Helpers.fill(4 - r, arr + input_len, 0);
+            memset(arr + input_len, 0, 4 - r);
             tempvar arr_len = (q + 1) * 4;
         } else {
             tempvar arr_len = q * 4;
