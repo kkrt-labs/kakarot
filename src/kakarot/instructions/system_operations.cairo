@@ -27,7 +27,7 @@ from utils.rlp import RLP
 from utils.utils import Helpers
 from utils.uint256 import uint256_to_uint160
 from utils.array import slice
-
+from utils.bytes import bytes_to_bytes8_little_endian
 // @title System operations opcodes.
 // @notice This file contains the functions to execute for system operations opcodes.
 namespace SystemOperations {
@@ -594,22 +594,13 @@ namespace CreateHelper {
         let (rlp_list_len: felt) = RLP.encode_list(packed_bytes_len, packed_bytes, rlp_list);
 
         let (local packed_bytes8: felt*) = alloc();
-        Helpers.bytes_to_bytes8_little_endian(
-            bytes_len=rlp_list_len,
-            bytes=rlp_list,
-            index=0,
-            size=rlp_list_len,
-            bytes8=0,
-            bytes8_shift=0,
-            dest=packed_bytes8,
-            dest_index=0,
-        );
+        bytes_to_bytes8_little_endian(packed_bytes8, rlp_list_len, rlp_list);
 
         with keccak_ptr {
             let (create_hash) = cairo_keccak_bigend(inputs=packed_bytes8, n_bytes=rlp_list_len);
-
-            finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
         }
+
+        finalize_keccak(keccak_ptr_start, keccak_ptr);
 
         let create_address = uint256_to_uint160(create_hash);
         return (create_address,);
@@ -638,16 +629,7 @@ namespace CreateHelper {
         local keccak_ptr_start: felt* = keccak_ptr;
 
         let (local bytecode_bytes8: felt*) = alloc();
-        Helpers.bytes_to_bytes8_little_endian(
-            bytes_len=bytecode_len,
-            bytes=bytecode,
-            index=0,
-            size=bytecode_len,
-            bytes8=0,
-            bytes8_shift=0,
-            dest=bytecode_bytes8,
-            dest_index=0,
-        );
+        bytes_to_bytes8_little_endian(bytecode_bytes8, bytecode_len, bytecode);
         with keccak_ptr {
             // get keccak hash of bytecode
             let (bytecode_hash_bigend) = cairo_keccak_bigend(
@@ -693,16 +675,7 @@ namespace CreateHelper {
             );
 
             let (local packed_bytes8: felt*) = alloc();
-            Helpers.bytes_to_bytes8_little_endian(
-                bytes_len=packed_bytes_len,
-                bytes=packed_bytes,
-                index=0,
-                size=packed_bytes_len,
-                bytes8=0,
-                bytes8_shift=0,
-                dest=packed_bytes8,
-                dest_index=0,
-            );
+            bytes_to_bytes8_little_endian(packed_bytes8, packed_bytes_len, packed_bytes);
 
             let (create2_hash) = cairo_keccak_bigend(
                 inputs=packed_bytes8, n_bytes=packed_bytes_len

@@ -17,6 +17,7 @@ from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 from kakarot.errors import Errors
 from utils.utils import Helpers
+from utils.bytes import bytes_to_bytes8_little_endian
 
 // @title Sha3 opcodes.
 // @notice This file contains the keccak opcode.
@@ -55,16 +56,7 @@ namespace Sha3 {
         let memory = Memory.load_n(ctx.memory, length.low, bigendian_data, offset.low);
 
         let (local dest: felt*) = alloc();
-        Helpers.bytes_to_bytes8_little_endian(
-            bytes_len=length.low,
-            bytes=bigendian_data,
-            index=0,
-            size=length.low,
-            bytes8=0,
-            bytes8_shift=0,
-            dest=dest,
-            dest_index=0,
-        );
+        bytes_to_bytes8_little_endian(dest, length.low, bigendian_data);
 
         let (keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
