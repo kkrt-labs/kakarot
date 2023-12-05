@@ -22,7 +22,7 @@ from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.state import State
 from utils.utils import Helpers
-from utils.bytes import felt_to_ascii
+
 // @title ExecutionContext related functions.
 // @notice This file contains functions related to the execution context.
 namespace ExecutionContext {

@@ -485,9 +485,6 @@ namespace Errors {
         alloc_locals;
         let (error: felt*) = alloc();
 
-        let (gas_used_ascii_len, gas_used_ascii) = felt_to_ascii(gas_used);
-        let (gas_limit_ascii_len, gas_limit_ascii) = felt_to_ascii(gas_limit);
-
         assert [error + 0] = 'K';
         assert [error + 1] = 'a';
         assert [error + 2] = 'k';
@@ -513,7 +510,7 @@ namespace Errors {
         assert [error + 22] = 't';
         assert [error + 23] = '=';
 
-        memcpy(error + 24, gas_limit_ascii, gas_limit_ascii_len);
+        let gas_limit_ascii_len = felt_to_ascii(error + 24, gas_limit);
 
         assert [error + 24 + gas_limit_ascii_len + 0] = ',';
         assert [error + 24 + gas_limit_ascii_len + 1] = ' ';
@@ -523,7 +520,7 @@ namespace Errors {
         assert [error + 24 + gas_limit_ascii_len + 5] = 'd';
         assert [error + 24 + gas_limit_ascii_len + 6] = '=';
 
-        memcpy(error + 24 + gas_limit_ascii_len + 7, gas_used_ascii, gas_used_ascii_len);
+        let gas_used_ascii_len = felt_to_ascii(error + 24 + gas_limit_ascii_len + 7, gas_used);
 
         return (24 + gas_limit_ascii_len + 7 + gas_used_ascii_len, error);
     }

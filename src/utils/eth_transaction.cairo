@@ -13,6 +13,7 @@ from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
 from utils.rlp import RLP
 from utils.utils import Helpers
+from utils.bytes import bytes_to_bytes8_little_endian
 
 // @title EthTransaction utils
 // @notice This file contains utils for decoding eth transactions
@@ -97,16 +98,7 @@ namespace EthTransaction {
             // > To use this function, split the input into words of 64 bits (little endian).
             // > Same as keccak, but outputs the hash in big endian representation.
             // > Note that the input is still treated as little endian.
-            Helpers.bytes_to_bytes8_little_endian(
-                bytes_len=rlp_data_len,
-                bytes=rlp_data,
-                index=0,
-                size=rlp_data_len,
-                bytes8=0,
-                bytes8_shift=0,
-                dest=words,
-                dest_index=0,
-            );
+            bytes_to_bytes8_little_endian(words, rlp_data_len, rlp_data);
             let (msg_hash) = cairo_keccak_bigend(inputs=words, n_bytes=rlp_data_len);
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
@@ -220,16 +212,7 @@ namespace EthTransaction {
             // > To use this function, split the input into words of 64 bits (little endian).
             // > Same as keccak, but outputs the hash in big endian representation.
             // > Note that the input is still treated as little endian.
-            Helpers.bytes_to_bytes8_little_endian(
-                bytes_len=rlp_len + 1,
-                bytes=signed_data,
-                index=0,
-                size=rlp_len + 1,
-                bytes8=0,
-                bytes8_shift=0,
-                dest=words,
-                dest_index=0,
-            );
+            bytes_to_bytes8_little_endian(words, rlp_len + 1, signed_data);
             let (msg_hash) = cairo_keccak_bigend(inputs=words, n_bytes=rlp_len + 1);
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);

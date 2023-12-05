@@ -23,6 +23,8 @@ from utils.utils import Helpers
 from kakarot.constants import Constants
 from utils.uint256 import uint256_to_uint160
 from utils.array import slice
+from utils.bytes import bytes_to_bytes8_little_endian
+
 // @title Environmental information opcodes.
 // @notice This file contains the functions to execute for environmental information opcodes.
 namespace EnvironmentalInformation {
@@ -380,17 +382,7 @@ namespace EnvironmentalInformation {
         }
 
         let (local dest: felt*) = alloc();
-        // convert to little endian
-        Helpers.bytes_to_bytes8_little_endian(
-            bytes_len=account.code_len,
-            bytes=account.code,
-            index=0,
-            size=account.code_len,
-            bytes8=0,
-            bytes8_shift=0,
-            dest=dest,
-            dest_index=0,
-        );
+        bytes_to_bytes8_little_endian(dest, account.code_len, account.code);
 
         let (keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
