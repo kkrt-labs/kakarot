@@ -229,8 +229,8 @@ namespace EthTransaction {
             tempvar parity = v;
         }
 
-        let (local keccak_ptr: felt*) = alloc();
-        local keccak_ptr_start: felt* = keccak_ptr;
+        let (keccak_ptr: felt*) = alloc();
+        let keccak_ptr_start: felt* = keccak_ptr;
         with keccak_ptr {
             verify_eth_signature_uint256(
                 msg_hash=msg_hash, r=r, s=s, v=parity, eth_address=address
