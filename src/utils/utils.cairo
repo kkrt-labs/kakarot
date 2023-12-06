@@ -16,7 +16,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_update
 
-from utils.bytes import uint256_to_bytes
+from utils.bytes import uint256_to_bytes32
 
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
@@ -136,10 +136,11 @@ namespace Helpers {
     func bigint_to_bytes_array{range_check_ptr}(val: BigInt3) -> (
         bytes_array_len: felt, bytes_array: felt*
     ) {
+        alloc_locals;
         let (val_uint256: Uint256) = bigint_to_uint256(val);
         let (bytes: felt*) = alloc();
-        let bytes_len = uint256_to_bytes(bytes, val_uint256);
-        return (bytes_len, bytes);
+        uint256_to_bytes32(bytes, val_uint256);
+        return (32, bytes);
     }
 
     // @notice: This helper returns the minimal number of EVM words for a given bytes length
