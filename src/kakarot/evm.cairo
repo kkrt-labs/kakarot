@@ -6,7 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math_cmp import is_le, is_not_zero
+from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
 
 // Internal dependencies
@@ -822,7 +822,8 @@ namespace EVM {
         ctx_summary: ExecutionContext.Summary*
     ) -> Summary* {
         alloc_locals;
-        let state_summary = Internals._get_state_summary(ctx_summary);
+        let ctx_summary = Internals._finalize_create_tx(ctx_summary);
+        let state_summary = State.finalize(ctx_summary.state);
         tempvar summary: Summary* = new Summary(
             memory=ctx_summary.memory,
             stack=ctx_summary.stack,
@@ -841,33 +842,60 @@ namespace EVM {
 }
 
 namespace Internals {
-    func _get_state_summary{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    func _finalize_create_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         ctx_summary: ExecutionContext.Summary*
-    ) -> State.Summary* {
+    ) -> ExecutionContext.Summary* {
         alloc_locals;
-        // In case of a deploy tx, we need to store the return_data in the Account
-        if (ctx_summary.call_context.is_create != FALSE) {
-            let (state, account) = State.get_account(ctx_summary.state, ctx_summary.address);
-            let account = Account.set_code(
-                account, ctx_summary.return_data_len, ctx_summary.return_data
-            );
-            let state = State.set_account(state, ctx_summary.address, account);
-            tempvar state = state;
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar range_check_ptr = range_check_ptr;
-            // Else the state is just the returned state of the ExecutionContext
-        } else {
-            tempvar state = ctx_summary.state;
-            tempvar syscall_ptr = syscall_ptr;
-            tempvar pedersen_ptr = pedersen_ptr;
-            tempvar range_check_ptr = range_check_ptr;
+        if (ctx_summary.call_context.is_create == FALSE) {
+            return ctx_summary;
         }
-        tempvar syscall_ptr = syscall_ptr;
-        tempvar pedersen_ptr = pedersen_ptr;
-        tempvar range_check_ptr = range_check_ptr;
 
-        let state_summary = State.finalize(state);
-        return state_summary;
+        // Charge final deposit gas
+        let code_size_limit = is_le(ctx_summary.return_data_len, 0x6000);
+        let code_deposit_cost = 200 * ctx_summary.return_data_len;
+        let enough_gas = is_nn(
+            ctx_summary.call_context.gas_limit - ctx_summary.gas_used - code_deposit_cost
+        );
+        let success = (1 - ctx_summary.reverted) * enough_gas * code_size_limit;
+
+        if (success == 0) {
+            // Burn all gas in case of failure
+            let (revert_reason_len, revert_reason) = Errors.outOfGas(
+                ctx_summary.call_context.gas_limit, ctx_summary.call_context.gas_limit
+            );
+            return new ExecutionContext.Summary(
+                memory=ctx_summary.memory,
+                stack=ctx_summary.stack,
+                return_data_len=revert_reason_len,
+                return_data=revert_reason,
+                gas_used=ctx_summary.call_context.gas_limit,
+                address=ctx_summary.address,
+                reverted=TRUE,
+                state=ctx_summary.state,
+                calling_context=ctx_summary.calling_context,
+                call_context=ctx_summary.call_context,
+                program_counter=ctx_summary.program_counter,
+            );
+        }
+
+        let (state, account) = State.get_account(ctx_summary.state, ctx_summary.address);
+        let account = Account.set_code(
+            account, ctx_summary.return_data_len, ctx_summary.return_data
+        );
+        let state = State.set_account(state, ctx_summary.address, account);
+
+        return new ExecutionContext.Summary(
+            memory=ctx_summary.memory,
+            stack=ctx_summary.stack,
+            return_data_len=2,
+            return_data=cast(ctx_summary.address, felt*),
+            gas_used=ctx_summary.gas_used + code_deposit_cost,
+            address=ctx_summary.address,
+            reverted=FALSE,
+            state=state,
+            calling_context=ctx_summary.calling_context,
+            call_context=ctx_summary.call_context,
+            program_counter=ctx_summary.program_counter,
+        );
     }
 }
