@@ -48,8 +48,8 @@ class TestEthTransaction:
             await eth_transaction.test__validate(
                 int(address, 16),
                 transaction["nonce"],
-                (int_to_uint256(signed.r)["low"], int_to_uint256(signed.r)["high"]),
-                (int_to_uint256(signed.s)["low"], int_to_uint256(signed.s)["high"]),
+                (int_to_uint256(signed.r)),
+                (int_to_uint256(signed.s)),
                 signed["v"],
                 list(encoded_unsigned_tx),
             ).call()
