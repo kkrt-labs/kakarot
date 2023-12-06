@@ -610,7 +610,7 @@ namespace EVM {
         jmp end;
         call SystemOperations.exec_delegatecall;  // 0xf4
         jmp end_sub_ctx;
-        call SystemOperations.exec_create2;  // 0xf5
+        call SystemOperations.exec_create;  // 0xf5
         jmp end_sub_ctx;
         call unknown_opcode;  // 0xf6
         jmp end;
