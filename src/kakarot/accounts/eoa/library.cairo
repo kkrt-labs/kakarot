@@ -25,7 +25,7 @@ func is_initialized_() -> (res: felt) {
 }
 
 @event
-func transaction_executed(response_len: felt, response: felt*, success: felt) {
+func transaction_executed(msg_hash: Uint256, response_len: felt, response: felt*, success: felt) {
 }
 
 namespace ExternallyOwnedAccount {
@@ -146,7 +146,15 @@ namespace ExternallyOwnedAccount {
         }
 
         let (
-            nonce, gas_price, gas_limit, destination, amount, _chain_id, payload_len, payload
+            msg_hash,
+            nonce,
+            gas_price,
+            gas_limit,
+            destination,
+            amount,
+            _chain_id,
+            payload_len,
+            payload,
         ) = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
 
         let (_kakarot_address) = kakarot_address.read();
@@ -164,7 +172,7 @@ namespace ExternallyOwnedAccount {
         // See Argent account
         // https://github.com/argentlabs/argent-contracts-starknet/blob/c6d3ee5e05f0f4b8a5c707b4094446c3bc822427/contracts/account/ArgentAccount.cairo#L132
         transaction_executed.emit(
-            response_len=return_data_len, response=return_data, success=success
+            msg_hash=msg_hash, response_len=return_data_len, response=return_data, success=success
         );
 
         let (response_len) = execute(

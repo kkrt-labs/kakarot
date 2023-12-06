@@ -38,10 +38,11 @@ from scripts.constants import (
 from scripts.utils.starknet import call as _call_starknet
 from scripts.utils.starknet import fund_address as _fund_starknet_address
 from scripts.utils.starknet import get_contract as _get_starknet_contract
-from scripts.utils.starknet import get_deployments, int_to_uint256
+from scripts.utils.starknet import get_deployments
 from scripts.utils.starknet import invoke as _invoke_starknet
 from scripts.utils.starknet import wait_for_transaction
-from tests.utils.helpers import rlp_encode_tx
+from tests.utils.helpers import rlp_encode_signed_data
+from tests.utils.uint256 import int_to_uint256
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -310,12 +311,7 @@ async def eth_send_transaction(
         hex(evm_account.signer.private_key),
     )
 
-    # We invoke eth_send_transaction for clarity but in reality,
-    # The eoa.__execute__ will always call eth_send_transaction of Kakarot
-    r = int_to_uint256(evm_tx.r)
-    s = int_to_uint256(evm_tx.s)
-
-    encoded_unsigned_tx = rlp_encode_tx(typed_transaction.as_dict())
+    encoded_unsigned_tx = rlp_encode_signed_data(typed_transaction.as_dict())
 
     prepared_invoke = await evm_account._prepare_invoke(
         calls=[
@@ -332,7 +328,7 @@ async def eth_send_transaction(
     prepared_invoke = Invoke(
         version=prepared_invoke.version,
         max_fee=prepared_invoke.max_fee,
-        signature=[r["low"], r["high"], s["low"], s["high"], evm_tx.v],
+        signature=[*int_to_uint256(evm_tx.r), *int_to_uint256(evm_tx.s), evm_tx.v],
         nonce=prepared_invoke.nonce,
         sender_address=prepared_invoke.sender_address,
         calldata=prepared_invoke.calldata,
@@ -351,6 +347,8 @@ async def eth_send_transaction(
     if len(transaction_events) != 1:
         raise ValueError("Cannot locate the single event giving the actual tx status")
     (
+        _msg_hash_low,
+        _msg_hash_high,
         response_len,
         *response,
         success,

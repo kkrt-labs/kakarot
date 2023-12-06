@@ -3,7 +3,6 @@ from textwrap import wrap
 from typing import List, Tuple
 
 import rlp
-from cytoolz import pipe
 from eth_abi import encode
 from eth_account._utils.transaction_utils import transaction_rpc_to_rlp_structure
 from eth_account._utils.typed_transactions import TypedTransaction
@@ -17,7 +16,7 @@ PERMIT_TYPEHASH = keccak(
 )
 
 
-def rlp_encode_tx(tx: dict) -> bytes:
+def rlp_encode_signed_data(tx: dict) -> bytes:
     if "type" in tx:
         typed_transaction = TypedTransaction.from_dict(tx)
 
@@ -29,14 +28,10 @@ def rlp_encode_tx(tx: dict) -> bytes:
         rlp_serializer = (
             typed_transaction.transaction.__class__._unsigned_transaction_serializer
         )
-        encoded_unsigned_tx = pipe(
-            rlp_serializer.from_dict(sanitized_transaction),
-            rlp.encode,
-            lambda val: bytes(
-                [typed_transaction.transaction.__class__.transaction_type]
-            )
-            + val,  # add the tx type right before the rlp[(...)]
-        )
+        encoded_unsigned_tx = [
+            typed_transaction.transaction_type,
+            *rlp.encode(rlp_serializer.from_dict(sanitized_transaction)),
+        ]
 
         return encoded_unsigned_tx
     else:

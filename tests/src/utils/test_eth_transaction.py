@@ -5,14 +5,14 @@ import pytest_asyncio
 from eth_account.account import Account
 from starkware.starknet.testing.starknet import Starknet
 
-from scripts.utils.starknet import int_to_uint256
 from tests.utils.constants import TRANSACTIONS
 from tests.utils.errors import cairo_error
 from tests.utils.helpers import (
     generate_random_evm_address,
     generate_random_private_key,
-    rlp_encode_tx,
+    rlp_encode_signed_data,
 )
+from tests.utils.uint256 import int_to_uint256
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -43,7 +43,7 @@ class TestEthTransaction:
             address = private_key.public_key.to_checksum_address()
             signed = Account.sign_transaction(transaction, private_key)
 
-            encoded_unsigned_tx = rlp_encode_tx(transaction)
+            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
 
             await eth_transaction.test__validate(
                 int(address, 16),
@@ -63,23 +63,14 @@ class TestEthTransaction:
             transaction = {**transaction, "chainId": 1}
             signed = Account.sign_transaction(transaction, private_key)
 
-            r = int_to_uint256(signed.r)
-            s = int_to_uint256(signed.s)
-
-            encoded_unsigned_tx = rlp_encode_tx(transaction)
+            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
 
             with cairo_error():
                 await eth_transaction.test__validate(
                     int(address, 16),
                     transaction["nonce"],
-                    (
-                        r["low"],
-                        r["high"],
-                    ),
-                    (
-                        s["low"],
-                        s["high"],
-                    ),
+                    int_to_uint256(signed.s),
+                    int_to_uint256(signed.s),
                     signed["v"],
                     list(encoded_unsigned_tx),
                 ).call()
@@ -92,24 +83,15 @@ class TestEthTransaction:
             address = int(generate_random_evm_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
 
-            r = int_to_uint256(signed.r)
-            s = int_to_uint256(signed.s)
-
-            encoded_unsigned_tx = rlp_encode_tx(transaction)
+            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
 
             assert address != int(private_key.public_key.to_address(), 16)
             with cairo_error():
                 await eth_transaction.test__validate(
                     address,
                     transaction["nonce"],
-                    (
-                        r["low"],
-                        r["high"],
-                    ),
-                    (
-                        s["low"],
-                        s["high"],
-                    ),
+                    int_to_uint256(signed.r),
+                    int_to_uint256(signed.s),
                     signed["v"],
                     list(encoded_unsigned_tx),
                 ).call()
@@ -122,24 +104,15 @@ class TestEthTransaction:
             address = int(generate_random_evm_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
 
-            r = int_to_uint256(signed.r)
-            s = int_to_uint256(signed.s)
-
-            encoded_unsigned_tx = rlp_encode_tx(transaction)
+            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
 
             assert address != int(private_key.public_key.to_address(), 16)
             with cairo_error():
                 await eth_transaction.test__validate(
                     address,
                     transaction["nonce"] + 1,
-                    (
-                        r["low"],
-                        r["high"],
-                    ),
-                    (
-                        s["low"],
-                        s["high"],
-                    ),
+                    int_to_uint256(signed.r),
+                    int_to_uint256(signed.s),
                     signed["v"],
                     list(encoded_unsigned_tx),
                 ).call()

@@ -32,6 +32,7 @@ namespace EthTransaction {
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
     }(tx_data_len: felt, tx_data: felt*) -> (
+        msg_hash: Uint256,
         nonce: felt,
         gas_price: felt,
         gas_limit: felt,
@@ -43,6 +44,19 @@ namespace EthTransaction {
     ) {
         // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md
         alloc_locals;
+
+        let (local words: felt*) = alloc();
+        let (keccak_ptr: felt*) = alloc();
+        let keccak_ptr_start = keccak_ptr;
+        with keccak_ptr {
+            // From keccak/cairo_keccak_bigend doc:
+            // > To use this function, split the input into words of 64 bits (little endian).
+            // > Same as keccak, but outputs the hash in big endian representation.
+            // > Note that the input is still treated as little endian.
+            bytes_to_bytes8_little_endian(words, tx_data_len, tx_data);
+            let (msg_hash) = cairo_keccak_bigend(inputs=words, n_bytes=tx_data_len);
+        }
+        finalize_keccak(keccak_ptr_start, keccak_ptr);
 
         let (local items: RLP.Item*) = alloc();
         RLP.decode(tx_data_len, tx_data, items);
@@ -75,7 +89,17 @@ namespace EthTransaction {
             sub_items[nonce_idx + 6].data_len, sub_items[nonce_idx + 6].data, 0
         );
 
-        return (nonce, gas_price, gas_limit, destination, amount, chain_id, payload_len, payload);
+        return (
+            msg_hash,
+            nonce,
+            gas_price,
+            gas_limit,
+            destination,
+            amount,
+            chain_id,
+            payload_len,
+            payload,
+        );
     }
 
     // @notice Decode a modern Ethereum transaction
@@ -91,6 +115,7 @@ namespace EthTransaction {
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
     }(tx_data_len: felt, tx_data: felt*) -> (
+        msg_hash: Uint256,
         nonce: felt,
         gas_price: felt,
         gas_limit: felt,
@@ -102,6 +127,20 @@ namespace EthTransaction {
     ) {
         // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-2718.md#specification
         alloc_locals;
+
+        let (local words: felt*) = alloc();
+        let (keccak_ptr: felt*) = alloc();
+        let keccak_ptr_start = keccak_ptr;
+        with keccak_ptr {
+            // From keccak/cairo_keccak_bigend doc:
+            // > To use this function, split the input into words of 64 bits (little endian).
+            // > Same as keccak, but outputs the hash in big endian representation.
+            // > Note that the input is still treated as little endian.
+            bytes_to_bytes8_little_endian(words, tx_data_len, tx_data);
+            let (msg_hash) = cairo_keccak_bigend(inputs=words, n_bytes=tx_data_len);
+        }
+        finalize_keccak(keccak_ptr_start, keccak_ptr);
+
         tempvar tx_type = [tx_data];
 
         let (local items: RLP.Item*) = alloc();
@@ -112,7 +151,6 @@ namespace EthTransaction {
         let (local sub_items: RLP.Item*) = alloc();
         RLP.decode([items].data_len, [items].data, sub_items);
 
-        // Verify signature
         local chain_id_idx = 0;
         let (chain_id) = Helpers.bytes_to_felt(
             sub_items[chain_id_idx].data_len, sub_items[chain_id_idx].data, 0
@@ -137,7 +175,17 @@ namespace EthTransaction {
         );
         let payload_len = sub_items[gas_price_idx + 4].data_len;
         let payload: felt* = sub_items[gas_price_idx + 4].data;
-        return (nonce, gas_price, gas_limit, destination, amount, chain_id, payload_len, payload);
+        return (
+            msg_hash,
+            nonce,
+            gas_price,
+            gas_limit,
+            destination,
+            amount,
+            chain_id,
+            payload_len,
+            payload,
+        );
     }
 
     // @notice Check if a raw transaction is a legacy Ethereum transaction
@@ -162,6 +210,7 @@ namespace EthTransaction {
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
     }(tx_data_len: felt, tx_data: felt*) -> (
+        msg_hash: Uint256,
         nonce: felt,
         gas_price: felt,
         gas_limit: felt,
@@ -203,32 +252,27 @@ namespace EthTransaction {
         tx_data: felt*,
     ) {
         alloc_locals;
-        let (nonce, _gas_price, _gas_limit, _, _, chain_id, _, _) = decode(tx_data_len, tx_data);
+        let (msg_hash, nonce, _gas_price, _gas_limit, _, _, chain_id, _, _) = decode(
+            tx_data_len, tx_data
+        );
         assert nonce = account_nonce;
         assert chain_id = Constants.CHAIN_ID;
+
+        // Note: here, the validate process assumes an ECDSA signature, and r, s, v field
+        // Technically, the transaction type can determine the signature scheme.
+        let _is_legacy = is_legacy_tx(tx_data);
+        if (_is_legacy != FALSE) {
+            tempvar y_parity = (v - 2 * Constants.CHAIN_ID - 35);
+        } else {
+            tempvar y_parity = v;
+        }
 
         let (local words: felt*) = alloc();
         let (keccak_ptr: felt*) = alloc();
         let keccak_ptr_start = keccak_ptr;
         with keccak_ptr {
-            // From keccak/cairo_keccak_bigend doc:
-            // > To use this function, split the input into words of 64 bits (little endian).
-            // > Same as keccak, but outputs the hash in big endian representation.
-            // > Note that the input is still treated as little endian.
-            bytes_to_bytes8_little_endian(words, tx_data_len, tx_data);
-            let (msg_hash) = cairo_keccak_bigend(inputs=words, n_bytes=tx_data_len);
-
-            // Note: here, the validate process assumes an ECDSA signature, and r, s, v field
-            // Technically, the transaction type can determine the signature scheme.
-            let _is_legacy = is_legacy_tx(tx_data);
-            if (_is_legacy != FALSE) {
-                tempvar parity = (v - 2 * Constants.CHAIN_ID - 35);
-            } else {
-                tempvar parity = v;
-            }
-
             verify_eth_signature_uint256(
-                msg_hash=msg_hash, r=r, s=s, v=parity, eth_address=address
+                msg_hash=msg_hash, r=r, s=s, v=y_parity, eth_address=address
             );
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
