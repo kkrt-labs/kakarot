@@ -1,7 +1,8 @@
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.math import unsigned_div_rem
+from starkware.cairo.common.math import unsigned_div_rem, split_int, split_felt
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.memset import memset
 from starkware.cairo.common.registers import get_label_location
 
 from utils.array import reverse
@@ -36,6 +37,99 @@ func felt_to_ascii{range_check_ptr}(dst: felt*, n: felt) -> felt {
     reverse(dst, ascii_len, ascii);
 
     return ascii_len;
+}
+
+// @notice Split a felt into an array of bytes little endian
+// @dev Use a hint from split_int
+func felt_to_bytes_little(dst: felt*, value: felt) -> felt {
+    alloc_locals;
+
+    tempvar value = value;
+    tempvar bytes_len = 0;
+
+    body:
+    let value = [ap - 2];
+    let bytes_len = [ap - 1];
+    let bytes = cast([fp - 4], felt*);
+    let output = bytes + bytes_len;
+    let base = 2 ** 8;
+    let bound = base;
+
+    %{
+        memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+        assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+    %}
+    let byte = [output];
+    let value = (value - byte) / base;
+
+    tempvar value = value;
+    tempvar bytes_len = bytes_len + 1;
+
+    jmp body if value != 0;
+
+    let value = [ap - 2];
+    let bytes_len = [ap - 1];
+    assert value = 0;
+
+    return bytes_len;
+}
+
+// @notice Split a felt into an array of bytes
+func felt_to_bytes(dst: felt*, value: felt) -> felt {
+    alloc_locals;
+    let (local bytes: felt*) = alloc();
+    let bytes_len = felt_to_bytes_little(bytes, value);
+    reverse(dst, bytes_len, bytes);
+
+    return bytes_len;
+}
+
+// @notice Split a felt into an array of 20 bytes, big endian
+// @dev Truncate the high 12 bytes
+func felt_to_bytes20{range_check_ptr}(dst: felt*, value: felt) {
+    alloc_locals;
+    let (bytes20: felt*) = alloc();
+    let (high, low) = split_felt(value);
+    let (_, high) = unsigned_div_rem(high, 2 ** 32);
+    split_int(low, 16, 256, 256, bytes20);
+    split_int(high, 4, 256, 256, bytes20 + 16);
+    reverse(dst, 20, bytes20);
+    return ();
+}
+
+func uint256_to_bytes_little{range_check_ptr}(dst: felt*, n: Uint256) -> felt {
+    alloc_locals;
+    let (local highest_byte, safe_high) = unsigned_div_rem(n.high, 2 ** 120);
+    local range_check_ptr = range_check_ptr;
+
+    let value = n.low + safe_high * 2 ** 128;
+    let len = felt_to_bytes_little(dst, value);
+    if (highest_byte != 0) {
+        memset(dst + len, 0, 31 - len);
+        assert [dst + 31] = highest_byte;
+        tempvar bytes_len = 32;
+    } else {
+        tempvar bytes_len = len;
+    }
+
+    return bytes_len;
+}
+
+func uint256_to_bytes{range_check_ptr}(dst: felt*, n: Uint256) -> felt {
+    alloc_locals;
+    let (bytes: felt*) = alloc();
+    let bytes_len = uint256_to_bytes_little(bytes, n);
+    reverse(dst, bytes_len, bytes);
+    return bytes_len;
+}
+
+func uint256_to_bytes32{range_check_ptr}(dst: felt*, n: Uint256) {
+    alloc_locals;
+    let (bytes: felt*) = alloc();
+    let bytes_len = uint256_to_bytes_little(bytes, n);
+    memset(dst, 0, 32 - bytes_len);
+    reverse(dst + 32 - bytes_len, bytes_len, bytes);
+    return ();
 }
 
 func bytes_to_bytes8_little_endian(dst: felt*, bytes_len: felt, bytes: felt*) -> felt {
