@@ -47,6 +47,7 @@ TRANSACTIONS = [
         "gasPrice": 234567897654321,
         "nonce": 0,
         "chainId": CHAIN_ID,
+        "data": b"",
     },
     {
         "type": 1,
@@ -106,6 +107,7 @@ TRANSACTIONS = [
     },
     # Deploy counter tx
     {
+        "type": 2,
         "value": 0,
         "gas": 21000,
         "maxFeePerGas": 10_000_000_002,

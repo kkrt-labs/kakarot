@@ -97,8 +97,20 @@ namespace ExternallyOwnedAccount {
         let (address) = evm_address.read();
         let (tx_info) = get_tx_info();
 
+        // Assert signature field is of length 5: r_low, r_high, s_low, s_high, v
+        assert tx_info.signature_len = 5;
+        let r = Uint256(tx_info.signature[0], tx_info.signature[1]);
+        let s = Uint256(tx_info.signature[2], tx_info.signature[3]);
+        let v = tx_info.signature[4];
+
         EthTransaction.validate(
-            address, tx_info.nonce, [call_array].data_len, calldata + [call_array].data_offset
+            address,
+            tx_info.nonce,
+            r,
+            s,
+            v,
+            [call_array].data_len,
+            calldata + [call_array].data_offset,
         );
 
         return validate(
@@ -134,17 +146,15 @@ namespace ExternallyOwnedAccount {
         }
 
         let (
+            msg_hash,
             nonce,
             gas_price,
             gas_limit,
             destination,
             amount,
+            _chain_id,
             payload_len,
             payload,
-            msg_hash,
-            v,
-            r,
-            s,
         ) = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
 
         let (_kakarot_address) = kakarot_address.read();
@@ -161,7 +171,6 @@ namespace ExternallyOwnedAccount {
 
         // See Argent account
         // https://github.com/argentlabs/argent-contracts-starknet/blob/c6d3ee5e05f0f4b8a5c707b4094446c3bc822427/contracts/account/ArgentAccount.cairo#L132
-        // Using here the EVM msg_hash instead of the Starknet tx.hash
         transaction_executed.emit(
             msg_hash=msg_hash, response_len=return_data_len, response=return_data, success=success
         );

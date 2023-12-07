@@ -32,64 +32,19 @@ namespace EthTransaction {
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
     }(tx_data_len: felt, tx_data: felt*) -> (
+        msg_hash: Uint256,
         nonce: felt,
         gas_price: felt,
         gas_limit: felt,
         destination: felt,
         amount: felt,
+        chain_id: felt,
         payload_len: felt,
         payload: felt*,
-        msg_hash: Uint256,
-        v: felt,
-        r: Uint256,
-        s: Uint256,
     ) {
         // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md
         alloc_locals;
 
-        let (local items: RLP.Item*) = alloc();
-        RLP.decode(tx_data_len, tx_data, items);
-        // the tx is a list of fields, hence first level RLP decoding
-        // is a single item, which is indeed the sought list
-        assert [items].is_list = TRUE;
-        let (local sub_items: RLP.Item*) = alloc();
-        RLP.decode([items].data_len, [items].data, sub_items);
-
-        // Verify signature
-        // The signature is at the end of the rlp encoded list and takes
-        // 5 bytes for v = 1 byte for len (=4) + 4 bytes for {0,1} + CHAIN_ID * 2 + 35
-        // 1 + r_len bytes for r = 1 byte for len (<= 32) + length in bytes for r word
-        // 1 + s_len bytes for s = 1 byte for len (<= 32) + length in bytes for s word
-        // This signature_len depends on CHAIN_ID, which is currently 0x 4b 4b 52 54
-        local signature_start_index = 6;
-        let r_len = sub_items[signature_start_index + 1].data_len;
-        let s_len = sub_items[signature_start_index + 2].data_len;
-        local signature_len = 1 + 4 + 1 + r_len + 1 + s_len;
-
-        // 1. extract v, r, s
-        let (v) = Helpers.bytes_to_felt(
-            sub_items[signature_start_index].data_len, sub_items[signature_start_index].data, 0
-        );
-        let v = (v - 2 * Constants.CHAIN_ID - 35);
-        let r = Helpers.bytes_i_to_uint256(sub_items[signature_start_index + 1].data, r_len);
-        let s = Helpers.bytes_i_to_uint256(sub_items[signature_start_index + 2].data, s_len);
-
-        // 2. Encode signed tx data
-        // Copy encoded data from input
-        let (local signed_data: felt*) = alloc();
-        memcpy(signed_data, [items].data, [items].data_len - signature_len);
-        // Append CHAIN_ID, 0, 0
-        assert [signed_data + [items].data_len - signature_len] = 0x84;  // 4 bytes
-        assert [signed_data + [items].data_len - signature_len + 1] = 0x4b;  // K
-        assert [signed_data + [items].data_len - signature_len + 2] = 0x4b;  // K
-        assert [signed_data + [items].data_len - signature_len + 3] = 0x52;  // R
-        assert [signed_data + [items].data_len - signature_len + 4] = 0x54;  // T
-        assert [signed_data + [items].data_len - signature_len + 5] = 0x80;  // 0
-        assert [signed_data + [items].data_len - signature_len + 6] = 0x80;  // 0
-        let (rlp_data: felt*) = alloc();
-        let (rlp_data_len) = RLP.encode_list(
-            data_len=[items].data_len - signature_len + 7, data=signed_data, rlp=rlp_data
-        );
         let (local words: felt*) = alloc();
         let (keccak_ptr: felt*) = alloc();
         let keccak_ptr_start = keccak_ptr;
@@ -98,10 +53,18 @@ namespace EthTransaction {
             // > To use this function, split the input into words of 64 bits (little endian).
             // > Same as keccak, but outputs the hash in big endian representation.
             // > Note that the input is still treated as little endian.
-            bytes_to_bytes8_little_endian(words, rlp_data_len, rlp_data);
-            let (msg_hash) = cairo_keccak_bigend(inputs=words, n_bytes=rlp_data_len);
+            bytes_to_bytes8_little_endian(words, tx_data_len, tx_data);
+            let (msg_hash) = cairo_keccak_bigend(inputs=words, n_bytes=tx_data_len);
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
+
+        let (local items: RLP.Item*) = alloc();
+        RLP.decode(tx_data_len, tx_data, items);
+        // the tx is a list of fields, hence first level RLP decoding
+        // is a single item, which is indeed the sought list
+        assert [items].is_list = TRUE;
+        let (local sub_items: RLP.Item*) = alloc();
+        RLP.decode([items].data_len, [items].data, sub_items);
 
         let nonce_idx = 0;
         let (nonce) = Helpers.bytes_to_felt(
@@ -121,18 +84,21 @@ namespace EthTransaction {
         );
         let payload_len = sub_items[nonce_idx + 5].data_len;
         let payload: felt* = sub_items[nonce_idx + 5].data;
+
+        let (chain_id) = Helpers.bytes_to_felt(
+            sub_items[nonce_idx + 6].data_len, sub_items[nonce_idx + 6].data, 0
+        );
+
         return (
+            msg_hash,
             nonce,
             gas_price,
             gas_limit,
             destination,
             amount,
+            chain_id,
             payload_len,
             payload,
-            msg_hash,
-            v,
-            r,
-            s,
         );
     }
 
@@ -149,20 +115,32 @@ namespace EthTransaction {
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
     }(tx_data_len: felt, tx_data: felt*) -> (
+        msg_hash: Uint256,
         nonce: felt,
         gas_price: felt,
         gas_limit: felt,
         destination: felt,
         amount: felt,
+        chain_id: felt,
         payload_len: felt,
         payload: felt*,
-        msg_hash: Uint256,
-        v: felt,
-        r: Uint256,
-        s: Uint256,
     ) {
         // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-2718.md#specification
         alloc_locals;
+
+        let (local words: felt*) = alloc();
+        let (keccak_ptr: felt*) = alloc();
+        let keccak_ptr_start = keccak_ptr;
+        with keccak_ptr {
+            // From keccak/cairo_keccak_bigend doc:
+            // > To use this function, split the input into words of 64 bits (little endian).
+            // > Same as keccak, but outputs the hash in big endian representation.
+            // > Note that the input is still treated as little endian.
+            bytes_to_bytes8_little_endian(words, tx_data_len, tx_data);
+            let (msg_hash) = cairo_keccak_bigend(inputs=words, n_bytes=tx_data_len);
+        }
+        finalize_keccak(keccak_ptr_start, keccak_ptr);
+
         tempvar tx_type = [tx_data];
 
         let (local items: RLP.Item*) = alloc();
@@ -173,49 +151,10 @@ namespace EthTransaction {
         let (local sub_items: RLP.Item*) = alloc();
         RLP.decode([items].data_len, [items].data, sub_items);
 
-        // Verify signature
-        // The signature is at the end of the rlp encoded list and takes
-        // 1 byte for v
-        // 33 bytes for r = 1 byte for len (=32) + 32 bytes for r word
-        // 33 bytes for s = 1 byte for len (=32) + 32 bytes for s word
-        local signature_start_index = tx_type + 7;
         local chain_id_idx = 0;
-        // 1. extract v, r, s
         let (chain_id) = Helpers.bytes_to_felt(
             sub_items[chain_id_idx].data_len, sub_items[chain_id_idx].data, 0
         );
-        assert chain_id = Constants.CHAIN_ID;
-        let (v) = Helpers.bytes_to_felt(
-            sub_items[signature_start_index].data_len, sub_items[signature_start_index].data, 0
-        );
-        let r = Helpers.bytes_i_to_uint256(
-            sub_items[signature_start_index + 1].data, sub_items[signature_start_index + 1].data_len
-        );
-        let s = Helpers.bytes_i_to_uint256(
-            sub_items[signature_start_index + 2].data, sub_items[signature_start_index + 2].data_len
-        );
-        local signature_len = 1 + 1 + sub_items[signature_start_index + 1].data_len + 1 + sub_items[
-            signature_start_index + 2
-        ].data_len;
-
-        let (local signed_data: felt*) = alloc();
-        assert [signed_data] = tx_type;
-        let (rlp_len) = RLP.encode_list(
-            [items].data_len - signature_len, [items].data, signed_data + 1
-        );
-
-        let (local words: felt*) = alloc();
-        let (keccak_ptr: felt*) = alloc();
-        let keccak_ptr_start = keccak_ptr;
-        with keccak_ptr {
-            // From keccak/cairo_keccak_bigend doc:
-            // > To use this function, split the input into words of 64 bits (little endian).
-            // > Same as keccak, but outputs the hash in big endian representation.
-            // > Note that the input is still treated as little endian.
-            bytes_to_bytes8_little_endian(words, rlp_len + 1, signed_data);
-            let (msg_hash) = cairo_keccak_bigend(inputs=words, n_bytes=rlp_len + 1);
-        }
-        finalize_keccak(keccak_ptr_start, keccak_ptr);
 
         let nonce_idx = 1;
         let (nonce) = Helpers.bytes_to_felt(
@@ -237,17 +176,15 @@ namespace EthTransaction {
         let payload_len = sub_items[gas_price_idx + 4].data_len;
         let payload: felt* = sub_items[gas_price_idx + 4].data;
         return (
+            msg_hash,
             nonce,
             gas_price,
             gas_limit,
             destination,
             amount,
+            chain_id,
             payload_len,
             payload,
-            msg_hash,
-            v,
-            r,
-            s,
         );
     }
 
@@ -273,17 +210,15 @@ namespace EthTransaction {
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
     }(tx_data_len: felt, tx_data: felt*) -> (
+        msg_hash: Uint256,
         nonce: felt,
         gas_price: felt,
         gas_limit: felt,
         destination: felt,
         amount: felt,
+        chain_id: felt,
         payload_len: felt,
         payload: felt*,
-        msg_hash: Uint256,
-        v: felt,
-        r: Uint256,
-        s: Uint256,
     ) {
         let _is_legacy = is_legacy_tx(tx_data);
         if (_is_legacy == FALSE) {
@@ -307,26 +242,38 @@ namespace EthTransaction {
         pedersen_ptr: HashBuiltin*,
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
-    }(address: felt, account_nonce: felt, tx_data_len: felt, tx_data: felt*) {
+    }(
+        address: felt,
+        account_nonce: felt,
+        r: Uint256,
+        s: Uint256,
+        v: felt,
+        tx_data_len: felt,
+        tx_data: felt*,
+    ) {
         alloc_locals;
-        let (
-            nonce,
-            gas_price,
-            gas_limit,
-            destination,
-            amount,
-            payload_len,
-            payload,
-            msg_hash,
-            v,
-            r,
-            s,
-        ) = decode(tx_data_len, tx_data);
+        let (msg_hash, nonce, _gas_price, _gas_limit, _, _, chain_id, _, _) = decode(
+            tx_data_len, tx_data
+        );
         assert nonce = account_nonce;
-        let (local keccak_ptr: felt*) = alloc();
-        local keccak_ptr_start: felt* = keccak_ptr;
+        assert chain_id = Constants.CHAIN_ID;
+
+        // Note: here, the validate process assumes an ECDSA signature, and r, s, v field
+        // Technically, the transaction type can determine the signature scheme.
+        let _is_legacy = is_legacy_tx(tx_data);
+        if (_is_legacy != FALSE) {
+            tempvar y_parity = (v - 2 * Constants.CHAIN_ID - 35);
+        } else {
+            tempvar y_parity = v;
+        }
+
+        let (local words: felt*) = alloc();
+        let (keccak_ptr: felt*) = alloc();
+        let keccak_ptr_start = keccak_ptr;
         with keccak_ptr {
-            verify_eth_signature_uint256(msg_hash=msg_hash, r=r, s=s, v=v, eth_address=address);
+            verify_eth_signature_uint256(
+                msg_hash=msg_hash, r=r, s=s, v=y_parity, eth_address=address
+            );
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
         return ();
