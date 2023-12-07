@@ -344,15 +344,7 @@ namespace MemoryOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-        // Get stack from context.
-        let stack: model.Stack* = ctx.stack;
-
-        // Compute remaining gas.
-        let remaining_gas = ctx.call_context.gas_limit - ctx.gas_used;
-        let stack: model.Stack* = Stack.push_uint128(ctx.stack, remaining_gas);
-
-        // Update context stack.
+        let stack = Stack.push_uint128(ctx.stack, ctx.gas_left);
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
         return ctx;

@@ -38,7 +38,7 @@ namespace Constants {
     // ACCOUNTS
     const BYTES_PER_FELT = 16;
     const MAX_NONCE = 2 ** 64 - 1;
-    const MAX_CODE_SIZE = 0x6000
+    const MAX_CODE_SIZE = 0x6000;
 }
 
 // See model.Opcode:

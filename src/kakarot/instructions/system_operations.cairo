@@ -68,9 +68,9 @@ namespace SystemOperations {
             memory.words_len, offset.low + size.low
         );
         // If .high != 0, OOG is surely triggered. So we only use the .low part for the
-        // actual computation, and add ctx.call_context.gas_limit * .high which would
-        // either be 0 or ctx.call_context.gas_limit * k, thus triggering OOG.
-        let memory_expansion_cost = ctx.call_context.gas_limit * (offset.high + size.high) +
+        // actual computation, and add ctx.gas_left * .high which would
+        // either be 0 or ctx.gas_left * k, thus triggering OOG.
+        let memory_expansion_cost = ctx.gas_left * (offset.high + size.high) +
             memory_expansion_cost;
         let (calldata_words, _) = unsigned_div_rem(size.low + 31, 31);
         let init_code_gas = Gas.INIT_CODE_WORD_COST * calldata_words;
@@ -96,9 +96,8 @@ namespace SystemOperations {
         tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
 
         // Get message call gas
-        let available_gas = ctx.call_context.gas_limit - ctx.gas_used;
-        let (gas_limit, _) = unsigned_div_rem(available_gas, 64);
-        let gas_limit = available_gas - gas_limit;
+        let (gas_limit, _) = unsigned_div_rem(ctx.gas_left, 64);
+        let gas_limit = ctx.gas_left - gas_limit;
 
         if (ctx.call_context.read_only != FALSE) {
             let ctx = ExecutionContext.charge_gas(ctx, gas_limit);
@@ -140,7 +139,7 @@ namespace SystemOperations {
         // Check code size
         let code_size_too_big = is_le(2 * Constants.MAX_CODE_SIZE + 1, size.low);
         if (code_size_too_big != FALSE) {
-            let ctx = ExecutionContext.charge_gas(ctx, ctx.call_context.gas_limit);
+            let ctx = ExecutionContext.charge_gas(ctx, ctx.gas_left + 1);
             let ctx = ExecutionContext.update_state(ctx, state);
             let ctx = ExecutionContext.update_stack(ctx, stack);
             return ctx;
@@ -163,7 +162,6 @@ namespace SystemOperations {
             calldata=calldata,
             calldata_len=0,
             value=value.low + value.high * 2 ** 128,
-            gas_limit=gas_limit,
             gas_price=ctx.call_context.gas_price,
             origin=ctx.call_context.origin,
             calling_context=ctx,
@@ -171,7 +169,7 @@ namespace SystemOperations {
             read_only=FALSE,
             is_create=TRUE,
         );
-        let sub_ctx = ExecutionContext.init(call_context, 0);
+        let sub_ctx = ExecutionContext.init(call_context, gas_limit);
 
         let (state, account) = State.get_account(state, address);
         let account = Account.set_nonce(account, 1);
@@ -206,8 +204,7 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        // TODO: map the concept of consuming all the gas given to the context
-        alloc_locals;
+        let ctx = ExecutionContext.charge_gas(ctx, ctx.gas_left);
         let (revert_reason: felt*) = alloc();
         let ctx = ExecutionContext.stop(ctx, 0, revert_reason, TRUE);
         return ctx;
@@ -235,7 +232,7 @@ namespace SystemOperations {
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
         let memory_expansion_cost = Gas.memory_expansion_cost(
-            ctx.words_len.memory, offset.low + size.low
+            ctx.memory.words_len, offset.low + size.low
         );
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
@@ -273,7 +270,7 @@ namespace SystemOperations {
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
         let memory_expansion_cost = Gas.memory_expansion_cost(
-            ctx.words_len.memory, offset.low + size.low
+            ctx.memory.words_len, offset.low + size.low
         );
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
@@ -508,15 +505,14 @@ namespace CallHelper {
         let max_expansion = max_expansion_is_ret * (ret_offset + ret_size) + (
             1 - max_expansion_is_ret
         ) * (args_offset + args_size);
-        let memory_expansion_cost = Gas.memory_expansion_cost(ctx.words_len.memory, max_expansion);
+        let memory_expansion_cost = Gas.memory_expansion_cost(ctx.memory.words_len, max_expansion);
 
         // Access list
         // TODO
 
         // Max between given gas arg and max allowed gas := available_gas - (available_gas // 64)
-        let available_gas = ctx.call_context.gas_limit - ctx.gas_used;
-        let (max_message_call_gas, _) = unsigned_div_rem(available_gas, 64);
-        tempvar max_message_call_gas = available_gas - max_message_call_gas;
+        let (max_message_call_gas, _) = unsigned_div_rem(ctx.gas_left, 64);
+        tempvar max_message_call_gas = ctx.gas_left - max_message_call_gas;
         let (max_message_call_gas_high, max_message_call_gas_low) = split_felt(
             max_message_call_gas
         );
@@ -551,6 +547,7 @@ namespace CallHelper {
                 calldata=calldata,
                 value=value,
                 calling_context=ctx,
+                gas_left=gas_limit,
             );
 
             return sub_ctx;
@@ -573,7 +570,6 @@ namespace CallHelper {
             calldata=calldata,
             calldata_len=args_size,
             value=value,
-            gas_limit=gas_limit,
             gas_price=ctx.call_context.gas_price,
             origin=ctx.call_context.origin,
             calling_context=ctx,
@@ -581,7 +577,7 @@ namespace CallHelper {
             read_only=read_only,
             is_create=FALSE,
         );
-        let sub_ctx = ExecutionContext.init(call_context, 0);
+        let sub_ctx = ExecutionContext.init(call_context, gas_limit);
         let state = State.copy(ctx.state);
         let sub_ctx = ExecutionContext.update_state(sub_ctx, state);
         return sub_ctx;
@@ -614,9 +610,7 @@ namespace CallHelper {
         );
 
         // Gas not used is returned when ctx is not reverted
-        let remaining_gas = (summary.call_context.gas_limit - summary.gas_used) * (
-            1 - summary.reverted
-        );
+        let remaining_gas = summary.gas_left * (1 - summary.reverted);
         tempvar ctx = new model.ExecutionContext(
             state=summary.calling_context.state,
             call_context=summary.calling_context.call_context,
@@ -626,7 +620,7 @@ namespace CallHelper {
             return_data=summary.return_data,
             program_counter=summary.calling_context.program_counter,
             stopped=summary.calling_context.stopped,
-            gas_used=summary.calling_context.gas_used - remaining_gas,
+            gas_left=summary.calling_context.gas_left + remaining_gas,
             reverted=summary.calling_context.reverted,
         );
 
@@ -793,7 +787,7 @@ namespace CreateHelper {
         // Charge final deposit gas
         let code_size_limit = is_le(summary.return_data_len, 0x6000);
         let code_deposit_cost = 200 * summary.return_data_len;
-        let remaining_gas = summary.call_context.gas_limit - summary.gas_used - code_deposit_cost;
+        let remaining_gas = summary.gas_left - code_deposit_cost;
         let enough_gas = is_nn(remaining_gas);
         let success = (1 - summary.reverted) * enough_gas * code_size_limit;
 
@@ -814,7 +808,7 @@ namespace CreateHelper {
             return_data=summary.return_data,
             program_counter=summary.calling_context.program_counter,
             stopped=summary.calling_context.stopped,
-            gas_used=summary.calling_context.gas_used - remaining_gas * success,
+            gas_left=summary.calling_context.gas_left + remaining_gas * success,
             reverted=summary.calling_context.reverted,
         );
 

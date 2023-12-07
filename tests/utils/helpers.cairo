@@ -45,7 +45,6 @@ namespace TestHelpers {
             calldata=calldata,
             calldata_len=1,
             value=0,
-            gas_limit=Constants.TRANSACTION_GAS_LIMIT,
             gas_price=0,
             origin=origin,
             calling_context=root_context,
@@ -53,7 +52,7 @@ namespace TestHelpers {
             read_only=FALSE,
             is_create=FALSE,
         );
-        let ctx: model.ExecutionContext* = ExecutionContext.init(call_context, 0);
+        let ctx: model.ExecutionContext* = ExecutionContext.init(call_context, Constants.TRANSACTION_GAS_LIMIT);
         return ctx;
     }
 
@@ -142,7 +141,6 @@ namespace TestHelpers {
         assert_array_equal(ctx_0.bytecode_len, ctx_0.bytecode, ctx_1.bytecode_len, ctx_1.bytecode);
         assert_array_equal(ctx_0.calldata_len, ctx_0.calldata, ctx_1.calldata_len, ctx_1.calldata);
 
-        assert ctx_0.gas_limit = ctx_1.gas_limit;
         assert ctx_0.address.starknet = ctx_1.address.starknet;
         assert ctx_0.gas_price = ctx_1.gas_price;
         assert ctx_0.address.evm = ctx_1.address.evm;
@@ -208,7 +206,6 @@ namespace TestHelpers {
         print_array('calldata', call_context.calldata_len, call_context.calldata);
         print_array('bytecode', call_context.bytecode_len, call_context.bytecode);
         %{
-            print(f"{ids.call_context.gas_limit=}")
             print(f"{ids.call_context.gas_price=}")
             print(f"{ids.call_context.origin.evm=:040x}")
             print(f"{ids.call_context.origin.starknet=:064x}")
@@ -232,7 +229,7 @@ namespace TestHelpers {
         %{
             print(f"{ids.execution_context.program_counter=}")
             print(f"{ids.execution_context.stopped=}")
-            print(f"{ids.execution_context.gas_used=}")
+            print(f"{ids.execution_context.gas_left=}")
             print(f"{ids.execution_context.reverted=}")
         %}
         return ();

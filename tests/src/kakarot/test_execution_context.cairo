@@ -16,52 +16,6 @@ from tests.utils.helpers import TestHelpers
 from utils.utils import Helpers
 
 @external
-func test__init__should_return_an_empty_execution_context{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let (bytecode) = alloc();
-    assert [bytecode] = 00;
-    tempvar bytecode_len = 1;
-    let (calldata) = alloc();
-    assert [calldata] = '';
-
-    // When
-    tempvar address = new model.Address(0, 0);
-    let calling_ctx = ExecutionContext.init_empty();
-    local call_context: model.CallContext* = new model.CallContext(
-        bytecode=bytecode,
-        bytecode_len=bytecode_len,
-        calldata=calldata,
-        calldata_len=1,
-        value=0,
-        gas_limit=Constants.TRANSACTION_GAS_LIMIT,
-        gas_price=0,
-        origin=address,
-        calling_context=calling_ctx,
-        address=address,
-        read_only=0,
-        is_create=0,
-    );
-
-    let result: model.ExecutionContext* = ExecutionContext.init(call_context, 0);
-
-    // Then
-    assert result.call_context.bytecode = bytecode;
-    assert result.call_context.bytecode_len = 1;
-    assert result.call_context.calldata = calldata;
-    assert result.program_counter = 0;
-    assert result.stopped = FALSE;
-    assert result.stack.size = 0;
-    assert result.memory.words_len = 0;
-    assert result.gas_used = 0;
-    assert result.call_context.gas_limit = Constants.TRANSACTION_GAS_LIMIT;  // TODO: Add support for gas limit
-    assert result.call_context.gas_price = 0;
-    return ();
-}
-
-@external
 func test__jump__should_set_pc_to_given_value{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {

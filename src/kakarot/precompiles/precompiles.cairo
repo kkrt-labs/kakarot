@@ -35,6 +35,7 @@ namespace Precompiles {
     // @param calldata The calldata.
     // @param value The value.
     // @param calling_context The calling context.
+    // @param gas_left The gas left.
     // @return ExecutionContext The initialized execution context.
     func run{
         syscall_ptr: felt*,
@@ -47,6 +48,7 @@ namespace Precompiles {
         calldata: felt*,
         value: felt,
         calling_context: model.ExecutionContext*,
+        gas_left: felt,
     ) -> model.ExecutionContext* {
         alloc_locals;
 
@@ -61,7 +63,6 @@ namespace Precompiles {
             calldata=cast(0, felt*),
             calldata_len=0,
             value=0,
-            gas_limit=calling_context.call_context.gas_limit,
             gas_price=0,
             origin=calling_context.call_context.origin,
             calling_context=calling_context,
@@ -69,13 +70,14 @@ namespace Precompiles {
             read_only=FALSE,
             is_create=FALSE,
         );
-        let sub_ctx = ExecutionContext.init(call_context, 0);
+        let sub_ctx = ExecutionContext.init(call_context, gas_left);
         let sub_ctx = ExecutionContext.update_state(sub_ctx, calling_context.state);
 
         // Execute the precompile at a given evm_address
         let (output_len, output, gas_used, reverted) = _exec_precompile(
             evm_address, calldata_len, calldata
         );
+        let sub_ctx = ExecutionContext.charge_gas(sub_ctx, gas_used);
         let sub_ctx = ExecutionContext.stop(sub_ctx, output_len, output, reverted);
 
         return sub_ctx;

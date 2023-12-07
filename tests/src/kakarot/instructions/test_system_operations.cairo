@@ -194,7 +194,6 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
     assert sub_ctx.return_data_len = 0;
-    assert sub_ctx.gas_used = 0;
     assert sub_ctx.call_context.gas_price = 0;
     assert sub_ctx.call_context.address.starknet = callee_starknet_contract_address;
     assert sub_ctx.call_context.address.evm = callee_evm_contract_address;
@@ -348,7 +347,6 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
     assert sub_ctx.call_context.value = value.low;
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
-    assert sub_ctx.gas_used = 0;
     assert sub_ctx.call_context.gas_price = 0;
     assert sub_ctx.call_context.address.starknet = caller_starknet_contract_address;
     assert sub_ctx.call_context.address.evm = caller_evm_contract_address;
@@ -489,7 +487,6 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
     assert sub_ctx.call_context.value = 0;
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
-    assert sub_ctx.gas_used = 0;
     assert sub_ctx.call_context.gas_price = 0;
     assert sub_ctx.call_context.address.starknet = starknet_contract_address;
     assert sub_ctx.call_context.address.evm = evm_contract_address;
@@ -563,7 +560,6 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
     assert sub_ctx.call_context.value = 0;
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
-    assert sub_ctx.gas_used = 0;
     assert sub_ctx.call_context.gas_price = 0;
     assert sub_ctx.call_context.address.starknet = ctx.call_context.address.starknet;
     assert sub_ctx.call_context.address.evm = ctx.call_context.address.evm;
@@ -648,7 +644,6 @@ func test__exec_create{
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
     assert sub_ctx.return_data_len = 0;
-    assert sub_ctx.gas_used = 0;
     assert sub_ctx.call_context.gas_price = ctx.call_context.gas_price;
     assert_not_zero(sub_ctx.call_context.address.starknet);
     assert_not_zero(sub_ctx.call_context.address.evm);

@@ -83,7 +83,6 @@ func init_context{
         calldata=calldata,
         calldata_len=1,
         value=0,
-        gas_limit=Constants.TRANSACTION_GAS_LIMIT,
         gas_price=0,
         origin=address,
         calling_context=calling_context,
@@ -93,7 +92,7 @@ func init_context{
     );
 
     // Initialize ExecutionContext
-    let ctx = ExecutionContext.init(call_context, 0);
+    let ctx = ExecutionContext.init(call_context, Constants.TRANSACTION_GAS_LIMIT);
     return ctx;
 }
 
@@ -228,11 +227,6 @@ func test__exec_extcodecopy__should_handle_address_with_no_code{
     let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(
         bytecode_len, bytecode, stack
     );
-
-    // we are hardcoding an assumption of 'cold' address access, for now.
-    // but the dynamic gas values of  `minimum_word_size` and `memory_expansion_cost`
-    // are being tested
-    let expected_gas = 2609;
 
     // When
     let result = EnvironmentalInformation.exec_extcodecopy(ctx);

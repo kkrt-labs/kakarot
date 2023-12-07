@@ -170,28 +170,3 @@ func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_ms
     assert result.memory.words_len = 23;
     return ();
 }
-
-@external
-func test__exec_gas_should_return_remaining_gas{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    // Given
-    alloc_locals;
-    let (bytecode) = alloc();
-    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
-    // Given
-    let stack = Stack.init();
-
-    let ctx = ExecutionContext.update_stack(ctx, stack);
-
-    // When
-    let result = MemoryOperations.exec_gas(ctx);
-
-    // Then
-    assert result.stack.size = 1;
-    let (stack, actual_remaining_gas) = Stack.peek(result.stack, 0);
-    let expected_remaining_gas = Constants.TRANSACTION_GAS_LIMIT - result.gas_used;
-    let expected_remaining_gas_uint256 = Uint256(expected_remaining_gas, 0);
-    assert_uint256_eq([actual_remaining_gas], expected_remaining_gas_uint256);
-    return ();
-}

@@ -479,7 +479,7 @@ namespace Errors {
         dw 'n';
     }
 
-    func outOfGas{range_check_ptr}(gas_limit: felt, gas_used: felt) -> (
+    func outOfGas{range_check_ptr}(gas_left: felt, gas_used: felt) -> (
         error_len: felt, error: felt*
     ) {
         alloc_locals;
@@ -504,25 +504,24 @@ namespace Errors {
         assert [error + 16] = 's';
         assert [error + 17] = ' ';
         assert [error + 18] = 'l';
-        assert [error + 19] = 'i';
-        assert [error + 20] = 'm';
-        assert [error + 21] = 'i';
-        assert [error + 22] = 't';
-        assert [error + 23] = '=';
+        assert [error + 19] = 'e';
+        assert [error + 20] = 'f';
+        assert [error + 21] = 't';
+        assert [error + 22] = '=';
 
-        let gas_limit_ascii_len = felt_to_ascii(error + 24, gas_limit);
+        let gas_left_ascii_len = felt_to_ascii(error + 23, gas_left);
 
-        assert [error + 24 + gas_limit_ascii_len + 0] = ',';
-        assert [error + 24 + gas_limit_ascii_len + 1] = ' ';
-        assert [error + 24 + gas_limit_ascii_len + 2] = 'u';
-        assert [error + 24 + gas_limit_ascii_len + 3] = 's';
-        assert [error + 24 + gas_limit_ascii_len + 4] = 'e';
-        assert [error + 24 + gas_limit_ascii_len + 5] = 'd';
-        assert [error + 24 + gas_limit_ascii_len + 6] = '=';
+        assert [error + 23 + gas_left_ascii_len + 0] = ',';
+        assert [error + 23 + gas_left_ascii_len + 1] = ' ';
+        assert [error + 23 + gas_left_ascii_len + 2] = 'u';
+        assert [error + 23 + gas_left_ascii_len + 3] = 's';
+        assert [error + 23 + gas_left_ascii_len + 4] = 'e';
+        assert [error + 23 + gas_left_ascii_len + 5] = 'd';
+        assert [error + 23 + gas_left_ascii_len + 6] = '=';
 
-        let gas_used_ascii_len = felt_to_ascii(error + 24 + gas_limit_ascii_len + 7, gas_used);
+        let gas_used_ascii_len = felt_to_ascii(error + 23 + gas_left_ascii_len + 7, gas_used);
 
-        return (24 + gas_limit_ascii_len + 7 + gas_used_ascii_len, error);
+        return (23 + gas_left_ascii_len + 7 + gas_used_ascii_len, error);
     }
 
     func precompileInputError() -> (error_len: felt, error: felt*) {
