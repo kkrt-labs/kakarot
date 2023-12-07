@@ -52,7 +52,9 @@ namespace TestHelpers {
             read_only=FALSE,
             is_create=FALSE,
         );
-        let ctx: model.ExecutionContext* = ExecutionContext.init(call_context, Constants.TRANSACTION_GAS_LIMIT);
+        let ctx: model.ExecutionContext* = ExecutionContext.init(
+            call_context, Constants.TRANSACTION_GAS_LIMIT
+        );
         return ctx;
     }
 
