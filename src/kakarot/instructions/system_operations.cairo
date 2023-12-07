@@ -27,7 +27,12 @@ from utils.rlp import RLP
 from utils.utils import Helpers
 from utils.uint256 import uint256_to_uint160
 from utils.array import slice
-from utils.bytes import bytes_to_bytes8_little_endian, felt_to_bytes20, uint256_to_bytes32
+from utils.bytes import (
+    bytes_to_bytes8_little_endian,
+    felt_to_bytes20,
+    uint256_to_bytes32,
+    felt_to_bytes,
+)
 // @title System operations opcodes.
 // @notice This file contains the functions to execute for system operations opcodes.
 namespace SystemOperations {
@@ -644,33 +649,41 @@ namespace CreateHelper {
         bitwise_ptr: BitwiseBuiltin*,
     }(sender_address: felt, nonce: felt) -> (evm_contract_address: felt) {
         alloc_locals;
+        local message_len;
+        // rlp([address, nonce]) inlined to save unnecessary expensive general RLP encoding
+        // final bytes is either
+        // (0xc0 + bytes_lenght) + (0x80 + 20) + address + nonce
+        // or
+        // (0xc0 + bytes_lenght) + (0x80 + 20) + address + (0x80 + nonce_len) + nonce
+        let (message: felt*) = alloc();
+        assert [message + 1] = 0x80 + 20;
+        felt_to_bytes20(message + 2, sender_address);
+        let encode_nonce = is_le(0x80, nonce);
+        if (encode_nonce != FALSE) {
+            let nonce_len = felt_to_bytes(message + 2 + 20 + 1, nonce);
+            assert [message + 2 + 20] = 0x80 + nonce_len;
+            assert message_len = 1 + 1 + 20 + 1 + nonce_len;
+        } else {
+            let is_nonce_not_zero = is_not_zero(nonce);
+            let encoded_nonce = nonce * is_nonce_not_zero + (1 - is_nonce_not_zero) * 0x80;
+            assert [message + 2 + 20] = encoded_nonce;
+            assert message_len = 1 + 1 + 20 + 1;
+        }
+        assert message[0] = message_len + 0xc0 - 1;
+
+        let (message_bytes8: felt*) = alloc();
+        bytes_to_bytes8_little_endian(message_bytes8, message_len, message);
+
         let (keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
-
-        let (local address_packed_bytes: felt*) = alloc();
-        felt_to_bytes20(address_packed_bytes, sender_address);
-
-        // encode address rlp
-        let (local packed_bytes: felt*) = alloc();
-        let (packed_bytes_len) = RLP.encode_byte_array(20, address_packed_bytes, 0, packed_bytes);
-
-        // encode nonce rlp
-        let (packed_bytes_len) = RLP.encode_felt(nonce, packed_bytes_len, packed_bytes);
-
-        let (local rlp_list: felt*) = alloc();
-        let (rlp_list_len: felt) = RLP.encode_list(packed_bytes_len, packed_bytes, rlp_list);
-
-        let (local packed_bytes8: felt*) = alloc();
-        bytes_to_bytes8_little_endian(packed_bytes8, rlp_list_len, rlp_list);
-
         with keccak_ptr {
-            let (create_hash) = cairo_keccak_bigend(inputs=packed_bytes8, n_bytes=rlp_list_len);
+            let (message_hash) = cairo_keccak_bigend(message_bytes8, message_len);
         }
 
         finalize_keccak(keccak_ptr_start, keccak_ptr);
 
-        let create_address = uint256_to_uint160(create_hash);
-        return (create_address,);
+        let address = uint256_to_uint160(message_hash);
+        return (address,);
     }
 
     // @notice Constructs an evm contract address for the create2 opcode
