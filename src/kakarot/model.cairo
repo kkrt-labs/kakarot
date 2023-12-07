@@ -1,7 +1,3 @@
-// SPDX-License-Identifier: MIT
-
-%lang starknet
-
 // StarkWare dependencies
 from starkware.cairo.common.dict import DictAccess
 from starkware.cairo.common.uint256 import Uint256

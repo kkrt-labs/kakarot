@@ -14,6 +14,7 @@ from kakarot.execution_context import ExecutionContext
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
+from kakarot.gas import Gas
 from utils.utils import Helpers
 
 // @title Logging operations opcodes.
@@ -53,7 +54,7 @@ namespace LoggingOperations {
         local size = Helpers.uint256_to_felt(popped[1]);
 
         // Log topics by emitting a starknet event
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset + size);
+        let memory_expansion_cost = Gas.memory_expansion_cost(ctx.memory.words_len, offset + size);
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;

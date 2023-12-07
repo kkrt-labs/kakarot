@@ -19,6 +19,7 @@ from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.state import State
+from kakarot.gas import Gas
 from utils.utils import Helpers
 from kakarot.constants import Constants
 from utils.uint256 import uint256_to_uint160
@@ -167,7 +168,9 @@ namespace EnvironmentalInformation {
         );
 
         // Write caldata slice to memory at dest_offset
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, dest_offset.low + size.low);
+        let memory_expansion_cost = Gas.memory_expansion_cost(
+            ctx.memory.words_len, dest_offset.low + size.low
+        );
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
@@ -213,7 +216,9 @@ namespace EnvironmentalInformation {
         );
 
         // Write bytecode slice to memory at dest_offset
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, dest_offset.low + size.low);
+        let memory_expansion_cost = Gas.memory_expansion_cost(
+            ctx.memory.words_len, dest_offset.low + size.low
+        );
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
@@ -286,7 +291,9 @@ namespace EnvironmentalInformation {
         slice(sliced_bytecode, account.code_len, account.code, offset.low, size.low);
 
         // Write bytecode slice to memory at dest_offset
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, dest_offset.low + size.low);
+        let memory_expansion_cost = Gas.memory_expansion_cost(
+            ctx.memory.words_len, dest_offset.low + size.low
+        );
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
@@ -327,7 +334,9 @@ namespace EnvironmentalInformation {
         let sliced_return_data: felt* = alloc();
         slice(sliced_return_data, ctx.return_data_len, ctx.return_data, offset.low, size.low);
 
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, dest_offset.low + size.low);
+        let memory_expansion_cost = Gas.memory_expansion_cost(
+            ctx.memory.words_len, dest_offset.low + size.low
+        );
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;

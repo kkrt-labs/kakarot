@@ -12,7 +12,7 @@ from starkware.cairo.common.math import assert_nn
 // Local dependencies
 from utils.utils import Helpers
 from kakarot.model import model
-from kakarot.memory import Memory, Internals
+from kakarot.memory import Memory
 
 @external
 func test__init__should_return_an_empty_memory{

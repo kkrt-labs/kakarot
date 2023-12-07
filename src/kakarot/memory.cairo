@@ -282,24 +282,6 @@ namespace Memory {
 
         return new model.Memory(self.word_dict_start, word_dict, new_words_len);
     }
-
-    // @notice Compute the expansion cost of max_offset for the the memory
-    // @param self The pointer to the memory.
-    // @param max_offset The target max_offset to be applied to the given memory.
-    // @return cost The current expansion gas cost. 0 if no expansion is triggered.
-    func expansion_cost{range_check_ptr}(self: model.Memory*, max_offset: felt) -> felt {
-        alloc_locals;
-        let memory_expansion = is_le(self.words_len * 32 - 1, max_offset);
-        if (memory_expansion == FALSE) {
-            return 0;
-        }
-
-        let prev_cost = Internals.cost(self.words_len);
-        let (new_words_len, _) = unsigned_div_rem(max_offset + 31, 32);
-        let new_cost = Internals.cost(new_words_len);
-
-        return new_cost - prev_cost;
-    }
 }
 
 namespace Internals {
@@ -344,23 +326,5 @@ namespace Internals {
         return load_aligned_words(
             chunk_index=chunk_index + 1, chunk_index_f=chunk_index_f, element=&element[16]
         );
-    }
-
-    // @notice Compute the cost of the memory for a given words length.
-    // @dev To avoid range_check overflow, we compute words_len / 512
-    //      instead of words_len * words_len / 512. Then we recompute the
-    //      resulting quotient: x^2 = 512q + r becomes
-    //      x = 512 q0 + r0 => x^2 = 512(512 q0^2 + q0 r0) + r0^2
-    //      r0^2 = 512 q1 + r1
-    //      x^2 = 512(512 q0^2 + q0 r0 + q1) + r1
-    //      q = 512 * q0 * q0 + q0 * r0 + q1
-    // @param words_len The given number of words (bytes32).
-    // @return cost The associated gas cost.
-    func cost{range_check_ptr}(words_len: felt) -> felt {
-        let (q0, r0) = unsigned_div_rem(words_len, 512);
-        let (q1, r1) = unsigned_div_rem(r0 * r0, 512);
-
-        let memory_cost = 512 * q0 * q0 + q0 * r0 + q1 + (3 * words_len);
-        return memory_cost;
     }
 }

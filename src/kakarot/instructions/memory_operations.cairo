@@ -12,6 +12,7 @@ from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.math_cmp import is_le
 
 from kakarot.errors import Errors
+from kakarot.gas import Gas
 from kakarot.execution_context import ExecutionContext
 from kakarot.memory import Memory
 from kakarot.model import model
@@ -45,7 +46,7 @@ namespace MemoryOperations {
         let (stack, offset_uint256) = Stack.pop(ctx.stack);
         let offset = Helpers.uint256_to_felt([offset_uint256]);
 
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset + 32);
+        let memory_expansion_cost = Gas.memory_expansion_cost(ctx.memory.words_len, offset + 32);
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -83,7 +84,9 @@ namespace MemoryOperations {
         let value = popped[1];
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + 32);
+        let memory_expansion_cost = Gas.memory_expansion_cost(
+            ctx.memory.words_len, offset.low + 32
+        );
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
@@ -256,7 +259,7 @@ namespace MemoryOperations {
         assert [value_pointer] = remainder.low;
 
         // Store byte to memory at offset
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + 1);
+        let memory_expansion_cost = Gas.memory_expansion_cost(ctx.memory.words_len, offset.low + 1);
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;

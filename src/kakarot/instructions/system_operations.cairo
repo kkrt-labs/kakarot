@@ -23,6 +23,7 @@ from kakarot.model import model
 from kakarot.precompiles.precompiles import Precompiles
 from kakarot.stack import Stack
 from kakarot.state import State
+from kakarot.gas import Gas
 from utils.rlp import RLP
 from utils.utils import Helpers
 from utils.uint256 import uint256_to_uint160
@@ -33,6 +34,7 @@ from utils.bytes import (
     uint256_to_bytes32,
     felt_to_bytes,
 )
+
 // @title System operations opcodes.
 // @notice This file contains the functions to execute for system operations opcodes.
 namespace SystemOperations {
@@ -62,15 +64,17 @@ namespace SystemOperations {
         // + extend_memory.cost
         // + init_code_gas
         // + is_create2 * GAS_KECCAK256_WORD * call_data_words
-        let memory_expansion_cost = Memory.expansion_cost(memory, offset.low + size.low);
+        let memory_expansion_cost = Gas.memory_expansion_cost(
+            memory.words_len, offset.low + size.low
+        );
         // If .high != 0, OOG is surely triggered. So we only use the .low part for the
         // actual computation, and add ctx.call_context.gas_limit * .high which would
         // either be 0 or ctx.call_context.gas_limit * k, thus triggering OOG.
         let memory_expansion_cost = ctx.call_context.gas_limit * (offset.high + size.high) +
             memory_expansion_cost;
         let (calldata_words, _) = unsigned_div_rem(size.low + 31, 31);
-        let init_code_gas = 2 * calldata_words;
-        let calldata_word_gas = is_create2 * 6 * calldata_words;
+        let init_code_gas = Gas.INIT_CODE_WORD_COST * calldata_words;
+        let calldata_word_gas = is_create2 * Gas.KECCAK256_WORD * calldata_words;
         let ctx = ExecutionContext.charge_gas(
             ctx, memory_expansion_cost + init_code_gas + calldata_word_gas
         );
@@ -109,7 +113,7 @@ namespace SystemOperations {
 
         // Check sender balance and nonce
         let (state, sender) = State.get_account(state, ctx.call_context.address);
-        let is_nonce_overflow = is_le(2 ** 64, sender.nonce);
+        let is_nonce_overflow = is_le(Constants.MAX_NONCE + 1, sender.nonce);
         let (is_balance_overflow) = uint256_lt([sender.balance], value);
         // TODO: missing stack depth limit
         if (is_nonce_overflow + is_balance_overflow != 0) {
@@ -134,7 +138,7 @@ namespace SystemOperations {
         }
 
         // Check code size
-        let code_size_too_big = is_le(2 * 0x6000 + 1, size.low);
+        let code_size_too_big = is_le(2 * Constants.MAX_CODE_SIZE + 1, size.low);
         if (code_size_too_big != FALSE) {
             let ctx = ExecutionContext.charge_gas(ctx, ctx.call_context.gas_limit);
             let ctx = ExecutionContext.update_state(ctx, state);
@@ -230,7 +234,9 @@ namespace SystemOperations {
         let size = popped[1];
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + size.low);
+        let memory_expansion_cost = Gas.memory_expansion_cost(
+            ctx.words_len.memory, offset.low + size.low
+        );
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
@@ -266,7 +272,9 @@ namespace SystemOperations {
         let size = popped[1];
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + size.low);
+        let memory_expansion_cost = Gas.memory_expansion_cost(
+            ctx.words_len.memory, offset.low + size.low
+        );
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
@@ -500,7 +508,7 @@ namespace CallHelper {
         let max_expansion = max_expansion_is_ret * (ret_offset + ret_size) + (
             1 - max_expansion_is_ret
         ) * (args_offset + args_size);
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, max_expansion);
+        let memory_expansion_cost = Gas.memory_expansion_cost(ctx.words_len.memory, max_expansion);
 
         // Access list
         // TODO
