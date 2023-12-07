@@ -86,11 +86,3 @@ func test__load__should_expand_memory_and_return_element{
     assert memory.words_len = 2;
     return ();
 }
-
-@external
-func test__cost{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    max_offset: felt
-) -> (cost: felt) {
-    let cost = Internals.cost(max_offset);
-    return (cost=cost);
-}

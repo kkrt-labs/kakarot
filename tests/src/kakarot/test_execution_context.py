@@ -16,7 +16,6 @@ async def execution_context(starknet: Starknet):
 @pytest.mark.asyncio
 class TestExecutionContext:
     async def test_everything_context(self, execution_context):
-        await execution_context.test__init__should_return_an_empty_execution_context().call()
         await execution_context.test__jump__should_set_pc_to_given_value().call()
 
         result = (

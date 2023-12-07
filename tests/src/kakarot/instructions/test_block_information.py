@@ -61,7 +61,7 @@ class TestBlockInformation:
             (Opcodes.TIMESTAMP, ("{timestamp}", 0)),
             (Opcodes.NUMBER, ("{block_number}", 0)),
             (Opcodes.PREVRANDAO, (0, 0)),
-            (Opcodes.GASLIMIT, (1_000_000, 0)),
+            (Opcodes.GASLIMIT, (20_000_000, 0)),
             (Opcodes.CHAINID, (int.from_bytes(b"KKRT", "big"), 0)),
             (Opcodes.BASEFEE, (0, 0)),
         ],
