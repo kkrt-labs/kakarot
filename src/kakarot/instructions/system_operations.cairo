@@ -55,7 +55,7 @@ namespace SystemOperations {
         // Charge dynamic gas
         let memory_expansion_cost = Memory.expansion_cost(memory, offset.low + size.low);
         // If .high != 0, OOG is surely triggered. So we only use the .low part for the
-        // actually computation, and add ctx.call_context.gas_limit * .high which would
+        // actual computation, and add ctx.call_context.gas_limit * .high which would
         // either be 0 or ctx.call_context.gas_limit * k, thus triggering OOG.
         let memory_expansion_cost = ctx.call_context.gas_limit * (offset.high + size.high) +
             memory_expansion_cost;

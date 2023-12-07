@@ -8,7 +8,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.dict import DictAccess, dict_write, dict_read
 from starkware.cairo.common.math import assert_le, assert_nn
-from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn, is_le_felt
+from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256
@@ -237,7 +237,7 @@ namespace ExecutionContext {
         self: model.ExecutionContext*, inc_value: felt
     ) -> model.ExecutionContext* {
         let gas_used = self.gas_used + inc_value;
-        let out_of_gas = is_le_felt(self.call_context.gas_limit, gas_used - 1);
+        let out_of_gas = is_le(self.call_context.gas_limit, gas_used - 1);
 
         if (out_of_gas != 0) {
             let (revert_reason_len, revert_reason) = Errors.outOfGas(
