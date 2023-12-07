@@ -39,9 +39,10 @@ namespace SystemOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
+        // Stack
+        let stack = ctx.stack;
         let memory = ctx.memory;
         let state = ctx.state;
-        let stack = ctx.stack;
 
         let opcode_number = [ctx.call_context.bytecode + ctx.program_counter];
         let is_create2 = is_not_zero(opcode_number - 0xf0);
@@ -52,7 +53,10 @@ namespace SystemOperations {
         let offset = popped[1];
         let size = popped[2];
 
-        // Charge dynamic gas
+        // Gas
+        // + extend_memory.cost
+        // + init_code_gas
+        // + is_create2 * GAS_KECCAK256_WORD * call_data_words
         let memory_expansion_cost = Memory.expansion_cost(memory, offset.low + size.low);
         // If .high != 0, OOG is surely triggered. So we only use the .low part for the
         // actual computation, and add ctx.call_context.gas_limit * .high which would
@@ -65,11 +69,22 @@ namespace SystemOperations {
         let ctx = ExecutionContext.charge_gas(
             ctx, memory_expansion_cost + init_code_gas + calldata_word_gas
         );
-
         if (ctx.reverted != FALSE) {
             let ctx = ExecutionContext.update_stack(ctx, stack);
             return ctx;
         }
+
+        // Load bytecode
+        let (bytecode: felt*) = alloc();
+        let memory = Memory.load_n(memory, size.low, bytecode, offset.low);
+        let ctx = ExecutionContext.update_memory(ctx, memory);
+
+        // Get target address
+        let (state, evm_contract_address) = CreateHelper.get_evm_address(
+            state, ctx.call_context.address, popped_len, popped, size.low, bytecode
+        );
+        let (starknet_contract_address) = Account.compute_starknet_address(evm_contract_address);
+        tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
 
         // Get message call gas
         let available_gas = ctx.call_context.gas_limit - ctx.gas_used;
@@ -80,24 +95,19 @@ namespace SystemOperations {
             let ctx = ExecutionContext.charge_gas(ctx, gas_limit);
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
             let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            let ctx = ExecutionContext.update_state(ctx, state);
+            let ctx = ExecutionContext.update_stack(ctx, stack);
             return ctx;
         }
 
-        // Load bytecode
-        let (bytecode: felt*) = alloc();
-        let memory = Memory.load_n(memory, size.low, bytecode, offset.low);
+        // TODO: Clear return data
 
-        // Get target address
-        let (state, evm_contract_address) = CreateHelper.get_evm_address(
-            state, ctx.call_context.address, popped_len, popped, size.low, bytecode
-        );
-        let (starknet_contract_address) = Account.compute_starknet_address(evm_contract_address);
-        tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
-
-        // Transfer value
-        let transfer = model.Transfer(ctx.call_context.address, address, value);
-        let (state, success) = State.add_transfer(state, transfer);
-        if (success == 0) {
+        // Check sender balance and nonce
+        let (state, sender) = State.get_account(state, ctx.call_context.address);
+        let is_nonce_overflow = is_le(2 ** 64, sender.nonce);
+        let (is_balance_overflow) = uint256_lt([sender.balance], value);
+        // TODO: missing stack depth limit
+        if (is_nonce_overflow + is_balance_overflow != 0) {
             let stack = Stack.push_uint128(stack, 0);
             let ctx = ExecutionContext.update_state(ctx, state);
             let ctx = ExecutionContext.update_stack(ctx, stack);
@@ -106,40 +116,37 @@ namespace SystemOperations {
 
         let ctx = ExecutionContext.charge_gas(ctx, gas_limit);
 
-        // Check code size
-        let code_size_too_big = is_le(2 * 0x6000 + 1, size.low);
-        if (code_size_too_big != FALSE) {
-            let ctx = ExecutionContext.update_stack(ctx, stack);
-            let ctx = ExecutionContext.update_state(ctx, state);
-            let ctx = ExecutionContext.charge_gas(ctx, ctx.call_context.gas_limit);
-            return ctx;
-        }
-
-        // At this point the ctx cannot revert anymore, we can increment the nonce
-        let (state, sender) = State.get_account(state, ctx.call_context.address);
-        let sender = Account.set_nonce(sender, sender.nonce + 1);
-        let state = State.set_account(state, ctx.call_context.address, sender);
-
-        // Get target account
+        // Check target account availabitliy
         let (state, account) = State.get_account(state, address);
         let is_collision = Account.has_code_or_nonce(account);
         if (is_collision != 0) {
+            let sender = Account.set_nonce(sender, sender.nonce + 1);
+            let state = State.set_account(state, ctx.call_context.address, sender);
             let stack = Stack.push_uint128(stack, 0);
-            let ctx = ExecutionContext.update_stack(ctx, stack);
             let ctx = ExecutionContext.update_state(ctx, state);
+            let ctx = ExecutionContext.update_stack(ctx, stack);
             return ctx;
         }
+
+        // Check code size
+        let code_size_too_big = is_le(2 * 0x6000 + 1, size.low);
+        if (code_size_too_big != FALSE) {
+            let ctx = ExecutionContext.charge_gas(ctx, ctx.call_context.gas_limit);
+            let ctx = ExecutionContext.update_state(ctx, state);
+            let ctx = ExecutionContext.update_stack(ctx, stack);
+            return ctx;
+        }
+
+        // Increment nonce
+        let sender = Account.set_nonce(sender, sender.nonce + 1);
+        let state = State.set_account(state, ctx.call_context.address, sender);
 
         // Final update of calling context
         let ctx = ExecutionContext.update_state(ctx, state);
         let ctx = ExecutionContext.update_stack(ctx, stack);
-        let ctx = ExecutionContext.update_memory(ctx, memory);
-
-        // Create sub context with copied state
         let state = State.copy(ctx.state);
-        let (state, account) = State.get_account(state, address);
-        let account = Account.set_nonce(account, 1);
-        let state = State.set_account(state, address, account);
+
+        // Create child message
         let (calldata: felt*) = alloc();
         tempvar call_context = new model.CallContext(
             bytecode=bytecode,
@@ -156,7 +163,20 @@ namespace SystemOperations {
             is_create=TRUE,
         );
         let sub_ctx = ExecutionContext.init(call_context, 0);
+
+        let (state, account) = State.get_account(state, address);
+        let account = Account.set_nonce(account, 1);
+        let state = State.set_account(state, address, account);
+
+        let transfer = model.Transfer(ctx.call_context.address, address, value);
+        let (state, success) = State.add_transfer(state, transfer);
         let sub_ctx = ExecutionContext.update_state(sub_ctx, state);
+        if (success == 0) {
+            let stack = Stack.push_uint128(stack, 0);
+            let sub_ctx = ExecutionContext.update_state(sub_ctx, state);
+            let sub_ctx = ExecutionContext.update_stack(sub_ctx, stack);
+            return sub_ctx;
+        }
 
         return sub_ctx;
     }
