@@ -8,7 +8,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.dict import DictAccess, dict_write, dict_read
 from starkware.cairo.common.math import assert_le, assert_nn
-from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
+from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn, is_le_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256
@@ -236,7 +236,7 @@ namespace ExecutionContext {
     func charge_gas{range_check_ptr}(
         self: model.ExecutionContext*, inc_value: felt
     ) -> model.ExecutionContext* {
-        let out_of_gas = is_le(self.gas_left + 1, inc_value);
+        let out_of_gas = is_le_felt(self.gas_left + 1, inc_value);
 
         if (out_of_gas != 0) {
             let (revert_reason_len, revert_reason) = Errors.outOfGas(self.gas_left, inc_value);
