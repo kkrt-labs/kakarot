@@ -6,7 +6,7 @@ from rlp import decode, encode
 from starkware.starknet.testing.starknet import Starknet
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="module")
 async def rlp(starknet: Starknet):
     class_hash = await starknet.deprecated_declare(
         source="./tests/src/utils/test_rlp.cairo",

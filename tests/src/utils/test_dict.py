@@ -3,7 +3,7 @@ import pytest_asyncio
 from starkware.starknet.testing.starknet import Starknet
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="module")
 async def dict_(starknet: Starknet):
     class_hash = await starknet.deprecated_declare(
         source="./tests/src/utils/test_dict.cairo",

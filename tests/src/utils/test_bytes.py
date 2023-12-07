@@ -7,7 +7,7 @@ from tests.utils.uint256 import int_to_uint256
 PRIME = 0x800000000000011000000000000000000000000000000000000000000000001
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="module")
 async def bytes_(starknet: Starknet):
     class_hash = await starknet.deprecated_declare(
         source="./tests/src/utils/test_bytes.cairo",

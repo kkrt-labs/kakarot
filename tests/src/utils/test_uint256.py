@@ -5,7 +5,7 @@ from starkware.starknet.testing.starknet import Starknet
 from tests.utils.uint256 import int_to_uint256
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="module")
 async def uint256(starknet: Starknet):
     class_hash = await starknet.deprecated_declare(
         source="./tests/src/utils/test_uint256.cairo",
