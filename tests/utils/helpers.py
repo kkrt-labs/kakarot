@@ -1,6 +1,6 @@
 import random
 from textwrap import wrap
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import rlp
 from eth_abi import encode
@@ -96,24 +96,29 @@ def get_domain_separator(name: str, token_address: str) -> bytes:
     )
 
 
-def get_create_address(sender_address: str, nonce: int) -> str:
+def get_create_address(sender_address: Union[int, str], nonce: int) -> str:
     """
     See [CREATE](https://www.evm.codes/#f0).
     """
     return to_checksum_address(
-        keccak(rlp.encode([decode_hex(sender_address), nonce]))[-20:]
+        keccak(rlp.encode([decode_hex(to_checksum_address(sender_address)), nonce]))[
+            -20:
+        ]
     )
 
 
 def get_create2_address(
-    sender_address: str, salt: bytes, initialization_code: bytes
+    sender_address: Union[int, str], salt: int, initialization_code: bytes
 ) -> str:
     """
     See [CREATE2](https://www.evm.codes/#f5).
     """
     return to_checksum_address(
         keccak(
-            b"\xff" + decode_hex(sender_address) + salt + keccak(initialization_code)
+            b"\xff"
+            + decode_hex(to_checksum_address(sender_address))
+            + salt.to_bytes(32, "big")
+            + keccak(initialization_code)
         )[-20:]
     )
 

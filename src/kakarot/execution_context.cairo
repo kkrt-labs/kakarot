@@ -8,7 +8,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.dict import DictAccess, dict_write, dict_read
 from starkware.cairo.common.math import assert_le, assert_nn
-from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
+from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn, is_le_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256
@@ -32,7 +32,7 @@ namespace ExecutionContext {
         stack: Stack.Summary*,
         return_data_len: felt,
         return_data: felt*,
-        gas_used: felt,
+        gas_left: felt,
         address: model.Address*,
         reverted: felt,
         state: model.State*,
@@ -57,7 +57,7 @@ namespace ExecutionContext {
         dw 0;  // return_data
         dw 0;  // program_counter
         dw 1;  // stopped
-        dw 0;  // gas_used
+        dw 0;  // gas_left
         dw 0;  // reverted
     }
 
@@ -65,7 +65,7 @@ namespace ExecutionContext {
     // @dev Initialize the execution context of a specific contract.
     // @param call_context The call_context (see model.CallContext) to be executed.
     // @return ExecutionContext The initialized execution context.
-    func init(call_context: model.CallContext*, gas_used: felt) -> model.ExecutionContext* {
+    func init(call_context: model.CallContext*, gas_left: felt) -> model.ExecutionContext* {
         let stack = Stack.init();
         let memory = Memory.init();
         let state = State.init();
@@ -80,7 +80,7 @@ namespace ExecutionContext {
             return_data=return_data,
             program_counter=0,
             stopped=FALSE,
-            gas_used=gas_used,
+            gas_left=gas_left,
             reverted=FALSE,
         );
     }
@@ -123,7 +123,7 @@ namespace ExecutionContext {
             return_data=return_data,
             program_counter=self.program_counter,
             stopped=TRUE,
-            gas_used=self.gas_used,
+            gas_left=self.gas_left,
             reverted=reverted,
         );
     }
@@ -152,7 +152,7 @@ namespace ExecutionContext {
             stack=stack_summary,
             return_data_len=self.return_data_len,
             return_data=self.return_data,
-            gas_used=self.gas_used,
+            gas_left=self.gas_left,
             address=self.call_context.address,
             reverted=self.reverted,
             state=self.state,
@@ -179,7 +179,7 @@ namespace ExecutionContext {
             return_data=self.return_data,
             program_counter=self.program_counter,
             stopped=self.stopped,
-            gas_used=self.gas_used,
+            gas_left=self.gas_left,
             reverted=self.reverted,
         );
     }
@@ -201,7 +201,7 @@ namespace ExecutionContext {
             return_data=self.return_data,
             program_counter=self.program_counter,
             stopped=self.stopped,
-            gas_used=self.gas_used,
+            gas_left=self.gas_left,
             reverted=self.reverted,
         );
     }
@@ -223,7 +223,7 @@ namespace ExecutionContext {
             return_data=self.return_data,
             program_counter=self.program_counter + inc_value,
             stopped=self.stopped,
-            gas_used=self.gas_used,
+            gas_left=self.gas_left,
             reverted=self.reverted,
         );
     }
@@ -236,13 +236,10 @@ namespace ExecutionContext {
     func charge_gas{range_check_ptr}(
         self: model.ExecutionContext*, inc_value: felt
     ) -> model.ExecutionContext* {
-        let gas_used = self.gas_used + inc_value;
-        let out_of_gas = is_le(self.call_context.gas_limit, gas_used - 1);
+        let out_of_gas = is_le_felt(self.gas_left + 1, inc_value);
 
         if (out_of_gas != 0) {
-            let (revert_reason_len, revert_reason) = Errors.outOfGas(
-                self.call_context.gas_limit, gas_used
-            );
+            let (revert_reason_len, revert_reason) = Errors.outOfGas(self.gas_left, inc_value);
             return new model.ExecutionContext(
                 state=self.state,
                 call_context=self.call_context,
@@ -252,7 +249,7 @@ namespace ExecutionContext {
                 return_data=revert_reason,
                 program_counter=self.program_counter,
                 stopped=TRUE,
-                gas_used=self.call_context.gas_limit,
+                gas_left=0,
                 reverted=TRUE,
             );
         }
@@ -266,7 +263,7 @@ namespace ExecutionContext {
             return_data=self.return_data,
             program_counter=self.program_counter,
             stopped=self.stopped,
-            gas_used=gas_used,
+            gas_left=self.gas_left - inc_value,
             reverted=self.reverted,
         );
     }
@@ -321,7 +318,7 @@ namespace ExecutionContext {
             return_data=self.return_data,
             program_counter=self.program_counter,
             stopped=self.stopped,
-            gas_used=self.gas_used,
+            gas_left=self.gas_left,
             reverted=self.reverted,
         );
     }
@@ -356,7 +353,7 @@ namespace ExecutionContext {
             return_data=self.return_data,
             program_counter=new_pc_offset,
             stopped=self.stopped,
-            gas_used=self.gas_used,
+            gas_left=self.gas_left,
             reverted=self.reverted,
         );
     }

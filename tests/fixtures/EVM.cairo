@@ -96,7 +96,7 @@ func evm_call{
     evm_contract_address: felt,
     return_data_len: felt,
     return_data: felt*,
-    gas_used: felt,
+    gas_left: felt,
     success: felt,
     program_counter: felt,
 ) {
@@ -136,7 +136,7 @@ func evm_call{
         evm_contract_address=summary.address.evm,
         return_data_len=summary.return_data_len,
         return_data=summary.return_data,
-        gas_used=summary.gas_used,
+        gas_left=summary.gas_left,
         success=1 - summary.reverted,
         program_counter=summary.program_counter,
     );

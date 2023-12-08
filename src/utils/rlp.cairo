@@ -176,9 +176,7 @@ namespace RLP {
             memcpy(rlp + rlp_len + 1, byte_array, byte_array_len);
             return (rlp_len + byte_array_len + 1,);
         } else {
-            // otherwise we encode in a prefix
-            // the length
-            // of
+            // otherwise we encode in a prefix the length of
             // the value of the length of item's byte representation
             // then the actual length of the bytes representation of item
             // then the element bytes (phew)

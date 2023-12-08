@@ -28,6 +28,7 @@ from kakarot.memory import Memory
 from kakarot.state import State
 from tests.utils.helpers import TestHelpers
 from utils.utils import Helpers
+from utils.uint256 import uint256_to_uint160
 
 @constructor
 func constructor{
@@ -66,30 +67,6 @@ func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
 ) -> (contract_address: felt) {
     let (contract_address_) = Account.compute_starknet_address(evm_address);
     return (contract_address=contract_address_);
-}
-
-//
-// Contract Account
-//
-
-// @dev We are using a storage var, so that we can set custom nonces
-// whilst still being able to increment them during the create execution.
-@storage_var
-func mock_nonce() -> (nonce: felt) {
-}
-
-// @notice the current nonce of the mocked contract account
-@view
-func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (nonce: felt) {
-    return mock_nonce.read();
-}
-
-// @notice This function increases the account nonce by 1
-@external
-func increment_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    let (current_nonce: felt) = mock_nonce.read();
-    mock_nonce.write(current_nonce + 1);
-    return ();
 }
 
 // ///////////////////
@@ -217,7 +194,6 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
     assert sub_ctx.return_data_len = 0;
-    assert sub_ctx.gas_used = 0;
     assert sub_ctx.call_context.gas_price = 0;
     assert sub_ctx.call_context.address.starknet = callee_starknet_contract_address;
     assert sub_ctx.call_context.address.evm = callee_evm_contract_address;
@@ -371,7 +347,6 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
     assert sub_ctx.call_context.value = value.low;
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
-    assert sub_ctx.gas_used = 0;
     assert sub_ctx.call_context.gas_price = 0;
     assert sub_ctx.call_context.address.starknet = caller_starknet_contract_address;
     assert sub_ctx.call_context.address.evm = caller_evm_contract_address;
@@ -512,7 +487,6 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
     assert sub_ctx.call_context.value = 0;
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
-    assert sub_ctx.gas_used = 0;
     assert sub_ctx.call_context.gas_price = 0;
     assert sub_ctx.call_context.address.starknet = starknet_contract_address;
     assert sub_ctx.call_context.address.evm = evm_contract_address;
@@ -586,7 +560,6 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
     assert sub_ctx.call_context.value = 0;
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
-    assert sub_ctx.gas_used = 0;
     assert sub_ctx.call_context.gas_price = 0;
     assert sub_ctx.call_context.address.starknet = ctx.call_context.address.starknet;
     assert sub_ctx.call_context.address.evm = ctx.call_context.address.evm;
@@ -608,86 +581,6 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
 }
 
 @external
-func test__exec_create__should_return_a_new_context_with_bytecode_from_memory_at_expected_address{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(evm_caller_address: felt, nonce_: felt, expected_create_address: felt) {
-    alloc_locals;
-
-    // Fill the stack with exec_create args
-    let stack: model.Stack* = Stack.init();
-    tempvar value = new Uint256(1, 0);
-    tempvar offset = new Uint256(3, 0);
-    tempvar size = new Uint256(4, 0);
-    let stack = Stack.push(stack, size);
-    let stack = Stack.push(stack, offset);
-    let stack = Stack.push(stack, value);
-
-    // Put some value in memory as it is used for bytecode with size and offset
-    // Word is 0x 11 22 33 44 55 66 77 88 00 00 ... 00
-    // bytecode should be 0x 44 55 66 77
-    tempvar memory_word = new Uint256(low=0, high=0x11223344556677880000000000000000);
-    tempvar memory_offset = new Uint256(0, 0);
-    let stack = Stack.push(stack, memory_word);
-    let stack = Stack.push(stack, memory_offset);
-    let bytecode_len = 0;
-    let (bytecode: felt*) = alloc();
-    // As this test contract is mocking the contract account we have to set this contract address as the starknet_contract_address.
-    let (contract_address: felt) = Account.compute_starknet_address(evm_caller_address);
-    let ctx = TestHelpers.init_context_at_address_with_stack(
-        contract_address, evm_caller_address, bytecode_len, bytecode, stack
-    );
-
-    let ctx = MemoryOperations.exec_mstore(ctx);
-
-    // We set the nonce of the mocked contract account
-    mock_nonce.write(nonce_);
-
-    // When
-    let sub_ctx = SystemOperations.exec_create(ctx);
-
-    // Then
-    assert sub_ctx.call_context.bytecode_len = 4;
-    assert sub_ctx.call_context.calldata_len = 0;
-    assert [sub_ctx.call_context.bytecode] = 0x44;
-    assert [sub_ctx.call_context.bytecode + 1] = 0x55;
-    assert [sub_ctx.call_context.bytecode + 2] = 0x66;
-    assert [sub_ctx.call_context.bytecode + 3] = 0x77;
-    assert sub_ctx.call_context.value = value.low;
-    assert sub_ctx.program_counter = 0;
-    assert sub_ctx.stopped = 0;
-    assert sub_ctx.return_data_len = 0;
-    assert sub_ctx.gas_used = 0;
-    assert sub_ctx.call_context.gas_price = ctx.call_context.gas_price;
-    assert_not_zero(sub_ctx.call_context.address.starknet);
-    assert_not_zero(sub_ctx.call_context.address.evm);
-    TestHelpers.assert_execution_context_equal(ctx, sub_ctx.call_context.calling_context);
-
-    // Fake a RETURN in sub_ctx then finalize
-    let return_data_len = 65;
-    memset(sub_ctx.return_data, 0xff, return_data_len);
-    let sub_ctx = ExecutionContext.stop(sub_ctx, return_data_len, sub_ctx.return_data, FALSE);
-    let summary = ExecutionContext.finalize(sub_ctx);
-    let ctx = CreateHelper.finalize_calling_context(summary);
-
-    // Then
-    let (stack, address) = Stack.peek(ctx.stack, 0);
-    let evm_contract_address = Helpers.uint256_to_felt([address]);
-    assert evm_contract_address = sub_ctx.call_context.address.evm;
-    assert sub_ctx.call_context.address.evm = expected_create_address;
-    let (state, account) = State.get_account(ctx.state, sub_ctx.call_context.address);
-    TestHelpers.assert_array_equal(
-        account.code_len, account.code, return_data_len, sub_ctx.return_data
-    );
-
-    tempvar sender_address = new model.Address(contract_address, evm_caller_address);
-    let (state, sender) = State.get_account(state, sender_address);
-    assert [sender.balance] = Uint256(0, 0);
-    assert [account.balance] = Uint256(1, 0);
-
-    return ();
-}
-
-@external
 func test__get_create_address_should_construct_address_deterministically{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(evm_caller_address: felt, nonce: felt, expected_create_address: felt) {
@@ -699,57 +592,58 @@ func test__get_create_address_should_construct_address_deterministically{
 }
 
 @external
-func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_at_expected_address{
+func test__exec_create{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
+    opcode: felt,
+    salt: felt,
+    create_code_len: felt,
+    create_code: felt*,
+    value: felt,
     evm_caller_address: felt,
-    bytecode_offset: felt,
-    bytecode_size: felt,
-    nonce: felt,
-    memory_word: Uint256,
-    expected_create2_address: felt,
-) {
+) -> (create_address: felt, nonce: felt) {
     alloc_locals;
 
-    // Fill the stack with exec_create2 args
-    let stack: model.Stack* = Stack.init();
-    tempvar value = new Uint256(1, 0);
-    let stack = Stack.push_uint128(stack, nonce);
-    let stack = Stack.push_uint128(stack, bytecode_size);
-    let stack = Stack.push_uint128(stack, bytecode_offset);
-    let stack = Stack.push(stack, value);
+    // Given
+    let stack = Stack.init();
+    let offset = 0;
+    let stack = Stack.push_uint128(stack, salt);
+    let stack = Stack.push_uint128(stack, create_code_len);
+    let stack = Stack.push_uint128(stack, offset);
+    let stack = Stack.push_uint128(stack, value);
 
-    // Put some value in memory as it is used for byte
-    tempvar word = new Uint256(memory_word.low, memory_word.high);
-    tempvar memory_offset = new Uint256(0, 0);
-    let stack = Stack.push(stack, word);
-    let stack = Stack.push(stack, memory_offset);
-    let bytecode_len = 0;
+    let memory = Memory.init();
+    let memory = Memory.store_n(memory, create_code_len, create_code, offset);
+
+    let bytecode_len = 1;
     let (bytecode: felt*) = alloc();
+    assert [bytecode] = opcode;
     let (contract_address: felt) = Account.compute_starknet_address(evm_caller_address);
-    tempvar sender_address = new model.Address(contract_address, evm_caller_address);
-    let ctx = TestHelpers.init_context_at_address_with_stack(
-        contract_address, evm_caller_address, bytecode_len, bytecode, stack
+    let ctx = TestHelpers.init_context_at_address(
+        bytecode_len, bytecode, contract_address, evm_caller_address
     );
-
-    assert ctx.call_context.address.evm = evm_caller_address;
-    let ctx = MemoryOperations.exec_mstore(ctx);
+    let (state, account) = State.get_account(ctx.state, ctx.call_context.address);
+    let ctx = ExecutionContext.update_memory(ctx, memory);
+    let ctx = ExecutionContext.update_stack(ctx, stack);
+    let ctx = ExecutionContext.update_state(ctx, state);
+    let nonce = account.nonce;
+    let balance_prev = account.balance;
 
     // When
-    let sub_ctx = SystemOperations.exec_create2(ctx);
+    let sub_ctx = SystemOperations.exec_create(ctx);
 
     // Then
-    assert sub_ctx.call_context.bytecode_len = 4;
     assert sub_ctx.call_context.calldata_len = 0;
-    assert [sub_ctx.call_context.bytecode] = 0x44;
-    assert [sub_ctx.call_context.bytecode + 1] = 0x55;
-    assert [sub_ctx.call_context.bytecode + 2] = 0x66;
-    assert [sub_ctx.call_context.bytecode + 3] = 0x77;
-    assert sub_ctx.call_context.value = value.low;
+    TestHelpers.assert_array_equal(
+        sub_ctx.call_context.bytecode_len,
+        sub_ctx.call_context.bytecode,
+        create_code_len,
+        create_code,
+    );
+    assert sub_ctx.call_context.value = value;
     assert sub_ctx.program_counter = 0;
     assert sub_ctx.stopped = 0;
     assert sub_ctx.return_data_len = 0;
-    assert sub_ctx.gas_used = 0;
     assert sub_ctx.call_context.gas_price = ctx.call_context.gas_price;
     assert_not_zero(sub_ctx.call_context.address.starknet);
     assert_not_zero(sub_ctx.call_context.address.evm);
@@ -763,20 +657,15 @@ func test__exec_create2__should_return_a_new_context_with_bytecode_from_memory_a
     let ctx = CreateHelper.finalize_calling_context(summary);
 
     // Then
-    let (stack, address) = Stack.peek(ctx.stack, 0);
-    let evm_contract_address = Helpers.uint256_to_felt([address]);
-    assert evm_contract_address = sub_ctx.call_context.address.evm;
-    assert sub_ctx.call_context.address.evm = expected_create2_address;
-    let state = ctx.state;
-    let (state, account) = State.get_account(state, sub_ctx.call_context.address);
+    let (state, account) = State.get_account(ctx.state, sub_ctx.call_context.address);
     TestHelpers.assert_array_equal(
         account.code_len, account.code, return_data_len, sub_ctx.return_data
     );
 
-    let (state, sender) = State.get_account(state, sender_address);
-
-    assert [sender.balance] = Uint256(0, 0);
-    assert [account.balance] = Uint256(1, 0);
-
-    return ();
+    let (state, sender) = State.get_account(state, ctx.call_context.address);
+    assert balance_prev.low = value + sender.balance.low;
+    assert [account.balance] = Uint256(value, 0);
+    let (stack, address) = Stack.peek(ctx.stack, 0);
+    let evm_contract_address = uint256_to_uint160([address]);
+    return (evm_contract_address, nonce);
 }

@@ -1,6 +1,5 @@
 import pytest
 import pytest_asyncio
-from ethereum.shanghai.vm.gas import calculate_memory_gas_cost
 from starkware.starknet.testing.starknet import Starknet
 
 
@@ -45,11 +44,3 @@ class TestMemory:
 
         async def test_should_expand_memory_and_return_element(self, memory):
             await memory.test__load__should_expand_memory_and_return_element().call()
-
-    class TestCost:
-        @pytest.mark.parametrize("max_offset", [0, 0xFF, 0xFFFF, 0xFFFFFF, 0xFFFFFFFF])
-        async def test_should_return_same_as_execution_specs(self, memory, max_offset):
-            assert (
-                calculate_memory_gas_cost(max_offset)
-                == (await memory.test__cost((max_offset + 31) // 32).call()).result.cost
-            )

@@ -49,7 +49,7 @@ def main():
         .set_index(["head_branch", "test"])
     )
     average_summary = all_resources.groupby(level="head_branch").agg("mean").round(2)
-    logger.info(f"Resources summary:\n{average_summary}")
+    logger.info(f"### Resources summary\n\n{average_summary.to_markdown()}")
 
 
 # %% Run

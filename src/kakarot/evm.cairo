@@ -41,7 +41,7 @@ namespace EVM {
         stack: Stack.Summary*,
         return_data: felt*,
         return_data_len: felt,
-        gas_used: felt,
+        gas_left: felt,
         address: model.Address*,
         reverted: felt,
         state: State.Summary*,
@@ -610,7 +610,7 @@ namespace EVM {
         jmp end;
         call SystemOperations.exec_delegatecall;  // 0xf4
         jmp end_sub_ctx;
-        call SystemOperations.exec_create2;  // 0xf5
+        call SystemOperations.exec_create;  // 0xf5
         jmp end_sub_ctx;
         call unknown_opcode;  // 0xf6
         jmp end;
@@ -755,7 +755,6 @@ namespace EVM {
             calldata=calldata,
             calldata_len=calldata_len,
             value=value,
-            gas_limit=gas_limit,
             gas_price=gas_price,
             origin=origin,
             calling_context=root_context,
@@ -764,7 +763,7 @@ namespace EVM {
             is_create=is_deploy_tx,
         );
 
-        let ctx = ExecutionContext.init(call_context, intrinsic_gas);
+        let ctx = ExecutionContext.init(call_context, gas_limit - intrinsic_gas);
 
         let state = ctx.state;
         // Handle value
@@ -829,7 +828,7 @@ namespace EVM {
             stack=ctx_summary.stack,
             return_data=ctx_summary.return_data,
             return_data_len=ctx_summary.return_data_len,
-            gas_used=ctx_summary.gas_used,
+            gas_left=ctx_summary.gas_left,
             address=ctx_summary.address,
             reverted=ctx_summary.reverted,
             state=state_summary,
@@ -853,22 +852,20 @@ namespace Internals {
         // Charge final deposit gas
         let code_size_limit = is_le(ctx_summary.return_data_len, 0x6000);
         let code_deposit_cost = 200 * ctx_summary.return_data_len;
-        let enough_gas = is_nn(
-            ctx_summary.call_context.gas_limit - ctx_summary.gas_used - code_deposit_cost
-        );
+        let enough_gas = is_nn(ctx_summary.gas_left - code_deposit_cost);
         let success = (1 - ctx_summary.reverted) * enough_gas * code_size_limit;
 
         if (success == 0) {
             // Burn all gas in case of failure
             let (revert_reason_len, revert_reason) = Errors.outOfGas(
-                ctx_summary.call_context.gas_limit, ctx_summary.call_context.gas_limit
+                ctx_summary.gas_left, ctx_summary.gas_left
             );
             return new ExecutionContext.Summary(
                 memory=ctx_summary.memory,
                 stack=ctx_summary.stack,
                 return_data_len=revert_reason_len,
                 return_data=revert_reason,
-                gas_used=ctx_summary.call_context.gas_limit,
+                gas_left=0,
                 address=ctx_summary.address,
                 reverted=TRUE,
                 state=ctx_summary.state,
@@ -889,7 +886,7 @@ namespace Internals {
             stack=ctx_summary.stack,
             return_data_len=2,
             return_data=cast(ctx_summary.address, felt*),
-            gas_used=ctx_summary.gas_used + code_deposit_cost,
+            gas_left=ctx_summary.gas_left - code_deposit_cost,
             address=ctx_summary.address,
             reverted=FALSE,
             state=state,

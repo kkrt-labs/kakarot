@@ -1,7 +1,3 @@
-// SPDX-License-Identifier: MIT
-
-%lang starknet
-
 // StarkWare dependencies
 from starkware.cairo.common.dict import DictAccess
 from starkware.cairo.common.uint256 import Uint256
@@ -93,7 +89,6 @@ namespace model {
     // @param calldata byte The space where the data parameter of a transaction or call is held.
     // @param calldata_len The length of calldata.
     // @param value The amount of native token to transfer.
-    // @param gas_limit The gas limit for the call.
     // @param gas_price The gas price for the call.
     // @param origin The origin of the transaction.
     // @param calling_context The parent context of the current execution context, can be empty when context
@@ -108,7 +103,6 @@ namespace model {
         calldata: felt*,
         calldata_len: felt,
         value: felt,
-        gas_limit: felt,
         gas_price: felt,
         origin: Address*,
         calling_context: ExecutionContext*,
@@ -125,7 +119,7 @@ namespace model {
     // @param return_data_len The return_data length.
     // @param stack The current execution context stack.
     // @param memory The current execution context memory.
-    // @param gas_used The gas consumed by the current state of the execution.
+    // @param gas_left The gas consumed by the current state of the execution.
     // @param state The current journal of state updates.
     struct ExecutionContext {
         state: State*,
@@ -136,7 +130,7 @@ namespace model {
         return_data: felt*,
         program_counter: felt,
         stopped: felt,
-        gas_used: felt,
+        gas_left: felt,
         reverted: felt,
     }
 

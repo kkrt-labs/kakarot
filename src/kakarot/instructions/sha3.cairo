@@ -13,6 +13,7 @@ from starkware.cairo.common.bool import FALSE, TRUE
 
 from kakarot.memory import Memory
 from kakarot.model import model
+from kakarot.gas import Gas
 from kakarot.execution_context import ExecutionContext
 from kakarot.stack import Stack
 from kakarot.errors import Errors
@@ -45,7 +46,9 @@ namespace Sha3 {
         let offset = popped[0];
         let length = popped[1];
 
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + length.low);
+        let memory_expansion_cost = Gas.memory_expansion_cost(
+            ctx.memory.words_len, offset.low + length.low
+        );
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             let ctx = ExecutionContext.update_stack(ctx, stack);

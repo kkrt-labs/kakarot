@@ -8,7 +8,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le, is_nn
+from starkware.cairo.common.math_cmp import is_le, is_nn, is_not_zero
 from starkware.cairo.common.uint256 import Uint256, uint256_lt
 from starkware.cairo.common.registers import get_fp_and_pc
 
@@ -23,11 +23,18 @@ from kakarot.model import model
 from kakarot.precompiles.precompiles import Precompiles
 from kakarot.stack import Stack
 from kakarot.state import State
+from kakarot.gas import Gas
 from utils.rlp import RLP
 from utils.utils import Helpers
 from utils.uint256 import uint256_to_uint160
 from utils.array import slice
-from utils.bytes import bytes_to_bytes8_little_endian, felt_to_bytes20, uint256_to_bytes32
+from utils.bytes import (
+    bytes_to_bytes8_little_endian,
+    felt_to_bytes20,
+    uint256_to_bytes32,
+    felt_to_bytes,
+)
+
 // @title System operations opcodes.
 // @notice This file contains the functions to execute for system operations opcodes.
 namespace SystemOperations {
@@ -39,63 +46,144 @@ namespace SystemOperations {
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
         alloc_locals;
 
-        if (ctx.call_context.read_only != FALSE) {
-            let (revert_reason_len, revert_reason) = Errors.stateModificationError();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
+        // Stack
+        let stack = ctx.stack;
+        let memory = ctx.memory;
+        let state = ctx.state;
 
-        // Stack input:
-        // 0 - value: value in wei to send to the new account
-        // 1 - offset: byte offset in the memory in bytes (initialization code)
-        // 2 - size: byte size to copy (size of initialization code)
-        let (stack, popped) = Stack.pop_n(self=ctx.stack, n=3);
+        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter];
+        let is_create2 = is_not_zero(opcode_number - 0xf0);
+        let popped_len = 3 + is_create2;
+        let (stack, popped) = Stack.pop_n(stack, 3 + is_create2);
+
+        let value = popped[0];
+        let offset = popped[1];
         let size = popped[2];
 
-        // create dynamic gas:
-        // dynamic_gas = 6 * minimum_word_size + memory_expansion_cost + deployment_code_execution_cost + code_deposit_cost
-        // -> ``memory_expansion_cost + deployment_code_execution_cost + code_deposit_cost`` is handled inside ``initialize_sub_context``
-        let (minimum_word_size) = Helpers.minimum_word_count(size.low);
-        let word_size_gas = 6 * minimum_word_size;
-
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-
-        let sub_ctx = CreateHelper.initialize_sub_context(ctx=ctx, popped_len=3, popped=popped);
-
-        return sub_ctx;
-    }
-
-    // @notice CREATE2 operation.
-    // @custom:since Frontier
-    // @custom:group System Operations
-    // @custom:gas 0 + dynamic gas
-    // @custom:stack_consumed_elements 4
-    // @custom:stack_produced_elements 1
-    // @return ExecutionContext The pointer to the updated execution context.
-    func exec_create2{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-
-        if (ctx.call_context.read_only != FALSE) {
-            let (revert_reason_len, revert_reason) = Errors.stateModificationError();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+        // Gas
+        // + extend_memory.cost
+        // + init_code_gas
+        // + is_create2 * GAS_KECCAK256_WORD * call_data_words
+        let memory_expansion_cost = Gas.memory_expansion_cost(
+            memory.words_len, offset.low + size.low
+        );
+        // If .high != 0, OOG is surely triggered. So we only use the .low part for the
+        // actual computation, and add ctx.gas_left * .high which would
+        // either be 0 or ctx.gas_left * k, thus triggering OOG.
+        let memory_expansion_cost = ctx.gas_left * (offset.high + size.high) +
+            memory_expansion_cost;
+        let (calldata_words, _) = unsigned_div_rem(size.low + 31, 31);
+        let init_code_gas = Gas.INIT_CODE_WORD_COST * calldata_words;
+        let calldata_word_gas = is_create2 * Gas.KECCAK256_WORD * calldata_words;
+        let ctx = ExecutionContext.charge_gas(
+            ctx, memory_expansion_cost + init_code_gas + calldata_word_gas
+        );
+        if (ctx.reverted != FALSE) {
+            let ctx = ExecutionContext.update_stack(ctx, stack);
             return ctx;
         }
 
-        // Stack input:
-        // 0 - value: value in wei to send to the new account
-        // 1 - offset: byte offset in the memory in bytes (initialization code)
-        // 2 - size: byte size to copy (size of initialization code)
-        // 3 - salt: salt for address generation
-        let (stack, popped) = Stack.pop_n(self=ctx.stack, n=4);
+        // Load bytecode
+        let (bytecode: felt*) = alloc();
+        let memory = Memory.load_n(memory, size.low, bytecode, offset.low);
+        let ctx = ExecutionContext.update_memory(ctx, memory);
 
+        // Get target address
+        let (state, evm_contract_address) = CreateHelper.get_evm_address(
+            state, ctx.call_context.address, popped_len, popped, size.low, bytecode
+        );
+        let (starknet_contract_address) = Account.compute_starknet_address(evm_contract_address);
+        tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
+
+        // Get message call gas
+        let (gas_limit, _) = unsigned_div_rem(ctx.gas_left, 64);
+        let gas_limit = ctx.gas_left - gas_limit;
+
+        if (ctx.call_context.read_only != FALSE) {
+            let ctx = ExecutionContext.charge_gas(ctx, gas_limit);
+            let (revert_reason_len, revert_reason) = Errors.stateModificationError();
+            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
+            let ctx = ExecutionContext.update_state(ctx, state);
+            let ctx = ExecutionContext.update_stack(ctx, stack);
+            return ctx;
+        }
+
+        // TODO: Clear return data
+
+        // Check sender balance and nonce
+        let (state, sender) = State.get_account(state, ctx.call_context.address);
+        let is_nonce_overflow = is_le(Constants.MAX_NONCE + 1, sender.nonce);
+        let (is_balance_overflow) = uint256_lt([sender.balance], value);
+        // TODO: missing stack depth limit
+        if (is_nonce_overflow + is_balance_overflow != 0) {
+            let stack = Stack.push_uint128(stack, 0);
+            let ctx = ExecutionContext.update_state(ctx, state);
+            let ctx = ExecutionContext.update_stack(ctx, stack);
+            return ctx;
+        }
+
+        let ctx = ExecutionContext.charge_gas(ctx, gas_limit);
+
+        // Check target account availabitliy
+        let (state, account) = State.get_account(state, address);
+        let is_collision = Account.has_code_or_nonce(account);
+        if (is_collision != 0) {
+            let sender = Account.set_nonce(sender, sender.nonce + 1);
+            let state = State.set_account(state, ctx.call_context.address, sender);
+            let stack = Stack.push_uint128(stack, 0);
+            let ctx = ExecutionContext.update_state(ctx, state);
+            let ctx = ExecutionContext.update_stack(ctx, stack);
+            return ctx;
+        }
+
+        // Check code size
+        let code_size_too_big = is_le(2 * Constants.MAX_CODE_SIZE + 1, size.low);
+        if (code_size_too_big != FALSE) {
+            let ctx = ExecutionContext.charge_gas(ctx, ctx.gas_left + 1);
+            let ctx = ExecutionContext.update_state(ctx, state);
+            let ctx = ExecutionContext.update_stack(ctx, stack);
+            return ctx;
+        }
+
+        // Increment nonce
+        let sender = Account.set_nonce(sender, sender.nonce + 1);
+        let state = State.set_account(state, ctx.call_context.address, sender);
+
+        // Final update of calling context
+        let ctx = ExecutionContext.update_state(ctx, state);
         let ctx = ExecutionContext.update_stack(ctx, stack);
+        let state = State.copy(ctx.state);
 
-        let sub_ctx = CreateHelper.initialize_sub_context(ctx=ctx, popped_len=4, popped=popped);
+        // Create child message
+        let (calldata: felt*) = alloc();
+        tempvar call_context = new model.CallContext(
+            bytecode=bytecode,
+            bytecode_len=size.low,
+            calldata=calldata,
+            calldata_len=0,
+            value=value.low + value.high * 2 ** 128,
+            gas_price=ctx.call_context.gas_price,
+            origin=ctx.call_context.origin,
+            calling_context=ctx,
+            address=address,
+            read_only=FALSE,
+            is_create=TRUE,
+        );
+        let sub_ctx = ExecutionContext.init(call_context, gas_limit);
+
+        let (state, account) = State.get_account(state, address);
+        let account = Account.set_nonce(account, 1);
+        let state = State.set_account(state, address, account);
+
+        let transfer = model.Transfer(ctx.call_context.address, address, value);
+        let (state, success) = State.add_transfer(state, transfer);
+        let sub_ctx = ExecutionContext.update_state(sub_ctx, state);
+        if (success == 0) {
+            let stack = Stack.push_uint128(stack, 0);
+            let sub_ctx = ExecutionContext.update_state(sub_ctx, state);
+            let sub_ctx = ExecutionContext.update_stack(sub_ctx, stack);
+            return sub_ctx;
+        }
 
         return sub_ctx;
     }
@@ -116,8 +204,7 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        // TODO: map the concept of consuming all the gas given to the context
-        alloc_locals;
+        let ctx = ExecutionContext.charge_gas(ctx, ctx.gas_left);
         let (revert_reason: felt*) = alloc();
         let ctx = ExecutionContext.stop(ctx, 0, revert_reason, TRUE);
         return ctx;
@@ -144,7 +231,9 @@ namespace SystemOperations {
         let size = popped[1];
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + size.low);
+        let memory_expansion_cost = Gas.memory_expansion_cost(
+            ctx.memory.words_len, offset.low + size.low
+        );
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
@@ -180,7 +269,9 @@ namespace SystemOperations {
         let size = popped[1];
         let ctx = ExecutionContext.update_stack(ctx, stack);
 
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + size.low);
+        let memory_expansion_cost = Gas.memory_expansion_cost(
+            ctx.memory.words_len, offset.low + size.low
+        );
         let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
         if (ctx.reverted != FALSE) {
             return ctx;
@@ -414,15 +505,14 @@ namespace CallHelper {
         let max_expansion = max_expansion_is_ret * (ret_offset + ret_size) + (
             1 - max_expansion_is_ret
         ) * (args_offset + args_size);
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, max_expansion);
+        let memory_expansion_cost = Gas.memory_expansion_cost(ctx.memory.words_len, max_expansion);
 
         // Access list
         // TODO
 
         // Max between given gas arg and max allowed gas := available_gas - (available_gas // 64)
-        let available_gas = ctx.call_context.gas_limit - ctx.gas_used;
-        let (max_message_call_gas, _) = unsigned_div_rem(available_gas, 64);
-        tempvar max_message_call_gas = available_gas - max_message_call_gas;
+        let (max_message_call_gas, _) = unsigned_div_rem(ctx.gas_left, 64);
+        tempvar max_message_call_gas = ctx.gas_left - max_message_call_gas;
         let (max_message_call_gas_high, max_message_call_gas_low) = split_felt(
             max_message_call_gas
         );
@@ -457,6 +547,7 @@ namespace CallHelper {
                 calldata=calldata,
                 value=value,
                 calling_context=ctx,
+                gas_left=gas_limit,
             );
 
             return sub_ctx;
@@ -479,7 +570,6 @@ namespace CallHelper {
             calldata=calldata,
             calldata_len=args_size,
             value=value,
-            gas_limit=gas_limit,
             gas_price=ctx.call_context.gas_price,
             origin=ctx.call_context.origin,
             calling_context=ctx,
@@ -487,7 +577,7 @@ namespace CallHelper {
             read_only=read_only,
             is_create=FALSE,
         );
-        let sub_ctx = ExecutionContext.init(call_context, 0);
+        let sub_ctx = ExecutionContext.init(call_context, gas_limit);
         let state = State.copy(ctx.state);
         let sub_ctx = ExecutionContext.update_state(sub_ctx, state);
         return sub_ctx;
@@ -520,9 +610,7 @@ namespace CallHelper {
         );
 
         // Gas not used is returned when ctx is not reverted
-        let remaining_gas = (summary.call_context.gas_limit - summary.gas_used) * (
-            1 - summary.reverted
-        );
+        let remaining_gas = summary.gas_left * (1 - summary.reverted);
         tempvar ctx = new model.ExecutionContext(
             state=summary.calling_context.state,
             call_context=summary.calling_context.call_context,
@@ -532,7 +620,7 @@ namespace CallHelper {
             return_data=summary.return_data,
             program_counter=summary.calling_context.program_counter,
             stopped=summary.calling_context.stopped,
-            gas_used=summary.calling_context.gas_used - remaining_gas,
+            gas_left=summary.calling_context.gas_left + remaining_gas,
             reverted=summary.calling_context.reverted,
         );
 
@@ -563,33 +651,41 @@ namespace CreateHelper {
         bitwise_ptr: BitwiseBuiltin*,
     }(sender_address: felt, nonce: felt) -> (evm_contract_address: felt) {
         alloc_locals;
+        local message_len;
+        // rlp([address, nonce]) inlined to save unnecessary expensive general RLP encoding
+        // final bytes is either
+        // (0xc0 + bytes_lenght) + (0x80 + 20) + address + nonce
+        // or
+        // (0xc0 + bytes_lenght) + (0x80 + 20) + address + (0x80 + nonce_len) + nonce
+        let (message: felt*) = alloc();
+        assert [message + 1] = 0x80 + 20;
+        felt_to_bytes20(message + 2, sender_address);
+        let encode_nonce = is_le(0x80, nonce);
+        if (encode_nonce != FALSE) {
+            let nonce_len = felt_to_bytes(message + 2 + 20 + 1, nonce);
+            assert [message + 2 + 20] = 0x80 + nonce_len;
+            assert message_len = 1 + 1 + 20 + 1 + nonce_len;
+        } else {
+            let is_nonce_not_zero = is_not_zero(nonce);
+            let encoded_nonce = nonce * is_nonce_not_zero + (1 - is_nonce_not_zero) * 0x80;
+            assert [message + 2 + 20] = encoded_nonce;
+            assert message_len = 1 + 1 + 20 + 1;
+        }
+        assert message[0] = message_len + 0xc0 - 1;
+
+        let (message_bytes8: felt*) = alloc();
+        bytes_to_bytes8_little_endian(message_bytes8, message_len, message);
+
         let (keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
-
-        let (local address_packed_bytes: felt*) = alloc();
-        felt_to_bytes20(address_packed_bytes, sender_address);
-
-        // encode address rlp
-        let (local packed_bytes: felt*) = alloc();
-        let (packed_bytes_len) = RLP.encode_byte_array(20, address_packed_bytes, 0, packed_bytes);
-
-        // encode nonce rlp
-        let (packed_bytes_len) = RLP.encode_felt(nonce, packed_bytes_len, packed_bytes);
-
-        let (local rlp_list: felt*) = alloc();
-        let (rlp_list_len: felt) = RLP.encode_list(packed_bytes_len, packed_bytes, rlp_list);
-
-        let (local packed_bytes8: felt*) = alloc();
-        bytes_to_bytes8_little_endian(packed_bytes8, rlp_list_len, rlp_list);
-
         with keccak_ptr {
-            let (create_hash) = cairo_keccak_bigend(inputs=packed_bytes8, n_bytes=rlp_list_len);
+            let (message_hash) = cairo_keccak_bigend(message_bytes8, message_len);
         }
 
         finalize_keccak(keccak_ptr_start, keccak_ptr);
 
-        let create_address = uint256_to_uint160(create_hash);
-        return (create_address,);
+        let address = uint256_to_uint160(message_hash);
+        return (address,);
     }
 
     // @notice Constructs an evm contract address for the create2 opcode
@@ -677,112 +773,6 @@ namespace CreateHelper {
         }
     }
 
-    // @notice Deploy a new Contract account and initialize a sub context at these addresses
-    //         with bytecode from calling context memory.
-    // @param ctx The pointer to the calling context.
-    // @param popped_len The length of popped.
-    // @param popped The memory.
-    // @return ExecutionContext The pointer to the updated calling context.
-    func initialize_sub_context{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*, popped_len: felt, popped: Uint256*) -> model.ExecutionContext* {
-        alloc_locals;
-
-        let value = popped[0];
-        let offset = popped[1];
-        let size = popped[2];
-
-        // Gas
-        let memory_expansion_cost = Memory.expansion_cost(ctx.memory, offset.low + size.low);
-        let (init_code_gas, _) = unsigned_div_rem(size.low + 31, 31);
-        let init_code_gas = 2 * init_code_gas;
-        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost + init_code_gas);
-        if (ctx.reverted != FALSE) {
-            return ctx;
-        }
-
-        let (bytecode: felt*) = alloc();
-        let memory = Memory.load_n(ctx.memory, size.low, bytecode, offset.low);
-        let ctx = ExecutionContext.update_memory(ctx, memory);
-
-        // Get target account
-        let (state, evm_contract_address) = get_evm_address(
-            ctx.state, ctx.call_context.address, popped_len, popped, size.low, bytecode
-        );
-        let (starknet_contract_address) = Account.compute_starknet_address(evm_contract_address);
-        tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
-
-        let (state, sender) = State.get_account(state, ctx.call_context.address);
-        let ctx = ExecutionContext.update_state(ctx, state);
-        let balance = [sender.balance];
-        let (insufficient_balance) = uint256_lt(balance, value);
-        if (insufficient_balance != 0) {
-            let stack = Stack.push_uint128(ctx.stack, 0);
-            let ctx = ExecutionContext.update_stack(ctx, stack);
-            return ctx;
-        }
-
-        let available_gas = ctx.call_context.gas_limit - ctx.gas_used;
-        let (gas_limit, _) = unsigned_div_rem(available_gas, 64);
-        let gas_limit = available_gas - gas_limit;
-        let ctx = ExecutionContext.charge_gas(ctx, gas_limit);
-
-        let sender = Account.set_nonce(sender, sender.nonce + 1);
-        let state = State.set_account(state, ctx.call_context.address, sender);
-        let ctx = ExecutionContext.update_state(ctx, state);
-
-        let (state, account) = State.get_account(state, address);
-        let is_collision = Account.has_code_or_nonce(account);
-        if (is_collision != 0) {
-            let stack = Stack.push_uint128(ctx.stack, 0);
-            let ctx = ExecutionContext.update_stack(ctx, stack);
-            let ctx = ExecutionContext.update_state(ctx, state);
-            return ctx;
-        }
-        let account = Account.set_nonce(account, 1);
-        let state = State.set_account(state, address, account);
-        let ctx = ExecutionContext.update_state(ctx, state);
-
-        // Create sub context with copied state
-        let state = State.copy(ctx.state);
-        let (state, account) = State.get_account(state, address);
-        let state = State.set_account(state, address, account);
-        let (calldata: felt*) = alloc();
-        tempvar call_context: model.CallContext* = new model.CallContext(
-            bytecode=bytecode,
-            bytecode_len=size.low,
-            calldata=calldata,
-            calldata_len=0,
-            value=value.low,
-            gas_limit=gas_limit,
-            gas_price=ctx.call_context.gas_price,
-            origin=ctx.call_context.origin,
-            calling_context=ctx,
-            address=address,
-            read_only=FALSE,
-            is_create=TRUE,
-        );
-        let sub_ctx = ExecutionContext.init(call_context, 0);
-
-        let transfer = model.Transfer(
-            sender=ctx.call_context.address, recipient=address, amount=value
-        );
-        let (state, success) = State.add_transfer(state, transfer);
-
-        if (success == 0) {
-            let (revert_reason_len, revert_reason) = Errors.balanceError();
-            let sub_ctx = ExecutionContext.stop(sub_ctx, revert_reason_len, revert_reason, TRUE);
-            let sub_ctx = ExecutionContext.update_state(sub_ctx, state);
-            return sub_ctx;
-        }
-        let sub_ctx = ExecutionContext.update_state(sub_ctx, state);
-
-        return sub_ctx;
-    }
-
     // @notice At the end of a sub-context initiated with CREATE or CREATE2, the calling context's stack is updated.
     // @param ctx The pointer to the calling context.
     // @return ExecutionContext The pointer to the updated calling context.
@@ -795,10 +785,11 @@ namespace CreateHelper {
         alloc_locals;
 
         // Charge final deposit gas
+        let code_size_limit = is_le(summary.return_data_len, 0x6000);
         let code_deposit_cost = 200 * summary.return_data_len;
-        let remaining_gas = summary.call_context.gas_limit - summary.gas_used - code_deposit_cost;
+        let remaining_gas = summary.gas_left - code_deposit_cost;
         let enough_gas = is_nn(remaining_gas);
-        let success = (1 - summary.reverted) * enough_gas;
+        let success = (1 - summary.reverted) * enough_gas * code_size_limit;
 
         // Stack output: the address of the deployed contract, 0 if the deployment failed.
         let (address_high, address_low) = split_felt(summary.address.evm * success);
@@ -817,7 +808,7 @@ namespace CreateHelper {
             return_data=summary.return_data,
             program_counter=summary.calling_context.program_counter,
             stopped=summary.calling_context.stopped,
-            gas_used=summary.calling_context.gas_used - remaining_gas * success,
+            gas_left=summary.calling_context.gas_left + remaining_gas * success,
             reverted=summary.calling_context.reverted,
         );
 

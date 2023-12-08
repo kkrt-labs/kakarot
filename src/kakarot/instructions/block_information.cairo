@@ -93,13 +93,11 @@ namespace BlockInformation {
         jmp end;
 
         gaslimit:
-        let ctx = cast([fp - 3], model.ExecutionContext*);
-        tempvar gas_limit = ctx.call_context.gas_limit;
         tempvar syscall_ptr = cast([fp - 7], felt*);
         tempvar pedersen_ptr = cast([fp - 6], HashBuiltin*);
         tempvar range_check_ptr = [fp - 5];
         tempvar ctx = cast([fp - 3], model.ExecutionContext*);
-        tempvar result = Uint256(gas_limit, 0);
+        tempvar result = Uint256(Constants.BLOCK_GAS_LIMIT, 0);
         jmp end;
 
         chainid:
