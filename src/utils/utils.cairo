@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: MIT
 
-%lang starknet
-
 // StarkWare dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import assert_le, split_felt, assert_nn_le, unsigned_div_rem
@@ -13,7 +11,6 @@ from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_update
 
 from utils.bytes import uint256_to_bytes32

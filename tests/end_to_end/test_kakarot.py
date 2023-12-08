@@ -73,9 +73,7 @@ class TestKakarot:
                 if params["stack"]
                 else []
             )
-            assert extract_memory_from_execute(result) == hex_string_to_bytes_array(
-                params["memory"]
-            )
+            assert bytes(extract_memory_from_execute(result)).hex() == params["memory"]
             assert bytes(result.return_data).hex() == params["return_data"]
 
             events = params.get("events")

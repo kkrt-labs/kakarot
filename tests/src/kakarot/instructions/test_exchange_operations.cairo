@@ -11,7 +11,7 @@ from starkware.cairo.common.uint256 import Uint256
 from utils.utils import Helpers
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.execution_context import ExecutionContext
+from kakarot.evm import EVM
 from kakarot.instructions.exchange_operations import ExchangeOperations
 from tests.utils.helpers import TestHelpers
 
@@ -22,13 +22,13 @@ func test__exec_swap{
     let stack_ = TestHelpers.init_stack_with_values(stack_len, stack);
     let (bytecode) = alloc();
     assert [bytecode] = i + 0x8f;
-    let ctx = TestHelpers.init_context_with_stack(1, bytecode, stack_);
+    let evm = TestHelpers.init_context_with_stack(1, bytecode, stack_);
 
     // When
-    let ctx = ExchangeOperations.exec_swap(ctx);
+    let evm = ExchangeOperations.exec_swap(evm);
 
     // Then
-    let stack_ = ctx.stack;
+    let stack_ = evm.stack;
     let (stack_, top) = Stack.peek(stack_, 0);
     let (stack_, swapped) = Stack.peek(stack_, i);
     return ([top], [swapped]);

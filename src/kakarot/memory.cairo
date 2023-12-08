@@ -1,19 +1,12 @@
 // SPDX-License-Identifier: MIT
 
-%lang starknet
-
-// Starkware dependencies
-from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.dict import DictAccess, dict_read, dict_write
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
-from starkware.cairo.common.math import split_int, unsigned_div_rem
+from starkware.cairo.common.dict import DictAccess, dict_read, dict_write
+from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le
-from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
 
-// Internal dependencies
 from kakarot.model import model
 from utils.utils import Helpers
 

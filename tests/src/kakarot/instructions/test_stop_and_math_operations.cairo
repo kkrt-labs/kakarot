@@ -12,7 +12,7 @@ from starkware.cairo.common.uint256 import Uint256
 from utils.utils import Helpers
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.execution_context import ExecutionContext
+from kakarot.evm import EVM
 from kakarot.instructions.stop_and_math_operations import StopAndMathOperations
 from tests.utils.helpers import TestHelpers
 
@@ -23,13 +23,13 @@ func test__exec_stop{
     alloc_locals;
 
     let (bytecode) = alloc();
-    let ctx = TestHelpers.init_context(0, bytecode);
-    assert ctx.stopped = FALSE;
+    let evm = TestHelpers.init_context(0, bytecode);
+    assert evm.stopped = FALSE;
 
-    let stopped_ctx = StopAndMathOperations.exec_stop(ctx);
+    let stopped_evm = StopAndMathOperations.exec_stop(evm);
 
-    assert stopped_ctx.stopped = TRUE;
-    assert stopped_ctx.return_data_len = 0;
+    assert stopped_evm.stopped = TRUE;
+    assert stopped_evm.return_data_len = 0;
 
     return ();
 }
@@ -43,13 +43,13 @@ func test__exec_math_operation{
     let (bytecode) = alloc();
     assert [bytecode] = opcode;
     let stack_ = TestHelpers.init_stack_with_values(stack_len, stack);
-    let ctx = TestHelpers.init_context_with_stack(1, bytecode, stack_);
+    let evm = TestHelpers.init_context_with_stack(1, bytecode, stack_);
 
     // When
-    let ctx = StopAndMathOperations.exec_math_operation(ctx);
+    let evm = StopAndMathOperations.exec_math_operation(evm);
 
     // Then
-    let (_, result) = Stack.peek(ctx.stack, 0);
+    let (_, result) = Stack.peek(evm.stack, 0);
     assert result[0] = expected_result;
     return ();
 }

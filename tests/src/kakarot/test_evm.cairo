@@ -19,8 +19,8 @@ func test__unknown_opcode{
 }() -> (revert_reason_len: felt, revert_reason: felt*) {
     alloc_locals;
     let (bytecode) = alloc();
-    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
-    let ctx = EVM.unknown_opcode(ctx);
+    let evm: model.EVM* = TestHelpers.init_context(0, bytecode);
+    let evm = EVM.unknown_opcode(evm);
 
-    return (ctx.return_data_len, ctx.return_data);
+    return (evm.return_data_len, evm.return_data);
 }

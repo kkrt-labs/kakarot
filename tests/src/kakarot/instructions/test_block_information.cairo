@@ -16,7 +16,7 @@ from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.constants import Constants
 from kakarot.storages import blockhash_registry_address
-from kakarot.execution_context import ExecutionContext
+from kakarot.evm import EVM
 from kakarot.instructions.block_information import BlockInformation
 from tests.utils.helpers import TestHelpers
 
@@ -58,14 +58,14 @@ func test__exec_block_information{
         let stack_ = stack_;
         tempvar range_check_ptr = range_check_ptr;
     }
-    let ctx = TestHelpers.init_context_with_stack(1, bytecode, stack_);
+    let evm = TestHelpers.init_context_with_stack(1, bytecode, stack_);
 
     // When
-    let ctx = BlockInformation.exec_block_information(ctx);
+    let evm = BlockInformation.exec_block_information(evm);
 
     // Then
     let (timestamp) = get_block_timestamp();
     let (block_number) = get_block_number();
-    let (_, result) = Stack.peek(ctx.stack, 0);
+    let (_, result) = Stack.peek(evm.stack, 0);
     return (result[0], timestamp, block_number);
 }

@@ -2,29 +2,22 @@
 
 %lang starknet
 
-// Starkware dependencies
-
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
-from starkware.cairo.common.uint256 import Uint256
-from starkware.cairo.common.bool import TRUE, FALSE
-from starkware.cairo.common.math_cmp import is_le
 
-// Internal dependencies
 from kakarot.account import Account
-from kakarot.errors import Errors
-from kakarot.execution_context import ExecutionContext
+from kakarot.evm import EVM
+from kakarot.gas import Gas
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.state import State
-from kakarot.gas import Gas
-from utils.utils import Helpers
-from kakarot.constants import Constants
-from utils.uint256 import uint256_to_uint160
 from utils.array import slice
 from utils.bytes import bytes_to_bytes8_little_endian
+from utils.uint256 import uint256_to_uint160
+from utils.utils import Helpers
 
 // @title Environmental information opcodes.
 // @notice This file contains the functions to execute for environmental information opcodes.
@@ -34,11 +27,11 @@ namespace EnvironmentalInformation {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let address = Helpers.to_uint256(ctx.call_context.address.evm);
-        let stack = Stack.push(ctx.stack, address);
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        return ctx;
+        stack: model.Stack*,
+    }(evm: model.EVM*) -> model.EVM* {
+        let address = Helpers.to_uint256(evm.message.address.evm);
+        Stack.push(address);
+        return evm;
     }
 
     func exec_balance{
@@ -46,20 +39,20 @@ namespace EnvironmentalInformation {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        stack: model.Stack*,
+    }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
-        let (stack, address_uint256) = Stack.pop(ctx.stack);
+        let (address_uint256) = Stack.pop();
 
         let evm_address = uint256_to_uint160([address_uint256]);
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
-        let (state, account) = State.get_account(ctx.state, address);
-        let stack = Stack.push_uint256(stack, [account.balance]);
+        let (state, account) = State.get_account(evm.state, address);
+        Stack.push_uint256([account.balance]);
 
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        let ctx = ExecutionContext.update_state(ctx, state);
-        return ctx;
+        let evm = EVM.update_state(evm, state);
+        return evm;
     }
 
     func exec_origin{
@@ -67,12 +60,12 @@ namespace EnvironmentalInformation {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let origin_address = Helpers.to_uint256(ctx.call_context.origin.evm);
+        stack: model.Stack*,
+    }(evm: model.EVM*) -> model.EVM* {
+        let origin_address = Helpers.to_uint256(evm.message.origin.evm);
 
-        let stack = Stack.push(self=ctx.stack, element=origin_address);
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        return ctx;
+        Stack.push(origin_address);
+        return evm;
     }
 
     func exec_caller{
@@ -80,18 +73,16 @@ namespace EnvironmentalInformation {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let calling_context = ctx.call_context.calling_context;
-        let is_root = ExecutionContext.is_empty(calling_context);
-        if (is_root == 0) {
-            tempvar caller = calling_context.call_context.address.evm;
+        stack: model.Stack*,
+    }(evm: model.EVM*) -> model.EVM* {
+        if (evm.message.depth == 0) {
+            tempvar caller = evm.message.origin.evm;
         } else {
-            tempvar caller = ctx.call_context.origin.evm;
+            tempvar caller = evm.message.parent.evm.message.address.evm;
         }
         let address = Helpers.to_uint256(caller);
-        let stack = Stack.push(ctx.stack, address);
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        return ctx;
+        Stack.push(address);
+        return evm;
     }
 
     func exec_callvalue{
@@ -99,12 +90,12 @@ namespace EnvironmentalInformation {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let value = Helpers.to_uint256(ctx.call_context.value);
-        let stack = Stack.push(ctx.stack, value);
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        stack: model.Stack*,
+    }(evm: model.EVM*) -> model.EVM* {
+        let value = Helpers.to_uint256(evm.message.value);
+        Stack.push(value);
 
-        return ctx;
+        return evm;
     }
 
     func exec_calldataload{
@@ -112,24 +103,18 @@ namespace EnvironmentalInformation {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        stack: model.Stack*,
+    }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
-        let (stack, offset) = Stack.pop(ctx.stack);
+        let (offset) = Stack.pop();
 
         let (sliced_calldata: felt*) = alloc();
-        slice(
-            sliced_calldata,
-            ctx.call_context.calldata_len,
-            ctx.call_context.calldata,
-            offset.low,
-            32,
-        );
+        slice(sliced_calldata, evm.message.calldata_len, evm.message.calldata, offset.low, 32);
         let calldata = Helpers.bytes32_to_uint256(sliced_calldata);
-        let stack = Stack.push_uint256(stack, calldata);
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        Stack.push_uint256(calldata);
 
-        return ctx;
+        return evm;
     }
 
     func exec_calldatasize{
@@ -137,10 +122,10 @@ namespace EnvironmentalInformation {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let stack = Stack.push_uint128(ctx.stack, ctx.call_context.calldata_len);
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        return ctx;
+        stack: model.Stack*,
+    }(evm: model.EVM*) -> model.EVM* {
+        Stack.push_uint128(evm.message.calldata_len);
+        return evm;
     }
 
     func exec_calldatacopy{
@@ -148,37 +133,32 @@ namespace EnvironmentalInformation {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        stack: model.Stack*,
+    }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
-        let (stack, popped) = Stack.pop_n(ctx.stack, 3);
+        let (popped) = Stack.pop_n(3);
         let dest_offset = popped[0];
         let offset = popped[1];
         let size = popped[2];
 
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-
         let (sliced_calldata: felt*) = alloc();
         slice(
-            sliced_calldata,
-            ctx.call_context.calldata_len,
-            ctx.call_context.calldata,
-            offset.low,
-            size.low,
+            sliced_calldata, evm.message.calldata_len, evm.message.calldata, offset.low, size.low
         );
 
         // Write caldata slice to memory at dest_offset
         let memory_expansion_cost = Gas.memory_expansion_cost(
-            ctx.memory.words_len, dest_offset.low + size.low
+            evm.memory.words_len, dest_offset.low + size.low
         );
-        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
-        if (ctx.reverted != FALSE) {
-            return ctx;
+        let evm = EVM.charge_gas(evm, memory_expansion_cost);
+        if (evm.reverted != FALSE) {
+            return evm;
         }
-        let memory = Memory.store_n(ctx.memory, size.low, sliced_calldata, dest_offset.low);
-        let ctx = ExecutionContext.update_memory(ctx, memory);
+        let memory = Memory.store_n(evm.memory, size.low, sliced_calldata, dest_offset.low);
+        let evm = EVM.update_memory(evm, memory);
 
-        return ctx;
+        return evm;
     }
 
     func exec_codesize{
@@ -186,10 +166,10 @@ namespace EnvironmentalInformation {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let stack = Stack.push_uint128(ctx.stack, ctx.call_context.bytecode_len);
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        return ctx;
+        stack: model.Stack*,
+    }(evm: model.EVM*) -> model.EVM* {
+        Stack.push_uint128(evm.message.bytecode_len);
+        return evm;
     }
 
     func exec_codecopy{
@@ -197,36 +177,30 @@ namespace EnvironmentalInformation {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        stack: model.Stack*,
+    }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
-        let (stack, popped) = Stack.pop_n(ctx.stack, 3);
+        let (popped) = Stack.pop_n(3);
         let dest_offset = popped[0];
         let offset = popped[1];
         let size = popped[2];
-        let ctx = ExecutionContext.update_stack(ctx, stack);
 
         let (local sliced_code: felt*) = alloc();
-        slice(
-            sliced_code,
-            ctx.call_context.bytecode_len,
-            ctx.call_context.bytecode,
-            offset.low,
-            size.low,
-        );
+        slice(sliced_code, evm.message.bytecode_len, evm.message.bytecode, offset.low, size.low);
 
         // Write bytecode slice to memory at dest_offset
         let memory_expansion_cost = Gas.memory_expansion_cost(
-            ctx.memory.words_len, dest_offset.low + size.low
+            evm.memory.words_len, dest_offset.low + size.low
         );
-        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
-        if (ctx.reverted != FALSE) {
-            return ctx;
+        let evm = EVM.charge_gas(evm, memory_expansion_cost);
+        if (evm.reverted != FALSE) {
+            return evm;
         }
-        let memory = Memory.store_n(ctx.memory, size.low, sliced_code, dest_offset.low);
+        let memory = Memory.store_n(evm.memory, size.low, sliced_code, dest_offset.low);
 
-        let ctx = ExecutionContext.update_memory(ctx, memory);
-        return ctx;
+        let evm = EVM.update_memory(evm, memory);
+        return evm;
     }
 
     func exec_gasprice{
@@ -234,15 +208,14 @@ namespace EnvironmentalInformation {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        stack: model.Stack*,
+    }(evm: model.EVM*) -> model.EVM* {
         // TODO: since gas_price is a felt, it might panic when being cast to a Uint256.low,
         // Add check gas_price < 2 ** 128
         // `split_felt` might be too expensive for this if we know gas_price < 2 ** 128
-        let stack = Stack.push_uint128(ctx.stack, ctx.call_context.gas_price);
+        Stack.push_uint128(evm.message.gas_price);
 
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-
-        return ctx;
+        return evm;
     }
 
     func exec_extcodesize{
@@ -250,22 +223,22 @@ namespace EnvironmentalInformation {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        stack: model.Stack*,
+    }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
-        let (stack, address_uint256) = Stack.pop(ctx.stack);
+        let (address_uint256) = Stack.pop();
         let evm_address = uint256_to_uint160([address_uint256]);
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
-        let (state, account) = State.get_account(ctx.state, address);
+        let (state, account) = State.get_account(evm.state, address);
 
         // bytecode_len cannot be greater than 24k in the EVM
-        let stack = Stack.push_uint128(stack, account.code_len);
+        Stack.push_uint128(account.code_len);
 
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        let ctx = ExecutionContext.update_state(ctx, state);
+        let evm = EVM.update_state(evm, state);
 
-        return ctx;
+        return evm;
     }
 
     func exec_extcodecopy{
@@ -273,37 +246,37 @@ namespace EnvironmentalInformation {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        stack: model.Stack*,
+    }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
-        let (stack, popped) = Stack.pop_n(ctx.stack, 4);
+        let (popped) = Stack.pop_n(4);
         let dest_offset = popped[1];
         let offset = popped[2];
         let size = popped[3];
-        let ctx = ExecutionContext.update_stack(ctx, stack);
 
         let evm_address = uint256_to_uint160(popped[0]);
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
-        let (state, account) = State.get_account(ctx.state, address);
+        let (state, account) = State.get_account(evm.state, address);
 
         let (sliced_bytecode: felt*) = alloc();
         slice(sliced_bytecode, account.code_len, account.code, offset.low, size.low);
 
         // Write bytecode slice to memory at dest_offset
         let memory_expansion_cost = Gas.memory_expansion_cost(
-            ctx.memory.words_len, dest_offset.low + size.low
+            evm.memory.words_len, dest_offset.low + size.low
         );
-        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
-        if (ctx.reverted != FALSE) {
-            return ctx;
+        let evm = EVM.charge_gas(evm, memory_expansion_cost);
+        if (evm.reverted != FALSE) {
+            return evm;
         }
-        let memory = Memory.store_n(ctx.memory, size.low, sliced_bytecode, dest_offset.low);
+        let memory = Memory.store_n(evm.memory, size.low, sliced_bytecode, dest_offset.low);
 
-        let ctx = ExecutionContext.update_memory(ctx, memory);
-        let ctx = ExecutionContext.update_state(ctx, state);
+        let evm = EVM.update_memory(evm, memory);
+        let evm = EVM.update_state(evm, state);
 
-        return ctx;
+        return evm;
     }
 
     func exec_returndatasize{
@@ -311,10 +284,10 @@ namespace EnvironmentalInformation {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let stack = Stack.push_uint128(ctx.stack, ctx.return_data_len);
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        return ctx;
+        stack: model.Stack*,
+    }(evm: model.EVM*) -> model.EVM* {
+        Stack.push_uint128(evm.return_data_len);
+        return evm;
     }
 
     func exec_returndatacopy{
@@ -322,28 +295,28 @@ namespace EnvironmentalInformation {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        stack: model.Stack*,
+    }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
-        let (stack, popped) = Stack.pop_n(ctx.stack, 3);
+        let (popped) = Stack.pop_n(3);
         let dest_offset = popped[0];
         let offset = popped[1];
         let size = popped[2];
-        let ctx = ExecutionContext.update_stack(ctx, stack);
 
         let sliced_return_data: felt* = alloc();
-        slice(sliced_return_data, ctx.return_data_len, ctx.return_data, offset.low, size.low);
+        slice(sliced_return_data, evm.return_data_len, evm.return_data, offset.low, size.low);
 
         let memory_expansion_cost = Gas.memory_expansion_cost(
-            ctx.memory.words_len, dest_offset.low + size.low
+            evm.memory.words_len, dest_offset.low + size.low
         );
-        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
-        if (ctx.reverted != FALSE) {
-            return ctx;
+        let evm = EVM.charge_gas(evm, memory_expansion_cost);
+        if (evm.reverted != FALSE) {
+            return evm;
         }
-        let memory = Memory.store_n(ctx.memory, size.low, sliced_return_data, dest_offset.low);
-        let ctx = ExecutionContext.update_memory(ctx, memory);
-        return ctx;
+        let memory = Memory.store_n(evm.memory, size.low, sliced_return_data, dest_offset.low);
+        let evm = EVM.update_memory(evm, memory);
+        return evm;
     }
 
     func exec_extcodehash{
@@ -351,25 +324,25 @@ namespace EnvironmentalInformation {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        stack: model.Stack*,
+    }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
-        let (stack, address_uint256) = Stack.pop(ctx.stack);
+        let (address_uint256) = Stack.pop();
         let evm_address = uint256_to_uint160([address_uint256]);
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
 
-        let (state, account) = State.get_account(ctx.state, address);
+        let (state, account) = State.get_account(evm.state, address);
         let has_code_or_nonce = Account.has_code_or_nonce(account);
         let (state, account) = State.get_account(state, address);
         let account_exists = has_code_or_nonce + account.balance.low;
         // Relevant cases:
         // https://github.com/ethereum/go-ethereum/blob/master/core/vm/instructions.go#L392
         if (account_exists == 0) {
-            let stack = Stack.push_uint128(stack, 0);
-            let ctx = ExecutionContext.update_stack(ctx, stack);
-            let ctx = ExecutionContext.update_state(ctx, state);
-            return ctx;
+            Stack.push_uint128(0);
+            let evm = EVM.update_state(evm, state);
+            return evm;
         }
 
         let (local dst: felt*) = alloc();
@@ -384,12 +357,10 @@ namespace EnvironmentalInformation {
 
         finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
 
-        tempvar hash = new Uint256(result.low, result.high);
-        let stack = Stack.push(stack, hash);
+        Stack.push_uint256(result);
 
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        let ctx = ExecutionContext.update_state(ctx, state);
+        let evm = EVM.update_state(evm, state);
 
-        return ctx;
+        return evm;
     }
 }

@@ -24,7 +24,7 @@ from kakarot.storages import (
     account_proxy_class_hash,
     native_token_address,
 )
-from kakarot.execution_context import ExecutionContext
+from kakarot.evm import EVM
 from kakarot.instructions.environmental_information import EnvironmentalInformation
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.system_operations import CreateHelper
@@ -66,18 +66,18 @@ func approve{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
 func init_context{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() -> model.ExecutionContext* {
+}() -> model.EVM* {
     alloc_locals;
 
-    // Initialize CallContext
+    // Initialize Message
     let (bytecode) = alloc();
     assert [bytecode] = 00;
     tempvar bytecode_len = 1;
     let (calldata) = alloc();
     assert [calldata] = '';
-    let calling_context = ExecutionContext.init_empty();
+    let parent = EVM.init_empty();
     tempvar address = new model.Address(0, 420);
-    local call_context: model.CallContext* = new model.CallContext(
+    local message: model.Message* = new model.Message(
         bytecode=bytecode,
         bytecode_len=bytecode_len,
         calldata=calldata,
@@ -85,15 +85,16 @@ func init_context{
         value=0,
         gas_price=0,
         origin=address,
-        calling_context=calling_context,
+        parent=parent,
         address=address,
         read_only=FALSE,
         is_create=FALSE,
+        depth=0,
     );
 
-    // Initialize ExecutionContext
-    let ctx = ExecutionContext.init(call_context, Constants.TRANSACTION_GAS_LIMIT);
-    return ctx;
+    // Initialize EVM
+    let evm = EVM.init(message, Constants.TRANSACTION_GAS_LIMIT);
+    return evm;
 }
 
 @view
@@ -102,10 +103,10 @@ func test__exec_address__should_push_address_to_stack{
 }() {
     // Given
     alloc_locals;
-    let ctx: model.ExecutionContext* = init_context();
+    let evm: model.EVM* = init_context();
 
     // When
-    let result = EnvironmentalInformation.exec_address(ctx);
+    let result = EnvironmentalInformation.exec_address(evm);
 
     // The
     assert result.stack.size = 1;
@@ -134,15 +135,13 @@ func test__exec_extcodesize__should_handle_address_with_no_code{
 
     let bytecode_len = 0;
     let (bytecode) = alloc();
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(
-        bytecode_len, bytecode, stack
-    );
+    let evm: model.EVM* = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
 
     // When
-    let ctx = EnvironmentalInformation.exec_extcodesize(ctx);
+    let evm = EnvironmentalInformation.exec_extcodesize(evm);
 
     // Then
-    let (stack, extcodesize) = Stack.peek(ctx.stack, 0);
+    let (stack, extcodesize) = Stack.peek(evm.stack, 0);
     assert extcodesize.low = 0;
     assert extcodesize.high = 0;
 
@@ -178,12 +177,10 @@ func test__exec_extcodecopy__should_handle_address_with_code{
     let stack = Stack.push(stack, item_1);  // dest_offset
     let stack = Stack.push(stack, item_0);  // address
 
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(
-        bytecode_len, bytecode, stack
-    );
+    let evm: model.EVM* = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
 
     // When
-    let result = EnvironmentalInformation.exec_extcodecopy(ctx);
+    let result = EnvironmentalInformation.exec_extcodecopy(evm);
 
     // Then
     assert result.stack.size = 0;
@@ -224,12 +221,10 @@ func test__exec_extcodecopy__should_handle_address_with_no_code{
     let (bytecode) = alloc();
     let bytecode_len = 0;
 
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(
-        bytecode_len, bytecode, stack
-    );
+    let evm: model.EVM* = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
 
     // When
-    let result = EnvironmentalInformation.exec_extcodecopy(ctx);
+    let result = EnvironmentalInformation.exec_extcodecopy(evm);
     let (output_array) = alloc();
     Memory.load_n(result.memory, 3, output_array, 32);
 
@@ -254,13 +249,11 @@ func test__exec_gasprice{
     assert [bytecode] = 00;
     tempvar bytecode_len = 1;
     let stack = Stack.init();
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(
-        bytecode_len, bytecode, stack
-    );
+    let evm: model.EVM* = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
 
-    let expected_gas_price_uint256 = Helpers.to_uint256(ctx.call_context.gas_price);
+    let expected_gas_price_uint256 = Helpers.to_uint256(evm.message.gas_price);
 
-    let result = EnvironmentalInformation.exec_gasprice(ctx);
+    let result = EnvironmentalInformation.exec_gasprice(evm);
     let (stack, gasprice) = Stack.peek(result.stack, 0);
 
     // The
@@ -281,7 +274,7 @@ func test__returndatacopy{
     let return_data_len: felt = 32;
 
     memset(return_data, 0xFF, return_data_len);
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_return_data(
+    let evm: model.EVM* = TestHelpers.init_context_with_return_data(
         0, bytecode, return_data_len, return_data
     );
 
@@ -298,13 +291,13 @@ func test__returndatacopy{
     let stack = Stack.push(stack, item_1);
     let stack = Stack.push(stack, item_0);
 
-    let ctx = ExecutionContext.update_stack(ctx, stack);
+    let evm = EVM.update_stack(evm, stack);
 
     // When
-    let ctx: model.ExecutionContext* = EnvironmentalInformation.exec_returndatacopy(ctx);
+    let evm: model.EVM* = EnvironmentalInformation.exec_returndatacopy(evm);
 
     // Then
-    let (memory, data) = Memory.load(ctx.memory, 0);
+    let (memory, data) = Memory.load(evm.memory, 0);
     assert_uint256_eq(
         data, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)
     );
@@ -319,11 +312,11 @@ func test__returndatacopy{
     let stack = Stack.push(stack, item_1);
     let stack = Stack.push(stack, item_0);
 
-    let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
-    let ctx: model.ExecutionContext* = ExecutionContext.update_memory(ctx, memory);
+    let evm: model.EVM* = EVM.update_stack(evm, stack);
+    let evm: model.EVM* = EVM.update_memory(evm, memory);
 
     // When
-    let result: model.ExecutionContext* = EnvironmentalInformation.exec_returndatacopy(ctx);
+    let result: model.EVM* = EnvironmentalInformation.exec_returndatacopy(evm);
 
     // Then
     // check first 32 bytes
@@ -352,12 +345,10 @@ func test__exec_extcodehash__should_handle_invalid_address{
     let stack = Stack.init();
     let stack = Stack.push(stack, address);
 
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(
-        bytecode_len, bytecode, stack
-    );
+    let evm: model.EVM* = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
 
     // When
-    let result = EnvironmentalInformation.exec_extcodehash(ctx);
+    let result = EnvironmentalInformation.exec_extcodehash(evm);
 
     // Then
     let (stack, extcodehash) = Stack.peek(result.stack, 0);
@@ -384,12 +375,10 @@ func test__exec_extcodehash__should_handle_address_with_code{
     let stack = Stack.init();
     let stack = Stack.push(stack, address);
 
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(
-        bytecode_len, bytecode, stack
-    );
+    let evm: model.EVM* = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
 
     // When
-    let result = EnvironmentalInformation.exec_extcodehash(ctx);
+    let result = EnvironmentalInformation.exec_extcodehash(evm);
 
     // Then
     let (stack, extcodehash) = Stack.peek(result.stack, 0);

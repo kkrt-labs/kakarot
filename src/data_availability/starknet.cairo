@@ -27,10 +27,9 @@ from kakarot.storages import (
 
 namespace Starknet {
     // @notice Commit the current state to the underlying data backend (here, Starknet)
-    // @dev Works on State.Summary to make sure only finalized states are committed.
     // @param self The pointer to the State
     func commit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: State.Summary*
+        self: model.State*
     ) {
         // Accounts
         Internals._commit_accounts(self.accounts_start, self.accounts);

@@ -12,7 +12,7 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp
 
 // Local dependencies
-from kakarot.evm import EVM
+from kakarot.interpreter import Interpreter
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.constants import Constants
@@ -49,12 +49,13 @@ func execute{
     bytecode: felt*,
     calldata_len: felt,
     calldata: felt*,
-) -> EVM.Summary* {
+) -> (model.EVM*, model.Stack*) {
     alloc_locals;
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
+
     tempvar address = new model.Address(1, 1);
-    let summary = EVM.execute(
+    let (evm, stack) = Interpreter.execute(
         address=address,
         is_deploy_tx=0,
         origin=&origin,
@@ -66,7 +67,7 @@ func execute{
         gas_limit=Constants.TRANSACTION_GAS_LIMIT,
         gas_price=0,
     );
-    return summary;
+    return (evm, stack);
 }
 
 @view
@@ -103,42 +104,38 @@ func evm_call{
     alloc_locals;
     let (local block_number) = get_block_number();
     let (local block_timestamp) = get_block_timestamp();
-    let summary = execute(origin, value, bytecode_len, bytecode, calldata_len, calldata);
+    let (evm, stack) = execute(origin, value, bytecode_len, bytecode, calldata_len, calldata);
 
-    let (stack_keys_len, stack_keys) = dict_keys(
-        summary.stack.squashed_start, summary.stack.squashed_end
-    );
-    let (stack_values_len, stack_values) = dict_values(
-        summary.stack.squashed_start, summary.stack.squashed_end
-    );
+    let (stack_keys_len, stack_keys) = dict_keys(stack.dict_ptr_start, stack.dict_ptr);
+    let (stack_values_len, stack_values) = dict_values(stack.dict_ptr_start, stack.dict_ptr);
 
-    let memory_accesses_len = summary.memory.squashed_end - summary.memory.squashed_start;
+    let memory_accesses_len = evm.memory.word_dict - evm.memory.word_dict_start;
 
     // Return only accounts keys, ie. touched starknet addresses
     let (account_addresses_len, account_addresses) = dict_keys(
-        summary.state.accounts_start, summary.state.accounts
+        evm.state.accounts_start, evm.state.accounts
     );
 
     return (
         block_number=block_number,
         block_timestamp=block_timestamp,
-        stack_size=summary.stack.size,
+        stack_size=stack.size,
         stack_keys_len=stack_keys_len,
         stack_keys=stack_keys,
         stack_values_len=stack_values_len,
         stack_values=stack_values,
         memory_accesses_len=memory_accesses_len,
-        memory_accesses=summary.memory.squashed_start,
-        memory_words_len=summary.memory.words_len,
+        memory_accesses=evm.memory.word_dict_start,
+        memory_words_len=evm.memory.words_len,
         account_addresses_len=account_addresses_len,
         account_addresses=account_addresses,
-        starknet_contract_address=summary.address.starknet,
-        evm_contract_address=summary.address.evm,
-        return_data_len=summary.return_data_len,
-        return_data=summary.return_data,
-        gas_left=summary.gas_left,
-        success=1 - summary.reverted,
-        program_counter=summary.program_counter,
+        starknet_contract_address=evm.message.address.starknet,
+        evm_contract_address=evm.message.address.evm,
+        return_data_len=evm.return_data_len,
+        return_data=evm.return_data,
+        gas_left=evm.gas_left,
+        success=1 - evm.reverted,
+        program_counter=evm.program_counter,
     );
 }
 
@@ -154,15 +151,15 @@ func evm_execute{
     calldata: felt*,
 ) -> (return_data_len: felt, return_data: felt*, success: felt) {
     alloc_locals;
-    let summary = execute(origin, value, bytecode_len, bytecode, calldata_len, calldata);
-    let result = (summary.return_data_len, summary.return_data, 1 - summary.reverted);
+    let (evm, stack) = execute(origin, value, bytecode_len, bytecode, calldata_len, calldata);
+    let result = (evm.return_data_len, evm.return_data, 1 - evm.reverted);
 
-    if (summary.reverted != FALSE) {
+    if (evm.reverted != FALSE) {
         return result;
     }
 
     // We just emit the events as committing the accounts is out of the scope of these EVM
-    // tests and requires a real CallContext.address (not Address(1, 1))
-    Starknet._emit_events(summary.state.events_len, summary.state.events);
+    // tests and requires a real Message.address (not Address(1, 1))
+    Starknet._emit_events(evm.state.events_len, evm.state.events);
     return result;
 }

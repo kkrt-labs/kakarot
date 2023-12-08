@@ -11,7 +11,7 @@ from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from utils.utils import Helpers
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.execution_context import ExecutionContext
+from kakarot.evm import EVM
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.constants import Constants
 from tests.utils.helpers import TestHelpers
@@ -24,11 +24,11 @@ func test__exec_pc__should_update_after_incrementing{
     alloc_locals;
 
     let (bytecode) = alloc();
-    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
-    let ctx = ExecutionContext.increment_program_counter(ctx, increment);
+    let evm: model.EVM* = TestHelpers.init_context(0, bytecode);
+    let evm = EVM.increment_program_counter(evm, increment);
 
     // When
-    let result = MemoryOperations.exec_pc(ctx);
+    let result = MemoryOperations.exec_pc(evm);
 
     // Then
     assert result.stack.size = 1;
@@ -45,7 +45,7 @@ func test__exec_pop_should_pop_an_item_from_execution_context{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
+    let evm: model.EVM* = TestHelpers.init_context(0, bytecode);
     // Given
     let stack = Stack.init();
 
@@ -54,10 +54,10 @@ func test__exec_pop_should_pop_an_item_from_execution_context{
 
     let stack = Stack.push(stack, item_1);
     let stack = Stack.push(stack, item_0);
-    let ctx = ExecutionContext.update_stack(ctx, stack);
+    let evm = EVM.update_stack(evm, stack);
 
     // When
-    let result = MemoryOperations.exec_pop(ctx);
+    let result = MemoryOperations.exec_pop(evm);
 
     // Then
     assert result.stack.size = 1;
@@ -73,7 +73,7 @@ func test__exec_mload_should_load_a_value_from_memory{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
+    let evm: model.EVM* = TestHelpers.init_context(0, bytecode);
     // Given
     let stack = Stack.init();
 
@@ -83,15 +83,15 @@ func test__exec_mload_should_load_a_value_from_memory{
     let stack = Stack.push(stack, item_1);
     let stack = Stack.push(stack, item_0);
 
-    let ctx = ExecutionContext.update_stack(ctx, stack);
-    let ctx = MemoryOperations.exec_mstore(ctx);
+    let evm = EVM.update_stack(evm, stack);
+    let evm = MemoryOperations.exec_mstore(evm);
 
     tempvar item_0 = new Uint256(0, 0);
-    let stack = Stack.push(ctx.stack, item_0);
-    let ctx = ExecutionContext.update_stack(ctx, stack);
+    let stack = Stack.push(evm.stack, item_0);
+    let evm = EVM.update_stack(evm, stack);
 
     // When
-    let result = MemoryOperations.exec_mload(ctx);
+    let result = MemoryOperations.exec_mload(evm);
 
     // Then
     assert result.stack.size = 1;
@@ -107,7 +107,7 @@ func test__exec_mload_should_load_a_value_from_memory_with_memory_expansion{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
+    let evm: model.EVM* = TestHelpers.init_context(0, bytecode);
     let test_offset = 16;
     // Given
     let stack = Stack.init();
@@ -118,15 +118,15 @@ func test__exec_mload_should_load_a_value_from_memory_with_memory_expansion{
     let stack: model.Stack* = Stack.push(stack, item_1);
     let stack: model.Stack* = Stack.push(stack, item_0);
 
-    let ctx = ExecutionContext.update_stack(ctx, stack);
-    let ctx = MemoryOperations.exec_mstore(ctx);
+    let evm = EVM.update_stack(evm, stack);
+    let evm = MemoryOperations.exec_mstore(evm);
 
     tempvar offset = new Uint256(test_offset, 0);
-    let stack = Stack.push(ctx.stack, offset);
-    let ctx = ExecutionContext.update_stack(ctx, stack);
+    let stack = Stack.push(evm.stack, offset);
+    let evm = EVM.update_stack(evm, stack);
 
     // When
-    let result = MemoryOperations.exec_mload(ctx);
+    let result = MemoryOperations.exec_mload(evm);
 
     // Then
     assert result.stack.size = 1;
@@ -143,7 +143,7 @@ func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_ms
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
+    let evm: model.EVM* = TestHelpers.init_context(0, bytecode);
     let test_offset = 684;
     // Given
     let stack = Stack.init();
@@ -154,14 +154,14 @@ func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_ms
     let stack: model.Stack* = Stack.push(stack, item_1);
     let stack: model.Stack* = Stack.push(stack, item_0);
 
-    let ctx = ExecutionContext.update_stack(ctx, stack);
-    let ctx = MemoryOperations.exec_mstore(ctx);
+    let evm = EVM.update_stack(evm, stack);
+    let evm = MemoryOperations.exec_mstore(evm);
     tempvar offset = new Uint256(test_offset, 0);
-    let stack = Stack.push(ctx.stack, offset);
-    let ctx = ExecutionContext.update_stack(ctx, stack);
+    let stack = Stack.push(evm.stack, offset);
+    let evm = EVM.update_stack(evm, stack);
 
     // When
-    let result = MemoryOperations.exec_mload(ctx);
+    let result = MemoryOperations.exec_mload(evm);
 
     // Then
     assert result.stack.size = 1;

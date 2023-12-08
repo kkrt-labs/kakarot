@@ -3,10 +3,8 @@
 %lang starknet
 
 from openzeppelin.access.ownable.library import Ownable
-from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.default_dict import default_dict_new
 from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 from starkware.cairo.common.math_cmp import is_not_zero
 
@@ -20,16 +18,10 @@ from kakarot.storages import (
     externally_owned_account_class_hash,
     native_token_address,
 )
-from kakarot.constants import Constants
-from kakarot.errors import Errors
-from kakarot.evm import EVM
-from kakarot.execution_context import ExecutionContext
+from kakarot.interpreter import Interpreter
 from kakarot.instructions.system_operations import CreateHelper
 from kakarot.interfaces.interfaces import IAccount, IERC20
-from kakarot.memory import Memory
 from kakarot.model import model
-from kakarot.stack import Stack
-from kakarot.state import State
 from utils.utils import Helpers
 
 // @title Kakarot main library file.
@@ -83,7 +75,7 @@ namespace Kakarot {
         value: felt,
         data_len: felt,
         data: felt*,
-    ) -> EVM.Summary* {
+    ) -> model.EVM* {
         alloc_locals;
         let evm_contract_address = resolve_to(to, origin);
         let (starknet_contract_address) = Account.compute_starknet_address(evm_contract_address);
@@ -95,7 +87,7 @@ namespace Kakarot {
         let is_deploy_tx = 1 - is_regular_tx;
         let (bytecode_len, bytecode) = Starknet.get_bytecode(address.evm);
 
-        let summary = EVM.execute(
+        let (evm, stack) = Interpreter.execute(
             address,
             is_deploy_tx,
             origin_address,
@@ -107,7 +99,7 @@ namespace Kakarot {
             gas_limit,
             gas_price,
         );
-        return summary;
+        return evm;
     }
 
     // @notice The Blockhash registry is used by the BLOCKHASH opcode
@@ -198,7 +190,7 @@ namespace Kakarot {
         return (starknet_contract_address=starknet_contract_address);
     }
 
-    // @notice Get the ExecutionContext address from the transaction
+    // @notice Get the EVM address from the transaction
     // @dev When to=0, it's a deploy tx so we first compute the target address
     // @param to The transaction to parameter
     // @param origin The transaction origin parameter

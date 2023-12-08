@@ -12,11 +12,7 @@ from starkware.starknet.common.syscalls import get_caller_address
 // Local dependencies
 from data_availability.starknet import Starknet
 from kakarot.account import Account
-from kakarot.evm import EVM
 from kakarot.library import Kakarot
-from kakarot.memory import Memory
-from kakarot.model import model
-from kakarot.stack import Stack
 from utils.utils import Helpers
 
 // Constructor
@@ -154,13 +150,8 @@ func eth_call{
     data_len: felt,
     data: felt*,
 ) -> (return_data_len: felt, return_data: felt*, success: felt) {
-    let summary = Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
-    let result = (summary.return_data_len, summary.return_data, 1 - summary.reverted);
-    if (to == 0) {
-        return (2, cast(summary.address, felt*), 1 - summary.reverted);
-    } else {
-        return result;
-    }
+    let evm = Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
+    return (evm.return_data_len, evm.return_data, 1 - evm.reverted);
 }
 
 // @notice The eth_send_transaction function as described in the spec,
@@ -184,14 +175,14 @@ func eth_send_transaction{
     alloc_locals;
     let (local starknet_caller_address) = get_caller_address();
     let (local origin) = Kakarot.safe_get_evm_address(starknet_caller_address);
-    let summary = Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
-    let result = (summary.return_data_len, summary.return_data, 1 - summary.reverted);
+    let evm = Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
+    let result = (evm.return_data_len, evm.return_data, 1 - evm.reverted);
 
-    if (summary.reverted != FALSE) {
+    if (evm.reverted != FALSE) {
         return result;
     }
 
-    Starknet.commit(summary.state);
+    Starknet.commit(evm.state);
 
     return result;
 }

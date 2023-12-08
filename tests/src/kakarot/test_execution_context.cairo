@@ -10,7 +10,7 @@ from starkware.cairo.common.uint256 import Uint256
 
 // Local dependencies
 from kakarot.constants import Constants
-from kakarot.execution_context import ExecutionContext
+from kakarot.evm import EVM
 from kakarot.model import model
 from tests.utils.helpers import TestHelpers
 from utils.utils import Helpers
@@ -31,8 +31,8 @@ func test__jump__should_set_pc_to_given_value{
     tempvar bytecode_len = 6;
 
     // When
-    let ctx: model.ExecutionContext* = TestHelpers.init_context(bytecode_len, bytecode);
-    let result = ExecutionContext.jump(ctx, 3);
+    let evm: model.EVM* = TestHelpers.init_context(bytecode_len, bytecode);
+    let result = EVM.jump(evm, 3);
 
     // Then
     assert result.program_counter = 3;
@@ -55,9 +55,9 @@ func test__jump__should_fail__when_given_value_not_in_code_range{
     tempvar bytecode_len = 6;
 
     // When & Then
-    let ctx: model.ExecutionContext* = TestHelpers.init_context(bytecode_len, bytecode);
-    let ctx = ExecutionContext.jump(ctx, 6);
-    return (ctx.return_data_len, ctx.return_data);
+    let evm: model.EVM* = TestHelpers.init_context(bytecode_len, bytecode);
+    let evm = EVM.jump(evm, 6);
+    return (evm.return_data_len, evm.return_data);
 }
 
 @external
@@ -76,7 +76,7 @@ func test__jump__should_fail__when_given_destination_that_is_not_JUMPDEST{
     tempvar bytecode_len = 6;
 
     // When & Then
-    let ctx: model.ExecutionContext* = TestHelpers.init_context(bytecode_len, bytecode);
-    let ctx = ExecutionContext.jump(ctx, 2);
-    return (ctx.return_data_len, ctx.return_data);
+    let evm: model.EVM* = TestHelpers.init_context(bytecode_len, bytecode);
+    let evm = EVM.jump(evm, 2);
+    return (evm.return_data_len, evm.return_data);
 }

@@ -17,16 +17,6 @@ from utils.dict import default_dict_copy
 from utils.utils import Helpers
 
 namespace State {
-    // @dev Like an State, but frozen after squashing all dicts
-    struct Summary {
-        accounts_start: DictAccess*,
-        accounts: DictAccess*,
-        events_len: felt,
-        events: model.Event*,
-        transfers_len: felt,
-        transfers: model.Transfer*,
-    }
-
     // @dev Create a new empty State
     func init() -> model.State* {
         let (accounts_start) = default_dict_new(0);
@@ -69,7 +59,7 @@ namespace State {
 
     // @dev Squash dicts used internally
     // @param self The pointer to the State
-    func finalize{range_check_ptr}(self: model.State*) -> Summary* {
+    func finalize{range_check_ptr}(self: model.State*) -> model.State* {
         alloc_locals;
         // First squash to get only one account per key
         let (local accounts_start, accounts) = default_dict_finalize(
@@ -80,7 +70,7 @@ namespace State {
         // Squash again to keep only one Account.Summary per key
         let (local accounts_start, accounts) = default_dict_finalize(accounts_start, accounts, 0);
 
-        return new Summary(
+        return new model.State(
             accounts_start=accounts_start,
             accounts=accounts,
             events_len=self.events_len,

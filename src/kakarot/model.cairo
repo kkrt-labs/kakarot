@@ -83,7 +83,7 @@ namespace model {
 
     // @notice info: https://www.evm.codes/about#calldata
     // @notice Struct storing data related to a call.
-    // @dev All CallContext fields are constant during a given call.
+    // @dev All Message fields are constant during a given call.
     // @param bytecode The executed bytecode.
     // @param bytecode_len The length of bytecode.
     // @param calldata byte The space where the data parameter of a transaction or call is held.
@@ -91,13 +91,13 @@ namespace model {
     // @param value The amount of native token to transfer.
     // @param gas_price The gas price for the call.
     // @param origin The origin of the transaction.
-    // @param calling_context The parent context of the current execution context, can be empty when context
-    //                        is root context | see ExecutionContext.is_empty(ctx).
+    // @param parent The parent context of the current execution context, can be empty.
     // @param address The address of the current EVM account. Note that the bytecode may not be the one
     //        of the account in case of a CALLCODE or DELEGATECALL
     // @param read_only if set to true, context cannot do any state modifying instructions or send ETH in the sub context.
     // @param is_create if set to true, the call context is a CREATEs or deploy execution
-    struct CallContext {
+    // @param depth The depth of the current execution context.
+    struct Message {
         bytecode: felt*,
         bytecode_len: felt,
         calldata: felt*,
@@ -105,14 +105,15 @@ namespace model {
         value: felt,
         gas_price: felt,
         origin: Address*,
-        calling_context: ExecutionContext*,
+        parent: Parent*,
         address: Address*,
         read_only: felt,
         is_create: felt,
+        depth: felt,
     }
 
     // @dev Stores all data relevant to the current execution context.
-    // @param call_context The call context data.
+    // @param message The call context data.
     // @param program_counter The keep track of the current position in the program as it is being executed.
     // @param stopped A boolean that state if the current execution is halted.
     // @param return_data The region used to return a value after a call.
@@ -121,10 +122,9 @@ namespace model {
     // @param memory The current execution context memory.
     // @param gas_left The gas consumed by the current state of the execution.
     // @param state The current journal of state updates.
-    struct ExecutionContext {
+    struct EVM {
         state: State*,
-        call_context: CallContext*,
-        stack: Stack*,
+        message: Message*,
         memory: Memory*,
         return_data_len: felt,
         return_data: felt*,
@@ -132,6 +132,12 @@ namespace model {
         stopped: felt,
         gas_left: felt,
         reverted: felt,
+    }
+
+    // @dev The parent EVM struct is used to store the parent EVM context of the current execution context.
+    struct Parent {
+        evm: EVM*,
+        stack: Stack*,
     }
 
     // @dev Stores the constant data of an opcode

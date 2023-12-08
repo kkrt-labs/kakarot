@@ -18,7 +18,7 @@ from kakarot.storages import (
     contract_account_class_hash,
     account_proxy_class_hash,
 )
-from kakarot.execution_context import ExecutionContext
+from kakarot.evm import EVM
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.instructions.system_operations import SystemOperations, CallHelper, CreateHelper
 from kakarot.account import Account
@@ -85,17 +85,17 @@ func test__exec_return_should_return_context_with_updated_return_data{
     // When
     let stack: model.Stack* = Stack.push_uint128(stack, return_data);
     let stack: model.Stack* = Stack.push_uint128(stack, 0);
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
-    let ctx: model.ExecutionContext* = MemoryOperations.exec_mstore(ctx);
+    let evm: model.EVM* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+    let evm: model.EVM* = MemoryOperations.exec_mstore(evm);
 
     // Then
-    let stack: model.Stack* = Stack.push_uint128(ctx.stack, 32);
+    let stack: model.Stack* = Stack.push_uint128(evm.stack, 32);
     let stack: model.Stack* = Stack.push_uint128(stack, 0);
-    let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
-    let ctx: model.ExecutionContext* = SystemOperations.exec_return(ctx);
+    let evm: model.EVM* = EVM.update_stack(evm, stack);
+    let evm: model.EVM* = SystemOperations.exec_return(evm);
 
     // Then
-    let returned_data = Helpers.load_word(32, ctx.return_data);
+    let returned_data = Helpers.load_word(32, evm.return_data);
     assert return_data = returned_data;
 
     return ();
@@ -116,26 +116,25 @@ func test__exec_revert{
     let stack: model.Stack* = Stack.init();
     let stack: model.Stack* = Stack.push(stack, reason_uint256);  // value
     let stack: model.Stack* = Stack.push(stack, offset);  // offset
-    let ctx: model.ExecutionContext* = TestHelpers.init_context_with_stack(0, bytecode, stack);
-    let ctx: model.ExecutionContext* = MemoryOperations.exec_mstore(ctx);
+    let evm: model.EVM* = TestHelpers.init_context_with_stack(0, bytecode, stack);
+    let evm: model.EVM* = MemoryOperations.exec_mstore(evm);
 
-    let stack: model.Stack* = Stack.push_uint128(ctx.stack, size);  // size
+    let stack: model.Stack* = Stack.push_uint128(evm.stack, size);  // size
     let stack: model.Stack* = Stack.push_uint128(stack, 0);  // offset is 0 to have the reason at 0x20
 
-    let ctx: model.ExecutionContext* = ExecutionContext.update_stack(ctx, stack);
+    let evm: model.EVM* = EVM.update_stack(evm, stack);
 
     // When
-    let ctx = SystemOperations.exec_revert(ctx);
-    let is_reverted = ExecutionContext.is_reverted(ctx);
+    let evm = SystemOperations.exec_revert(evm);
 
     // Then
-    assert is_reverted = 1;
-    assert ctx.return_data_len = size;
-    return (ctx.return_data_len, ctx.return_data);
+    assert evm.reverter = 1;
+    assert evm.return_data_len = size;
+    return (evm.return_data_len, evm.return_data);
 }
 
 @external
-func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
+func test__exec_call__should_return_a_new_context_based_on_calling_evm_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Deploy two empty contract
@@ -173,46 +172,46 @@ func test__exec_call__should_return_a_new_context_based_on_calling_ctx_stack{
     let stack = Stack.push(stack, memory_word);
     let stack = Stack.push(stack, memory_offset);
     let (bytecode) = alloc();
-    let ctx = TestHelpers.init_context_at_address_with_stack(
+    let evm = TestHelpers.init_context_at_address_with_stack(
         caller_starknet_contract_address, caller_evm_contract_address, 0, bytecode, stack
     );
-    let ctx = MemoryOperations.exec_mstore(ctx);
+    let evm = MemoryOperations.exec_mstore(evm);
 
     // When
-    let sub_ctx = SystemOperations.exec_call(ctx);
+    let child_evm = SystemOperations.exec_call(evm);
 
     // Then
 
     // assert than sub_context is well initialized
-    assert sub_ctx.call_context.bytecode_len = 0;
-    assert sub_ctx.call_context.calldata_len = 4;
-    assert [sub_ctx.call_context.calldata] = 0x44;
-    assert [sub_ctx.call_context.calldata + 1] = 0x55;
-    assert [sub_ctx.call_context.calldata + 2] = 0x66;
-    assert [sub_ctx.call_context.calldata + 3] = 0x77;
-    assert sub_ctx.call_context.value = value.low;
-    assert sub_ctx.program_counter = 0;
-    assert sub_ctx.stopped = 0;
-    assert sub_ctx.return_data_len = 0;
-    assert sub_ctx.call_context.gas_price = 0;
-    assert sub_ctx.call_context.address.starknet = callee_starknet_contract_address;
-    assert sub_ctx.call_context.address.evm = callee_evm_contract_address;
-    TestHelpers.assert_execution_context_equal(sub_ctx.call_context.calling_context, ctx);
+    assert child_evm.message.bytecode_len = 0;
+    assert child_evm.message.calldata_len = 4;
+    assert [child_evm.message.calldata] = 0x44;
+    assert [child_evm.message.calldata + 1] = 0x55;
+    assert [child_evm.message.calldata + 2] = 0x66;
+    assert [child_evm.message.calldata + 3] = 0x77;
+    assert child_evm.message.value = value.low;
+    assert child_evm.program_counter = 0;
+    assert child_evm.stopped = 0;
+    assert child_evm.return_data_len = 0;
+    assert child_evm.message.gas_price = 0;
+    assert child_evm.message.address.starknet = callee_starknet_contract_address;
+    assert child_evm.message.address.evm = callee_evm_contract_address;
+    TestHelpers.assert_execution_context_equal(child_evm.message.parent, evm);
 
-    // Fake a RETURN in sub_ctx then teardow, see note in evm.codes:
+    // Fake a RETURN in child_evm then teardow, see note in evm.codes:
     // If the size of the return data is not known, it can also be retrieved after the call with
     // the instructions RETURNDATASIZE and RETURNDATACOPY (since the Byzantium fork).
     let (local return_data: felt*) = alloc();
     assert [return_data] = 0x11;
-    let sub_ctx = ExecutionContext.stop(sub_ctx, 1, return_data, FALSE);
-    let summary = ExecutionContext.finalize(sub_ctx);
-    let ctx = CallHelper.finalize_calling_context(summary);
+    let child_evm = EVM.stop(child_evm, 1, return_data, FALSE);
+    let summary = EVM.finalize(child_evm);
+    let evm = CallHelper.finalize_parent(summary);
 
     // Then
-    let (stack, success) = Stack.peek(ctx.stack, 0);
+    let (stack, success) = Stack.peek(evm.stack, 0);
     assert success.low = 1;
     let (local loaded_return_data: felt*) = alloc();
-    Memory.load_n(ctx.memory, ret_size.low, loaded_return_data, ret_offset.low);
+    Memory.load_n(evm.memory, ret_size.low, loaded_return_data, ret_offset.low);
     assert [loaded_return_data] = 0x11;
 
     return ();
@@ -257,24 +256,24 @@ func test__exec_call__should_transfer_value{
     let stack = Stack.push(stack, memory_word);
     let stack = Stack.push(stack, memory_offset);
     let (bytecode) = alloc();
-    let ctx = TestHelpers.init_context_at_address_with_stack(
+    let evm = TestHelpers.init_context_at_address_with_stack(
         caller_starknet_contract_address, caller_evm_contract_address, 0, bytecode, stack
     );
-    let ctx = MemoryOperations.exec_mstore(ctx);
+    let evm = MemoryOperations.exec_mstore(evm);
 
     // Get the balance of caller pre-call
     tempvar caller_address = new model.Address(
         caller_starknet_contract_address, caller_evm_contract_address
     );
-    let (state, caller_account_prev) = State.get_account(ctx.state, caller_address);
-    let ctx = ExecutionContext.update_state(ctx, state);
+    let (state, caller_account_prev) = State.get_account(evm.state, caller_address);
+    let evm = EVM.update_state(evm, state);
 
     // When
-    let sub_ctx = SystemOperations.exec_call(ctx);
+    let child_evm = SystemOperations.exec_call(evm);
 
     // Then
     // get balances of caller and callee post-call
-    let state = sub_ctx.state;
+    let state = child_evm.state;
     tempvar callee_address = new model.Address(
         callee_starknet_contract_address, callee_evm_contract_address
     );
@@ -289,7 +288,7 @@ func test__exec_call__should_transfer_value{
 }
 
 @external
-func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack{
+func test__exec_callcode__should_return_a_new_context_based_on_calling_evm_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Deploy two empty contract
@@ -329,39 +328,39 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_ctx_stack
     let stack = Stack.push(stack, memory_offset);
     let (bytecode) = alloc();
     local bytecode_len = 0;
-    let ctx = TestHelpers.init_context_at_address_with_stack(
+    let evm = TestHelpers.init_context_at_address_with_stack(
         caller_starknet_contract_address, caller_evm_contract_address, bytecode_len, bytecode, stack
     );
-    let ctx = MemoryOperations.exec_mstore(ctx);
+    let evm = MemoryOperations.exec_mstore(evm);
 
     // When
-    let sub_ctx = SystemOperations.exec_callcode(ctx);
+    let child_evm = SystemOperations.exec_callcode(evm);
 
     // Then
-    assert sub_ctx.call_context.bytecode_len = 0;
-    assert sub_ctx.call_context.calldata_len = 4;
-    assert [sub_ctx.call_context.calldata] = 0x44;
-    assert [sub_ctx.call_context.calldata + 1] = 0x55;
-    assert [sub_ctx.call_context.calldata + 2] = 0x66;
-    assert [sub_ctx.call_context.calldata + 3] = 0x77;
-    assert sub_ctx.call_context.value = value.low;
-    assert sub_ctx.program_counter = 0;
-    assert sub_ctx.stopped = 0;
-    assert sub_ctx.call_context.gas_price = 0;
-    assert sub_ctx.call_context.address.starknet = caller_starknet_contract_address;
-    assert sub_ctx.call_context.address.evm = caller_evm_contract_address;
-    TestHelpers.assert_execution_context_equal(sub_ctx.call_context.calling_context, ctx);
+    assert child_evm.message.bytecode_len = 0;
+    assert child_evm.message.calldata_len = 4;
+    assert [child_evm.message.calldata] = 0x44;
+    assert [child_evm.message.calldata + 1] = 0x55;
+    assert [child_evm.message.calldata + 2] = 0x66;
+    assert [child_evm.message.calldata + 3] = 0x77;
+    assert child_evm.message.value = value.low;
+    assert child_evm.program_counter = 0;
+    assert child_evm.stopped = 0;
+    assert child_evm.message.gas_price = 0;
+    assert child_evm.message.address.starknet = caller_starknet_contract_address;
+    assert child_evm.message.address.evm = caller_evm_contract_address;
+    TestHelpers.assert_execution_context_equal(child_evm.message.parent, evm);
 
-    // Fake a RETURN in sub_ctx then teardow, see note in evm.codes:
+    // Fake a RETURN in child_evm then teardow, see note in evm.codes:
     // If the size of the return data is not known, it can also be retrieved after the call with
     // the instructions RETURNDATASIZE and RETURNDATACOPY (since the Byzantium fork).
-    // So it's expected that the RETURN of the sub_ctx does set proper values for return_data_len and return_data
-    let sub_ctx = ExecutionContext.stop(sub_ctx, 0, sub_ctx.return_data, FALSE);
-    let summary = ExecutionContext.finalize(sub_ctx);
-    let ctx = CallHelper.finalize_calling_context(summary);
+    // So it's expected that the RETURN of the child_evm does set proper values for return_data_len and return_data
+    let child_evm = EVM.stop(child_evm, 0, child_evm.return_data, FALSE);
+    let summary = EVM.finalize(child_evm);
+    let evm = CallHelper.finalize_parent(summary);
 
     // Then
-    let (stack, success) = Stack.peek(ctx.stack, 0);
+    let (stack, success) = Stack.peek(evm.stack, 0);
     assert success.low = 1;
 
     return ();
@@ -413,21 +412,21 @@ func test__exec_callcode__should_transfer_value{
     let stack = Stack.push(stack, memory_offset);
     let (bytecode) = alloc();
     local bytecode_len = 0;
-    let ctx = TestHelpers.init_context_at_address_with_stack(
+    let evm = TestHelpers.init_context_at_address_with_stack(
         caller_starknet_contract_address, caller_evm_contract_address, bytecode_len, bytecode, stack
     );
-    let ctx = MemoryOperations.exec_mstore(ctx);
+    let evm = MemoryOperations.exec_mstore(evm);
 
     // Get the balance of caller pre-call
-    let (state, caller_pre_account) = State.get_account(ctx.state, caller_address);
-    let ctx = ExecutionContext.update_state(ctx, state);
+    let (state, caller_pre_account) = State.get_account(evm.state, caller_address);
+    let evm = EVM.update_state(evm, state);
 
     // When
-    let sub_ctx = SystemOperations.exec_callcode(ctx);
+    let child_evm = SystemOperations.exec_callcode(evm);
 
     // Then
     // get balances of caller and callee post-call
-    let state = sub_ctx.state;
+    let state = child_evm.state;
     let (state, caller_post_account) = State.get_account(state, caller_address);
 
     assert caller_post_account.balance = caller_pre_account.balance;
@@ -435,7 +434,7 @@ func test__exec_callcode__should_transfer_value{
 }
 
 @external
-func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_stack{
+func test__exec_staticcall__should_return_a_new_context_based_on_calling_evm_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Deploy another contract
@@ -471,44 +470,44 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_ctx_sta
     let stack = Stack.push(stack, memory_offset);
     let (bytecode) = alloc();
     local bytecode_len = 0;
-    let ctx = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
-    let ctx = MemoryOperations.exec_mstore(ctx);
+    let evm = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
+    let evm = MemoryOperations.exec_mstore(evm);
 
     // When
-    let sub_ctx = SystemOperations.exec_staticcall(ctx);
+    let child_evm = SystemOperations.exec_staticcall(evm);
 
     // Then
-    assert sub_ctx.call_context.bytecode_len = 0;
-    assert sub_ctx.call_context.calldata_len = 4;
-    assert [sub_ctx.call_context.calldata] = 0x44;
-    assert [sub_ctx.call_context.calldata + 1] = 0x55;
-    assert [sub_ctx.call_context.calldata + 2] = 0x66;
-    assert [sub_ctx.call_context.calldata + 3] = 0x77;
-    assert sub_ctx.call_context.value = 0;
-    assert sub_ctx.program_counter = 0;
-    assert sub_ctx.stopped = 0;
-    assert sub_ctx.call_context.gas_price = 0;
-    assert sub_ctx.call_context.address.starknet = starknet_contract_address;
-    assert sub_ctx.call_context.address.evm = evm_contract_address;
-    TestHelpers.assert_execution_context_equal(sub_ctx.call_context.calling_context, ctx);
+    assert child_evm.message.bytecode_len = 0;
+    assert child_evm.message.calldata_len = 4;
+    assert [child_evm.message.calldata] = 0x44;
+    assert [child_evm.message.calldata + 1] = 0x55;
+    assert [child_evm.message.calldata + 2] = 0x66;
+    assert [child_evm.message.calldata + 3] = 0x77;
+    assert child_evm.message.value = 0;
+    assert child_evm.program_counter = 0;
+    assert child_evm.stopped = 0;
+    assert child_evm.message.gas_price = 0;
+    assert child_evm.message.address.starknet = starknet_contract_address;
+    assert child_evm.message.address.evm = evm_contract_address;
+    TestHelpers.assert_execution_context_equal(child_evm.message.parent, evm);
 
-    // Fake a RETURN in sub_ctx then teardow, see note in evm.codes:
+    // Fake a RETURN in child_evm then teardow, see note in evm.codes:
     // If the size of the return data is not known, it can also be retrieved after the call with
     // the instructions RETURNDATASIZE and RETURNDATACOPY (since the Byzantium fork).
-    // So it's expected that the RETURN of the sub_ctx does set proper values for return_data_len and return_data
-    let sub_ctx = ExecutionContext.stop(sub_ctx, 0, sub_ctx.return_data, FALSE);
-    let summary = ExecutionContext.finalize(sub_ctx);
-    let ctx = CallHelper.finalize_calling_context(summary);
+    // So it's expected that the RETURN of the child_evm does set proper values for return_data_len and return_data
+    let child_evm = EVM.stop(child_evm, 0, child_evm.return_data, FALSE);
+    let summary = EVM.finalize(child_evm);
+    let evm = CallHelper.finalize_parent(summary);
 
     // Then
-    let (stack, success) = Stack.peek(ctx.stack, 0);
+    let (stack, success) = Stack.peek(evm.stack, 0);
     assert success.low = 1;
 
     return ();
 }
 
 @external
-func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_stack{
+func test__exec_delegatecall__should_return_a_new_context_based_on_calling_evm_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Deploy another contract
@@ -544,37 +543,37 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_ctx_s
     let stack = Stack.push(stack, memory_offset);
     let (bytecode) = alloc();
     local bytecode_len = 0;
-    let ctx = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
-    let ctx = MemoryOperations.exec_mstore(ctx);
+    let evm = TestHelpers.init_context_with_stack(bytecode_len, bytecode, stack);
+    let evm = MemoryOperations.exec_mstore(evm);
 
     // When
-    let sub_ctx = SystemOperations.exec_delegatecall(ctx);
+    let child_evm = SystemOperations.exec_delegatecall(evm);
 
     // Then
-    assert sub_ctx.call_context.bytecode_len = 0;
-    assert sub_ctx.call_context.calldata_len = 4;
-    assert [sub_ctx.call_context.calldata] = 0x44;
-    assert [sub_ctx.call_context.calldata + 1] = 0x55;
-    assert [sub_ctx.call_context.calldata + 2] = 0x66;
-    assert [sub_ctx.call_context.calldata + 3] = 0x77;
-    assert sub_ctx.call_context.value = 0;
-    assert sub_ctx.program_counter = 0;
-    assert sub_ctx.stopped = 0;
-    assert sub_ctx.call_context.gas_price = 0;
-    assert sub_ctx.call_context.address.starknet = ctx.call_context.address.starknet;
-    assert sub_ctx.call_context.address.evm = ctx.call_context.address.evm;
-    TestHelpers.assert_execution_context_equal(sub_ctx.call_context.calling_context, ctx);
+    assert child_evm.message.bytecode_len = 0;
+    assert child_evm.message.calldata_len = 4;
+    assert [child_evm.message.calldata] = 0x44;
+    assert [child_evm.message.calldata + 1] = 0x55;
+    assert [child_evm.message.calldata + 2] = 0x66;
+    assert [child_evm.message.calldata + 3] = 0x77;
+    assert child_evm.message.value = 0;
+    assert child_evm.program_counter = 0;
+    assert child_evm.stopped = 0;
+    assert child_evm.message.gas_price = 0;
+    assert child_evm.message.address.starknet = evm.message.address.starknet;
+    assert child_evm.message.address.evm = evm.message.address.evm;
+    TestHelpers.assert_execution_context_equal(child_evm.message.parent, evm);
 
-    // Fake a RETURN in sub_ctx then teardow, see note in evm.codes:
+    // Fake a RETURN in child_evm then teardow, see note in evm.codes:
     // If the size of the return data is not known, it can also be retrieved after the call with
     // the instructions RETURNDATASIZE and RETURNDATACOPY (since the Byzantium fork).
-    // So it's expected that the RETURN of the sub_ctx does set proper values for return_data_len and return_data
-    let sub_ctx = ExecutionContext.stop(sub_ctx, 0, sub_ctx.return_data, FALSE);
-    let summary = ExecutionContext.finalize(sub_ctx);
-    let ctx = CallHelper.finalize_calling_context(summary);
+    // So it's expected that the RETURN of the child_evm does set proper values for return_data_len and return_data
+    let child_evm = EVM.stop(child_evm, 0, child_evm.return_data, FALSE);
+    let summary = EVM.finalize(child_evm);
+    let evm = CallHelper.finalize_parent(summary);
 
     // Then
-    let (stack, success) = Stack.peek(ctx.stack, 0);
+    let (stack, success) = Stack.peek(evm.stack, 0);
     assert success.low = 1;
 
     return ();
@@ -619,53 +618,50 @@ func test__exec_create{
     let (bytecode: felt*) = alloc();
     assert [bytecode] = opcode;
     let (contract_address: felt) = Account.compute_starknet_address(evm_caller_address);
-    let ctx = TestHelpers.init_context_at_address(
+    let evm = TestHelpers.init_context_at_address(
         bytecode_len, bytecode, contract_address, evm_caller_address
     );
-    let (state, account) = State.get_account(ctx.state, ctx.call_context.address);
-    let ctx = ExecutionContext.update_memory(ctx, memory);
-    let ctx = ExecutionContext.update_stack(ctx, stack);
-    let ctx = ExecutionContext.update_state(ctx, state);
+    let (state, account) = State.get_account(evm.state, evm.message.address);
+    let evm = EVM.update_memory(evm, memory);
+    let evm = EVM.update_stack(evm, stack);
+    let evm = EVM.update_state(evm, state);
     let nonce = account.nonce;
     let balance_prev = account.balance;
 
     // When
-    let sub_ctx = SystemOperations.exec_create(ctx);
+    let child_evm = SystemOperations.exec_create(evm);
 
     // Then
-    assert sub_ctx.call_context.calldata_len = 0;
+    assert child_evm.message.calldata_len = 0;
     TestHelpers.assert_array_equal(
-        sub_ctx.call_context.bytecode_len,
-        sub_ctx.call_context.bytecode,
-        create_code_len,
-        create_code,
+        child_evm.message.bytecode_len, child_evm.message.bytecode, create_code_len, create_code
     );
-    assert sub_ctx.call_context.value = value;
-    assert sub_ctx.program_counter = 0;
-    assert sub_ctx.stopped = 0;
-    assert sub_ctx.return_data_len = 0;
-    assert sub_ctx.call_context.gas_price = ctx.call_context.gas_price;
-    assert_not_zero(sub_ctx.call_context.address.starknet);
-    assert_not_zero(sub_ctx.call_context.address.evm);
-    TestHelpers.assert_execution_context_equal(ctx, sub_ctx.call_context.calling_context);
+    assert child_evm.message.value = value;
+    assert child_evm.program_counter = 0;
+    assert child_evm.stopped = 0;
+    assert child_evm.return_data_len = 0;
+    assert child_evm.message.gas_price = evm.message.gas_price;
+    assert_not_zero(child_evm.message.address.starknet);
+    assert_not_zero(child_evm.message.address.evm);
+    TestHelpers.assert_execution_context_equal(evm, child_evm.message.parent);
 
-    // Fake a RETURN in sub_ctx then finalize
+    // Fake a RETURN in child_evm then finalize
     let return_data_len = 65;
-    memset(sub_ctx.return_data, 0xff, return_data_len);
-    let sub_ctx = ExecutionContext.stop(sub_ctx, return_data_len, sub_ctx.return_data, FALSE);
-    let summary = ExecutionContext.finalize(sub_ctx);
-    let ctx = CreateHelper.finalize_calling_context(summary);
+    memset(child_evm.return_data, 0xff, return_data_len);
+    let child_evm = EVM.stop(child_evm, return_data_len, child_evm.return_data, FALSE);
+    let summary = EVM.finalize(child_evm);
+    let evm = CreateHelper.finalize_parent(summary);
 
     // Then
-    let (state, account) = State.get_account(ctx.state, sub_ctx.call_context.address);
+    let (state, account) = State.get_account(evm.state, child_evm.message.address);
     TestHelpers.assert_array_equal(
-        account.code_len, account.code, return_data_len, sub_ctx.return_data
+        account.code_len, account.code, return_data_len, child_evm.return_data
     );
 
-    let (state, sender) = State.get_account(state, ctx.call_context.address);
+    let (state, sender) = State.get_account(state, evm.message.address);
     assert balance_prev.low = value + sender.balance.low;
     assert [account.balance] = Uint256(value, 0);
-    let (stack, address) = Stack.peek(ctx.stack, 0);
+    let (stack, address) = Stack.peek(evm.stack, 0);
     let evm_contract_address = uint256_to_uint160([address]);
     return (evm_contract_address, nonce);
 }

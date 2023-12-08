@@ -2,22 +2,15 @@
 
 %lang starknet
 
-// Starkware dependencies
-
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math_cmp import is_not_zero, is_le
-from starkware.cairo.common.uint256 import Uint256
-from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.memcpy import memcpy
-from starkware.cairo.common.bool import FALSE, TRUE
+from starkware.cairo.common.math_cmp import is_le
 
-// Internal dependencies
-from kakarot.model import model
 from kakarot.constants import Constants
 from kakarot.errors import Errors
-from utils.utils import Helpers
-from kakarot.execution_context import ExecutionContext
+from kakarot.evm import EVM
+from kakarot.model import model
 from kakarot.stack import Stack
+from utils.utils import Helpers
 
 // @title Push operations opcodes.
 namespace PushOperations {
@@ -26,24 +19,24 @@ namespace PushOperations {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        stack: model.Stack*,
+    }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
         // See evm.cairo, pc is increased before entering the opcode
-        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter];
+        let opcode_number = [evm.message.bytecode + evm.program_counter];
         let i = opcode_number - 0x5f;
 
         // Copy code slice
-        let pc = ctx.program_counter + 1;
-        let out_of_bounds = is_le(ctx.call_context.bytecode_len, pc + i);
-        local len = (1 - out_of_bounds) * i + out_of_bounds * (ctx.call_context.bytecode_len - pc);
+        let pc = evm.program_counter + 1;
+        let out_of_bounds = is_le(evm.message.bytecode_len, pc + i);
+        local len = (1 - out_of_bounds) * i + out_of_bounds * (evm.message.bytecode_len - pc);
 
-        let stack_element = Helpers.bytes_i_to_uint256(ctx.call_context.bytecode + pc, len);
-        let stack = Stack.push_uint256(ctx.stack, stack_element);
+        let stack_element = Helpers.bytes_i_to_uint256(evm.message.bytecode + pc, len);
+        Stack.push_uint256(stack_element);
 
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        let ctx = ExecutionContext.increment_program_counter(ctx, len);
+        let evm = EVM.increment_program_counter(evm, len);
 
-        return ctx;
+        return evm;
     }
 }

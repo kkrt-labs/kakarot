@@ -11,7 +11,7 @@ from starkware.cairo.common.uint256 import Uint256
 from utils.utils import Helpers
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.execution_context import ExecutionContext
+from kakarot.evm import EVM
 from kakarot.instructions.duplication_operations import DuplicationOperations
 from tests.utils.helpers import TestHelpers
 
@@ -22,12 +22,12 @@ func test__exec_dup{
     let stack_ = TestHelpers.init_stack_with_values(stack_len, stack);
     let (bytecode) = alloc();
     assert [bytecode] = i + 0x7f;
-    let ctx = TestHelpers.init_context_with_stack(1, bytecode, stack_);
+    let evm = TestHelpers.init_context_with_stack(1, bytecode, stack_);
 
     // When
-    let ctx = DuplicationOperations.exec_dup(ctx);
+    let evm = DuplicationOperations.exec_dup(evm);
 
     // Then
-    let (stack_, top) = Stack.peek(ctx.stack, 0);
+    let (stack_, top) = Stack.peek(evm.stack, 0);
     return ([top],);
 }
