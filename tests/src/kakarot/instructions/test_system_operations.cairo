@@ -80,19 +80,19 @@ func test__exec_return_should_return_context_with_updated_return_data{
     // Given
     alloc_locals;
     let bytecode: felt* = alloc();
-    let stack: model.Stack* = Stack.init();
+    let stack = Stack.init();
+    let memory = Memory.init();
+    let evm = TestHelpers.init_context(0, bytecode);
 
-    // When
-    let stack: model.Stack* = Stack.push_uint128(stack, return_data);
-    let stack: model.Stack* = Stack.push_uint128(stack, 0);
-    let evm: model.EVM* = TestHelpers.init_context_with_stack(0, bytecode, stack);
-    let evm: model.EVM* = MemoryOperations.exec_mstore(evm);
+    with stack, memory {
+        Stack.push_uint128(return_data);
+        Stack.push_uint128(0);
+        let evm = MemoryOperations.exec_mstore(evm);
 
-    // Then
-    let stack: model.Stack* = Stack.push_uint128(evm.stack, 32);
-    let stack: model.Stack* = Stack.push_uint128(stack, 0);
-    let evm: model.EVM* = EVM.update_stack(evm, stack);
-    let evm: model.EVM* = SystemOperations.exec_return(evm);
+        Stack.push_uint128(32);
+        Stack.push_uint128(0);
+        let evm = SystemOperations.exec_return(evm);
+    }
 
     // Then
     let returned_data = Helpers.load_word(32, evm.return_data);
@@ -113,16 +113,15 @@ func test__exec_revert{
     tempvar offset = new Uint256(32, 0);
 
     let (bytecode) = alloc();
-    let stack: model.Stack* = Stack.init();
+    let stack = Stack.init();
+    let memory = Memory.init();
     let stack: model.Stack* = Stack.push(stack, reason_uint256);  // value
     let stack: model.Stack* = Stack.push(stack, offset);  // offset
-    let evm: model.EVM* = TestHelpers.init_context_with_stack(0, bytecode, stack);
-    let evm: model.EVM* = MemoryOperations.exec_mstore(evm);
+    let evm = TestHelpers.init_context_with_stack(0, bytecode, stack);
+    let evm = MemoryOperations.exec_mstore(evm);
 
-    let stack: model.Stack* = Stack.push_uint128(evm.stack, size);  // size
-    let stack: model.Stack* = Stack.push_uint128(stack, 0);  // offset is 0 to have the reason at 0x20
-
-    let evm: model.EVM* = EVM.update_stack(evm, stack);
+    Stack.push_uint128(size);  // size
+    Stack.push_uint128(0);  // offset is 0 to have the reason at 0x20
 
     // When
     let evm = SystemOperations.exec_revert(evm);
@@ -205,11 +204,10 @@ func test__exec_call__should_return_a_new_context_based_on_calling_evm_stack{
     let (local return_data: felt*) = alloc();
     assert [return_data] = 0x11;
     let child_evm = EVM.stop(child_evm, 1, return_data, FALSE);
-    let summary = EVM.finalize(child_evm);
-    let evm = CallHelper.finalize_parent(summary);
+    let evm = CallHelper.finalize_parent(child_evm);
 
     // Then
-    let (stack, success) = Stack.peek(evm.stack, 0);
+    let (stack, success) = Stack.peek(stack, 0);
     assert success.low = 1;
     let (local loaded_return_data: felt*) = alloc();
     Memory.load_n(ret_size.low, loaded_return_data, ret_offset.low);
@@ -236,7 +234,8 @@ func test__exec_call__should_transfer_value{
     );
 
     // Fill the stack with input data
-    let stack: model.Stack* = Stack.init();
+    let stack = Stack.init();
+    let memory = Memory.init();
     let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
     let (address_high, address_low) = split_felt(callee_evm_contract_address);
     tempvar address = new Uint256(address_low, address_high);
@@ -304,7 +303,8 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_evm_stack
     let (_) = Starknet.deploy(contract_account_class_hash_, callee_evm_contract_address);
 
     // Fill the stack with input data
-    let stack: model.Stack* = Stack.init();
+    let stack = Stack.init();
+    let memory = Memory.init();
     let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
     let (address_high, address_low) = split_felt(callee_evm_contract_address);
     tempvar address = new Uint256(address_low, address_high);
@@ -357,11 +357,10 @@ func test__exec_callcode__should_return_a_new_context_based_on_calling_evm_stack
     // the instructions RETURNDATASIZE and RETURNDATACOPY (since the Byzantium fork).
     // So it's expected that the RETURN of the child_evm does set proper values for return_data_len and return_data
     let child_evm = EVM.stop(child_evm, 0, child_evm.return_data, FALSE);
-    let summary = EVM.finalize(child_evm);
-    let evm = CallHelper.finalize_parent(summary);
+    let evm = CallHelper.finalize_parent(child_evm);
 
     // Then
-    let (stack, success) = Stack.peek(evm.stack, 0);
+    let (stack, success) = Stack.peek(stack, 0);
     assert success.low = 1;
 
     return ();
@@ -391,7 +390,8 @@ func test__exec_callcode__should_transfer_value{
     );
 
     // Fill the stack with input data
-    let stack: model.Stack* = Stack.init();
+    let stack = Stack.init();
+    let memory = Memory.init();
     let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
     let (address_high, address_low) = split_felt(callee_evm_contract_address);
     tempvar address = new Uint256(address_low, address_high);
@@ -448,7 +448,8 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_evm_sta
     );
 
     // Fill the stack with input data
-    let stack: model.Stack* = Stack.init();
+    let stack = Stack.init();
+    let memory = Memory.init();
     let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
     let (address_high, address_low) = split_felt(evm_contract_address);
     tempvar address = new Uint256(address_low, address_high);
@@ -497,11 +498,10 @@ func test__exec_staticcall__should_return_a_new_context_based_on_calling_evm_sta
     // the instructions RETURNDATASIZE and RETURNDATACOPY (since the Byzantium fork).
     // So it's expected that the RETURN of the child_evm does set proper values for return_data_len and return_data
     let child_evm = EVM.stop(child_evm, 0, child_evm.return_data, FALSE);
-    let summary = EVM.finalize(child_evm);
-    let evm = CallHelper.finalize_parent(summary);
+    let evm = CallHelper.finalize_parent(child_evm);
 
     // Then
-    let (stack, success) = Stack.peek(evm.stack, 0);
+    let (stack, success) = Stack.peek(stack, 0);
     assert success.low = 1;
 
     return ();
@@ -521,7 +521,8 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_evm_s
     );
 
     // Fill the stack with input data
-    let stack: model.Stack* = Stack.init();
+    let stack = Stack.init();
+    let memory = Memory.init();
     let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
     let (address_high, address_low) = split_felt(evm_contract_address);
     tempvar address = new Uint256(address_low, address_high);
@@ -570,11 +571,10 @@ func test__exec_delegatecall__should_return_a_new_context_based_on_calling_evm_s
     // the instructions RETURNDATASIZE and RETURNDATACOPY (since the Byzantium fork).
     // So it's expected that the RETURN of the child_evm does set proper values for return_data_len and return_data
     let child_evm = EVM.stop(child_evm, 0, child_evm.return_data, FALSE);
-    let summary = EVM.finalize(child_evm);
-    let evm = CallHelper.finalize_parent(summary);
+    let evm = CallHelper.finalize_parent(child_evm);
 
     // Then
-    let (stack, success) = Stack.peek(evm.stack, 0);
+    let (stack, success) = Stack.peek(stack, 0);
     assert success.low = 1;
 
     return ();
@@ -607,10 +607,10 @@ func test__exec_create{
     // Given
     let stack = Stack.init();
     let offset = 0;
-    let stack = Stack.push_uint128(stack, salt);
-    let stack = Stack.push_uint128(stack, create_code_len);
-    let stack = Stack.push_uint128(stack, offset);
-    let stack = Stack.push_uint128(stack, value);
+    Stack.push_uint128(salt);
+    Stack.push_uint128(create_code_len);
+    Stack.push_uint128(offset);
+    Stack.push_uint128(value);
 
     let memory = Memory.init();
     let memory = Memory.store_n(memory, create_code_len, create_code, offset);
@@ -624,7 +624,6 @@ func test__exec_create{
     );
     let (state, account) = State.get_account(evm.state, evm.message.address);
     let evm = EVM.update_memory(evm, memory);
-    let evm = EVM.update_stack(evm, stack);
     let evm = EVM.update_state(evm, state);
     let nonce = account.nonce;
     let balance_prev = account.balance;
@@ -650,8 +649,7 @@ func test__exec_create{
     let return_data_len = 65;
     memset(child_evm.return_data, 0xff, return_data_len);
     let child_evm = EVM.stop(child_evm, return_data_len, child_evm.return_data, FALSE);
-    let summary = EVM.finalize(child_evm);
-    let evm = CreateHelper.finalize_parent(summary);
+    let evm = CreateHelper.finalize_parent(child_evm);
 
     // Then
     let (state, account) = State.get_account(evm.state, child_evm.message.address);
@@ -662,7 +660,7 @@ func test__exec_create{
     let (state, sender) = State.get_account(state, evm.message.address);
     assert balance_prev.low = value + sender.balance.low;
     assert [account.balance] = Uint256(value, 0);
-    let (stack, address) = Stack.peek(evm.stack, 0);
+    let (stack, address) = Stack.peek(stack, 0);
     let evm_contract_address = uint256_to_uint160([address]);
     return (evm_contract_address, nonce);
 }
