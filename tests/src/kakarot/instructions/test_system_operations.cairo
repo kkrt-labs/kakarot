@@ -151,7 +151,8 @@ func test__exec_call__should_return_a_new_context_based_on_calling_evm_stack{
     );
 
     // Fill the stack with input data
-    let stack: model.Stack* = Stack.init();
+    let stack = Stack.init();
+    let memory = Memory.init();
     let gas = Helpers.to_uint256(Constants.TRANSACTION_GAS_LIMIT);
     let (address_high, address_low) = split_felt(callee_evm_contract_address);
     tempvar address = new Uint256(address_low, address_high);
@@ -211,7 +212,7 @@ func test__exec_call__should_return_a_new_context_based_on_calling_evm_stack{
     let (stack, success) = Stack.peek(evm.stack, 0);
     assert success.low = 1;
     let (local loaded_return_data: felt*) = alloc();
-    Memory.load_n(evm.memory, ret_size.low, loaded_return_data, ret_offset.low);
+    Memory.load_n(ret_size.low, loaded_return_data, ret_offset.low);
     assert [loaded_return_data] = 0x11;
 
     return ();

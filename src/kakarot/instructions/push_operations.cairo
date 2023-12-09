@@ -20,6 +20,7 @@ namespace PushOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 

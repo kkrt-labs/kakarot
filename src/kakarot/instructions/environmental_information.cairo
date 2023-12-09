@@ -28,6 +28,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         let address = Helpers.to_uint256(evm.message.address.evm);
         Stack.push(address);
@@ -40,6 +41,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -61,6 +63,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         let origin_address = Helpers.to_uint256(evm.message.origin.evm);
 
@@ -74,6 +77,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         if (evm.message.depth == 0) {
             tempvar caller = evm.message.origin.evm;
@@ -91,6 +95,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         let value = Helpers.to_uint256(evm.message.value);
         Stack.push(value);
@@ -104,6 +109,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -123,6 +129,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         Stack.push_uint128(evm.message.calldata_len);
         return evm;
@@ -134,6 +141,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -149,14 +157,13 @@ namespace EnvironmentalInformation {
 
         // Write caldata slice to memory at dest_offset
         let memory_expansion_cost = Gas.memory_expansion_cost(
-            evm.memory.words_len, dest_offset.low + size.low
+            memory.words_len, dest_offset.low + size.low
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
-        let memory = Memory.store_n(evm.memory, size.low, sliced_calldata, dest_offset.low);
-        let evm = EVM.update_memory(evm, memory);
+        Memory.store_n(size.low, sliced_calldata, dest_offset.low);
 
         return evm;
     }
@@ -167,6 +174,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         Stack.push_uint128(evm.message.bytecode_len);
         return evm;
@@ -178,6 +186,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -191,15 +200,14 @@ namespace EnvironmentalInformation {
 
         // Write bytecode slice to memory at dest_offset
         let memory_expansion_cost = Gas.memory_expansion_cost(
-            evm.memory.words_len, dest_offset.low + size.low
+            memory.words_len, dest_offset.low + size.low
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
-        let memory = Memory.store_n(evm.memory, size.low, sliced_code, dest_offset.low);
+        Memory.store_n(size.low, sliced_code, dest_offset.low);
 
-        let evm = EVM.update_memory(evm, memory);
         return evm;
     }
 
@@ -209,6 +217,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         // TODO: since gas_price is a felt, it might panic when being cast to a Uint256.low,
         // Add check gas_price < 2 ** 128
@@ -224,6 +233,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -247,6 +257,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -265,15 +276,14 @@ namespace EnvironmentalInformation {
 
         // Write bytecode slice to memory at dest_offset
         let memory_expansion_cost = Gas.memory_expansion_cost(
-            evm.memory.words_len, dest_offset.low + size.low
+            memory.words_len, dest_offset.low + size.low
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
-        let memory = Memory.store_n(evm.memory, size.low, sliced_bytecode, dest_offset.low);
+        Memory.store_n(size.low, sliced_bytecode, dest_offset.low);
 
-        let evm = EVM.update_memory(evm, memory);
         let evm = EVM.update_state(evm, state);
 
         return evm;
@@ -285,6 +295,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         Stack.push_uint128(evm.return_data_len);
         return evm;
@@ -296,6 +307,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -308,14 +320,13 @@ namespace EnvironmentalInformation {
         slice(sliced_return_data, evm.return_data_len, evm.return_data, offset.low, size.low);
 
         let memory_expansion_cost = Gas.memory_expansion_cost(
-            evm.memory.words_len, dest_offset.low + size.low
+            memory.words_len, dest_offset.low + size.low
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
-        let memory = Memory.store_n(evm.memory, size.low, sliced_return_data, dest_offset.low);
-        let evm = EVM.update_memory(evm, memory);
+        Memory.store_n(size.low, sliced_return_data, dest_offset.low);
         return evm;
     }
 
@@ -325,6 +336,7 @@ namespace EnvironmentalInformation {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 

@@ -49,13 +49,13 @@ func execute{
     bytecode: felt*,
     calldata_len: felt,
     calldata: felt*,
-) -> (model.EVM*, model.Stack*) {
+) -> (model.EVM*, model.Stack*, model.Memory*) {
     alloc_locals;
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
 
     tempvar address = new model.Address(1, 1);
-    let (evm, stack) = Interpreter.execute(
+    let (evm, stack, memory) = Interpreter.execute(
         address=address,
         is_deploy_tx=0,
         origin=&origin,
@@ -67,7 +67,7 @@ func execute{
         gas_limit=Constants.TRANSACTION_GAS_LIMIT,
         gas_price=0,
     );
-    return (evm, stack);
+    return (evm, stack, memory);
 }
 
 @view
@@ -104,12 +104,14 @@ func evm_call{
     alloc_locals;
     let (local block_number) = get_block_number();
     let (local block_timestamp) = get_block_timestamp();
-    let (evm, stack) = execute(origin, value, bytecode_len, bytecode, calldata_len, calldata);
+    let (evm, stack, memory) = execute(
+        origin, value, bytecode_len, bytecode, calldata_len, calldata
+    );
 
     let (stack_keys_len, stack_keys) = dict_keys(stack.dict_ptr_start, stack.dict_ptr);
     let (stack_values_len, stack_values) = dict_values(stack.dict_ptr_start, stack.dict_ptr);
 
-    let memory_accesses_len = evm.memory.word_dict - evm.memory.word_dict_start;
+    let memory_accesses_len = memory.word_dict - memory.word_dict_start;
 
     // Return only accounts keys, ie. touched starknet addresses
     let (account_addresses_len, account_addresses) = dict_keys(
@@ -125,8 +127,8 @@ func evm_call{
         stack_values_len=stack_values_len,
         stack_values=stack_values,
         memory_accesses_len=memory_accesses_len,
-        memory_accesses=evm.memory.word_dict_start,
-        memory_words_len=evm.memory.words_len,
+        memory_accesses=memory.word_dict_start,
+        memory_words_len=memory.words_len,
         account_addresses_len=account_addresses_len,
         account_addresses=account_addresses,
         starknet_contract_address=evm.message.address.starknet,
@@ -151,7 +153,9 @@ func evm_execute{
     calldata: felt*,
 ) -> (return_data_len: felt, return_data: felt*, success: felt) {
     alloc_locals;
-    let (evm, stack) = execute(origin, value, bytecode_len, bytecode, calldata_len, calldata);
+    let (evm, stack, memory) = execute(
+        origin, value, bytecode_len, bytecode, calldata_len, calldata
+    );
     let result = (evm.return_data_len, evm.return_data, 1 - evm.reverted);
 
     if (evm.reverted != FALSE) {

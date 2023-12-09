@@ -36,7 +36,6 @@ namespace TestHelpers {
 
         let (calldata) = alloc();
         assert [calldata] = '';
-        let root = EVM.init_empty();
         tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
         tempvar origin = new model.Address(0, 0);
         local message: model.Message* = new model.Message(
@@ -47,7 +46,7 @@ namespace TestHelpers {
             value=0,
             gas_price=0,
             origin=origin,
-            parent=root,
+            parent=cast(0, model.Parent*),
             address=address,
             read_only=FALSE,
             is_create=FALSE,
@@ -102,7 +101,6 @@ namespace TestHelpers {
         bytecode_len: felt, bytecode: felt*, stack: model.Stack*
     ) -> model.EVM* {
         let evm: model.EVM* = init_context(bytecode_len, bytecode);
-        let evm = EVM.update_stack(evm, stack);
         return evm;
     }
 
@@ -116,7 +114,6 @@ namespace TestHelpers {
         let evm: model.EVM* = init_context_at_address(
             bytecode_len, bytecode, starknet_contract_address, evm_contract_address
         );
-        let evm = EVM.update_stack(evm, stack);
         return evm;
     }
 

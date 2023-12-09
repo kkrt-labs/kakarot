@@ -11,7 +11,6 @@ from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256
 
 from kakarot.errors import Errors
-from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.state import State
@@ -24,14 +23,12 @@ namespace EVM {
     // @param message The message (see model.Message) to be executed.
     // @return EVM The initialized execution context.
     func init(message: model.Message*, gas_left: felt) -> model.EVM* {
-        let memory = Memory.init();
         let state = State.init();
         let (return_data: felt*) = alloc();
 
         return new model.EVM(
             state=state,
             message=message,
-            memory=memory,
             return_data_len=0,
             return_data=return_data,
             program_counter=0,
@@ -54,32 +51,12 @@ namespace EVM {
         return new model.EVM(
             state=self.state,
             message=self.message,
-            memory=self.memory,
             return_data_len=return_data_len,
             return_data=return_data,
             program_counter=self.program_counter,
             stopped=TRUE,
             gas_left=self.gas_left,
             reverted=reverted,
-        );
-    }
-
-    // @notice Update the memory of the current execution context.
-    // @dev The memory is updated with the given memory.
-    // @param self The pointer to the execution context.
-    // @param memory The pointer to the new memory.
-    // @return EVM The pointer to the updated execution context.
-    func update_memory(self: model.EVM*, memory: model.Memory*) -> model.EVM* {
-        return new model.EVM(
-            state=self.state,
-            message=self.message,
-            memory=memory,
-            return_data_len=self.return_data_len,
-            return_data=self.return_data,
-            program_counter=self.program_counter,
-            stopped=self.stopped,
-            gas_left=self.gas_left,
-            reverted=self.reverted,
         );
     }
 
@@ -94,7 +71,6 @@ namespace EVM {
         return new model.EVM(
             state=self.state,
             message=self.message,
-            memory=self.memory,
             return_data_len=return_data_len,
             return_data=return_data,
             program_counter=self.program_counter,
@@ -113,7 +89,6 @@ namespace EVM {
         return new model.EVM(
             state=self.state,
             message=self.message,
-            memory=self.memory,
             return_data_len=self.return_data_len,
             return_data=self.return_data,
             program_counter=self.program_counter + inc_value,
@@ -136,7 +111,6 @@ namespace EVM {
             return new model.EVM(
                 state=self.state,
                 message=self.message,
-                memory=self.memory,
                 return_data_len=revert_reason_len,
                 return_data=revert_reason,
                 program_counter=self.program_counter,
@@ -149,7 +123,6 @@ namespace EVM {
         return new model.EVM(
             state=self.state,
             message=self.message,
-            memory=self.memory,
             return_data_len=self.return_data_len,
             return_data=self.return_data,
             program_counter=self.program_counter,
@@ -197,7 +170,6 @@ namespace EVM {
         return new model.EVM(
             state=state,
             message=self.message,
-            memory=self.memory,
             return_data_len=self.return_data_len,
             return_data=self.return_data,
             program_counter=self.program_counter,
@@ -229,7 +201,6 @@ namespace EVM {
         return new model.EVM(
             state=self.state,
             message=self.message,
-            memory=self.memory,
             return_data_len=self.return_data_len,
             return_data=self.return_data,
             program_counter=new_pc_offset,

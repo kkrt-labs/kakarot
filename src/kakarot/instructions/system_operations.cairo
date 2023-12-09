@@ -39,10 +39,10 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
-        let memory = evm.memory;
         let state = evm.state;
 
         let opcode_number = [evm.message.bytecode + evm.program_counter];
@@ -76,8 +76,7 @@ namespace SystemOperations {
 
         // Load bytecode
         let (bytecode: felt*) = alloc();
-        let memory = Memory.load_n(memory, size.low, bytecode, offset.low);
-        let evm = EVM.update_memory(evm, memory);
+        Memory.load_n(size.low, bytecode, offset.low);
 
         // Get target address
         let (state, evm_contract_address) = CreateHelper.get_evm_address(
@@ -138,8 +137,9 @@ namespace SystemOperations {
 
         // Final update of calling context
         let evm = EVM.update_state(evm, state);
-        tempvar parent = new model.Parent(evm=evm, stack=stack);
+        tempvar parent = new model.Parent(evm, stack, memory);
         let stack = Stack.init();
+        let memory = Memory.init();
         let state = State.copy(evm.state);
 
         // Create child message
@@ -193,6 +193,7 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         let evm = EVM.charge_gas(evm, evm.gas_left);
         let (revert_reason: felt*) = alloc();
@@ -214,6 +215,7 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -222,7 +224,7 @@ namespace SystemOperations {
         let size = popped[1];
 
         let memory_expansion_cost = Gas.memory_expansion_cost(
-            evm.memory.words_len, offset.low + size.low
+            memory.words_len, offset.low + size.low
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
@@ -230,9 +232,8 @@ namespace SystemOperations {
         }
 
         let (local return_data: felt*) = alloc();
-        let memory = Memory.load_n(evm.memory, size.low, return_data, offset.low);
+        Memory.load_n(size.low, return_data, offset.low);
 
-        let evm = EVM.update_memory(evm, memory);
         let evm = EVM.stop(evm, size.low, return_data, FALSE);
 
         return evm;
@@ -252,6 +253,7 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -260,7 +262,7 @@ namespace SystemOperations {
         let size = popped[1];
 
         let memory_expansion_cost = Gas.memory_expansion_cost(
-            evm.memory.words_len, offset.low + size.low
+            memory.words_len, offset.low + size.low
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
@@ -269,9 +271,8 @@ namespace SystemOperations {
 
         // Load revert reason from offset
         let (return_data: felt*) = alloc();
-        let memory = Memory.load_n(evm.memory, size.low, return_data, offset.low);
+        Memory.load_n(size.low, return_data, offset.low);
 
-        let evm = EVM.update_memory(evm, memory);
         let evm = EVM.stop(evm, size.low, return_data, TRUE);
         return evm;
     }
@@ -290,6 +291,7 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
         let child_evm = CallHelper.init_sub_context(
@@ -336,6 +338,7 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         let child_evm = CallHelper.init_sub_context(
             evm=evm, with_value=FALSE, read_only=TRUE, self_call=FALSE
@@ -357,6 +360,7 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         let child_evm = CallHelper.init_sub_context(
             evm=evm, with_value=TRUE, read_only=evm.message.read_only, self_call=TRUE
@@ -379,6 +383,7 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         let child_evm = CallHelper.init_sub_context(
             evm=evm, with_value=FALSE, read_only=evm.message.read_only, self_call=TRUE
@@ -400,6 +405,7 @@ namespace SystemOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -461,6 +467,7 @@ namespace CallHelper {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*, with_value: felt, read_only: felt, self_call: felt) -> model.EVM* {
         alloc_locals;
 
@@ -489,7 +496,7 @@ namespace CallHelper {
         let max_expansion = max_expansion_is_ret * (ret_offset + ret_size) + (
             1 - max_expansion_is_ret
         ) * (args_offset + args_size);
-        let memory_expansion_cost = Gas.memory_expansion_cost(evm.memory.words_len, max_expansion);
+        let memory_expansion_cost = Gas.memory_expansion_cost(memory.words_len, max_expansion);
 
         // Access list
         // TODO
@@ -518,14 +525,13 @@ namespace CallHelper {
 
         // 3. Calldata
         let (calldata: felt*) = alloc();
-        let memory = Memory.load_n(evm.memory, args_size, calldata, args_offset);
-        let evm = EVM.update_memory(evm, memory);
+        Memory.load_n(args_size, calldata, args_offset);
 
         // 4. Build child_evm
         // Check if the called address is a precompiled contract
         let is_precompile = Precompiles.is_precompile(address=address);
         if (is_precompile != FALSE) {
-            tempvar parent = new model.Parent(evm=evm, stack=stack);
+            tempvar parent = new model.Parent(evm, stack, memory);
             let child_evm = Precompiles.run(
                 evm_address=address,
                 calldata_len=args_size,
@@ -549,8 +555,9 @@ namespace CallHelper {
             tempvar message_address = evm.message.address;
         }
 
-        tempvar parent = new model.Parent(evm=evm, stack=stack);
+        tempvar parent = new model.Parent(evm, stack, memory);
         let stack = Stack.init();
+        let memory = Memory.init();
         tempvar message = new model.Message(
             bytecode=account.code,
             bytecode_len=account.code_len,
@@ -571,7 +578,6 @@ namespace CallHelper {
         return child_evm;
     }
 
-    // @notice At the end of a sub-context call, the calling context's stack and memory are updated.
     // @return EVM The pointer to the updated calling context.
     func finalize_parent{
         syscall_ptr: felt*,
@@ -579,6 +585,7 @@ namespace CallHelper {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -594,9 +601,7 @@ namespace CallHelper {
         // Store RETURN_DATA in memory
         let (return_data: felt*) = alloc();
         slice(return_data, evm.return_data_len, evm.return_data, 0, ret_size);
-        let memory = Memory.store_n(
-            evm.message.parent.evm.memory, ret_size, return_data, ret_offset
-        );
+        Memory.store_n(ret_size, return_data, ret_offset);
 
         // Gas not used is returned when evm is not reverted
         local gas_left;
@@ -611,7 +616,6 @@ namespace CallHelper {
         tempvar evm = new model.EVM(
             state=state,
             message=evm.message.parent.evm.message,
-            memory=memory,
             return_data_len=evm.return_data_len,
             return_data=evm.return_data,
             program_counter=evm.message.parent.evm.program_counter + 1,
@@ -771,6 +775,7 @@ namespace CreateHelper {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -793,7 +798,6 @@ namespace CreateHelper {
         tempvar evm = new model.EVM(
             state=evm.message.parent.evm.state,
             message=evm.message.parent.evm.message,
-            memory=evm.message.parent.evm.memory,
             return_data_len=evm.return_data_len,
             return_data=evm.return_data,
             program_counter=evm.message.parent.evm.program_counter + 1,

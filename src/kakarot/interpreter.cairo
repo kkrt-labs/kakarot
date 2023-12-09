@@ -46,6 +46,7 @@ namespace Interpreter {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -105,6 +106,7 @@ namespace Interpreter {
         [ap] = range_check_ptr, ap++;
         [ap] = bitwise_ptr, ap++;
         [ap] = stack, ap++;
+        [ap] = memory, ap++;
         [ap] = evm, ap++;
 
         // call opcode
@@ -623,11 +625,12 @@ namespace Interpreter {
         jmp end;
 
         end_child_evm:
-        let syscall_ptr = cast([ap - 6], felt*);
-        let pedersen_ptr = cast([ap - 5], HashBuiltin*);
-        let range_check_ptr = [ap - 4];
-        let bitwise_ptr = cast([ap - 3], BitwiseBuiltin*);
-        let stack = cast([ap - 2], model.Stack*);
+        let syscall_ptr = cast([ap - 7], felt*);
+        let pedersen_ptr = cast([ap - 6], HashBuiltin*);
+        let range_check_ptr = [ap - 5];
+        let bitwise_ptr = cast([ap - 4], BitwiseBuiltin*);
+        let stack = cast([ap - 3], model.Stack*);
+        let memory = cast([ap - 2], model.Memory*);
         let child_evm = cast([ap - 1], model.EVM*);
 
         // Handle edge cases of CALLs and CREATEs
@@ -640,11 +643,12 @@ namespace Interpreter {
         }
 
         end:
-        let syscall_ptr = cast([ap - 6], felt*);
-        let pedersen_ptr = cast([ap - 5], HashBuiltin*);
-        let range_check_ptr = [ap - 4];
-        let bitwise_ptr = cast([ap - 3], BitwiseBuiltin*);
-        let stack = cast([ap - 2], model.Stack*);
+        let syscall_ptr = cast([ap - 7], felt*);
+        let pedersen_ptr = cast([ap - 6], HashBuiltin*);
+        let range_check_ptr = [ap - 5];
+        let bitwise_ptr = cast([ap - 4], BitwiseBuiltin*);
+        let stack = cast([ap - 3], model.Stack*);
+        let memory = cast([ap - 2], model.Memory*);
         let evm = cast([ap - 1], model.EVM*);
 
         let evm = EVM.increment_program_counter(evm, 1);
@@ -661,6 +665,7 @@ namespace Interpreter {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -669,22 +674,23 @@ namespace Interpreter {
             return run(evm);
         }
 
-        Memory.finalize(evm.memory);
+        Memory.finalize();
         Stack.finalize();
 
         if (evm.message.depth == 0) {
             if (evm.message.is_create != FALSE) {
                 let evm = Internals._finalize_create_tx(evm);
-                State.finalize(evm.state);
                 return evm;
             }
 
-            State.finalize(evm.state);
+            let state = State.finalize(evm.state);
+            let evm = EVM.update_state(evm, state);
             return evm;
         }
 
         State.finalize(evm.state);
         let stack = evm.message.parent.stack;
+        let memory = evm.message.parent.memory;
 
         if (evm.message.is_create != FALSE) {
             let evm = CreateHelper.finalize_parent(evm);
@@ -722,7 +728,7 @@ namespace Interpreter {
         value: felt,
         gas_limit: felt,
         gas_price: felt,
-    ) -> (model.EVM*, model.Stack*) {
+    ) -> (model.EVM*, model.Stack*, model.Memory*) {
         alloc_locals;
 
         // Compute intrinsic gas usage
@@ -797,11 +803,12 @@ namespace Interpreter {
         }
 
         let stack = Stack.init();
-        with stack {
+        let memory = Memory.init();
+        with stack, memory {
             let evm = run(evm);
         }
 
-        return (evm, stack);
+        return (evm, stack, memory);
     }
 
     // @notice A placeholder for opcodes that don't exist
@@ -813,6 +820,7 @@ namespace Interpreter {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         let (revert_reason_len, revert_reason) = Errors.unknownOpcode();
         let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
@@ -841,6 +849,7 @@ namespace Internals {
         let (state, account) = State.get_account(evm.state, evm.message.address);
         let account = Account.set_code(account, evm.return_data_len, evm.return_data);
         let state = State.set_account(state, evm.message.address, account);
+        let state = State.finalize(state);
         let evm = EVM.update_state(evm, state);
         let evm = EVM.update_return_data(evm, 2, cast(evm.message.address, felt*));
         return evm;

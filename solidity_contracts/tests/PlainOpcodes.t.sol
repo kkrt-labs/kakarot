@@ -139,4 +139,9 @@ contract PlainOpcodesTest is Test {
     function testNewContractConstructorRevert() public {
         plainOpcodes.newContractConstructorRevert();
     }
+
+    function testLoop() public view {
+        uint256 value = plainOpcodes.loop(10);
+        assert(value == 10);
+    }
 }

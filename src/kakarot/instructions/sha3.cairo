@@ -15,24 +15,14 @@ from kakarot.model import model
 from kakarot.stack import Stack
 from utils.bytes import bytes_to_bytes8_little_endian
 
-// @title Sha3 opcodes.
-// @notice This file contains the keccak opcode.
 namespace Sha3 {
-    // @notice SHA3.
-    // @dev Hashes n memory elements at m memory offset.
-    // @custom:since Frontier
-    // @custom:group Sha3
-    // @custom:gas 30
-    // @custom:stack_consumed_elements 2
-    // @custom:stack_produced_elements 1
-    // @param evm The pointer to the execution context
-    // @return EVM The pointer to the updated execution context.
     func exec_sha3{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -41,7 +31,7 @@ namespace Sha3 {
         let length = popped[1];
 
         let memory_expansion_cost = Gas.memory_expansion_cost(
-            evm.memory.words_len, offset.low + length.low
+            memory.words_len, offset.low + length.low
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
@@ -49,7 +39,7 @@ namespace Sha3 {
         }
 
         let (bigendian_data: felt*) = alloc();
-        let memory = Memory.load_n(evm.memory, length.low, bigendian_data, offset.low);
+        Memory.load_n(length.low, bigendian_data, offset.low);
 
         let (local dst: felt*) = alloc();
         bytes_to_bytes8_little_endian(dst, length.low, bigendian_data);
@@ -63,8 +53,6 @@ namespace Sha3 {
         finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
 
         Stack.push_uint256(result);
-
-        let evm = EVM.update_memory(evm, memory);
 
         return evm;
     }

@@ -30,6 +30,7 @@ namespace LoggingOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -51,14 +52,13 @@ namespace LoggingOperations {
         local size = Helpers.uint256_to_felt(popped[1]);
 
         // Log topics by emitting a starknet event
-        let memory_expansion_cost = Gas.memory_expansion_cost(evm.memory.words_len, offset + size);
+        let memory_expansion_cost = Gas.memory_expansion_cost(memory.words_len, offset + size);
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
         let (data: felt*) = alloc();
-        let memory = Memory.load_n(evm.memory, size, data, offset);
-        let evm = EVM.update_memory(evm, memory);
+        Memory.load_n(size, data, offset);
         let evm = EVM.push_event(evm, topics_len, popped + 4, size, data);
 
         return evm;

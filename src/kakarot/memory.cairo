@@ -22,13 +22,6 @@ from utils.utils import Helpers
 // @dev stored as a dictionary from chunk_index to chunk_value.
 // @dev Each chunk should be read as big endian representation of 16 bytes.
 namespace Memory {
-    // Summary of memory. Created upon finalization of the memory.
-    struct Summary {
-        squashed_start: DictAccess*,
-        squashed_end: DictAccess*,
-        words_len: felt,
-    }
-
     // @notice Initialize the memory.
     // @return memory The pointer to the memory.
     func init() -> model.Memory* {
@@ -38,27 +31,26 @@ namespace Memory {
 
     // @notice Finalize the memory.
     // @return summary The pointer to the memory Summary.
-    func finalize{range_check_ptr}(self: model.Memory*) -> Summary* {
+    func finalize{range_check_ptr, memory: model.Memory*}() {
         let (squashed_start, squashed_end) = default_dict_finalize(
-            self.word_dict_start, self.word_dict, 0
+            memory.word_dict_start, memory.word_dict, 0
         );
-        return new Summary(squashed_start, squashed_end, self.words_len);
+        tempvar memory = new model.Memory(squashed_start, squashed_end, memory.words_len);
+        return ();
     }
 
     // @notice Store an element into the memory.
-    // @param self The pointer to the memory.
+    // @param memory The pointer to the memory.
     // @param element The element to push.
     // @param offset The offset to store the element at.
     // @return memory The new pointer to the memory.
-    func store{range_check_ptr}(
-        self: model.Memory*, element: Uint256, offset: felt
-    ) -> model.Memory* {
-        let word_dict = self.word_dict;
+    func store{range_check_ptr, memory: model.Memory*}(element: Uint256, offset: felt) {
+        let word_dict = memory.word_dict;
 
         // Compute new words_len.
         let (required_words_len, _) = unsigned_div_rem(offset + 32 + 31, 32);
-        let fits = is_le(required_words_len, self.words_len);
-        let new_words_len = fits * self.words_len + (1 - fits) * required_words_len;
+        let fits = is_le(required_words_len, memory.words_len);
+        let new_words_len = fits * memory.words_len + (1 - fits) * required_words_len;
 
         // Check alignment of offset to 16B chunks.
         let (chunk_index, offset_in_chunk) = unsigned_div_rem(offset, 16);
@@ -68,7 +60,8 @@ namespace Memory {
             // so we optimize for it. Note that no locals were allocated at all.
             dict_write{dict_ptr=word_dict}(chunk_index, element.high);
             dict_write{dict_ptr=word_dict}(chunk_index + 1, element.low);
-            return new model.Memory(self.word_dict_start, word_dict, new_words_len);
+            tempvar memory = new model.Memory(memory.word_dict_start, word_dict, new_words_len);
+            return ();
         }
 
         // Offset is misaligned.
@@ -100,29 +93,30 @@ namespace Memory {
         dict_write{dict_ptr=word_dict}(chunk_index, new_w0);
         dict_write{dict_ptr=word_dict}(chunk_index + 1, new_w1);
         dict_write{dict_ptr=word_dict}(chunk_index + 2, new_w2);
-        return new model.Memory(self.word_dict_start, word_dict, new_words_len);
+        tempvar memory = new model.Memory(memory.word_dict_start, word_dict, new_words_len);
+        return ();
     }
 
     // @notice Store N bytes into the memory.
-    // @param self The pointer to the memory.
+    // @param memory The pointer to the memory.
     // @param element_len byte length of the array to be saved on memory.
     // @param element pointer to the array that will be saved on memory.
     // @param offset The offset to store the element at.
     // @return memory The new pointer to the memory.
-    func store_n{range_check_ptr}(
-        self: model.Memory*, element_len: felt, element: felt*, offset: felt
-    ) -> model.Memory* {
+    func store_n{range_check_ptr, memory: model.Memory*}(
+        element_len: felt, element: felt*, offset: felt
+    ) {
         alloc_locals;
         if (element_len == 0) {
-            return self;
+            return ();
         }
 
-        let word_dict = self.word_dict;
+        let word_dict = memory.word_dict;
 
         // Compute new words_len.
         let (required_words_len, _) = unsigned_div_rem(offset + element_len + 31, 32);
-        let fits = is_le(required_words_len, self.words_len);
-        let new_words_len = fits * self.words_len + (1 - fits) * required_words_len;
+        let fits = is_le(required_words_len, memory.words_len);
+        let new_words_len = fits * memory.words_len + (1 - fits) * required_words_len;
 
         // Check alignment of offset to 16B chunks.
         let (chunk_index_i, offset_in_chunk_i) = unsigned_div_rem(offset, 16);
@@ -140,7 +134,8 @@ namespace Memory {
             let x = Helpers.load_word(element_len, element);
             let new_w = w_h * mask_i + x * mask_f + w_ll;
             dict_write{dict_ptr=word_dict}(chunk_index_i, new_w);
-            return new model.Memory(self.word_dict_start, word_dict, new_words_len);
+            tempvar memory = new model.Memory(memory.word_dict_start, word_dict, new_words_len);
+            return ();
         }
 
         // Otherwise.
@@ -161,21 +156,22 @@ namespace Memory {
             chunk_index_i + 1, chunk_index_f, element + 16 - offset_in_chunk_i
         );
 
-        return new model.Memory(self.word_dict_start, word_dict, new_words_len);
+        tempvar memory = new model.Memory(memory.word_dict_start, word_dict, new_words_len);
+        return ();
     }
 
     // @notice Load an element from the memory.
-    // @param self The pointer to the memory.
+    // @param memory The pointer to the memory.
     // @param offset The offset to load the element from.
     // @return memory The new pointer to the memory.
     // @return loaded_element The loaded element.
-    func load{range_check_ptr}(self: model.Memory*, offset: felt) -> (model.Memory*, Uint256) {
-        let word_dict = self.word_dict;
+    func load{range_check_ptr, memory: model.Memory*}(offset: felt) -> Uint256 {
+        let word_dict = memory.word_dict;
 
         // Compute new words_len.
         let (required_words_len, _) = unsigned_div_rem(offset + 32 + 31, 32);
-        let fits = is_le(required_words_len, self.words_len);
-        let new_words_len = fits * self.words_len + (1 - fits) * required_words_len;
+        let fits = is_le(required_words_len, memory.words_len);
+        let new_words_len = fits * memory.words_len + (1 - fits) * required_words_len;
 
         // Check alignment of offset to 16B chunks.
         let (chunk_index, offset_in_chunk) = unsigned_div_rem(offset, 16);
@@ -185,10 +181,8 @@ namespace Memory {
             // so we optimize for it. Note that no locals were allocated at all.
             let (el_h) = dict_read{dict_ptr=word_dict}(chunk_index);
             let (el_l) = dict_read{dict_ptr=word_dict}(chunk_index + 1);
-            return (
-                new model.Memory(self.word_dict_start, word_dict, new_words_len),
-                Uint256(low=el_l, high=el_h),
-            );
+            tempvar memory = new model.Memory(memory.word_dict_start, word_dict, new_words_len);
+            return (Uint256(low=el_l, high=el_h));
         }
 
         // Offset is misaligned.
@@ -213,33 +207,34 @@ namespace Memory {
         let el_h = w0_l * mask_c + w1_h;
         let el_l = w1_l * mask_c + w2_h;
 
-        return (
-            new model.Memory(self.word_dict_start, word_dict, new_words_len),
-            Uint256(low=el_l, high=el_h),
-        );
+        tempvar memory = new model.Memory(memory.word_dict_start, word_dict, new_words_len);
+        return (Uint256(low=el_l, high=el_h));
     }
 
     // @notice Load N bytes from the memory.
-    // @param self The pointer to the memory.
+    // @param memory The pointer to the memory.
     // @param element_len byte length of the output array.
     // @param element pointer to the output array.
     // @param offset The memory offset to load from.
     // @return memory The new pointer to the memory.
-    func load_n{range_check_ptr}(
-        self: model.Memory*, element_len: felt, element: felt*, offset: felt
-    ) -> model.Memory* {
+    func load_n{range_check_ptr, memory: model.Memory*}(
+        element_len: felt, element: felt*, offset: felt
+    ) {
         alloc_locals;
 
         // Compute new words_len.
         let (required_words_len, _) = unsigned_div_rem(offset + element_len + 31, 32);
-        let fits = is_le(required_words_len, self.words_len);
-        let new_words_len = fits * self.words_len + (1 - fits) * required_words_len;
+        let fits = is_le(required_words_len, memory.words_len);
+        let new_words_len = fits * memory.words_len + (1 - fits) * required_words_len;
 
         if (element_len == 0) {
-            return new model.Memory(self.word_dict_start, self.word_dict, new_words_len);
+            tempvar memory = new model.Memory(
+                memory.word_dict_start, memory.word_dict, new_words_len
+            );
+            return ();
         }
 
-        let word_dict = self.word_dict;
+        let word_dict = memory.word_dict;
 
         // Check alignment of offset to 16B chunks.
         let (chunk_index_i, offset_in_chunk_i) = unsigned_div_rem(offset, 16);
@@ -254,7 +249,8 @@ namespace Memory {
             let (_, w_l) = Helpers.div_rem(w, mask_i);
             let (w_lh, _) = Helpers.div_rem(w_l, mask_f);
             Helpers.split_word(w_lh, element_len, element);
-            return new model.Memory(self.word_dict_start, word_dict, new_words_len);
+            tempvar memory = new model.Memory(memory.word_dict_start, word_dict, new_words_len);
+            return ();
         }
 
         // Otherwise.
@@ -273,7 +269,8 @@ namespace Memory {
             chunk_index_i + 1, chunk_index_f, element + 16 - offset_in_chunk_i
         );
 
-        return new model.Memory(self.word_dict_start, word_dict, new_words_len);
+        tempvar memory = new model.Memory(memory.word_dict_start, word_dict, new_words_len);
+        return ();
     }
 }
 

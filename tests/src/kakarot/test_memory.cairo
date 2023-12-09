@@ -33,10 +33,12 @@ func test__store__should_add_an_element_to_the_memory{
     alloc_locals;
     // Given
     let memory = Memory.init();
+    let value = Uint256(1, 0);
 
     // When
-    let value = Uint256(1, 0);
-    let memory = Memory.store(memory, value, 0);
+    with memory {
+        Memory.store(value, 0);
+    }
 
     // Then
     assert memory.words_len = 1;
@@ -52,11 +54,13 @@ func test__load__should_load_an_element_from_the_memory_with_offset{
     let memory = Memory.init();
     let first_value = Uint256(low=2, high=1);
     let second_value = Uint256(low=4, high=3);
-    let memory = Memory.store(memory, first_value, 0);
-    let memory = Memory.store(memory, second_value, 32);
 
     // When
-    let (memory, result) = Memory.load(memory, offset);
+    with memory {
+        Memory.store(first_value, 0);
+        Memory.store(second_value, 32);
+        let result = Memory.load(offset);
+    }
 
     // Then
     assert_uint256_eq(result, Uint256(low, high));
@@ -74,14 +78,15 @@ func test__load__should_expand_memory_and_return_element{
     let value = Uint256(1, 0);
 
     // When
-    let memory = Memory.store(memory, value, 0);
+    with memory {
+        Memory.store(value, 0);
+        let value = Memory.load(0);
+        // Then
+        assert value = Uint256(1, 0);
+        assert memory.words_len = 1;
 
-    // Then
-    let (memory, value) = Memory.load(memory, 0);
-    assert value = Uint256(1, 0);
-    assert memory.words_len = 1;
-
-    let (memory, value) = Memory.load(memory, 32);
+        let value = Memory.load(32);
+    }
     assert value = Uint256(0, 0);
     assert memory.words_len = 2;
     return ();

@@ -17,6 +17,7 @@ namespace DuplicationOperations {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
+        memory: model.Memory*,
     }(evm: model.EVM*) -> model.EVM* {
         let opcode_number = [evm.message.bytecode + evm.program_counter];
         let i = opcode_number - 0x7F;

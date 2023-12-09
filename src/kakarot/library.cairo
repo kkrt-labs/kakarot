@@ -87,7 +87,7 @@ namespace Kakarot {
         let is_deploy_tx = 1 - is_regular_tx;
         let (bytecode_len, bytecode) = Starknet.get_bytecode(address.evm);
 
-        let (evm, stack) = Interpreter.execute(
+        let (evm, stack, memory) = Interpreter.execute(
             address,
             is_deploy_tx,
             origin_address,
