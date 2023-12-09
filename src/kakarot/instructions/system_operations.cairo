@@ -792,22 +792,18 @@ namespace CreateHelper {
 
         Stack.push(address);
 
-        // Re-create the calling context with updated stack and return_data
-        // Gas not used is returned when evm is not reverted
-        // In the case of a reverted create context, the gas of the reverted context should be rolled back and not consumed
-        tempvar evm = new model.EVM(
-            state=evm.message.parent.evm.state,
-            message=evm.message.parent.evm.message,
-            return_data_len=evm.return_data_len,
-            return_data=evm.return_data,
-            program_counter=evm.message.parent.evm.program_counter + 1,
-            stopped=evm.message.parent.evm.stopped,
-            gas_left=evm.message.parent.evm.gas_left + remaining_gas * success,
-            reverted=evm.message.parent.evm.reverted,
-        );
-
-        // REVERTED, just returns
         if (success == FALSE) {
+            // REVERTED, just returns previous EVM
+            tempvar evm = new model.EVM(
+                state=evm.message.parent.evm.state,
+                message=evm.message.parent.evm.message,
+                return_data_len=evm.return_data_len,
+                return_data=evm.return_data,
+                program_counter=evm.message.parent.evm.program_counter + 1,
+                stopped=evm.message.parent.evm.stopped,
+                gas_left=evm.message.parent.evm.gas_left,
+                reverted=evm.message.parent.evm.reverted,
+            );
             return evm;
         }
 
@@ -816,7 +812,16 @@ namespace CreateHelper {
         let account = Account.set_code(account, evm.return_data_len, evm.return_data);
         let state = State.set_account(state, evm.message.address, account);
 
-        let evm = EVM.update_state(evm, state);
+        tempvar evm = new model.EVM(
+            state=state,
+            message=evm.message.parent.evm.message,
+            return_data_len=evm.return_data_len,
+            return_data=evm.return_data,
+            program_counter=evm.message.parent.evm.program_counter + 1,
+            stopped=evm.message.parent.evm.stopped,
+            gas_left=evm.message.parent.evm.gas_left + remaining_gas,
+            reverted=evm.message.parent.evm.reverted,
+        );
 
         return evm;
     }
