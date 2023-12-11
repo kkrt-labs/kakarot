@@ -120,6 +120,16 @@ jobs:
         with:
           repository: kkrt-labs/ef-tests
           ref: feat/move-signature-location
+      - name: Checkout local skip file
+        uses: actions/checkout@v3
+        with:
+          sparse-checkout: |
+            blockchain-tests-skip.yml
+          sparse-checkout-cone-mode: false
+          path: skip-file
+      - name: Replace the skip files
+        run: |
+          mv skip-file/blockchain-tests-skip.yml blockchain-tests-skip.yml
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
         with:
