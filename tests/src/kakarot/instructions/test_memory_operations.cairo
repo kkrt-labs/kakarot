@@ -25,7 +25,7 @@ func test__exec_pc__should_update_after_incrementing{
     alloc_locals;
 
     let (bytecode) = alloc();
-    let evm = TestHelpers.init_context(0, bytecode);
+    let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
     let evm = EVM.increment_program_counter(evm, increment);
     let stack = Stack.init();
     let memory = Memory.init();
@@ -50,7 +50,7 @@ func test__exec_pop_should_pop_an_item_from_execution_context{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let evm = TestHelpers.init_context(0, bytecode);
+    let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
     let stack = Stack.init();
     let memory = Memory.init();
 
@@ -79,7 +79,7 @@ func test__exec_mload_should_load_a_value_from_memory{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let evm = TestHelpers.init_context(0, bytecode);
+    let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
     let stack = Stack.init();
     let memory = Memory.init();
 
@@ -112,7 +112,7 @@ func test__exec_mload_should_load_a_value_from_memory_with_memory_expansion{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let evm = TestHelpers.init_context(0, bytecode);
+    let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
     let stack = Stack.init();
     let memory = Memory.init();
 
@@ -145,7 +145,7 @@ func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_ms
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let evm = TestHelpers.init_context(0, bytecode);
+    let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
     let test_offset = 684;
     // Given
     let stack = Stack.init();

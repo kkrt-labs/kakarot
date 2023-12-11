@@ -26,7 +26,7 @@ from kakarot.stack import Stack
 from utils.utils import Helpers
 
 namespace TestHelpers {
-    func init_context_at_address(
+    func init_evm_at_address(
         bytecode_len: felt,
         bytecode: felt*,
         starknet_contract_address: felt,
@@ -56,14 +56,18 @@ namespace TestHelpers {
         return evm;
     }
 
-    func init_context(bytecode_len: felt, bytecode: felt*) -> model.EVM* {
-        return init_context_at_address(bytecode_len, bytecode, 0, 0);
+    func init_evm() -> model.EVM* {
+        let (bytecode) = alloc();
+        return init_evm_at_address(0, bytecode, 0, 0);
     }
 
-    func init_stack_with_values{range_check_ptr}(stack_len: felt, stack: Uint256*) -> model.Stack* {
+    func init_evm_with_bytecode(bytecode_len: felt, bytecode: felt*) -> model.EVM* {
+        return init_evm_at_address(bytecode_len, bytecode, 0, 0);
+    }
+
+    func init_stack_with_values(stack_len: felt, stack: Uint256*) -> model.Stack* {
         let stack_ = Stack.init();
 
-        tempvar range_check_ptr = range_check_ptr;
         tempvar stack_ = stack_;
         tempvar stack_len = stack_len;
         tempvar stack = stack;
@@ -71,18 +75,15 @@ namespace TestHelpers {
         jmp cond;
 
         loop:
-        let range_check_ptr = [ap - 4];
         let stack_ = cast([ap - 3], model.Stack*);
         let stack_len = [ap - 2];
         let stack = cast([ap - 1], Uint256*);
 
-        let stack_ = Stack.push(stack_, stack + (stack_len - 1) * Uint256.SIZE);
+        Stack.push{stack=stack_}(stack + (stack_len - 1) * Uint256.SIZE);
 
-        let range_check_ptr = [ap - 2];
         tempvar stack_len = stack_len - 1;
         tempvar stack = stack;
 
-        static_assert range_check_ptr == [ap - 4];
         static_assert stack_ == [ap - 3];
         static_assert stack_len == [ap - 2];
         static_assert stack == [ap - 1];
@@ -91,38 +92,9 @@ namespace TestHelpers {
         let stack_len = [ap - 2];
         jmp loop if stack_len != 0;
 
-        let range_check_ptr = [ap - 4];
         let stack_ = cast([ap - 3], model.Stack*);
 
         return stack_;
-    }
-
-    func init_context_with_stack(
-        bytecode_len: felt, bytecode: felt*, stack: model.Stack*
-    ) -> model.EVM* {
-        let evm: model.EVM* = init_context(bytecode_len, bytecode);
-        return evm;
-    }
-
-    func init_context_at_address_with_stack(
-        starknet_contract_address: felt,
-        evm_contract_address: felt,
-        bytecode_len: felt,
-        bytecode: felt*,
-        stack: model.Stack*,
-    ) -> model.EVM* {
-        let evm: model.EVM* = init_context_at_address(
-            bytecode_len, bytecode, starknet_contract_address, evm_contract_address
-        );
-        return evm;
-    }
-
-    func init_context_with_return_data(
-        bytecode_len: felt, bytecode: felt*, return_data_len: felt, return_data: felt*
-    ) -> model.EVM* {
-        let evm: model.EVM* = init_context(bytecode_len, bytecode);
-        let evm = EVM.stop(evm, return_data_len, return_data, FALSE);
-        return evm;
     }
 
     func assert_array_equal(array_0_len: felt, array_0: felt*, array_1_len: felt, array_1: felt*) {
