@@ -196,7 +196,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: resources
-          path: resources
       - name: Check resources evolution
         run: |
           mv resources/resources_v0.json resources.json
