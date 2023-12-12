@@ -151,7 +151,7 @@ jobs:
         with:
           python-version: 3.x
       - name: run tests
-        run: make ef-tests-v0-ci > test_v0.out 2>&1 test_v0.out
+        run: make ef-tests-v0 > test_v0.out 2>&1 test_v0.out
       - name: Retrieve ef-tests execution resources
         run: python scripts/compute_resources.py
         env:
