@@ -27,6 +27,7 @@ func test__exec_push{
     memset(bytecode + 1, 0xff, i);
     let stack = Stack.init();
     let memory = Memory.init();
+    let state = State.init();
     let evm = TestHelpers.init_evm_with_bytecode(1 + i, bytecode);
 
     with stack, memory, state {

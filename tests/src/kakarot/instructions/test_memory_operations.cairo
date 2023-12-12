@@ -92,8 +92,8 @@ func test__exec_mload_should_load_a_value_from_memory{
 
     // When
     with stack, memory, state {
-        Stack.push(stack, item_1);
-        Stack.push(stack, item_0);
+        Stack.push(item_1);
+        Stack.push(item_0);
 
         let evm = MemoryOperations.exec_mstore(evm);
 

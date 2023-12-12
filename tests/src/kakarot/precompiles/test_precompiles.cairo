@@ -9,6 +9,9 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from kakarot.model import model
 from kakarot.constants import Constants
 from kakarot.evm import EVM
+from kakarot.stack import Stack
+from kakarot.memory import Memory
+from kakarot.state import State
 from kakarot.precompiles.precompiles import Precompiles
 
 @external
@@ -35,7 +38,11 @@ func test__precompiles_run{
         is_create=0,
         depth=0,
     );
-    let parent = EVM.init(message, Constants.TRANSACTION_GAS_LIMIT);
+    let evm = EVM.init(message, Constants.TRANSACTION_GAS_LIMIT);
+    let stack = Stack.init();
+    let memory = Memory.init();
+    let state = State.init();
+    tempvar parent = new model.Parent(evm, stack, memory, state);
     let result = Precompiles.run(
         evm_address=address,
         calldata_len=0,

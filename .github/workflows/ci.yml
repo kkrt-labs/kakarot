@@ -151,9 +151,7 @@ jobs:
         with:
           python-version: 3.x
       - name: run tests
-        run: python scripts/compute_resources.py
-        env:
-          KAKAROT_VERSION: v0
+        run: make ef-test-v0 > test.out 2>&1 test.out
       - name: upload resources
         uses: actions/upload-artifact@v3
         with:
