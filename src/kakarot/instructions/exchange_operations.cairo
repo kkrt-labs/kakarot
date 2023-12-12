@@ -8,7 +8,7 @@ from starkware.cairo.common.bool import TRUE
 from kakarot.model import model
 from kakarot.evm import EVM
 from kakarot.stack import Stack
-from kakarot.State import State
+from kakarot.state import State
 from kakarot.errors import Errors
 
 // @title Exchange operations opcodes.
