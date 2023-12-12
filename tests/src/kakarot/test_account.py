@@ -2,7 +2,6 @@ import pytest
 import pytest_asyncio
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.errors import cairo_error
 from tests.utils.uint256 import int_to_uint256
 
 
@@ -41,26 +40,6 @@ class TestAccount:
             await account.test__copy__should_return_new_account_with_same_attributes(
                 address, code, nonce, balance
             ).call()
-
-    class TestFinalize:
-        @pytest.mark.parametrize(
-            "address, code, nonce", [(0, [], 0), (2**160 - 1, [1, 2, 3], 1)]
-        )
-        async def test_should_return_summary(self, account, address, code, nonce):
-            await account.test__finalize__should_return_summary(
-                address, code, nonce
-            ).call()
-
-        @pytest.mark.parametrize(
-            "address, code, nonce", [(0, [], 0), (2**160 - 1, [1, 2, 3], 1)]
-        )
-        async def test_should_return_summary_with_no_default_dict(
-            self, account, address, code, nonce
-        ):
-            with cairo_error("KeyError"):
-                await account.test__finalize__should_return_summary_with_no_default_dict(
-                    address, code, nonce
-                ).call()
 
     class TestWriteStorage:
         @pytest.mark.parametrize("key, value", [(0, 0), (2**256 - 1, 2**256 - 1)])

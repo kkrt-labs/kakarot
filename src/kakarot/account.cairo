@@ -35,18 +35,6 @@ from utils.dict import default_dict_copy
 from utils.utils import Helpers
 
 namespace Account {
-    // @dev Like an Account, but frozen after squashing all dicts
-    struct Summary {
-        address: felt,
-        code_len: felt,
-        code: felt*,
-        storage_start: DictAccess*,
-        storage: DictAccess*,
-        nonce: felt,
-        balance: Uint256*,
-        selfdestruct: felt,
-    }
-
     // @notice Create a new account
     // @dev New contract accounts start at nonce=1.
     // @param address The EVM address of the account
@@ -72,27 +60,11 @@ namespace Account {
     }
 
     // @dev Copy the Account to safely mutate the storage
+    // @dev Squash dicts used internally
     // @param self The pointer to the Account
     func copy{range_check_ptr}(self: model.Account*) -> model.Account* {
         let (storage_start, storage) = default_dict_copy(self.storage_start, self.storage);
         return new model.Account(
-            address=self.address,
-            code_len=self.code_len,
-            code=self.code,
-            storage_start=storage_start,
-            storage=storage,
-            nonce=self.nonce,
-            balance=self.balance,
-            selfdestruct=self.selfdestruct,
-        );
-    }
-
-    // @dev Squash dicts used internally
-    // @param self The pointer to the Account
-    // @return a Summary Account, frozen
-    func finalize{range_check_ptr}(self: model.Account*) -> Summary* {
-        let (storage_start, storage) = default_dict_copy(self.storage_start, self.storage);
-        return new Summary(
             address=self.address,
             code_len=self.code_len,
             code=self.code,

@@ -66,8 +66,8 @@ namespace State {
             state.accounts_start, state.accounts, 0
         );
         // Finalizing the accounts create another entry per account
-        Internals._finalize_accounts{accounts=accounts}(accounts_start, accounts);
-        // Squash again to keep only one Account.Summary per key
+        Internals._copy_accounts{accounts=accounts}(accounts_start, accounts);
+        // Squash again to keep only one model.Account per key
         // @dev: using default_dict_copy as default_dict_finalize doesn't return a default_dict
         let (local accounts_start, accounts) = default_dict_copy(accounts_start, accounts);
 
@@ -254,30 +254,9 @@ namespace Internals {
         }
 
         let account = cast(accounts_start.new_value, model.Account*);
-        let account_summary = Account.copy(account);
-        dict_write{dict_ptr=accounts}(
-            key=accounts_start.key, new_value=cast(account_summary, felt)
-        );
+        let account = Account.copy(account);
+        dict_write{dict_ptr=accounts}(key=accounts_start.key, new_value=cast(account, felt));
 
         return _copy_accounts(accounts_start + DictAccess.SIZE, accounts_end);
-    }
-
-    // @notice Iterate through the accounts dict and finalize them
-    // @param accounts_start The dict start pointer
-    // @param accounts_end The dict end pointer
-    func _finalize_accounts{range_check_ptr, accounts: DictAccess*}(
-        accounts_start: DictAccess*, accounts_end: DictAccess*
-    ) {
-        if (accounts_start == accounts_end) {
-            return ();
-        }
-
-        let account = cast(accounts_start.new_value, model.Account*);
-        let account_summary = Account.finalize(account);
-        dict_write{dict_ptr=accounts}(
-            key=accounts_start.key, new_value=cast(account_summary, felt)
-        );
-
-        return _finalize_accounts(accounts_start + DictAccess.SIZE, accounts_end);
     }
 }
