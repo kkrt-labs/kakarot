@@ -12,6 +12,7 @@ from starkware.cairo.common.memset import memset
 from utils.utils import Helpers
 from kakarot.model import model
 from kakarot.stack import Stack
+from kakarot.state import State
 from kakarot.memory import Memory
 from kakarot.instructions.push_operations import PushOperations
 from tests.utils.helpers import TestHelpers
@@ -28,7 +29,7 @@ func test__exec_push{
     let memory = Memory.init();
     let evm = TestHelpers.init_evm_with_bytecode(1 + i, bytecode);
 
-    with stack, memory {
+    with stack, memory, state {
         let evm = PushOperations.exec_push(evm);
         let (result) = Stack.peek(0);
     }

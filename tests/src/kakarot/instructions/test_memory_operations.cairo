@@ -11,6 +11,7 @@ from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from utils.utils import Helpers
 from kakarot.model import model
 from kakarot.stack import Stack
+from kakarot.state import State
 from kakarot.memory import Memory
 from kakarot.evm import EVM
 from kakarot.instructions.memory_operations import MemoryOperations
@@ -28,10 +29,11 @@ func test__exec_pc__should_update_after_incrementing{
     let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
     let evm = EVM.increment_program_counter(evm, increment);
     let stack = Stack.init();
+    let state = Staet.init();
     let memory = Memory.init();
 
     // When
-    with stack, memory {
+    with stack, memory, state {
         let evm = MemoryOperations.exec_pc(evm);
         let (index0) = Stack.peek(0);
     }
@@ -52,13 +54,14 @@ func test__exec_pop_should_pop_an_item_from_execution_context{
     let (bytecode) = alloc();
     let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
     let stack = Stack.init();
+    let state = Staet.init();
     let memory = Memory.init();
 
     tempvar item_1 = new Uint256(1, 0);
     tempvar item_0 = new Uint256(2, 0);
 
     // When
-    with stack, memory {
+    with stack, memory, state {
         Stack.push(item_1);
         Stack.push(item_0);
 
@@ -81,13 +84,14 @@ func test__exec_mload_should_load_a_value_from_memory{
     let (bytecode) = alloc();
     let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
     let stack = Stack.init();
+    let state = Staet.init();
     let memory = Memory.init();
 
     tempvar item_1 = new Uint256(1, 0);
     tempvar item_0 = new Uint256(0, 0);
 
     // When
-    with stack, memory {
+    with stack, memory, state {
         Stack.push(stack, item_1);
         Stack.push(stack, item_0);
 
@@ -114,9 +118,10 @@ func test__exec_mload_should_load_a_value_from_memory_with_memory_expansion{
     let (bytecode) = alloc();
     let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
     let stack = Stack.init();
+    let state = Staet.init();
     let memory = Memory.init();
 
-    with stack, memory {
+    with stack, memory, state {
         tempvar item_1 = new Uint256(1, 0);
         tempvar item_0 = new Uint256(0, 0);
 
@@ -149,12 +154,13 @@ func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_ms
     let test_offset = 684;
     // Given
     let stack = Stack.init();
+    let state = Staet.init();
     let memory = Memory.init();
 
     tempvar item_1 = new Uint256(1, 0);
     tempvar item_0 = new Uint256(0, 0);
 
-    with stack, memory {
+    with stack, memory, state {
         Stack.push(item_1);
         Stack.push(item_0);
 

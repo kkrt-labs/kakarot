@@ -15,6 +15,7 @@ from kakarot.interfaces.interfaces import IKakarot, IContractAccount, IAccount
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
+from kakarot.state import State
 from tests.utils.helpers import TestHelpers
 from utils.utils import Helpers
 
@@ -70,13 +71,14 @@ func test__exec_address__should_push_address_to_stack{
     // Given
     alloc_locals;
     let stack = Stack.init();
+    let state = State.init();
     let memory = Memory.init();
     let (bytecode) = alloc();
     let address = 0xdead;
     let evm = TestHelpers.init_evm_at_address(0, bytecode, 0, address);
 
     // When
-    with stack, memory {
+    with stack, memory, state {
         let result = EnvironmentalInformation.exec_address(evm);
         let (index0) = Stack.peek(0);
     }
@@ -97,10 +99,11 @@ func test__exec_extcodesize__should_handle_address_with_no_code{
 
     let evm = TestHelpers.init_evm();
     let stack = Stack.init();
+    let state = State.init();
     let memory = Memory.init();
 
     // When
-    with stack, memory {
+    with stack, memory, state {
         Stack.push_uint128(0xdead);
         let evm = EnvironmentalInformation.exec_extcodesize(evm);
         let (extcodesize) = Stack.peek(0);
@@ -121,13 +124,14 @@ func test__exec_extcodesize__should_handle_address_with_code{
     alloc_locals;
 
     let stack = Stack.init();
+    let state = State.init();
     let memory = Memory.init();
     let evm = TestHelpers.init_evm();
     let (address) = external_account_address.read();
     let address_uint256 = Helpers.to_uint256(address.evm);
 
     // When
-    with stack, memory {
+    with stack, memory, state {
         Stack.push(address_uint256);
         let evm = EnvironmentalInformation.exec_extcodesize(evm);
         let (extcodesize) = Stack.peek(0);
@@ -150,6 +154,7 @@ func test__exec_extcodecopy__should_handle_address_with_no_code{
     // Given
     let evm = TestHelpers.init_evm();
     let stack = Stack.init();
+    let state = State.init();
     let memory = Memory.init();
     let size = 32;
     let offset = 0;
@@ -160,7 +165,7 @@ func test__exec_extcodecopy__should_handle_address_with_no_code{
     tempvar item_0 = new Uint256(0xDEAD, 0);  // address
 
     // When
-    with stack, memory {
+    with stack, memory, state {
         Stack.push(item_3);  // size
         Stack.push(item_2);  // offset
         Stack.push(item_1);  // dest_offset
@@ -184,6 +189,7 @@ func test__exec_extcodecopy__should_handle_address_with_code{
     // Given
     let evm = TestHelpers.init_evm();
     let stack = Stack.init();
+    let state = State.init();
     let memory = Memory.init();
     tempvar item_3 = new Uint256(size, 0);  // size
     tempvar item_2 = new Uint256(offset, 0);  // offset
@@ -192,7 +198,7 @@ func test__exec_extcodecopy__should_handle_address_with_code{
     let item_0 = Helpers.to_uint256(address.evm);
 
     // When
-    with stack, memory {
+    with stack, memory, state {
         Stack.push(item_3);  // size
         Stack.push(item_2);  // offset
         Stack.push(item_1);  // dest_offset
@@ -216,11 +222,12 @@ func test__exec_gasprice{
     // Given
     let evm = TestHelpers.init_evm();
     let stack = Stack.init();
+    let state = State.init();
     let memory = Memory.init();
     let expected_gas_price_uint256 = Helpers.to_uint256(evm.message.gas_price);
 
     // When
-    with stack, memory {
+    with stack, memory, state {
         let result = EnvironmentalInformation.exec_gasprice(evm);
         let (gasprice) = Stack.peek(0);
     }
@@ -238,12 +245,13 @@ func test__exec_extcodehash__should_handle_invalid_address{
 
     // Given
     let stack = Stack.init();
+    let state = State.init();
     let memory = Memory.init();
     let evm = TestHelpers.init_evm();
     tempvar address = new Uint256(0xDEAD, 0);
 
     // When
-    with stack, memory {
+    with stack, memory, state {
         Stack.push(address);
         let result = EnvironmentalInformation.exec_extcodehash(evm);
         let (extcodehash) = Stack.peek(0);
@@ -264,10 +272,11 @@ func test__exec_extcodehash__should_handle_address_with_code{
     alloc_locals;
     let evm = TestHelpers.init_evm();
     let stack = Stack.init();
+    let state = State.init();
     let memory = Memory.init();
 
     // When
-    with stack, memory {
+    with stack, memory, state {
         let (address) = external_account_address.read();
         let address_uint256 = Helpers.to_uint256(address.evm);
         Stack.push(address_uint256);

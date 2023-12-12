@@ -8,6 +8,7 @@ from starkware.cairo.common.uint256 import Uint256
 
 from kakarot.stack import Stack
 from kakarot.memory import Memory
+from kakarot.state import State
 from kakarot.instructions.exchange_operations import ExchangeOperations
 from tests.utils.helpers import TestHelpers
 
@@ -22,7 +23,7 @@ func test__exec_swap{
     let memory = Memory.init();
 
     // When
-    with stack, memory {
+    with stack, memory, state {
         let evm = ExchangeOperations.exec_swap(evm);
         let (top) = Stack.peek(0);
         let (swapped) = Stack.peek(i);

@@ -9,6 +9,7 @@ from starkware.starknet.common.syscalls import get_block_number, get_block_times
 
 from kakarot.model import model
 from kakarot.stack import Stack
+from kakarot.state import State
 from kakarot.memory import Memory
 from kakarot.storages import blockhash_registry_address
 from kakarot.instructions.block_information import BlockInformation
@@ -44,12 +45,13 @@ func test__exec_block_information{
     alloc_locals;
     let stack = TestHelpers.init_stack_with_values(initial_stack_len, initial_stack);
     let memory = Memory.init();
+    let state = State.init();
     let (bytecode) = alloc();
     assert [bytecode] = opcode;
     let evm = TestHelpers.init_evm_with_bytecode(1, bytecode);
 
     // When
-    with stack, memory {
+    with stack, memory, state {
         let evm = BlockInformation.exec_block_information(evm);
         let (result) = Stack.peek(0);
     }

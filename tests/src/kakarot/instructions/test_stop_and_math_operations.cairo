@@ -8,6 +8,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 
 from kakarot.stack import Stack
+from kakarot.state import State
 from kakarot.memory import Memory
 from kakarot.instructions.stop_and_math_operations import StopAndMathOperations
 from tests.utils.helpers import TestHelpers
@@ -20,9 +21,10 @@ func test__exec_stop{
 
     let evm = TestHelpers.init_evm();
     let stack = Stack.init();
+    let state = State.init();
     let memory = Memory.init();
 
-    with stack, memory {
+    with stack, memory, state {
         let evm = StopAndMathOperations.exec_stop(evm);
     }
 
@@ -45,7 +47,7 @@ func test__exec_math_operation{
     let evm = TestHelpers.init_evm_with_bytecode(1, bytecode);
 
     // When
-    with stack, memory {
+    with stack, memory, state {
         let evm = StopAndMathOperations.exec_math_operation(evm);
         let (result) = Stack.peek(0);
     }
