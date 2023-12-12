@@ -8,6 +8,7 @@ from starkware.cairo.common.bool import TRUE
 from kakarot.model import model
 from kakarot.evm import EVM
 from kakarot.stack import Stack
+from kakarot.State import State
 from kakarot.errors import Errors
 
 // @title Exchange operations opcodes.
@@ -23,6 +24,7 @@ namespace ExchangeOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         let opcode_number = [evm.message.bytecode + evm.program_counter];
         let i = opcode_number - 0x8f;

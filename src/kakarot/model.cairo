@@ -114,14 +114,13 @@ namespace model {
 
     // @dev Stores all data relevant to the current execution context.
     // @param message The call context data.
+    // @param return_data_len The return_data length.
+    // @param return_data The region used to return a value after a call.
     // @param program_counter The keep track of the current position in the program as it is being executed.
     // @param stopped A boolean that state if the current execution is halted.
-    // @param return_data The region used to return a value after a call.
-    // @param return_data_len The return_data length.
     // @param gas_left The gas consumed by the current state of the execution.
-    // @param state The current journal of state updates.
+    // @param reverted If the EVM is reverted.
     struct EVM {
-        state: State*,
         message: Message*,
         return_data_len: felt,
         return_data: felt*,
@@ -136,6 +135,7 @@ namespace model {
         evm: EVM*,
         stack: Stack*,
         memory: Memory*,
+        state: State*,
     }
 
     // @dev Stores the constant data of an opcode

@@ -10,6 +10,7 @@ from kakarot.errors import Errors
 from kakarot.evm import EVM
 from kakarot.model import model
 from kakarot.stack import Stack
+from kakarot.state import State
 from utils.utils import Helpers
 
 // @title Push operations opcodes.
@@ -21,6 +22,7 @@ namespace PushOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 

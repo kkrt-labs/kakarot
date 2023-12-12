@@ -75,7 +75,7 @@ namespace Kakarot {
         value: felt,
         data_len: felt,
         data: felt*,
-    ) -> model.EVM* {
+    ) -> (model.EVM*, model.State*) {
         alloc_locals;
         let evm_contract_address = resolve_to(to, origin);
         let (starknet_contract_address) = Account.compute_starknet_address(evm_contract_address);
@@ -87,7 +87,7 @@ namespace Kakarot {
         let is_deploy_tx = 1 - is_regular_tx;
         let (bytecode_len, bytecode) = Starknet.get_bytecode(address.evm);
 
-        let (evm, stack, memory) = Interpreter.execute(
+        let (evm, stack, memory, state) = Interpreter.execute(
             address,
             is_deploy_tx,
             origin_address,
@@ -99,7 +99,7 @@ namespace Kakarot {
             gas_limit,
             gas_price,
         );
-        return evm;
+        return (evm, state);
     }
 
     // @notice The Blockhash registry is used by the BLOCKHASH opcode

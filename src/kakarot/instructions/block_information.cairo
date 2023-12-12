@@ -27,6 +27,7 @@ namespace BlockInformation {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         let opcode_number = [evm.message.bytecode + evm.program_counter];
 
@@ -44,113 +45,105 @@ namespace BlockInformation {
         jmp basefee;
 
         blockhash:
-        let syscall_ptr = cast([fp - 9], felt*);
-        let pedersen_ptr = cast([fp - 8], HashBuiltin*);
-        let range_check_ptr = [fp - 7];
-        let stack = cast([fp - 5], model.Stack*);
+        let syscall_ptr = cast([fp - 10], felt*);
+        let pedersen_ptr = cast([fp - 9], HashBuiltin*);
+        let range_check_ptr = [fp - 8];
+        let stack = cast([fp - 6], model.Stack*);
+        Internals.blockhash();
+
+        // Rebind unused args with fp
+        let bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
+        let memory = cast([fp - 5], model.Memory*);
+        let state = cast([fp - 4], model.State*);
         let evm = cast([fp - 3], model.EVM*);
-        let (evm, result) = Internals.blockhash(evm);
-        jmp end;
+        return evm;
 
         coinbase:
-        tempvar syscall_ptr = cast([fp - 9], felt*);
-        tempvar pedersen_ptr = cast([fp - 8], HashBuiltin*);
-        tempvar range_check_ptr = [fp - 7];
-        tempvar stack = cast([fp - 5], model.Stack*);
-        tempvar evm = cast([fp - 3], model.EVM*);
         tempvar result = Uint256(
             0xacdffe0cf08e20ed8ba10ea97a487004, 0x388ca486b82e20cc81965d056b4cdca
         );
-        jmp end;
+        jmp end_constant;
 
         timestamp:
-        let syscall_ptr = cast([fp - 9], felt*);
+        let syscall_ptr = cast([fp - 10], felt*);
         let (block_timestamp) = get_block_timestamp();
-        tempvar syscall_ptr = cast([ap - 2], felt*);
-        tempvar pedersen_ptr = cast([fp - 8], HashBuiltin*);
-        tempvar range_check_ptr = [fp - 7];
-        tempvar stack = cast([fp - 5], model.Stack*);
-        tempvar evm = cast([fp - 3], model.EVM*);
         tempvar result = Uint256(block_timestamp, 0);
-        jmp end;
+        jmp end_syscall;
 
         number:
-        let syscall_ptr = cast([fp - 9], felt*);
+        let syscall_ptr = cast([fp - 10], felt*);
         let (block_number) = get_block_number();
-        tempvar syscall_ptr = cast([ap - 2], felt*);
-        tempvar pedersen_ptr = cast([fp - 8], HashBuiltin*);
-        tempvar range_check_ptr = [fp - 7];
-        tempvar stack = cast([fp - 5], model.Stack*);
-        tempvar evm = cast([fp - 3], model.EVM*);
         tempvar result = Uint256(block_number, 0);
-        jmp end;
+        jmp end_syscall;
 
         prevrandao:
-        tempvar syscall_ptr = cast([fp - 9], felt*);
-        tempvar pedersen_ptr = cast([fp - 8], HashBuiltin*);
-        tempvar range_check_ptr = [fp - 7];
-        tempvar stack = cast([fp - 5], model.Stack*);
-        tempvar evm = cast([fp - 3], model.EVM*);
         tempvar result = Uint256(0, 0);
-        jmp end;
+        jmp end_constant;
 
         gaslimit:
-        tempvar syscall_ptr = cast([fp - 9], felt*);
-        tempvar pedersen_ptr = cast([fp - 8], HashBuiltin*);
-        tempvar range_check_ptr = [fp - 7];
-        tempvar stack = cast([fp - 5], model.Stack*);
-        tempvar evm = cast([fp - 3], model.EVM*);
         tempvar result = Uint256(Constants.BLOCK_GAS_LIMIT, 0);
-        jmp end;
+        jmp end_constant;
 
         chainid:
-        tempvar syscall_ptr = cast([fp - 9], felt*);
-        tempvar pedersen_ptr = cast([fp - 8], HashBuiltin*);
-        tempvar range_check_ptr = [fp - 7];
-        tempvar stack = cast([fp - 5], model.Stack*);
-        tempvar evm = cast([fp - 3], model.EVM*);
         tempvar result = Uint256(Constants.CHAIN_ID, 0);
-        jmp end;
+        jmp end_constant;
 
         selfbalance:
-        let syscall_ptr = cast([fp - 9], felt*);
-        let pedersen_ptr = cast([fp - 8], HashBuiltin*);
-        let range_check_ptr = [fp - 7];
-        let stack = cast([fp - 5], model.Stack*);
+        let syscall_ptr = cast([fp - 10], felt*);
+        let pedersen_ptr = cast([fp - 9], HashBuiltin*);
+        let range_check_ptr = [fp - 8];
+        let stack = cast([fp - 6], model.Stack*);
+        let state = cast([fp - 4], model.State*);
         let evm = cast([fp - 3], model.EVM*);
-        let (evm, result) = Internals.selfbalance(evm);
-        jmp end;
+        Internals.selfbalance(evm);
+
+        // Rebind unused args with fp
+        let bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
+        let memory = cast([fp - 5], model.Memory*);
+        return evm;
 
         basefee:
         // Since Kakarot does not implement EIP1559,
         // there is no priority fee, therefore gasPrice == baseFeePerGas
-        let evm = cast([fp - 3], model.EVM*);
-        tempvar gas_price = evm.message.gas_price;
-        tempvar syscall_ptr = cast([fp - 9], felt*);
-        tempvar pedersen_ptr = cast([fp - 8], HashBuiltin*);
-        tempvar range_check_ptr = [fp - 7];
-        tempvar stack = cast([fp - 5], model.Stack*);
-        tempvar evm = cast([fp - 3], model.EVM*);
         // TODO: since gas_price is a felt, it might panic when being cast to a Uint256.low,
         // Add check gas_price < 2 ** 128 at creation of EVM
         // `split_felt` might be too expensive for this if we know gas_price < 2 ** 128
+        let evm = cast([fp - 3], model.EVM*);
+        tempvar gas_price = evm.message.gas_price;
         tempvar result = Uint256(gas_price, 0);
-        jmp end;
+        jmp end_constant;
 
-        end:
+        end_constant:
         // Rebind unused args with fp
-        let bitwise_ptr = cast([fp - 6], BitwiseBuiltin*);
-        let memory = cast([fp - 4], model.Memory*);
+        let syscall_ptr = cast([fp - 10], felt*);
+        let pedersen_ptr = cast([fp - 9], HashBuiltin*);
+        let range_check_ptr = [fp - 8];
+        let bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
+        let stack = cast([fp - 6], model.Stack*);
+        let memory = cast([fp - 5], model.Memory*);
+        let state = cast([fp - 4], model.State*);
+        let evm = cast([fp - 3], model.EVM*);
 
         // Rebind used args with ap
-        let syscall_ptr = cast([ap - 7], felt*);
-        let pedersen_ptr = cast([ap - 6], HashBuiltin*);
-        let range_check_ptr = [ap - 5];
-        let stack = cast([ap - 4], model.Stack*);
-        let evm = cast([ap - 3], model.EVM*);
         let result = Uint256([ap - 2], [ap - 1]);
 
-        // Finalize opcode
+        Stack.push_uint256(result);
+        return evm;
+
+        end_syscall:
+        // Rebind unused args with fp
+        let pedersen_ptr = cast([fp - 9], HashBuiltin*);
+        let range_check_ptr = [fp - 8];
+        let bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
+        let stack = cast([fp - 6], model.Stack*);
+        let memory = cast([fp - 5], model.Memory*);
+        let state = cast([fp - 4], model.State*);
+        let evm = cast([fp - 3], model.EVM*);
+
+        // Rebind used args with ap
+        let syscall_ptr = cast([ap - 3], felt*);
+        let result = Uint256([ap - 2], [ap - 1]);
+
         Stack.push_uint256(result);
         return evm;
     }
@@ -159,7 +152,7 @@ namespace BlockInformation {
 namespace Internals {
     func blockhash{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, stack: model.Stack*
-    }(evm: model.EVM*) -> (model.EVM*, Uint256) {
+    }() {
         let (block_number_uint256) = Stack.pop();
         let block_number = block_number_uint256.low;
 
@@ -170,7 +163,8 @@ namespace Internals {
 
         // If not in range, return 0
         if (in_range == FALSE) {
-            return (evm, Uint256(0, 0));
+            Stack.push_uint256(Uint256(0, 0));
+            return ();
         }
 
         let (blockhash_registry_address_: felt) = blockhash_registry_address.read();
@@ -178,14 +172,19 @@ namespace Internals {
             contract_address=blockhash_registry_address_, block_number=[block_number_uint256]
         );
         let blockhash = Helpers.to_uint256(blockhash_);
-        return (evm, [blockhash]);
+        Stack.push(blockhash);
+        return ();
     }
 
     func selfbalance{
-        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, stack: model.Stack*
-    }(evm: model.EVM*) -> (model.EVM*, Uint256) {
-        let (state, account) = State.get_account(evm.state, evm.message.address);
-        let evm = EVM.update_state(evm, state);
-        return (evm, [account.balance]);
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        stack: model.Stack*,
+        state: model.State*,
+    }(evm: model.EVM*) {
+        let account = State.get_account(evm.message.address);
+        Stack.push(account.balance);
+        return ();
     }
 }

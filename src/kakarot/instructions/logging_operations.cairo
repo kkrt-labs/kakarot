@@ -11,6 +11,7 @@ from kakarot.evm import EVM
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
+from kakarot.state import State
 from kakarot.gas import Gas
 from utils.utils import Helpers
 
@@ -31,6 +32,7 @@ namespace LoggingOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -59,7 +61,7 @@ namespace LoggingOperations {
         }
         let (data: felt*) = alloc();
         Memory.load_n(size, data, offset);
-        let evm = EVM.push_event(evm, topics_len, popped + 4, size, data);
+        EVM.push_event(evm, topics_len, popped + 4, size, data);
 
         return evm;
     }

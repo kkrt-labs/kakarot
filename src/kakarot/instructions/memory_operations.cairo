@@ -24,6 +24,7 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -49,6 +50,7 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -73,6 +75,7 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         Stack.push_uint128(evm.program_counter);
         return evm;
@@ -85,6 +88,7 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         Stack.push_uint128(memory.words_len * 32);
         return evm;
@@ -97,6 +101,7 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
         let (offset) = Stack.pop();
@@ -111,6 +116,7 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
         let (popped) = Stack.pop_n(2);
@@ -134,6 +140,7 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
         return evm;
@@ -146,6 +153,7 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         Stack.pop();
 
@@ -159,6 +167,7 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -189,6 +198,7 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -202,8 +212,7 @@ namespace MemoryOperations {
 
         let key = popped;  // Uint256*
         let value = popped + Uint256.SIZE;  // Uint256*
-        let state = State.write_storage(evm.state, evm.message.address, key, value);
-        let evm = EVM.update_state(evm, state);
+        State.write_storage(evm.message.address, key, value);
         return evm;
     }
 
@@ -214,13 +223,13 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
         let (key) = Stack.pop();
-        let (state, value) = State.read_storage(evm.state, evm.message.address, key);
+        let value = State.read_storage(evm.message.address, key);
         Stack.push(value);
-        let evm = EVM.update_state(evm, state);
         return evm;
     }
 
@@ -231,6 +240,7 @@ namespace MemoryOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         Stack.push_uint128(evm.gas_left);
 

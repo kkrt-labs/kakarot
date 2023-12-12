@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: MIT
 
+%lang starknet
+
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
 from kakarot.model import model
 from kakarot.stack import Stack
+from kakarot.state import State
 
 // @title Duplication operations opcodes.
 namespace DuplicationOperations {
@@ -18,6 +21,7 @@ namespace DuplicationOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         let opcode_number = [evm.message.bytecode + evm.program_counter];
         let i = opcode_number - 0x7F;

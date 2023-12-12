@@ -40,10 +40,9 @@ namespace SystemOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
-
-        let state = evm.state;
 
         let opcode_number = [evm.message.bytecode + evm.program_counter];
         let is_create2 = is_not_zero(opcode_number - 0xf0);
@@ -79,8 +78,8 @@ namespace SystemOperations {
         Memory.load_n(size.low, bytecode, offset.low);
 
         // Get target address
-        let (state, evm_contract_address) = CreateHelper.get_evm_address(
-            state, evm.message.address, popped_len, popped, size.low, bytecode
+        let evm_contract_address = CreateHelper.get_evm_address(
+            evm.message.address, popped_len, popped, size.low, bytecode
         );
         let (starknet_contract_address) = Account.compute_starknet_address(evm_contract_address);
         tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
@@ -93,33 +92,30 @@ namespace SystemOperations {
             let evm = EVM.charge_gas(evm, gas_limit);
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
             let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
-            let evm = EVM.update_state(evm, state);
             return evm;
         }
 
         // TODO: Clear return data
 
         // Check sender balance and nonce
-        let (state, sender) = State.get_account(state, evm.message.address);
+        let sender = State.get_account(evm.message.address);
         let is_nonce_overflow = is_le(Constants.MAX_NONCE + 1, sender.nonce);
         let (is_balance_overflow) = uint256_lt([sender.balance], value);
-        // TODO: missing stack depth limit
-        if (is_nonce_overflow + is_balance_overflow != 0) {
+        let stack_depth_limit = is_le(1024, evm.message.depth);
+        if (is_nonce_overflow + is_balance_overflow + stack_depth_limit != 0) {
             Stack.push_uint128(0);
-            let evm = EVM.update_state(evm, state);
             return evm;
         }
 
         let evm = EVM.charge_gas(evm, gas_limit);
 
         // Check target account availabitliy
-        let (state, account) = State.get_account(state, address);
+        let account = State.get_account(address);
         let is_collision = Account.has_code_or_nonce(account);
         if (is_collision != 0) {
             let sender = Account.set_nonce(sender, sender.nonce + 1);
-            let state = State.set_account(state, evm.message.address, sender);
+            State.set_account(evm.message.address, sender);
             Stack.push_uint128(0);
-            let evm = EVM.update_state(evm, state);
             return evm;
         }
 
@@ -127,20 +123,18 @@ namespace SystemOperations {
         let code_size_too_big = is_le(2 * Constants.MAX_CODE_SIZE + 1, size.low);
         if (code_size_too_big != FALSE) {
             let evm = EVM.charge_gas(evm, evm.gas_left + 1);
-            let evm = EVM.update_state(evm, state);
             return evm;
         }
 
         // Increment nonce
         let sender = Account.set_nonce(sender, sender.nonce + 1);
-        let state = State.set_account(state, evm.message.address, sender);
+        State.set_account(evm.message.address, sender);
 
         // Final update of calling context
-        let evm = EVM.update_state(evm, state);
-        tempvar parent = new model.Parent(evm, stack, memory);
+        tempvar parent = new model.Parent(evm, stack, memory, state);
         let stack = Stack.init();
         let memory = Memory.init();
-        let state = State.copy(evm.state);
+        let state = State.copy();
 
         // Create child message
         let (calldata: felt*) = alloc();
@@ -161,16 +155,14 @@ namespace SystemOperations {
         let child_evm = EVM.init(message, gas_limit);
         let stack = Stack.init();
 
-        let (state, account) = State.get_account(state, address);
+        let account = State.get_account(address);
         let account = Account.set_nonce(account, 1);
-        let state = State.set_account(state, address, account);
+        State.set_account(address, account);
 
         let transfer = model.Transfer(evm.message.address, address, value);
-        let (state, success) = State.add_transfer(state, transfer);
-        let child_evm = EVM.update_state(child_evm, state);
+        let success = State.add_transfer(transfer);
         if (success == 0) {
             Stack.push_uint128(0);
-            let child_evm = EVM.update_state(child_evm, state);
             return child_evm;
         }
 
@@ -194,6 +186,7 @@ namespace SystemOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         let evm = EVM.charge_gas(evm, evm.gas_left);
         let (revert_reason: felt*) = alloc();
@@ -216,6 +209,7 @@ namespace SystemOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -254,6 +248,7 @@ namespace SystemOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -292,6 +287,7 @@ namespace SystemOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
         let child_evm = CallHelper.init_sub_context(
@@ -312,8 +308,7 @@ namespace SystemOperations {
         tempvar value = Uint256(value_low, value_high);
 
         let transfer = model.Transfer(evm.message.address, child_evm.message.address, value);
-        let (state, success) = State.add_transfer(child_evm.state, transfer);
-        let child_evm = EVM.update_state(child_evm, state);
+        let success = State.add_transfer(transfer);
         if (success == 0) {
             let (revert_reason_len, revert_reason) = Errors.balanceError();
             tempvar child_evm = EVM.stop(child_evm, revert_reason_len, revert_reason, TRUE);
@@ -339,6 +334,7 @@ namespace SystemOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         let child_evm = CallHelper.init_sub_context(
             evm=evm, with_value=FALSE, read_only=TRUE, self_call=FALSE
@@ -361,6 +357,7 @@ namespace SystemOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         let child_evm = CallHelper.init_sub_context(
             evm=evm, with_value=TRUE, read_only=evm.message.read_only, self_call=TRUE
@@ -384,6 +381,7 @@ namespace SystemOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         let child_evm = CallHelper.init_sub_context(
             evm=evm, with_value=FALSE, read_only=evm.message.read_only, self_call=TRUE
@@ -406,6 +404,7 @@ namespace SystemOperations {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -429,22 +428,21 @@ namespace SystemOperations {
 
         let (recipient_starknet_address) = Account.compute_starknet_address(recipient_evm_address);
         tempvar recipient = new model.Address(recipient_starknet_address, recipient_evm_address);
-        let (state, account) = State.get_account(evm.state, evm.message.address);
+        let account = State.get_account(evm.message.address);
         let transfer = model.Transfer(
             sender=evm.message.address, recipient=recipient, amount=[account.balance]
         );
-        let (state, success) = State.add_transfer(state, transfer);
+        let success = State.add_transfer(transfer);
 
         // Register for SELFDESTRUCT
-        let (state, account) = State.get_account(state, evm.message.address);
+        // @dev: get_account again because add_transfer updated it
+        let account = State.get_account(evm.message.address);
         let account = Account.selfdestruct(account);
-        let state = State.set_account(state, evm.message.address, account);
+        State.set_account(evm.message.address, account);
 
         // Halt context
         let (return_data: felt*) = alloc();
         let evm = EVM.stop(evm, 0, return_data, FALSE);
-
-        let evm = EVM.update_state(evm, state);
 
         return evm;
     }
@@ -468,6 +466,7 @@ namespace CallHelper {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*, with_value: felt, read_only: felt, self_call: felt) -> model.EVM* {
         alloc_locals;
 
@@ -531,7 +530,7 @@ namespace CallHelper {
         // Check if the called address is a precompiled contract
         let is_precompile = Precompiles.is_precompile(address=address);
         if (is_precompile != FALSE) {
-            tempvar parent = new model.Parent(evm, stack, memory);
+            tempvar parent = new model.Parent(evm, stack, memory, state);
             let child_evm = Precompiles.run(
                 evm_address=address,
                 calldata_len=args_size,
@@ -546,8 +545,7 @@ namespace CallHelper {
 
         let (starknet_contract_address) = Account.compute_starknet_address(address);
         tempvar call_address = new model.Address(starknet_contract_address, address);
-        let (state, account) = State.get_account(evm.state, call_address);
-        let evm = EVM.update_state(evm, state);
+        let account = State.get_account(call_address);
 
         if (self_call == FALSE) {
             tempvar message_address = call_address;
@@ -555,7 +553,7 @@ namespace CallHelper {
             tempvar message_address = evm.message.address;
         }
 
-        tempvar parent = new model.Parent(evm, stack, memory);
+        tempvar parent = new model.Parent(evm, stack, memory, state);
         let stack = Stack.init();
         let memory = Memory.init();
         tempvar message = new model.Message(
@@ -573,8 +571,7 @@ namespace CallHelper {
             depth=evm.message.depth + 1,
         );
         let child_evm = EVM.init(message, gas_limit);
-        let state = State.copy(evm.state);
-        let child_evm = EVM.update_state(child_evm, state);
+        let state = State.copy();
         return child_evm;
     }
 
@@ -586,6 +583,7 @@ namespace CallHelper {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -607,14 +605,11 @@ namespace CallHelper {
         local gas_left;
         if (evm.reverted == FALSE) {
             assert gas_left = evm.message.parent.evm.gas_left + evm.gas_left;
-            tempvar state = evm.state;
         } else {
             assert gas_left = evm.message.parent.evm.gas_left;
-            tempvar state = evm.message.parent.evm.state;
         }
 
         tempvar evm = new model.EVM(
-            state=state,
             message=evm.message.parent.evm.message,
             return_data_len=evm.return_data_len,
             return_data=evm.return_data,
@@ -739,30 +734,30 @@ namespace CreateHelper {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(
         state: model.State*,
+    }(
         address: model.Address*,
         popped_len: felt,
         popped: Uint256*,
         bytecode_len: felt,
         bytecode: felt*,
-    ) -> (model.State*, felt) {
+    ) -> felt {
         alloc_locals;
-        let (state, account) = State.get_account(state, address);
-        let nonce = account.nonce;
-
         // create2 context pops 4 off the stack, create pops 3
         // so we use popped_len to derive the way we should handle
         // the creation of evm addresses
         if (popped_len != 4) {
-            let (evm_contract_address) = CreateHelper.get_create_address(address.evm, nonce);
-            return (state, evm_contract_address);
+            let account = State.get_account(address);
+            let (evm_contract_address) = CreateHelper.get_create_address(
+                address.evm, account.nonce
+            );
+            return evm_contract_address;
         } else {
             let salt = popped[3];
             let (evm_contract_address) = CreateHelper.get_create2_address(
                 sender_address=address.evm, bytecode_len=bytecode_len, bytecode=bytecode, salt=salt
             );
-            return (state, evm_contract_address);
+            return evm_contract_address;
         }
     }
 
@@ -776,6 +771,7 @@ namespace CreateHelper {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -795,7 +791,6 @@ namespace CreateHelper {
         if (success == FALSE) {
             // REVERTED, just returns previous EVM
             tempvar evm = new model.EVM(
-                state=evm.message.parent.evm.state,
                 message=evm.message.parent.evm.message,
                 return_data_len=evm.return_data_len,
                 return_data=evm.return_data,
@@ -808,12 +803,11 @@ namespace CreateHelper {
         }
 
         // Write bytecode to Account
-        let (state, account) = State.get_account(evm.state, evm.message.address);
+        let account = State.get_account(evm.message.address);
         let account = Account.set_code(account, evm.return_data_len, evm.return_data);
-        let state = State.set_account(state, evm.message.address, account);
+        State.set_account(evm.message.address, account);
 
         tempvar evm = new model.EVM(
-            state=state,
             message=evm.message.parent.evm.message,
             return_data_len=evm.return_data_len,
             return_data=evm.return_data,

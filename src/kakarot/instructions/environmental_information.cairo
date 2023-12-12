@@ -29,6 +29,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         let address = Helpers.to_uint256(evm.message.address.evm);
         Stack.push(address);
@@ -42,6 +43,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -50,10 +52,9 @@ namespace EnvironmentalInformation {
         let evm_address = uint256_to_uint160([address_uint256]);
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
-        let (state, account) = State.get_account(evm.state, address);
-        Stack.push_uint256([account.balance]);
+        let account = State.get_account(address);
+        Stack.push(account.balance);
 
-        let evm = EVM.update_state(evm, state);
         return evm;
     }
 
@@ -64,6 +65,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         let origin_address = Helpers.to_uint256(evm.message.origin.evm);
 
@@ -78,6 +80,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         if (evm.message.depth == 0) {
             tempvar caller = evm.message.origin.evm;
@@ -96,6 +99,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         let value = Helpers.to_uint256(evm.message.value);
         Stack.push(value);
@@ -110,6 +114,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -130,6 +135,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         Stack.push_uint128(evm.message.calldata_len);
         return evm;
@@ -142,6 +148,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -175,6 +182,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         Stack.push_uint128(evm.message.bytecode_len);
         return evm;
@@ -187,6 +195,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -218,6 +227,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         // TODO: since gas_price is a felt, it might panic when being cast to a Uint256.low,
         // Add check gas_price < 2 ** 128
@@ -234,6 +244,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -241,12 +252,10 @@ namespace EnvironmentalInformation {
         let evm_address = uint256_to_uint160([address_uint256]);
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
-        let (state, account) = State.get_account(evm.state, address);
+        let account = State.get_account(address);
 
         // bytecode_len cannot be greater than 24k in the EVM
         Stack.push_uint128(account.code_len);
-
-        let evm = EVM.update_state(evm, state);
 
         return evm;
     }
@@ -258,6 +267,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -269,7 +279,7 @@ namespace EnvironmentalInformation {
         let evm_address = uint256_to_uint160(popped[0]);
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
-        let (state, account) = State.get_account(evm.state, address);
+        let account = State.get_account(address);
 
         let (sliced_bytecode: felt*) = alloc();
         slice(sliced_bytecode, account.code_len, account.code, offset.low, size.low);
@@ -284,8 +294,6 @@ namespace EnvironmentalInformation {
         }
         Memory.store_n(size.low, sliced_bytecode, dest_offset.low);
 
-        let evm = EVM.update_state(evm, state);
-
         return evm;
     }
 
@@ -296,6 +304,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         Stack.push_uint128(evm.return_data_len);
         return evm;
@@ -308,6 +317,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -337,6 +347,7 @@ namespace EnvironmentalInformation {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -345,15 +356,13 @@ namespace EnvironmentalInformation {
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
 
-        let (state, account) = State.get_account(evm.state, address);
+        let account = State.get_account(address);
         let has_code_or_nonce = Account.has_code_or_nonce(account);
-        let (state, account) = State.get_account(state, address);
         let account_exists = has_code_or_nonce + account.balance.low;
         // Relevant cases:
         // https://github.com/ethereum/go-ethereum/blob/master/core/vm/instructions.go#L392
         if (account_exists == 0) {
             Stack.push_uint128(0);
-            let evm = EVM.update_state(evm, state);
             return evm;
         }
 
@@ -362,16 +371,12 @@ namespace EnvironmentalInformation {
 
         let (keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
-
         with keccak_ptr {
             let (result) = cairo_keccak_bigend(dst, account.code_len);
         }
-
         finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
 
         Stack.push_uint256(result);
-
-        let evm = EVM.update_state(evm, state);
 
         return evm;
     }

@@ -68,7 +68,6 @@ namespace Precompiles {
             depth=parent.evm.message.depth + 1,
         );
         let evm = EVM.init(message, gas_left);
-        let evm = EVM.update_state(evm, parent.evm.state);
 
         // Execute the precompile at a given evm_address
         let (output_len, output, gas_used, reverted) = _exec_precompile(

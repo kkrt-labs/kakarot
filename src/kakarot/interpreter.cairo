@@ -47,6 +47,7 @@ namespace Interpreter {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -107,6 +108,7 @@ namespace Interpreter {
         [ap] = bitwise_ptr, ap++;
         [ap] = stack, ap++;
         [ap] = memory, ap++;
+        [ap] = state, ap++;
         [ap] = evm, ap++;
 
         // call opcode
@@ -592,17 +594,17 @@ namespace Interpreter {
         call unknown_opcode;  // 0xef
         jmp end;
         call SystemOperations.exec_create;  // 0xf0
-        jmp end_child_evm;
+        jmp end;
         call SystemOperations.exec_call;  // 0xf1
-        jmp end_child_evm;
+        jmp end;
         call SystemOperations.exec_callcode;  // 0xf2
-        jmp end_child_evm;
+        jmp end;
         call SystemOperations.exec_return;  // 0xf3
         jmp end;
         call SystemOperations.exec_delegatecall;  // 0xf4
-        jmp end_child_evm;
+        jmp end;
         call SystemOperations.exec_create;  // 0xf5
-        jmp end_child_evm;
+        jmp end;
         call unknown_opcode;  // 0xf6
         jmp end;
         call unknown_opcode;  // 0xf7
@@ -612,7 +614,7 @@ namespace Interpreter {
         call unknown_opcode;  // 0xf9
         jmp end;
         call SystemOperations.exec_staticcall;  // 0xfa
-        jmp end_child_evm;
+        jmp end;
         call unknown_opcode;  // 0xfb
         jmp end;
         call unknown_opcode;  // 0xfc
@@ -624,36 +626,23 @@ namespace Interpreter {
         call SystemOperations.exec_selfdestruct;  // 0xff
         jmp end;
 
-        end_child_evm:
-        let syscall_ptr = cast([ap - 7], felt*);
-        let pedersen_ptr = cast([ap - 6], HashBuiltin*);
-        let range_check_ptr = [ap - 5];
-        let bitwise_ptr = cast([ap - 4], BitwiseBuiltin*);
-        let stack = cast([ap - 3], model.Stack*);
-        let memory = cast([ap - 2], model.Memory*);
-        let child_evm = cast([ap - 1], model.EVM*);
+        end:
+        let syscall_ptr = cast([ap - 8], felt*);
+        let pedersen_ptr = cast([ap - 7], HashBuiltin*);
+        let range_check_ptr = [ap - 6];
+        let bitwise_ptr = cast([ap - 5], BitwiseBuiltin*);
+        let stack = cast([ap - 4], model.Stack*);
+        let memory = cast([ap - 3], model.Memory*);
+        let state = cast([ap - 2], model.State*);
+        let evm = cast([ap - 1], model.EVM*);
+        let evm_prev = cast([fp - 3], model.EVM*);
 
-        // Handle edge cases of CALLs and CREATEs
-        // pc != 0 means that the returned child_evm is not a new evm
-        if (child_evm.program_counter == 0) {
-            return child_evm;
+        if (evm_prev.message.depth == evm.message.depth) {
+            let evm = EVM.increment_program_counter(evm, 1);
+            return evm;
         } else {
-            let evm = EVM.increment_program_counter(child_evm, 1);
             return evm;
         }
-
-        end:
-        let syscall_ptr = cast([ap - 7], felt*);
-        let pedersen_ptr = cast([ap - 6], HashBuiltin*);
-        let range_check_ptr = [ap - 5];
-        let bitwise_ptr = cast([ap - 4], BitwiseBuiltin*);
-        let stack = cast([ap - 3], model.Stack*);
-        let memory = cast([ap - 2], model.Memory*);
-        let evm = cast([ap - 1], model.EVM*);
-
-        let evm = EVM.increment_program_counter(evm, 1);
-
-        return evm;
     }
 
     // @notice Iteratively decode and execute the bytecode of an EVM
@@ -666,6 +655,7 @@ namespace Interpreter {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
@@ -676,6 +666,7 @@ namespace Interpreter {
 
         Memory.finalize();
         Stack.finalize();
+        State.finalize();
 
         if (evm.message.depth == 0) {
             if (evm.message.is_create != FALSE) {
@@ -683,14 +674,16 @@ namespace Interpreter {
                 return evm;
             }
 
-            let state = State.finalize(evm.state);
-            let evm = EVM.update_state(evm, state);
             return evm;
         }
 
-        State.finalize(evm.state);
         let stack = evm.message.parent.stack;
         let memory = evm.message.parent.memory;
+        if (evm.reverted == FALSE) {
+            tempvar state = state;
+        } else {
+            tempvar state = evm.message.parent.state;
+        }
 
         if (evm.message.is_create != FALSE) {
             let evm = CreateHelper.finalize_parent(evm);
@@ -728,7 +721,7 @@ namespace Interpreter {
         value: felt,
         gas_limit: felt,
         gas_price: felt,
-    ) -> (model.EVM*, model.Stack*, model.Memory*) {
+    ) -> (model.EVM*, model.Stack*, model.Memory*, model.State*) {
         alloc_locals;
 
         // Compute intrinsic gas usage
@@ -769,24 +762,26 @@ namespace Interpreter {
             depth=0,
         );
 
+        let stack = Stack.init();
+        let memory = Memory.init();
+        let state = State.init();
         let evm = EVM.init(message, gas_limit - intrinsic_gas);
 
-        let state = evm.state;
-        // Handle value
-        let amount = Helpers.to_uint256(value);
-        let transfer = model.Transfer(origin, address, [amount]);
-        let (state, success) = State.add_transfer(state, transfer);
+        with state {
+            // Handle value
+            let amount = Helpers.to_uint256(value);
+            let transfer = model.Transfer(origin, address, [amount]);
+            let success = State.add_transfer(transfer);
 
-        // Check collision
-        let (state, account) = State.get_account(state, address);
-        let code_or_nonce = Account.has_code_or_nonce(account);
-        let is_collision = code_or_nonce * is_deploy_tx;
-        // Nonce is set to 1 in case of deploy_tx
-        let nonce = account.nonce * (1 - is_deploy_tx) + is_deploy_tx;
-        let account = Account.set_nonce(account, nonce);
-        let state = State.set_account(state, address, account);
-
-        let evm = EVM.update_state(evm, state);
+            // Check collision
+            let account = State.get_account(address);
+            let code_or_nonce = Account.has_code_or_nonce(account);
+            let is_collision = code_or_nonce * is_deploy_tx;
+            // Nonce is set to 1 in case of deploy_tx
+            let nonce = account.nonce * (1 - is_deploy_tx) + is_deploy_tx;
+            let account = Account.set_nonce(account, nonce);
+            State.set_account(address, account);
+        }
 
         if (is_collision != 0) {
             let (revert_reason_len, revert_reason) = Errors.addressCollision();
@@ -802,13 +797,11 @@ namespace Interpreter {
             tempvar evm = evm;
         }
 
-        let stack = Stack.init();
-        let memory = Memory.init();
-        with stack, memory {
+        with stack, memory, state {
             let evm = run(evm);
         }
 
-        return (evm, stack, memory);
+        return (evm, stack, memory, state);
     }
 
     // @notice A placeholder for opcodes that don't exist
@@ -821,6 +814,7 @@ namespace Interpreter {
         bitwise_ptr: BitwiseBuiltin*,
         stack: model.Stack*,
         memory: model.Memory*,
+        state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         let (revert_reason_len, revert_reason) = Errors.unknownOpcode();
         let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
@@ -829,9 +823,9 @@ namespace Interpreter {
 }
 
 namespace Internals {
-    func _finalize_create_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        evm: model.EVM*
-    ) -> model.EVM* {
+    func _finalize_create_tx{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
+    }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
         // Charge final deposit gas
         let code_size_limit = is_le(evm.return_data_len, Constants.MAX_CODE_SIZE);
@@ -846,12 +840,14 @@ namespace Internals {
         }
 
         let evm = EVM.charge_gas(evm, code_deposit_cost);
-        let (state, account) = State.get_account(evm.state, evm.message.address);
+
+        let account = State.get_account(evm.message.address);
         let account = Account.set_code(account, evm.return_data_len, evm.return_data);
-        let state = State.set_account(state, evm.message.address, account);
-        let state = State.finalize(state);
-        let evm = EVM.update_state(evm, state);
+        State.set_account(evm.message.address, account);
+        State.finalize();
+
         let evm = EVM.update_return_data(evm, 2, cast(evm.message.address, felt*));
+
         return evm;
     }
 }

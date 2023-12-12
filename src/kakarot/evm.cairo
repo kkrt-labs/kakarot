@@ -23,11 +23,9 @@ namespace EVM {
     // @param message The message (see model.Message) to be executed.
     // @return EVM The initialized execution context.
     func init(message: model.Message*, gas_left: felt) -> model.EVM* {
-        let state = State.init();
         let (return_data: felt*) = alloc();
 
         return new model.EVM(
-            state=state,
             message=message,
             return_data_len=0,
             return_data=return_data,
@@ -49,7 +47,6 @@ namespace EVM {
         self: model.EVM*, return_data_len: felt, return_data: felt*, reverted: felt
     ) -> model.EVM* {
         return new model.EVM(
-            state=self.state,
             message=self.message,
             return_data_len=return_data_len,
             return_data=return_data,
@@ -69,7 +66,6 @@ namespace EVM {
         self: model.EVM*, return_data_len: felt, return_data: felt*
     ) -> model.EVM* {
         return new model.EVM(
-            state=self.state,
             message=self.message,
             return_data_len=return_data_len,
             return_data=return_data,
@@ -87,7 +83,6 @@ namespace EVM {
     // @return EVM The pointer to the updated execution context.
     func increment_program_counter(self: model.EVM*, inc_value: felt) -> model.EVM* {
         return new model.EVM(
-            state=self.state,
             message=self.message,
             return_data_len=self.return_data_len,
             return_data=self.return_data,
@@ -109,7 +104,6 @@ namespace EVM {
         if (out_of_gas != 0) {
             let (revert_reason_len, revert_reason) = Errors.outOfGas(self.gas_left, inc_value);
             return new model.EVM(
-                state=self.state,
                 message=self.message,
                 return_data_len=revert_reason_len,
                 return_data=revert_reason,
@@ -121,7 +115,6 @@ namespace EVM {
         }
 
         return new model.EVM(
-            state=self.state,
             message=self.message,
             return_data_len=self.return_data_len,
             return_data=self.return_data,
@@ -138,9 +131,9 @@ namespace EVM {
     // @param topics The topics Uint256 array
     // @param data_len The length of the data
     // @param data The data bytes array
-    func push_event(
+    func push_event{state: model.State*}(
         self: model.EVM*, topics_len: felt, topics: Uint256*, data_len: felt, data: felt*
-    ) -> model.EVM* {
+    ) {
         alloc_locals;
 
         // we add the operating evm_contract_address of the execution context
@@ -158,25 +151,9 @@ namespace EVM {
             data=data,
         );
 
-        let state = State.add_event(self.state, event);
+        State.add_event(event);
 
-        return EVM.update_state(self, state);
-    }
-
-    // @notice Updates the dictionary that keeps track of the prior-to-first-write value of a contract storage key so it can be reverted to if the writing execution context reverts.
-    // @param self The pointer to the execution context.
-    // @param state The pointer to model.State
-    func update_state(self: model.EVM*, state: model.State*) -> model.EVM* {
-        return new model.EVM(
-            state=state,
-            message=self.message,
-            return_data_len=self.return_data_len,
-            return_data=self.return_data,
-            program_counter=self.program_counter,
-            stopped=self.stopped,
-            gas_left=self.gas_left,
-            reverted=self.reverted,
-        );
+        return ();
     }
 
     // @notice Update the program counter.
@@ -199,7 +176,6 @@ namespace EVM {
         }
 
         return new model.EVM(
-            state=self.state,
             message=self.message,
             return_data_len=self.return_data_len,
             return_data=self.return_data,

@@ -49,13 +49,13 @@ func execute{
     bytecode: felt*,
     calldata_len: felt,
     calldata: felt*,
-) -> (model.EVM*, model.Stack*, model.Memory*) {
+) -> (model.EVM*, model.Stack*, model.Memory*, model.State*) {
     alloc_locals;
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
 
     tempvar address = new model.Address(1, 1);
-    let (evm, stack, memory) = Interpreter.execute(
+    let (evm, stack, memory, state) = Interpreter.execute(
         address=address,
         is_deploy_tx=0,
         origin=&origin,
@@ -67,7 +67,7 @@ func execute{
         gas_limit=Constants.TRANSACTION_GAS_LIMIT,
         gas_price=0,
     );
-    return (evm, stack, memory);
+    return (evm, stack, memory, state);
 }
 
 @view
@@ -104,7 +104,7 @@ func evm_call{
     alloc_locals;
     let (local block_number) = get_block_number();
     let (local block_timestamp) = get_block_timestamp();
-    let (evm, stack, memory) = execute(
+    let (evm, stack, memory, state) = execute(
         origin, value, bytecode_len, bytecode, calldata_len, calldata
     );
 
@@ -115,7 +115,7 @@ func evm_call{
 
     // Return only accounts keys, ie. touched starknet addresses
     let (account_addresses_len, account_addresses) = dict_keys(
-        evm.state.accounts_start, evm.state.accounts
+        state.accounts_start, state.accounts
     );
 
     return (
@@ -153,7 +153,7 @@ func evm_execute{
     calldata: felt*,
 ) -> (return_data_len: felt, return_data: felt*, success: felt) {
     alloc_locals;
-    let (evm, stack, memory) = execute(
+    let (evm, stack, memory, state) = execute(
         origin, value, bytecode_len, bytecode, calldata_len, calldata
     );
     let result = (evm.return_data_len, evm.return_data, 1 - evm.reverted);
@@ -164,6 +164,6 @@ func evm_execute{
 
     // We just emit the events as committing the accounts is out of the scope of these EVM
     // tests and requires a real Message.address (not Address(1, 1))
-    Starknet._emit_events(evm.state.events_len, evm.state.events);
+    Starknet._emit_events(state.events_len, state.events);
     return result;
 }

@@ -90,10 +90,11 @@ func default_dict_copy{range_check_ptr}(start: DictAccess*, end: DictAccess*) ->
     local range_check_ptr = range_check_ptr;
     let dict_len = squashed_end - squashed_start;
 
+    local default_value;
     if (dict_len == 0) {
-        tempvar default_value = 0;
+        assert default_value = 0;
     } else {
-        tempvar default_value = squashed_start.prev_value;
+        assert default_value = squashed_start.prev_value;
     }
 
     let (local new_start) = default_dict_new(default_value);
@@ -111,8 +112,11 @@ func default_dict_copy{range_check_ptr}(start: DictAccess*, end: DictAccess*) ->
     let squashed_start = cast([ap - 3], DictAccess*);
     let dict_len = [ap - 2];
     let new_ptr = cast([ap - 1], DictAccess*);
+    let default_value = [fp + 1];
 
     let key = [squashed_start].key;
+    let prev_value = [squashed_start].prev_value;
+    assert prev_value = default_value;
     let new_value = [squashed_start].new_value;
 
     dict_write{dict_ptr=new_ptr}(key=key, new_value=new_value);
