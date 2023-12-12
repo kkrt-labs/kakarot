@@ -21,6 +21,7 @@ func test__exec_swap{
     assert [bytecode] = i + 0x8f;
     let evm = TestHelpers.init_evm_with_bytecode(1, bytecode);
     let memory = Memory.init();
+    let state = State.init();
 
     // When
     with stack, memory, state {

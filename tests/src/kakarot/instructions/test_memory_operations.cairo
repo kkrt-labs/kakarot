@@ -29,7 +29,7 @@ func test__exec_pc__should_update_after_incrementing{
     let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
     let evm = EVM.increment_program_counter(evm, increment);
     let stack = Stack.init();
-    let state = Staet.init();
+    let state = State.init();
     let memory = Memory.init();
 
     // When
@@ -54,7 +54,7 @@ func test__exec_pop_should_pop_an_item_from_execution_context{
     let (bytecode) = alloc();
     let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
     let stack = Stack.init();
-    let state = Staet.init();
+    let state = State.init();
     let memory = Memory.init();
 
     tempvar item_1 = new Uint256(1, 0);
@@ -84,7 +84,7 @@ func test__exec_mload_should_load_a_value_from_memory{
     let (bytecode) = alloc();
     let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
     let stack = Stack.init();
-    let state = Staet.init();
+    let state = State.init();
     let memory = Memory.init();
 
     tempvar item_1 = new Uint256(1, 0);
@@ -118,7 +118,7 @@ func test__exec_mload_should_load_a_value_from_memory_with_memory_expansion{
     let (bytecode) = alloc();
     let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
     let stack = Stack.init();
-    let state = Staet.init();
+    let state = State.init();
     let memory = Memory.init();
 
     with stack, memory, state {
@@ -154,7 +154,7 @@ func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_ms
     let test_offset = 684;
     // Given
     let stack = Stack.init();
-    let state = Staet.init();
+    let state = State.init();
     let memory = Memory.init();
 
     tempvar item_1 = new Uint256(1, 0);

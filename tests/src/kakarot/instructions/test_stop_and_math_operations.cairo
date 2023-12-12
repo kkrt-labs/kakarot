@@ -45,6 +45,7 @@ func test__exec_math_operation{
     let memory = Memory.init();
     let stack = TestHelpers.init_stack_with_values(initial_stack_len, initial_stack);
     let evm = TestHelpers.init_evm_with_bytecode(1, bytecode);
+    let state = State.init();
 
     // When
     with stack, memory, state {

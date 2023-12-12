@@ -29,7 +29,7 @@ func test__precompiles_run{
         value=0,
         gas_price=0,
         origin=cast(0, model.Address*),
-        parent=cast(0, model.EVM*),
+        parent=cast(0, model.Parent*),
         address=cast(0, model.Address*),
         read_only=0,
         is_create=0,
