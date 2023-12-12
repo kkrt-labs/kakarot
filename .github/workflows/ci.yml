@@ -159,7 +159,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: resources
-          path: ./resources.csv
+          path: ./resources/
 
   resources:
     runs-on: ubuntu-latest
