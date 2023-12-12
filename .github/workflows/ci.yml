@@ -153,6 +153,8 @@ jobs:
           python-version: 3.x
       - name: run tests
         run: python scripts/compute_resources.py
+        env:
+          KAKAROT_VERSION: v0
       - name: upload resources
         uses: actions/upload-artifact@v3
         with:
