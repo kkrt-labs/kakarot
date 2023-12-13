@@ -9,7 +9,6 @@ from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256
-from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp
 
 // Local dependencies
 from kakarot.interpreter import Interpreter
@@ -19,31 +18,26 @@ from kakarot.constants import Constants
 from kakarot.storages import (
     native_token_address,
     contract_account_class_hash,
-    blockhash_registry_address,
     account_proxy_class_hash,
 )
-from data_availability.starknet import Internals as Starknet
+from backend.starknet import Starknet, Internals as StarknetInternals
 from utils.dict import dict_keys, dict_values
 
 // Constructor
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    native_token_address_: felt,
-    contract_account_class_hash_: felt,
-    account_proxy_class_hash_: felt,
-    blockhash_registry_address_: felt,
+    native_token_address_: felt, contract_account_class_hash_: felt, account_proxy_class_hash_: felt
 ) {
     native_token_address.write(native_token_address_);
     contract_account_class_hash.write(contract_account_class_hash_);
     account_proxy_class_hash.write(account_proxy_class_hash_);
-    blockhash_registry_address.write(blockhash_registry_address_);
     return ();
 }
 
 func execute{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
-    origin: model.Address,
+    env: model.Environment*,
     value: felt,
     bytecode_len: felt,
     bytecode: felt*,
@@ -51,21 +45,17 @@ func execute{
     calldata: felt*,
 ) -> (model.EVM*, model.Stack*, model.Memory*, model.State*) {
     alloc_locals;
-    let fp_and_pc = get_fp_and_pc();
-    local __fp__: felt* = fp_and_pc.fp_val;
-
     tempvar address = new model.Address(1, 1);
     let (evm, stack, memory, state) = Interpreter.execute(
+        env=env,
         address=address,
         is_deploy_tx=0,
-        origin=&origin,
         bytecode_len=bytecode_len,
         bytecode=bytecode,
         calldata_len=calldata_len,
         calldata=calldata,
         value=value,
         gas_limit=Constants.TRANSACTION_GAS_LIMIT,
-        gas_price=0,
     );
     return (evm, stack, memory, state);
 }
@@ -102,10 +92,12 @@ func evm_call{
     program_counter: felt,
 ) {
     alloc_locals;
-    let (local block_number) = get_block_number();
-    let (local block_timestamp) = get_block_timestamp();
+    let fp_and_pc = get_fp_and_pc();
+    local __fp__: felt* = fp_and_pc.fp_val;
+
+    let env = Starknet.get_env(&origin, 0);
     let (evm, stack, memory, state) = execute(
-        origin, value, bytecode_len, bytecode, calldata_len, calldata
+        env, value, bytecode_len, bytecode, calldata_len, calldata
     );
 
     let (stack_keys_len, stack_keys) = dict_keys(stack.dict_ptr_start, stack.dict_ptr);
@@ -119,8 +111,8 @@ func evm_call{
     );
 
     return (
-        block_number=block_number,
-        block_timestamp=block_timestamp,
+        block_number=env.block_number,
+        block_timestamp=env.block_timestamp,
         stack_size=stack.size,
         stack_keys_len=stack_keys_len,
         stack_keys=stack_keys,
@@ -153,8 +145,12 @@ func evm_execute{
     calldata: felt*,
 ) -> (return_data_len: felt, return_data: felt*, success: felt) {
     alloc_locals;
+    let fp_and_pc = get_fp_and_pc();
+    local __fp__: felt* = fp_and_pc.fp_val;
+
+    let env = Starknet.get_env(&origin, 0);
     let (evm, stack, memory, state) = execute(
-        origin, value, bytecode_len, bytecode, calldata_len, calldata
+        env, value, bytecode_len, bytecode, calldata_len, calldata
     );
     let result = (evm.return_data_len, evm.return_data, 1 - evm.reverted);
 
@@ -164,6 +160,6 @@ func evm_execute{
 
     // We just emit the events as committing the accounts is out of the scope of these EVM
     // tests and requires a real Message.address (not Address(1, 1))
-    Starknet._emit_events(state.events_len, state.events);
+    StarknetInternals._emit_events(state.events_len, state.events);
     return result;
 }

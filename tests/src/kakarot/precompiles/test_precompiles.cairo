@@ -30,13 +30,12 @@ func test__precompiles_run{
         calldata=cast(0, felt*),
         calldata_len=0,
         value=0,
-        gas_price=0,
-        origin=cast(0, model.Address*),
         parent=cast(0, model.Parent*),
         address=cast(0, model.Address*),
         read_only=0,
         is_create=0,
         depth=0,
+        env=cast(0, model.Environment*),
     );
     let evm = EVM.init(message, Constants.TRANSACTION_GAS_LIMIT);
     let stack = Stack.init();

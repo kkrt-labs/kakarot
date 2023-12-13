@@ -7,13 +7,17 @@ from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.memset import memset
 from starkware.starknet.common.syscalls import (
     emit_event,
     get_contract_address,
     deploy as deploy_syscall,
+    get_block_number,
+    get_block_timestamp,
 )
 
 from kakarot.account import Account
+from kakarot.constants import Constants
 from kakarot.events import evm_contract_deployed
 from kakarot.interfaces.interfaces import IERC20, IContractAccount, IAccount
 from kakarot.model import model
@@ -88,6 +92,33 @@ namespace Starknet {
 
         let (bytecode_len, bytecode) = IAccount.bytecode(starknet_address);
         return (bytecode_len, bytecode);
+    }
+
+    // @notice Populate a Environment with Starknet syscalls
+    func get_env{syscall_ptr: felt*}(
+        origin: model.Address*, gas_price: felt
+    ) -> model.Environment* {
+        alloc_locals;
+        let (block_number) = get_block_number();
+        let (block_timestamp) = get_block_timestamp();
+        let (block_hashes) = alloc();
+        // TODO: fix how blockhashes are retrieved
+        memset(block_hashes, 0, 256 * 2);
+
+        let coinbase = Uint256(
+            0xacdffe0cf08e20ed8ba10ea97a487004, 0x388ca486b82e20cc81965d056b4cdca
+        );
+        return new model.Environment(
+            origin=origin,
+            gas_price=gas_price,
+            chain_id=Constants.CHAIN_ID,
+            prev_randao=Uint256(0, 0),
+            block_number=block_number,
+            block_gas_limit=Constants.BLOCK_GAS_LIMIT,
+            block_timestamp=block_timestamp,
+            block_hashes=cast(block_hashes, Uint256*),
+            coinbase=coinbase,
+        );
     }
 }
 

@@ -24,7 +24,6 @@ async def kakarot(
     contract_account_class: DeclaredClass,
     externally_owned_account_class: DeclaredClass,
     account_proxy_class: DeclaredClass,
-    blockhash_registry: StarknetContract,
 ) -> StarknetContract:
     owner = 1
     class_hash = await starknet.deprecated_declare(
@@ -43,9 +42,6 @@ async def kakarot(
             DEPLOY_FEE,
         ],
     )
-    await kakarot.set_blockhash_registry(
-        blockhash_registry_address_=blockhash_registry.contract_address
-    ).execute(caller_address=owner)
     return kakarot
 
 

@@ -59,13 +59,12 @@ namespace Precompiles {
             calldata=cast(0, felt*),
             calldata_len=0,
             value=0,
-            gas_price=0,
-            origin=parent.evm.message.origin,
             parent=parent,
             address=address,
             read_only=FALSE,
             is_create=FALSE,
             depth=parent.evm.message.depth + 1,
+            env=parent.evm.message.env,
         );
         let evm = EVM.init(message, gas_left);
 

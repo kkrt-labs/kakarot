@@ -8,6 +8,7 @@ from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.math import split_felt
+from starkware.cairo.common.memset import memset
 from starkware.cairo.common.uint256 import (
     Uint256,
     uint256_check,
@@ -35,22 +36,33 @@ namespace TestHelpers {
         alloc_locals;
 
         let (calldata) = alloc();
-        assert [calldata] = '';
+        let (block_hashes) = alloc();
+        memset(block_hashes, 0, 256 * 2);
+        tempvar address_0 = new model.Address(0, 0);
+        tempvar env = new model.Environment(
+            origin=address_0,
+            gas_price=0,
+            chain_id=0,
+            prev_randao=Uint256(0, 0),
+            block_number=0,
+            block_gas_limit=0,
+            block_timestamp=0,
+            block_hashes=cast(block_hashes, Uint256*),
+            coinbase=Uint256(0, 0),
+        );
         tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
-        tempvar origin = new model.Address(0, 0);
         local message: model.Message* = new model.Message(
             bytecode=bytecode,
             bytecode_len=bytecode_len,
             calldata=calldata,
             calldata_len=1,
             value=0,
-            gas_price=0,
-            origin=origin,
             parent=cast(0, model.Parent*),
             address=address,
             read_only=FALSE,
             is_create=FALSE,
             depth=0,
+            env=env,
         );
         let evm: model.EVM* = EVM.init(message, Constants.TRANSACTION_GAS_LIMIT);
         return evm;
@@ -169,9 +181,9 @@ namespace TestHelpers {
         print_array('calldata', message.calldata_len, message.calldata);
         print_array('bytecode', message.bytecode_len, message.bytecode);
         %{
-            print(f"{ids.message.gas_price=}")
-            print(f"{ids.message.origin.evm=:040x}")
-            print(f"{ids.message.origin.starknet=:064x}")
+            print(f"{ids.message.env.gas_price=}")
+            print(f"{ids.message.env.origin.evm=:040x}")
+            print(f"{ids.message.env.origin.starknet=:064x}")
             print(f"{ids.message.address.evm=:040x}")
             print(f"{ids.message.address.starknet=:064x}")
             print(f"{ids.message.read_only=}")

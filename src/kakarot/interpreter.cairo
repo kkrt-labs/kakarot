@@ -711,16 +711,15 @@ namespace Interpreter {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(
+        env: model.Environment*,
         address: model.Address*,
         is_deploy_tx: felt,
-        origin: model.Address*,
         bytecode_len: felt,
         bytecode: felt*,
         calldata_len: felt,
         calldata: felt*,
         value: felt,
         gas_limit: felt,
-        gas_price: felt,
     ) -> (model.EVM*, model.Stack*, model.Memory*, model.State*) {
         alloc_locals;
 
@@ -753,13 +752,12 @@ namespace Interpreter {
             calldata=calldata,
             calldata_len=calldata_len,
             value=value,
-            gas_price=gas_price,
-            origin=origin,
             parent=cast(0, model.Parent*),
             address=address,
             read_only=FALSE,
             is_create=is_deploy_tx,
             depth=0,
+            env=env,
         );
 
         let stack = Stack.init();
@@ -770,7 +768,7 @@ namespace Interpreter {
         with state {
             // Handle value
             let amount = Helpers.to_uint256(value);
-            let transfer = model.Transfer(origin, address, [amount]);
+            let transfer = model.Transfer(env.origin, address, [amount]);
             let success = State.add_transfer(transfer);
 
             // Check collision

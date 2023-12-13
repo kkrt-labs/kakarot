@@ -11,7 +11,6 @@ from cairo_coverage import cairo_coverage
 from starkware.starknet.business_logic.execution.execute_entry_point import (
     ExecuteEntryPoint,
 )
-from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 from starkware.starknet.definitions.general_config import StarknetGeneralConfig
 from starkware.starknet.testing.starknet import Starknet
 
@@ -32,18 +31,11 @@ logger = logging.getLogger()
 
 
 @pytest_asyncio.fixture(scope="session")
-async def starknet(worker_id, request, blockhashes) -> AsyncGenerator[Starknet, None]:
+async def starknet(worker_id, request) -> AsyncGenerator[Starknet, None]:
     config = StarknetGeneralConfig(
         invoke_tx_max_n_steps=2**24, validate_max_n_steps=2**24  # type: ignore
     )
     starknet = await Starknet.empty(config)
-    current_block_number = blockhashes["current_block"]["block_number"]
-    current_block_timestamp = blockhashes["current_block"]["timestamp"]
-    starknet.state.state.update_block_info(
-        BlockInfo.create_for_testing(
-            block_number=current_block_number, block_timestamp=current_block_timestamp
-        )
-    )
 
     starknet.deploy = traceit.trace_all(timeit(starknet.deploy))
     starknet.deprecated_declare = timeit(starknet.deprecated_declare)

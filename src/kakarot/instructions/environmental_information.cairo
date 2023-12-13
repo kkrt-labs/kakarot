@@ -67,7 +67,7 @@ namespace EnvironmentalInformation {
         memory: model.Memory*,
         state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
-        let origin_address = Helpers.to_uint256(evm.message.origin.evm);
+        let origin_address = Helpers.to_uint256(evm.message.env.origin.evm);
 
         Stack.push(origin_address);
         return evm;
@@ -83,7 +83,7 @@ namespace EnvironmentalInformation {
         state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         if (evm.message.depth == 0) {
-            tempvar caller = evm.message.origin.evm;
+            tempvar caller = evm.message.env.origin.evm;
         } else {
             tempvar caller = evm.message.parent.evm.message.address.evm;
         }
@@ -232,7 +232,7 @@ namespace EnvironmentalInformation {
         // TODO: since gas_price is a felt, it might panic when being cast to a Uint256.low,
         // Add check gas_price < 2 ** 128
         // `split_felt` might be too expensive for this if we know gas_price < 2 ** 128
-        Stack.push_uint128(evm.message.gas_price);
+        Stack.push_uint128(evm.message.env.gas_price);
 
         return evm;
     }

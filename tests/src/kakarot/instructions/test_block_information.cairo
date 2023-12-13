@@ -11,29 +11,8 @@ from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.state import State
 from kakarot.memory import Memory
-from kakarot.storages import blockhash_registry_address
 from kakarot.instructions.block_information import BlockInformation
 from tests.utils.helpers import TestHelpers
-
-// Storage for testing BLOCKHASH
-@storage_var
-func block_number() -> (block_number: Uint256) {
-}
-
-@storage_var
-func blockhash() -> (blockhash: felt) {
-}
-
-// Constructor
-@constructor
-func constructor{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(block_number_: Uint256, blockhash_: felt, blockhash_registry_address_: felt) {
-    block_number.write(block_number_);
-    blockhash.write(blockhash_);
-    blockhash_registry_address.write(blockhash_registry_address_);
-    return ();
-}
 
 @external
 func test__exec_block_information{
