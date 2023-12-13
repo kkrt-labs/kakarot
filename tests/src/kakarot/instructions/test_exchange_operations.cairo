@@ -16,6 +16,7 @@ from tests.utils.helpers import TestHelpers
 func test__exec_swap{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(i: felt, initial_stack_len: felt, initial_stack: Uint256*) -> (top: Uint256, swapped: Uint256) {
+    alloc_locals;
     let stack = TestHelpers.init_stack_with_values(initial_stack_len, initial_stack);
     let (bytecode) = alloc();
     assert [bytecode] = i + 0x8f;

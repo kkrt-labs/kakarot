@@ -2,7 +2,13 @@ import pytest
 import pytest_asyncio
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.constants import Opcodes
+from tests.utils.constants import (
+    BLOCK_GAS_LIMIT,
+    BLOCK_NUMBER,
+    BLOCK_TIMESTAMP,
+    CHAIN_ID,
+    Opcodes,
+)
 
 
 @pytest_asyncio.fixture(scope="module")
@@ -24,24 +30,18 @@ class TestBlockInformation:
                 Opcodes.COINBASE,
                 (0xACDFFE0CF08E20ED8BA10EA97A487004, 0x388CA486B82E20CC81965D056B4CDCA),
             ),
-            (Opcodes.TIMESTAMP, ("{timestamp}", 0)),
-            (Opcodes.NUMBER, ("{block_number}", 0)),
+            (Opcodes.TIMESTAMP, (BLOCK_TIMESTAMP, 0)),
+            (Opcodes.NUMBER, (BLOCK_NUMBER, 0)),
             (Opcodes.PREVRANDAO, (0, 0)),
-            (Opcodes.GASLIMIT, (20_000_000, 0)),
-            (Opcodes.CHAINID, (int.from_bytes(b"KKRT", "big"), 0)),
+            (Opcodes.GASLIMIT, (BLOCK_GAS_LIMIT, 0)),
+            (Opcodes.CHAINID, (CHAIN_ID, 0)),
             (Opcodes.BASEFEE, (0, 0)),
         ],
     )
     async def test__exec_block_information(
         self, block_information, opcode, expected_result
     ):
-        result, timestamp, block_number = (
+        (result,) = (
             await block_information.test__exec_block_information(opcode, []).call()
         ).result
-        expected_result = tuple(
-            v
-            if isinstance(v, int)
-            else int(v.format(timestamp=timestamp, block_number=block_number))
-            for v in expected_result
-        )
         assert result == expected_result

@@ -11,9 +11,11 @@ from cairo_coverage import cairo_coverage
 from starkware.starknet.business_logic.execution.execute_entry_point import (
     ExecuteEntryPoint,
 )
+from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 from starkware.starknet.definitions.general_config import StarknetGeneralConfig
 from starkware.starknet.testing.starknet import Starknet
 
+from tests.utils.constants import BLOCK_NUMBER, BLOCK_TIMESTAMP
 from tests.utils.reporting import (
     dump_coverage,
     dump_reports,
@@ -36,7 +38,11 @@ async def starknet(worker_id, request) -> AsyncGenerator[Starknet, None]:
         invoke_tx_max_n_steps=2**24, validate_max_n_steps=2**24  # type: ignore
     )
     starknet = await Starknet.empty(config)
-
+    starknet.state.state.update_block_info(
+        BlockInfo.create_for_testing(
+            block_number=BLOCK_NUMBER, block_timestamp=BLOCK_TIMESTAMP
+        )
+    )
     starknet.deploy = traceit.trace_all(timeit(starknet.deploy))
     starknet.deprecated_declare = timeit(starknet.deprecated_declare)
     if request.config.getoption("trace_run"):

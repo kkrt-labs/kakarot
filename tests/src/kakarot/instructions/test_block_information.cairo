@@ -5,7 +5,6 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
-from starkware.starknet.common.syscalls import get_block_number, get_block_timestamp
 
 from kakarot.model import model
 from kakarot.stack import Stack
@@ -17,9 +16,7 @@ from tests.utils.helpers import TestHelpers
 @external
 func test__exec_block_information{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(opcode: felt, initial_stack_len: felt, initial_stack: Uint256*) -> (
-    result: Uint256, timestamp: felt, block_number: felt
-) {
+}(opcode: felt, initial_stack_len: felt, initial_stack: Uint256*) -> (result: Uint256) {
     // Given
     alloc_locals;
     let stack = TestHelpers.init_stack_with_values(initial_stack_len, initial_stack);
@@ -36,7 +33,5 @@ func test__exec_block_information{
     }
 
     // Then
-    let (timestamp) = get_block_timestamp();
-    let (block_number) = get_block_number();
-    return (result[0], timestamp, block_number);
+    return (result[0],);
 }

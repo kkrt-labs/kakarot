@@ -25,9 +25,10 @@ from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
 from utils.utils import Helpers
+from backend.starknet import Starknet
 
 namespace TestHelpers {
-    func init_evm_at_address(
+    func init_evm_at_address{syscall_ptr: felt*}(
         bytecode_len: felt,
         bytecode: felt*,
         starknet_contract_address: felt,
@@ -36,20 +37,8 @@ namespace TestHelpers {
         alloc_locals;
 
         let (calldata) = alloc();
-        let (block_hashes) = alloc();
-        memset(block_hashes, 0, 256 * 2);
         tempvar address_0 = new model.Address(0, 0);
-        tempvar env = new model.Environment(
-            origin=address_0,
-            gas_price=0,
-            chain_id=0,
-            prev_randao=Uint256(0, 0),
-            block_number=0,
-            block_gas_limit=0,
-            block_timestamp=0,
-            block_hashes=cast(block_hashes, Uint256*),
-            coinbase=Uint256(0, 0),
-        );
+        let env = Starknet.get_env(address_0, 0);
         tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
         local message: model.Message* = new model.Message(
             bytecode=bytecode,
@@ -68,12 +57,14 @@ namespace TestHelpers {
         return evm;
     }
 
-    func init_evm() -> model.EVM* {
+    func init_evm{syscall_ptr: felt*}() -> model.EVM* {
         let (bytecode) = alloc();
         return init_evm_at_address(0, bytecode, 0, 0);
     }
 
-    func init_evm_with_bytecode(bytecode_len: felt, bytecode: felt*) -> model.EVM* {
+    func init_evm_with_bytecode{syscall_ptr: felt*}(
+        bytecode_len: felt, bytecode: felt*
+    ) -> model.EVM* {
         return init_evm_at_address(bytecode_len, bytecode, 0, 0);
     }
 
