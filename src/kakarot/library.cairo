@@ -8,11 +8,10 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 from starkware.cairo.common.math_cmp import is_not_zero
 
-from data_availability.starknet import Starknet
+from backend.starknet import Starknet
 from kakarot.account import Account
 from kakarot.storages import (
     account_proxy_class_hash,
-    blockhash_registry_address,
     contract_account_class_hash,
     deploy_fee,
     externally_owned_account_class_hash,
@@ -87,39 +86,12 @@ namespace Kakarot {
         let is_deploy_tx = 1 - is_regular_tx;
         let (bytecode_len, bytecode) = Starknet.get_bytecode(address.evm);
 
+        let env = Starknet.get_env(origin_address, gas_price);
+
         let (evm, stack, memory, state) = Interpreter.execute(
-            address,
-            is_deploy_tx,
-            origin_address,
-            bytecode_len,
-            bytecode,
-            data_len,
-            data,
-            value,
-            gas_limit,
-            gas_price,
+            env, address, is_deploy_tx, bytecode_len, bytecode, data_len, data, value, gas_limit
         );
         return (evm, state);
-    }
-
-    // @notice The Blockhash registry is used by the BLOCKHASH opcode
-    // @dev Set the Blockhash registry contract address
-    // @param blockhash_registry_address_ The address of the new blockhash registry contract.
-    func set_blockhash_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        blockhash_registry_address_: felt
-    ) {
-        Ownable.assert_only_owner();
-        blockhash_registry_address.write(blockhash_registry_address_);
-        return ();
-    }
-
-    // @notice The Blockhash registry is used by the BLOCKHASH opcode
-    // @dev Get the Blockhash registry contract address
-    // @return address The address of the current blockhash registry contract.
-    func get_blockhash_registry{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ) -> (address: felt) {
-        let (blockhash_registry_address_) = blockhash_registry_address.read();
-        return (blockhash_registry_address_,);
     }
 
     // @notice Set the native Starknet ERC20 token used by kakarot.

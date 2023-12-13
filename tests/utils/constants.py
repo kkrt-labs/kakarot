@@ -1,6 +1,7 @@
 from enum import IntEnum
+from time import time
 
-CHAIN_ID = 1263227476  # KKRT (0x4b4b5254) in ASCII
+CHAIN_ID = int.from_bytes(b"KKRT", "big")  # KKRT (0x4b4b5254) in ASCII
 
 # Deployment fee to be returned to the deployer of the account
 DEPLOY_FEE = int(1e15)  # 0.001 ETH
@@ -35,6 +36,9 @@ LAST_PRECOMPILE_ADDRESS = 0x09
 MAX_INT = 2**256 - 1
 
 ZERO_ADDRESS = "0x" + 40 * "0"
+
+BLOCK_NUMBER = 0x42
+BLOCK_TIMESTAMP = int(time())
 
 # Taken from eth_account.account.Account.sign_transaction docstring
 # https://eth-account.readthedocs.io/en/stable/eth_account.html?highlight=sign_transaction#eth_account.account.Account.sign_transaction

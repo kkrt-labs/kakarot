@@ -19,7 +19,6 @@ from scripts.utils.starknet import (
     dump_deployments,
     get_declarations,
     get_starknet_account,
-    invoke,
 )
 
 logging.basicConfig()
@@ -52,17 +51,12 @@ async def main():
         class_hash["proxy"],  # account_proxy_class_hash
         DEPLOY_FEE,
     )
-    deployments["blockhash_registry"] = await deploy(
-        "blockhash_registry",
-        deployments["kakarot"]["address"],  # kakarot address
-    )
 
     deployments["EVM"] = await deploy(
         "EVM",
         ETH_TOKEN_ADDRESS,  # native_token_address_
         class_hash["contract_account"],  # contract_account_class_hash_
         class_hash["proxy"],  # account_proxy_class_hash
-        deployments["blockhash_registry"]["address"],  # blockhash_registry address
     )
 
     if NETWORK["name"] in ["madara", "katana", os.getenv("RPC_NAME", "custom-rpc")]:
@@ -71,14 +65,6 @@ async def main():
         )
 
     dump_deployments(deployments)
-
-    logger.info("⏳ Configuring Contracts...")
-    await invoke(
-        "kakarot",
-        "set_blockhash_registry",
-        deployments["blockhash_registry"]["address"],
-    )
-    logger.info("✅ Configuration Complete")
 
     if EVM_ADDRESS:
         logger.info(f"ℹ️  Found default EVM address {EVM_ADDRESS}")

@@ -7,7 +7,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 
-from data_availability.starknet import Starknet
+from backend.starknet import Starknet
 from kakarot.storages import account_proxy_class_hash, native_token_address
 from kakarot.instructions.environmental_information import EnvironmentalInformation
 from kakarot.instructions.system_operations import CreateHelper
@@ -224,7 +224,7 @@ func test__exec_gasprice{
     let stack = Stack.init();
     let state = State.init();
     let memory = Memory.init();
-    let expected_gas_price_uint256 = Helpers.to_uint256(evm.message.gas_price);
+    let expected_gas_price_uint256 = Helpers.to_uint256(evm.message.env.gas_price);
 
     // When
     with stack, memory, state {

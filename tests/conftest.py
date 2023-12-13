@@ -25,6 +25,5 @@ def event_loop():
 
 pytest_plugins = [
     "tests.fixtures.starknet",
-    "tests.fixtures.blockhash_registry",
     "tests.fixtures.accounts",
 ]

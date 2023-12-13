@@ -3,17 +3,6 @@
 from starkware.cairo.common.uint256 import Uint256
 
 @contract_interface
-namespace IBlockhashRegistry {
-    func set_blockhashes(
-        block_number_len: felt, block_number: Uint256*, block_hash_len: felt, block_hash: felt*
-    ) -> () {
-    }
-
-    func get_blockhash(block_number: Uint256) -> (blockhash: felt) {
-    }
-}
-
-@contract_interface
 namespace IERC20 {
     func balanceOf(account: felt) -> (balance: Uint256) {
     }
@@ -84,12 +73,6 @@ namespace IContractAccount {
 
 @contract_interface
 namespace IKakarot {
-    func set_blockhash_registry(blockhash_registry_address_: felt) -> () {
-    }
-
-    func get_blockhash_registry() -> (address: felt) {
-    }
-
     func set_native_token(native_token_address_: felt) {
     }
 

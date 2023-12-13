@@ -7,10 +7,6 @@ func native_token_address() -> (res: felt) {
 }
 
 @storage_var
-func blockhash_registry_address() -> (res: felt) {
-}
-
-@storage_var
 func contract_account_class_hash() -> (value: felt) {
 }
 

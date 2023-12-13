@@ -89,8 +89,6 @@ namespace model {
     // @param calldata byte The space where the data parameter of a transaction or call is held.
     // @param calldata_len The length of calldata.
     // @param value The amount of native token to transfer.
-    // @param gas_price The gas price for the call.
-    // @param origin The origin of the transaction.
     // @param parent The parent context of the current execution context, can be empty.
     // @param address The address of the current EVM account. Note that the bytecode may not be the one
     //        of the account in case of a CALLCODE or DELEGATECALL
@@ -103,13 +101,12 @@ namespace model {
         calldata: felt*,
         calldata_len: felt,
         value: felt,
-        gas_price: felt,
-        origin: Address*,
         parent: Parent*,
         address: Address*,
         read_only: felt,
         is_create: felt,
         depth: felt,
+        env: Environment*,
     }
 
     // @dev Stores all data relevant to the current execution context.
@@ -128,6 +125,28 @@ namespace model {
         stopped: felt,
         gas_left: felt,
         reverted: felt,
+    }
+
+    // @notice Store all environment data relevant to the current execution context.
+    // @param origin The origin of the transaction.
+    // @param gas_price The gas price for the call.
+    // @param chain_id The chain id of the current block.
+    // @param prev_randao The previous RANDAO value.
+    // @param block_number The block number of the current block.
+    // @param block_gas_limit The gas limit for the current block.
+    // @param block_timestamp The timestamp of the current block.
+    // @param block_hashes The last 256 accessible block hashes
+    // @param coinbase The address of the miner of the current block.
+    struct Environment {
+        origin: Address*,
+        gas_price: felt,
+        chain_id: felt,
+        prev_randao: Uint256,
+        block_number: felt,
+        block_gas_limit: felt,
+        block_timestamp: felt,
+        block_hashes: Uint256*,
+        coinbase: Uint256,
     }
 
     // @dev The parent EVM struct is used to store the parent EVM context of the current execution context.

@@ -137,7 +137,6 @@ DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
 
 COMPILED_CONTRACTS = [
     {"contract_name": "kakarot", "is_account_contract": False},
-    {"contract_name": "blockhash_registry", "is_account_contract": False},
     {"contract_name": "contract_account", "is_account_contract": False},
     {"contract_name": "externally_owned_account", "is_account_contract": True},
     {"contract_name": "proxy", "is_account_contract": False},

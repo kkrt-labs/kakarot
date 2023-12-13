@@ -144,13 +144,12 @@ namespace SystemOperations {
             calldata=calldata,
             calldata_len=0,
             value=value.low + value.high * 2 ** 128,
-            gas_price=evm.message.gas_price,
-            origin=evm.message.origin,
             parent=parent,
             address=address,
             read_only=FALSE,
             is_create=TRUE,
             depth=evm.message.depth + 1,
+            env=evm.message.env,
         );
         let child_evm = EVM.init(message, gas_limit);
         let stack = Stack.init();
@@ -562,13 +561,12 @@ namespace CallHelper {
             calldata=calldata,
             calldata_len=args_size,
             value=value,
-            gas_price=evm.message.gas_price,
-            origin=evm.message.origin,
             parent=parent,
             address=message_address,
             read_only=read_only,
             is_create=FALSE,
             depth=evm.message.depth + 1,
+            env=evm.message.env,
         );
         let child_evm = EVM.init(message, gas_limit);
         let state = State.copy();
