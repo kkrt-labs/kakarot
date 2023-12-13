@@ -20,7 +20,7 @@ def get_artifacts(
 ):
     # Pull latest main artifacts
     response = requests.get(
-        "https://api.github.com/repos/kkrt-labs/kakarot/actions/artifacts"
+        f"https://api.github.com/repos/kkrt-labs/kakarot/actions/artifacts?name={name}&per_page=50"
     )
     artifacts = (
         pd.DataFrame(
@@ -29,7 +29,6 @@ def get_artifacts(
                 for artifact in response.json()["artifacts"]
             ]
         )
-        .loc[lambda df: df.name == str(name)]
         .reindex(["head_branch", "updated_at", "archive_download_url"], axis=1)
         .sort_values(["head_branch", "updated_at"], ascending=False)
         .drop_duplicates(["head_branch"])

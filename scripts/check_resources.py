@@ -24,19 +24,19 @@ def main():
     artifacts = get_artifacts(artifact_name, base_branch_name)
 
     # %% Build aggregated stat for checking resources evolution
-    resources = [
-        (
-            pd.read_csv(
-                artifact_name / artifact["head_branch"] / "resources.csv"
-            ).assign(head_branch=artifact["head_branch"])
+    resources = []
+    for artifact in artifacts.to_dict("records"):
+        file_path = next(
+            (artifact_name / artifact["head_branch"]).glob("resources*.csv")
         )
-        for artifact in artifacts.to_dict("records")
-    ]
-    if (artifact_name / "resources.csv").exists():
         resources.append(
-            pd.read_csv(artifact_name / "resources.csv").assign(
-                head_branch=current_name
-            )
+            pd.read_csv(file_path).assign(head_branch=artifact["head_branch"])
+        )
+
+    local_artifact = list(artifact_name.glob("resources*.csv"))
+    if local_artifact:
+        resources.append(
+            pd.read_csv(local_artifact[0]).assign(head_branch=current_name)
         )
     else:
         logger.info("No local resources found to compare against")
