@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: MIT
 
-%lang starknet
-
 // @title Constants file.
 // @notice This file contains global constants.
 namespace Constants {

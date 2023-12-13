@@ -2,38 +2,33 @@
 
 %lang starknet
 
-// Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le, is_nn, is_not_zero
-from starkware.cairo.common.uint256 import Uint256, uint256_lt
 from starkware.cairo.common.registers import get_fp_and_pc
+from starkware.cairo.common.uint256 import Uint256, uint256_lt
 
-// Internal dependencies
 from kakarot.account import Account
-from kakarot.storages import contract_account_class_hash, native_token_address
 from kakarot.constants import Constants
 from kakarot.errors import Errors
-from kakarot.execution_context import ExecutionContext
+from kakarot.evm import EVM
+from kakarot.gas import Gas
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.precompiles.precompiles import Precompiles
 from kakarot.stack import Stack
 from kakarot.state import State
-from kakarot.gas import Gas
-from utils.rlp import RLP
-from utils.utils import Helpers
-from utils.uint256 import uint256_to_uint160
 from utils.array import slice
 from utils.bytes import (
     bytes_to_bytes8_little_endian,
+    felt_to_bytes,
     felt_to_bytes20,
     uint256_to_bytes32,
-    felt_to_bytes,
 )
+from utils.uint256 import uint256_to_uint160
 
 // @title System operations opcodes.
 // @notice This file contains the functions to execute for system operations opcodes.
@@ -43,18 +38,16 @@ namespace SystemOperations {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
-        // Stack
-        let stack = ctx.stack;
-        let memory = ctx.memory;
-        let state = ctx.state;
-
-        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter];
+        let opcode_number = [evm.message.bytecode + evm.program_counter];
         let is_create2 = is_not_zero(opcode_number - 0xf0);
         let popped_len = 3 + is_create2;
-        let (stack, popped) = Stack.pop_n(stack, 3 + is_create2);
+        let (popped) = Stack.pop_n(3 + is_create2);
 
         let value = popped[0];
         let offset = popped[1];
@@ -68,124 +61,112 @@ namespace SystemOperations {
             memory.words_len, offset.low + size.low
         );
         // If .high != 0, OOG is surely triggered. So we only use the .low part for the
-        // actual computation, and add ctx.gas_left * .high which would
-        // either be 0 or ctx.gas_left * k, thus triggering OOG.
-        let memory_expansion_cost = ctx.gas_left * (offset.high + size.high) +
+        // actual computation, and add evm.gas_left * .high which would
+        // either be 0 or evm.gas_left * k, thus triggering OOG.
+        let memory_expansion_cost = evm.gas_left * (offset.high + size.high) +
             memory_expansion_cost;
         let (calldata_words, _) = unsigned_div_rem(size.low + 31, 31);
         let init_code_gas = Gas.INIT_CODE_WORD_COST * calldata_words;
         let calldata_word_gas = is_create2 * Gas.KECCAK256_WORD * calldata_words;
-        let ctx = ExecutionContext.charge_gas(
-            ctx, memory_expansion_cost + init_code_gas + calldata_word_gas
-        );
-        if (ctx.reverted != FALSE) {
-            let ctx = ExecutionContext.update_stack(ctx, stack);
-            return ctx;
+        let evm = EVM.charge_gas(evm, memory_expansion_cost + init_code_gas + calldata_word_gas);
+        if (evm.reverted != FALSE) {
+            return evm;
         }
 
         // Load bytecode
         let (bytecode: felt*) = alloc();
-        let memory = Memory.load_n(memory, size.low, bytecode, offset.low);
-        let ctx = ExecutionContext.update_memory(ctx, memory);
+        Memory.load_n(size.low, bytecode, offset.low);
 
         // Get target address
-        let (state, evm_contract_address) = CreateHelper.get_evm_address(
-            state, ctx.call_context.address, popped_len, popped, size.low, bytecode
+        let evm_contract_address = CreateHelper.get_evm_address(
+            evm.message.address, popped_len, popped, size.low, bytecode
         );
         let (starknet_contract_address) = Account.compute_starknet_address(evm_contract_address);
         tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
 
         // Get message call gas
-        let (gas_limit, _) = unsigned_div_rem(ctx.gas_left, 64);
-        let gas_limit = ctx.gas_left - gas_limit;
+        let (gas_limit, _) = unsigned_div_rem(evm.gas_left, 64);
+        let gas_limit = evm.gas_left - gas_limit;
 
-        if (ctx.call_context.read_only != FALSE) {
-            let ctx = ExecutionContext.charge_gas(ctx, gas_limit);
+        if (evm.message.read_only != FALSE) {
+            let evm = EVM.charge_gas(evm, gas_limit);
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            let ctx = ExecutionContext.update_state(ctx, state);
-            let ctx = ExecutionContext.update_stack(ctx, stack);
-            return ctx;
+            let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
+            return evm;
         }
 
         // TODO: Clear return data
 
         // Check sender balance and nonce
-        let (state, sender) = State.get_account(state, ctx.call_context.address);
+        let sender = State.get_account(evm.message.address);
         let is_nonce_overflow = is_le(Constants.MAX_NONCE + 1, sender.nonce);
         let (is_balance_overflow) = uint256_lt([sender.balance], value);
-        // TODO: missing stack depth limit
-        if (is_nonce_overflow + is_balance_overflow != 0) {
-            let stack = Stack.push_uint128(stack, 0);
-            let ctx = ExecutionContext.update_state(ctx, state);
-            let ctx = ExecutionContext.update_stack(ctx, stack);
-            return ctx;
+        let stack_depth_limit = is_le(1024, evm.message.depth);
+        if (is_nonce_overflow + is_balance_overflow + stack_depth_limit != 0) {
+            Stack.push_uint128(0);
+            return evm;
         }
 
-        let ctx = ExecutionContext.charge_gas(ctx, gas_limit);
+        let evm = EVM.charge_gas(evm, gas_limit);
 
         // Check target account availabitliy
-        let (state, account) = State.get_account(state, address);
+        let account = State.get_account(address);
         let is_collision = Account.has_code_or_nonce(account);
         if (is_collision != 0) {
             let sender = Account.set_nonce(sender, sender.nonce + 1);
-            let state = State.set_account(state, ctx.call_context.address, sender);
-            let stack = Stack.push_uint128(stack, 0);
-            let ctx = ExecutionContext.update_state(ctx, state);
-            let ctx = ExecutionContext.update_stack(ctx, stack);
-            return ctx;
+            State.set_account(evm.message.address, sender);
+            Stack.push_uint128(0);
+            return evm;
         }
 
         // Check code size
         let code_size_too_big = is_le(2 * Constants.MAX_CODE_SIZE + 1, size.low);
         if (code_size_too_big != FALSE) {
-            let ctx = ExecutionContext.charge_gas(ctx, ctx.gas_left + 1);
-            let ctx = ExecutionContext.update_state(ctx, state);
-            let ctx = ExecutionContext.update_stack(ctx, stack);
-            return ctx;
+            let evm = EVM.charge_gas(evm, evm.gas_left + 1);
+            return evm;
         }
 
         // Increment nonce
         let sender = Account.set_nonce(sender, sender.nonce + 1);
-        let state = State.set_account(state, ctx.call_context.address, sender);
+        State.set_account(evm.message.address, sender);
 
         // Final update of calling context
-        let ctx = ExecutionContext.update_state(ctx, state);
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        let state = State.copy(ctx.state);
+        tempvar parent = new model.Parent(evm, stack, memory, state);
+        let stack = Stack.init();
+        let memory = Memory.init();
+        let state = State.copy();
 
         // Create child message
         let (calldata: felt*) = alloc();
-        tempvar call_context = new model.CallContext(
+        tempvar message = new model.Message(
             bytecode=bytecode,
             bytecode_len=size.low,
             calldata=calldata,
             calldata_len=0,
             value=value.low + value.high * 2 ** 128,
-            gas_price=ctx.call_context.gas_price,
-            origin=ctx.call_context.origin,
-            calling_context=ctx,
+            gas_price=evm.message.gas_price,
+            origin=evm.message.origin,
+            parent=parent,
             address=address,
             read_only=FALSE,
             is_create=TRUE,
+            depth=evm.message.depth + 1,
         );
-        let sub_ctx = ExecutionContext.init(call_context, gas_limit);
+        let child_evm = EVM.init(message, gas_limit);
+        let stack = Stack.init();
 
-        let (state, account) = State.get_account(state, address);
+        let account = State.get_account(address);
         let account = Account.set_nonce(account, 1);
-        let state = State.set_account(state, address, account);
+        State.set_account(address, account);
 
-        let transfer = model.Transfer(ctx.call_context.address, address, value);
-        let (state, success) = State.add_transfer(state, transfer);
-        let sub_ctx = ExecutionContext.update_state(sub_ctx, state);
+        let transfer = model.Transfer(evm.message.address, address, value);
+        let success = State.add_transfer(transfer);
         if (success == 0) {
-            let stack = Stack.push_uint128(stack, 0);
-            let sub_ctx = ExecutionContext.update_state(sub_ctx, state);
-            let sub_ctx = ExecutionContext.update_stack(sub_ctx, stack);
-            return sub_ctx;
+            Stack.push_uint128(0);
+            return child_evm;
         }
 
-        return sub_ctx;
+        return child_evm;
     }
 
     // @notice INVALID operation.
@@ -196,18 +177,21 @@ namespace SystemOperations {
     // @custom:gas NaN
     // @custom:stack_consumed_elements 0
     // @custom:stack_produced_elements 0
-    // @param ctx The pointer to the execution context
-    // @return ExecutionContext The pointer to the updated execution context.
+    // @param evm The pointer to the execution context
+    // @return EVM The pointer to the updated execution context.
     func exec_invalid{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let ctx = ExecutionContext.charge_gas(ctx, ctx.gas_left);
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*) -> model.EVM* {
+        let evm = EVM.charge_gas(evm, evm.gas_left);
         let (revert_reason: felt*) = alloc();
-        let ctx = ExecutionContext.stop(ctx, 0, revert_reason, TRUE);
-        return ctx;
+        let evm = EVM.stop(evm, 0, revert_reason, TRUE);
+        return evm;
     }
 
     // @notice RETURN operation.
@@ -217,35 +201,36 @@ namespace SystemOperations {
     // @custom:gas NaN
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 0
-    // @return ExecutionContext The pointer to the updated execution context.
+    // @return EVM The pointer to the updated execution context.
     func exec_return{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
-        let (stack, popped) = Stack.pop_n(ctx.stack, 2);
+        let (popped) = Stack.pop_n(2);
         let offset = popped[0];
         let size = popped[1];
-        let ctx = ExecutionContext.update_stack(ctx, stack);
 
         let memory_expansion_cost = Gas.memory_expansion_cost(
-            ctx.memory.words_len, offset.low + size.low
+            memory.words_len, offset.low + size.low
         );
-        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
-        if (ctx.reverted != FALSE) {
-            return ctx;
+        let evm = EVM.charge_gas(evm, memory_expansion_cost);
+        if (evm.reverted != FALSE) {
+            return evm;
         }
 
         let (local return_data: felt*) = alloc();
-        let memory = Memory.load_n(ctx.memory, size.low, return_data, offset.low);
+        Memory.load_n(size.low, return_data, offset.low);
 
-        let ctx = ExecutionContext.update_memory(ctx, memory);
-        let ctx = ExecutionContext.stop(ctx, size.low, return_data, FALSE);
+        let evm = EVM.stop(evm, size.low, return_data, FALSE);
 
-        return ctx;
+        return evm;
     }
 
     // @notice REVERT operation.
@@ -255,35 +240,36 @@ namespace SystemOperations {
     // @custom:gas 0 + dynamic gas
     // @custom:stack_consumed_elements 2
     // @custom:stack_produced_elements 0
-    // @return ExecutionContext The pointer to the updated execution context.
+    // @return EVM The pointer to the updated execution context.
     func exec_revert{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
-        let (stack, popped) = Stack.pop_n(ctx.stack, 2);
+        let (popped) = Stack.pop_n(2);
         let offset = popped[0];
         let size = popped[1];
-        let ctx = ExecutionContext.update_stack(ctx, stack);
 
         let memory_expansion_cost = Gas.memory_expansion_cost(
-            ctx.memory.words_len, offset.low + size.low
+            memory.words_len, offset.low + size.low
         );
-        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
-        if (ctx.reverted != FALSE) {
-            return ctx;
+        let evm = EVM.charge_gas(evm, memory_expansion_cost);
+        if (evm.reverted != FALSE) {
+            return evm;
         }
 
         // Load revert reason from offset
         let (return_data: felt*) = alloc();
-        let memory = Memory.load_n(ctx.memory, size.low, return_data, offset.low);
+        Memory.load_n(size.low, return_data, offset.low);
 
-        let ctx = ExecutionContext.update_memory(ctx, memory);
-        let ctx = ExecutionContext.stop(ctx, size.low, return_data, TRUE);
-        return ctx;
+        let evm = EVM.stop(evm, size.low, return_data, TRUE);
+        return evm;
     }
 
     // @notice CALL operation.
@@ -293,50 +279,44 @@ namespace SystemOperations {
     // @custom:gas 0 + dynamic gas
     // @custom:stack_consumed_elements 7
     // @custom:stack_produced_elements 1
-    // @return ExecutionContext The pointer to the sub context.
+    // @return EVM The pointer to the sub context.
     func exec_call{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        // See https://docs.cairo-lang.org/0.12.0/how_cairo_works/functions.html#retrieving-registers
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
-        let fp_and_pc = get_fp_and_pc();
-        local __fp__: felt* = fp_and_pc.fp_val;
-        let sub_ctx = CallHelper.init_sub_context(
-            ctx=ctx, with_value=TRUE, read_only=ctx.call_context.read_only, self_call=FALSE
+        let child_evm = CallHelper.init_sub_context(
+            evm=evm, with_value=TRUE, read_only=evm.message.read_only, self_call=FALSE
         );
-        if (sub_ctx.reverted != 0) {
-            return sub_ctx;
+        if (child_evm.reverted != 0) {
+            return child_evm;
         }
 
-        if (ctx.call_context.read_only * sub_ctx.call_context.value != FALSE) {
+        if (evm.message.read_only * child_evm.message.value != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
-            let ctx = sub_ctx.call_context.calling_context;
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
+            let evm = child_evm.message.parent.evm;
+            let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
+            return evm;
         }
 
-        let (value_high, value_low) = split_felt(sub_ctx.call_context.value);
+        let (value_high, value_low) = split_felt(child_evm.message.value);
         tempvar value = Uint256(value_low, value_high);
 
-        let calling_context = sub_ctx.call_context.calling_context;
-        let transfer = model.Transfer(
-            calling_context.call_context.address, sub_ctx.call_context.address, value
-        );
-        let (state, success) = State.add_transfer(sub_ctx.state, transfer);
-        let sub_ctx = ExecutionContext.update_state(sub_ctx, state);
+        let transfer = model.Transfer(evm.message.address, child_evm.message.address, value);
+        let success = State.add_transfer(transfer);
         if (success == 0) {
             let (revert_reason_len, revert_reason) = Errors.balanceError();
-            tempvar sub_ctx = ExecutionContext.stop(
-                sub_ctx, revert_reason_len, revert_reason, TRUE
-            );
+            tempvar child_evm = EVM.stop(child_evm, revert_reason_len, revert_reason, TRUE);
         } else {
-            tempvar sub_ctx = sub_ctx;
+            tempvar child_evm = child_evm;
         }
 
-        return sub_ctx;
+        return child_evm;
     }
 
     // @notice STATICCALL operation.
@@ -346,17 +326,20 @@ namespace SystemOperations {
     // @custom:gas 0 + dynamic gas
     // @custom:stack_consumed_elements 6
     // @custom:stack_produced_elements 1
-    // @return ExecutionContext The pointer to the sub context.
+    // @return EVM The pointer to the sub context.
     func exec_staticcall{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let sub_ctx = CallHelper.init_sub_context(
-            ctx=ctx, with_value=FALSE, read_only=TRUE, self_call=FALSE
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*) -> model.EVM* {
+        let child_evm = CallHelper.init_sub_context(
+            evm=evm, with_value=FALSE, read_only=TRUE, self_call=FALSE
         );
-        return sub_ctx;
+        return child_evm;
     }
 
     // @notice CALLCODE operation.
@@ -366,18 +349,21 @@ namespace SystemOperations {
     // @custom:gas 0 + dynamic gas
     // @custom:stack_consumed_elements 7
     // @custom:stack_produced_elements 1
-    // @return ExecutionContext The pointer to the sub context.
+    // @return EVM The pointer to the sub context.
     func exec_callcode{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let sub_ctx = CallHelper.init_sub_context(
-            ctx=ctx, with_value=TRUE, read_only=ctx.call_context.read_only, self_call=TRUE
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*) -> model.EVM* {
+        let child_evm = CallHelper.init_sub_context(
+            evm=evm, with_value=TRUE, read_only=evm.message.read_only, self_call=TRUE
         );
 
-        return sub_ctx;
+        return child_evm;
     }
 
     // @notice DELEGATECALL operation.
@@ -387,18 +373,21 @@ namespace SystemOperations {
     // @custom:gas 0 + dynamic gas
     // @custom:stack_consumed_elements 6
     // @custom:stack_produced_elements 1
-    // @return ExecutionContext The pointer to the sub context.
+    // @return EVM The pointer to the sub context.
     func exec_delegatecall{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let sub_ctx = CallHelper.init_sub_context(
-            ctx=ctx, with_value=FALSE, read_only=ctx.call_context.read_only, self_call=TRUE
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*) -> model.EVM* {
+        let child_evm = CallHelper.init_sub_context(
+            evm=evm, with_value=FALSE, read_only=evm.message.read_only, self_call=TRUE
         );
 
-        return sub_ctx;
+        return child_evm;
     }
 
     // @notice SELFDESTRUCT operation.
@@ -407,27 +396,30 @@ namespace SystemOperations {
     // @custom:group System Operations
     // @custom:gas 3000 + dynamic gas
     // @custom:stack_consumed_elements 1
-    // @return ExecutionContext The pointer to the updated execution_context.
+    // @return EVM The pointer to the updated execution_context.
     func exec_selfdestruct{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
-        if (ctx.call_context.read_only != FALSE) {
+        if (evm.message.read_only != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
+            let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
+            return evm;
         }
 
         // Transfer funds
-        let (stack, popped) = Stack.pop(ctx.stack);
+        let (popped) = Stack.pop();
         let recipient_evm_address = uint256_to_uint160([popped]);
 
         // Remove this when https://eips.ethereum.org/EIPS/eip-6780 is validated
-        if (recipient_evm_address == ctx.call_context.address.evm) {
+        if (recipient_evm_address == evm.message.address.evm) {
             tempvar is_recipient_self = TRUE;
         } else {
             tempvar is_recipient_self = FALSE;
@@ -436,25 +428,23 @@ namespace SystemOperations {
 
         let (recipient_starknet_address) = Account.compute_starknet_address(recipient_evm_address);
         tempvar recipient = new model.Address(recipient_starknet_address, recipient_evm_address);
-        let (state, account) = State.get_account(ctx.state, ctx.call_context.address);
+        let account = State.get_account(evm.message.address);
         let transfer = model.Transfer(
-            sender=ctx.call_context.address, recipient=recipient, amount=[account.balance]
+            sender=evm.message.address, recipient=recipient, amount=[account.balance]
         );
-        let (state, success) = State.add_transfer(state, transfer);
+        let success = State.add_transfer(transfer);
 
         // Register for SELFDESTRUCT
-        let (state, account) = State.get_account(state, ctx.call_context.address);
+        // @dev: get_account again because add_transfer updated it
+        let account = State.get_account(evm.message.address);
         let account = Account.selfdestruct(account);
-        let state = State.set_account(state, ctx.call_context.address, account);
+        State.set_account(evm.message.address, account);
 
         // Halt context
         let (return_data: felt*) = alloc();
-        let ctx = ExecutionContext.stop(ctx, 0, return_data, FALSE);
+        let evm = EVM.stop(evm, 0, return_data, FALSE);
 
-        let ctx = ExecutionContext.update_state(ctx, state);
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-
-        return ctx;
+        return evm;
     }
 }
 
@@ -462,38 +452,38 @@ namespace CallHelper {
     // @notice The shared logic of the CALL ops, allowing CALL, CALLCODE, STATICCALL, and DELEGATECALL to
     //         share structure and parameterize whether the call requires a value (CALL, CALLCODE) and
     //         whether the returned sub context's is read only (STATICCODE)
-    // @param calling_ctx The pointer to the calling execution context.
+    // @param calling_evm The pointer to the calling execution context.
     // @param with_value The boolean that determines whether the sub-context's calling context has a value read
     //        from the calling context's stack or the calling context's calling context.
     // @param read_only The boolean that determines whether state modifications can be executed from the sub-execution context.
     // @param self_call A boolean to indicate whether the account to message-call into is self (address of the current executing account)
     //        or the call argument's address (address of the call's target account)
-    // @return ExecutionContext The pointer to the sub context.
+    // @return EVM The pointer to the sub context.
     func init_sub_context{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(
-        ctx: model.ExecutionContext*, with_value: felt, read_only: felt, self_call: felt
-    ) -> model.ExecutionContext* {
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*, with_value: felt, read_only: felt, self_call: felt) -> model.EVM* {
         alloc_locals;
 
         // 1. Parse args from Stack
         // Note: We don't pop ret_offset and ret_size here but at the end of the sub context
-        // See finalize_calling_context
+        // See finalize_parent
         // Pop ret_offset and ret_size
-        let (stack, popped) = Stack.pop_n(ctx.stack, 4 + with_value);
-        let (stack, ret_offset_uint256) = Stack.peek(stack, 0);
-        let (stack, ret_size_uint256) = Stack.peek(stack, 1);
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let (popped) = Stack.pop_n(4 + with_value);
+        let (ret_offset_uint256) = Stack.peek(0);
+        let (ret_size_uint256) = Stack.peek(1);
 
         let gas = popped[0];
         let address = uint256_to_uint160(popped[1]);
         let stack_value = (2 ** 128 * popped[2].high + popped[2].low) * with_value;
         // If the call op expects value to be on the stack, we return it
         // Otherwise, the value is the calling call context value
-        let value = with_value * stack_value + (1 - with_value) * ctx.call_context.value;
+        let value = with_value * stack_value + (1 - with_value) * evm.message.value;
         let args_offset = 2 ** 128 * popped[2 + with_value].high + popped[2 + with_value].low;
         let args_size = 2 ** 128 * popped[3 + with_value].high + popped[3 + with_value].low;
         let ret_offset = 2 ** 128 * ret_offset_uint256.high + ret_offset_uint256.low;
@@ -505,14 +495,14 @@ namespace CallHelper {
         let max_expansion = max_expansion_is_ret * (ret_offset + ret_size) + (
             1 - max_expansion_is_ret
         ) * (args_offset + args_size);
-        let memory_expansion_cost = Gas.memory_expansion_cost(ctx.memory.words_len, max_expansion);
+        let memory_expansion_cost = Gas.memory_expansion_cost(memory.words_len, max_expansion);
 
         // Access list
         // TODO
 
         // Max between given gas arg and max allowed gas := available_gas - (available_gas // 64)
-        let (max_message_call_gas, _) = unsigned_div_rem(ctx.gas_left, 64);
-        tempvar max_message_call_gas = ctx.gas_left - max_message_call_gas;
+        let (max_message_call_gas, _) = unsigned_div_rem(evm.gas_left, 64);
+        tempvar max_message_call_gas = evm.gas_left - max_message_call_gas;
         let (max_message_call_gas_high, max_message_call_gas_low) = split_felt(
             max_message_call_gas
         );
@@ -527,111 +517,109 @@ namespace CallHelper {
             assert gas_limit = max_message_call_gas;
         }
         // All the gas is charged upfront and remaining gis is refunded at the end
-        let ctx = ExecutionContext.charge_gas(ctx, gas_limit + memory_expansion_cost);
-        if (ctx.reverted != FALSE) {
-            return ctx;
+        let evm = EVM.charge_gas(evm, gas_limit + memory_expansion_cost);
+        if (evm.reverted != FALSE) {
+            return evm;
         }
 
         // 3. Calldata
         let (calldata: felt*) = alloc();
-        let memory = Memory.load_n(ctx.memory, args_size, calldata, args_offset);
-        let ctx = ExecutionContext.update_memory(ctx, memory);
+        Memory.load_n(args_size, calldata, args_offset);
 
-        // 4. Build sub_ctx
+        // 4. Build child_evm
         // Check if the called address is a precompiled contract
         let is_precompile = Precompiles.is_precompile(address=address);
         if (is_precompile != FALSE) {
-            let sub_ctx = Precompiles.run(
+            tempvar parent = new model.Parent(evm, stack, memory, state);
+            let child_evm = Precompiles.run(
                 evm_address=address,
                 calldata_len=args_size,
                 calldata=calldata,
                 value=value,
-                calling_context=ctx,
+                parent=parent,
                 gas_left=gas_limit,
             );
 
-            return sub_ctx;
+            return child_evm;
         }
 
         let (starknet_contract_address) = Account.compute_starknet_address(address);
         tempvar call_address = new model.Address(starknet_contract_address, address);
-        let (state, account) = State.get_account(ctx.state, call_address);
-        let ctx = ExecutionContext.update_state(ctx, state);
+        let account = State.get_account(call_address);
 
         if (self_call == FALSE) {
-            tempvar call_context_address = call_address;
+            tempvar message_address = call_address;
         } else {
-            tempvar call_context_address = ctx.call_context.address;
+            tempvar message_address = evm.message.address;
         }
 
-        tempvar call_context = new model.CallContext(
+        tempvar parent = new model.Parent(evm, stack, memory, state);
+        let stack = Stack.init();
+        let memory = Memory.init();
+        tempvar message = new model.Message(
             bytecode=account.code,
             bytecode_len=account.code_len,
             calldata=calldata,
             calldata_len=args_size,
             value=value,
-            gas_price=ctx.call_context.gas_price,
-            origin=ctx.call_context.origin,
-            calling_context=ctx,
-            address=call_context_address,
+            gas_price=evm.message.gas_price,
+            origin=evm.message.origin,
+            parent=parent,
+            address=message_address,
             read_only=read_only,
             is_create=FALSE,
+            depth=evm.message.depth + 1,
         );
-        let sub_ctx = ExecutionContext.init(call_context, gas_limit);
-        let state = State.copy(ctx.state);
-        let sub_ctx = ExecutionContext.update_state(sub_ctx, state);
-        return sub_ctx;
+        let child_evm = EVM.init(message, gas_limit);
+        let state = State.copy();
+        return child_evm;
     }
 
-    // @notice At the end of a sub-context call, the calling context's stack and memory are updated.
-    // @return ExecutionContext The pointer to the updated calling context.
-    func finalize_calling_context{
+    // @return EVM The pointer to the updated calling context.
+    func finalize_parent{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(summary: ExecutionContext.Summary*) -> model.ExecutionContext* {
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
         // Pop ret_offset and ret_size
         // See init_sub_context, the Stack here is guaranteed to have enough items
-        let (stack, popped) = Stack.pop_n(self=summary.calling_context.stack, n=2);
+        let (popped) = Stack.pop_n(n=2);
         let ret_offset = 2 ** 128 * popped[0].high + popped[0].low;
         let ret_size = 2 ** 128 * popped[1].high + popped[1].low;
 
         // Put status in stack
-        let stack = Stack.push_uint128(stack, 1 - summary.reverted);
+        Stack.push_uint128(1 - evm.reverted);
 
         // Store RETURN_DATA in memory
         let (return_data: felt*) = alloc();
-        slice(return_data, summary.return_data_len, summary.return_data, 0, ret_size);
-        let memory = Memory.store_n(
-            summary.calling_context.memory, ret_size, return_data, ret_offset
-        );
+        slice(return_data, evm.return_data_len, evm.return_data, 0, ret_size);
+        Memory.store_n(ret_size, return_data, ret_offset);
 
-        // Gas not used is returned when ctx is not reverted
-        let remaining_gas = summary.gas_left * (1 - summary.reverted);
-        tempvar ctx = new model.ExecutionContext(
-            state=summary.calling_context.state,
-            call_context=summary.calling_context.call_context,
-            stack=stack,
-            memory=memory,
-            return_data_len=summary.return_data_len,
-            return_data=summary.return_data,
-            program_counter=summary.calling_context.program_counter,
-            stopped=summary.calling_context.stopped,
-            gas_left=summary.calling_context.gas_left + remaining_gas,
-            reverted=summary.calling_context.reverted,
-        );
-
-        // REVERTED, just update Stack and Memory
-        if (summary.reverted != FALSE) {
-            return ctx;
+        // Gas not used is returned when evm is not reverted
+        local gas_left;
+        if (evm.reverted == FALSE) {
+            assert gas_left = evm.message.parent.evm.gas_left + evm.gas_left;
+        } else {
+            assert gas_left = evm.message.parent.evm.gas_left;
         }
 
-        let ctx = ExecutionContext.update_state(ctx, summary.state);
+        tempvar evm = new model.EVM(
+            message=evm.message.parent.evm.message,
+            return_data_len=evm.return_data_len,
+            return_data=evm.return_data,
+            program_counter=evm.message.parent.evm.program_counter + 1,
+            stopped=evm.message.parent.evm.stopped,
+            gas_left=gas_left,
+            reverted=evm.message.parent.evm.reverted,
+        );
 
-        return ctx;
+        return evm;
     }
 }
 
@@ -643,7 +631,7 @@ namespace CreateHelper {
     // @param sender_address The evm sender address.
     // @param bytecode_len The length of the initialization code.
     // @param nonce The nonce given to the create opcode.
-    // @return ExecutionContext The pointer to the updated calling context.
+    // @return EVM The pointer to the updated calling context.
     func get_create_address{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -697,7 +685,7 @@ namespace CreateHelper {
     // @param bytecode_len The length of the initialization code.
     // @param bytecode The offset to store the element at.
     // @param salt The salt given to the create2 opcode.
-    // @return ExecutionContext The pointer to the updated calling context.
+    // @return EVM The pointer to the updated calling context.
     func get_create2_address{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -746,84 +734,89 @@ namespace CreateHelper {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(
         state: model.State*,
+    }(
         address: model.Address*,
         popped_len: felt,
         popped: Uint256*,
         bytecode_len: felt,
         bytecode: felt*,
-    ) -> (model.State*, felt) {
+    ) -> felt {
         alloc_locals;
-        let (state, account) = State.get_account(state, address);
-        let nonce = account.nonce;
-
         // create2 context pops 4 off the stack, create pops 3
         // so we use popped_len to derive the way we should handle
         // the creation of evm addresses
         if (popped_len != 4) {
-            let (evm_contract_address) = CreateHelper.get_create_address(address.evm, nonce);
-            return (state, evm_contract_address);
+            let account = State.get_account(address);
+            let (evm_contract_address) = CreateHelper.get_create_address(
+                address.evm, account.nonce
+            );
+            return evm_contract_address;
         } else {
             let salt = popped[3];
             let (evm_contract_address) = CreateHelper.get_create2_address(
                 sender_address=address.evm, bytecode_len=bytecode_len, bytecode=bytecode, salt=salt
             );
-            return (state, evm_contract_address);
+            return evm_contract_address;
         }
     }
 
     // @notice At the end of a sub-context initiated with CREATE or CREATE2, the calling context's stack is updated.
-    // @param ctx The pointer to the calling context.
-    // @return ExecutionContext The pointer to the updated calling context.
-    func finalize_calling_context{
+    // @param evm The pointer to the calling context.
+    // @return EVM The pointer to the updated calling context.
+    func finalize_parent{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(summary: ExecutionContext.Summary*) -> model.ExecutionContext* {
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
         // Charge final deposit gas
-        let code_size_limit = is_le(summary.return_data_len, 0x6000);
-        let code_deposit_cost = 200 * summary.return_data_len;
-        let remaining_gas = summary.gas_left - code_deposit_cost;
+        let code_size_limit = is_le(evm.return_data_len, Constants.MAX_CODE_SIZE);
+        let code_deposit_cost = Gas.CODE_DEPOSIT * evm.return_data_len;
+        let remaining_gas = evm.gas_left - code_deposit_cost;
         let enough_gas = is_nn(remaining_gas);
-        let success = (1 - summary.reverted) * enough_gas * code_size_limit;
+        let success = (1 - evm.reverted) * enough_gas * code_size_limit;
 
         // Stack output: the address of the deployed contract, 0 if the deployment failed.
-        let (address_high, address_low) = split_felt(summary.address.evm * success);
+        let (address_high, address_low) = split_felt(evm.message.address.evm * success);
         tempvar address = new Uint256(low=address_low, high=address_high);
-        let stack = Stack.push(summary.calling_context.stack, address);
 
-        // Re-create the calling context with updated stack and return_data
-        // Gas not used is returned when ctx is not reverted
-        // In the case of a reverted create context, the gas of the reverted context should be rolled back and not consumed
-        tempvar ctx = new model.ExecutionContext(
-            state=summary.calling_context.state,
-            call_context=summary.calling_context.call_context,
-            stack=stack,
-            memory=summary.calling_context.memory,
-            return_data_len=summary.return_data_len,
-            return_data=summary.return_data,
-            program_counter=summary.calling_context.program_counter,
-            stopped=summary.calling_context.stopped,
-            gas_left=summary.calling_context.gas_left + remaining_gas * success,
-            reverted=summary.calling_context.reverted,
-        );
+        Stack.push(address);
 
-        // REVERTED, just returns
         if (success == FALSE) {
-            return ctx;
+            // REVERTED, just returns previous EVM
+            tempvar evm = new model.EVM(
+                message=evm.message.parent.evm.message,
+                return_data_len=evm.return_data_len,
+                return_data=evm.return_data,
+                program_counter=evm.message.parent.evm.program_counter + 1,
+                stopped=evm.message.parent.evm.stopped,
+                gas_left=evm.message.parent.evm.gas_left,
+                reverted=evm.message.parent.evm.reverted,
+            );
+            return evm;
         }
 
         // Write bytecode to Account
-        let (state, account) = State.get_account(summary.state, summary.address);
-        let account = Account.set_code(account, summary.return_data_len, summary.return_data);
-        let state = State.set_account(state, summary.address, account);
+        let account = State.get_account(evm.message.address);
+        let account = Account.set_code(account, evm.return_data_len, evm.return_data);
+        State.set_account(evm.message.address, account);
 
-        let ctx = ExecutionContext.update_state(ctx, state);
+        tempvar evm = new model.EVM(
+            message=evm.message.parent.evm.message,
+            return_data_len=evm.return_data_len,
+            return_data=evm.return_data,
+            program_counter=evm.message.parent.evm.program_counter + 1,
+            stopped=evm.message.parent.evm.stopped,
+            gas_left=evm.message.parent.evm.gas_left + remaining_gas,
+            reverted=evm.message.parent.evm.reverted,
+        );
 
-        return ctx;
+        return evm;
     }
 }

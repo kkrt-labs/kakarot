@@ -151,13 +151,15 @@ jobs:
         with:
           python-version: 3.x
       - name: run tests
+        run: make ef-test-v0 > test_v0.out 2>&1 test_v0.out
+      - name: Retrieve ef-tests execution resources
         run: python scripts/compute_resources.py
         env:
           KAKAROT_VERSION: v0
       - name: upload resources
         uses: actions/upload-artifact@v3
         with:
-          path: ./resources/
+          path: resources
           name: resources
 
   resources:
@@ -195,10 +197,9 @@ jobs:
       - name: Load performance artifacts
         uses: actions/download-artifact@v3
         with:
-          name: resources
           path: resources
+          name: resources
       - name: Check resources evolution
         run: |
-          mv resources/resources_v0.json resources.json
           result=$(GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} make check-resources 2>&1)
           echo "$result" >> "$GITHUB_STEP_SUMMARY"

@@ -2,17 +2,14 @@
 
 %lang starknet
 
-// Starkware dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.bool import TRUE, FALSE
+from starkware.cairo.common.bool import TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 
-// Local dependencies
-from utils.utils import Helpers
-from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.execution_context import ExecutionContext
+from kakarot.state import State
+from kakarot.memory import Memory
 from kakarot.instructions.stop_and_math_operations import StopAndMathOperations
 from tests.utils.helpers import TestHelpers
 
@@ -22,14 +19,17 @@ func test__exec_stop{
 }() {
     alloc_locals;
 
-    let (bytecode) = alloc();
-    let ctx = TestHelpers.init_context(0, bytecode);
-    assert ctx.stopped = FALSE;
+    let evm = TestHelpers.init_evm();
+    let stack = Stack.init();
+    let state = State.init();
+    let memory = Memory.init();
 
-    let stopped_ctx = StopAndMathOperations.exec_stop(ctx);
+    with stack, memory, state {
+        let evm = StopAndMathOperations.exec_stop(evm);
+    }
 
-    assert stopped_ctx.stopped = TRUE;
-    assert stopped_ctx.return_data_len = 0;
+    assert evm.stopped = TRUE;
+    assert evm.return_data_len = 0;
 
     return ();
 }
@@ -37,19 +37,23 @@ func test__exec_stop{
 @external
 func test__exec_math_operation{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(opcode: felt, stack_len: felt, stack: Uint256*, expected_result: Uint256) {
+}(opcode: felt, initial_stack_len: felt, initial_stack: Uint256*, expected_result: Uint256) {
     // Given
     alloc_locals;
     let (bytecode) = alloc();
     assert [bytecode] = opcode;
-    let stack_ = TestHelpers.init_stack_with_values(stack_len, stack);
-    let ctx = TestHelpers.init_context_with_stack(1, bytecode, stack_);
+    let memory = Memory.init();
+    let stack = TestHelpers.init_stack_with_values(initial_stack_len, initial_stack);
+    let evm = TestHelpers.init_evm_with_bytecode(1, bytecode);
+    let state = State.init();
 
     // When
-    let ctx = StopAndMathOperations.exec_math_operation(ctx);
+    with stack, memory, state {
+        let evm = StopAndMathOperations.exec_math_operation(evm);
+        let (result) = Stack.peek(0);
+    }
 
     // Then
-    let (_, result) = Stack.peek(ctx.stack, 0);
     assert result[0] = expected_result;
     return ();
 }

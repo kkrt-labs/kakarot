@@ -63,14 +63,8 @@ def extract_memory_from_execute(result):
     mem = [0] * result.memory_words_len * 32
     for i in range(0, len(result.memory_accesses), 3):
         k = result.memory_accesses[i]  # Word index.
-        assert result.memory_accesses[i + 1] == 0  # Initial value.
         v = result.memory_accesses[i + 2]  # Final value.
-        for j in range(16):
-            if k * 16 + 15 - j < len(mem):
-                mem[k * 16 + 15 - j] = v % 256
-            else:
-                assert v == 0
-            v //= 256
+        mem[k * 16 : k * 16 + 16] = bytes.fromhex(f"{v:032x}")
     return mem
 
 

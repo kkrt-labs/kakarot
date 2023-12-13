@@ -3,8 +3,10 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import (
-    Uint256,
     uint256_add,
     uint256_and,
     uint256_eq,
@@ -20,17 +22,14 @@ from starkware.cairo.common.uint256 import (
     uint256_sub,
     uint256_unsigned_div_rem,
     uint256_xor,
+    Uint256,
 )
-from starkware.cairo.common.math_cmp import is_le
-from starkware.cairo.common.bool import FALSE, TRUE
-from starkware.cairo.common.alloc import alloc
-from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
 
 from kakarot.constants import opcodes_label
 from kakarot.model import model
-from kakarot.execution_context import ExecutionContext
+from kakarot.evm import EVM
 from kakarot.stack import Stack
-from kakarot.errors import Errors
+from kakarot.state import State
 from utils.uint256 import uint256_fast_exp, uint256_signextend
 
 // @title Stop and Math operations opcodes.
@@ -41,14 +40,17 @@ namespace StopAndMathOperations {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*) -> model.EVM* {
         // return_data stored the return_data for the last executed sub context
         // see CALLs opcodes. When we run the STOP opcode, we stop the current
         // execution context with *no* return data (unlike RETURN and REVERT).
         // hence we just clear the return_data and stop.
         let (return_data: felt*) = alloc();
-        let ctx = ExecutionContext.stop(ctx, 0, return_data, FALSE);
-        return ctx;
+        let evm = EVM.stop(evm, 0, return_data, FALSE);
+        return evm;
     }
 
     func exec_math_operation{
@@ -56,13 +58,16 @@ namespace StopAndMathOperations {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
         local opcode: model.Opcode*;
 
         // See evm.cairo, pc is increased before entering the opcode
-        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter];
+        let opcode_number = [evm.message.bytecode + evm.program_counter];
 
         // To cast the codeoffset opcodes_label to a model.Opcode*, we need to use it to offset
         // the current pc. We get the pc from the `get_fp_and_pc` util and assign a codeoffset (pc_label) to it.
@@ -74,7 +79,8 @@ namespace StopAndMathOperations {
             pc + (opcodes_label - pc_label) + opcode_number * model.Opcode.SIZE, model.Opcode*
         );
 
-        let (local stack, popped) = Stack.pop_n(ctx.stack, opcode.stack_input);
+        let (popped) = Stack.pop_n(opcode.stack_input);
+        local stack: model.Stack* = stack;
 
         // offset is 1 (new line) + 2 (jmp + label) per opcode
         // opcode is offset from by 0x1 (index of the first opcode)
@@ -126,16 +132,16 @@ namespace StopAndMathOperations {
         // Rebind args with fp
         // Function args are in [fp - n - 2: fp - 2]
         // locals are retrieved from [fp] in the order they are defined
-        let syscall_ptr = cast([fp - 7], felt*);
-        let pedersen_ptr = cast([fp - 6], HashBuiltin*);
-        let ctx = cast([fp - 3], model.ExecutionContext*);
-        let opcode = cast([fp], model.Opcode*);
+        let syscall_ptr = cast([fp - 10], felt*);
+        let pedersen_ptr = cast([fp - 9], HashBuiltin*);
+        let memory = cast([fp - 5], model.Memory*);
+        let state = cast([fp - 4], model.State*);
+        let evm = cast([fp - 3], model.EVM*);
         let stack = cast([fp + 1], model.Stack*);
 
         // Finalize opcode
-        let stack = Stack.push_uint256(stack, result);
-        let ctx = ExecutionContext.update_stack(ctx, stack);
-        return ctx;
+        Stack.push_uint256(result);
+        return evm;
 
         ADD:
         let range_check_ptr = [ap - 2];
@@ -143,7 +149,7 @@ namespace StopAndMathOperations {
 
         let (result, _) = uint256_add(popped[0], popped[1]);
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(result.low, result.high);
         jmp end;
@@ -154,7 +160,7 @@ namespace StopAndMathOperations {
 
         let (result, _) = uint256_mul(popped[0], popped[1]);
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(result.low, result.high);
         jmp end;
@@ -165,7 +171,7 @@ namespace StopAndMathOperations {
 
         let (result) = uint256_sub(popped[0], popped[1]);
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(result.low, result.high);
         jmp end;
@@ -176,7 +182,7 @@ namespace StopAndMathOperations {
 
         let (quotient, _) = uint256_unsigned_div_rem(popped[0], popped[1]);
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(quotient.low, quotient.high);
         jmp end;
@@ -187,7 +193,7 @@ namespace StopAndMathOperations {
 
         let (quotient, _) = uint256_signed_div_rem(popped[0], popped[1]);
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(quotient.low, quotient.high);
         jmp end;
@@ -198,7 +204,7 @@ namespace StopAndMathOperations {
 
         let (_, remainder) = uint256_unsigned_div_rem(popped[0], popped[1]);
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(remainder.low, remainder.high);
         jmp end;
@@ -209,7 +215,7 @@ namespace StopAndMathOperations {
 
         let (_, remainder) = uint256_signed_div_rem(popped[0], popped[1]);
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(remainder.low, remainder.high);
         jmp end;
@@ -221,7 +227,7 @@ namespace StopAndMathOperations {
         let (sum, _) = uint256_add(popped[0], popped[1]);
         let (_, remainder) = uint256_unsigned_div_rem(sum, popped[2]);
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(remainder.low, remainder.high);
         jmp end;
@@ -232,7 +238,7 @@ namespace StopAndMathOperations {
 
         let (_, _, result) = uint256_mul_div_mod(popped[0], popped[1], popped[2]);
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(result.low, result.high);
         jmp end;
@@ -243,7 +249,7 @@ namespace StopAndMathOperations {
 
         let result = uint256_fast_exp(popped[0], popped[1]);
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(result.low, result.high);
         jmp end;
@@ -254,7 +260,7 @@ namespace StopAndMathOperations {
 
         let result = uint256_signextend(popped[1], popped[0]);
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = result;
         jmp end;
@@ -267,7 +273,7 @@ namespace StopAndMathOperations {
 
         let (res) = uint256_lt(popped[0], popped[1]);
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(res, 0);
         jmp end;
@@ -278,7 +284,7 @@ namespace StopAndMathOperations {
 
         let (res) = uint256_lt(popped[1], popped[0]);
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(res, 0);
         jmp end;
@@ -289,7 +295,7 @@ namespace StopAndMathOperations {
 
         let (res) = uint256_signed_lt(popped[0], popped[1]);
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(res, 0);
         jmp end;
@@ -300,7 +306,7 @@ namespace StopAndMathOperations {
 
         let (res) = uint256_signed_lt(popped[1], popped[0]);
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(res, 0);
         jmp end;
@@ -311,7 +317,7 @@ namespace StopAndMathOperations {
 
         let (res) = uint256_eq(popped[0], popped[1]);
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(res, 0);
         jmp end;
@@ -322,13 +328,13 @@ namespace StopAndMathOperations {
 
         let (res) = uint256_eq(popped[0], Uint256(0, 0));
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(res, 0);
         jmp end;
 
         AND:
-        let bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        let bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         let range_check_ptr = [ap - 2];
         let popped = cast([ap - 1], Uint256*);
 
@@ -340,7 +346,7 @@ namespace StopAndMathOperations {
         jmp end;
 
         OR:
-        let bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        let bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         let range_check_ptr = [ap - 2];
         let popped = cast([ap - 1], Uint256*);
 
@@ -352,7 +358,7 @@ namespace StopAndMathOperations {
         jmp end;
 
         XOR:
-        let bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        let bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         let range_check_ptr = [ap - 2];
         let popped = cast([ap - 1], Uint256*);
 
@@ -364,7 +370,7 @@ namespace StopAndMathOperations {
         jmp end;
 
         BYTE:
-        let bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        let bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         let range_check_ptr = [ap - 2];
         let popped = cast([ap - 1], Uint256*);
 
@@ -385,7 +391,7 @@ namespace StopAndMathOperations {
 
         let (result) = uint256_shl(popped[1], popped[0]);
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(result.low, result.high);
         jmp end;
@@ -396,13 +402,13 @@ namespace StopAndMathOperations {
 
         let (result) = uint256_shr(popped[1], popped[0]);
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(result.low, result.high);
         jmp end;
 
         SAR:
-        let bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        let bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         let range_check_ptr = [ap - 2];
         let popped = cast([ap - 1], Uint256*);
 
@@ -451,7 +457,7 @@ namespace StopAndMathOperations {
 
         let (result) = uint256_not(popped[0]);
 
-        tempvar bitwise_ptr = cast([fp - 4], BitwiseBuiltin*);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(result.low, result.high);
         jmp end;

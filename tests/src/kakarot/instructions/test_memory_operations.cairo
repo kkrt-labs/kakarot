@@ -11,7 +11,9 @@ from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from utils.utils import Helpers
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.execution_context import ExecutionContext
+from kakarot.state import State
+from kakarot.memory import Memory
+from kakarot.evm import EVM
 from kakarot.instructions.memory_operations import MemoryOperations
 from kakarot.constants import Constants
 from tests.utils.helpers import TestHelpers
@@ -24,15 +26,20 @@ func test__exec_pc__should_update_after_incrementing{
     alloc_locals;
 
     let (bytecode) = alloc();
-    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
-    let ctx = ExecutionContext.increment_program_counter(ctx, increment);
+    let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
+    let evm = EVM.increment_program_counter(evm, increment);
+    let stack = Stack.init();
+    let state = State.init();
+    let memory = Memory.init();
 
     // When
-    let result = MemoryOperations.exec_pc(ctx);
+    with stack, memory, state {
+        let evm = MemoryOperations.exec_pc(evm);
+        let (index0) = Stack.peek(0);
+    }
 
     // Then
-    assert result.stack.size = 1;
-    let (stack, index0) = Stack.peek(result.stack, 0);
+    assert stack.size = 1;
     assert index0.low = increment;
     assert index0.high = 0;
     return ();
@@ -45,23 +52,25 @@ func test__exec_pop_should_pop_an_item_from_execution_context{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
-    // Given
+    let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
     let stack = Stack.init();
+    let state = State.init();
+    let memory = Memory.init();
 
     tempvar item_1 = new Uint256(1, 0);
     tempvar item_0 = new Uint256(2, 0);
 
-    let stack = Stack.push(stack, item_1);
-    let stack = Stack.push(stack, item_0);
-    let ctx = ExecutionContext.update_stack(ctx, stack);
-
     // When
-    let result = MemoryOperations.exec_pop(ctx);
+    with stack, memory, state {
+        Stack.push(item_1);
+        Stack.push(item_0);
+
+        let evm = MemoryOperations.exec_pop(evm);
+        let (index0) = Stack.peek(0);
+    }
 
     // Then
-    assert result.stack.size = 1;
-    let (stack, index0) = Stack.peek(result.stack, 0);
+    assert stack.size = 1;
     assert_uint256_eq([index0], Uint256(1, 0));
     return ();
 }
@@ -73,30 +82,30 @@ func test__exec_mload_should_load_a_value_from_memory{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
-    // Given
+    let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
     let stack = Stack.init();
+    let state = State.init();
+    let memory = Memory.init();
 
     tempvar item_1 = new Uint256(1, 0);
     tempvar item_0 = new Uint256(0, 0);
 
-    let stack = Stack.push(stack, item_1);
-    let stack = Stack.push(stack, item_0);
-
-    let ctx = ExecutionContext.update_stack(ctx, stack);
-    let ctx = MemoryOperations.exec_mstore(ctx);
-
-    tempvar item_0 = new Uint256(0, 0);
-    let stack = Stack.push(ctx.stack, item_0);
-    let ctx = ExecutionContext.update_stack(ctx, stack);
-
     // When
-    let result = MemoryOperations.exec_mload(ctx);
+    with stack, memory, state {
+        Stack.push(item_1);
+        Stack.push(item_0);
+
+        let evm = MemoryOperations.exec_mstore(evm);
+
+        Stack.push(item_0);
+
+        let evm = MemoryOperations.exec_mload(evm);
+        let (index0) = Stack.peek(0);
+    }
 
     // Then
-    assert result.stack.size = 1;
-    let (stack, index0) = Stack.peek(result.stack, 0);
-    assert_uint256_eq([index0], Uint256(1, 0));
+    assert stack.size = 1;
+    assert_uint256_eq([index0], [item_1]);
     return ();
 }
 
@@ -107,32 +116,30 @@ func test__exec_mload_should_load_a_value_from_memory_with_memory_expansion{
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
-    let test_offset = 16;
-    // Given
+    let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
     let stack = Stack.init();
+    let state = State.init();
+    let memory = Memory.init();
 
-    tempvar item_1 = new Uint256(1, 0);
-    tempvar item_0 = new Uint256(0, 0);
+    with stack, memory, state {
+        tempvar item_1 = new Uint256(1, 0);
+        tempvar item_0 = new Uint256(0, 0);
 
-    let stack: model.Stack* = Stack.push(stack, item_1);
-    let stack: model.Stack* = Stack.push(stack, item_0);
+        Stack.push(item_1);
+        Stack.push(item_0);
 
-    let ctx = ExecutionContext.update_stack(ctx, stack);
-    let ctx = MemoryOperations.exec_mstore(ctx);
+        let evm = MemoryOperations.exec_mstore(evm);
 
-    tempvar offset = new Uint256(test_offset, 0);
-    let stack = Stack.push(ctx.stack, offset);
-    let ctx = ExecutionContext.update_stack(ctx, stack);
+        tempvar offset = new Uint256(16, 0);
+        Stack.push(offset);
 
-    // When
-    let result = MemoryOperations.exec_mload(ctx);
+        let evm = MemoryOperations.exec_mload(evm);
+        let (index0) = Stack.peek(0);
+    }
 
-    // Then
-    assert result.stack.size = 1;
-    let (stack, index0) = Stack.peek(result.stack, 0);
+    assert stack.size = 1;
     assert_uint256_eq([index0], Uint256(0, 1));
-    assert result.memory.words_len = 2;
+    assert memory.words_len = 2;
     return ();
 }
 
@@ -143,30 +150,30 @@ func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_ms
     // Given
     alloc_locals;
     let (bytecode) = alloc();
-    let ctx: model.ExecutionContext* = TestHelpers.init_context(0, bytecode);
+    let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
     let test_offset = 684;
     // Given
     let stack = Stack.init();
+    let state = State.init();
+    let memory = Memory.init();
 
     tempvar item_1 = new Uint256(1, 0);
     tempvar item_0 = new Uint256(0, 0);
 
-    let stack: model.Stack* = Stack.push(stack, item_1);
-    let stack: model.Stack* = Stack.push(stack, item_0);
+    with stack, memory, state {
+        Stack.push(item_1);
+        Stack.push(item_0);
 
-    let ctx = ExecutionContext.update_stack(ctx, stack);
-    let ctx = MemoryOperations.exec_mstore(ctx);
-    tempvar offset = new Uint256(test_offset, 0);
-    let stack = Stack.push(ctx.stack, offset);
-    let ctx = ExecutionContext.update_stack(ctx, stack);
+        let evm = MemoryOperations.exec_mstore(evm);
+        tempvar offset = new Uint256(test_offset, 0);
+        Stack.push(offset);
 
-    // When
-    let result = MemoryOperations.exec_mload(ctx);
+        let evm = MemoryOperations.exec_mload(evm);
 
-    // Then
-    assert result.stack.size = 1;
-    let (stack, index0) = Stack.peek(result.stack, 0);
+        let (index0) = Stack.peek(0);
+    }
+    assert stack.size = 1;
     assert_uint256_eq([index0], Uint256(0, 0));
-    assert result.memory.words_len = 23;
+    assert memory.words_len = 23;
     return ();
 }

@@ -12,16 +12,14 @@ from starkware.cairo.common.math_cmp import is_le, is_not_zero
 // Internal dependencies
 from kakarot.account import Account
 from kakarot.constants import Constants
-from kakarot.execution_context import ExecutionContext
+from kakarot.evm import EVM
 from kakarot.errors import Errors
-from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.precompiles.blake2f import PrecompileBlake2f
 from kakarot.precompiles.datacopy import PrecompileDataCopy
 from kakarot.precompiles.ec_recover import PrecompileEcRecover
 from kakarot.precompiles.ripemd160 import PrecompileRIPEMD160
 from kakarot.precompiles.sha256 import PrecompileSHA256
-from kakarot.stack import Stack
 
 // @title Precompile related functions.
 // @notice This file contains functions related to the running of precompiles.
@@ -34,9 +32,9 @@ namespace Precompiles {
     // @param calldata_len The calldata length
     // @param calldata The calldata.
     // @param value The value.
-    // @param calling_context The calling context.
+    // @param parent The calling context.
     // @param gas_left The gas left.
-    // @return ExecutionContext The initialized execution context.
+    // @return EVM The initialized execution context.
     func run{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -47,40 +45,38 @@ namespace Precompiles {
         calldata_len: felt,
         calldata: felt*,
         value: felt,
-        calling_context: model.ExecutionContext*,
+        parent: model.Parent*,
         gas_left: felt,
-    ) -> model.ExecutionContext* {
+    ) -> model.EVM* {
         alloc_locals;
 
         // Build returned execution context
-        let stack = Stack.init();
-        let memory = Memory.init();
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
-        tempvar call_context = new model.CallContext(
+        tempvar message = new model.Message(
             bytecode=cast(0, felt*),
             bytecode_len=0,
             calldata=cast(0, felt*),
             calldata_len=0,
             value=0,
             gas_price=0,
-            origin=calling_context.call_context.origin,
-            calling_context=calling_context,
+            origin=parent.evm.message.origin,
+            parent=parent,
             address=address,
             read_only=FALSE,
             is_create=FALSE,
+            depth=parent.evm.message.depth + 1,
         );
-        let sub_ctx = ExecutionContext.init(call_context, gas_left);
-        let sub_ctx = ExecutionContext.update_state(sub_ctx, calling_context.state);
+        let evm = EVM.init(message, gas_left);
 
         // Execute the precompile at a given evm_address
         let (output_len, output, gas_used, reverted) = _exec_precompile(
             evm_address, calldata_len, calldata
         );
-        let sub_ctx = ExecutionContext.charge_gas(sub_ctx, gas_used);
-        let sub_ctx = ExecutionContext.stop(sub_ctx, output_len, output, reverted);
+        let evm = EVM.charge_gas(evm, gas_used);
+        let evm = EVM.stop(evm, output_len, output, reverted);
 
-        return sub_ctx;
+        return evm;
     }
 
     func is_precompile{range_check_ptr}(address: felt) -> felt {

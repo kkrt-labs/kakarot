@@ -20,7 +20,7 @@ from starkware.cairo.common.memset import memset
 from kakarot.model import model
 from utils.utils import Helpers
 from kakarot.memory import Memory
-from kakarot.execution_context import ExecutionContext
+from kakarot.evm import EVM
 
 // @title RIPEMD-160 precompile
 // @custom:precompile

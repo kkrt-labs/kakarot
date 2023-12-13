@@ -17,16 +17,6 @@ from utils.dict import default_dict_copy
 from utils.utils import Helpers
 
 namespace State {
-    // @dev Like an State, but frozen after squashing all dicts
-    struct Summary {
-        accounts_start: DictAccess*,
-        accounts: DictAccess*,
-        events_len: felt,
-        events: model.Event*,
-        transfers_len: felt,
-        transfers: model.Transfer*,
-    }
-
     // @dev Create a new empty State
     func init() -> model.State* {
         let (accounts_start) = default_dict_new(0);
@@ -44,192 +34,188 @@ namespace State {
 
     // @dev Deep copy of the state, creating new memory segments
     // @param self The pointer to the State
-    func copy{range_check_ptr}(self: model.State*) -> model.State* {
+    func copy{range_check_ptr, state: model.State*}() -> model.State* {
         alloc_locals;
         // accounts are a new memory segment
-        let (accounts_start, accounts) = default_dict_copy(self.accounts_start, self.accounts);
+        let (accounts_start, accounts) = default_dict_copy(state.accounts_start, state.accounts);
         // for each account, storage is a new memory segment
         Internals._copy_accounts{accounts=accounts}(accounts_start, accounts);
 
         let (local events: felt*) = alloc();
-        memcpy(dst=events, src=self.events, len=self.events_len * model.Event.SIZE);
+        memcpy(dst=events, src=state.events, len=state.events_len * model.Event.SIZE);
 
         let (local transfers: felt*) = alloc();
-        memcpy(dst=transfers, src=self.transfers, len=self.transfers_len * model.Transfer.SIZE);
+        memcpy(dst=transfers, src=state.transfers, len=state.transfers_len * model.Transfer.SIZE);
 
-        return new model.State(
+        tempvar state_copy = new model.State(
             accounts_start=accounts_start,
             accounts=accounts,
-            events_len=self.events_len,
+            events_len=state.events_len,
             events=cast(events, model.Event*),
-            transfers_len=self.transfers_len,
+            transfers_len=state.transfers_len,
             transfers=cast(transfers, model.Transfer*),
         );
+        return state_copy;
     }
 
     // @dev Squash dicts used internally
-    // @param self The pointer to the State
-    func finalize{range_check_ptr}(self: model.State*) -> Summary* {
+    func finalize{range_check_ptr, state: model.State*}() {
         alloc_locals;
         // First squash to get only one account per key
         let (local accounts_start, accounts) = default_dict_finalize(
-            self.accounts_start, self.accounts, 0
+            state.accounts_start, state.accounts, 0
         );
         // Finalizing the accounts create another entry per account
-        Internals._finalize_accounts{accounts=accounts}(accounts_start, accounts);
-        // Squash again to keep only one Account.Summary per key
-        let (local accounts_start, accounts) = default_dict_finalize(accounts_start, accounts, 0);
+        Internals._copy_accounts{accounts=accounts}(accounts_start, accounts);
+        // Squash again to keep only one model.Account per key
+        // @dev: using default_dict_copy as default_dict_finalize doesn't return a default_dict
+        let (local accounts_start, accounts) = default_dict_copy(accounts_start, accounts);
 
-        return new Summary(
+        tempvar state = new model.State(
             accounts_start=accounts_start,
             accounts=accounts,
-            events_len=self.events_len,
-            events=self.events,
-            transfers_len=self.transfers_len,
-            transfers=self.transfers,
+            events_len=state.events_len,
+            events=state.events,
+            transfers_len=state.transfers_len,
+            transfers=state.transfers,
         );
+        return ();
     }
 
     // @notice Get a given EVM Account
     // @dev Try to retrieve in the local Dict<Address*, Account*> first, and if not already here
     //      read the contract storage and cache the result.
-    // @param self The pointer to the State.
     // @param key The pointer to the address
     // @return The updated state
     // @return The account
-    func get_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.State*, address: model.Address*
-    ) -> (model.State*, model.Account*) {
+    func get_account{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
+    }(address: model.Address*) -> model.Account* {
         alloc_locals;
-        let accounts = self.accounts;
+        let accounts = state.accounts;
         let (pointer) = dict_read{dict_ptr=accounts}(key=address.evm);
 
         // Return from local storage if found
         if (pointer != 0) {
             let account = cast(pointer, model.Account*);
             tempvar state = new model.State(
-                accounts_start=self.accounts_start,
+                accounts_start=state.accounts_start,
                 accounts=accounts,
-                events_len=self.events_len,
-                events=self.events,
-                transfers_len=self.transfers_len,
-                transfers=self.transfers,
+                events_len=state.events_len,
+                events=state.events,
+                transfers_len=state.transfers_len,
+                transfers=state.transfers,
             );
-            return (state, account);
+            return account;
         } else {
             // Otherwise read values from contract storage
             local accounts: DictAccess* = accounts;
             let account = Account.fetch_or_create(address);
             dict_write{dict_ptr=accounts}(key=address.evm, new_value=cast(account, felt));
             tempvar state = new model.State(
-                accounts_start=self.accounts_start,
+                accounts_start=state.accounts_start,
                 accounts=accounts,
-                events_len=self.events_len,
-                events=self.events,
-                transfers_len=self.transfers_len,
-                transfers=self.transfers,
+                events_len=state.events_len,
+                events=state.events,
+                transfers_len=state.transfers_len,
+                transfers=state.transfers,
             );
-            return (state, account);
+            return account;
         }
     }
 
     // @notice Set the Account at the given address
-    // @param self The pointer to the State.
     // @param address The address of the Account
     // @param account The new account
-    func set_account(
-        self: model.State*, address: model.Address*, account: model.Account*
-    ) -> model.State* {
-        let accounts = self.accounts;
+    func set_account{state: model.State*}(address: model.Address*, account: model.Account*) {
+        let accounts = state.accounts;
         dict_write{dict_ptr=accounts}(key=address.evm, new_value=cast(account, felt));
-        return new model.State(
-            accounts_start=self.accounts_start,
+        tempvar state = new model.State(
+            accounts_start=state.accounts_start,
             accounts=accounts,
-            events_len=self.events_len,
-            events=self.events,
-            transfers_len=self.transfers_len,
-            transfers=self.transfers,
+            events_len=state.events_len,
+            events=state.events,
+            transfers_len=state.transfers_len,
+            transfers=state.transfers,
         );
+        return ();
     }
 
     // @notice Read a given storage
     // @dev Try to retrieve in the local Dict<Uint256*> first, if not already here
     //      read the contract storage and cache the result.
-    // @param self The pointer to the execution State.
     // @param address The pointer to the Address.
     // @param key The pointer to the storage key
-    func read_storage{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.State*, address: model.Address*, key: Uint256*
-    ) -> (model.State*, Uint256*) {
+    func read_storage{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
+    }(address: model.Address*, key: Uint256*) -> Uint256* {
         alloc_locals;
-        let (self, account) = get_account(self, address);
+        let account = get_account(address);
         let (account, value) = Account.read_storage(account, address, key);
-        let self = set_account(self, address, account);
-        return (self, value);
+        set_account(address, account);
+        return value;
     }
 
     // @notice Update a storage key with the given value
-    // @param self The pointer to the State.
     // @param address The pointer to the Account address
     // @param key The pointer to the Uint256 storage key
     // @param value The pointer to the Uint256 value
-    func write_storage{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.State*, address: model.Address*, key: Uint256*, value: Uint256*
-    ) -> model.State* {
+    func write_storage{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
+    }(address: model.Address*, key: Uint256*, value: Uint256*) {
         alloc_locals;
-        let (self, account) = get_account(self, address);
+        let account = get_account(address);
         let account = Account.write_storage(account, key, value);
-        let self = set_account(self, address, account);
-        return self;
+        set_account(address, account);
+        return ();
     }
 
     // @notice Add an event to the Event* array
-    // @param self The pointer to the State
     // @param event The pointer to the Event
     // @return The updated State
-    func add_event(self: model.State*, event: model.Event) -> model.State* {
-        assert self.events[self.events_len] = event;
+    func add_event{state: model.State*}(event: model.Event) {
+        assert state.events[state.events_len] = event;
 
-        return new model.State(
-            accounts_start=self.accounts_start,
-            accounts=self.accounts,
-            events_len=self.events_len + 1,
-            events=self.events,
-            transfers_len=self.transfers_len,
-            transfers=self.transfers,
+        tempvar state = new model.State(
+            accounts_start=state.accounts_start,
+            accounts=state.accounts,
+            events_len=state.events_len + 1,
+            events=state.events,
+            transfers_len=state.transfers_len,
+            transfers=state.transfers,
         );
+        return ();
     }
 
     // @notice Add a transfer to the Transfer* array
-    // @param self The pointer to the State
     // @param event The pointer to the Transfer
     // @return The updated State
     // @return The status of the transfer
-    func add_transfer{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.State*, transfer: model.Transfer
-    ) -> (model.State*, felt) {
+    func add_transfer{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
+    }(transfer: model.Transfer) -> felt {
         alloc_locals;
         // See https://docs.cairo-lang.org/0.12.0/how_cairo_works/functions.html#retrieving-registers
         let fp_and_pc = get_fp_and_pc();
         local __fp__: felt* = fp_and_pc.fp_val;
 
         if (transfer.sender == transfer.recipient) {
-            return (self, 1);
+            return 1;
         }
 
         let (null_transfer) = uint256_eq(transfer.amount, Uint256(0, 0));
         if (null_transfer != 0) {
-            return (self, 1);
+            return 1;
         }
 
-        let (self, sender) = get_account(self, transfer.sender);
+        let sender = get_account(transfer.sender);
         let (success) = uint256_le(transfer.amount, [sender.balance]);
 
         if (success == 0) {
-            return (self, success);
+            return success;
         }
 
-        let (self, recipient) = get_account(self, transfer.recipient);
+        let recipient = get_account(transfer.recipient);
 
         let (local sender_balance_new) = uint256_sub([sender.balance], transfer.amount);
         let (local recipient_balance_new, carry) = uint256_add(
@@ -239,20 +225,20 @@ namespace State {
         let sender = Account.set_balance(sender, &sender_balance_new);
         let recipient = Account.set_balance(recipient, &recipient_balance_new);
 
-        let accounts = self.accounts;
+        let accounts = state.accounts;
         dict_write{dict_ptr=accounts}(key=transfer.sender.evm, new_value=cast(sender, felt));
         dict_write{dict_ptr=accounts}(key=transfer.recipient.evm, new_value=cast(recipient, felt));
-        assert self.transfers[self.transfers_len] = transfer;
+        assert state.transfers[state.transfers_len] = transfer;
 
         tempvar state = new model.State(
-            accounts_start=self.accounts_start,
+            accounts_start=state.accounts_start,
             accounts=accounts,
-            events_len=self.events_len,
-            events=self.events,
-            transfers_len=self.transfers_len + 1,
-            transfers=self.transfers,
+            events_len=state.events_len,
+            events=state.events,
+            transfers_len=state.transfers_len + 1,
+            transfers=state.transfers,
         );
-        return (state, success);
+        return success;
     }
 }
 
@@ -268,30 +254,9 @@ namespace Internals {
         }
 
         let account = cast(accounts_start.new_value, model.Account*);
-        let account_summary = Account.copy(account);
-        dict_write{dict_ptr=accounts}(
-            key=accounts_start.key, new_value=cast(account_summary, felt)
-        );
+        let account = Account.copy(account);
+        dict_write{dict_ptr=accounts}(key=accounts_start.key, new_value=cast(account, felt));
 
         return _copy_accounts(accounts_start + DictAccess.SIZE, accounts_end);
-    }
-
-    // @notice Iterate through the accounts dict and finalize them
-    // @param accounts_start The dict start pointer
-    // @param accounts_end The dict end pointer
-    func _finalize_accounts{range_check_ptr, accounts: DictAccess*}(
-        accounts_start: DictAccess*, accounts_end: DictAccess*
-    ) {
-        if (accounts_start == accounts_end) {
-            return ();
-        }
-
-        let account = cast(accounts_start.new_value, model.Account*);
-        let account_summary = Account.finalize(account);
-        dict_write{dict_ptr=accounts}(
-            key=accounts_start.key, new_value=cast(account_summary, felt)
-        );
-
-        return _finalize_accounts(accounts_start + DictAccess.SIZE, accounts_end);
     }
 }

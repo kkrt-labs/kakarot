@@ -15,15 +15,20 @@ async def execution_context(starknet: Starknet):
 
 @pytest.mark.asyncio
 class TestExecutionContext:
-    async def test_everything_context(self, execution_context):
-        await execution_context.test__jump__should_set_pc_to_given_value().call()
-
-        result = (
-            await execution_context.test__jump__should_fail__when_given_value_not_in_code_range().call()
-        )
-        assert result.result.revert_reason == list(b"Kakarot: ProgramCounterOutOfRange")
-
-        result = (
-            await execution_context.test__jump__should_fail__when_given_destination_that_is_not_JUMPDEST().call()
-        )
-        assert result.result.revert_reason == list(b"Kakarot: JUMP to non JUMPDEST")
+    @pytest.mark.parametrize(
+        "jumpdest,new_pc,expected_return_data",
+        [
+            (0, 0, list(b"Kakarot: JUMP to non JUMPDEST")),
+            (1, 1, []),
+            (2, 0, list(b"Kakarot: ProgramCounterOutOfRange")),
+        ],
+    )
+    async def test_jump(
+        self, execution_context, jumpdest, new_pc, expected_return_data
+    ):
+        bytecode = [0, 0x5B]
+        (pc, return_data) = (
+            await execution_context.test__jump(bytecode, jumpdest).call()
+        ).result
+        assert pc == new_pc
+        assert return_data == expected_return_data

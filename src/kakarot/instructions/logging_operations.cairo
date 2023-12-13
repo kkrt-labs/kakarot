@@ -2,18 +2,16 @@
 
 %lang starknet
 
-// Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math_cmp import is_le
 
-// Internal dependencies
 from kakarot.errors import Errors
-from kakarot.execution_context import ExecutionContext
+from kakarot.evm import EVM
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
+from kakarot.state import State
 from kakarot.gas import Gas
 from utils.utils import Helpers
 
@@ -24,46 +22,47 @@ namespace LoggingOperations {
     // @dev Append log record with n topics.
     // @custom:since Frontier
     // @custom:group Logging Operations
-    // @param ctx The pointer to the execution context
+    // @param evm The pointer to the execution context
     // @param Topic length.
-    // @return ExecutionContext The pointer to the execution context.
+    // @return EVM The pointer to the execution context.
     func exec_log{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
-        if (ctx.call_context.read_only != FALSE) {
+        if (evm.message.read_only != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
+            let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
+            return evm;
         }
 
         // See evm.cairo, pc is increased before entering the opcode
-        let opcode_number = [ctx.call_context.bytecode + ctx.program_counter];
+        let opcode_number = [evm.message.bytecode + evm.program_counter];
         let topics_len = opcode_number - 0xa0;
 
         // Pop offset + size.
-        let (stack, popped) = Stack.pop_n(ctx.stack, topics_len + 2);
-        let ctx = ExecutionContext.update_stack(ctx, stack);
+        let (popped) = Stack.pop_n(topics_len + 2);
 
         // Transform data + safety checks
         local offset = Helpers.uint256_to_felt(popped[0]);
         local size = Helpers.uint256_to_felt(popped[1]);
 
         // Log topics by emitting a starknet event
-        let memory_expansion_cost = Gas.memory_expansion_cost(ctx.memory.words_len, offset + size);
-        let ctx = ExecutionContext.charge_gas(ctx, memory_expansion_cost);
-        if (ctx.reverted != FALSE) {
-            return ctx;
+        let memory_expansion_cost = Gas.memory_expansion_cost(memory.words_len, offset + size);
+        let evm = EVM.charge_gas(evm, memory_expansion_cost);
+        if (evm.reverted != FALSE) {
+            return evm;
         }
         let (data: felt*) = alloc();
-        let memory = Memory.load_n(ctx.memory, size, data, offset);
-        let ctx = ExecutionContext.update_memory(ctx, memory);
-        let ctx = ExecutionContext.push_event(ctx, topics_len, popped + 4, size, data);
+        Memory.load_n(size, data, offset);
+        EVM.push_event(evm, topics_len, popped + 4, size, data);
 
-        return ctx;
+        return evm;
     }
 }

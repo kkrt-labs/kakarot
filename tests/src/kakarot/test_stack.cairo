@@ -20,10 +20,10 @@ func test__init__should_return_an_empty_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // When
-    let result = Stack.init();
+    let stack = Stack.init();
 
     // Then
-    assert result.size = 0;
+    assert stack.size = 0;
     return ();
 }
 
@@ -35,10 +35,10 @@ func test__push__should_add_an_element_to_the_stack{
     let stack = Stack.init();
 
     // When
-    let result = Stack.push_uint128(stack, 1);
+    Stack.push_uint128{stack=stack}(1);
 
     // Then
-    assert result.size = 1;
+    assert stack.size = 1;
     return ();
 }
 
@@ -47,17 +47,19 @@ func test__pop__should_pop_an_element_to_the_stack{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
+    let stack = Stack.init();
     tempvar item_0 = new Uint256(1, 0);
     tempvar item_1 = new Uint256(2, 0);
     tempvar item_2 = new Uint256(3, 0);
 
-    let stack = Stack.init();
-    let stack = Stack.push(stack, item_2);
-    let stack = Stack.push(stack, item_1);
-    let stack = Stack.push(stack, item_0);
+    with stack {
+        Stack.push(item_2);
+        Stack.push(item_1);
+        Stack.push(item_0);
 
-    // When
-    let (stack, element) = Stack.pop(stack);
+        // When
+        let (element) = Stack.pop();
+    }
 
     // Then
     assert stack.size = 2;
@@ -71,17 +73,19 @@ func test__pop__should_pop_N_elements_to_the_stack{
 }() {
     alloc_locals;
     // Given
+    let stack = Stack.init();
     tempvar item_0 = new Uint256(1, 0);
     tempvar item_1 = new Uint256(2, 0);
     tempvar item_2 = new Uint256(3, 0);
 
-    let stack = Stack.init();
-    let stack = Stack.push(stack, item_2);
-    let stack = Stack.push(stack, item_1);
-    let stack = Stack.push(stack, item_0);
+    with stack {
+        Stack.push(item_2);
+        Stack.push(item_1);
+        Stack.push(item_0);
 
-    // When
-    let (stack, local elements) = Stack.pop_n(stack, 3);
+        // When
+        let (local elements) = Stack.pop_n(3);
+    }
 
     // Then
     assert_uint256_eq(elements[0], Uint256(1, 0));
@@ -97,20 +101,22 @@ func test__peek__should_return_stack_at_given_index__when_value_is_0{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
+    let stack = Stack.init();
     tempvar item_0 = new Uint256(1, 0);
     tempvar item_1 = new Uint256(2, 0);
     tempvar item_2 = new Uint256(3, 0);
 
-    let stack = Stack.init();
-    let stack = Stack.push(stack, item_2);
-    let stack = Stack.push(stack, item_1);
-    let stack = Stack.push(stack, item_0);
+    with stack {
+        Stack.push(item_2);
+        Stack.push(item_1);
+        Stack.push(item_0);
 
-    // When
-    let (stack, result) = Stack.peek(stack, 0);
+        // When
+        let (peek_0) = Stack.peek(0);
+    }
 
     // Then
-    assert_uint256_eq([result], [item_0]);
+    assert_uint256_eq([peek_0], [item_0]);
     return ();
 }
 
@@ -119,20 +125,22 @@ func test__peek__should_return_stack_at_given_index__when_value_is_1{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     // Given
+    let stack = Stack.init();
     tempvar item_0 = new Uint256(1, 0);
     tempvar item_1 = new Uint256(2, 0);
     tempvar item_2 = new Uint256(3, 0);
 
-    let stack = Stack.init();
-    let stack = Stack.push(stack, item_2);
-    let stack = Stack.push(stack, item_1);
-    let stack = Stack.push(stack, item_0);
+    with stack {
+        Stack.push(item_2);
+        Stack.push(item_1);
+        Stack.push(item_0);
 
-    // When
-    let (stack, result) = Stack.peek(stack, 1);
+        // When
+        let (peek_1) = Stack.peek(1);
+    }
 
     // Then
-    assert_uint256_eq([result], [item_1]);
+    assert_uint256_eq([peek_1], [item_1]);
     return ();
 }
 
@@ -144,28 +152,31 @@ func test__swap__should_swap_2_stacks{
     alloc_locals;
 
     // Given
+    let stack = Stack.init();
     tempvar item_0 = new Uint256(1, 0);
     tempvar item_1 = new Uint256(2, 0);
     tempvar item_2 = new Uint256(3, 0);
     tempvar item_3 = new Uint256(4, 0);
 
-    let stack = Stack.init();
-    let stack = Stack.push(stack, item_3);
-    let stack = Stack.push(stack, item_2);
-    let stack = Stack.push(stack, item_1);
-    let stack = Stack.push(stack, item_0);
+    with stack {
+        Stack.push(item_3);
+        Stack.push(item_2);
+        Stack.push(item_1);
+        Stack.push(item_0);
 
-    // When
-    let result = Stack.swap_i(stack, i=3);
+        // When
+        Stack.swap_i(3);
 
-    // Then
-    let (stack, index3) = Stack.peek(result, 3);
-    assert_uint256_eq([index3], [item_0]);
-    let (stack, index2) = Stack.peek(stack, 2);
-    assert_uint256_eq([index2], [item_2]);
-    let (stack, index1) = Stack.peek(stack, 1);
-    assert_uint256_eq([index1], [item_1]);
-    let (stack, index0) = Stack.peek(stack, 0);
-    assert_uint256_eq([index0], [item_3]);
+        // Then
+        let (index3) = Stack.peek(3);
+        assert_uint256_eq([index3], [item_0]);
+        let (index2) = Stack.peek(2);
+        assert_uint256_eq([index2], [item_2]);
+        let (index1) = Stack.peek(1);
+        assert_uint256_eq([index1], [item_1]);
+        let (index0) = Stack.peek(0);
+        assert_uint256_eq([index0], [item_3]);
+    }
+
     return ();
 }

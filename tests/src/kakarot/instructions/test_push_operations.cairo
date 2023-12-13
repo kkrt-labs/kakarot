@@ -12,7 +12,8 @@ from starkware.cairo.common.memset import memset
 from utils.utils import Helpers
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.execution_context import ExecutionContext
+from kakarot.state import State
+from kakarot.memory import Memory
 from kakarot.instructions.push_operations import PushOperations
 from tests.utils.helpers import TestHelpers
 
@@ -24,10 +25,14 @@ func test__exec_push{
     let (bytecode) = alloc();
     assert [bytecode] = i + 0x5f;
     memset(bytecode + 1, 0xff, i);
-    let stack_ = Stack.init();
-    let ctx = TestHelpers.init_context_with_stack(1 + i, bytecode, stack_);
+    let stack = Stack.init();
+    let memory = Memory.init();
+    let state = State.init();
+    let evm = TestHelpers.init_evm_with_bytecode(1 + i, bytecode);
 
-    let ctx = PushOperations.exec_push(ctx);
-    let (stack, result) = Stack.peek(ctx.stack, 0);
+    with stack, memory, state {
+        let evm = PushOperations.exec_push(evm);
+        let (result) = Stack.peek(0);
+    }
     return ([result],);
 }

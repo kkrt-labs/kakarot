@@ -79,60 +79,6 @@ func test__copy__should_return_new_account_with_same_attributes{
 }
 
 @external
-func test__finalize__should_return_summary{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}(evm_address: felt, code_len: felt, code: felt*, nonce: felt) {
-    // Given
-    alloc_locals;
-    tempvar balance = new Uint256(0, 0);
-    let account = Account.init(evm_address, code_len, code, nonce, balance);
-    tempvar key = new Uint256(1, 2);
-    tempvar value = new Uint256(3, 4);
-    tempvar address = new model.Address(0, evm_address);
-    let account = Account.write_storage(account, key, value);
-    let (account, value_read) = Account.read_storage(account, address, key);
-    let (account, value_read) = Account.read_storage(account, address, key);
-    let (account, value_read) = Account.read_storage(account, address, key);
-
-    // When
-    let summary = Account.finalize(account);
-
-    // Then
-    let account_storage_len = account.storage - account.storage_start;
-    assert account_storage_len = 4 * DictAccess.SIZE;
-    let summary_storage_len = summary.storage - summary.storage_start;
-    assert summary_storage_len = 1 * DictAccess.SIZE;
-    let (account, value_summary) = Account.read_storage(
-        cast(summary, model.Account*), address, key
-    );
-    assert_uint256_eq([value_read], [value_summary]);
-
-    return ();
-}
-
-@external
-func test__finalize__should_return_summary_with_no_default_dict{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}(evm_address: felt, code_len: felt, code: felt*, nonce: felt) {
-    // Given
-    alloc_locals;
-    tempvar key = new Uint256(1, 2);
-    tempvar address = new model.Address(0, evm_address);
-    tempvar balance = new Uint256(0, 0);
-    let account = Account.init(evm_address, code_len, code, nonce, balance);
-
-    // When
-    let summary = Account.finalize(account);
-
-    // Then
-    with_attr error_message("KeyError") {
-        Account.read_storage(cast(summary, model.Account*), address, key);
-    }
-
-    return ();
-}
-
-@external
 func test__write_storage__should_store_value_at_key{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 }(key: Uint256, value: Uint256) {

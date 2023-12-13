@@ -27,10 +27,9 @@ from kakarot.storages import (
 
 namespace Starknet {
     // @notice Commit the current state to the underlying data backend (here, Starknet)
-    // @dev Works on State.Summary to make sure only finalized states are committed.
     // @param self The pointer to the State
     func commit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: State.Summary*
+        self: model.State*
     ) {
         // Accounts
         Internals._commit_accounts(self.accounts_start, self.accounts);
@@ -106,7 +105,7 @@ namespace Internals {
         }
 
         let (starknet_address) = Account.compute_starknet_address(accounts_start.key);
-        let account = cast(accounts_start.new_value, Account.Summary*);
+        let account = cast(accounts_start.new_value, model.Account*);
         _commit_account(account, starknet_address);
 
         _commit_accounts(accounts_start + DictAccess.SIZE, accounts_end);
@@ -116,12 +115,12 @@ namespace Internals {
 
     // @notice Commit the account to the storage backend at given address
     // @dev Account is deployed here if it doesn't exist already
-    // @dev Works on Account.Summary to make sure only finalized accounts are committed.
+    // @dev Works on model.Account to make sure only finalized accounts are committed.
     // @param self The pointer to the Account
     // @param starknet_address A starknet address to commit to
     // @notice Iterate through the storage dict and update the Starknet storage
     func _commit_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: Account.Summary*, starknet_address: felt
+        self: model.Account*, starknet_address: felt
     ) {
         alloc_locals;
 
@@ -132,8 +131,8 @@ namespace Internals {
             // Just casting the Summary into an Account to apply has_code_or_nonce
             // cf Summary note: like an Account, but frozen after squashing all dicts
             // There is no reason to have has_code_or_nonce available in the public API
-            // for Account.Summary, but safe to use here
-            let code_or_nonce = Account.has_code_or_nonce(cast(self, model.Account*));
+            // for model.Account, but safe to use here
+            let code_or_nonce = Account.has_code_or_nonce(self);
 
             if (code_or_nonce != FALSE) {
                 // Deploy accounts

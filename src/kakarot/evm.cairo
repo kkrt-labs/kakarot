@@ -2,897 +2,187 @@
 
 %lang starknet
 
-// Starkware dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.bool import FALSE, TRUE
+from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
-from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
+from starkware.cairo.common.math_cmp import is_le, is_le_felt
+from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.registers import get_label_location
+from starkware.cairo.common.uint256 import Uint256
 
-// Internal dependencies
-from kakarot.account import Account
-from kakarot.constants import opcodes_label, Constants
 from kakarot.errors import Errors
-from kakarot.execution_context import ExecutionContext
-from kakarot.instructions.block_information import BlockInformation
-from kakarot.instructions.duplication_operations import DuplicationOperations
-from kakarot.instructions.environmental_information import EnvironmentalInformation
-from kakarot.instructions.exchange_operations import ExchangeOperations
-from kakarot.instructions.logging_operations import LoggingOperations
-from kakarot.instructions.memory_operations import MemoryOperations
-from kakarot.instructions.push_operations import PushOperations
-from kakarot.instructions.sha3 import Sha3
-from kakarot.instructions.stop_and_math_operations import StopAndMathOperations
-from kakarot.instructions.system_operations import CallHelper, CreateHelper, SystemOperations
-from kakarot.memory import Memory
 from kakarot.model import model
-from kakarot.precompiles.precompiles import Precompiles
 from kakarot.stack import Stack
 from kakarot.state import State
-from utils.utils import Helpers
-from utils.array import count_not_zero
 
-// @title EVM instructions processing.
-// @notice This file contains functions related to the processing of EVM instructions.
+// @title EVM related functions.
+// @notice This file contains functions related to the execution context.
 namespace EVM {
-    // Summary of the execution. Created upon finalization of the execution.
-    struct Summary {
-        memory: Memory.Summary*,
-        stack: Stack.Summary*,
-        return_data: felt*,
-        return_data_len: felt,
-        gas_left: felt,
-        address: model.Address*,
-        reverted: felt,
-        state: State.Summary*,
-        call_context: model.CallContext*,
-        program_counter: felt,
-    }
+    // @notice Initialize the execution context.
+    // @dev Initialize the execution context of a specific contract.
+    // @param message The message (see model.Message) to be executed.
+    // @return EVM The initialized execution context.
+    func init(message: model.Message*, gas_left: felt) -> model.EVM* {
+        let (return_data: felt*) = alloc();
 
-    // @notice Decode the current opcode and execute associated function.
-    // @dev The function uses an internal jump table to execute the corresponding opcode
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext The pointer to the updated execution context.
-    func exec_opcode{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        alloc_locals;
-
-        local opcode_number;
-        local opcode: model.Opcode*;
-
-        // Get the current opcode number
-        let pc = ctx.program_counter;
-
-        let is_pc_ge_code_len = is_le(ctx.call_context.bytecode_len, pc);
-        if (is_pc_ge_code_len != FALSE) {
-            assert opcode_number = 0;
-        } else {
-            assert opcode_number = [ctx.call_context.bytecode + pc];
-        }
-
-        // Get the corresponding opcode data
-        // To cast the codeoffset opcodes_label to a model.Opcode*, we need to use it to offset
-        // the current pc. We get the pc from the `get_fp_and_pc` util and assign a codeoffset (pc_label) to it.
-        // In short, this boils down to: opcode = pc + offset - pc = offset
-        let (_, cairo_pc) = get_fp_and_pc();
-
-        pc_label:
-        assert opcode = cast(
-            cairo_pc + (opcodes_label - pc_label) + opcode_number * model.Opcode.SIZE, model.Opcode*
+        return new model.EVM(
+            message=message,
+            return_data_len=0,
+            return_data=return_data,
+            program_counter=0,
+            stopped=FALSE,
+            gas_left=gas_left,
+            reverted=FALSE,
         );
+    }
 
-        // Check stack over/under flow
-        let stack_underflow = is_le(ctx.stack.size, opcode.stack_size_min - 1);
-        if (stack_underflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-        let stack_overflow = is_le(
-            Constants.STACK_MAX_DEPTH, ctx.stack.size + opcode.stack_size_diff + 1
+    // @notice Stop the current execution context.
+    // @dev When the execution context is stopped, no more instructions can be executed.
+    // @param self The pointer to the execution context.
+    // @param return_data_len The length of the return_data.
+    // @param return_data The pointer to the return_data array.
+    // @param reverted A boolean indicating whether the EVM is reverted or not.
+    // @return EVM The pointer to the updated execution context.
+    func stop(
+        self: model.EVM*, return_data_len: felt, return_data: felt*, reverted: felt
+    ) -> model.EVM* {
+        return new model.EVM(
+            message=self.message,
+            return_data_len=return_data_len,
+            return_data=return_data,
+            program_counter=self.program_counter,
+            stopped=TRUE,
+            gas_left=self.gas_left,
+            reverted=reverted,
         );
-        if (stack_overflow != 0) {
-            let (revert_reason_len, revert_reason) = Errors.stackOverflow();
-            let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-            return ctx;
-        }
-
-        // Update static gas
-        let ctx = ExecutionContext.charge_gas(ctx, opcode.gas);
-        if (ctx.reverted != FALSE) {
-            return ctx;
-        }
-
-        // Compute the corresponding offset in the jump table:
-        // count 1 for "next line" and 4 steps per opcode: call, opcode, jmp, end
-        tempvar offset = 1 + 4 * opcode_number;
-
-        // Prepare arguments
-        [ap] = syscall_ptr, ap++;
-        [ap] = pedersen_ptr, ap++;
-        [ap] = range_check_ptr, ap++;
-        [ap] = bitwise_ptr, ap++;
-        [ap] = ctx, ap++;
-
-        // call opcode
-        jmp rel offset;
-        call StopAndMathOperations.exec_stop;  // 0x0
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x1
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x2
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x3
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x4
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x5
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x6
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x7
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x8
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x9
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0xa
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0xb
-        jmp end;
-        call unknown_opcode;  // 0xc
-        jmp end;
-        call unknown_opcode;  // 0xd
-        jmp end;
-        call unknown_opcode;  // 0xe
-        jmp end;
-        call unknown_opcode;  // 0xf
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x10
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x11
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x12
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x13
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x14
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x15
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x16
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x17
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x18
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x19
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x1a
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x1b
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x1c
-        jmp end;
-        call StopAndMathOperations.exec_math_operation;  // 0x1d
-        jmp end;
-        call unknown_opcode;  // 0x1e
-        jmp end;
-        call unknown_opcode;  // 0x1f
-        jmp end;
-        call Sha3.exec_sha3;  // 0x20
-        jmp end;
-        call unknown_opcode;  // 0x21
-        jmp end;
-        call unknown_opcode;  // 0x22
-        jmp end;
-        call unknown_opcode;  // 0x23
-        jmp end;
-        call unknown_opcode;  // 0x24
-        jmp end;
-        call unknown_opcode;  // 0x25
-        jmp end;
-        call unknown_opcode;  // 0x26
-        jmp end;
-        call unknown_opcode;  // 0x27
-        jmp end;
-        call unknown_opcode;  // 0x28
-        jmp end;
-        call unknown_opcode;  // 0x29
-        jmp end;
-        call unknown_opcode;  // 0x2a
-        jmp end;
-        call unknown_opcode;  // 0x2b
-        jmp end;
-        call unknown_opcode;  // 0x2c
-        jmp end;
-        call unknown_opcode;  // 0x2d
-        jmp end;
-        call unknown_opcode;  // 0x2e
-        jmp end;
-        call unknown_opcode;  // 0x2f
-        jmp end;
-        call EnvironmentalInformation.exec_address;  // 0x30
-        jmp end;
-        call EnvironmentalInformation.exec_balance;  // 0x31
-        jmp end;
-        call EnvironmentalInformation.exec_origin;  // 0x32
-        jmp end;
-        call EnvironmentalInformation.exec_caller;  // 0x33
-        jmp end;
-        call EnvironmentalInformation.exec_callvalue;  // 0x34
-        jmp end;
-        call EnvironmentalInformation.exec_calldataload;  // 0x35
-        jmp end;
-        call EnvironmentalInformation.exec_calldatasize;  // 0x36
-        jmp end;
-        call EnvironmentalInformation.exec_calldatacopy;  // 0x37
-        jmp end;
-        call EnvironmentalInformation.exec_codesize;  // 0x38
-        jmp end;
-        call EnvironmentalInformation.exec_codecopy;  // 0x39
-        jmp end;
-        call EnvironmentalInformation.exec_gasprice;  // 0x3a
-        jmp end;
-        call EnvironmentalInformation.exec_extcodesize;  // 0x3b
-        jmp end;
-        call EnvironmentalInformation.exec_extcodecopy;  // 0x3c
-        jmp end;
-        call EnvironmentalInformation.exec_returndatasize;  // 0x3d
-        jmp end;
-        call EnvironmentalInformation.exec_returndatacopy;  // 0x3e
-        jmp end;
-        call EnvironmentalInformation.exec_extcodehash;  // 0x3f
-        jmp end;
-        call BlockInformation.exec_block_information;  // 0x40
-        jmp end;
-        call BlockInformation.exec_block_information;  // 0x41
-        jmp end;
-        call BlockInformation.exec_block_information;  // 0x42
-        jmp end;
-        call BlockInformation.exec_block_information;  // 0x43
-        jmp end;
-        call BlockInformation.exec_block_information;  // 0x44
-        jmp end;
-        call BlockInformation.exec_block_information;  // 0x45
-        jmp end;
-        call BlockInformation.exec_block_information;  // 0x46
-        jmp end;
-        call BlockInformation.exec_block_information;  // 0x47
-        jmp end;
-        call BlockInformation.exec_block_information;  // 0x48
-        jmp end;
-        call unknown_opcode;  // 0x49
-        jmp end;
-        call unknown_opcode;  // 0x4a
-        jmp end;
-        call unknown_opcode;  // 0x4b
-        jmp end;
-        call unknown_opcode;  // 0x4c
-        jmp end;
-        call unknown_opcode;  // 0x4d
-        jmp end;
-        call unknown_opcode;  // 0x4e
-        jmp end;
-        call unknown_opcode;  // 0x4f
-        jmp end;
-        call MemoryOperations.exec_pop;  // 0x50
-        jmp end;
-        call MemoryOperations.exec_mload;  // 0x51
-        jmp end;
-        call MemoryOperations.exec_mstore;  // 0x52
-        jmp end;
-        call MemoryOperations.exec_mstore8;  // 0x53
-        jmp end;
-        call MemoryOperations.exec_sload;  // 0x54
-        jmp end;
-        call MemoryOperations.exec_sstore;  // 0x55
-        jmp end;
-        call MemoryOperations.exec_jump;  // 0x56
-        jmp end;
-        call MemoryOperations.exec_jumpi;  // 0x57
-        jmp end;
-        call MemoryOperations.exec_pc;  // 0x58
-        jmp end;
-        call MemoryOperations.exec_msize;  // 0x59
-        jmp end;
-        call MemoryOperations.exec_gas;  // 0x5a
-        jmp end;
-        call MemoryOperations.exec_jumpdest;  // 0x5b
-        jmp end;
-        call unknown_opcode;  // 0x5c
-        jmp end;
-        call unknown_opcode;  // 0x5d
-        jmp end;
-        call unknown_opcode;  // 0x5e
-        jmp end;
-        call PushOperations.exec_push;  // 0x5f
-        jmp end;
-        call PushOperations.exec_push;  // 0x60
-        jmp end;
-        call PushOperations.exec_push;  // 0x61
-        jmp end;
-        call PushOperations.exec_push;  // 0x62
-        jmp end;
-        call PushOperations.exec_push;  // 0x63
-        jmp end;
-        call PushOperations.exec_push;  // 0x64
-        jmp end;
-        call PushOperations.exec_push;  // 0x65
-        jmp end;
-        call PushOperations.exec_push;  // 0x66
-        jmp end;
-        call PushOperations.exec_push;  // 0x67
-        jmp end;
-        call PushOperations.exec_push;  // 0x68
-        jmp end;
-        call PushOperations.exec_push;  // 0x69
-        jmp end;
-        call PushOperations.exec_push;  // 0x6a
-        jmp end;
-        call PushOperations.exec_push;  // 0x6b
-        jmp end;
-        call PushOperations.exec_push;  // 0x6c
-        jmp end;
-        call PushOperations.exec_push;  // 0x6d
-        jmp end;
-        call PushOperations.exec_push;  // 0x6e
-        jmp end;
-        call PushOperations.exec_push;  // 0x6f
-        jmp end;
-        call PushOperations.exec_push;  // 0x70
-        jmp end;
-        call PushOperations.exec_push;  // 0x71
-        jmp end;
-        call PushOperations.exec_push;  // 0x72
-        jmp end;
-        call PushOperations.exec_push;  // 0x73
-        jmp end;
-        call PushOperations.exec_push;  // 0x74
-        jmp end;
-        call PushOperations.exec_push;  // 0x75
-        jmp end;
-        call PushOperations.exec_push;  // 0x76
-        jmp end;
-        call PushOperations.exec_push;  // 0x77
-        jmp end;
-        call PushOperations.exec_push;  // 0x78
-        jmp end;
-        call PushOperations.exec_push;  // 0x79
-        jmp end;
-        call PushOperations.exec_push;  // 0x7a
-        jmp end;
-        call PushOperations.exec_push;  // 0x7b
-        jmp end;
-        call PushOperations.exec_push;  // 0x7c
-        jmp end;
-        call PushOperations.exec_push;  // 0x7d
-        jmp end;
-        call PushOperations.exec_push;  // 0x7e
-        jmp end;
-        call PushOperations.exec_push;  // 0x7f
-        jmp end;
-        call DuplicationOperations.exec_dup;  // 0x80
-        jmp end;
-        call DuplicationOperations.exec_dup;  // 0x81
-        jmp end;
-        call DuplicationOperations.exec_dup;  // 0x82
-        jmp end;
-        call DuplicationOperations.exec_dup;  // 0x83
-        jmp end;
-        call DuplicationOperations.exec_dup;  // 0x84
-        jmp end;
-        call DuplicationOperations.exec_dup;  // 0x85
-        jmp end;
-        call DuplicationOperations.exec_dup;  // 0x86
-        jmp end;
-        call DuplicationOperations.exec_dup;  // 0x87
-        jmp end;
-        call DuplicationOperations.exec_dup;  // 0x88
-        jmp end;
-        call DuplicationOperations.exec_dup;  // 0x89
-        jmp end;
-        call DuplicationOperations.exec_dup;  // 0x8a
-        jmp end;
-        call DuplicationOperations.exec_dup;  // 0x8b
-        jmp end;
-        call DuplicationOperations.exec_dup;  // 0x8c
-        jmp end;
-        call DuplicationOperations.exec_dup;  // 0x8d
-        jmp end;
-        call DuplicationOperations.exec_dup;  // 0x8e
-        jmp end;
-        call DuplicationOperations.exec_dup;  // 0x8f
-        jmp end;
-        call ExchangeOperations.exec_swap;  // 0x90
-        jmp end;
-        call ExchangeOperations.exec_swap;  // 0x91
-        jmp end;
-        call ExchangeOperations.exec_swap;  // 0x92
-        jmp end;
-        call ExchangeOperations.exec_swap;  // 0x93
-        jmp end;
-        call ExchangeOperations.exec_swap;  // 0x94
-        jmp end;
-        call ExchangeOperations.exec_swap;  // 0x95
-        jmp end;
-        call ExchangeOperations.exec_swap;  // 0x96
-        jmp end;
-        call ExchangeOperations.exec_swap;  // 0x97
-        jmp end;
-        call ExchangeOperations.exec_swap;  // 0x98
-        jmp end;
-        call ExchangeOperations.exec_swap;  // 0x99
-        jmp end;
-        call ExchangeOperations.exec_swap;  // 0x9a
-        jmp end;
-        call ExchangeOperations.exec_swap;  // 0x9b
-        jmp end;
-        call ExchangeOperations.exec_swap;  // 0x9c
-        jmp end;
-        call ExchangeOperations.exec_swap;  // 0x9d
-        jmp end;
-        call ExchangeOperations.exec_swap;  // 0x9e
-        jmp end;
-        call ExchangeOperations.exec_swap;  // 0x9f
-        jmp end;
-        call LoggingOperations.exec_log;  // 0xa0
-        jmp end;
-        call LoggingOperations.exec_log;  // 0xa1
-        jmp end;
-        call LoggingOperations.exec_log;  // 0xa2
-        jmp end;
-        call LoggingOperations.exec_log;  // 0xa3
-        jmp end;
-        call LoggingOperations.exec_log;  // 0xa4
-        jmp end;
-        call unknown_opcode;  // 0xa5
-        jmp end;
-        call unknown_opcode;  // 0xa6
-        jmp end;
-        call unknown_opcode;  // 0xa7
-        jmp end;
-        call unknown_opcode;  // 0xa8
-        jmp end;
-        call unknown_opcode;  // 0xa9
-        jmp end;
-        call unknown_opcode;  // 0xaa
-        jmp end;
-        call unknown_opcode;  // 0xab
-        jmp end;
-        call unknown_opcode;  // 0xac
-        jmp end;
-        call unknown_opcode;  // 0xad
-        jmp end;
-        call unknown_opcode;  // 0xae
-        jmp end;
-        call unknown_opcode;  // 0xaf
-        jmp end;
-        call unknown_opcode;  // 0xb0
-        jmp end;
-        call unknown_opcode;  // 0xb1
-        jmp end;
-        call unknown_opcode;  // 0xb2
-        jmp end;
-        call unknown_opcode;  // 0xb3
-        jmp end;
-        call unknown_opcode;  // 0xb4
-        jmp end;
-        call unknown_opcode;  // 0xb5
-        jmp end;
-        call unknown_opcode;  // 0xb6
-        jmp end;
-        call unknown_opcode;  // 0xb7
-        jmp end;
-        call unknown_opcode;  // 0xb8
-        jmp end;
-        call unknown_opcode;  // 0xb9
-        jmp end;
-        call unknown_opcode;  // 0xba
-        jmp end;
-        call unknown_opcode;  // 0xbb
-        jmp end;
-        call unknown_opcode;  // 0xbc
-        jmp end;
-        call unknown_opcode;  // 0xbd
-        jmp end;
-        call unknown_opcode;  // 0xbe
-        jmp end;
-        call unknown_opcode;  // 0xbf
-        jmp end;
-        call unknown_opcode;  // 0xc0
-        jmp end;
-        call unknown_opcode;  // 0xc1
-        jmp end;
-        call unknown_opcode;  // 0xc2
-        jmp end;
-        call unknown_opcode;  // 0xc3
-        jmp end;
-        call unknown_opcode;  // 0xc4
-        jmp end;
-        call unknown_opcode;  // 0xc5
-        jmp end;
-        call unknown_opcode;  // 0xc6
-        jmp end;
-        call unknown_opcode;  // 0xc7
-        jmp end;
-        call unknown_opcode;  // 0xc8
-        jmp end;
-        call unknown_opcode;  // 0xc9
-        jmp end;
-        call unknown_opcode;  // 0xca
-        jmp end;
-        call unknown_opcode;  // 0xcb
-        jmp end;
-        call unknown_opcode;  // 0xcc
-        jmp end;
-        call unknown_opcode;  // 0xcd
-        jmp end;
-        call unknown_opcode;  // 0xce
-        jmp end;
-        call unknown_opcode;  // 0xcf
-        jmp end;
-        call unknown_opcode;  // 0xd0
-        jmp end;
-        call unknown_opcode;  // 0xd1
-        jmp end;
-        call unknown_opcode;  // 0xd2
-        jmp end;
-        call unknown_opcode;  // 0xd3
-        jmp end;
-        call unknown_opcode;  // 0xd4
-        jmp end;
-        call unknown_opcode;  // 0xd5
-        jmp end;
-        call unknown_opcode;  // 0xd6
-        jmp end;
-        call unknown_opcode;  // 0xd7
-        jmp end;
-        call unknown_opcode;  // 0xd8
-        jmp end;
-        call unknown_opcode;  // 0xd9
-        jmp end;
-        call unknown_opcode;  // 0xda
-        jmp end;
-        call unknown_opcode;  // 0xdb
-        jmp end;
-        call unknown_opcode;  // 0xdc
-        jmp end;
-        call unknown_opcode;  // 0xdd
-        jmp end;
-        call unknown_opcode;  // 0xde
-        jmp end;
-        call unknown_opcode;  // 0xdf
-        jmp end;
-        call unknown_opcode;  // 0xe0
-        jmp end;
-        call unknown_opcode;  // 0xe1
-        jmp end;
-        call unknown_opcode;  // 0xe2
-        jmp end;
-        call unknown_opcode;  // 0xe3
-        jmp end;
-        call unknown_opcode;  // 0xe4
-        jmp end;
-        call unknown_opcode;  // 0xe5
-        jmp end;
-        call unknown_opcode;  // 0xe6
-        jmp end;
-        call unknown_opcode;  // 0xe7
-        jmp end;
-        call unknown_opcode;  // 0xe8
-        jmp end;
-        call unknown_opcode;  // 0xe9
-        jmp end;
-        call unknown_opcode;  // 0xea
-        jmp end;
-        call unknown_opcode;  // 0xeb
-        jmp end;
-        call unknown_opcode;  // 0xec
-        jmp end;
-        call unknown_opcode;  // 0xed
-        jmp end;
-        call unknown_opcode;  // 0xee
-        jmp end;
-        call unknown_opcode;  // 0xef
-        jmp end;
-        call SystemOperations.exec_create;  // 0xf0
-        jmp end_sub_ctx;
-        call SystemOperations.exec_call;  // 0xf1
-        jmp end_sub_ctx;
-        call SystemOperations.exec_callcode;  // 0xf2
-        jmp end_sub_ctx;
-        call SystemOperations.exec_return;  // 0xf3
-        jmp end;
-        call SystemOperations.exec_delegatecall;  // 0xf4
-        jmp end_sub_ctx;
-        call SystemOperations.exec_create;  // 0xf5
-        jmp end_sub_ctx;
-        call unknown_opcode;  // 0xf6
-        jmp end;
-        call unknown_opcode;  // 0xf7
-        jmp end;
-        call unknown_opcode;  // 0xf8
-        jmp end;
-        call unknown_opcode;  // 0xf9
-        jmp end;
-        call SystemOperations.exec_staticcall;  // 0xfa
-        jmp end_sub_ctx;
-        call unknown_opcode;  // 0xfb
-        jmp end;
-        call unknown_opcode;  // 0xfc
-        jmp end;
-        call SystemOperations.exec_revert;  // 0xfd
-        jmp end;
-        call SystemOperations.exec_invalid;  // 0xfe
-        jmp end;
-        call SystemOperations.exec_selfdestruct;  // 0xff
-        jmp end;
-
-        end_sub_ctx:
-        let syscall_ptr = cast([ap - 5], felt*);
-        let pedersen_ptr = cast([ap - 4], HashBuiltin*);
-        let range_check_ptr = [ap - 3];
-        let bitwise_ptr = cast([ap - 2], BitwiseBuiltin*);
-        let sub_ctx = cast([ap - 1], model.ExecutionContext*);
-
-        // Handle edge cases of CALLs and CREATEs
-        // pc != 0 means that the returned sub_ctx is not a new ctx
-        if (sub_ctx.program_counter == 0) {
-            return sub_ctx;
-        } else {
-            let ctx = ExecutionContext.increment_program_counter(sub_ctx, 1);
-            return ctx;
-        }
-
-        end:
-        let syscall_ptr = cast([ap - 5], felt*);
-        let pedersen_ptr = cast([ap - 4], HashBuiltin*);
-        let range_check_ptr = [ap - 3];
-        let bitwise_ptr = cast([ap - 2], BitwiseBuiltin*);
-        let ctx = cast([ap - 1], model.ExecutionContext*);
-
-        let ctx = ExecutionContext.increment_program_counter(ctx, 1);
-
-        return ctx;
     }
 
-    // @notice Iteratively decode and execute the bytecode of an ExecutionContext
-    // @param ctx The pointer to the execution context.
-    // @return ExecutionContext The pointer to the updated execution context.
-    func run{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> Summary* {
-        alloc_locals;
-
-        if (ctx.stopped != FALSE) {
-            let ctx_summary = ExecutionContext.finalize(ctx);
-            let is_root = ExecutionContext.is_empty(ctx_summary.calling_context);
-            if (is_root != FALSE) {
-                let evm_summary = finalize(ctx_summary);
-                return evm_summary;
-            }
-
-            if (ctx_summary.call_context.is_create != 0) {
-                let ctx = CreateHelper.finalize_calling_context(ctx_summary);
-                let ctx = ExecutionContext.increment_program_counter(ctx, 1);
-                return run(ctx);
-            } else {
-                let ctx = CallHelper.finalize_calling_context(ctx_summary);
-                let ctx = ExecutionContext.increment_program_counter(ctx, 1);
-                return run(ctx);
-            }
-        }
-
-        let ctx = exec_opcode(ctx);
-        return run(ctx);
-    }
-
-    // @notice Run the given bytecode with the given calldata and parameters
-    // @param address The target account address
-    // @param is_deploy_tx Whether the transaction is a deploy tx or not
-    // @param origin The caller EVM address
-    // @param bytecode_len The length of the bytecode
-    // @param bytecode The bytecode run
-    // @param calldata_len The length of the calldata
-    // @param calldata The calldata of the execution
-    // @param value The value of the execution
-    // @param gas_limit The gas limit of the execution
-    // @param gas_price The gas price for the execution
-    func execute{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(
-        address: model.Address*,
-        is_deploy_tx: felt,
-        origin: model.Address*,
-        bytecode_len: felt,
-        bytecode: felt*,
-        calldata_len: felt,
-        calldata: felt*,
-        value: felt,
-        gas_limit: felt,
-        gas_price: felt,
-    ) -> Summary* {
-        alloc_locals;
-
-        // Compute intrinsic gas usage
-        // See https://www.evm.codes/about#gascosts
-        let count = count_not_zero(calldata_len, calldata);
-        let zeroes = calldata_len - count;
-        let calldata_gas = zeroes * 4 + count * 16;
-        let intrinsic_gas = 21000 + calldata_gas;
-
-        // If is_deploy_tx is TRUE, then
-        // bytecode is data and data is empty
-        // else, bytecode and data are kept as is
-        let bytecode_len = calldata_len * is_deploy_tx + bytecode_len * (1 - is_deploy_tx);
-        let calldata_len = calldata_len * (1 - is_deploy_tx);
-        if (is_deploy_tx != 0) {
-            let (empty: felt*) = alloc();
-            tempvar bytecode = calldata;
-            tempvar calldata = empty;
-            tempvar intrinsic_gas = intrinsic_gas + 32000;
-        } else {
-            tempvar bytecode = bytecode;
-            tempvar calldata = calldata;
-            tempvar intrinsic_gas = intrinsic_gas;
-        }
-
-        let root_context = ExecutionContext.init_empty();
-        tempvar call_context = new model.CallContext(
-            bytecode=bytecode,
-            bytecode_len=bytecode_len,
-            calldata=calldata,
-            calldata_len=calldata_len,
-            value=value,
-            gas_price=gas_price,
-            origin=origin,
-            calling_context=root_context,
-            address=address,
-            read_only=FALSE,
-            is_create=is_deploy_tx,
+    // @notice Update the return data of the current execution context.
+    // @param self The pointer to the execution context.
+    // @param return_data_len The length of the return_data.
+    // @param return_data The pointer to the return_data array.
+    // @return EVM The pointer to the updated execution context.
+    func update_return_data(
+        self: model.EVM*, return_data_len: felt, return_data: felt*
+    ) -> model.EVM* {
+        return new model.EVM(
+            message=self.message,
+            return_data_len=return_data_len,
+            return_data=return_data,
+            program_counter=self.program_counter,
+            stopped=self.stopped,
+            gas_left=self.gas_left,
+            reverted=self.reverted,
         );
-
-        let ctx = ExecutionContext.init(call_context, gas_limit - intrinsic_gas);
-
-        let state = ctx.state;
-        // Handle value
-        let amount = Helpers.to_uint256(value);
-        let transfer = model.Transfer(origin, address, [amount]);
-        let (state, success) = State.add_transfer(state, transfer);
-
-        // Check collision
-        let (state, account) = State.get_account(state, address);
-        let code_or_nonce = Account.has_code_or_nonce(account);
-        let is_collision = code_or_nonce * is_deploy_tx;
-        // Nonce is set to 1 in case of deploy_tx
-        let nonce = account.nonce * (1 - is_deploy_tx) + is_deploy_tx;
-        let account = Account.set_nonce(account, nonce);
-        let state = State.set_account(state, address, account);
-
-        let ctx = ExecutionContext.update_state(ctx, state);
-
-        if (is_collision != 0) {
-            let (revert_reason_len, revert_reason) = Errors.addressCollision();
-            tempvar ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-        } else {
-            tempvar ctx = ctx;
-        }
-
-        if (success == 0) {
-            let (revert_reason_len, revert_reason) = Errors.balanceError();
-            tempvar ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-        } else {
-            tempvar ctx = ctx;
-        }
-
-        let summary = run(ctx);
-        return summary;
     }
 
-    // @notice A placeholder for opcodes that don't exist
-    // @dev Halts execution
-    // @param ctx The pointer to the execution context
-    func unknown_opcode{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }(ctx: model.ExecutionContext*) -> model.ExecutionContext* {
-        let (revert_reason_len, revert_reason) = Errors.unknownOpcode();
-        let ctx = ExecutionContext.stop(ctx, revert_reason_len, revert_reason, TRUE);
-        return ctx;
-    }
-
-    // @notice Finalizes a transaction.
-    // @param ctx_summary The pointer to the execution context summary.
-    // @return Summary The pointer to the transaction Summary.
-    func finalize{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_summary: ExecutionContext.Summary*
-    ) -> Summary* {
-        alloc_locals;
-        let ctx_summary = Internals._finalize_create_tx(ctx_summary);
-        let state_summary = State.finalize(ctx_summary.state);
-        tempvar summary: Summary* = new Summary(
-            memory=ctx_summary.memory,
-            stack=ctx_summary.stack,
-            return_data=ctx_summary.return_data,
-            return_data_len=ctx_summary.return_data_len,
-            gas_left=ctx_summary.gas_left,
-            address=ctx_summary.address,
-            reverted=ctx_summary.reverted,
-            state=state_summary,
-            call_context=ctx_summary.call_context,
-            program_counter=ctx_summary.program_counter,
+    // @notice Increment the program counter.
+    // @dev The program counter is incremented by the given value.
+    // @param self The pointer to the execution context.
+    // @param inc_value The value to increment the program counter with.
+    // @return EVM The pointer to the updated execution context.
+    func increment_program_counter(self: model.EVM*, inc_value: felt) -> model.EVM* {
+        return new model.EVM(
+            message=self.message,
+            return_data_len=self.return_data_len,
+            return_data=self.return_data,
+            program_counter=self.program_counter + inc_value,
+            stopped=self.stopped,
+            gas_left=self.gas_left,
+            reverted=self.reverted,
         );
-
-        return summary;
     }
-}
 
-namespace Internals {
-    func _finalize_create_tx{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        ctx_summary: ExecutionContext.Summary*
-    ) -> ExecutionContext.Summary* {
-        alloc_locals;
-        if (ctx_summary.call_context.is_create == FALSE) {
-            return ctx_summary;
-        }
+    // @notice Increment the gas used.
+    // @dev The gas used is incremented by the given value.
+    // @param self The pointer to the execution context.
+    // @param inc_value The value to increment the gas used with.
+    // @return EVM The pointer to the updated execution context.
+    func charge_gas{range_check_ptr}(self: model.EVM*, inc_value: felt) -> model.EVM* {
+        let out_of_gas = is_le_felt(self.gas_left + 1, inc_value);
 
-        // Charge final deposit gas
-        let code_size_limit = is_le(ctx_summary.return_data_len, 0x6000);
-        let code_deposit_cost = 200 * ctx_summary.return_data_len;
-        let enough_gas = is_nn(ctx_summary.gas_left - code_deposit_cost);
-        let success = (1 - ctx_summary.reverted) * enough_gas * code_size_limit;
-
-        if (success == 0) {
-            // Burn all gas in case of failure
-            let (revert_reason_len, revert_reason) = Errors.outOfGas(
-                ctx_summary.gas_left, ctx_summary.gas_left
-            );
-            return new ExecutionContext.Summary(
-                memory=ctx_summary.memory,
-                stack=ctx_summary.stack,
+        if (out_of_gas != 0) {
+            let (revert_reason_len, revert_reason) = Errors.outOfGas(self.gas_left, inc_value);
+            return new model.EVM(
+                message=self.message,
                 return_data_len=revert_reason_len,
                 return_data=revert_reason,
+                program_counter=self.program_counter,
+                stopped=TRUE,
                 gas_left=0,
-                address=ctx_summary.address,
                 reverted=TRUE,
-                state=ctx_summary.state,
-                calling_context=ctx_summary.calling_context,
-                call_context=ctx_summary.call_context,
-                program_counter=ctx_summary.program_counter,
             );
         }
 
-        let (state, account) = State.get_account(ctx_summary.state, ctx_summary.address);
-        let account = Account.set_code(
-            account, ctx_summary.return_data_len, ctx_summary.return_data
+        return new model.EVM(
+            message=self.message,
+            return_data_len=self.return_data_len,
+            return_data=self.return_data,
+            program_counter=self.program_counter,
+            stopped=self.stopped,
+            gas_left=self.gas_left - inc_value,
+            reverted=self.reverted,
         );
-        let state = State.set_account(state, ctx_summary.address, account);
+    }
 
-        return new ExecutionContext.Summary(
-            memory=ctx_summary.memory,
-            stack=ctx_summary.stack,
-            return_data_len=2,
-            return_data=cast(ctx_summary.address, felt*),
-            gas_left=ctx_summary.gas_left - code_deposit_cost,
-            address=ctx_summary.address,
-            reverted=FALSE,
-            state=state,
-            calling_context=ctx_summary.calling_context,
-            call_context=ctx_summary.call_context,
-            program_counter=ctx_summary.program_counter,
+    // @notice Update the array of events to emit in the case of a execution context successfully running to completion (see `EVM.finalize`).
+    // @param self The pointer to the execution context.
+    // @param topics_len The length of the topics
+    // @param topics The topics Uint256 array
+    // @param data_len The length of the data
+    // @param data The data bytes array
+    func push_event{state: model.State*}(
+        self: model.EVM*, topics_len: felt, topics: Uint256*, data_len: felt, data: felt*
+    ) {
+        alloc_locals;
+
+        // we add the operating evm_contract_address of the execution context
+        // as the first key of an event
+        // we track kakarot events as those emitted from the kkrt contract
+        // and map it to the corresponding EVM contract via this convention
+        // this looks a bit odd and may need to be reviewed
+        let (local topics_with_address: felt*) = alloc();
+        assert [topics_with_address] = self.message.address.evm;
+        memcpy(dst=topics_with_address + 1, src=cast(topics, felt*), len=topics_len * Uint256.SIZE);
+        let event = model.Event(
+            topics_len=1 + topics_len * Uint256.SIZE,
+            topics=topics_with_address,
+            data_len=data_len,
+            data=data,
+        );
+
+        State.add_event(event);
+
+        return ();
+    }
+
+    // @notice Update the program counter.
+    // @dev The program counter is updated to a given value. This is only ever called by JUMP or JUMPI
+    // @param self The pointer to the execution context.
+    // @param new_pc_offset The value to update the program counter by.
+    // @return EVM The pointer to the updated execution context.
+    func jump{range_check_ptr}(self: model.EVM*, new_pc_offset: felt) -> model.EVM* {
+        let out_of_range = is_le(self.message.bytecode_len, new_pc_offset);
+        if (out_of_range != FALSE) {
+            let (revert_reason_len, revert_reason) = Errors.programCounterOutOfRange();
+            let evm = EVM.stop(self, revert_reason_len, revert_reason, TRUE);
+            return evm;
+        }
+
+        if ([self.message.bytecode + new_pc_offset] != 0x5b) {
+            let (revert_reason_len, revert_reason) = Errors.jumpToNonJumpdest();
+            let evm = EVM.stop(self, revert_reason_len, revert_reason, TRUE);
+            return evm;
+        }
+
+        return new model.EVM(
+            message=self.message,
+            return_data_len=self.return_data_len,
+            return_data=self.return_data,
+            program_counter=new_pc_offset,
+            stopped=self.stopped,
+            gas_left=self.gas_left,
+            reverted=self.reverted,
         );
     }
 }

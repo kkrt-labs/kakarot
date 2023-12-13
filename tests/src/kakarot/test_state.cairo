@@ -68,41 +68,43 @@ func test__copy__should_return_new_state_with_same_attributes{
     tempvar key_0 = new Uint256(1, 2);
     tempvar key_1 = new Uint256(3, 4);
     tempvar value = new Uint256(3, 4);
-    let state = State.write_storage(state, address_0, key_0, value);
-    let state = State.write_storage(state, address_1, key_0, value);
-    let state = State.write_storage(state, address_1, key_1, value);
+    with state {
+        State.write_storage(address_0, key_0, value);
+        State.write_storage(address_1, key_0, value);
+        State.write_storage(address_1, key_1, value);
 
-    // 3. Put some events
-    let (local topics: felt*) = alloc();
-    let (local data: felt*) = alloc();
-    let event = model.Event(topics_len=0, topics=topics, data_len=0, data=data);
-    let state = State.add_event(state, event);
+        // 3. Put some events
+        let (local topics: felt*) = alloc();
+        let (local data: felt*) = alloc();
+        let event = model.Event(topics_len=0, topics=topics, data_len=0, data=data);
+        State.add_event(event);
 
-    // 4. Add transfers
-    // State.add_transfer requires a native token contract deployed so we just push.
-    let amount = Uint256(0xa, 0xb);
-    tempvar transfer = model.Transfer(address_0, address_1, amount);
-    assert state.transfers[0] = transfer;
-    tempvar state = new model.State(
-        accounts_start=state.accounts_start,
-        accounts=state.accounts,
-        events_len=state.events_len,
-        events=state.events,
-        transfers_len=1,
-        transfers=state.transfers,
-    );
+        // 4. Add transfers
+        // State.add_transfer requires a native token contract deployed so we just push.
+        let amount = Uint256(0xa, 0xb);
+        tempvar transfer = model.Transfer(address_0, address_1, amount);
+        assert state.transfers[0] = transfer;
+        tempvar state = new model.State(
+            accounts_start=state.accounts_start,
+            accounts=state.accounts,
+            events_len=state.events_len,
+            events=state.events,
+            transfers_len=1,
+            transfers=state.transfers,
+        );
 
-    // When
-    let state_copy = State.copy(state);
+        // When
+        let state_copy = State.copy();
+    }
 
     // Then
 
     // Storage
-    let (state_copy, value_copy) = State.read_storage(state_copy, address_0, key_0);
+    let value_copy = State.read_storage{state=state_copy}(address_0, key_0);
     assert_uint256_eq([value], [value_copy]);
-    let (state_copy, value_copy) = State.read_storage(state_copy, address_1, key_0);
+    let value_copy = State.read_storage{state=state_copy}(address_1, key_0);
     assert_uint256_eq([value], [value_copy]);
-    let (state_copy, value_copy) = State.read_storage(state_copy, address_1, key_1);
+    let value_copy = State.read_storage{state=state_copy}(address_1, key_1);
     assert_uint256_eq([value], [value_copy]);
 
     // Events

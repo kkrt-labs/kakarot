@@ -9,7 +9,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from kakarot.model import model
 from utils.utils import Helpers
 from kakarot.memory import Memory
-from kakarot.execution_context import ExecutionContext
+from kakarot.evm import EVM
 
 // @title DataCopy precompile
 // @custom:precompile
