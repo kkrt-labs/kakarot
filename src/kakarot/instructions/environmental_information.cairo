@@ -120,6 +120,11 @@ namespace EnvironmentalInformation {
 
         let (offset) = Stack.pop();
 
+        if (offset.high != 0) {
+            Stack.push_uint128(0);
+            return evm;
+        }
+
         let (sliced_calldata: felt*) = alloc();
         slice(sliced_calldata, evm.message.calldata_len, evm.message.calldata, offset.low, 32);
         let calldata = Helpers.bytes32_to_uint256(sliced_calldata);
