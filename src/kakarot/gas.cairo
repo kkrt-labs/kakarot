@@ -1,6 +1,7 @@
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.uint256 import Uint256
 
 from kakarot.model import model
 
@@ -81,5 +82,23 @@ namespace Gas {
         let new_cost = memory_cost(new_words_len);
 
         return new_cost - prev_cost;
+    }
+
+    // @notive A proxy function for memory_expansion_cost that matches the actual computation
+    //         when words_len and max_offset are within range_check and returns a factor of the given
+    //         oog_cost otherwise, so as to trigger an OOG in any case but to avoid the more expensive
+    //         Uint256 based computing.
+    // @param words_len The current length of the memory as Uint256.
+    // @param max_offset The target max_offset to be applied to the given memory as Uint256.
+    // @param oog_cost The base cost to be returned in case of OOG. Should be enough to trigger OOG (eg. evm.gas_left).
+    // @return cost The current expansion gas cost.
+    func memory_expansion_cost_proxy{range_check_ptr}(
+        words_len: felt, offset: Uint256, size: Uint256, oog_cost: felt
+    ) -> felt {
+        if (offset.high + size.high != 0) {
+            return oog_cost * (offset.high + size.high);
+        }
+
+        return memory_expansion_cost(words_len, offset.low + size.low);
     }
 }

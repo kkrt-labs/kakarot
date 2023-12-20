@@ -26,7 +26,6 @@ namespace PushOperations {
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
-        // See evm.cairo, pc is increased before entering the opcode
         let opcode_number = [evm.message.bytecode + evm.program_counter];
         let i = opcode_number - 0x5f;
 

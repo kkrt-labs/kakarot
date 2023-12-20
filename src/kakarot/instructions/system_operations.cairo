@@ -57,14 +57,9 @@ namespace SystemOperations {
         // + extend_memory.cost
         // + init_code_gas
         // + is_create2 * GAS_KECCAK256_WORD * call_data_words
-        let memory_expansion_cost = Gas.memory_expansion_cost(
-            memory.words_len, offset.low + size.low
+        let memory_expansion_cost = Gas.memory_expansion_cost_proxy(
+            memory.words_len, offset, size, evm.gas_left
         );
-        // If .high != 0, OOG is surely triggered. So we only use the .low part for the
-        // actual computation, and add evm.gas_left * .high which would
-        // either be 0 or evm.gas_left * k, thus triggering OOG.
-        let memory_expansion_cost = evm.gas_left * (offset.high + size.high) +
-            memory_expansion_cost;
         let (calldata_words, _) = unsigned_div_rem(size.low + 31, 31);
         let init_code_gas = Gas.INIT_CODE_WORD_COST * calldata_words;
         let calldata_word_gas = is_create2 * Gas.KECCAK256_WORD * calldata_words;
