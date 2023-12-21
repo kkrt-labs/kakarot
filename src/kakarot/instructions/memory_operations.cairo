@@ -110,7 +110,7 @@ namespace MemoryOperations {
         let (offset) = Stack.pop();
 
         if (offset.high != 0) {
-            let (revert_reason_len, revert_reason) = Errors.programCounterOutOfRange();
+            let (revert_reason_len, revert_reason) = Errors.invalidJumpDestError();
             let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
             return evm;
         }
@@ -140,7 +140,7 @@ namespace MemoryOperations {
         }
 
         if (offset.high != 0) {
-            let (revert_reason_len, revert_reason) = Errors.programCounterOutOfRange();
+            let (revert_reason_len, revert_reason) = Errors.invalidJumpDestError();
             let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
             return evm;
         }

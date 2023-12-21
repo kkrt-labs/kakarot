@@ -164,7 +164,7 @@ namespace EVM {
     func jump{range_check_ptr}(self: model.EVM*, new_pc_offset: felt) -> model.EVM* {
         let out_of_range = is_le(self.message.bytecode_len, new_pc_offset);
         if (out_of_range != FALSE) {
-            let (revert_reason_len, revert_reason) = Errors.programCounterOutOfRange();
+            let (revert_reason_len, revert_reason) = Errors.invalidJumpDestError();
             let evm = EVM.stop(self, revert_reason_len, revert_reason, TRUE);
             return evm;
         }

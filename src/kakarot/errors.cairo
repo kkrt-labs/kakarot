@@ -73,44 +73,45 @@ namespace Errors {
         dw 101;  // e'
     }
 
-    func programCounterOutOfRange() -> (error_len: felt, error: felt*) {
-        let (error) = get_label_location(pc_oor_error_message);
-        return (33, error);
+    func invalidJumpDestError() -> (error_len: felt, error: felt*) {
+        let (error) = get_label_location(invalid_jump_dest_message);
+        return (34, error);
 
-        pc_oor_error_message:
-        dw 75;  // K
-        dw 97;  // a
-        dw 107;  // k
-        dw 97;  // a
-        dw 114;  // r
-        dw 111;  // o
-        dw 116;  // t
-        dw 58;  // :
-        dw 32;  //
-        dw 80;  // P
-        dw 114;  // r
-        dw 111;  // o
-        dw 103;  // g
-        dw 114;  // r
-        dw 97;  // a
-        dw 109;  // m
-        dw 67;  // C
-        dw 111;  // o
-        dw 117;  // u
-        dw 110;  // n
-        dw 116;  // t
-        dw 101;  // e
-        dw 114;  // r
-        dw 79;  // O
-        dw 117;  // u
-        dw 116;  // t
-        dw 79;  // O
-        dw 102;  // f
-        dw 82;  // R
-        dw 97;  // a
-        dw 110;  // n
-        dw 103;  // g
-        dw 101;  // e
+        invalid_jump_dest_message:
+        dw 'K';
+        dw 'a';
+        dw 'k';
+        dw 'a';
+        dw 'r';
+        dw 'o';
+        dw 't';
+        dw ':';
+        dw ' ';
+        dw 'P';
+        dw 'r';
+        dw 'o';
+        dw 'g';
+        dw 'r';
+        dw 'a';
+        dw 'm';
+        dw 'C';
+        dw 'o';
+        dw 'u';
+        dw 'n';
+        dw 't';
+        dw 'e';
+        dw 'r';
+        dw 'O';
+        dw 'o';
+        dw 'u';
+        dw 't';
+        dw 'O';
+        dw 'f';
+        dw 'R';
+        dw 'a';
+        dw 'n';
+        dw 'g';
+        dw 'e';
     }
 
     func jumpToNonJumpdest() -> (error_len: felt, error: felt*) {
