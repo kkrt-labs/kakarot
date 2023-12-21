@@ -47,6 +47,7 @@ namespace Gas {
     const COLD_ACCOUNT_ACCESS = 2600;
     const WARM_ACCESS = 100;
     const INIT_CODE_WORD_COST = 2;
+    const MEMORY_COST_U128 = 0x200000000000000000000000000018000000000000000000000000000000;
 
     // @notice Compute the cost of the memory for a given words length.
     // @dev To avoid range_check overflow, we compute words_len / 512
@@ -84,19 +85,18 @@ namespace Gas {
         return new_cost - prev_cost;
     }
 
-    // @notive A proxy function for memory_expansion_cost that matches the actual computation
-    //         when offset and size are within range_check and returns a factor of the given
-    //         oog_cost otherwise, so as to trigger an OOG in any case but to avoid the more expensive
-    //         Uint256 based computing.
+    // @notive A saturated version of the memory_expansion_cost function
+    // @dev Saturation at offset + size = 2^128.
     // @param words_len The current length of the memory as Uint256.
-    // @param max_offset The target max_offset to be applied to the given memory as Uint256.
-    // @param oog_cost The base cost to be returned in case of OOG. Should be enough to trigger OOG (eg. evm.gas_left).
+    // @param offset An offset to be applied to the given memory as Uint256.
+    // @param size The size of the memory chunk.
     // @return cost The current expansion gas cost.
-    func memory_expansion_cost_proxy{range_check_ptr}(
-        words_len: felt, offset: Uint256, size: Uint256, oog_cost: felt
+    func memory_expansion_cost_saturated{range_check_ptr}(
+        words_len: felt, offset: Uint256, size: Uint256
     ) -> felt {
         if (offset.high + size.high != 0) {
-            return oog_cost * (offset.high + size.high);
+            // Hardcoded value of cost(2^128)
+            return MEMORY_COST_U128;
         }
 
         return memory_expansion_cost(words_len, offset.low + size.low);

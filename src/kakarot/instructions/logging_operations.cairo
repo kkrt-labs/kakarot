@@ -50,8 +50,8 @@ namespace LoggingOperations {
         let offset = popped[0];
         let size = popped[1];
 
-        let memory_expansion_cost = Gas.memory_expansion_cost_proxy(
-            memory.words_len, offset, size, evm.gas_left
+        let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
+            memory.words_len, offset, size
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {

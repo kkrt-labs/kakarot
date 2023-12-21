@@ -163,8 +163,8 @@ namespace EnvironmentalInformation {
         let offset = popped[1];
         let size = popped[2];
 
-        let memory_expansion_cost = Gas.memory_expansion_cost_proxy(
-            memory.words_len, dest_offset, size, evm.gas_left
+        let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
+            memory.words_len, dest_offset, size
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
@@ -272,8 +272,8 @@ namespace EnvironmentalInformation {
         let offset = popped[2];
         let size = popped[3];
 
-        let memory_expansion_cost = Gas.memory_expansion_cost_proxy(
-            memory.words_len, dest_offset, size, evm.gas_left
+        let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
+            memory.words_len, dest_offset, size
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {

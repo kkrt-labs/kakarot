@@ -57,8 +57,8 @@ namespace SystemOperations {
         // + extend_memory.cost
         // + init_code_gas
         // + is_create2 * GAS_KECCAK256_WORD * call_data_words
-        let memory_expansion_cost = Gas.memory_expansion_cost_proxy(
-            memory.words_len, offset, size, evm.gas_left
+        let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
+            memory.words_len, offset, size
         );
         let (calldata_words, _) = unsigned_div_rem(size.low + 31, 31);
         let init_code_gas = Gas.INIT_CODE_WORD_COST * calldata_words;
@@ -211,8 +211,8 @@ namespace SystemOperations {
         let offset = popped[0];
         let size = popped[1];
 
-        let memory_expansion_cost = Gas.memory_expansion_cost_proxy(
-            memory.words_len, offset, size, evm.gas_left
+        let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
+            memory.words_len, offset, size
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
@@ -250,8 +250,8 @@ namespace SystemOperations {
         let offset = popped[0];
         let size = popped[1];
 
-        let memory_expansion_cost = Gas.memory_expansion_cost_proxy(
-            memory.words_len, offset, size, evm.gas_left
+        let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
+            memory.words_len, offset, size
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
@@ -489,10 +489,10 @@ namespace CallHelper {
             1 - max_expansion_is_ret
         ) * (args_offset.low + args_size.low);
         let memory_expansion_cost = Gas.memory_expansion_cost(memory.words_len, max_expansion);
-        // See Gas.memory_expansion_cost_proxy for more details
+        // See Gas.memory_expansion_cost_saturated for more details
         let memory_expansion_cost = memory_expansion_cost + (
             args_offset.high + args_size.high + ret_offset.high + ret_size.high
-        ) * evm.gas_left;
+        ) * Gas.MEMORY_COST_U128;
 
         // Access list
         // TODO
