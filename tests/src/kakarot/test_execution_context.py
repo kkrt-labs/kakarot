@@ -18,9 +18,9 @@ class TestExecutionContext:
     @pytest.mark.parametrize(
         "jumpdest,new_pc,expected_return_data",
         [
-            (0, 0, list(b"Kakarot: JUMP to non JUMPDEST")),
+            (0, 0, list(b"Kakarot: invalidJumpDestError")),
             (1, 1, []),
-            (2, 0, list(b"Kakarot: ProgramCounterOutOfRange")),
+            (2, 0, list(b"Kakarot: invalidJumpDestError")),
         ],
     )
     async def test_jump(

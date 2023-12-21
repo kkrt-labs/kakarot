@@ -75,7 +75,7 @@ namespace Errors {
 
     func invalidJumpDestError() -> (error_len: felt, error: felt*) {
         let (error) = get_label_location(invalid_jump_dest_message);
-        return (34, error);
+        return (29, error);
 
         invalid_jump_dest_message:
         dw 'K';
@@ -87,67 +87,26 @@ namespace Errors {
         dw 't';
         dw ':';
         dw ' ';
-        dw 'P';
-        dw 'r';
-        dw 'o';
-        dw 'g';
-        dw 'r';
+        dw 'i';
+        dw 'n';
+        dw 'v';
         dw 'a';
+        dw 'l';
+        dw 'i';
+        dw 'd';
+        dw 'J';
+        dw 'u';
         dw 'm';
-        dw 'C';
-        dw 'o';
-        dw 'u';
-        dw 'n';
-        dw 't';
+        dw 'p';
+        dw 'D';
         dw 'e';
+        dw 's';
+        dw 't';
+        dw 'E';
         dw 'r';
-        dw 'O';
+        dw 'r';
         dw 'o';
-        dw 'u';
-        dw 't';
-        dw 'O';
-        dw 'f';
-        dw 'R';
-        dw 'a';
-        dw 'n';
-        dw 'g';
-        dw 'e';
-    }
-
-    func jumpToNonJumpdest() -> (error_len: felt, error: felt*) {
-        let (error) = get_label_location(jumpdest_error_message);
-        return (29, error);
-
-        jumpdest_error_message:
-        dw 75;  // K
-        dw 97;  // a
-        dw 107;  // k
-        dw 97;  // a
-        dw 114;  // r
-        dw 111;  // o
-        dw 116;  // t
-        dw 58;  // :
-        dw 32;  //
-        dw 74;  // J
-        dw 85;  // U
-        dw 77;  // M
-        dw 80;  // P
-        dw 32;  //
-        dw 116;  // t
-        dw 111;  // o
-        dw 32;  //
-        dw 110;  // n
-        dw 111;  // o
-        dw 110;  // n
-        dw 32;  //
-        dw 74;  // J
-        dw 85;  // U
-        dw 77;  // M
-        dw 80;  // P
-        dw 68;  // D
-        dw 69;  // E
-        dw 83;  // S
-        dw 84;  // T
+        dw 'r';
     }
 
     func callerNotKakarotAccount() -> (error_len: felt, error: felt*) {

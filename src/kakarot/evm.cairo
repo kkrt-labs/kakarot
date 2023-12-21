@@ -170,7 +170,7 @@ namespace EVM {
         }
 
         if ([self.message.bytecode + new_pc_offset] != 0x5b) {
-            let (revert_reason_len, revert_reason) = Errors.jumpToNonJumpdest();
+            let (revert_reason_len, revert_reason) = Errors.invalidJumpDestError();
             let evm = EVM.stop(self, revert_reason_len, revert_reason, TRUE);
             return evm;
         }
