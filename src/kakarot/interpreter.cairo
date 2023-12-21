@@ -223,11 +223,11 @@ namespace Interpreter {
         jmp end;
         call EnvironmentalInformation.exec_calldatasize;  // 0x36
         jmp end;
-        call EnvironmentalInformation.exec_calldatacopy;  // 0x37
+        call EnvironmentalInformation.exec_copy;  // 0x37
         jmp end;
         call EnvironmentalInformation.exec_codesize;  // 0x38
         jmp end;
-        call EnvironmentalInformation.exec_codecopy;  // 0x39
+        call EnvironmentalInformation.exec_copy;  // 0x39
         jmp end;
         call EnvironmentalInformation.exec_gasprice;  // 0x3a
         jmp end;
@@ -237,7 +237,7 @@ namespace Interpreter {
         jmp end;
         call EnvironmentalInformation.exec_returndatasize;  // 0x3d
         jmp end;
-        call EnvironmentalInformation.exec_returndatacopy;  // 0x3e
+        call EnvironmentalInformation.exec_copy;  // 0x3e
         jmp end;
         call EnvironmentalInformation.exec_extcodehash;  // 0x3f
         jmp end;

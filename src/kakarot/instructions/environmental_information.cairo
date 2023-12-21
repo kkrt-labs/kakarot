@@ -6,6 +6,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
+from starkware.cairo.common.memset import memset
 
 from kakarot.account import Account
 from kakarot.evm import EVM
@@ -120,6 +121,11 @@ namespace EnvironmentalInformation {
 
         let (offset) = Stack.pop();
 
+        if (offset.high != 0) {
+            Stack.push_uint128(0);
+            return evm;
+        }
+
         let (sliced_calldata: felt*) = alloc();
         slice(sliced_calldata, evm.message.calldata_len, evm.message.calldata, offset.low, 32);
         let calldata = Helpers.bytes32_to_uint256(sliced_calldata);
@@ -141,7 +147,7 @@ namespace EnvironmentalInformation {
         return evm;
     }
 
-    func exec_calldatacopy{
+    func exec_copy{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
@@ -157,20 +163,42 @@ namespace EnvironmentalInformation {
         let offset = popped[1];
         let size = popped[2];
 
-        let (sliced_calldata: felt*) = alloc();
-        slice(
-            sliced_calldata, evm.message.calldata_len, evm.message.calldata, offset.low, size.low
-        );
-
-        // Write caldata slice to memory at dest_offset
-        let memory_expansion_cost = Gas.memory_expansion_cost(
-            memory.words_len, dest_offset.low + size.low
+        let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
+            memory.words_len, dest_offset, size
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
-        Memory.store_n(size.low, sliced_calldata, dest_offset.low);
+
+        // Offset.high != 0 means that the sliced data is surely 0x00...00
+        // And storing 0 in Memory is just doing nothing
+        if (offset.high != 0) {
+            return evm;
+        }
+
+        // 0x37: calldatacopy
+        // 0x39: codecopy
+        // 0x3e: returndatacopy
+        let (sliced_data: felt*) = alloc();
+        local data_len;
+        local data: felt*;
+        let opcode_number = [evm.message.bytecode + evm.program_counter];
+        if (opcode_number == 0x37) {
+            assert data_len = evm.message.calldata_len;
+            assert data = evm.message.calldata;
+        } else {
+            if (opcode_number == 0x39) {
+                assert data_len = evm.message.bytecode_len;
+                assert data = evm.message.bytecode;
+            } else {
+                assert data_len = evm.return_data_len;
+                assert data = evm.return_data;
+            }
+        }
+        slice(sliced_data, data_len, data, offset.low, size.low);
+
+        Memory.store_n(size.low, sliced_data, dest_offset.low);
 
         return evm;
     }
@@ -185,38 +213,6 @@ namespace EnvironmentalInformation {
         state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         Stack.push_uint128(evm.message.bytecode_len);
-        return evm;
-    }
-
-    func exec_codecopy{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-        stack: model.Stack*,
-        memory: model.Memory*,
-        state: model.State*,
-    }(evm: model.EVM*) -> model.EVM* {
-        alloc_locals;
-
-        let (popped) = Stack.pop_n(3);
-        let dest_offset = popped[0];
-        let offset = popped[1];
-        let size = popped[2];
-
-        let (local sliced_code: felt*) = alloc();
-        slice(sliced_code, evm.message.bytecode_len, evm.message.bytecode, offset.low, size.low);
-
-        // Write bytecode slice to memory at dest_offset
-        let memory_expansion_cost = Gas.memory_expansion_cost(
-            memory.words_len, dest_offset.low + size.low
-        );
-        let evm = EVM.charge_gas(evm, memory_expansion_cost);
-        if (evm.reverted != FALSE) {
-            return evm;
-        }
-        Memory.store_n(size.low, sliced_code, dest_offset.low);
-
         return evm;
     }
 
@@ -276,23 +272,28 @@ namespace EnvironmentalInformation {
         let offset = popped[2];
         let size = popped[3];
 
-        let evm_address = uint256_to_uint160(popped[0]);
-        let (starknet_address) = Account.compute_starknet_address(evm_address);
-        tempvar address = new model.Address(starknet_address, evm_address);
-        let account = State.get_account(address);
-
-        let (sliced_bytecode: felt*) = alloc();
-        slice(sliced_bytecode, account.code_len, account.code, offset.low, size.low);
-
-        // Write bytecode slice to memory at dest_offset
-        let memory_expansion_cost = Gas.memory_expansion_cost(
-            memory.words_len, dest_offset.low + size.low
+        let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
+            memory.words_len, dest_offset, size
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
-        Memory.store_n(size.low, sliced_bytecode, dest_offset.low);
+
+        // Offset.high != 0 means that the sliced data is surely 0x00...00
+        // And storing 0 in Memory is just doing nothing
+        if (offset.high != 0) {
+            return evm;
+        }
+
+        let (sliced_data: felt*) = alloc();
+        let evm_address = uint256_to_uint160(popped[0]);
+        let (starknet_address) = Account.compute_starknet_address(evm_address);
+        tempvar address = new model.Address(starknet_address, evm_address);
+        let account = State.get_account(address);
+        slice(sliced_data, account.code_len, account.code, offset.low, size.low);
+
+        Memory.store_n(size.low, sliced_data, dest_offset.low);
 
         return evm;
     }
@@ -307,36 +308,6 @@ namespace EnvironmentalInformation {
         state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         Stack.push_uint128(evm.return_data_len);
-        return evm;
-    }
-
-    func exec_returndatacopy{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-        stack: model.Stack*,
-        memory: model.Memory*,
-        state: model.State*,
-    }(evm: model.EVM*) -> model.EVM* {
-        alloc_locals;
-
-        let (popped) = Stack.pop_n(3);
-        let dest_offset = popped[0];
-        let offset = popped[1];
-        let size = popped[2];
-
-        let sliced_return_data: felt* = alloc();
-        slice(sliced_return_data, evm.return_data_len, evm.return_data, offset.low, size.low);
-
-        let memory_expansion_cost = Gas.memory_expansion_cost(
-            memory.words_len, dest_offset.low + size.low
-        );
-        let evm = EVM.charge_gas(evm, memory_expansion_cost);
-        if (evm.reverted != FALSE) {
-            return evm;
-        }
-        Memory.store_n(size.low, sliced_return_data, dest_offset.low);
         return evm;
     }
 

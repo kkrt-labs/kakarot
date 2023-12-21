@@ -57,14 +57,9 @@ namespace SystemOperations {
         // + extend_memory.cost
         // + init_code_gas
         // + is_create2 * GAS_KECCAK256_WORD * call_data_words
-        let memory_expansion_cost = Gas.memory_expansion_cost(
-            memory.words_len, offset.low + size.low
+        let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
+            memory.words_len, offset, size
         );
-        // If .high != 0, OOG is surely triggered. So we only use the .low part for the
-        // actual computation, and add evm.gas_left * .high which would
-        // either be 0 or evm.gas_left * k, thus triggering OOG.
-        let memory_expansion_cost = evm.gas_left * (offset.high + size.high) +
-            memory_expansion_cost;
         let (calldata_words, _) = unsigned_div_rem(size.low + 31, 31);
         let init_code_gas = Gas.INIT_CODE_WORD_COST * calldata_words;
         let calldata_word_gas = is_create2 * Gas.KECCAK256_WORD * calldata_words;
@@ -216,8 +211,8 @@ namespace SystemOperations {
         let offset = popped[0];
         let size = popped[1];
 
-        let memory_expansion_cost = Gas.memory_expansion_cost(
-            memory.words_len, offset.low + size.low
+        let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
+            memory.words_len, offset, size
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
@@ -255,8 +250,8 @@ namespace SystemOperations {
         let offset = popped[0];
         let size = popped[1];
 
-        let memory_expansion_cost = Gas.memory_expansion_cost(
-            memory.words_len, offset.low + size.low
+        let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
+            memory.words_len, offset, size
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
@@ -474,27 +469,30 @@ namespace CallHelper {
         // See finalize_parent
         // Pop ret_offset and ret_size
         let (popped) = Stack.pop_n(4 + with_value);
-        let (ret_offset_uint256) = Stack.peek(0);
-        let (ret_size_uint256) = Stack.peek(1);
-
         let gas = popped[0];
         let address = uint256_to_uint160(popped[1]);
-        let stack_value = (2 ** 128 * popped[2].high + popped[2].low) * with_value;
-        // If the call op expects value to be on the stack, we return it
-        // Otherwise, the value is the calling call context value
-        let value = with_value * stack_value + (1 - with_value) * evm.message.value;
-        let args_offset = 2 ** 128 * popped[2 + with_value].high + popped[2 + with_value].low;
-        let args_size = 2 ** 128 * popped[3 + with_value].high + popped[3 + with_value].low;
-        let ret_offset = 2 ** 128 * ret_offset_uint256.high + ret_offset_uint256.low;
-        let ret_size = 2 ** 128 * ret_size_uint256.high + ret_size_uint256.low;
+        let stack_value = popped[2];
+        let args_offset = popped[2 + with_value];
+        let args_size = popped[3 + with_value];
+        let (ret_offset) = Stack.peek(0);
+        let (ret_size) = Stack.peek(1);
+
+        // TODO: fix value when refactoring CALLs for proper gas accounting
+        let value = with_value * stack_value.low + (1 - with_value) * evm.message.value;
 
         // 2. Gas
         // Memory expansion cost
-        let max_expansion_is_ret = is_le(args_offset + args_size, ret_offset + ret_size);
-        let max_expansion = max_expansion_is_ret * (ret_offset + ret_size) + (
+        let max_expansion_is_ret = is_le(
+            args_offset.low + args_size.low, ret_offset.low + ret_size.low
+        );
+        let max_expansion = max_expansion_is_ret * (ret_offset.low + ret_size.low) + (
             1 - max_expansion_is_ret
-        ) * (args_offset + args_size);
+        ) * (args_offset.low + args_size.low);
         let memory_expansion_cost = Gas.memory_expansion_cost(memory.words_len, max_expansion);
+        // See Gas.memory_expansion_cost_saturated for more details
+        let memory_expansion_cost = memory_expansion_cost + (
+            args_offset.high + args_size.high + ret_offset.high + ret_size.high
+        ) * Gas.MEMORY_COST_U128;
 
         // Access list
         // TODO
@@ -523,7 +521,7 @@ namespace CallHelper {
 
         // 3. Calldata
         let (calldata: felt*) = alloc();
-        Memory.load_n(args_size, calldata, args_offset);
+        Memory.load_n(args_size.low, calldata, args_offset.low);
 
         // 4. Build child_evm
         // Check if the called address is a precompiled contract
@@ -532,7 +530,7 @@ namespace CallHelper {
             tempvar parent = new model.Parent(evm, stack, memory, state);
             let child_evm = Precompiles.run(
                 evm_address=address,
-                calldata_len=args_size,
+                calldata_len=args_size.low,
                 calldata=calldata,
                 value=value,
                 parent=parent,
@@ -559,7 +557,7 @@ namespace CallHelper {
             bytecode=account.code,
             bytecode_len=account.code_len,
             calldata=calldata,
-            calldata_len=args_size,
+            calldata_len=args_size.low,
             value=value,
             parent=parent,
             address=message_address,
@@ -587,17 +585,18 @@ namespace CallHelper {
 
         // Pop ret_offset and ret_size
         // See init_sub_context, the Stack here is guaranteed to have enough items
+        // values are checked there as Memory expansion cost is computed there.
         let (popped) = Stack.pop_n(n=2);
-        let ret_offset = 2 ** 128 * popped[0].high + popped[0].low;
-        let ret_size = 2 ** 128 * popped[1].high + popped[1].low;
+        let ret_offset = popped[0];
+        let ret_size = popped[1];
 
         // Put status in stack
         Stack.push_uint128(1 - evm.reverted);
 
         // Store RETURN_DATA in memory
         let (return_data: felt*) = alloc();
-        slice(return_data, evm.return_data_len, evm.return_data, 0, ret_size);
-        Memory.store_n(ret_size, return_data, ret_offset);
+        slice(return_data, evm.return_data_len, evm.return_data, 0, ret_size.low);
+        Memory.store_n(ret_size.low, return_data, ret_offset.low);
 
         // Gas not used is returned when evm is not reverted
         local gas_left;

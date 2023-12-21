@@ -1,6 +1,7 @@
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.uint256 import Uint256
 
 from kakarot.model import model
 
@@ -46,6 +47,7 @@ namespace Gas {
     const COLD_ACCOUNT_ACCESS = 2600;
     const WARM_ACCESS = 100;
     const INIT_CODE_WORD_COST = 2;
+    const MEMORY_COST_U128 = 0x200000000000000000000000000018000000000000000000000000000000;
 
     // @notice Compute the cost of the memory for a given words length.
     // @dev To avoid range_check overflow, we compute words_len / 512
@@ -81,5 +83,22 @@ namespace Gas {
         let new_cost = memory_cost(new_words_len);
 
         return new_cost - prev_cost;
+    }
+
+    // @notive A saturated version of the memory_expansion_cost function
+    // @dev Saturation at offset + size = 2^128.
+    // @param words_len The current length of the memory as Uint256.
+    // @param offset An offset to be applied to the given memory as Uint256.
+    // @param size The size of the memory chunk.
+    // @return cost The current expansion gas cost.
+    func memory_expansion_cost_saturated{range_check_ptr}(
+        words_len: felt, offset: Uint256, size: Uint256
+    ) -> felt {
+        if (offset.high + size.high != 0) {
+            // Hardcoded value of cost(2^128)
+            return MEMORY_COST_U128;
+        }
+
+        return memory_expansion_cost(words_len, offset.low + size.low);
     }
 }

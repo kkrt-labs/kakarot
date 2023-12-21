@@ -73,80 +73,40 @@ namespace Errors {
         dw 101;  // e'
     }
 
-    func programCounterOutOfRange() -> (error_len: felt, error: felt*) {
-        let (error) = get_label_location(pc_oor_error_message);
-        return (33, error);
-
-        pc_oor_error_message:
-        dw 75;  // K
-        dw 97;  // a
-        dw 107;  // k
-        dw 97;  // a
-        dw 114;  // r
-        dw 111;  // o
-        dw 116;  // t
-        dw 58;  // :
-        dw 32;  //
-        dw 80;  // P
-        dw 114;  // r
-        dw 111;  // o
-        dw 103;  // g
-        dw 114;  // r
-        dw 97;  // a
-        dw 109;  // m
-        dw 67;  // C
-        dw 111;  // o
-        dw 117;  // u
-        dw 110;  // n
-        dw 116;  // t
-        dw 101;  // e
-        dw 114;  // r
-        dw 79;  // O
-        dw 117;  // u
-        dw 116;  // t
-        dw 79;  // O
-        dw 102;  // f
-        dw 82;  // R
-        dw 97;  // a
-        dw 110;  // n
-        dw 103;  // g
-        dw 101;  // e
-    }
-
-    func jumpToNonJumpdest() -> (error_len: felt, error: felt*) {
-        let (error) = get_label_location(jumpdest_error_message);
+    func invalidJumpDestError() -> (error_len: felt, error: felt*) {
+        let (error) = get_label_location(invalid_jump_dest_message);
         return (29, error);
 
-        jumpdest_error_message:
-        dw 75;  // K
-        dw 97;  // a
-        dw 107;  // k
-        dw 97;  // a
-        dw 114;  // r
-        dw 111;  // o
-        dw 116;  // t
-        dw 58;  // :
-        dw 32;  //
-        dw 74;  // J
-        dw 85;  // U
-        dw 77;  // M
-        dw 80;  // P
-        dw 32;  //
-        dw 116;  // t
-        dw 111;  // o
-        dw 32;  //
-        dw 110;  // n
-        dw 111;  // o
-        dw 110;  // n
-        dw 32;  //
-        dw 74;  // J
-        dw 85;  // U
-        dw 77;  // M
-        dw 80;  // P
-        dw 68;  // D
-        dw 69;  // E
-        dw 83;  // S
-        dw 84;  // T
+        invalid_jump_dest_message:
+        dw 'K';
+        dw 'a';
+        dw 'k';
+        dw 'a';
+        dw 'r';
+        dw 'o';
+        dw 't';
+        dw ':';
+        dw ' ';
+        dw 'i';
+        dw 'n';
+        dw 'v';
+        dw 'a';
+        dw 'l';
+        dw 'i';
+        dw 'd';
+        dw 'J';
+        dw 'u';
+        dw 'm';
+        dw 'p';
+        dw 'D';
+        dw 'e';
+        dw 's';
+        dw 't';
+        dw 'E';
+        dw 'r';
+        dw 'r';
+        dw 'o';
+        dw 'r';
     }
 
     func callerNotKakarotAccount() -> (error_len: felt, error: felt*) {
