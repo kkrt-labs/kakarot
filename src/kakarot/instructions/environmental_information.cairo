@@ -147,50 +147,6 @@ namespace EnvironmentalInformation {
         return evm;
     }
 
-    func exec_calldatacopy{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-        stack: model.Stack*,
-        memory: model.Memory*,
-        state: model.State*,
-    }(evm: model.EVM*) -> model.EVM* {
-        alloc_locals;
-
-        let (popped) = Stack.pop_n(3);
-        let dest_offset = popped[0];
-        let offset = popped[1];
-        let size = popped[2];
-
-        let memory_expansion_cost = Gas.memory_expansion_cost_proxy(
-            memory.words_len, dest_offset, size, evm.gas_left
-        );
-        let evm = EVM.charge_gas(evm, memory_expansion_cost);
-        if (evm.reverted != FALSE) {
-            return evm;
-        }
-
-        let (sliced_calldata: felt*) = alloc();
-        if (offset.high != 0) {
-            memset(sliced_calldata, 0, size.low);
-            tempvar range_check_ptr = range_check_ptr;
-        } else {
-            slice(
-                sliced_calldata,
-                evm.message.calldata_len,
-                evm.message.calldata,
-                offset.low,
-                size.low,
-            );
-        }
-        let range_check_ptr = [ap - 1];
-
-        Memory.store_n(size.low, sliced_calldata, dest_offset.low);
-
-        return evm;
-    }
-
     func exec_copy{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -215,32 +171,32 @@ namespace EnvironmentalInformation {
             return evm;
         }
 
-        let (sliced_data: felt*) = alloc();
+        // Offset.high != 0 means that the sliced data is surely 0x00...00
+        // And storing 0 in Memory is just doing nothing
         if (offset.high != 0) {
-            memset(sliced_data, 0, size.low);
-            tempvar range_check_ptr = range_check_ptr;
-        } else {
-            // 0x37: calldatacopy
-            // 0x39: codecopy
-            // 0x3e: returndatacopy
-            local data_len;
-            local data: felt*;
-            let opcode_number = [evm.message.bytecode + evm.program_counter];
-            if (opcode_number == 0x37) {
-                assert data_len = evm.message.calldata_len;
-                assert data = evm.message.calldata;
-            } else {
-                if (opcode_number == 0x39) {
-                    assert data_len = evm.message.bytecode_len;
-                    assert data = evm.message.bytecode;
-                } else {
-                    assert data_len = evm.return_data_len;
-                    assert data = evm.return_data;
-                }
-            }
-            slice(sliced_data, data_len, data, offset.low, size.low);
+            return evm;
         }
-        let range_check_ptr = [ap - 1];
+
+        // 0x37: calldatacopy
+        // 0x39: codecopy
+        // 0x3e: returndatacopy
+        let (sliced_data: felt*) = alloc();
+        local data_len;
+        local data: felt*;
+        let opcode_number = [evm.message.bytecode + evm.program_counter];
+        if (opcode_number == 0x37) {
+            assert data_len = evm.message.calldata_len;
+            assert data = evm.message.calldata;
+        } else {
+            if (opcode_number == 0x39) {
+                assert data_len = evm.message.bytecode_len;
+                assert data = evm.message.bytecode;
+            } else {
+                assert data_len = evm.return_data_len;
+                assert data = evm.return_data;
+            }
+        }
+        slice(sliced_data, data_len, data, offset.low, size.low);
 
         Memory.store_n(size.low, sliced_data, dest_offset.low);
 
@@ -321,6 +277,12 @@ namespace EnvironmentalInformation {
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
+            return evm;
+        }
+
+        // Offset.high != 0 means that the sliced data is surely 0x00...00
+        // And storing 0 in Memory is just doing nothing
+        if (offset.high != 0) {
             return evm;
         }
 

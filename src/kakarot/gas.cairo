@@ -85,7 +85,7 @@ namespace Gas {
     }
 
     // @notive A proxy function for memory_expansion_cost that matches the actual computation
-    //         when words_len and max_offset are within range_check and returns a factor of the given
+    //         when offset and size are within range_check and returns a factor of the given
     //         oog_cost otherwise, so as to trigger an OOG in any case but to avoid the more expensive
     //         Uint256 based computing.
     // @param words_len The current length of the memory as Uint256.
