@@ -211,8 +211,8 @@ namespace SystemOperations {
         let offset = popped[0];
         let size = popped[1];
 
-        let memory_expansion_cost = Gas.memory_expansion_cost(
-            memory.words_len, offset.low + size.low
+        let memory_expansion_cost = Gas.memory_expansion_cost_proxy(
+            memory.words_len, offset, size, evm.gas_left
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
@@ -250,8 +250,8 @@ namespace SystemOperations {
         let offset = popped[0];
         let size = popped[1];
 
-        let memory_expansion_cost = Gas.memory_expansion_cost(
-            memory.words_len, offset.low + size.low
+        let memory_expansion_cost = Gas.memory_expansion_cost_proxy(
+            memory.words_len, offset, size, evm.gas_left
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {

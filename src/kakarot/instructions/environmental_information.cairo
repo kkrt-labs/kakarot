@@ -325,17 +325,11 @@ namespace EnvironmentalInformation {
         }
 
         let (sliced_data: felt*) = alloc();
-        if (offset.high != 0) {
-            memset(sliced_data, 0, size.low);
-            tempvar range_check_ptr = range_check_ptr;
-        } else {
-            let evm_address = uint256_to_uint160(popped[0]);
-            let (starknet_address) = Account.compute_starknet_address(evm_address);
-            tempvar address = new model.Address(starknet_address, evm_address);
-            let account = State.get_account(address);
-            slice(sliced_data, account.code_len, account.code, offset.low, size.low);
-        }
-        let range_check_ptr = [ap - 1];
+        let evm_address = uint256_to_uint160(popped[0]);
+        let (starknet_address) = Account.compute_starknet_address(evm_address);
+        tempvar address = new model.Address(starknet_address, evm_address);
+        let account = State.get_account(address);
+        slice(sliced_data, account.code_len, account.code, offset.low, size.low);
 
         Memory.store_n(size.low, sliced_data, dest_offset.low);
 

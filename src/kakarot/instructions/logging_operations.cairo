@@ -42,26 +42,24 @@ namespace LoggingOperations {
             return evm;
         }
 
-        // See evm.cairo, pc is increased before entering the opcode
         let opcode_number = [evm.message.bytecode + evm.program_counter];
         let topics_len = opcode_number - 0xa0;
 
-        // Pop offset + size.
         let (popped) = Stack.pop_n(topics_len + 2);
 
-        // Transform data + safety checks
-        local offset = Helpers.uint256_to_felt(popped[0]);
-        local size = Helpers.uint256_to_felt(popped[1]);
+        let offset = popped[0];
+        let size = popped[1];
 
-        // Log topics by emitting a starknet event
-        let memory_expansion_cost = Gas.memory_expansion_cost(memory.words_len, offset + size);
+        let memory_expansion_cost = Gas.memory_expansion_cost_proxy(
+            memory.words_len, offset, size, evm.gas_left
+        );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
         let (data: felt*) = alloc();
-        Memory.load_n(size, data, offset);
-        EVM.push_event(evm, topics_len, popped + 4, size, data);
+        Memory.load_n(size.low, data, offset.low);
+        EVM.push_event(evm, topics_len, popped + 4, size.low, data);
 
         return evm;
     }

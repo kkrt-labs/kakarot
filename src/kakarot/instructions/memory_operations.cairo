@@ -28,16 +28,17 @@ namespace MemoryOperations {
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
-        let (offset_uint256) = Stack.pop();
-        let offset = Helpers.uint256_to_felt([offset_uint256]);
+        let (offset) = Stack.pop();
 
-        let memory_expansion_cost = Gas.memory_expansion_cost(memory.words_len, offset + 32);
+        let memory_expansion_cost = Gas.memory_expansion_cost_proxy(
+            memory.words_len, [offset], Uint256(32, 0), evm.gas_left
+        );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
 
-        let value = Memory.load(offset);
+        let value = Memory.load(offset.low);
         Stack.push_uint256(value);
 
         return evm;
@@ -58,7 +59,9 @@ namespace MemoryOperations {
         let offset = popped[0];
         let value = popped[1];
 
-        let memory_expansion_cost = Gas.memory_expansion_cost(memory.words_len, offset.low + 32);
+        let memory_expansion_cost = Gas.memory_expansion_cost_proxy(
+            memory.words_len, offset, Uint256(32, 0), evm.gas_left
+        );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
             return evm;
@@ -105,6 +108,13 @@ namespace MemoryOperations {
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
         let (offset) = Stack.pop();
+
+        if (offset.high != 0) {
+            let (revert_reason_len, revert_reason) = Errors.programCounterOutOfRange();
+            let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
+            return evm;
+        }
+
         let evm = EVM.jump(evm, offset.low);
         return evm;
     }
@@ -126,6 +136,12 @@ namespace MemoryOperations {
         // If skip_condition is 0, then don't jump
         let (skip_condition_is_zero) = uint256_eq(Uint256(0, 0), skip_condition);
         if (skip_condition_is_zero != FALSE) {
+            return evm;
+        }
+
+        if (offset.high != 0) {
+            let (revert_reason_len, revert_reason) = Errors.programCounterOutOfRange();
+            let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
             return evm;
         }
 
@@ -175,17 +191,18 @@ namespace MemoryOperations {
         let offset = popped[0];
         let value = popped[1];
 
-        // Extract last byte from stack value
-        let (_, remainder) = uint256_unsigned_div_rem(value, Uint256(256, 0));
-        let (value_pointer: felt*) = alloc();
-        assert [value_pointer] = remainder.low;
-
-        // Store byte to memory at offset
-        let memory_expansion_cost = Gas.memory_expansion_cost(memory.words_len, offset.low + 1);
+        let memory_expansion_cost = Gas.memory_expansion_cost_proxy(
+            memory.words_len, offset, Uint256(1, 0), evm.gas_left
+        );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
+
+        let (_, remainder) = uint256_unsigned_div_rem(value, Uint256(256, 0));
+        let (value_pointer: felt*) = alloc();
+        assert [value_pointer] = remainder.low;
+
         Memory.store_n(1, value_pointer, offset.low);
 
         return evm;

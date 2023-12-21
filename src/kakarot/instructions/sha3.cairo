@@ -29,10 +29,10 @@ namespace Sha3 {
 
         let (popped) = Stack.pop_n(2);
         let offset = popped[0];
-        let length = popped[1];
+        let size = popped[1];
 
-        let memory_expansion_cost = Gas.memory_expansion_cost(
-            memory.words_len, offset.low + length.low
+        let memory_expansion_cost = Gas.memory_expansion_cost_proxy(
+            memory.words_len, offset, size, evm.gas_left
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         if (evm.reverted != FALSE) {
@@ -40,16 +40,16 @@ namespace Sha3 {
         }
 
         let (bigendian_data: felt*) = alloc();
-        Memory.load_n(length.low, bigendian_data, offset.low);
+        Memory.load_n(size.low, bigendian_data, offset.low);
 
         let (local dst: felt*) = alloc();
-        bytes_to_bytes8_little_endian(dst, length.low, bigendian_data);
+        bytes_to_bytes8_little_endian(dst, size.low, bigendian_data);
 
         let (keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
 
         with keccak_ptr {
-            let (result) = cairo_keccak_bigend(dst, length.low);
+            let (result) = cairo_keccak_bigend(dst, size.low);
         }
         finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
 
