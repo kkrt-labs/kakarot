@@ -585,6 +585,7 @@ namespace CallHelper {
 
         // Pop ret_offset and ret_size
         // See init_sub_context, the Stack here is guaranteed to have enough items
+        // values are checked there as Memory expansion cost is computed there.
         let (popped) = Stack.pop_n(n=2);
         let ret_offset = popped[0];
         let ret_size = popped[1];
