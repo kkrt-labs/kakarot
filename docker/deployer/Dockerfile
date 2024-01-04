@@ -1,5 +1,6 @@
 # trunk-ignore-all(terrascan/AC_DOCKER_0047)
 # trunk-ignore-all(hadolint/DL4006)
+# trunk-ignore-all(hadolint/DL3059)
 FROM python:3.9.13
 
 HEALTHCHECK NONE
