@@ -11,7 +11,7 @@ COPY poetry.lock .
 COPY pyproject.toml .
 COPY scripts ./scripts
 COPY README.md .
-RUN poetry install
+RUN mkdir tests && touch tests/__init__.py && poetry install
 # split install in two steps to leverage docker cache
 COPY . .
 RUN poetry install
