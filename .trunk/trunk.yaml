@@ -42,7 +42,7 @@ lint:
     - shellcheck@0.9.0
     - shfmt@3.6.0
     - taplo@0.8.1
-    - terrascan@1.18.3
+    - terrascan@1.18.11
     - yamllint@1.32.0
   disabled:
     - trufflehog
