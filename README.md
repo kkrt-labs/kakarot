@@ -166,7 +166,7 @@ Test architecture is the following:
 
 The project also contains a regular forge project
 (`./solidity_contracts`) to generate real artifacts to be tested against. This
-project also contains some forge tests (e.g. `PlainOpcodes.t.sol`) whose purpose
+project also contains some forge tests (e.g. `PlainOpcodes.t.sol`) which purpose
 is to test easily the solidity functions meant to be tested with kakarot, i.e.
 quickly making sure that they return the expected output so that we know that we
 focus on kakarot testing and not .sol testing. They are not part of the CI.
