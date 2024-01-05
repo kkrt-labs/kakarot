@@ -164,7 +164,7 @@ Test architecture is the following:
   [Katana](https://github.com/dojoengine/dojo). These end-to-end tests contain
   both raw bytecode execution tests and test on real solidity contracts.
 
-The project indeed contains also a regular forge project
+The project also contains a regular forge project
 (`./solidity_contracts`) to generate real artifacts to be tested against. This
 project also contains some forge tests (e.g. `PlainOpcodes.t.sol`) whose purpose
 is to test easily the solidity functions meant to be tested with kakarot, i.e.
