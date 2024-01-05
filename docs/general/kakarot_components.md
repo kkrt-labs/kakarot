@@ -57,9 +57,11 @@ following properties:
 }
 ```
 
-Currently, Kakarot uses an external ERC0 contract for storing the balances and
-consequently only the three other fields are stored in the corresponding
-Starknet contracts.
+Currently, Kakarot uses an external regular Starknet ERC20 contract for storing
+the balances and consequently only the three other fields are stored in the
+corresponding Starknet contracts. Though it doesn't bring any change from the
+Kakarot point of view, it would allow Kakarot within Starknet to use Starknet
+ETH (or STRK) as native token, removing the need for bridging it.
 
 ### Contract Accounts
 
