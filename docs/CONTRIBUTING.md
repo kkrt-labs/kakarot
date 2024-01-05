@@ -30,7 +30,7 @@ contracts, first make sure you have
 
 Then, run:
 
-`make build-foundry`
+`make build-sol`
 
 Common caveats:
 
@@ -89,10 +89,8 @@ Please try to create bug reports that are:
 1. Search our repository for open or closed
    [Pull Requests](https://github.com/kkrt-labs/kakarot/pulls) that relate to
    your submission. You don't want to duplicate effort.
-2. Fork the project
-3. **Enable workflows** so CI can add an auto-commit during format checks
-   ![enable-workflow](/docs/img/github_workflows.png)
-4. Create your feature branch (`git checkout -b feat/amazing_feature`)
-5. Add, then commit your changes (`git commit -m 'feat: add amazing_feature'`)
-6. Push to the branch (`git push origin feat/amazing_feature`)
-7. [Open a Pull Request](https://github.com/kkrt-labs/kakarot/compare?expand=1)
+1. Fork the project
+1. Create your feature branch (`git checkout -b feat/amazing_feature`)
+1. Add, then commit your changes (`git commit -m 'feat: add amazing_feature'`)
+1. Push to the branch (`git push origin feat/amazing_feature`)
+1. [Open a Pull Request](https://github.com/kkrt-labs/kakarot/compare?expand=1)
