@@ -20,9 +20,8 @@ COPY tests ./tests
 RUN poetry install
 # split install in two steps to leverage docker cache
 COPY . .
-
-# Build contracts
-RUN python scripts/compile_kakarot.py
+RUN poetry install \
+    && python scripts/compile_kakarot.py
 
 # Deploy kakarot
 CMD ["python", "scripts/deploy_kakarot.py"]
