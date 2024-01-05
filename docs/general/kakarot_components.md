@@ -69,11 +69,13 @@ bytecode and the contract storage (`SSTORE` and `SLOAD`).
 
 ### Externally Owned Account
 
-This contract is an account in the Starknet sense, meaning that it defines the
-`__validate__` and `__execute__` entrypoint and is used to send transactions
-from a wallet to Kakarot. However, it only uses the `calldata` field of a
-Starknet transaction, where the raw decoded signed Ethereum transaction bytecode
-is given. For a general introduction to EVM transactions, see
+This [contract](../../src/kakarot/accounts/eoa/externally_owned_account.cairo)
+is an account in the Starknet sense, meaning that it defines the `__validate__`
+and `__execute__` entrypoints and is used to send transactions from a wallet to
+Kakarot. However, it doesn't use the `to` and `selector` fields but only the
+`calldata` of a Starknet transaction to send the RLP encoded unsigned data. The
+Ethereum signature is sent in the signature field. For a general introduction to
+EVM transactions, see
 [the official doc](https://ethereum.org/en/developers/docs/transactions/).
 
 ## Deploying Kakarot
