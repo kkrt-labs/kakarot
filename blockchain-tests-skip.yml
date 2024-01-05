@@ -5687,6 +5687,7 @@ testname:
     - sha3_d3g0v0_Shanghai
     - sha3_d5g0v0_Shanghai
     - sha3_d6g0v0_Shanghai
+    - sha3_d7g0v0_Shanghai
     - loopExp_d0g0v0_Shanghai
     - performanceTester_d2g0v0_Shanghai
 
