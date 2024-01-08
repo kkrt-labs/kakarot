@@ -131,7 +131,7 @@ namespace Memory {
 
             let (w_h, w_l) = Helpers.div_rem(w, mask_i);
             let (_, w_ll) = Helpers.div_rem(w_l, mask_f);
-            let x = Helpers.load_word(element_len, element);
+            let x = Helpers.bytes_to_felt(element_len, element);
             let new_w = w_h * mask_i + x * mask_f + w_ll;
             dict_write{dict_ptr=word_dict}(chunk_index_i, new_w);
             tempvar memory = new model.Memory(memory.word_dict_start, word_dict, new_words_len);
@@ -142,13 +142,15 @@ namespace Memory {
         // Fill first word.
         let (w_i) = dict_read{dict_ptr=word_dict}(chunk_index_i);
         let (w_i_h, _) = Helpers.div_rem(w_i, mask_i);
-        let x_i = Helpers.load_word(16 - offset_in_chunk_i, element);
+        let x_i = Helpers.bytes_to_felt(16 - offset_in_chunk_i, element);
         dict_write{dict_ptr=word_dict}(chunk_index_i, w_i_h * mask_i + x_i);
 
         // Fill last word.
         let (w_f) = dict_read{dict_ptr=word_dict}(chunk_index_f);
         let (_, w_f_l) = Helpers.div_rem(w_f, mask_f);
-        let x_f = Helpers.load_word(offset_in_chunk_f, element + element_len - offset_in_chunk_f);
+        let x_f = Helpers.bytes_to_felt(
+            offset_in_chunk_f, element + element_len - offset_in_chunk_f
+        );
         dict_write{dict_ptr=word_dict}(chunk_index_f, x_f * mask_f + w_f_l);
 
         // Write blocks.

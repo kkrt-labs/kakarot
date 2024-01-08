@@ -60,7 +60,7 @@ namespace RLP {
             let is_le_191 = is_le(byte, 191);  // string longer than 55 bytes
             if (is_le_191 != FALSE) {
                 local len_len = byte - 183;
-                let (dlen) = Helpers.bytes_to_felt(data_len=len_len, data=buffer_ptr, n=0);
+                let dlen = Helpers.bytes_to_felt(len_len, buffer_ptr);
                 let buffer_ptr = buffer_ptr + len_len;
                 assert [items] = Item(data_len=dlen, data=buffer_ptr, is_list=0);
                 return decode(
@@ -80,7 +80,7 @@ namespace RLP {
                 );
             } else {
                 local list_len_len = byte - 247;
-                let (dlen) = Helpers.bytes_to_felt(data_len=list_len_len, data=buffer_ptr, n=0);
+                let dlen = Helpers.bytes_to_felt(list_len_len, buffer_ptr);
                 let buffer_ptr = buffer_ptr + list_len_len;
                 assert [items] = Item(data_len=dlen, data=buffer_ptr, is_list=1);
                 return decode(

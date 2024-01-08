@@ -58,7 +58,7 @@ namespace PrecompileBlake2f {
             return (revert_reason_len, revert_reason, 0, 1);
         }
 
-        let rounds = Helpers.load_word(rounds_bytes_len, input);
+        let rounds = Helpers.bytes_to_felt(rounds_bytes_len, input);
 
         let (local h: felt*) = alloc();
         Helpers.load_64_bits_array(8, input + h_bytes_offset, h);
