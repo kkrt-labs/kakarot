@@ -19,15 +19,20 @@
 
 <div align="center">
 
-Kakarot is a zkEVM written in Cairo. It aims to allow users to leverage the
-scaling benefits of validity rollups while maintaining compatibility with the
-Ethereum ecosystem.
+Kakarot is an EVM implementation in Cairo. As such, it allows for provable
+executions of EVM transactions, and is _de facto_ a so-called _zkEVM_. While
+other zkEVM implementations (see for example
+[Scroll](https://github.com/scroll-tech/zkevm-circuits),
+[Polygon zkEVM](https://github.com/0xpolygonhermez) or
+[Taiko](https://github.com/taikoxyz/taiko-geth)) try to prove existing EVM
+implementations (mainly Geth), Kakarot is like another new Geth, but provable by
+design, simply because it runs on the CairoVM.
 
-We strongly believe the CairoVM will provide the best zero-knowledge toolbox in
-the coming years and that the Ethereum network effect will remain prevalent in
-the meantime. We present to developers an abstraction layer they're familiar
-with: the EVM. Build and deploy as if you were working on Ethereum, be forward
-compatible with the future of zero-knowledge.
+Indeed, we strongly believe the CairoVM will provide the best zero-knowledge
+toolbox in the coming years and that the Ethereum network effect will remain
+prevalent in the meantime. We present to developers an abstraction layer they're
+familiar with: the EVM. Build and deploy as if you were working on Ethereum, be
+forward compatible with the future of zero-knowledge.
 
 Kakarot is a work in progress, and it is not ready for production.
 
@@ -48,62 +53,17 @@ precompiles.
 
 ### Architecture
 
-![](docs/img/architecture.png)
+- ✅ Kakarot is a set of Cairo programs
 
-- ✅ Kakarot is a set of Cairo programs, deployable on any chain that runs the
-  CairoVM as runtime.
-
-- ✅ Kakarot can: (a) execute arbitrary EVM bytecode, (b) deploy an EVM smart
-  contract as is, (c) call a Kakarot-deployed EVM smart contract's functions
-  (views and write methods).
+- ✅ Kakarot can be packaged as a smart contract and deployed on any chain that
+  runs the CairoVM (currently only Starknet mainnet).
 
 - ✅ Kakarot is an EVM implementation.
 
 - ❌ Kakarot is not a blockchain by itself. It still needs a chain that runs the
-  CairoVM to be deployed.
+  CairoVM to be deployed
 
 - ❌ Kakarot is not a compiler.
-
-<!-- markdownlint-disable MD013 -->
-<!-- TODO: Update sequence diagram
-### Main execution flow
-
-mermaid
-sequenceDiagram
-    title Simple bytecode execution flow example: [PUSH1 0x01 PUSH1 0x02 ADD]
-    actor User
-    participant Kakarot
-    participant ExecutionContext
-    participant EVMInstructions
-    participant ArithmeticOperations
-    participant PushOperations
-    participant Stack
-    User->>+Kakarot: execute(value, code, calldata)
-    Kakarot->>+EVMInstructions: generate_instructions()
-    EVMInstructions->>-Kakarot: instructions
-    Kakarot->>+ExecutionContext: compute_intrinsic_gas_cost()
-    ExecutionContext->>-Kakarot: ctx
-    Kakarot->>Kakarot: run(instructions, ctx)
-    loop opcode
-        Kakarot->>+EVMInstructions: decode_and_execute(instructions, ctx)
-        EVMInstructions->>EVMInstructions: retrieve the current program counter
-        Note over EVMInstructions: revert if pc < 0, stop if pc > length of code
-        EVMInstructions->>EVMInstructions: read opcode associated function from instruction set
-        Note over PushOperations, Stack: x2 PUSH a=1, PUSH b=2
-        EVMInstructions->>+PushOperations: exec_push1(ctx)
-        PushOperations->>Stack: push(stack, element)
-        PushOperations->>-EVMInstructions: ctx
-        EVMInstructions->>+ArithmeticOperations: exec_add(ctx)
-        Note over PushOperations, Stack: x2 POP a, POP b
-        ArithmeticOperations->>Stack: pop(stack)
-        Stack->>ArithmeticOperations: element
-        ArithmeticOperations->>Stack: push(stack, result)
-        ArithmeticOperations->>-EVMInstructions: ctx
-        EVMInstructions->>-Kakarot: ctx
-    end
-    Kakarot->>-User: ctx
--->
-<!-- markdownlint-enable MD013 -->
 
 ## Getting started
 
@@ -171,6 +131,12 @@ palette > Format Document With > Trunk).
 
 ## Test
 
+### Kakarot tests
+
+Kakarot tests uses [pytest](https://docs.pytest.org/) as test runner. Make sure
+to read the [doc](https://docs.pytest.org/) and get familiar with the tool to
+benefit from all its features.
+
 ```bash
 # Run all tests
 make test
@@ -182,88 +148,93 @@ make test-units
 make test-integration
 
 # Run a specific test file
-pytest <PATH_TO_FILE>  # with pytest
-python3 -m unittest <PATH_TO_FILE>  # with unittest
+pytest <PATH_TO_FILE>
 
 # Run a specific test mark (markers in pyproject.toml)
-make run-test-mark mark=<MARK>
-make run-test-mark-log mark=<MARK> # with log
+pytest -m <MARK>
 ```
 
 Test architecture is the following:
 
-- tests/unit/src contains cairo tests for each cairo function in the kakarot
-  codebase
-- tests/integration/bytecode contains python tests for kakarot execute()
-  function with forged bytecode
-- tests/integration/solidity_contracts contains python tests for solidity
-  contracts that are compiled, deployed on kakarot local node and interacted
-  with kakarot eth_call() and invoke()
-- the project also contains some forge tests (e.g. `PlainOpcodes.t.sol`) whose
-  purpose is to test easily the solidity functions meant to be tested with
-  kakarot, i.e. quickly making sure that they return the expected output so that
-  we know that we focus on kakarot testing and not .sol testing. They are not
-  part of the CI. Simply use `forge test` to run them.
+- tests/src contains cairo tests for each cairo function in the kakarot codebase
+- tests/integration contains high level integrations tests running in the
+  starknet test runner.
+- tests/integration/end_to_end contains end-to-end tests running on an
+  underlying Starknet-like network (using the Starknet RPC), currently
+  [Katana](https://github.com/dojoengine/dojo). These end-to-end tests contain
+  both raw bytecode execution tests and test on real solidity contracts.
+
+The project also contains a regular forge project (`./solidity_contracts`) to
+generate real artifacts to be tested against. This project also contains some
+forge tests (e.g. `PlainOpcodes.t.sol`) which purpose is to test easily the
+solidity functions meant to be tested with kakarot, i.e. quickly making sure
+that they return the expected output so that we know that we focus on kakarot
+testing and not .sol testing. They are not part of the CI. Simply use
+`forge test` to run them.
+
+### EF tests
+
+To run the [Ethereum Foundation test suite](https://github.com/ethereum/tests),
+you need to pull locally
+[the Kakarot ef-tests runner](https://github.com/kkrt-labs/ef-tests). To
+simplify the devX, you can create symlinks in the ef-tests repo pointing to your
+local changes. For example:
+
+```bash
+ln -s /Users/clementwalter/Documents/kkrt-labs/kakarot/blockchain-tests-skip.yml blockchain-tests-skip.yml
+mkdir build && cd build
+ln -s /Users/clementwalter/Documents/kkrt-labs/kakarot/build/ v0
+ln -s /Users/clementwalter/Documents/kkrt-labs/kakarot/build/fixtures/ common
+```
+
+With this setting, you can run a given EF test against your local Kakarot build
+by running (in the ef test directory):
+
+```bash
+cargo test <test_name> --features v0 -- --nocapture
+# e.g. cargo test test_sha3_d7g0v0_Shanghai --features v0 -- --nocapture
+```
+
+See [this doc](./docs/general/decode_a_cairo_trace.md) to learn how to debug a
+cairo trace when the CairoVM reverts.
 
 ## Deploy
 
-The following describes how to deploy the entire Kakarot **EVM** on StarkNet.
+The following describes how to deploy the Kakarot as a Starknet smart contract.
 
-It is **not** a description on how to deploy a contract on the official Kakarot
-zkEVM.
+It is **not** a description on how to deploy a solidity contract on the Kakarot
+EVM.
 
-The Kakarot EVM can be deployed on StarkNet using a python script utilizing the
-[starknet.py](https://starknetpy.readthedocs.io/en/latest/) library.
+The [deploy script](./scripts/deploy_kakarot.py) relies on some env variables
+defined in a `.env` file located at the root of the project and loaded in the
+[constant file](./scripts/constants.py). To get started, just
 
-First we need to declare some environment variables that are required for the
-deployment.
+```bash
+cp .env.example .env
+```
 
-Start by copying the `.env.example` file located in the root directory (`.files`
-are usually hidden by default in most explorers. You should be able to see the
-file in your IDE).
+The default file is self sufficient for using Kakarot with KATANA. If targeting
+other networks, make sure to fill the corresponding variables.
 
-Rename the copied file to `.env`.
-
-The file holds the following content:
+Furthermore, if you want to run the
+[check-resources](./scripts/check_resources.py) locally to check the steps usage
+of your local changes in the EF tests against main and other branches, you need
+to fill the following
 
 ```text
 GITHUB_TOKEN=your_github_token
 ```
 
-You will need to provide a Github access token to be able to build and deploy
-Kakarot.
-
 You can learn how to create this token from
 [here](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token),
 we would suggest using a fine-grained token with only read access.
 
-```text
-PRIVATE_KEY=your_private_key
-ACCOUNT_ADDRESS=your_account_address
-```
-
-Now replace the placeholder values with your account and network details.
-
-`PRIVATE_KEY` is the private key of the account contract that will pay for the
-deployment. **This should be a hexadecimal number**
-
-`ACCOUNT_ADDRESS` is the address of the account contract that will pay for the
-deployment (not the public key). **This should be a hexadecimal number**
-
-Here is a concrete example:
-
-```text
-ACCOUNT_ADDRESS=0x7e00d496e324876bbc8531f2d9a82bf154d1a04a50218ee74cdd372f75a551a
-PRIVATE_KEY=0xe3e70682c2094cac629f6fbed82c07cd
-```
-
-By default, everything will run on a local starknet-devnet (started with
-`make run`). If you want to deploy to a given target, set the `STARKNET_NETWORK`
-env variable, for example:
+By default, everything will run on a local katana (started with
+`make run-katana`). If you want to deploy to a given target, set the
+`STARKNET_NETWORK` env variable, for example:
 
 ```bash
 make deploy # localhost
-STARKNET_NETWORK=katana make deploy
 STARKNET_NETWORK=testnet make deploy
 STARKNET_NETWORK=mainnet make deploy
 ```
@@ -285,14 +256,6 @@ Kakarot is provided **"as is"** without any **warranty**. Use at your own risk.
 
 _For more information and to report security issues, please refer to our
 [security documentation](docs/SECURITY.md)._
-
-## Callgraphs
-
-The callgraph artifacts contains all the contract's call graph. Those are
-generated using [thoth](https://github.com/FuzzingLabs/thoth) and can provide
-some more insight on the inside of this zkEVM. You can use
-[this tool](https://dreampuf.github.io/GraphvizOnline/) to visualize the .gv
-files online.
 
 ## Contributing
 

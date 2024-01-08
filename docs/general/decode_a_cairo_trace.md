@@ -67,3 +67,57 @@ this cryptic message to map location in the original cairo program.
 
 And tada! You should now be able to understand the reason your cairo program
 failed with more clarity.
+
+## Extended scripts
+
+As it's not always obvious which contract triggered the error (Kakarot, account,
+EVM for the bytecode tests), this extended snippets proved to be more robust as
+a general purpose debug scripts, to be run both from the ef-test and the kakarot
+repo.
+
+It basically loads by default all the possible contract sources, looking for
+them in appropriate directories, and then run the debug tool for each of them.
+
+```python
+# %% Imports
+import json
+import re
+from pathlib import Path
+
+from starkware.cairo.lang.compiler.program import Program
+from starkware.cairo.lang.vm.reconstruct_traceback import reconstruct_traceback
+
+build_dir = Path("build")
+programs = {}
+for contract_name in ["externally_owned_account", "kakarot", "contract_account", "EVM"]:
+    artifact = build_dir / f"{contract_name}.json"
+    if not artifact.is_file():
+        artifact = build_dir / "fixtures" / f"{contract_name}.json"
+    if not artifact.is_file():
+        artifact = build_dir / "v0" / f"{contract_name}.json"
+    if not artifact.is_file():
+        artifact = build_dir / "common" / f"{contract_name}.json"
+    programs[contract_name] = Program.load(
+        data=json.loads(artifact.read_text())["program"]
+    )
+
+# %% Parse error
+display_error_for = ["kakarot"]
+
+error_message = """
+Cairo traceback (most recent call last):
+Unknown location (pc=0:5352)
+Unknown location (pc=0:6135)
+Unknown location (pc=0:3417)
+"""
+
+for contract_name in display_error_for:
+    traceback = reconstruct_traceback(programs[contract_name], error_message)
+    print(f"Trace for {contract_name}")
+    print(traceback)
+    print(
+        """
+
+    """
+    )
+```

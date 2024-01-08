@@ -9,7 +9,6 @@ import requests
 from dotenv import load_dotenv
 from eth_keys import keys
 from starknet_py.net.full_node_client import FullNodeClient
-from starknet_py.net.gateway_client import GatewayClient
 from starknet_py.net.models.chains import StarknetChainId
 
 logging.basicConfig()
@@ -23,7 +22,6 @@ NETWORKS = {
         "name": "mainnet",
         "explorer_url": "https://starkscan.co",
         "rpc_url": f"https://starknet-mainnet.infura.io/v3/{os.getenv('INFURA_KEY')}",
-        "gateway": "mainnet",
         "devnet": False,
         "chain_id": StarknetChainId.MAINNET,
     },
@@ -31,7 +29,6 @@ NETWORKS = {
         "name": "testnet",
         "explorer_url": "https://testnet.starkscan.co",
         "rpc_url": f"https://starknet-goerli.infura.io/v3/{os.getenv('INFURA_KEY')}",
-        "gateway": "testnet",
         "devnet": False,
         "chain_id": StarknetChainId.TESTNET,
     },
@@ -99,8 +96,6 @@ if NETWORK["private_key"] is None:
     NETWORK["private_key"] = os.getenv("PRIVATE_KEY")
 
 RPC_CLIENT = FullNodeClient(node_url=NETWORK["rpc_url"])
-GATEWAY_CLIENT = GatewayClient(NETWORK["gateway"]) if NETWORK.get("gateway") else None
-CLIENT = GATEWAY_CLIENT if GATEWAY_CLIENT is not None else RPC_CLIENT
 
 try:
     response = requests.post(
@@ -156,8 +151,7 @@ EVM_ADDRESS = (
 
 if NETWORK.get("chain_id"):
     logger.info(
-        f"ℹ️  Connected to CHAIN_ID {NETWORK['chain_id'].value.to_bytes(ceil(log(NETWORK['chain_id'].value, 256)), 'big')} "
-        f"with {f'Gateway {GATEWAY_CLIENT.net}' if GATEWAY_CLIENT is not None else f'RPC {RPC_CLIENT.url}'}"
+        f"ℹ️  Connected to CHAIN_ID {NETWORK['chain_id'].value.to_bytes(ceil(log(NETWORK['chain_id'].value, 256)), 'big')}"
     )
 
 # private key for the deployer account for Madara and Katana, generated via starkli

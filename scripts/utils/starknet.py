@@ -33,12 +33,10 @@ from starkware.starknet.public.abi import get_selector_from_name
 from scripts.constants import (
     BUILD_DIR,
     BUILD_DIR_FIXTURES,
-    CLIENT,
     CONTRACTS,
     CONTRACTS_FIXTURES,
     DEPLOYMENTS_DIR,
     ETH_TOKEN_ADDRESS,
-    GATEWAY_CLIENT,
     NETWORK,
     RPC_CLIENT,
     SOURCE_DIR,
@@ -87,7 +85,9 @@ async def get_starknet_account(
                 selector=get_selector_from_name(selector),
                 calldata=[],
             )
-            public_key = (await CLIENT.call_contract(call=call, block_hash="latest"))[0]
+            public_key = (
+                await RPC_CLIENT.call_contract(call=call, block_hash="latest")
+            )[0]
             break
         except Exception as err:
             if (
@@ -115,7 +115,7 @@ async def get_starknet_account(
 
     return Account(
         address=address,
-        client=CLIENT,
+        client=RPC_CLIENT,
         chain=NETWORK["chain_id"],
         key_pair=key_pair,
     )
@@ -328,7 +328,7 @@ async def deploy_starknet_account(class_hash, private_key=None, amount=1):
         class_hash=class_hash,
         salt=salt,
         key_pair=key_pair,
-        client=CLIENT,
+        client=RPC_CLIENT,
         chain=NETWORK["chain_id"],
         constructor_calldata=constructor_calldata,
         max_fee=_max_fee,
@@ -351,7 +351,7 @@ async def declare(contract_name):
     contract_class = create_compiled_contract(compiled_contract=compiled_contract)
     class_hash = compute_class_hash(contract_class=deepcopy(contract_class))
     try:
-        await CLIENT.get_class_by_hash(class_hash)
+        await RPC_CLIENT.get_class_by_hash(class_hash)
         logger.info("✅ Class already declared, skipping")
         return class_hash
     except Exception:
@@ -375,19 +375,16 @@ async def declare(contract_name):
     )
     signature = message_signature(msg_hash=tx_hash, priv_key=account.signer.private_key)
     transaction = _add_signature_to_transaction(transaction, signature)
-    if GATEWAY_CLIENT is not None:
-        resp = await GATEWAY_CLIENT.declare(transaction)
-    else:
-        params = _create_broadcasted_txn(transaction=transaction)
+    params = _create_broadcasted_txn(transaction=transaction)
 
-        res = await RPC_CLIENT._client.call(
-            method_name="addDeclareTransaction",
-            params=[params],
-        )
-        resp = cast(
-            DeclareTransactionResponse,
-            DeclareTransactionResponseSchema().load(res, unknown=EXCLUDE),
-        )
+    res = await RPC_CLIENT._client.call(
+        method_name="addDeclareTransaction",
+        params=[params],
+    )
+    resp = cast(
+        DeclareTransactionResponse,
+        DeclareTransactionResponseSchema().load(res, unknown=EXCLUDE),
+    )
 
     status = await wait_for_transaction(resp.transaction_hash)
     status = "✅" if status == TransactionStatus.ACCEPTED_ON_L2 else "❌"
@@ -522,11 +519,6 @@ async def wait_for_transaction(*args, **kwargs):
     We need to write this custom hacky wait_for_transaction instead of using the one from starknet-py
     because the RPCs don't know RECEIVED, PENDING and REJECTED states currently.
     """
-    if GATEWAY_CLIENT is not None:
-        # Gateway case, just use it
-        _, status = await GATEWAY_CLIENT.wait_for_tx(*args, **kwargs)
-        return status
-
     start = datetime.now()
     elapsed = 0
     check_interval = kwargs.get("check_interval", NETWORK.get("check_interval", 15))

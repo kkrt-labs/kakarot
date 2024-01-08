@@ -8,7 +8,7 @@ build: check
 	poetry run python ./scripts/compile_kakarot.py
 
 check:
-	poetry lock --check
+	poetry check --lock
 
 setup:
 	poetry install

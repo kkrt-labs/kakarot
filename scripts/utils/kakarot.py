@@ -29,11 +29,11 @@ from web3.types import LogReceipt
 
 from scripts.artifacts import fetch_deployments
 from scripts.constants import (
-    CLIENT,
     EVM_ADDRESS,
     EVM_PRIVATE_KEY,
     KAKAROT_CHAIN_ID,
     NETWORK,
+    RPC_CLIENT,
 )
 from scripts.utils.starknet import call as _call_starknet
 from scripts.utils.starknet import fund_address as _fund_starknet_address
@@ -52,7 +52,9 @@ if not NETWORK["devnet"]:
     try:
         fetch_deployments()
     except Exception as e:
-        logger.warn(f"Using network {NETWORK}, couldn't fetch deployment, error:\n{e}")
+        logger.warn(
+            f"Using network {NETWORK['name']}, couldn't fetch deployment, error:\n{e}"
+        )
 
 try:
     FOUNDRY_FILE = toml.loads((Path(__file__).parents[2] / "foundry.toml").read_text())
@@ -257,7 +259,7 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
 
 async def _contract_exists(address: int) -> bool:
     try:
-        await CLIENT.get_class_hash_at(address)
+        await RPC_CLIENT.get_class_hash_at(address)
         return True
     except ClientError:
         return False
@@ -271,7 +273,7 @@ async def get_eoa(private_key=None, amount=10) -> Account:
 
     return Account(
         address=starknet_address,
-        client=CLIENT,
+        client=RPC_CLIENT,
         chain=NETWORK["chain_id"],
         # This is somehow a hack because we put EVM private key into a
         # Stark signer KeyPair to have both a regular Starknet account
@@ -337,7 +339,7 @@ async def eth_send_transaction(
     response = await evm_account.client.send_transaction(prepared_invoke)
 
     await wait_for_transaction(tx_hash=response.transaction_hash)
-    receipt = await CLIENT.get_transaction_receipt(response.transaction_hash)
+    receipt = await RPC_CLIENT.get_transaction_receipt(response.transaction_hash)
     transaction_events = [
         event
         for event in receipt.events

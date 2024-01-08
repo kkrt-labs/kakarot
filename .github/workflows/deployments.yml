@@ -18,7 +18,7 @@ jobs:
     env:
       ACCOUNT_ADDRESS: ${{ secrets.ACCOUNT_ADDRESS }}
       PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-      RPC_KEY: ${{ secrets.RPC_KEY }}
+      INFURA_KEY: ${{ secrets.INFURA_KEY }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4

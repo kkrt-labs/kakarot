@@ -1,6 +1,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.math_cmp import is_nn
 
 from utils.bytes import felt_to_ascii
 
@@ -469,6 +470,12 @@ namespace Errors {
         assert [error + 21] = 't';
         assert [error + 22] = '=';
 
+        let gas_left_in_range = is_nn(gas_left);
+        if (gas_left_in_range == 0) {
+            // Trim the useless left= part of the string
+            return (17, error);
+        }
+
         let gas_left_ascii_len = felt_to_ascii(error + 23, gas_left);
 
         assert [error + 23 + gas_left_ascii_len + 0] = ',';
@@ -478,6 +485,12 @@ namespace Errors {
         assert [error + 23 + gas_left_ascii_len + 4] = 'e';
         assert [error + 23 + gas_left_ascii_len + 5] = 'd';
         assert [error + 23 + gas_left_ascii_len + 6] = '=';
+
+        let gas_used_in_range = is_nn(gas_used);
+
+        if (gas_used_in_range == 0) {
+            return (23 + gas_left_ascii_len + 7, error);
+        }
 
         let gas_used_ascii_len = felt_to_ascii(error + 23 + gas_left_ascii_len + 7, gas_used);
 
