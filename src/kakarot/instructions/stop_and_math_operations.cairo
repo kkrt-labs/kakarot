@@ -224,12 +224,24 @@ namespace StopAndMathOperations {
         let range_check_ptr = [ap - 2];
         let popped = cast([ap - 1], Uint256*);
 
-        let (sum, _) = uint256_add(popped[0], popped[1]);
-        let (_, remainder) = uint256_unsigned_div_rem(sum, popped[2]);
+        tempvar mod_is_not_zero = popped[2].low + popped[2].high;
+        jmp addmod_not_zero if mod_is_not_zero != 0;
 
         tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
-        tempvar result = Uint256(remainder.low, remainder.high);
+        tempvar result = Uint256(0, 0);
+        jmp end;
+
+        addmod_not_zero:
+        // (a + b) mod n  = (a mod n + b mod n)mod n
+        let (_, a_mod_n) = uint256_unsigned_div_rem(popped[0], popped[2]);
+        let (_, b_mod_n) = uint256_unsigned_div_rem(popped[1], popped[2]);
+        let (sum, carry) = uint256_add(a_mod_n, b_mod_n);
+        let (_, result) = uint256_unsigned_div_rem(sum, popped[2]);
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
+        tempvar range_check_ptr = range_check_ptr;
+        tempvar result = result;
+
         jmp end;
 
         MULMOD:
@@ -237,14 +249,14 @@ namespace StopAndMathOperations {
         let popped = cast([ap - 1], Uint256*);
 
         tempvar mod_is_not_zero = popped[2].low + popped[2].high;
-        jmp not_zero if mod_is_not_zero != 0;
+        jmp mulmod_not_zero if mod_is_not_zero != 0;
 
         tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(0, 0);
         jmp end;
 
-        not_zero:
+        mulmod_not_zero:
         let (_, _, result) = uint256_mul_div_mod(popped[0], popped[1], popped[2]);
 
         tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
