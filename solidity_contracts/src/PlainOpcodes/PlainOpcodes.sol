@@ -194,6 +194,10 @@ contract PlainOpcodes {
         return mulmod(type(uint256).max, type(uint256).max, type(uint256).max);
     }
 
+    function addmodMax() public pure returns (uint) {
+        return addmod(type(uint256).max, type(uint256).max, type(uint256).max);
+    }
+
     receive() external payable {}
     fallback() external payable {}
 }
