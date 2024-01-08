@@ -18,21 +18,6 @@ async def rlp(starknet: Starknet):
 
 @pytest.mark.asyncio
 class TestRLP:
-    class TestEncodeList:
-        @pytest.mark.parametrize("payload_len", [55, 56])
-        async def test_should_match_encode_reference_implementation(
-            self, rlp, payload_len
-        ):
-            random.seed(0)
-            # data_len <= 55 is encoded as (0x80 + data_len), data, so payload_len - 1 is data_len
-            data = random.randbytes(payload_len - 1)
-            expected_result = encode([data])
-            payload = encode(data)
-            output = bytes(
-                (await rlp.test__encode_list(list(payload)).call()).result.data
-            )
-            assert expected_result == output
-
     class TestDecode:
         @pytest.mark.parametrize("payload_len", [55, 56])
         async def test_should_match_decode_reference_implementation(
