@@ -190,6 +190,10 @@ contract PlainOpcodes {
         selfdestruct(to);
     }
 
+    function mulmodMax() public pure returns (uint256) {
+        return mulmod(type(uint256).max, type(uint256).max, type(uint256).max);
+    }
+
     receive() external payable {}
     fallback() external payable {}
 }

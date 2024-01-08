@@ -236,6 +236,15 @@ namespace StopAndMathOperations {
         let range_check_ptr = [ap - 2];
         let popped = cast([ap - 1], Uint256*);
 
+        tempvar mod_is_not_zero = popped[2].low + popped[2].high;
+        jmp not_zero if mod_is_not_zero != 0;
+
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
+        tempvar range_check_ptr = range_check_ptr;
+        tempvar result = Uint256(0, 0);
+        jmp end;
+
+        not_zero:
         let (_, _, result) = uint256_mul_div_mod(popped[0], popped[1], popped[2]);
 
         tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);

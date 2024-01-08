@@ -442,3 +442,7 @@ class TestPlainOpcodes:
             )
             assert not success
             assert f"reverted on {message}".encode() in bytes(response)
+
+    class TestMulmod:
+        async def test_should_return_0(self, plain_opcodes):
+            assert 0 == await plain_opcodes.mulmodMax()
