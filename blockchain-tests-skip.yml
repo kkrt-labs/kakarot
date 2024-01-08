@@ -9,10 +9,6 @@ testname:
     - push0Gas_d0g0v0_Shanghai
     - push0_d1g0v0_Shanghai
   vmArithmeticTest:
-    - addmod_d11g0v0_Shanghai
-    - addmod_d10g0v0_Shanghai
-    - addmod_d9g0v0_Shanghai
-    - addmod_d8g0v0_Shanghai
     - divByZero_d63g0v0_Shanghai
     - divByZero_d64g0v0_Shanghai
     - divByZero_d65g0v0_Shanghai
