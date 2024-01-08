@@ -4107,7 +4107,7 @@ testname:
     - CrashingTransaction_d0g0v0_Shanghai
     - ContractCreationSpam_d0g0v0_Shanghai
   stBugs:
-    - randomStatetestDEFAULT_minus_Tue_07_58_41_minus_15153_minus_575192_d0g0v0_Shanghai
+    - randomStatetestDEFAULT-Tue_07_58_41-15153-575192_d0g0v0_Shanghai
   stCallCodes:
     - call_OOG_additionalGasCosts2_d0g0v0_Shanghai
   stCallCreateCallCodeTest:
@@ -4413,7 +4413,7 @@ testname:
     - eip2929_d4g0v0_Shanghai
     - eip2929_d5g0v0_Shanghai
     - eip2929_d37g0v0_Shanghai
-    - eip2929_minus_ff_d0g0v0_Shanghai
+    - eip2929-ff_d0g0v0_Shanghai
     - eip2929_d7g0v0_Shanghai
     - eip2929_d6g0v0_Shanghai
     - eip2929_d8g0v0_Shanghai
