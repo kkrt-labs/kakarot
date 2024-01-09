@@ -7131,8 +7131,9 @@ testname:
     - randomStatetest583_d0g0v0_Shanghai
   stQuadraticComplexityTest:
     - Call20KbytesContract50_1_d0g1v0_Shanghai
-    - Call20KbytesContract50_3_d0g1v0_Shanghai
     - Call20KbytesContract50_2_d0g1v0_Shanghai
+    - Call20KbytesContract50_3_d0g0v0_Shanghai
+    - Call20KbytesContract50_3_d0g1v0_Shanghai
     - Call1MB1024Calldepth_d0g1v0_Shanghai
     - Return50000_d0g1v0_Shanghai
     - Return50000_2_d0g1v0_Shanghai
