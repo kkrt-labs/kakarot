@@ -30,6 +30,6 @@ func test__modexp_impl{
         PrecompileModExpUint256.PRECOMPILE_ADDRESS, data_len, data
     );
 
-    let (result) = Helpers.bytes_to_felt(output_len, output, 0);
+    let result = Helpers.bytes_to_felt(output_len, output);
     return (result=result, gas_cost=gas_used);
 }

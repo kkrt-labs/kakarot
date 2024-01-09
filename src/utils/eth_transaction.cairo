@@ -67,26 +67,24 @@ namespace EthTransaction {
         RLP.decode([items].data_len, [items].data, sub_items);
 
         let nonce_idx = 0;
-        let (nonce) = Helpers.bytes_to_felt(
-            sub_items[nonce_idx].data_len, sub_items[nonce_idx].data, 0
+        let nonce = Helpers.bytes_to_felt(sub_items[nonce_idx].data_len, sub_items[nonce_idx].data);
+        let gas_price = Helpers.bytes_to_felt(
+            sub_items[nonce_idx + 1].data_len, sub_items[nonce_idx + 1].data
         );
-        let (gas_price) = Helpers.bytes_to_felt(
-            sub_items[nonce_idx + 1].data_len, sub_items[nonce_idx + 1].data, 0
+        let gas_limit = Helpers.bytes_to_felt(
+            sub_items[nonce_idx + 2].data_len, sub_items[nonce_idx + 2].data
         );
-        let (gas_limit) = Helpers.bytes_to_felt(
-            sub_items[nonce_idx + 2].data_len, sub_items[nonce_idx + 2].data, 0
+        let destination = Helpers.bytes_to_felt(
+            sub_items[nonce_idx + 3].data_len, sub_items[nonce_idx + 3].data
         );
-        let (destination) = Helpers.bytes_to_felt(
-            sub_items[nonce_idx + 3].data_len, sub_items[nonce_idx + 3].data, 0
-        );
-        let (amount) = Helpers.bytes_to_felt(
-            sub_items[nonce_idx + 4].data_len, sub_items[nonce_idx + 4].data, 0
+        let amount = Helpers.bytes_to_felt(
+            sub_items[nonce_idx + 4].data_len, sub_items[nonce_idx + 4].data
         );
         let payload_len = sub_items[nonce_idx + 5].data_len;
         let payload: felt* = sub_items[nonce_idx + 5].data;
 
-        let (chain_id) = Helpers.bytes_to_felt(
-            sub_items[nonce_idx + 6].data_len, sub_items[nonce_idx + 6].data, 0
+        let chain_id = Helpers.bytes_to_felt(
+            sub_items[nonce_idx + 6].data_len, sub_items[nonce_idx + 6].data
         );
 
         return (
@@ -152,26 +150,24 @@ namespace EthTransaction {
         RLP.decode([items].data_len, [items].data, sub_items);
 
         local chain_id_idx = 0;
-        let (chain_id) = Helpers.bytes_to_felt(
-            sub_items[chain_id_idx].data_len, sub_items[chain_id_idx].data, 0
+        let chain_id = Helpers.bytes_to_felt(
+            sub_items[chain_id_idx].data_len, sub_items[chain_id_idx].data
         );
 
         let nonce_idx = 1;
-        let (nonce) = Helpers.bytes_to_felt(
-            sub_items[nonce_idx].data_len, sub_items[nonce_idx].data, 0
-        );
+        let nonce = Helpers.bytes_to_felt(sub_items[nonce_idx].data_len, sub_items[nonce_idx].data);
         let gas_price_idx = tx_type + nonce_idx;
-        let (gas_price) = Helpers.bytes_to_felt(
-            sub_items[gas_price_idx].data_len, sub_items[gas_price_idx].data, 0
+        let gas_price = Helpers.bytes_to_felt(
+            sub_items[gas_price_idx].data_len, sub_items[gas_price_idx].data
         );
-        let (gas_limit) = Helpers.bytes_to_felt(
-            sub_items[gas_price_idx + 1].data_len, sub_items[gas_price_idx + 1].data, 0
+        let gas_limit = Helpers.bytes_to_felt(
+            sub_items[gas_price_idx + 1].data_len, sub_items[gas_price_idx + 1].data
         );
-        let (destination) = Helpers.bytes_to_felt(
-            sub_items[gas_price_idx + 2].data_len, sub_items[gas_price_idx + 2].data, 0
+        let destination = Helpers.bytes_to_felt(
+            sub_items[gas_price_idx + 2].data_len, sub_items[gas_price_idx + 2].data
         );
-        let (amount) = Helpers.bytes_to_felt(
-            sub_items[gas_price_idx + 3].data_len, sub_items[gas_price_idx + 3].data, 0
+        let amount = Helpers.bytes_to_felt(
+            sub_items[gas_price_idx + 3].data_len, sub_items[gas_price_idx + 3].data
         );
         let payload_len = sub_items[gas_price_idx + 4].data_len;
         let payload: felt* = sub_items[gas_price_idx + 4].data;

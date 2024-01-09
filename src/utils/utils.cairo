@@ -184,13 +184,15 @@ namespace Helpers {
     // @param len: number of bytes.
     // @param ptr: pointer to bytes array.
     // @return: packed felt.
-    func load_word(len: felt, ptr: felt*) -> felt {
+    func bytes_to_felt(len: felt, ptr: felt*) -> felt {
         if (len == 0) {
             return 0;
         }
         tempvar current = 0;
 
         // len, ptr, ?, ?, current
+        // ?, ? are intermediate steps created by the compiler to unfold the
+        // complex expression.
         loop:
         let len = [ap - 5];
         let ptr = cast([ap - 4], felt*);
@@ -198,9 +200,7 @@ namespace Helpers {
 
         tempvar len = len - 1;
         tempvar ptr = ptr + 1;
-        tempvar loaded = [ptr - 1];
-        tempvar tmp = current * 256;
-        tempvar current = tmp + loaded;
+        tempvar current = current * 256 + [ptr - 1];
 
         static_assert len == [ap - 5];
         static_assert ptr == [ap - 4];
@@ -519,21 +519,6 @@ namespace Helpers {
         return ();
     }
 
-    // @notice transform multiple bytes into a single felt
-    // @param data_len The length of the bytes
-    // @param data The pointer to the bytes array
-    // @param n used for recursion, set to 0
-    // @return n the resultant felt
-    func bytes_to_felt{range_check_ptr}(data_len: felt, data: felt*, n: felt) -> (n: felt) {
-        if (data_len == 0) {
-            return (n=n);
-        }
-        let e: felt = data_len - 1;
-        let byte: felt = data[0];
-        let (res) = pow(256, e);
-        return bytes_to_felt(data_len=data_len - 1, data=data + 1, n=n + byte * res);
-    }
-
     // @notice transform multiple bytes into words of 32 bits (big endian)
     // @dev the input data must have length in multiples of 4
     // @param data_len The length of the bytes
@@ -556,7 +541,7 @@ namespace Helpers {
         }
 
         // Load sequence of 4 bytes into a single 32-bit word (big endian)
-        let res = load_word(4, data);
+        let res = bytes_to_felt(4, data);
         assert n[n_len] = res;
         return bytes_to_bytes4_array(data_len=data_len - 4, data=data + 4, n_len=n_len + 1, n=n);
     }
