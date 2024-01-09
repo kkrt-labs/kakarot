@@ -70,7 +70,7 @@ async def main():
         logger.info(f"ℹ️  Found default EVM address {EVM_ADDRESS}")
         from scripts.utils.kakarot import get_eoa
 
-        await get_eoa(amount=1)
+        await get_eoa(amount=100)
 
 
 # %% Run
