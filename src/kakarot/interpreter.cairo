@@ -8,6 +8,8 @@ from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
+from starkware.cairo.common.default_dict import default_dict_new
+from starkware.cairo.common.dict_access import DictAccess
 
 // Internal dependencies
 from kakarot.account import Account
@@ -734,21 +736,34 @@ namespace Interpreter {
         // bytecode is data and data is empty
         // else, bytecode and data are kept as is
         let bytecode_len = calldata_len * is_deploy_tx + bytecode_len * (1 - is_deploy_tx);
-        let calldata_len = calldata_len * (1 - is_deploy_tx);
+
+        let tmp_bytecode = bytecode;
+        let tmp_calldata = calldata;
+        let tmp_intrinsic_gas = intrinsic_gas;
+        local bytecode: felt*;
+        local calldata: felt*;
+        local intrinsic_gas: felt;
         if (is_deploy_tx != 0) {
             let (empty: felt*) = alloc();
-            tempvar bytecode = calldata;
-            tempvar calldata = empty;
-            tempvar intrinsic_gas = intrinsic_gas + Gas.CREATE;
+            assert bytecode = tmp_calldata;
+            assert calldata = empty;
+            assert intrinsic_gas = tmp_intrinsic_gas + Gas.CREATE;
         } else {
-            tempvar bytecode = bytecode;
-            tempvar calldata = calldata;
-            tempvar intrinsic_gas = intrinsic_gas;
+            assert bytecode = tmp_bytecode;
+            assert calldata = tmp_calldata;
+            assert intrinsic_gas = tmp_intrinsic_gas;
         }
 
+        let (valid_jumpdests_start: DictAccess*) = default_dict_new(0);
+        tempvar valid_jumpdests = valid_jumpdests_start;
+        Helpers.init_valid_jumpdests{valid_jumpdests=valid_jumpdests}(
+            i=0, bytecode_len=bytecode_len, bytecode=bytecode
+        );
         tempvar message = new model.Message(
             bytecode=bytecode,
             bytecode_len=bytecode_len,
+            valid_jumpdests_start=valid_jumpdests_start,
+            valid_jumpdests=valid_jumpdests,
             calldata=calldata,
             calldata_len=calldata_len,
             value=value,

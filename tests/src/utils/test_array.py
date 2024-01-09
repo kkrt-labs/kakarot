@@ -61,3 +61,17 @@ class TestArray:
             assert (arr + (offset + size) * [0])[offset : offset + size] == (
                 (await array_.test__slice(arr, offset, size).call()).result.slice
             )
+
+    class TestContains:
+        @pytest.mark.parametrize(
+            "arr, value, expected",
+            [
+                ([0, 1, 2, 3, 4], 1, True),
+                ([0, 1, 2, 3], 5, False),
+                ([0, 1, 19], 19, True),
+                ([0], 0, True),
+                ([], 1, False),
+            ],
+        )
+        async def test_should_return_if_contains(self, array_, arr, value, expected):
+            assert expected == ((await array_.test_contains(arr, value).call()).result.is_contained)

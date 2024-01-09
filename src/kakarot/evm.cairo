@@ -9,6 +9,7 @@ from starkware.cairo.common.math_cmp import is_le, is_le_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.dict import dict_read
 
 from kakarot.errors import Errors
 from kakarot.model import model
@@ -169,14 +170,41 @@ namespace EVM {
             return evm;
         }
 
-        if ([self.message.bytecode + new_pc_offset] != 0x5b) {
+        let valid_jumpdests = self.message.valid_jumpdests;
+        let (is_valid_jumpdest) = dict_read{dict_ptr=valid_jumpdests}(new_pc_offset);
+        tempvar updated_message = new model.Message(
+            bytecode=self.message.bytecode,
+            bytecode_len=self.message.bytecode_len,
+            valid_jumpdests_start=self.message.valid_jumpdests_start,
+            valid_jumpdests=valid_jumpdests,
+            calldata=self.message.calldata,
+            calldata_len=self.message.calldata_len,
+            value=self.message.value,
+            parent=self.message.parent,
+            address=self.message.address,
+            read_only=self.message.read_only,
+            is_create=self.message.is_create,
+            depth=self.message.depth,
+            env=self.message.env,
+        );
+
+        if (is_valid_jumpdest == FALSE) {
             let (revert_reason_len, revert_reason) = Errors.invalidJumpDestError();
+            tempvar self = new model.EVM(
+                message=updated_message,
+                return_data_len=self.return_data_len,
+                return_data=self.return_data,
+                program_counter=self.program_counter,
+                stopped=self.stopped,
+                gas_left=self.gas_left,
+                reverted=self.reverted,
+            );
             let evm = EVM.stop(self, revert_reason_len, revert_reason, TRUE);
             return evm;
         }
 
         return new model.EVM(
-            message=self.message,
+            message=updated_message,
             return_data_len=self.return_data_len,
             return_data=self.return_data,
             program_counter=new_pc_offset,

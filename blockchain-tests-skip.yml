@@ -57,8 +57,6 @@ testname:
   vmIOandFlowOperations:
     - gas_d1g0v0_Shanghai
     - gas_d0g0v0_Shanghai
-    - jump_d9g0v0_Shanghai
-    - jumpi_d14g0v0_Shanghai
   vmTests:
     - blockInfo_d1g0v0_Shanghai
     - blockInfo_d0g0v0_Shanghai
