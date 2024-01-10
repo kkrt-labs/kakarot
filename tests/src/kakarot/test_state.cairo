@@ -123,36 +123,25 @@ func test__copy__should_return_new_state_with_same_attributes{
 }
 
 @external
-func test_is_account_alive_existing_account{
+func test_existing_account{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(nonce, code_len, code: felt*, balance_low) -> (is_alive: felt) {
     tempvar balance = new Uint256(balance_low, 0);
-    let address = 'alive';
-    let account = Account.init(address, code_len, code, nonce, balance);
-
+    let evm_address = 'alive';
+    tempvar address = new model.Address(0, evm_address);
+    let account = Account.init(evm_address, code_len, code, nonce, balance);
     let state = State.init();
 
-    // Write account and update state
-    let accounts = state.accounts;
-    dict_write{dict_ptr=accounts}(address, cast(account, felt));
-    tempvar state = new model.State(
-        accounts_start=state.accounts_start,
-        accounts=accounts,
-        events_len=state.events_len,
-        events=state.events,
-        transfers_len=state.transfers_len,
-        transfers=state.transfers,
-    );
-
     with state {
-        let is_alive = State.is_account_alive(address);
+        State.set_account(address, account);
+        let is_alive = State.is_account_alive(evm_address);
     }
 
     return (is_alive=is_alive);
 }
 
 @external
-func test_is_account_alive_not_in_state{
+func test_not_in_state{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> (is_alive: felt) {
     let state = State.init();
