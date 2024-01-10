@@ -734,6 +734,7 @@ namespace Interpreter {
         // bytecode is data and data is empty
         // else, bytecode and data are kept as is
         let bytecode_len = calldata_len * is_deploy_tx + bytecode_len * (1 - is_deploy_tx);
+        let calldata_len = calldata_len * (1 - is_deploy_tx);
 
         let tmp_bytecode = bytecode;
         let tmp_calldata = calldata;
