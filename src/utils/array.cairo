@@ -90,7 +90,6 @@ func contains{range_check_ptr}(arr_len: felt, arr: felt*, value: felt) -> felt {
     }
 
     tempvar i = 0;
-    tempvar is_found = FALSE;
 
     body:
     let arr_len = [fp - 5];
@@ -98,8 +97,8 @@ func contains{range_check_ptr}(arr_len: felt, arr: felt*, value: felt) -> felt {
     let value = [fp - 3];
     let i = [ap - 1];
 
-    tempvar check_value = ([arr + i] - value);
-    tempvar check_bound = (arr_len - (i + 1));
+    tempvar check_value = [arr + i] - value;
+    tempvar check_bound = arr_len - (i + 1);
     tempvar checks = check_value * check_bound;
 
     tempvar i = i + 1;

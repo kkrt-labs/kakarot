@@ -591,43 +591,4 @@ namespace Helpers {
             data_len=data_len - 1, data=data + 1, bytes_len=bytes_len + 4, bytes=res
         );
     }
-
-    // @notice Initializes a dictionary of valid jump destinations in EVM bytecode.
-    // @param i The current index in the bytecode.
-    // @param bytecode_len The length of the bytecode.
-    // @param bytecode The EVM bytecode to analyze.
-    // @param valid_jumpdests A dictionary to be filled with valid jump destinations.
-    // @return valid_jumpdests The updated dictionary with valid jump destinations.
-    //
-    // @dev This function iterates over the bytecode from the current index 'i'.
-    // If the opcode at the current index is between 0x5f and 0x7f (PUSHN opcodes) (inclusive),
-    // it skips the next 'n_args' opcodes, where 'n_args' is the opcode minus 0x5f.
-    // If the opcode is 0x5b (JUMPDEST), it marks the current index as a valid jump destination.
-    // The function then increments the index and recursively calls itself until it has processed the entire bytecode.
-    func init_valid_jumpdests{range_check_ptr, valid_jumpdests: DictAccess*}(
-        i: felt, bytecode_len: felt, bytecode: felt*
-    ) {
-        let is_done = is_le(bytecode_len, i);
-        if (is_done != FALSE) {
-            return ();
-        }
-
-        let opcode = [bytecode + i];
-        let is_opcode_ge_0x5f = is_le_felt(0x5f, opcode);
-        let is_opcode_le_0x7f = is_le_felt(opcode, 0x7f);
-
-        if ((is_opcode_ge_0x5f * is_opcode_le_0x7f) == TRUE) {
-            let n_args = opcode - 0x5f;
-            return init_valid_jumpdests(
-                i=i + 1 + n_args, bytecode_len=bytecode_len, bytecode=bytecode
-            );
-        }
-
-        if (opcode == 0x5b) {
-            dict_write{dict_ptr=valid_jumpdests}(i, TRUE);
-            return init_valid_jumpdests(i=i + 1, bytecode_len=bytecode_len, bytecode=bytecode);
-        }
-
-        return init_valid_jumpdests(i=i + 1, bytecode_len=bytecode_len, bytecode=bytecode);
-    }
 }

@@ -172,7 +172,7 @@ namespace EVM {
 
         let valid_jumpdests = self.message.valid_jumpdests;
         let (is_valid_jumpdest) = dict_read{dict_ptr=valid_jumpdests}(new_pc_offset);
-        tempvar updated_message = new model.Message(
+        tempvar message = new model.Message(
             bytecode=self.message.bytecode,
             bytecode_len=self.message.bytecode_len,
             valid_jumpdests_start=self.message.valid_jumpdests_start,
@@ -190,21 +190,21 @@ namespace EVM {
 
         if (is_valid_jumpdest == FALSE) {
             let (revert_reason_len, revert_reason) = Errors.invalidJumpDestError();
-            tempvar self = new model.EVM(
-                message=updated_message,
-                return_data_len=self.return_data_len,
-                return_data=self.return_data,
+            // stop and revert the execution context with the updated `message`
+            tempvar evm = new model.EVM(
+                message=message,
+                return_data_len=revert_reason_len,
+                return_data=revert_reason,
                 program_counter=self.program_counter,
-                stopped=self.stopped,
+                stopped=TRUE,
                 gas_left=self.gas_left,
-                reverted=self.reverted,
+                reverted=TRUE,
             );
-            let evm = EVM.stop(self, revert_reason_len, revert_reason, TRUE);
             return evm;
         }
 
         return new model.EVM(
-            message=updated_message,
+            message=message,
             return_data_len=self.return_data_len,
             return_data=self.return_data,
             program_counter=new_pc_offset,

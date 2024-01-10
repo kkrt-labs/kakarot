@@ -8,8 +8,6 @@ from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
-from starkware.cairo.common.default_dict import default_dict_new
-from starkware.cairo.common.dict_access import DictAccess
 
 // Internal dependencies
 from kakarot.account import Account
@@ -754,10 +752,8 @@ namespace Interpreter {
             assert intrinsic_gas = tmp_intrinsic_gas;
         }
 
-        let (valid_jumpdests_start: DictAccess*) = default_dict_new(0);
-        tempvar valid_jumpdests = valid_jumpdests_start;
-        Helpers.init_valid_jumpdests{valid_jumpdests=valid_jumpdests}(
-            i=0, bytecode_len=bytecode_len, bytecode=bytecode
+        let (valid_jumpdests_start, valid_jumpdests) = Account.init_valid_jumpdests(
+            bytecode_len=bytecode_len, bytecode=bytecode
         );
         tempvar message = new model.Message(
             bytecode=bytecode,

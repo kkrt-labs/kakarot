@@ -74,4 +74,6 @@ class TestArray:
             ],
         )
         async def test_should_return_if_contains(self, array_, arr, value, expected):
-            assert expected == ((await array_.test_contains(arr, value).call()).result.is_contained)
+            assert expected == (
+                (await array_.test_contains(arr, value).call()).result.is_contained
+            )

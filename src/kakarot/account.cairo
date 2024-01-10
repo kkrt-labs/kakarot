@@ -9,7 +9,7 @@ from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.dict import dict_read, dict_write
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.hash import hash2
-from starkware.cairo.common.math_cmp import is_not_zero
+from starkware.cairo.common.math_cmp import is_not_zero, is_le
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.hash_state import (
@@ -365,6 +365,62 @@ namespace Account {
         let (local registered_starknet_account) = get_registered_starknet_address(address);
         let starknet_account_exists = is_not_zero(registered_starknet_account);
         return starknet_account_exists;
+    }
+
+    // @notice Initializes a dictionary of valid jump destinations in EVM bytecode.
+    // @param i The current index in the bytecode.
+    // @param bytecode_len The length of the bytecode.
+    // @param bytecode The EVM bytecode to analyze.
+    // @param valid_jumpdests A dictionary to be filled with valid jump destinations.
+    // @return valid_jumpdests The updated dictionary with valid jump destinations.
+    //
+    // @dev This function iterates over the bytecode from the current index 'i'.
+    // If the opcode at the current index is between 0x5f and 0x7f (PUSHN opcodes) (inclusive),
+    // it skips the next 'n_args' opcodes, where 'n_args' is the opcode minus 0x5f.
+    // If the opcode is 0x5b (JUMPDEST), it marks the current index as a valid jump destination.
+    // The function then increments the index and recursively calls itself until it has processed the entire bytecode.
+    func init_valid_jumpdests{range_check_ptr}(bytecode_len: felt, bytecode: felt*) -> (
+        valid_jumpdests_start: DictAccess*, valid_jumpdests: DictAccess*
+    ) {
+        alloc_locals;
+        let (local valid_jumpdests_start: DictAccess*) = default_dict_new(0);
+        tempvar valid_jumpdests = valid_jumpdests_start;
+        tempvar i = 0;
+
+        body:
+        let bytecode_len = [fp - 4];
+        let bytecode = cast([fp - 3], felt*);
+        let valid_jumpdests = cast([ap - 2], DictAccess*);
+        let i = [ap - 1];
+
+        let opcode = [bytecode + i];
+        let is_opcode_ge_0x5f = is_le(0x5f, opcode);
+        let is_opcode_le_0x7f = is_le(opcode, 0x7f);
+        let is_push_opcode = is_opcode_ge_0x5f * is_opcode_le_0x7f;
+        if (is_push_opcode != FALSE) {
+            let n_args = opcode - 0x5f;
+            tempvar i = i + 1 + n_args;
+        } else {
+            tempvar i = i + 1;
+        }
+
+        if (opcode == 0x5b) {
+            dict_write{dict_ptr=valid_jumpdests}(i, TRUE);
+            tempvar valid_jumpdests = valid_jumpdests;
+            tempvar i = i;
+        } else {
+            tempvar valid_jumpdests = valid_jumpdests;
+            tempvar i = i;
+        }
+
+        tempvar check_bound = is_le(bytecode_len, i);
+        tempvar valid_jumpdests = valid_jumpdests;
+        tempvar i = i;
+        static_assert valid_jumpdests == [ap - 2];
+        static_assert i == [ap - 1];
+        jmp body if check_bound != 0;
+
+        return (valid_jumpdests_start=valid_jumpdests_start, valid_jumpdests=valid_jumpdests);
     }
 }
 

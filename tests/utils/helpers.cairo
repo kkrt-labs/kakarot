@@ -24,6 +24,7 @@ from kakarot.evm import EVM
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
+from kakarot.account import Account
 from utils.utils import Helpers
 from backend.starknet import Starknet
 
@@ -40,10 +41,8 @@ namespace TestHelpers {
         tempvar address_0 = new model.Address(0, 0);
         let env = Starknet.get_env(address_0, 0);
         tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
-        let (valid_jumpdests_start: DictAccess*) = default_dict_new(0);
-        tempvar valid_jumpdests = valid_jumpdests_start;
-        Helpers.init_valid_jumpdests{valid_jumpdests=valid_jumpdests}(
-            i=0, bytecode_len=bytecode_len, bytecode=bytecode
+        let (valid_jumpdests_start, valid_jumpdests) = Account.init_valid_jumpdests(
+            bytecode_len=bytecode_len, bytecode=bytecode
         );
         local message: model.Message* = new model.Message(
             bytecode=bytecode,
