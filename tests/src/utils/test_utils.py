@@ -27,3 +27,4 @@ def test_utils(compiled_contract):
     )
     if process.returncode:
         raise ValueError(process.stderr.decode("utf-8"))
+    print(process.stdout.decode("utf-8"))
