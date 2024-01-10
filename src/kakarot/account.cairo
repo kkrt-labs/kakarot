@@ -401,27 +401,27 @@ namespace Account {
         let is_opcode_ge_0x5f = is_le(0x5f, opcode);
         let is_opcode_le_0x7f = is_le(opcode, 0x7f);
         let is_push_opcode = is_opcode_ge_0x5f * is_opcode_le_0x7f;
-        let i = i + 1 + is_push_opcode * (opcode - 0x5f);
+        let next_i = i + 1 + is_push_opcode * (opcode - 0x5f);  // 0x5f is the first PUSHN opcode, opcode - 0x5f is the number of arguments.
 
         if (opcode == 0x5b) {
             dict_write{dict_ptr=valid_jumpdests}(i, TRUE);
             tempvar valid_jumpdests = valid_jumpdests;
-            tempvar i = i;
+            tempvar next_i = next_i;
             tempvar range_check_ptr = range_check_ptr;
         } else {
             tempvar valid_jumpdests = valid_jumpdests;
-            tempvar i = i;
+            tempvar next_i = next_i;
             tempvar range_check_ptr = range_check_ptr;
         }
 
-        tempvar check_bound = is_le(bytecode_len + 1, i);
+        tempvar is_not_done = is_le(next_i + 1, bytecode_len);
         tempvar range_check_ptr = range_check_ptr;
         tempvar valid_jumpdests = valid_jumpdests;
-        tempvar i = i;
+        tempvar i = next_i;
         static_assert range_check_ptr == [ap - 3];
         static_assert valid_jumpdests == [ap - 2];
         static_assert i == [ap - 1];
-        jmp body if check_bound != 0;
+        jmp body if is_not_done != 0;
 
         end:
         tempvar range_check_ptr = [ap - 3];
