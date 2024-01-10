@@ -752,7 +752,7 @@ namespace Interpreter {
             assert intrinsic_gas = tmp_intrinsic_gas;
         }
 
-        let (valid_jumpdests_start, valid_jumpdests) = Account.init_valid_jumpdests(
+        let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
             bytecode_len=bytecode_len, bytecode=bytecode
         );
         tempvar message = new model.Message(

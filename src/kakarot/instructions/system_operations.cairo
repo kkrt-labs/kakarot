@@ -136,7 +136,7 @@ namespace SystemOperations {
 
         // Create child message
         let (calldata: felt*) = alloc();
-        let (valid_jumpdests_start, valid_jumpdests) = Account.init_valid_jumpdests(
+        let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
             bytecode_len=size.low, bytecode=bytecode
         );
         tempvar message = new model.Message(
@@ -555,7 +555,7 @@ namespace CallHelper {
         tempvar parent = new model.Parent(evm, stack, memory, state);
         let stack = Stack.init();
         let memory = Memory.init();
-        let (valid_jumpdests_start, valid_jumpdests) = Account.init_valid_jumpdests(
+        let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
             bytecode_len=account.code_len, bytecode=account.code
         );
         if (self_call == FALSE) {

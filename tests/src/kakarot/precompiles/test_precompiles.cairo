@@ -13,6 +13,7 @@ from kakarot.stack import Stack
 from kakarot.memory import Memory
 from kakarot.state import State
 from kakarot.precompiles.precompiles import Precompiles
+from starkware.cairo.common.dict_access import DictAccess
 
 @external
 func test__is_precompile{range_check_ptr}(address: felt) -> (is_precompile: felt) {
