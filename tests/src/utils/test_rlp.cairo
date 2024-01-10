@@ -1,16 +1,33 @@
-%lang starknet
+%builtins range_check
 
 from utils.rlp import RLP
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.memcpy import memcpy
 
-@view
-func test__decode_at_index{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
-}(data_len: felt, data: felt*, index: felt) -> (data_len: felt, data: felt*, is_list: felt) {
+func test__decode{range_check_ptr}() {
     alloc_locals;
+    // Given
+    tempvar data_len: felt;
+    let (data) = alloc();
+    %{
+        ids.data_len = len(program_input["data"])
+        segments.write_arg(ids.data, program_input["data"])
+    %}
+
+    // When
     let (local items: RLP.Item*) = alloc();
     RLP.decode(data_len, data, items);
-    let item = items[index];
-    return (data_len=item.data_len, data=item.data, is_list=item.is_list);
+
+    // Then
+    let item = items[0];
+    tempvar is_list: felt;
+    %{ ids.is_list = program_input["is_list"] %}
+    assert item.is_list = is_list;
+
+    tempvar output: felt*;
+    %{ ids.output = output %}
+    memcpy(output, item.data, item.data_len);
+
+    return ();
 }

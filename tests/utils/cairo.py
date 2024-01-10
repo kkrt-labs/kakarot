@@ -3,7 +3,7 @@ from starkware.cairo.lang.vm.cairo_runner import CairoRunner
 from starkware.cairo.lang.vm.memory_dict import MemoryDict
 
 
-def run_program_entrypoint(program, entrypoint, program_input=None):
+def run_program_entrypoint(program, entrypoint, program_input=None) -> list:
     runner = CairoRunner(
         program=program,
         layout="small",
@@ -24,7 +24,8 @@ def run_program_entrypoint(program, entrypoint, program_input=None):
 
     return_fp = runner.segments.add()
     end = runner.segments.add()
-    stack = stack + [return_fp, end]
+    output = runner.segments.add()
+    stack = stack + [return_fp, end, output]
 
     runner.initialize_state(
         entrypoint=program.identifiers.get_by_full_name(
@@ -35,8 +36,12 @@ def run_program_entrypoint(program, entrypoint, program_input=None):
     runner.initial_fp = runner.initial_ap = runner.execution_base + len(stack)
     runner.final_pc = end
 
-    runner.initialize_vm(hint_locals={"program_input": program_input or {}})
-    runner.run_until_pc(end)
+    runner.initialize_vm(
+        hint_locals={"program_input": program_input or {}},
+        static_locals={"output": output},
+    )
+    runner.run_until_pc(output)
     runner.original_steps = runner.vm.current_step
     runner.end_run(disable_trace_padding=False)
-    runner.print_output()
+    output_size = runner.segments.get_segment_size(output.segment_index)
+    return [runner.segments.memory.get(output + i) for i in range(output_size)]

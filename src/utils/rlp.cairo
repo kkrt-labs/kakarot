@@ -1,19 +1,6 @@
-// SPDX-License-Identifier: MIT
-
-%lang starknet
-
-from starkware.cairo.common.bool import TRUE, FALSE
-from starkware.cairo.common.memcpy import memcpy
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.math_cmp import is_le
-from starkware.cairo.common.math import assert_le, split_felt
-from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.pow import pow
-from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.math import unsigned_div_rem
-from starkware.cairo.common.uint256 import word_reverse_endian
 from utils.utils import Helpers
-from utils.bytes import felt_to_bytes
 
 // The namespace handling all RLP computation
 namespace RLP {
@@ -28,12 +15,7 @@ namespace RLP {
     // @param data_len The length of the bytes
     // @param data The pointer to the first byte in array
     // @param items A pointer to an empty array of items, will be filled with found items
-    func decode{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        bitwise_ptr: BitwiseBuiltin*,
-        range_check_ptr,
-    }(data_len: felt, data: felt*, items: Item*) -> () {
+    func decode{range_check_ptr}(data_len: felt, data: felt*, items: Item*) -> () {
         alloc_locals;
         if (data_len == 0) {
             return ();
