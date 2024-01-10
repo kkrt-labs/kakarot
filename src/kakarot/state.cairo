@@ -10,6 +10,7 @@ from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256, uint256_add, uint256_sub, uint256_le, uint256_eq
+from starkware.cairo.common.bool import FALSE, TRUE
 
 from kakarot.account import Account
 from kakarot.model import model
@@ -250,13 +251,6 @@ namespace State {
         alloc_locals;
         let accounts = state.accounts;
         let (pointer) = dict_read{dict_ptr=accounts}(key=evm_address);
-
-        // If not found in local storage, the account is not alive
-        if (pointer == 0) {
-            return FALSE;
-        }
-
-        let account = cast(pointer, model.Account*);
         tempvar state = new model.State(
             accounts_start=state.accounts_start,
             accounts=accounts,
@@ -265,6 +259,13 @@ namespace State {
             transfers_len=state.transfers_len,
             transfers=state.transfers,
         );
+
+        // If not found in local storage, the account is not alive
+        if (pointer == 0) {
+            return FALSE;
+        }
+
+        let account = cast(pointer, model.Account*);
 
         let nonce = account.nonce;
         let code_len = account.code_len;
