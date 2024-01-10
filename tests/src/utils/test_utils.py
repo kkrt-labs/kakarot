@@ -2,9 +2,8 @@ import subprocess
 from pathlib import Path
 
 import pytest
-from starkware.cairo.lang.vm.cairo_run import load_program
-from starkware.cairo.lang.vm.cairo_runner import CairoRunner
-from starkware.cairo.lang.vm.memory_dict import MemoryDict
+
+from tests.utils.cairo import run_program_entrypoint
 
 
 @pytest.fixture(scope="module")
@@ -22,19 +21,59 @@ def compiled_contract():
     compiled_path.unlink()
 
 
-def test_utils(compiled_contract):
-    program = load_program(open(compiled_contract))
-    runner = CairoRunner(
-        program=program,
-        layout="small",
-        memory=MemoryDict(),
-        proof_mode=False,
-        allow_missing_builtins=False,
+@pytest.mark.parametrize(
+    "test_case,data,expected",
+    [
+        (
+            "test__bytes4_array_to_bytes",
+            [
+                0x68656C6C,
+                0x6F20776F,
+                0x726C6400,
+            ],
+            [
+                0x68,
+                0x65,
+                0x6C,
+                0x6C,
+                0x6F,
+                0x20,
+                0x77,
+                0x6F,
+                0x72,
+                0x6C,
+                0x64,
+                0x00,
+            ],
+        ),
+        (
+            "test__bytes_to_bytes4_array",
+            [
+                0x68,
+                0x65,
+                0x6C,
+                0x6C,
+                0x6F,
+                0x20,
+                0x77,
+                0x6F,
+                0x72,
+                0x6C,
+                0x64,
+                0x00,
+            ],
+            [
+                0x68656C6C,
+                0x6F20776F,
+                0x726C6400,
+            ],
+        ),
+        ("test__bytes_i_to_uint256", [], []),
+    ],
+)
+def test_utils(compiled_contract, test_case, data, expected):
+    run_program_entrypoint(
+        compiled_contract,
+        test_case,
+        {"data": data, "expected": expected},
     )
-    runner.initialize_segments()
-    end = runner.initialize_main_entrypoint()
-    runner.initialize_vm(hint_locals={"program_input": {}})
-    runner.run_until_pc(end)
-    runner.original_steps = runner.vm.current_step
-    runner.end_run(disable_trace_padding=False)
-    runner.print_output()
