@@ -1,26 +1,29 @@
+import subprocess
+from pathlib import Path
+
 import pytest
-import pytest_asyncio
-from starkware.starknet.testing.starknet import Starknet
 
 
-@pytest_asyncio.fixture(scope="module")
-async def helpers(starknet: Starknet):
-    class_hash = await starknet.deprecated_declare(
-        source="./tests/src/utils/test_utils.cairo",
-        cairo_path=["src"],
-        disable_hint_validation=False,
+@pytest.fixture(scope="module")
+def compiled_contract():
+    path = Path("tests/src/utils/test_utils.cairo")
+    compiled_path = path.parent / f"{path.stem}_compiled.json"
+    subprocess.run(
+        f"cairo-compile --output {compiled_path} {path}",
+        env={"CAIRO_PATH": "src"},
+        shell=True,
     )
-    return await starknet.deploy(class_hash=class_hash.class_hash)
+
+    yield compiled_path
+
+    compiled_path.unlink()
 
 
-@pytest.mark.asyncio
-@pytest.mark.Utils
-class TestHelpers:
-    async def test__bytes_i_to_uint256(self, helpers):
-        await helpers.test__bytes_i_to_uint256().call()
-
-    async def test__bytes_to_bytes4_array(self, helpers):
-        await helpers.test__bytes_to_bytes4_array().call()
-
-    async def test__bytes4_array_to_bytes(self, helpers):
-        await helpers.test__bytes4_array_to_bytes().call()
+def test_utils(compiled_contract):
+    process = subprocess.run(
+        f"cairo-run --program {compiled_contract} --layout=small",
+        shell=True,
+        capture_output=True,
+    )
+    if process.returncode:
+        raise ValueError(process.stderr.decode("utf-8"))
