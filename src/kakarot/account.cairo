@@ -386,6 +386,9 @@ namespace Account {
         let (local valid_jumpdests_start: DictAccess*) = default_dict_new(0);
         tempvar valid_jumpdests = valid_jumpdests_start;
         tempvar i = 0;
+        jmp body if bytecode_len != 0;
+        tempvar range_check_ptr = range_check_ptr;
+        jmp end;
 
         body:
         let bytecode_len = [fp - 4];
@@ -419,7 +422,10 @@ namespace Account {
         static_assert valid_jumpdests == [ap - 2];
         static_assert i == [ap - 1];
         jmp body if check_bound != 0;
+        tempvar range_check_ptr = range_check_ptr;
 
+        end:
+        tempvar range_check_ptr = [ap - 1];
         return (valid_jumpdests_start=valid_jumpdests_start, valid_jumpdests=valid_jumpdests);
     }
 }

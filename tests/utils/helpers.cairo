@@ -29,7 +29,7 @@ from utils.utils import Helpers
 from backend.starknet import Starknet
 
 namespace TestHelpers {
-    func init_evm_at_address{syscall_ptr: felt*}(
+    func init_evm_at_address{syscall_ptr: felt*, range_check_ptr}(
         bytecode_len: felt,
         bytecode: felt*,
         starknet_contract_address: felt,
