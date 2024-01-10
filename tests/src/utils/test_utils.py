@@ -1,24 +1,16 @@
-import subprocess
 from pathlib import Path
 
 import pytest
+from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
+from starkware.cairo.lang.compiler.cairo_compile import compile_cairo
 
 from tests.utils.cairo import run_program_entrypoint
 
 
 @pytest.fixture(scope="module")
-def compiled_contract():
+def program():
     path = Path("tests/src/utils/test_utils.cairo")
-    compiled_path = path.parent / f"{path.stem}_compiled.json"
-    subprocess.run(
-        f"cairo-compile --output {compiled_path} {path}",
-        env={"CAIRO_PATH": "src"},
-        shell=True,
-    )
-
-    yield compiled_path
-
-    compiled_path.unlink()
+    return compile_cairo(path.read_text(), cairo_path=["src"], prime=DEFAULT_PRIME)
 
 
 @pytest.mark.parametrize(
@@ -71,9 +63,9 @@ def compiled_contract():
         ("test__bytes_i_to_uint256", [], []),
     ],
 )
-def test_utils(compiled_contract, test_case, data, expected):
+def test_utils(program, test_case, data, expected):
     run_program_entrypoint(
-        compiled_contract,
+        program,
         test_case,
         {"data": data, "expected": expected},
     )

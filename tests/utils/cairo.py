@@ -1,13 +1,9 @@
-import json
-
-from starkware.cairo.lang.compiler.program import Program
+from starkware.cairo.lang.compiler.scoped_name import ScopedName
 from starkware.cairo.lang.vm.cairo_runner import CairoRunner
 from starkware.cairo.lang.vm.memory_dict import MemoryDict
 
 
-def run_program_entrypoint(program_path, entrypoint, program_input=None):
-    program_json = json.loads(program_path.read_text())
-    program = Program.load(data=program_json)
+def run_program_entrypoint(program, entrypoint, program_input=None):
     runner = CairoRunner(
         program=program,
         layout="small",
@@ -29,8 +25,13 @@ def run_program_entrypoint(program_path, entrypoint, program_input=None):
     return_fp = runner.segments.add()
     end = runner.segments.add()
     stack = stack + [return_fp, end]
-    main = program_json["identifiers"].get(f"__main__.{entrypoint}")["pc"]
-    runner.initialize_state(main, stack)
+
+    runner.initialize_state(
+        entrypoint=program.identifiers.get_by_full_name(
+            ScopedName(path=["__main__", entrypoint])
+        ).pc,
+        stack=stack,
+    )
     runner.initial_fp = runner.initial_ap = runner.execution_base + len(stack)
     runner.final_pc = end
 
