@@ -54,11 +54,12 @@ namespace Precompiles {
         // Build returned execution context
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
+        let (valid_jumdests) = default_dict_new(0);
         tempvar message = new model.Message(
             bytecode=cast(0, felt*),
             bytecode_len=0,
-            valid_jumpdests_start=cast(0, DictAccess*),
-            valid_jumpdests=cast(0, DictAccess*),
+            valid_jumpdests_start=valid_jumdests,
+            valid_jumpdests=valid_jumdests,
             calldata=cast(0, felt*),
             calldata_len=0,
             value=0,
