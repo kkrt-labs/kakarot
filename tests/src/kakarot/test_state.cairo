@@ -123,7 +123,7 @@ func test__copy__should_return_new_state_with_same_attributes{
 }
 
 @external
-func test_existing_account{
+func test__is_account_alive__existing_account{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(nonce, code_len, code: felt*, balance_low) -> (is_alive: felt) {
     tempvar balance = new Uint256(balance_low, 0);
@@ -141,7 +141,7 @@ func test_existing_account{
 }
 
 @external
-func test_not_in_state{
+func test__is_account_alive__not_in_state{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> (is_alive: felt) {
     let state = State.init();
