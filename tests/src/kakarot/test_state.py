@@ -37,10 +37,14 @@ class TestState:
             self, state, nonce, code, balance_low, expected_result
         ):
             result = (
-                await state.test__is_account_alive__existing_account(nonce, code, balance_low).call()
+                await state.test__is_account_alive__existing_account(
+                    nonce, code, balance_low
+                ).call()
             ).result.is_alive
             assert result == expected_result
 
         async def test_not_in_state(self, state):
-            result = (await state.test__is_account_alive__not_in_state().call()).result.is_alive
+            result = (
+                await state.test__is_account_alive__not_in_state().call()
+            ).result.is_alive
             assert result == 0
