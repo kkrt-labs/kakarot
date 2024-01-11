@@ -229,7 +229,7 @@ namespace MemoryOperations {
 
         let key = popped;  // Uint256*
         let value = popped + Uint256.SIZE;  // Uint256*
-        State.write_storage(evm.message.address, key, value);
+        State.write_storage(evm.message.address.evm, key, value);
         return evm;
     }
 
@@ -245,7 +245,7 @@ namespace MemoryOperations {
         alloc_locals;
 
         let (key) = Stack.pop();
-        let value = State.read_storage(evm.message.address, key);
+        let value = State.read_storage(evm.message.address.evm, key);
         Stack.push(value);
         return evm;
     }

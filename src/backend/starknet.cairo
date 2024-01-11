@@ -96,7 +96,7 @@ namespace Starknet {
 
     // @notice Populate a Environment with Starknet syscalls
     func get_env{syscall_ptr: felt*}(
-        origin: model.Address*, gas_price: felt
+        origin_evm_address: felt, gas_price: felt
     ) -> model.Environment* {
         alloc_locals;
         let (block_number) = get_block_number();
@@ -109,7 +109,7 @@ namespace Starknet {
             0xacdffe0cf08e20ed8ba10ea97a487004, 0x388ca486b82e20cc81965d056b4cdca
         );
         return new model.Environment(
-            origin=origin,
+            origin=origin_evm_address,
             gas_price=gas_price,
             chain_id=Constants.CHAIN_ID,
             prev_randao=Uint256(0, 0),
@@ -135,7 +135,7 @@ namespace Internals {
             return ();
         }
 
-        let (starknet_address) = Account.compute_starknet_address(accounts_start.key);
+        let starknet_address = Account.compute_starknet_address(accounts_start.key);
         let account = cast(accounts_start.new_value, model.Account*);
         _commit_account(account, starknet_address);
 
@@ -155,7 +155,7 @@ namespace Internals {
     ) {
         alloc_locals;
 
-        let starknet_account_exists = Account.is_registered(self.address);
+        let starknet_account_exists = Account.is_registered(self.address.evm);
 
         // Case new Account
         if (starknet_account_exists == 0) {
@@ -168,7 +168,7 @@ namespace Internals {
             if (code_or_nonce != FALSE) {
                 // Deploy accounts
                 let (class_hash) = contract_account_class_hash.read();
-                Starknet.deploy(class_hash, self.address);
+                Starknet.deploy(class_hash, self.address.evm);
                 // If SELFDESTRUCT, stops here to leave the account empty
                 if (self.selfdestruct != 0) {
                     return ();

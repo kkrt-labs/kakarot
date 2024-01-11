@@ -18,8 +18,10 @@ from kakarot.account import Account
 @external
 func test__init__should_return_account_with_default_dict_as_storage{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(address: felt, code_len: felt, code: felt*, nonce: felt, balance_low: felt) {
+}(evm_address: felt, code_len: felt, code: felt*, nonce: felt, balance_low: felt) {
     // When
+    let starknet_address = Account.compute_starknet_address(evm_address);
+    tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
     tempvar balance = new Uint256(balance_low, 0);
     let account = Account.init(address, code_len, code, nonce, balance);
 
@@ -42,8 +44,10 @@ func test__copy__should_return_new_account_with_same_attributes{
 }(evm_address: felt, code_len: felt, code: felt*, nonce: felt, balance_low: felt) {
     alloc_locals;
     // Given
+    let starknet_address = Account.compute_starknet_address(evm_address);
+    tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
     tempvar balance = new Uint256(balance_low, 0);
-    let account = Account.init(evm_address, code_len, code, nonce, balance);
+    let account = Account.init(address, code_len, code, nonce, balance);
     tempvar key = new Uint256(1, 2);
     tempvar value = new Uint256(3, 4);
     let account = Account.write_storage(account, key, value);
@@ -65,14 +69,13 @@ func test__copy__should_return_new_account_with_same_attributes{
     let storage_len = account.storage - account.storage_start;
     let storage_copy_len = account_copy.storage - account_copy.storage_start;
     assert storage_len = storage_copy_len;
-    tempvar address = new model.Address(0, evm_address);
-    let (account_copy, value_copy) = Account.read_storage(account_copy, address, key);
+    let (account_copy, value_copy) = Account.read_storage(account_copy, key);
     assert_uint256_eq([value], [value_copy]);
 
     // Updating copy doesn't update original
     tempvar new_value = new Uint256(5, 6);
     let account_copy = Account.write_storage(account_copy, key, new_value);
-    let (account, value_original) = Account.read_storage(account, address, key);
+    let (account, value_original) = Account.read_storage(account, key);
     assert_uint256_eq([value], [value_original]);
 
     return ();
@@ -89,7 +92,8 @@ func test__write_storage__should_store_value_at_key{
     tempvar address = new model.Address(0, 0);
     let (local code: felt*) = alloc();
     tempvar balance = new Uint256(0, 0);
-    let account = Account.init(0, 0, code, 0, balance);
+    tempvar address = new model.Address(0, 0);
+    let account = Account.init(address, 0, code, 0, balance);
 
     // When
     let account = Account.write_storage(account, &key, &value);
@@ -97,7 +101,7 @@ func test__write_storage__should_store_value_at_key{
     // Then
     let storage_len = account.storage - account.storage_start;
     assert storage_len = DictAccess.SIZE;
-    let (account, value_read) = Account.read_storage(account, address, &key);
+    let (account, value_read) = Account.read_storage(account, &key);
     assert_uint256_eq([value_read], value);
 
     return ();
@@ -109,7 +113,8 @@ func test__has_code_or_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
 ) -> (has_code_or_nonce: felt) {
     // Given
     tempvar balance = new Uint256(0, 0);
-    let account = Account.init(0, code_len, code, nonce, balance);
+    tempvar address = new model.Address(0, 0);
+    let account = Account.init(address, code_len, code, nonce, balance);
 
     // When
     let result = Account.has_code_or_nonce(account);

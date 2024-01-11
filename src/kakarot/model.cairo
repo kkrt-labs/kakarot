@@ -49,7 +49,7 @@ namespace model {
     // @dev We don't put the balance here to avoid loading the whole Account just for sending ETH
     // @dev The address here is consequently an EVM address
     struct Account {
-        address: felt,
+        address: model.Address*,
         code_len: felt,
         code: felt*,
         storage_start: DictAccess*,
@@ -140,7 +140,7 @@ namespace model {
     // @param block_hashes The last 256 accessible block hashes
     // @param coinbase The address of the miner of the current block.
     struct Environment {
-        origin: Address*,
+        origin: felt,
         gas_price: felt,
         chain_id: felt,
         prev_randao: Uint256,

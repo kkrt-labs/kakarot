@@ -95,7 +95,7 @@ func evm_call{
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
 
-    let env = Starknet.get_env(&origin, 0);
+    let env = Starknet.get_env(origin.evm, 0);
     let (evm, stack, memory, state) = execute(
         env, value, bytecode_len, bytecode, calldata_len, calldata
     );
@@ -148,7 +148,7 @@ func evm_execute{
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
 
-    let env = Starknet.get_env(&origin, 0);
+    let env = Starknet.get_env(origin.evm, 0);
     let (evm, stack, memory, state) = execute(
         env, value, bytecode_len, bytecode, calldata_len, calldata
     );

@@ -783,17 +783,21 @@ namespace Interpreter {
         with state {
             // Handle value
             let amount = Helpers.to_uint256(value);
-            let transfer = model.Transfer(env.origin, address, [amount]);
+            let origin_starknet_address = Account.compute_starknet_address(env.origin);
+            tempvar origin_address = new model.Address(
+                starknet=origin_starknet_address, evm=env.origin
+            );
+            let transfer = model.Transfer(origin_address, address, [amount]);
             let success = State.add_transfer(transfer);
 
             // Check collision
-            let account = State.get_account(address);
+            let account = State.get_account(address.evm);
             let code_or_nonce = Account.has_code_or_nonce(account);
             let is_collision = code_or_nonce * is_deploy_tx;
             // Nonce is set to 1 in case of deploy_tx
             let nonce = account.nonce * (1 - is_deploy_tx) + is_deploy_tx;
             let account = Account.set_nonce(account, nonce);
-            State.set_account(address, account);
+            State.set_account(account);
         }
 
         if (is_collision != 0) {
@@ -854,9 +858,9 @@ namespace Internals {
 
         let evm = EVM.charge_gas(evm, code_deposit_cost);
 
-        let account = State.get_account(evm.message.address);
+        let account = State.get_account(evm.message.address.evm);
         let account = Account.set_code(account, evm.return_data_len, evm.return_data);
-        State.set_account(evm.message.address, account);
+        State.set_account(account);
         State.finalize();
 
         let evm = EVM.update_return_data(evm, 2, cast(evm.message.address, felt*));

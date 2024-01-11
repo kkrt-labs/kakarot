@@ -77,16 +77,16 @@ namespace Kakarot {
     ) -> (model.EVM*, model.State*) {
         alloc_locals;
         let evm_contract_address = resolve_to(to, origin);
-        let (starknet_contract_address) = Account.compute_starknet_address(evm_contract_address);
-        tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
-        let (starknet_origin_address) = Account.compute_starknet_address(origin);
-        tempvar origin_address = new model.Address(starknet_origin_address, origin);
+        let starknet_contract_address = Account.compute_starknet_address(evm_contract_address);
+        tempvar address = new model.Address(
+            starknet=starknet_contract_address, evm=evm_contract_address
+        );
 
         let is_regular_tx = is_not_zero(to);
         let is_deploy_tx = 1 - is_regular_tx;
         let (bytecode_len, bytecode) = Starknet.get_bytecode(address.evm);
 
-        let env = Starknet.get_env(origin_address, gas_price);
+        let env = Starknet.get_env(origin, gas_price);
 
         let (evm, stack, memory, state) = Interpreter.execute(
             env, address, is_deploy_tx, bytecode_len, bytecode, data_len, data, value, gas_limit
@@ -197,7 +197,7 @@ namespace Kakarot {
     }(starknet_address: felt) -> (evm_address: felt) {
         alloc_locals;
         let (local evm_address) = IAccount.get_evm_address(starknet_address);
-        let (local computed_starknet_address) = Account.compute_starknet_address(evm_address);
+        let computed_starknet_address = Account.compute_starknet_address(evm_address);
 
         with_attr error_message("Kakarot: caller contract is not a Kakarot Account") {
             assert computed_starknet_address = starknet_address;

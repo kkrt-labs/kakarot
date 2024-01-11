@@ -44,7 +44,7 @@ namespace Account {
     // @return The updated state
     // @return The account
     func init(
-        address: felt, code_len: felt, code: felt*, nonce: felt, balance: Uint256*
+        address: model.Address*, code_len: felt, code: felt*, nonce: felt, balance: Uint256*
     ) -> model.Account* {
         let (storage_start) = default_dict_new(0);
         return new model.Account(
@@ -81,24 +81,31 @@ namespace Account {
     // @param address the pointer to the Address
     // @return the account populated with Starknet data
     func fetch_or_create{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        address: model.Address*
+        evm_address: felt
     ) -> model.Account* {
         alloc_locals;
-        let starknet_account_exists = is_registered(address.evm);
+        let starknet_address = get_registered_starknet_address(evm_address);
 
-        let balance = read_balance(address);
-        tempvar balance_ptr = new Uint256(balance.low, balance.high);
+        local balance_ptr: Uint256*;
 
         // Case touching a non deployed account
-        if (starknet_account_exists == 0) {
+        if (starknet_address == 0) {
             let (bytecode: felt*) = alloc();
+            let starknet_address = compute_starknet_address(evm_address);
+            tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
+            let balance = fetch_balance(address);
+            assert balance_ptr = new Uint256(balance.low, balance.high);
             let account = Account.init(
-                address=address.evm, code_len=0, code=bytecode, nonce=0, balance=balance_ptr
+                address=address, code_len=0, code=bytecode, nonce=0, balance=balance_ptr
             );
             return account;
+        } else {
+            tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
+            let balance = fetch_balance(address);
+            assert balance_ptr = new Uint256(balance.low, balance.high);
         }
 
-        let (account_type) = IAccount.account_type(contract_address=address.starknet);
+        let (account_type) = IAccount.account_type(contract_address=starknet_address);
 
         if (account_type == 'EOA') {
             let (bytecode: felt*) = alloc();
@@ -106,20 +113,16 @@ namespace Account {
             // But putting 1 shouldn't have any impact and is safer than 0
             // since has_code_or_nonce is used in some places to trigger collision
             let account = Account.init(
-                address=address.evm, code_len=0, code=bytecode, nonce=1, balance=balance_ptr
+                address=address, code_len=0, code=bytecode, nonce=1, balance=balance_ptr
             );
             return account;
         }
 
         // Case CA
-        let (bytecode_len, bytecode) = IAccount.bytecode(contract_address=address.starknet);
-        let (nonce) = IContractAccount.get_nonce(contract_address=address.starknet);
+        let (bytecode_len, bytecode) = IAccount.bytecode(contract_address=starknet_address);
+        let (nonce) = IContractAccount.get_nonce(contract_address=starknet_address);
         let account = Account.init(
-            address=address.evm,
-            code_len=bytecode_len,
-            code=bytecode,
-            nonce=nonce,
-            balance=balance_ptr,
+            address, code_len=bytecode_len, code=bytecode, nonce=nonce, balance=balance_ptr
         );
         return account;
     }
@@ -133,7 +136,7 @@ namespace Account {
     // @return The updated Account
     // @return The read value
     func read_storage{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Account*, address: model.Address*, key: Uint256*
+        self: model.Account*, key: Uint256*
     ) -> (model.Account*, Uint256*) {
         alloc_locals;
         let storage = self.storage;
@@ -158,10 +161,10 @@ namespace Account {
         }
 
         // Case reading from Starknet storage
-        let starknet_account_exists = is_registered(address.evm);
+        let starknet_account_exists = is_registered(self.address.evm);
         if (starknet_account_exists != 0) {
             let (value) = IContractAccount.storage(
-                contract_address=address.starknet, storage_addr=storage_addr
+                contract_address=self.address.starknet, storage_addr=storage_addr
             );
             tempvar value_ptr = new Uint256(value.low, value.high);
             tempvar syscall_ptr = syscall_ptr;
@@ -251,10 +254,10 @@ namespace Account {
         );
     }
 
-    // @notice Read the balance of an account without loading the Account
+    // @notice Fetches the balance of an account without loading the Account
     // @param address The address of the account
     // @return the Uint256 balance
-    func read_balance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    func fetch_balance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         address: model.Address*
     ) -> Uint256 {
         let (native_token_address_) = native_token_address.read();
@@ -300,8 +303,9 @@ namespace Account {
     // @return starknet_address The Starknet Account Contract address or 0 if not already deployed
     func get_registered_starknet_address{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-    }(evm_address: felt) -> (starknet_address: felt) {
-        return evm_to_starknet_address.read(evm_address);
+    }(evm_address: felt) -> felt {
+        let (starknet_address) = evm_to_starknet_address.read(evm_address);
+        return starknet_address;
     }
 
     // @dev As contract addresses are deterministic we can know what will be the address of a starknet contract from its input EVM address
@@ -310,7 +314,7 @@ namespace Account {
     // @return contract_address The Starknet Account Contract address (not necessarily deployed)
     func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         evm_address: felt
-    ) -> (contract_address: felt) {
+    ) -> felt {
         alloc_locals;
         let (_deployer_address: felt) = get_contract_address();
         let (_account_proxy_class_hash: felt) = account_proxy_class_hash.read();
@@ -341,7 +345,7 @@ namespace Account {
             addr=contract_address_before_modulo
         );
 
-        return (contract_address=contract_address);
+        return contract_address;
     }
 
     // @notice Tells if an account has code_len > 0 or nonce > 0
@@ -356,13 +360,13 @@ namespace Account {
     }
 
     // @notice Tell if an account is already registered
-    // @param address the address (EVM) as felt
+    // @param evm_address the address (EVM) as felt
     // @return true if the account is already registered
     func is_registered{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        address: felt
+        evm_address: felt
     ) -> felt {
         alloc_locals;
-        let (local registered_starknet_account) = get_registered_starknet_address(address);
+        let registered_starknet_account = get_registered_starknet_address(evm_address);
         let starknet_account_exists = is_not_zero(registered_starknet_account);
         return starknet_account_exists;
     }

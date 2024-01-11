@@ -47,7 +47,8 @@ func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ra
 func get_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     evm_address: felt
 ) -> (starknet_address: felt) {
-    return Account.get_registered_starknet_address(evm_address);
+    let starknet_address = Account.get_registered_starknet_address(evm_address);
+    return (starknet_address=starknet_address);
 }
 
 // @notice Deploy a new externally owned account.

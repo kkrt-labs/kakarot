@@ -166,7 +166,7 @@ def generate_random_private_key(seed=0):
 
 def generate_random_evm_address(seed=0):
     random.seed(seed)
-    return to_checksum_address(hex(random.getrandbits(160)))
+    return to_checksum_address(f"{random.getrandbits(160):040x}")
 
 
 def ec_sign(

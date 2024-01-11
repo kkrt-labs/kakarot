@@ -76,11 +76,9 @@ namespace SystemOperations {
         Memory.load_n(size.low, bytecode, offset.low);
 
         // Get target address
-        let evm_contract_address = CreateHelper.get_evm_address(
-            evm.message.address, popped_len, popped, size.low, bytecode
+        let target_evm_address = CreateHelper.get_evm_address(
+            evm.message.address.evm, popped_len, popped, size.low, bytecode
         );
-        let (starknet_contract_address) = Account.compute_starknet_address(evm_contract_address);
-        tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
 
         // Get message call gas
         let (gas_limit, _) = unsigned_div_rem(evm.gas_left, 64);
@@ -96,7 +94,7 @@ namespace SystemOperations {
         // TODO: Clear return data
 
         // Check sender balance and nonce
-        let sender = State.get_account(evm.message.address);
+        let sender = State.get_account(evm.message.address.evm);
         let is_nonce_overflow = is_le(Constants.MAX_NONCE + 1, sender.nonce);
         let (is_balance_overflow) = uint256_lt([sender.balance], value);
         let stack_depth_limit = is_le(1024, evm.message.depth);
@@ -108,11 +106,11 @@ namespace SystemOperations {
         let evm = EVM.charge_gas(evm, gas_limit);
 
         // Check target account availabitliy
-        let account = State.get_account(address);
-        let is_collision = Account.has_code_or_nonce(account);
+        let target_account = State.get_account(target_evm_address);
+        let is_collision = Account.has_code_or_nonce(target_account);
         if (is_collision != 0) {
             let sender = Account.set_nonce(sender, sender.nonce + 1);
-            State.set_account(evm.message.address, sender);
+            State.set_account(sender);
             Stack.push_uint128(0);
             return evm;
         }
@@ -126,7 +124,7 @@ namespace SystemOperations {
 
         // Increment nonce
         let sender = Account.set_nonce(sender, sender.nonce + 1);
-        State.set_account(evm.message.address, sender);
+        State.set_account(sender);
 
         // Final update of calling context
         tempvar parent = new model.Parent(evm, stack, memory, state);
@@ -148,7 +146,7 @@ namespace SystemOperations {
             calldata_len=0,
             value=value.low + value.high * 2 ** 128,
             parent=parent,
-            address=address,
+            address=target_account.address,
             read_only=FALSE,
             is_create=TRUE,
             depth=evm.message.depth + 1,
@@ -157,11 +155,10 @@ namespace SystemOperations {
         let child_evm = EVM.init(message, gas_limit);
         let stack = Stack.init();
 
-        let account = State.get_account(address);
-        let account = Account.set_nonce(account, 1);
-        State.set_account(address, account);
+        let target_account = Account.set_nonce(target_account, 1);
+        State.set_account(target_account);
 
-        let transfer = model.Transfer(evm.message.address, address, value);
+        let transfer = model.Transfer(evm.message.address, target_account.address, value);
         let success = State.add_transfer(transfer);
         if (success == 0) {
             Stack.push_uint128(0);
@@ -428,9 +425,11 @@ namespace SystemOperations {
         }
         let recipient_evm_address = (1 - is_recipient_self) * recipient_evm_address;
 
-        let (recipient_starknet_address) = Account.compute_starknet_address(recipient_evm_address);
-        tempvar recipient = new model.Address(recipient_starknet_address, recipient_evm_address);
-        let account = State.get_account(evm.message.address);
+        let recipient_starknet_address = Account.compute_starknet_address(recipient_evm_address);
+        tempvar recipient = new model.Address(
+            starknet=recipient_starknet_address, evm=recipient_evm_address
+        );
+        let account = State.get_account(evm.message.address.evm);
         let transfer = model.Transfer(
             sender=evm.message.address, recipient=recipient, amount=[account.balance]
         );
@@ -438,9 +437,9 @@ namespace SystemOperations {
 
         // Register for SELFDESTRUCT
         // @dev: get_account again because add_transfer updated it
-        let account = State.get_account(evm.message.address);
+        let account = State.get_account(evm.message.address.evm);
         let account = Account.selfdestruct(account);
-        State.set_account(evm.message.address, account);
+        State.set_account(account);
 
         // Halt context
         let (return_data: felt*) = alloc();
@@ -478,7 +477,7 @@ namespace CallHelper {
         // Pop ret_offset and ret_size
         let (popped) = Stack.pop_n(4 + with_value);
         let gas = popped[0];
-        let address = uint256_to_uint160(popped[1]);
+        let evm_address = uint256_to_uint160(popped[1]);
         let stack_value = popped[2];
         let args_offset = popped[2 + with_value];
         let args_size = popped[3 + with_value];
@@ -533,11 +532,11 @@ namespace CallHelper {
 
         // 4. Build child_evm
         // Check if the called address is a precompiled contract
-        let is_precompile = Precompiles.is_precompile(address=address);
+        let is_precompile = Precompiles.is_precompile(address=evm_address);
         if (is_precompile != FALSE) {
             tempvar parent = new model.Parent(evm, stack, memory, state);
             let child_evm = Precompiles.run(
-                evm_address=address,
+                evm_address=evm_address,
                 calldata_len=args_size.low,
                 calldata=calldata,
                 value=value,
@@ -548,9 +547,9 @@ namespace CallHelper {
             return child_evm;
         }
 
-        let (starknet_contract_address) = Account.compute_starknet_address(address);
-        tempvar call_address = new model.Address(starknet_contract_address, address);
-        let account = State.get_account(call_address);
+        let target_starknet_address = Account.compute_starknet_address(evm_address);
+        tempvar call_address = new model.Address(starknet=target_starknet_address, evm=evm_address);
+        let account = State.get_account(evm_address);
 
         tempvar parent = new model.Parent(evm, stack, memory, state);
         let stack = Stack.init();
@@ -746,26 +745,22 @@ namespace CreateHelper {
         bitwise_ptr: BitwiseBuiltin*,
         state: model.State*,
     }(
-        address: model.Address*,
-        popped_len: felt,
-        popped: Uint256*,
-        bytecode_len: felt,
-        bytecode: felt*,
+        evm_address: felt, popped_len: felt, popped: Uint256*, bytecode_len: felt, bytecode: felt*
     ) -> felt {
         alloc_locals;
         // create2 context pops 4 off the stack, create pops 3
         // so we use popped_len to derive the way we should handle
         // the creation of evm addresses
         if (popped_len != 4) {
-            let account = State.get_account(address);
+            let account = State.get_account(evm_address);
             let (evm_contract_address) = CreateHelper.get_create_address(
-                address.evm, account.nonce
+                evm_address, account.nonce
             );
             return evm_contract_address;
         } else {
             let salt = popped[3];
             let (evm_contract_address) = CreateHelper.get_create2_address(
-                sender_address=address.evm, bytecode_len=bytecode_len, bytecode=bytecode, salt=salt
+                sender_address=evm_address, bytecode_len=bytecode_len, bytecode=bytecode, salt=salt
             );
             return evm_contract_address;
         }
@@ -813,9 +808,9 @@ namespace CreateHelper {
         }
 
         // Write bytecode to Account
-        let account = State.get_account(evm.message.address);
+        let account = State.get_account(evm.message.address.evm);
         let account = Account.set_code(account, evm.return_data_len, evm.return_data);
-        State.set_account(evm.message.address, account);
+        State.set_account(account);
 
         tempvar evm = new model.EVM(
             message=evm.message.parent.evm.message,

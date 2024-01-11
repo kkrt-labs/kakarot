@@ -86,15 +86,15 @@ namespace State {
     // @notice Get a given EVM Account
     // @dev Try to retrieve in the local Dict<Address*, Account*> first, and if not already here
     //      read the contract storage and cache the result.
-    // @param key The pointer to the address
+    // @param evm_address The evm address of the Account
     // @return The updated state
     // @return The account
     func get_account{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
-    }(address: model.Address*) -> model.Account* {
+    }(evm_address: felt) -> model.Account* {
         alloc_locals;
         let accounts = state.accounts;
-        let (pointer) = dict_read{dict_ptr=accounts}(key=address.evm);
+        let (pointer) = dict_read{dict_ptr=accounts}(key=evm_address);
 
         // Return from local storage if found
         if (pointer != 0) {
@@ -111,8 +111,8 @@ namespace State {
         } else {
             // Otherwise read values from contract storage
             local accounts: DictAccess* = accounts;
-            let account = Account.fetch_or_create(address);
-            dict_write{dict_ptr=accounts}(key=address.evm, new_value=cast(account, felt));
+            let account = Account.fetch_or_create(evm_address);
+            dict_write{dict_ptr=accounts}(key=evm_address, new_value=cast(account, felt));
             tempvar state = new model.State(
                 accounts_start=state.accounts_start,
                 accounts=accounts,
@@ -126,11 +126,10 @@ namespace State {
     }
 
     // @notice Set the Account at the given address
-    // @param address The address of the Account
     // @param account The new account
-    func set_account{state: model.State*}(address: model.Address*, account: model.Account*) {
+    func set_account{state: model.State*}(account: model.Account*) {
         let accounts = state.accounts;
-        dict_write{dict_ptr=accounts}(key=address.evm, new_value=cast(account, felt));
+        dict_write{dict_ptr=accounts}(key=account.address.evm, new_value=cast(account, felt));
         tempvar state = new model.State(
             accounts_start=state.accounts_start,
             accounts=accounts,
@@ -149,11 +148,11 @@ namespace State {
     // @param key The pointer to the storage key
     func read_storage{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
-    }(address: model.Address*, key: Uint256*) -> Uint256* {
+    }(evm_address: felt, key: Uint256*) -> Uint256* {
         alloc_locals;
-        let account = get_account(address);
-        let (account, value) = Account.read_storage(account, address, key);
-        set_account(address, account);
+        let account = get_account(evm_address);
+        let (account, value) = Account.read_storage(account, key);
+        set_account(account);
         return value;
     }
 
@@ -163,11 +162,11 @@ namespace State {
     // @param value The pointer to the Uint256 value
     func write_storage{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
-    }(address: model.Address*, key: Uint256*, value: Uint256*) {
+    }(evm_address: felt, key: Uint256*, value: Uint256*) {
         alloc_locals;
-        let account = get_account(address);
+        let account = get_account(evm_address);
         let account = Account.write_storage(account, key, value);
-        set_account(address, account);
+        set_account(account);
         return ();
     }
 
@@ -209,14 +208,14 @@ namespace State {
             return 1;
         }
 
-        let sender = get_account(transfer.sender);
+        let sender = get_account(transfer.sender.evm);
         let (success) = uint256_le(transfer.amount, [sender.balance]);
 
         if (success == 0) {
             return success;
         }
 
-        let recipient = get_account(transfer.recipient);
+        let recipient = get_account(transfer.recipient.evm);
 
         let (local sender_balance_new) = uint256_sub([sender.balance], transfer.amount);
         let (local recipient_balance_new, carry) = uint256_add(
