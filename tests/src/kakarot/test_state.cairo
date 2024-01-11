@@ -5,7 +5,7 @@
 // Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.dict import dict_read
+from starkware.cairo.common.dict import dict_read, dict_write
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from starkware.cairo.common.math import assert_not_equal
 from starkware.cairo.common.dict_access import DictAccess
@@ -120,4 +120,34 @@ func test__copy__should_return_new_state_with_same_attributes{
     assert_uint256_eq(transfer.amount, transfer_copy.amount);
 
     return ();
+}
+
+@external
+func test__is_account_alive__existing_account{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(nonce, code_len, code: felt*, balance_low) -> (is_alive: felt) {
+    tempvar balance = new Uint256(balance_low, 0);
+    let evm_address = 'alive';
+    tempvar address = new model.Address(0, evm_address);
+    let account = Account.init(evm_address, code_len, code, nonce, balance);
+    let state = State.init();
+
+    with state {
+        State.set_account(address, account);
+        let is_alive = State.is_account_alive(evm_address);
+    }
+
+    return (is_alive=is_alive);
+}
+
+@external
+func test__is_account_alive__not_in_state{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() -> (is_alive: felt) {
+    let state = State.init();
+    with state {
+        let is_alive = State.is_account_alive(0xdead);
+    }
+
+    return (is_alive=is_alive);
 }

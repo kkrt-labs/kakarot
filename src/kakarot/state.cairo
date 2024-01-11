@@ -10,6 +10,7 @@ from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256, uint256_add, uint256_sub, uint256_le, uint256_eq
+from starkware.cairo.common.bool import FALSE, TRUE
 
 from kakarot.account import Account
 from kakarot.model import model
@@ -239,6 +240,43 @@ namespace State {
             transfers=state.transfers,
         );
         return success;
+    }
+
+    // @notice Check whether an account is both in the state and non empty.
+    // @param address Address of the account that needs to be checked.
+    // @return is_alive TRUE if the account is alive.
+    func is_account_alive{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
+    }(evm_address: felt) -> felt {
+        alloc_locals;
+        let accounts = state.accounts;
+        let (pointer) = dict_read{dict_ptr=accounts}(key=evm_address);
+        tempvar state = new model.State(
+            accounts_start=state.accounts_start,
+            accounts=accounts,
+            events_len=state.events_len,
+            events=state.events,
+            transfers_len=state.transfers_len,
+            transfers=state.transfers,
+        );
+
+        // If not found in local storage, the account is not alive
+        if (pointer == 0) {
+            return FALSE;
+        }
+
+        let account = cast(pointer, model.Account*);
+
+        let nonce = account.nonce;
+        let code_len = account.code_len;
+        let balance = account.balance;
+
+        // an account is alive if it has nonce, code or balance
+        if (nonce + code_len + balance.low + balance.high != 0) {
+            return TRUE;
+        }
+
+        return FALSE;
     }
 }
 
