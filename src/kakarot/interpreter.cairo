@@ -667,6 +667,9 @@ namespace Interpreter {
         Memory.finalize();
         Stack.finalize();
         State.finalize();
+        with evm {
+            EVM.finalize();
+        }
 
         if (evm.message.depth == 0) {
             if (evm.message.is_create != FALSE) {
@@ -735,20 +738,32 @@ namespace Interpreter {
         // else, bytecode and data are kept as is
         let bytecode_len = calldata_len * is_deploy_tx + bytecode_len * (1 - is_deploy_tx);
         let calldata_len = calldata_len * (1 - is_deploy_tx);
+
+        let tmp_bytecode = bytecode;
+        let tmp_calldata = calldata;
+        let tmp_intrinsic_gas = intrinsic_gas;
+        local bytecode: felt*;
+        local calldata: felt*;
+        local intrinsic_gas: felt;
         if (is_deploy_tx != 0) {
             let (empty: felt*) = alloc();
-            tempvar bytecode = calldata;
-            tempvar calldata = empty;
-            tempvar intrinsic_gas = intrinsic_gas + Gas.CREATE;
+            assert bytecode = tmp_calldata;
+            assert calldata = empty;
+            assert intrinsic_gas = tmp_intrinsic_gas + Gas.CREATE;
         } else {
-            tempvar bytecode = bytecode;
-            tempvar calldata = calldata;
-            tempvar intrinsic_gas = intrinsic_gas;
+            assert bytecode = tmp_bytecode;
+            assert calldata = tmp_calldata;
+            assert intrinsic_gas = tmp_intrinsic_gas;
         }
 
+        let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
+            bytecode_len=bytecode_len, bytecode=bytecode
+        );
         tempvar message = new model.Message(
             bytecode=bytecode,
             bytecode_len=bytecode_len,
+            valid_jumpdests_start=valid_jumpdests_start,
+            valid_jumpdests=valid_jumpdests,
             calldata=calldata,
             calldata_len=calldata_len,
             value=value,

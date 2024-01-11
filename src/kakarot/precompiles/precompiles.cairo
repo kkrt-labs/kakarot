@@ -8,6 +8,7 @@ from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.math_cmp import is_le, is_not_zero
+from starkware.cairo.common.dict_access import DictAccess
 
 // Internal dependencies
 from kakarot.account import Account
@@ -53,9 +54,12 @@ namespace Precompiles {
         // Build returned execution context
         let (starknet_address) = Account.compute_starknet_address(evm_address);
         tempvar address = new model.Address(starknet_address, evm_address);
+        let (valid_jumdests) = default_dict_new(0);
         tempvar message = new model.Message(
             bytecode=cast(0, felt*),
             bytecode_len=0,
+            valid_jumpdests_start=valid_jumdests,
+            valid_jumpdests=valid_jumdests,
             calldata=cast(0, felt*),
             calldata_len=0,
             value=0,

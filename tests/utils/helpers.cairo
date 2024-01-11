@@ -24,11 +24,12 @@ from kakarot.evm import EVM
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
+from kakarot.account import Account
 from utils.utils import Helpers
 from backend.starknet import Starknet
 
 namespace TestHelpers {
-    func init_evm_at_address{syscall_ptr: felt*}(
+    func init_evm_at_address{syscall_ptr: felt*, range_check_ptr}(
         bytecode_len: felt,
         bytecode: felt*,
         starknet_contract_address: felt,
@@ -40,9 +41,14 @@ namespace TestHelpers {
         tempvar address_0 = new model.Address(0, 0);
         let env = Starknet.get_env(address_0, 0);
         tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
+        let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
+            bytecode_len=bytecode_len, bytecode=bytecode
+        );
         local message: model.Message* = new model.Message(
             bytecode=bytecode,
             bytecode_len=bytecode_len,
+            valid_jumpdests_start=valid_jumpdests_start,
+            valid_jumpdests=valid_jumpdests,
             calldata=calldata,
             calldata_len=1,
             value=0,
@@ -57,12 +63,12 @@ namespace TestHelpers {
         return evm;
     }
 
-    func init_evm{syscall_ptr: felt*}() -> model.EVM* {
+    func init_evm{syscall_ptr: felt*, range_check_ptr}() -> model.EVM* {
         let (bytecode) = alloc();
         return init_evm_at_address(0, bytecode, 0, 0);
     }
 
-    func init_evm_with_bytecode{syscall_ptr: felt*}(
+    func init_evm_with_bytecode{syscall_ptr: felt*, range_check_ptr}(
         bytecode_len: felt, bytecode: felt*
     ) -> model.EVM* {
         return init_evm_at_address(bytecode_len, bytecode, 0, 0);

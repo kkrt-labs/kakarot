@@ -10,6 +10,8 @@ from starkware.cairo.common.math import split_felt, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le, is_nn, is_not_zero
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256, uint256_lt
+from starkware.cairo.common.default_dict import default_dict_new
+from starkware.cairo.common.dict_access import DictAccess
 
 from kakarot.account import Account
 from kakarot.constants import Constants
@@ -21,6 +23,7 @@ from kakarot.model import model
 from kakarot.precompiles.precompiles import Precompiles
 from kakarot.stack import Stack
 from kakarot.state import State
+from utils.utils import Helpers
 from utils.array import slice
 from utils.bytes import (
     bytes_to_bytes8_little_endian,
@@ -133,9 +136,14 @@ namespace SystemOperations {
 
         // Create child message
         let (calldata: felt*) = alloc();
+        let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
+            bytecode_len=size.low, bytecode=bytecode
+        );
         tempvar message = new model.Message(
             bytecode=bytecode,
             bytecode_len=size.low,
+            valid_jumpdests_start=valid_jumpdests_start,
+            valid_jumpdests=valid_jumpdests,
             calldata=calldata,
             calldata_len=0,
             value=value.low + value.high * 2 ** 128,
@@ -544,18 +552,23 @@ namespace CallHelper {
         tempvar call_address = new model.Address(starknet_contract_address, address);
         let account = State.get_account(call_address);
 
+        tempvar parent = new model.Parent(evm, stack, memory, state);
+        let stack = Stack.init();
+        let memory = Memory.init();
+        let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
+            bytecode_len=account.code_len, bytecode=account.code
+        );
         if (self_call == FALSE) {
             tempvar message_address = call_address;
         } else {
             tempvar message_address = evm.message.address;
         }
 
-        tempvar parent = new model.Parent(evm, stack, memory, state);
-        let stack = Stack.init();
-        let memory = Memory.init();
         tempvar message = new model.Message(
             bytecode=account.code,
             bytecode_len=account.code_len,
+            valid_jumpdests_start=valid_jumpdests_start,
+            valid_jumpdests=valid_jumpdests,
             calldata=calldata,
             calldata_len=args_size.low,
             value=value,

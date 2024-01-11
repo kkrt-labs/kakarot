@@ -9,6 +9,8 @@ from starkware.cairo.common.math_cmp import is_le, is_le_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.dict import dict_read
+from starkware.cairo.common.default_dict import default_dict_finalize
 
 from kakarot.errors import Errors
 from kakarot.model import model
@@ -34,6 +36,39 @@ namespace EVM {
             gas_left=gas_left,
             reverted=FALSE,
         );
+    }
+
+    func finalize{range_check_ptr, evm: model.EVM*}() {
+        let (squashed_start, squashed_end) = default_dict_finalize(
+            evm.message.valid_jumpdests_start, evm.message.valid_jumpdests, 0
+        );
+        tempvar message = new model.Message(
+            bytecode=evm.message.bytecode,
+            bytecode_len=evm.message.bytecode_len,
+            valid_jumpdests_start=squashed_start,
+            valid_jumpdests=squashed_end,
+            calldata=evm.message.calldata,
+            calldata_len=evm.message.calldata_len,
+            value=evm.message.value,
+            parent=evm.message.parent,
+            address=evm.message.address,
+            read_only=evm.message.read_only,
+            is_create=evm.message.is_create,
+            depth=evm.message.depth,
+            env=evm.message.env,
+        );
+
+        tempvar evm = new model.EVM(
+            message=message,
+            return_data_len=evm.return_data_len,
+            return_data=evm.return_data,
+            program_counter=evm.program_counter,
+            stopped=evm.stopped,
+            gas_left=evm.gas_left,
+            reverted=evm.reverted,
+        );
+
+        return ();
     }
 
     // @notice Stop the current execution context.
@@ -169,14 +204,41 @@ namespace EVM {
             return evm;
         }
 
-        if ([self.message.bytecode + new_pc_offset] != 0x5b) {
+        let valid_jumpdests = self.message.valid_jumpdests;
+        let (is_valid_jumpdest) = dict_read{dict_ptr=valid_jumpdests}(new_pc_offset);
+        tempvar message = new model.Message(
+            bytecode=self.message.bytecode,
+            bytecode_len=self.message.bytecode_len,
+            valid_jumpdests_start=self.message.valid_jumpdests_start,
+            valid_jumpdests=valid_jumpdests,
+            calldata=self.message.calldata,
+            calldata_len=self.message.calldata_len,
+            value=self.message.value,
+            parent=self.message.parent,
+            address=self.message.address,
+            read_only=self.message.read_only,
+            is_create=self.message.is_create,
+            depth=self.message.depth,
+            env=self.message.env,
+        );
+
+        if (is_valid_jumpdest == FALSE) {
             let (revert_reason_len, revert_reason) = Errors.invalidJumpDestError();
-            let evm = EVM.stop(self, revert_reason_len, revert_reason, TRUE);
+            // stop and revert the execution context with the updated `message`
+            tempvar evm = new model.EVM(
+                message=message,
+                return_data_len=revert_reason_len,
+                return_data=revert_reason,
+                program_counter=self.program_counter,
+                stopped=TRUE,
+                gas_left=self.gas_left,
+                reverted=TRUE,
+            );
             return evm;
         }
 
         return new model.EVM(
-            message=self.message,
+            message=message,
             return_data_len=self.return_data_len,
             return_data=self.return_data,
             program_counter=new_pc_offset,

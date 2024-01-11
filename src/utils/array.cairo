@@ -2,7 +2,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.memset import memset
 from starkware.cairo.common.math_cmp import is_not_zero, is_nn
-from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.bool import FALSE, TRUE
 
 func reverse(dst: felt*, arr_len: felt, arr: felt*) {
     alloc_locals;
@@ -80,4 +80,33 @@ func slice{range_check_ptr}(dst: felt*, data_len: felt, data: felt*, offset: fel
     memcpy(dst=dst, src=data + offset, len=max_len);
     memset(dst=dst + max_len, value=0, n=size - max_len);
     return ();
+}
+
+func contains{range_check_ptr}(arr_len: felt, arr: felt*, value: felt) -> felt {
+    alloc_locals;
+
+    if (arr_len == 0) {
+        return FALSE;
+    }
+
+    tempvar i = 0;
+
+    body:
+    let arr_len = [fp - 5];
+    let arr = cast([fp - 4], felt*);
+    let value = [fp - 3];
+    let i = [ap - 1];
+
+    tempvar check_value = [arr + i] - value;
+    tempvar check_bound = arr_len - (i + 1);
+    tempvar checks = check_value * check_bound;
+
+    tempvar i = i + 1;
+    static_assert i == [ap - 1];
+    jmp body if checks != 0;
+
+    if (check_value == 0) {
+        return TRUE;
+    }
+    return FALSE;
 }

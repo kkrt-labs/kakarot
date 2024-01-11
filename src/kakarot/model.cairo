@@ -98,6 +98,8 @@ namespace model {
     struct Message {
         bytecode: felt*,
         bytecode_len: felt,
+        valid_jumpdests_start: DictAccess*,
+        valid_jumpdests: DictAccess*,
         calldata: felt*,
         calldata_len: felt,
         value: felt,
