@@ -6,7 +6,7 @@ from starkware.cairo.lang.vm.memory_dict import MemoryDict
 def run_program_entrypoint(program, entrypoint, program_input=None) -> list:
     runner = CairoRunner(
         program=program,
-        layout="small",
+        layout="starknet_with_keccak",
         memory=MemoryDict(),
         proof_mode=False,
         allow_missing_builtins=False,
@@ -40,7 +40,7 @@ def run_program_entrypoint(program, entrypoint, program_input=None) -> list:
         hint_locals={"program_input": program_input or {}},
         static_locals={"output": output},
     )
-    runner.run_until_pc(output)
+    runner.run_until_pc(stack[-1])
     runner.original_steps = runner.vm.current_step
     runner.end_run(disable_trace_padding=False)
     output_size = runner.segments.get_segment_size(output.segment_index)
