@@ -9,7 +9,7 @@ logger = logging.getLogger()
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--trace-run",
+        "--profile",
         action="store_true",
         default=False,
         help="compute and dump TracerData for the VM runner: True or False",

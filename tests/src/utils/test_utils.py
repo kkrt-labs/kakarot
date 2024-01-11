@@ -1,16 +1,10 @@
-from pathlib import Path
 
 import pytest
-from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
-from starkware.cairo.lang.compiler.cairo_compile import compile_cairo
-
-from tests.utils.cairo import run_program_entrypoint
 
 
 @pytest.fixture(scope="module")
-def program():
-    path = Path("tests/src/utils/test_utils.cairo")
-    return compile_cairo(path.read_text(), cairo_path=["src"], prime=DEFAULT_PRIME)
+def program(cairo_compile):
+    return cairo_compile("tests/src/utils/test_utils.cairo")
 
 
 @pytest.mark.parametrize(
@@ -63,9 +57,5 @@ def program():
         ("test__bytes_i_to_uint256", [], []),
     ],
 )
-def test_utils(program, test_case, data, expected):
-    run_program_entrypoint(
-        program,
-        test_case,
-        {"data": data, "expected": expected},
-    )
+def test_utils(cairo_run, program, test_case, data, expected):
+    cairo_run(program, test_case, {"data": data, "expected": expected})

@@ -7,7 +7,6 @@ __pycache__
 venv
 
 # starknet
-node.json
 deployments
 artifacts
 build
@@ -15,13 +14,7 @@ build
 #foundry
 /cache
 /out
-
-# nile
-127.0.0.1.*
-
-# Protostar
-./build
-*logs.json
+/broadcast
 
 .DS_Store
 .env
@@ -31,17 +24,5 @@ kakarot.code-workspace
 coverage/*
 resources/*
 
-# Scripts artifacts
-blockhashes.json
-deployed_addresses.json
-
-# thoth relateds stuff
-output-callgraph/*
-build/*
-docs/callgraphs/*
-
-# Hypothesis
-.hypothesis/*
-node_modules
-tmp*
-broadcast
+.hypothesis
+*.pb.gz

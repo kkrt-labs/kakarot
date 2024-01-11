@@ -8,9 +8,13 @@ import pandas as pd
 import pytest
 import pytest_asyncio
 from cairo_coverage import cairo_coverage
-from starkware.starknet.business_logic.execution.execute_entry_point import (
-    ExecuteEntryPoint,
-)
+from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
+from starkware.cairo.lang.compiler.cairo_compile import compile_cairo
+from starkware.cairo.lang.compiler.scoped_name import ScopedName
+from starkware.cairo.lang.tracer.tracer_data import TracerData
+from starkware.cairo.lang.vm.cairo_runner import CairoRunner
+from starkware.cairo.lang.vm.memory_dict import MemoryDict
+from starkware.cairo.lang.vm.memory_segments import FIRST_MEMORY_ADDR as PROGRAM_BASE
 from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 from starkware.starknet.definitions.general_config import StarknetGeneralConfig
 from starkware.starknet.testing.starknet import Starknet
@@ -45,9 +49,8 @@ async def starknet(worker_id, request) -> AsyncGenerator[Starknet, None]:
     )
     starknet.deploy = traceit.trace_all(timeit(starknet.deploy))
     starknet.deprecated_declare = timeit(starknet.deprecated_declare)
-    if request.config.getoption("trace_run"):
+    if request.config.getoption("profile"):
         logger.info("trace-run option enabled")
-        ExecuteEntryPoint._run = traceit.trace_run(ExecuteEntryPoint._run)
     else:
         logger.info("trace-run option disabled")
     output_dir = Path("coverage")
@@ -118,3 +121,86 @@ def starknet_snapshot(starknet):
 
     initial_cache_state = initial_state.state._copy()
     starknet.state.state = initial_cache_state
+
+
+@pytest.fixture(scope="session")
+def cairo_compile(request):
+    def _factory(path) -> list:
+        return compile_cairo(
+            Path(path).read_text(),
+            cairo_path=["src"],
+            prime=DEFAULT_PRIME,
+            debug_info=request.config.getoption("profile"),
+        )
+
+    return _factory
+
+
+@pytest.fixture()
+def cairo_run(request) -> list:
+    def _factory(program, entrypoint, program_input=None) -> list:
+        runner = CairoRunner(
+            program=program,
+            layout="starknet_with_keccak",
+            memory=MemoryDict(),
+            proof_mode=False,
+            allow_missing_builtins=False,
+        )
+
+        runner.initialize_segments()
+        stack = []
+        for builtin_name in runner.program.builtins:
+            builtin_runner = runner.builtin_runners.get(f"{builtin_name}_builtin")
+            if builtin_runner is None:
+                assert runner.allow_missing_builtins, "Missing builtin."
+                stack += [0]
+            else:
+                stack += builtin_runner.initial_stack()
+
+        return_fp = runner.segments.add()
+        end = runner.segments.add()
+        output = runner.segments.add()
+        stack = stack + [return_fp, end, output]
+
+        runner.initialize_state(
+            entrypoint=program.identifiers.get_by_full_name(
+                ScopedName(path=["__main__", entrypoint])
+            ).pc,
+            stack=stack,
+        )
+        runner.initial_fp = runner.initial_ap = runner.execution_base + len(stack)
+        runner.final_pc = end
+
+        runner.initialize_vm(
+            hint_locals={"program_input": program_input or {}},
+            static_locals={"output": output},
+        )
+        runner.run_until_pc(stack[-1])
+        runner.original_steps = runner.vm.current_step
+        runner.end_run(disable_trace_padding=False)
+        runner.relocate()
+
+        if request.config.getoption("profile"):
+            from starkware.cairo.lang.tracer.profile import profile_from_tracer_data
+
+            tracer_data = TracerData(
+                program=program,
+                memory=runner.relocated_memory,
+                trace=runner.relocated_trace,
+                air_public_input=None,
+                debug_info=runner.get_relocated_debug_info(),
+                program_base=PROGRAM_BASE,
+            )
+
+            data = profile_from_tracer_data(tracer_data)
+            with open(
+                request.node.path.parent
+                / f"{request.node.path.stem}.{request.node.name}.pb.gz",
+                "wb",
+            ) as fp:
+                fp.write(data)
+
+        output_size = runner.segments.get_segment_size(output.segment_index)
+        return [runner.segments.memory.get(output + i) for i in range(output_size)]
+
+    return _factory
