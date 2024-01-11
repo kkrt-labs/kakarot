@@ -667,6 +667,9 @@ namespace Interpreter {
         Memory.finalize();
         Stack.finalize();
         State.finalize();
+        with evm {
+            EVM.finalize();
+        }
 
         if (evm.message.depth == 0) {
             if (evm.message.is_create != FALSE) {

@@ -10,6 +10,7 @@ from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.dict import dict_read
+from starkware.cairo.common.default_dict import default_dict_finalize
 
 from kakarot.errors import Errors
 from kakarot.model import model
@@ -35,6 +36,39 @@ namespace EVM {
             gas_left=gas_left,
             reverted=FALSE,
         );
+    }
+
+    func finalize{range_check_ptr, evm: model.EVM*}() {
+        let (squashed_start, squashed_end) = default_dict_finalize(
+            evm.message.valid_jumpdests_start, evm.message.valid_jumpdests, 0
+        );
+        tempvar message = new model.Message(
+            bytecode=evm.message.bytecode,
+            bytecode_len=evm.message.bytecode_len,
+            valid_jumpdests_start=squashed_start,
+            valid_jumpdests=squashed_end,
+            calldata=evm.message.calldata,
+            calldata_len=evm.message.calldata_len,
+            value=evm.message.value,
+            parent=evm.message.parent,
+            address=evm.message.address,
+            read_only=evm.message.read_only,
+            is_create=evm.message.is_create,
+            depth=evm.message.depth,
+            env=evm.message.env,
+        );
+
+        tempvar evm = new model.EVM(
+            message=message,
+            return_data_len=evm.return_data_len,
+            return_data=evm.return_data,
+            program_counter=evm.program_counter,
+            stopped=evm.stopped,
+            gas_left=evm.gas_left,
+            reverted=evm.reverted,
+        );
+
+        return ();
     }
 
     // @notice Stop the current execution context.
