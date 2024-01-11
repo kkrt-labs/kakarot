@@ -90,6 +90,7 @@ namespace ExternallyOwnedAccount {
         bitwise_ptr: BitwiseBuiltin*,
         range_check_ptr,
     }(call_array_len: felt, call_array: CallArray*, calldata_len: felt, calldata: felt*) -> () {
+        alloc_locals;
         if (call_array_len == 0) {
             return ();
         }
@@ -113,12 +114,14 @@ namespace ExternallyOwnedAccount {
             calldata + [call_array].data_offset,
         );
 
-        return validate(
+        validate(
             call_array_len=call_array_len - 1,
             call_array=call_array + CallArray.SIZE,
             calldata_len=calldata_len,
             calldata=calldata,
         );
+
+        return ();
     }
 
     // @notice Execute the transaction.

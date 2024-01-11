@@ -1,7 +1,3 @@
-// SPDX-License-Identifier: MIT
-
-%lang starknet
-
 from kakarot.constants import Constants
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
@@ -26,12 +22,9 @@ namespace EthTransaction {
     // transaction data, which includes the chain ID in accordance with EIP-155.
     // @param tx_data_len The length of the raw transaction data
     // @param tx_data The raw transaction data
-    func decode_legacy_tx{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        bitwise_ptr: BitwiseBuiltin*,
-        range_check_ptr,
-    }(tx_data_len: felt, tx_data: felt*) -> (
+    func decode_legacy_tx{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
+        tx_data_len: felt, tx_data: felt*
+    ) -> (
         msg_hash: Uint256,
         nonce: felt,
         gas_price: felt,
@@ -107,12 +100,9 @@ namespace EthTransaction {
     // transaction data, which includes the chain ID as part of the transaction data itself.
     // @param tx_data_len The length of the raw transaction data
     // @param tx_data The raw transaction data
-    func decode_tx{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        bitwise_ptr: BitwiseBuiltin*,
-        range_check_ptr,
-    }(tx_data_len: felt, tx_data: felt*) -> (
+    func decode_tx{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
+        tx_data_len: felt, tx_data: felt*
+    ) -> (
         msg_hash: Uint256,
         nonce: felt,
         gas_price: felt,
@@ -200,12 +190,9 @@ namespace EthTransaction {
     // (decode_legacy_tx or decode_tx) based on the result.
     // @param tx_data_len The length of the raw transaction data
     // @param tx_data The raw transaction data
-    func decode{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        bitwise_ptr: BitwiseBuiltin*,
-        range_check_ptr,
-    }(tx_data_len: felt, tx_data: felt*) -> (
+    func decode{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
+        tx_data_len: felt, tx_data: felt*
+    ) -> (
         msg_hash: Uint256,
         nonce: felt,
         gas_price: felt,
@@ -233,12 +220,7 @@ namespace EthTransaction {
     // @param account_nonce The nonce of the account
     // @param tx_data_len The length of the raw transaction data
     // @param tx_data The raw transaction data
-    func validate{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        bitwise_ptr: BitwiseBuiltin*,
-        range_check_ptr,
-    }(
+    func validate{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
         address: felt,
         account_nonce: felt,
         r: Uint256,
