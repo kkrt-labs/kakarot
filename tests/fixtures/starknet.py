@@ -7,11 +7,11 @@ from typing import AsyncGenerator
 import pandas as pd
 import pytest
 import pytest_asyncio
-from cairo_coverage import cairo_coverage
 from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 from starkware.cairo.lang.compiler.cairo_compile import compile_cairo
 from starkware.cairo.lang.compiler.scoped_name import ScopedName
 from starkware.cairo.lang.tracer.tracer_data import TracerData
+from starkware.cairo.lang.vm import cairo_runner
 from starkware.cairo.lang.vm.cairo_runner import CairoRunner
 from starkware.cairo.lang.vm.memory_dict import MemoryDict
 from starkware.cairo.lang.vm.memory_segments import FIRST_MEMORY_ADDR as PROGRAM_BASE
@@ -20,6 +20,7 @@ from starkware.starknet.definitions.general_config import StarknetGeneralConfig
 from starkware.starknet.testing.starknet import Starknet
 
 from tests.utils.constants import BLOCK_NUMBER, BLOCK_TIMESTAMP
+from tests.utils.coverage import VmWithCoverage, report_runs
 from tests.utils.reporting import (
     dump_coverage,
     dump_reports,
@@ -27,6 +28,8 @@ from tests.utils.reporting import (
     timeit,
     traceit,
 )
+
+cairo_runner.VirtualMachine = VmWithCoverage
 
 pd.set_option("display.max_rows", 500)
 pd.set_option("display.max_columns", 500)
@@ -49,7 +52,7 @@ async def starknet(worker_id, request) -> AsyncGenerator[Starknet, None]:
     )
     starknet.deploy = traceit.trace_all(timeit(starknet.deploy))
     starknet.deprecated_declare = timeit(starknet.deprecated_declare)
-    if request.config.getoption("profile"):
+    if request.config.getoption("profile_cairo"):
         logger.info("trace-run option enabled")
     else:
         logger.info("trace-run option disabled")
@@ -59,7 +62,7 @@ async def starknet(worker_id, request) -> AsyncGenerator[Starknet, None]:
     yield starknet
 
     output_dir.mkdir(exist_ok=True, parents=True)
-    files = cairo_coverage.report_runs(excluded_file={"site-packages", "tests"})
+    files = report_runs(excluded_file={"site-packages", "tests"})
     total_covered = []
     for file in files:
         if file.pct_covered < 80:
@@ -130,7 +133,7 @@ def cairo_compile(request):
             Path(path).read_text(),
             cairo_path=["src"],
             prime=DEFAULT_PRIME,
-            debug_info=request.config.getoption("profile"),
+            debug_info=request.config.getoption("profile_cairo"),
         )
 
     return _factory
@@ -180,7 +183,7 @@ def cairo_run(request) -> list:
         runner.end_run(disable_trace_padding=False)
         runner.relocate()
 
-        if request.config.getoption("profile"):
+        if request.config.getoption("profile_cairo"):
             from starkware.cairo.lang.tracer.profile import profile_from_tracer_data
 
             tracer_data = TracerData(
