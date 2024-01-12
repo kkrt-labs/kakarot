@@ -211,6 +211,9 @@ def cairo_run(request, cairo_compile) -> list:
                 initial_fp=tracer_data.trace[0].fp, memory=tracer_data.memory
             )
 
+            # Un-bundle the profile.profile_from_tracer_data to hard fix the opcode_labels name mismatch
+            # between the debug_info and the identifiers; and adding a try/catch for the traces (pc going out of bounds).
+
             # Functions.
             for name, ident in program.identifiers.as_dict().items():
                 if not isinstance(ident, LabelDefinition):

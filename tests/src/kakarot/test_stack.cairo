@@ -1,24 +1,17 @@
-// SPDX-License-Identifier: MIT
+%builtins range_check
 
-%lang starknet
-
-// Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.uint256 import assert_uint256_eq
 
-// Local dependencies
 from utils.utils import Helpers
 from kakarot.constants import Constants
 from kakarot.model import model
 from kakarot.stack import Stack
 
-@external
-func test__init__should_return_an_empty_stack{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
+func test__init__should_return_an_empty_stack() {
     // When
     let stack = Stack.init();
 
@@ -27,10 +20,7 @@ func test__init__should_return_an_empty_stack{
     return ();
 }
 
-@external
-func test__push__should_add_an_element_to_the_stack{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
+func test__push__should_add_an_element_to_the_stack() {
     // Given
     let stack = Stack.init();
 
@@ -42,10 +32,7 @@ func test__push__should_add_an_element_to_the_stack{
     return ();
 }
 
-@external
-func test__pop__should_pop_an_element_to_the_stack{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
+func test__pop__should_pop_an_element_to_the_stack{range_check_ptr}() {
     // Given
     let stack = Stack.init();
     tempvar item_0 = new Uint256(1, 0);
@@ -67,10 +54,7 @@ func test__pop__should_pop_an_element_to_the_stack{
     return ();
 }
 
-@external
-func test__pop__should_pop_N_elements_to_the_stack{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
+func test__pop__should_pop_N_elements_to_the_stack{range_check_ptr}() {
     alloc_locals;
     // Given
     let stack = Stack.init();
@@ -96,10 +80,7 @@ func test__pop__should_pop_N_elements_to_the_stack{
     return ();
 }
 
-@external
-func test__peek__should_return_stack_at_given_index__when_value_is_0{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
+func test__peek__should_return_stack_at_given_index__when_value_is_0{range_check_ptr}() {
     // Given
     let stack = Stack.init();
     tempvar item_0 = new Uint256(1, 0);
@@ -120,10 +101,7 @@ func test__peek__should_return_stack_at_given_index__when_value_is_0{
     return ();
 }
 
-@external
-func test__peek__should_return_stack_at_given_index__when_value_is_1{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
+func test__peek__should_return_stack_at_given_index__when_value_is_1{range_check_ptr}() {
     // Given
     let stack = Stack.init();
     tempvar item_0 = new Uint256(1, 0);
@@ -144,10 +122,7 @@ func test__peek__should_return_stack_at_given_index__when_value_is_1{
     return ();
 }
 
-@external
-func test__swap__should_swap_2_stacks{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
+func test__swap__should_swap_2_stacks{range_check_ptr}() {
     // Given
     alloc_locals;
 

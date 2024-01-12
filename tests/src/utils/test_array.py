@@ -35,14 +35,8 @@ class TestArray:
             assert len(arr) - arr.count(0) == output[0]
 
     class TestSlice:
-        @pytest.mark.parametrize(
-            "offset",
-            [0, 1, 2, 3, 4, 5, 6],
-        )
-        @pytest.mark.parametrize(
-            "size",
-            [0, 1, 2, 3, 4, 5, 6],
-        )
+        @pytest.mark.parametrize("offset", [0, 1, 2, 3, 4, 5, 6])
+        @pytest.mark.parametrize("size", [0, 1, 2, 3, 4, 5, 6])
         def test_should_return_slice(self, cairo_run, offset, size):
             arr = [0, 1, 2, 3, 4]
             output = cairo_run("test__slice", arr=arr, offset=offset, size=size)
