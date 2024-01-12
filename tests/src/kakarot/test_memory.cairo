@@ -1,13 +1,7 @@
 %builtins range_check
 
-from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
-from starkware.cairo.common.math import assert_nn
 
-from utils.utils import Helpers
-from kakarot.model import model
 from kakarot.memory import Memory
 
 func test__init__should_return_an_empty_memory() {
