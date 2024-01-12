@@ -11,6 +11,7 @@ from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256
 
 // Local dependencies
+from kakarot.library import Kakarot
 from kakarot.interpreter import Interpreter
 from kakarot.account import Account
 from kakarot.model import model
@@ -161,4 +162,15 @@ func evm_execute{
     // tests and requires a real Message.address (not Address(1, 1))
     StarknetInternals._emit_events(state.events_len, state.events);
     return result;
+}
+
+// @notice Compute the starknet address of a contract given its EVM address
+// @param evm_address The EVM address of the contract
+// @return contract_address The starknet address of the contract
+@view
+func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    evm_address: felt
+) -> (contract_address: felt) {
+    let starknet_address = Account.compute_starknet_address(evm_address);
+    return (contract_address=starknet_address);
 }
