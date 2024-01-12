@@ -9,8 +9,9 @@ import pytest
 import pytest_asyncio
 from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 from starkware.cairo.lang.compiler.cairo_compile import compile_cairo
+from starkware.cairo.lang.compiler.identifier_definition import LabelDefinition
 from starkware.cairo.lang.compiler.scoped_name import ScopedName
-from starkware.cairo.lang.tracer.profile import profile_from_tracer_data
+from starkware.cairo.lang.tracer.profile import ProfileBuilder
 from starkware.cairo.lang.tracer.tracer_data import TracerData
 from starkware.cairo.lang.vm import cairo_runner
 from starkware.cairo.lang.vm.cairo_runner import CairoRunner
@@ -194,7 +195,39 @@ def cairo_run(request) -> list:
                 program_base=PROGRAM_BASE,
             )
 
-            data = profile_from_tracer_data(tracer_data)
+            builder = ProfileBuilder(
+                initial_fp=tracer_data.trace[0].fp, memory=tracer_data.memory
+            )
+
+            # Functions.
+            for name, ident in program.identifiers.as_dict().items():
+                if not isinstance(ident, LabelDefinition):
+                    continue
+                builder.function_id(
+                    name="kakarot.constants"
+                    if str(name) == "kakarot.constants.opcodes_label"
+                    else str(name),
+                    inst_location=program.debug_info.instruction_locations[ident.pc],
+                )
+
+            # Locations.
+            for (
+                pc_offset,
+                inst_location,
+            ) in program.debug_info.instruction_locations.items():
+                builder.location_id(
+                    pc=tracer_data.get_pc_from_offset(pc_offset),
+                    inst_location=inst_location,
+                )
+
+            # Samples.
+            for trace_entry in tracer_data.trace:
+                try:
+                    builder.add_sample(trace_entry)
+                except KeyError:
+                    pass
+
+            data = builder.dump()
 
             with open(
                 request.node.path.parent
