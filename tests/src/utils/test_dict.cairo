@@ -1,6 +1,4 @@
-// SPDX-License-Identifier: MIT
-
-%lang starknet
+%builtins range_check
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
@@ -10,10 +8,7 @@ from starkware.cairo.common.uint256 import Uint256
 
 from utils.dict import dict_keys, default_dict_copy, dict_values
 
-@external
-func test__dict_keys__should_return_keys{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}() {
+func test__dict_keys__should_return_keys{range_check_ptr}() {
     alloc_locals;
     let (local dict_start) = default_dict_new(0);
     let dict_ptr = dict_start;
@@ -47,7 +42,6 @@ func test__dict_keys__should_return_keys{
     return ();
 }
 
-@external
 func test__default_dict_copy__should_return_copied_dict{range_check_ptr}() {
     let default_value = 0xdead;
     let (dict_ptr_start) = default_dict_new(default_value);
@@ -87,7 +81,6 @@ func test__default_dict_copy__should_return_copied_dict{range_check_ptr}() {
     return ();
 }
 
-@external
 func test__dict_values__should_return_values{range_check_ptr}() {
     alloc_locals;
     let (local dict_start) = default_dict_new(0);
