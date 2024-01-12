@@ -1,103 +1,107 @@
 import pytest
-import pytest_asyncio
-from starkware.starknet.testing.starknet import Starknet
 
 from tests.utils.uint256 import int_to_uint256
 
 PRIME = 0x800000000000011000000000000000000000000000000000000000000000001
 
 
-@pytest_asyncio.fixture(scope="module")
-async def bytes_(starknet: Starknet):
-    class_hash = await starknet.deprecated_declare(
-        source="./tests/src/utils/test_bytes.cairo",
-        cairo_path=["src"],
-        disable_hint_validation=True,
-    )
-    return await starknet.deploy(class_hash=class_hash.class_hash)
+@pytest.fixture(scope="module")
+def program(cairo_compile):
+    return cairo_compile("tests/src/utils/test_bytes.cairo")
 
 
-@pytest.mark.asyncio
 class TestBytes:
     class TestFeltToAscii:
         @pytest.mark.parametrize("n", [0, 10, 1234, 0xFFFFFF])
-        async def test_should_return_ascii(self, bytes_, n):
-            assert (
-                str(n)
-                == bytes(
-                    (await bytes_.test__felt_to_ascii(n).call()).result.ascii
-                ).decode()
+        def test_should_return_ascii(self, cairo_run, program, n):
+            output = cairo_run(
+                program=program,
+                entrypoint="test__felt_to_ascii",
+                program_input={"n": n},
             )
+            assert str(n) == bytes(output).decode()
 
     class TestFeltToBytesLittle:
         @pytest.mark.parametrize("n", [0, 10, 1234, 0xFFFFFF, 2**128, PRIME - 1])
-        async def test_should_return_bytes(self, bytes_, n):
-            res = bytes(
-                (await bytes_.test__felt_to_bytes_little(n).call()).result.bytes
+        def test_should_return_bytes(self, cairo_run, program, n):
+            output = cairo_run(
+                program=program,
+                entrypoint="test__felt_to_bytes_little",
+                program_input={"n": n},
             )
+            res = bytes(output)
             assert bytes.fromhex(f"{n:x}".rjust(len(res) * 2, "0"))[::-1] == res
 
     class TestFeltToBytes:
         @pytest.mark.parametrize("n", [0, 10, 1234, 0xFFFFFF, 2**128, PRIME - 1])
-        async def test_should_return_bytes(self, bytes_, n):
-            res = bytes((await bytes_.test__felt_to_bytes(n).call()).result.bytes)
+        def test_should_return_bytes(self, cairo_run, program, n):
+            output = cairo_run(
+                program=program,
+                entrypoint="test__felt_to_bytes",
+                program_input={"n": n},
+            )
+            res = bytes(output)
             assert bytes.fromhex(f"{n:x}".rjust(len(res) * 2, "0")) == res
 
     class TestFeltToBytes20:
         @pytest.mark.parametrize("n", [0, 10, 1234, 0xFFFFFF, 2**128, PRIME - 1])
-        async def test_should_return_bytes20(self, bytes_, n):
-            res = bytes((await bytes_.test__felt_to_bytes20(n).call()).result.bytes)
-            assert f"{n:064x}"[-40:] == res.hex()
+        def test_should_return_bytes20(self, cairo_run, program, n):
+            output = cairo_run(
+                program=program,
+                entrypoint="test__felt_to_bytes20",
+                program_input={"n": n},
+            )
+            assert f"{n:064x}"[-40:] == bytes(output).hex()
 
     class TestUint256ToBytesLittle:
         @pytest.mark.parametrize(
             "n", [0, 10, 1234, 0xFFFFFF, 2**128, PRIME - 1, 2**256 - 1]
         )
-        async def test_should_return_bytes(self, bytes_, n):
-            res = bytes(
-                (
-                    await bytes_.test__uint256_to_bytes_little(int_to_uint256(n)).call()
-                ).result.bytes
+        def test_should_return_bytes(self, cairo_run, program, n):
+            output = cairo_run(
+                program=program,
+                entrypoint="test__uint256_to_bytes_little",
+                program_input={"n": int_to_uint256(n)},
             )
+            res = bytes(output)
             assert bytes.fromhex(f"{n:x}".rjust(len(res) * 2, "0"))[::-1] == res
 
     class TestUint256ToBytes:
         @pytest.mark.parametrize(
             "n", [0, 10, 1234, 0xFFFFFF, 2**128, PRIME - 1, 2**256 - 1]
         )
-        async def test_should_return_bytes(self, bytes_, n):
-            res = bytes(
-                (
-                    await bytes_.test__uint256_to_bytes(int_to_uint256(n)).call()
-                ).result.bytes
+        def test_should_return_bytes(self, cairo_run, program, n):
+            output = cairo_run(
+                program=program,
+                entrypoint="test__uint256_to_bytes",
+                program_input={"n": int_to_uint256(n)},
             )
+            res = bytes(output)
             assert bytes.fromhex(f"{n:x}".rjust(len(res) * 2, "0")) == res
 
     class TestUint256ToBytes32:
         @pytest.mark.parametrize(
             "n", [0, 10, 1234, 0xFFFFFF, 2**128, PRIME - 1, 2**256 - 1]
         )
-        async def test_should_return_bytes(self, bytes_, n):
-            res = bytes(
-                (
-                    await bytes_.test__uint256_to_bytes32(int_to_uint256(n)).call()
-                ).result.bytes
+        def test_should_return_bytes(self, cairo_run, program, n):
+            output = cairo_run(
+                program=program,
+                entrypoint="test__uint256_to_bytes32",
+                program_input={"n": int_to_uint256(n)},
             )
-            assert bytes.fromhex(f"{n:064x}") == res
+            assert bytes.fromhex(f"{n:064x}") == bytes(output)
 
     class TestBytesToBytes8LittleEndian:
         @pytest.mark.parametrize("bytes_len", list(range(20)))
-        async def test_should_return_bytes8(self, bytes_, bytes_len):
+        def test_should_return_bytes8(self, cairo_run, program, bytes_len):
             bytes_array = list(range(bytes_len))
             bytes8_little_endian = [
                 int(bytes(bytes_array[i : i + 8][::-1]).hex(), 16)
                 for i in range(0, len(bytes_array), 8)
             ]
-            assert (
-                bytes8_little_endian
-                == (
-                    await bytes_.test__bytes_to_bytes8_little_endian(
-                        list(range(bytes_len))
-                    ).call()
-                ).result.res
+            output = cairo_run(
+                program=program,
+                entrypoint="test__bytes_to_bytes8_little_endian",
+                program_input={"bytes": list(range(bytes_len))},
             )
+            assert bytes8_little_endian == output
