@@ -126,10 +126,10 @@ func test__copy__should_return_new_state_with_same_attributes{
 func test__is_account_alive__existing_account{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(nonce, code_len, code: felt*, balance_low) -> (is_alive: felt) {
-    tempvar balance = new Uint256(balance_low, 0);
     let evm_address = 'alive';
     let starknet_address = Account.compute_starknet_address(evm_address);
     tempvar address = new model.Address(starknet_address, evm_address);
+    tempvar balance = new Uint256(balance_low, 0);
     let account = Account.init(address, code_len, code, nonce, balance);
     let state = State.init();
 
