@@ -1,4 +1,3 @@
-from kakarot.constants import Constants
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin, HashBuiltin
@@ -7,6 +6,8 @@ from starkware.cairo.common.cairo_secp.signature import verify_eth_signature_uin
 from starkware.cairo.common.math_cmp import is_not_zero, is_le
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
+
+from kakarot.constants import Constants
 from utils.rlp import RLP
 from utils.utils import Helpers
 from utils.bytes import bytes_to_bytes8_little_endian

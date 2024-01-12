@@ -10,6 +10,7 @@ import pytest_asyncio
 from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 from starkware.cairo.lang.compiler.cairo_compile import compile_cairo
 from starkware.cairo.lang.compiler.scoped_name import ScopedName
+from starkware.cairo.lang.tracer.profile import profile_from_tracer_data
 from starkware.cairo.lang.tracer.tracer_data import TracerData
 from starkware.cairo.lang.vm import cairo_runner
 from starkware.cairo.lang.vm.cairo_runner import CairoRunner
@@ -184,8 +185,6 @@ def cairo_run(request) -> list:
         runner.relocate()
 
         if request.config.getoption("profile_cairo"):
-            from starkware.cairo.lang.tracer.profile import profile_from_tracer_data
-
             tracer_data = TracerData(
                 program=program,
                 memory=runner.relocated_memory,
@@ -196,6 +195,7 @@ def cairo_run(request) -> list:
             )
 
             data = profile_from_tracer_data(tracer_data)
+
             with open(
                 request.node.path.parent
                 / f"{request.node.path.stem}.{request.node.name}.pb.gz",
