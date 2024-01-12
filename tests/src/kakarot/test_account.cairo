@@ -89,10 +89,10 @@ func test__write_storage__should_store_value_at_key{
     alloc_locals;
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
-    tempvar address = new model.Address(0, 0);
+    let starknet_address = Account.compute_starknet_address(0);
+    tempvar address = new model.Address(starknet_address, 0);
     let (local code: felt*) = alloc();
     tempvar balance = new Uint256(0, 0);
-    tempvar address = new model.Address(0, 0);
     let account = Account.init(address, 0, code, 0, balance);
 
     // When
@@ -112,8 +112,9 @@ func test__has_code_or_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
     nonce: felt, code_len: felt, code: felt*
 ) -> (has_code_or_nonce: felt) {
     // Given
+    let starknet_address = Account.compute_starknet_address(0);
+    tempvar address = new model.Address(starknet_address, 0);
     tempvar balance = new Uint256(0, 0);
-    tempvar address = new model.Address(0, 0);
     let account = Account.init(address, code_len, code, nonce, balance);
 
     // When

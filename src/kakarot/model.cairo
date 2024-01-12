@@ -47,7 +47,8 @@ namespace model {
 
     // @notice The struct representing an EVM account.
     // @dev We don't put the balance here to avoid loading the whole Account just for sending ETH
-    // @dev The address here is consequently an EVM address
+    // @dev The address is a tuple (starknet, evm) for step-optimization purposes:
+    // we can compute the starknet only once.
     struct Account {
         address: model.Address*,
         code_len: felt,

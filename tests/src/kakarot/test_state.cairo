@@ -128,12 +128,13 @@ func test__is_account_alive__existing_account{
 }(nonce, code_len, code: felt*, balance_low) -> (is_alive: felt) {
     tempvar balance = new Uint256(balance_low, 0);
     let evm_address = 'alive';
-    tempvar address = new model.Address(0, evm_address);
+    let starknet_address = Account.compute_starknet_address(evm_address);
+    tempvar address = new model.Address(starknet_address, evm_address);
     let account = Account.init(address, code_len, code, nonce, balance);
     let state = State.init();
 
     with state {
-        State.set_account(account);
+        State.update_account(account);
         let is_alive = State.is_account_alive(evm_address);
     }
 

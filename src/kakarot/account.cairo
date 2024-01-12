@@ -37,7 +37,7 @@ from utils.utils import Helpers
 namespace Account {
     // @notice Create a new account
     // @dev New contract accounts start at nonce=1.
-    // @param address The EVM address of the account
+    // @param address The address (starknet,evm) of the account
     // @param code_len The length of the code
     // @param code The pointer to the code
     // @param nonce The initial nonce
@@ -78,7 +78,7 @@ namespace Account {
 
     // @notice fetch an account from Starknet
     // @dev An non-deployed account is just an empty account.
-    // @param address the pointer to the Address
+    // @param address the EVM address of the account
     // @return the account populated with Starknet data
     func fetch_or_create{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         evm_address: felt
@@ -131,7 +131,6 @@ namespace Account {
     // @dev Try to retrieve in the local Dict<Uint256*> first, if not already here
     //      read the contract storage and cache the result.
     // @param self The pointer to the execution Account.
-    // @param address The pointer to the Address.
     // @param key The pointer to the storage key
     // @return The updated Account
     // @return The read value
@@ -148,14 +147,14 @@ namespace Account {
             // Return from local storage if found
             let value_ptr = cast(pointer, Uint256*);
             tempvar self = new model.Account(
-                self.address,
-                self.code_len,
-                self.code,
-                self.storage_start,
-                storage,
-                self.nonce,
-                self.balance,
-                self.selfdestruct,
+                address=self.address,
+                code_len=self.code_len,
+                code=self.code,
+                storage_start=self.storage_start,
+                storage=storage,
+                nonce=self.nonce,
+                balance=self.balance,
+                selfdestruct=self.selfdestruct,
             );
             return (self, value_ptr);
         }
@@ -182,14 +181,14 @@ namespace Account {
         dict_write{dict_ptr=storage}(key=storage_addr, new_value=cast(value_ptr, felt));
 
         tempvar self = new model.Account(
-            self.address,
-            self.code_len,
-            self.code,
-            self.storage_start,
-            storage,
-            self.nonce,
-            self.balance,
-            self.selfdestruct,
+            address=self.address,
+            code_len=self.code_len,
+            code=self.code,
+            storage_start=self.storage_start,
+            storage=storage,
+            nonce=self.nonce,
+            balance=self.balance,
+            selfdestruct=self.selfdestruct,
         );
         return (self, value_ptr);
     }
@@ -206,14 +205,14 @@ namespace Account {
         let (storage_addr) = Internals._storage_addr(key);
         dict_write{dict_ptr=storage}(key=storage_addr, new_value=cast(value, felt));
         tempvar self = new model.Account(
-            self.address,
-            self.code_len,
-            self.code,
-            self.storage_start,
-            storage,
-            self.nonce,
-            self.balance,
-            self.selfdestruct,
+            address=self.address,
+            code_len=self.code_len,
+            code=self.code,
+            storage_start=self.storage_start,
+            storage=storage,
+            nonce=self.nonce,
+            balance=self.balance,
+            selfdestruct=self.selfdestruct,
         );
         return self;
     }

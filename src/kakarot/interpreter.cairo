@@ -797,7 +797,7 @@ namespace Interpreter {
             // Nonce is set to 1 in case of deploy_tx
             let nonce = account.nonce * (1 - is_deploy_tx) + is_deploy_tx;
             let account = Account.set_nonce(account, nonce);
-            State.set_account(account);
+            State.update_account(account);
         }
 
         if (is_collision != 0) {
@@ -860,7 +860,7 @@ namespace Internals {
 
         let account = State.get_account(evm.message.address.evm);
         let account = Account.set_code(account, evm.return_data_len, evm.return_data);
-        State.set_account(account);
+        State.update_account(account);
         State.finalize();
 
         let evm = EVM.update_return_data(evm, 2, cast(evm.message.address, felt*));

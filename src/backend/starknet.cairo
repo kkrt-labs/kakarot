@@ -135,9 +135,8 @@ namespace Internals {
             return ();
         }
 
-        let starknet_address = Account.compute_starknet_address(accounts_start.key);
         let account = cast(accounts_start.new_value, model.Account*);
-        _commit_account(account, starknet_address);
+        _commit_account(account);
 
         _commit_accounts(accounts_start + DictAccess.SIZE, accounts_end);
 
@@ -151,12 +150,12 @@ namespace Internals {
     // @param starknet_address A starknet address to commit to
     // @notice Iterate through the storage dict and update the Starknet storage
     func _commit_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Account*, starknet_address: felt
+        self: model.Account*
     ) {
         alloc_locals;
 
         let starknet_account_exists = Account.is_registered(self.address.evm);
-
+        let starknet_address = self.address.starknet;
         // Case new Account
         if (starknet_account_exists == 0) {
             // Just casting the Summary into an Account to apply has_code_or_nonce

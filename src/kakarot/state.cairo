@@ -125,9 +125,9 @@ namespace State {
         }
     }
 
-    // @notice Set the Account at the given address
+    // @notice Updates the given account in the state.
     // @param account The new account
-    func set_account{state: model.State*}(account: model.Account*) {
+    func update_account{state: model.State*}(account: model.Account*) {
         let accounts = state.accounts;
         dict_write{dict_ptr=accounts}(key=account.address.evm, new_value=cast(account, felt));
         tempvar state = new model.State(
@@ -144,7 +144,7 @@ namespace State {
     // @notice Read a given storage
     // @dev Try to retrieve in the local Dict<Uint256*> first, if not already here
     //      read the contract storage and cache the result.
-    // @param address The pointer to the Address.
+    // @param evm_address The evm address of the account to read storage from.
     // @param key The pointer to the storage key
     func read_storage{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
@@ -152,12 +152,12 @@ namespace State {
         alloc_locals;
         let account = get_account(evm_address);
         let (account, value) = Account.read_storage(account, key);
-        set_account(account);
+        update_account(account);
         return value;
     }
 
     // @notice Update a storage key with the given value
-    // @param address The pointer to the Account address
+    // @param evm_address The evm address of the account to write storage to.
     // @param key The pointer to the Uint256 storage key
     // @param value The pointer to the Uint256 value
     func write_storage{
@@ -166,7 +166,7 @@ namespace State {
         alloc_locals;
         let account = get_account(evm_address);
         let account = Account.write_storage(account, key, value);
-        set_account(account);
+        update_account(account);
         return ();
     }
 

@@ -110,7 +110,7 @@ namespace SystemOperations {
         let is_collision = Account.has_code_or_nonce(target_account);
         if (is_collision != 0) {
             let sender = Account.set_nonce(sender, sender.nonce + 1);
-            State.set_account(sender);
+            State.update_account(sender);
             Stack.push_uint128(0);
             return evm;
         }
@@ -124,7 +124,7 @@ namespace SystemOperations {
 
         // Increment nonce
         let sender = Account.set_nonce(sender, sender.nonce + 1);
-        State.set_account(sender);
+        State.update_account(sender);
 
         // Final update of calling context
         tempvar parent = new model.Parent(evm, stack, memory, state);
@@ -155,8 +155,9 @@ namespace SystemOperations {
         let child_evm = EVM.init(message, gas_limit);
         let stack = Stack.init();
 
+        let target_account = State.get_account(target_evm_address);
         let target_account = Account.set_nonce(target_account, 1);
-        State.set_account(target_account);
+        State.update_account(target_account);
 
         let transfer = model.Transfer(evm.message.address, target_account.address, value);
         let success = State.add_transfer(transfer);
@@ -431,7 +432,7 @@ namespace SystemOperations {
         );
         let account = State.get_account(evm.message.address.evm);
         let transfer = model.Transfer(
-            sender=evm.message.address, recipient=recipient, amount=[account.balance]
+            sender=account.address, recipient=recipient, amount=[account.balance]
         );
         let success = State.add_transfer(transfer);
 
@@ -439,7 +440,7 @@ namespace SystemOperations {
         // @dev: get_account again because add_transfer updated it
         let account = State.get_account(evm.message.address.evm);
         let account = Account.selfdestruct(account);
-        State.set_account(account);
+        State.update_account(account);
 
         // Halt context
         let (return_data: felt*) = alloc();
@@ -547,25 +548,24 @@ namespace CallHelper {
             return child_evm;
         }
 
-        let target_starknet_address = Account.compute_starknet_address(evm_address);
-        tempvar call_address = new model.Address(starknet=target_starknet_address, evm=evm_address);
-        let account = State.get_account(evm_address);
+        let call_starknet_address = Account.compute_starknet_address(evm_address);
+        let called_account = State.get_account(evm_address);
 
         tempvar parent = new model.Parent(evm, stack, memory, state);
         let stack = Stack.init();
         let memory = Memory.init();
         let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
-            bytecode_len=account.code_len, bytecode=account.code
+            bytecode_len=called_account.code_len, bytecode=called_account.code
         );
         if (self_call == FALSE) {
-            tempvar message_address = call_address;
+            tempvar message_address = called_account.address;
         } else {
             tempvar message_address = evm.message.address;
         }
 
         tempvar message = new model.Message(
-            bytecode=account.code,
-            bytecode_len=account.code_len,
+            bytecode=called_account.code,
+            bytecode_len=called_account.code_len,
             valid_jumpdests_start=valid_jumpdests_start,
             valid_jumpdests=valid_jumpdests,
             calldata=calldata,
@@ -810,7 +810,7 @@ namespace CreateHelper {
         // Write bytecode to Account
         let account = State.get_account(evm.message.address.evm);
         let account = Account.set_code(account, evm.return_data_len, evm.return_data);
-        State.set_account(account);
+        State.update_account(account);
 
         tempvar evm = new model.EVM(
             message=evm.message.parent.evm.message,

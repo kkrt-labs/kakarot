@@ -49,17 +49,14 @@ class TestKakarot:
         ):
             with traceit.context(request.node.callspec.id):
                 result = await evm.functions["evm_call"].call(
-                    origin={
-                        "starknet": addresses[0].starknet_contract.address,
-                        "evm": int(addresses[0].address, 16),
-                    },
+                    origin=int(addresses[0].address, 16),
                     value=int(params["value"]),
                     bytecode=hex_string_to_bytes_array(params["code"]),
                     calldata=hex_string_to_bytes_array(params["calldata"]),
                 )
 
             assert result.success == params["success"]
-            assert result.stack_values[: result.stack_size] == (
+            assert result.stack_valueresult.stack_valuess[: result.stack_size] == (
                 [
                     int(x)
                     for x in params["stack"]
@@ -80,10 +77,7 @@ class TestKakarot:
             if events:
                 # Events only show up in a transaction, thus we run the same call, but in a tx
                 tx = await evm.functions["evm_execute"].invoke(
-                    origin={
-                        "starknet": addresses[0].starknet_contract.address,
-                        "evm": int(addresses[0].address, 16),
-                    },
+                    origin=int(addresses[0].address, 16),
                     value=int(params["value"]),
                     bytecode=hex_string_to_bytes_array(params["code"]),
                     calldata=hex_string_to_bytes_array(params["calldata"]),
