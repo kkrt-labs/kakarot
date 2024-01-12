@@ -1,27 +1,14 @@
 import pytest
-import pytest_asyncio
-from starkware.starknet.testing.starknet import Starknet
 
 
-@pytest_asyncio.fixture(scope="module")
-async def memory(starknet: Starknet):
-    class_hash = await starknet.deprecated_declare(
-        source="./tests/src/kakarot/test_memory.cairo",
-        cairo_path=["src"],
-        disable_hint_validation=True,
-    )
-    return await starknet.deploy(class_hash=class_hash.class_hash)
-
-
-@pytest.mark.asyncio
 class TestMemory:
     class TestInit:
-        async def test_should_return_an_empty_memory(self, memory):
-            await memory.test__init__should_return_an_empty_memory().call()
+        def test_should_return_an_empty_memory(self, cairo_run):
+            cairo_run("test__init__should_return_an_empty_memory")
 
     class TestStore:
-        async def test_should_add_an_element_to_the_memory(self, memory):
-            await memory.test__store__should_add_an_element_to_the_memory().call()
+        def test_should_add_an_element_to_the_memory(self, cairo_run):
+            cairo_run("test__store__should_add_an_element_to_the_memory")
 
     class TestLoad:
         @pytest.mark.parametrize(
@@ -36,11 +23,14 @@ class TestMemory:
             ],
         )
         async def test_should_load_an_element_from_the_memory_with_offset(
-            self, memory, offset, low, high
+            self, cairo_run, offset, low, high
         ):
-            await memory.test__load__should_load_an_element_from_the_memory_with_offset(
-                offset, low, high
-            ).call()
+            cairo_run(
+                "test__load__should_load_an_element_from_the_memory_with_offset",
+                offset=offset,
+                low=low,
+                high=high,
+            )
 
-        async def test_should_expand_memory_and_return_element(self, memory):
-            await memory.test__load__should_expand_memory_and_return_element().call()
+        def test_should_expand_memory_and_return_element(self, cairo_run):
+            cairo_run("test__load__should_expand_memory_and_return_element")

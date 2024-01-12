@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import shutil
@@ -148,6 +149,8 @@ def cairo_run(request, cairo_compile) -> list:
     Returns the output of the cairo program put in the output memory segment.
 
     When --profile-cairo is passed, the cairo program is run with the tracer enabled and the resulting trace is dumped.
+
+    Logic is mainly taken from starkware.cairo.lang.vm.cairo_run with minor updates like the addition of the output segment.
     """
     cairo_file = Path(request.node.fspath).with_suffix(".cairo")
     if not cairo_file.exists():
@@ -246,7 +249,7 @@ def cairo_run(request, cairo_compile) -> list:
 
             with open(
                 request.node.path.parent
-                / f"{request.node.path.stem}.{request.node.name}.pb.gz",
+                / f"{request.node.path.stem}.{request.node.name}.{entrypoint}({json.dumps(kwargs) if kwargs else ''}).pb.gz",
                 "wb",
             ) as fp:
                 fp.write(data)
