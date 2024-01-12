@@ -1,11 +1,6 @@
 import pytest
 
 
-@pytest.fixture(scope="module")
-def program(cairo_compile):
-    return cairo_compile("tests/src/utils/test_utils.cairo")
-
-
 @pytest.mark.parametrize(
     "test_case,data,expected",
     [
@@ -56,5 +51,5 @@ def program(cairo_compile):
         ("test__bytes_i_to_uint256", [], []),
     ],
 )
-def test_utils(cairo_run, program, test_case, data, expected):
-    cairo_run(program, test_case, {"data": data, "expected": expected})
+def test_utils(cairo_run, test_case, data, expected):
+    cairo_run(test_case, data=data, expected=expected)

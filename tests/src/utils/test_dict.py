@@ -1,11 +1,6 @@
 import pytest
 
 
-@pytest.fixture(scope="module")
-def program(cairo_compile):
-    return cairo_compile("tests/src/utils/test_dict.cairo")
-
-
 @pytest.mark.parametrize(
     "test_case",
     [
@@ -14,5 +9,5 @@ def program(cairo_compile):
         "test__default_dict_copy__should_return_copied_dict",
     ],
 )
-def test_dict(cairo_run, program, test_case):
-    cairo_run(program, test_case)
+def test_dict(cairo_run, test_case):
+    cairo_run(test_case)

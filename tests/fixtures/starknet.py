@@ -141,9 +141,21 @@ def cairo_compile(request):
     return _factory
 
 
-@pytest.fixture()
-def cairo_run(request) -> list:
-    def _factory(program, entrypoint, program_input=None) -> list:
+@pytest.fixture(scope="module")
+def cairo_run(request, cairo_compile) -> list:
+    """
+    Run the cairo program corresponding to the python test file at a given entrypoint with given program inputs as kwargs.
+    Returns the output of the cairo program put in the output memory segment.
+
+    When --profile-cairo is passed, the cairo program is run with the tracer enabled and the resulting trace is dumped.
+    """
+    cairo_file = Path(request.node.fspath).with_suffix(".cairo")
+    if not cairo_file.exists():
+        raise ValueError(f"Missing cairo file: {cairo_file}")
+
+    program = cairo_compile(cairo_file)
+
+    def _factory(entrypoint, **kwargs) -> list:
         runner = CairoRunner(
             program=program,
             layout="starknet_with_keccak",
@@ -177,7 +189,7 @@ def cairo_run(request) -> list:
         runner.final_pc = end
 
         runner.initialize_vm(
-            hint_locals={"program_input": program_input or {}},
+            hint_locals={"program_input": kwargs},
             static_locals={"output": output},
         )
         runner.run_until_pc(stack[-1])

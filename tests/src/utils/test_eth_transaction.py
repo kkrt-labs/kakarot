@@ -13,17 +13,12 @@ from tests.utils.helpers import (
 from tests.utils.uint256 import int_to_uint256
 
 
-@pytest.fixture(scope="module")
-def program(cairo_compile):
-    return cairo_compile("tests/src/utils/test_eth_transaction.cairo")
-
-
 class TestEthTransaction:
     class TestValidate:
         @pytest.mark.parametrize("seed", (41, 42))
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         async def test_should_pass_all_transactions_types(
-            self, cairo_run, program, seed, transaction
+            self, cairo_run, seed, transaction
         ):
             """
             Note: the seeds 41 and 42 have been manually selected after observing that some private keys
@@ -38,22 +33,17 @@ class TestEthTransaction:
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
 
             cairo_run(
-                program,
                 "test__validate",
-                {
-                    "address": int(address, 16),
-                    "nonce": transaction["nonce"],
-                    "r": int_to_uint256(signed.r),
-                    "s": int_to_uint256(signed.s),
-                    "v": signed["v"],
-                    "tx_data": list(encoded_unsigned_tx),
-                },
+                address=int(address, 16),
+                nonce=transaction["nonce"],
+                r=int_to_uint256(signed.r),
+                s=int_to_uint256(signed.s),
+                v=signed["v"],
+                tx_data=list(encoded_unsigned_tx),
             )
 
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
-        async def test_should_raise_with_wrong_chain_id(
-            self, cairo_run, program, transaction
-        ):
+        async def test_should_raise_with_wrong_chain_id(self, cairo_run, transaction):
             private_key = generate_random_private_key()
             address = private_key.public_key.to_checksum_address()
             transaction = {**transaction, "chainId": 1}
@@ -63,22 +53,17 @@ class TestEthTransaction:
 
             with cairo_error():
                 cairo_run(
-                    program,
                     "test__validate",
-                    {
-                        "address": int(address, 16),
-                        "nonce": transaction["nonce"],
-                        "r": int_to_uint256(signed.r),
-                        "s": int_to_uint256(signed.s),
-                        "v": signed["v"],
-                        "tx_data": list(encoded_unsigned_tx),
-                    },
+                    address=int(address, 16),
+                    nonce=transaction["nonce"],
+                    r=int_to_uint256(signed.r),
+                    s=int_to_uint256(signed.s),
+                    v=signed["v"],
+                    tx_data=list(encoded_unsigned_tx),
                 )
 
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
-        async def test_should_raise_with_wrong_address(
-            self, cairo_run, program, transaction
-        ):
+        async def test_should_raise_with_wrong_address(self, cairo_run, transaction):
             private_key = generate_random_private_key()
             address = int(generate_random_evm_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
@@ -88,22 +73,17 @@ class TestEthTransaction:
             assert address != int(private_key.public_key.to_address(), 16)
             with cairo_error():
                 cairo_run(
-                    program,
                     "test__validate",
-                    {
-                        "address": int(address, 16),
-                        "nonce": transaction["nonce"],
-                        "r": int_to_uint256(signed.r),
-                        "s": int_to_uint256(signed.s),
-                        "v": signed["v"],
-                        "tx_data": list(encoded_unsigned_tx),
-                    },
+                    address=int(address, 16),
+                    nonce=transaction["nonce"],
+                    r=int_to_uint256(signed.r),
+                    s=int_to_uint256(signed.s),
+                    v=signed["v"],
+                    tx_data=list(encoded_unsigned_tx),
                 )
 
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
-        async def test_should_raise_with_wrong_nonce(
-            self, cairo_run, program, transaction
-        ):
+        async def test_should_raise_with_wrong_nonce(self, cairo_run, transaction):
             private_key = generate_random_private_key()
             address = int(generate_random_evm_address(), 16)
             signed = Account.sign_transaction(transaction, private_key)
@@ -113,14 +93,11 @@ class TestEthTransaction:
             assert address != int(private_key.public_key.to_address(), 16)
             with cairo_error():
                 cairo_run(
-                    program,
                     "test__validate",
-                    {
-                        "address": int(address, 16),
-                        "nonce": transaction["nonce"],
-                        "r": int_to_uint256(signed.r),
-                        "s": int_to_uint256(signed.s),
-                        "v": signed["v"],
-                        "tx_data": list(encoded_unsigned_tx),
-                    },
+                    address=int(address, 16),
+                    nonce=transaction["nonce"],
+                    r=int_to_uint256(signed.r),
+                    s=int_to_uint256(signed.s),
+                    v=signed["v"],
+                    tx_data=list(encoded_unsigned_tx),
                 )

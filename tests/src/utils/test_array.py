@@ -1,11 +1,6 @@
 import pytest
 
 
-@pytest.fixture(scope="module")
-def program(cairo_compile):
-    return cairo_compile("tests/src/utils/test_array.cairo")
-
-
 class TestArray:
     class TestReverse:
         @pytest.mark.parametrize(
@@ -19,12 +14,8 @@ class TestArray:
                 [],
             ],
         )
-        def test_should_return_reversed_array(self, cairo_run, program, arr):
-            output = cairo_run(
-                program=program,
-                entrypoint="test__reverse",
-                program_input={"arr": arr},
-            )
+        def test_should_return_reversed_array(self, cairo_run, arr):
+            output = cairo_run("test__reverse", arr=arr)
             assert arr[::-1] == output
 
     class TestCountNotZero:
@@ -39,14 +30,8 @@ class TestArray:
                 [],
             ],
         )
-        def test_should_return_count_of_non_zero_elements(
-            self, cairo_run, program, arr
-        ):
-            output = cairo_run(
-                program=program,
-                entrypoint="test__count_not_zero",
-                program_input={"arr": arr},
-            )
+        def test_should_return_count_of_non_zero_elements(self, cairo_run, arr):
+            output = cairo_run("test__count_not_zero", arr=arr)
             assert len(arr) - arr.count(0) == output[0]
 
     class TestSlice:
@@ -58,13 +43,9 @@ class TestArray:
             "size",
             [0, 1, 2, 3, 4, 5, 6],
         )
-        def test_should_return_slice(self, cairo_run, program, offset, size):
+        def test_should_return_slice(self, cairo_run, offset, size):
             arr = [0, 1, 2, 3, 4]
-            output = cairo_run(
-                program=program,
-                entrypoint="test__slice",
-                program_input={"arr": arr, "offset": offset, "size": size},
-            )
+            output = cairo_run("test__slice", arr=arr, offset=offset, size=size)
             assert (arr + (offset + size) * [0])[offset : offset + size] == output
 
     class TestContains:
@@ -78,10 +59,6 @@ class TestArray:
                 ([], 1, False),
             ],
         )
-        async def test_should_return_if_contains(self, cairo_run, program, arr, value, expected):
-            output = cairo_run(
-                program=program,
-                entrypoint="test_contains",
-                program_input={"arr": arr, "value": value},
-            )
+        async def test_should_return_if_contains(self, cairo_run, arr, value, expected):
+            output = cairo_run("test_contains", arr=arr, value=value)
             assert expected == output[0]
