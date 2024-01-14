@@ -7,7 +7,6 @@ from starknet_py.net.account.account import Account
 from starknet_py.net.client_models import TransactionStatus
 from starknet_py.net.full_node_client import FullNodeClient
 
-from scripts.utils.starknet import fund_address
 from tests.end_to_end.bytecodes import test_cases
 from tests.utils.constants import PRE_FUND_AMOUNT
 from tests.utils.helpers import (
@@ -35,6 +34,8 @@ async def origin(evm: Contract, addresses):
     """
     Deploys the origin's Starknet contract to the correct address and funds it.
     """
+    from scripts.utils.starknet import fund_address
+
     evm_address = int(addresses[0].address, 16)
     sn_address = (
         await evm.functions["compute_starknet_address"].call(evm_address)

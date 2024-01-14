@@ -76,7 +76,7 @@ namespace SystemOperations {
         Memory.load_n(size.low, bytecode, offset.low);
 
         // Get target address
-        let target_evm_address = CreateHelper.get_evm_address(
+        let target_address = CreateHelper.get_evm_address(
             evm.message.address.evm, popped_len, popped, size.low, bytecode
         );
 
@@ -106,7 +106,7 @@ namespace SystemOperations {
         let evm = EVM.charge_gas(evm, gas_limit);
 
         // Check target account availabitliy
-        let target_account = State.get_account(target_evm_address);
+        let target_account = State.get_account(target_address);
         let is_collision = Account.has_code_or_nonce(target_account);
         if (is_collision != 0) {
             let sender = Account.set_nonce(sender, sender.nonce + 1);
@@ -155,7 +155,7 @@ namespace SystemOperations {
         let child_evm = EVM.init(message, gas_limit);
         let stack = Stack.init();
 
-        let target_account = State.get_account(target_evm_address);
+        let target_account = State.get_account(target_address);
         let target_account = Account.set_nonce(target_account, 1);
         State.update_account(target_account);
 
@@ -478,7 +478,7 @@ namespace CallHelper {
         // Pop ret_offset and ret_size
         let (popped) = Stack.pop_n(4 + with_value);
         let gas = popped[0];
-        let evm_address = uint256_to_uint160(popped[1]);
+        let to = uint256_to_uint160(popped[1]);
         let stack_value = popped[2];
         let args_offset = popped[2 + with_value];
         let args_size = popped[3 + with_value];
@@ -533,11 +533,11 @@ namespace CallHelper {
 
         // 4. Build child_evm
         // Check if the called address is a precompiled contract
-        let is_precompile = Precompiles.is_precompile(address=evm_address);
+        let is_precompile = Precompiles.is_precompile(address=to);
         if (is_precompile != FALSE) {
             tempvar parent = new model.Parent(evm, stack, memory, state);
             let child_evm = Precompiles.run(
-                evm_address=evm_address,
+                evm_address=to,
                 calldata_len=args_size.low,
                 calldata=calldata,
                 value=value,
@@ -548,24 +548,23 @@ namespace CallHelper {
             return child_evm;
         }
 
-        let call_starknet_address = Account.compute_starknet_address(evm_address);
-        let called_account = State.get_account(evm_address);
+        let to_account = State.get_account(to);
 
         tempvar parent = new model.Parent(evm, stack, memory, state);
         let stack = Stack.init();
         let memory = Memory.init();
         let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
-            bytecode_len=called_account.code_len, bytecode=called_account.code
+            bytecode_len=to_account.code_len, bytecode=to_account.code
         );
         if (self_call == FALSE) {
-            tempvar message_address = called_account.address;
+            tempvar message_address = to_account.address;
         } else {
             tempvar message_address = evm.message.address;
         }
 
         tempvar message = new model.Message(
-            bytecode=called_account.code,
-            bytecode_len=called_account.code_len,
+            bytecode=to_account.code,
+            bytecode_len=to_account.code_len,
             valid_jumpdests_start=valid_jumpdests_start,
             valid_jumpdests=valid_jumpdests,
             calldata=calldata,

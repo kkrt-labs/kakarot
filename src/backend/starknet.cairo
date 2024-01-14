@@ -95,9 +95,7 @@ namespace Starknet {
     }
 
     // @notice Populate a Environment with Starknet syscalls
-    func get_env{syscall_ptr: felt*}(
-        origin_evm_address: felt, gas_price: felt
-    ) -> model.Environment* {
+    func get_env{syscall_ptr: felt*}(origin: felt, gas_price: felt) -> model.Environment* {
         alloc_locals;
         let (block_number) = get_block_number();
         let (block_timestamp) = get_block_timestamp();
@@ -109,7 +107,7 @@ namespace Starknet {
             0xacdffe0cf08e20ed8ba10ea97a487004, 0x388ca486b82e20cc81965d056b4cdca
         );
         return new model.Environment(
-            origin=origin_evm_address,
+            origin=origin,
             gas_price=gas_price,
             chain_id=Constants.CHAIN_ID,
             prev_randao=Uint256(0, 0),
