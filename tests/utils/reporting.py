@@ -7,6 +7,8 @@ from time import perf_counter
 from typing import Any, Callable, Iterable, List, TypeVar, Union, cast
 
 import pandas as pd
+from starkware.cairo.lang.compiler.identifier_definition import LabelDefinition
+from starkware.cairo.lang.tracer.profile import ProfileBuilder
 from starkware.cairo.lang.tracer.tracer_data import TracerData
 from starkware.starknet.testing.objects import StarknetCallInfo
 from starkware.starknet.testing.starknet import StarknetContract
@@ -18,7 +20,6 @@ logger = logging.getLogger("timer")
 
 _time_report: List[dict] = []
 _resources_report: List[dict] = []
-_profile_data = {}
 
 T = TypeVar("T", bound=Callable[..., Any])
 
@@ -191,12 +192,24 @@ class traceit:
     @classmethod
     def trace_run(cls, run):
         def _run(*args, **kwargs):
-            runner, syscall_handler = run(*args, **kwargs)
+            run(*args, **kwargs)
 
             if cls._context:
-                _profile_data[cls._context] = runner
+                logger.info(f"Dumping TracerData for runner {cls._context}")
+                runner = kwargs.get("runner", args[0])
+                runner.relocate()
+                tracer_data = TracerData(
+                    program=runner.program,
+                    memory=runner.relocated_memory,
+                    trace=runner.relocated_trace,
+                    program_base=1,
+                    debug_info=runner.get_relocated_debug_info(),
+                )
+                profile = profile_from_tracer_data(tracer_data)
+                with open(f"{cls._context}.pb.gz", "wb") as fp:
+                    fp.write(profile)
 
-            return runner, syscall_handler
+            return
 
         return _run
 
@@ -254,29 +267,6 @@ def dump_reports(path: Union[str, Path]):
     traces.to_csv(p / "resources.csv", index=False)
 
 
-def dump_tracing(path: Union[str, Path]):
-    if not _profile_data:
-        return
-
-    from starkware.cairo.lang.tracer.profile import profile_from_tracer_data
-
-    p = Path(path)
-    p.mkdir(exist_ok=True, parents=True)
-    for label, runner in _profile_data.items():
-        logger.info(f"Dumping TracerData for runner {label}")
-        runner.relocate()
-        tracer_data = TracerData(
-            program=runner.program,
-            memory=runner.relocated_memory,
-            trace=runner.relocated_trace,
-            program_base=1,
-            debug_info=runner.get_relocated_debug_info(),
-        )
-        profile = profile_from_tracer_data(tracer_data)
-        with open(p / f"{label}_prof.pb.gz", "wb") as fp:
-            fp.write(profile)
-
-
 def dump_coverage(path: Union[str, Path], files: List[CoverageFile]):
     p = Path(path)
     p.mkdir(exist_ok=True, parents=True)
@@ -293,3 +283,46 @@ def dump_coverage(path: Union[str, Path], files: List[CoverageFile]):
         open(p / "coverage.json", "w"),
         indent=2,
     )
+
+
+def profile_from_tracer_data(tracer_data):
+    """
+    Un-bundle the profile.profile_from_tracer_data to hard fix the opcode_labels name mismatch
+    between the debug_info and the identifiers; and adding a try/catch for the traces (pc going out of bounds).
+    """
+
+    builder = ProfileBuilder(
+        initial_fp=tracer_data.trace[0].fp, memory=tracer_data.memory
+    )
+
+    # Functions.
+    for name, ident in tracer_data.program.identifiers.as_dict().items():
+        if not isinstance(ident, LabelDefinition):
+            continue
+        builder.function_id(
+            name="kakarot.constants"
+            if str(name) == "kakarot.constants.opcodes_label"
+            else str(name),
+            inst_location=tracer_data.program.debug_info.instruction_locations[
+                ident.pc
+            ],
+        )
+
+    # Locations.
+    for (
+        pc_offset,
+        inst_location,
+    ) in tracer_data.program.debug_info.instruction_locations.items():
+        builder.location_id(
+            pc=tracer_data.get_pc_from_offset(pc_offset),
+            inst_location=inst_location,
+        )
+
+    # Samples.
+    for trace_entry in tracer_data.trace:
+        try:
+            builder.add_sample(trace_entry)
+        except KeyError:
+            pass
+
+    return builder.dump()

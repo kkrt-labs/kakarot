@@ -10,14 +10,15 @@ import pytest
 import pytest_asyncio
 from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
 from starkware.cairo.lang.compiler.cairo_compile import compile_cairo
-from starkware.cairo.lang.compiler.identifier_definition import LabelDefinition
 from starkware.cairo.lang.compiler.scoped_name import ScopedName
-from starkware.cairo.lang.tracer.profile import ProfileBuilder
 from starkware.cairo.lang.tracer.tracer_data import TracerData
 from starkware.cairo.lang.vm import cairo_runner
 from starkware.cairo.lang.vm.cairo_runner import CairoRunner
 from starkware.cairo.lang.vm.memory_dict import MemoryDict
 from starkware.cairo.lang.vm.memory_segments import FIRST_MEMORY_ADDR as PROGRAM_BASE
+from starkware.starknet.business_logic.execution.execute_entry_point import (
+    ExecuteEntryPoint,
+)
 from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 from starkware.starknet.definitions.general_config import StarknetGeneralConfig
 from starkware.starknet.testing.starknet import Starknet
@@ -27,7 +28,7 @@ from tests.utils.coverage import VmWithCoverage, report_runs
 from tests.utils.reporting import (
     dump_coverage,
     dump_reports,
-    dump_tracing,
+    profile_from_tracer_data,
     timeit,
     traceit,
 )
@@ -56,9 +57,10 @@ async def starknet(worker_id, request) -> AsyncGenerator[Starknet, None]:
     starknet.deploy = traceit.trace_all(timeit(starknet.deploy))
     starknet.deprecated_declare = timeit(starknet.deprecated_declare)
     if request.config.getoption("profile_cairo"):
-        logger.info("trace-run option enabled")
+        ExecuteEntryPoint._run = traceit.trace_run(ExecuteEntryPoint._run)
+        logger.info("profile-cairo option enabled")
     else:
-        logger.info("trace-run option disabled")
+        logger.info("profile-cairo option disabled")
     output_dir = Path("coverage")
     shutil.rmtree(output_dir, ignore_errors=True)
 
@@ -76,11 +78,9 @@ async def starknet(worker_id, request) -> AsyncGenerator[Starknet, None]:
 
     if worker_id == "master":
         dump_reports(output_dir)
-        dump_tracing(output_dir)
         dump_coverage(output_dir, files)
     else:
         dump_reports(output_dir / worker_id)
-        dump_tracing(output_dir / worker_id)
         dump_coverage(output_dir / worker_id, files)
         if len(os.listdir(output_dir)) == int(os.environ["PYTEST_XDIST_WORKER_COUNT"]):
             # This is the last teardown of the test suite, merge the files
@@ -205,51 +205,14 @@ def cairo_run(request, cairo_compile) -> list:
                 program=program,
                 memory=runner.relocated_memory,
                 trace=runner.relocated_trace,
-                air_public_input=None,
                 debug_info=runner.get_relocated_debug_info(),
                 program_base=PROGRAM_BASE,
             )
-
-            builder = ProfileBuilder(
-                initial_fp=tracer_data.trace[0].fp, memory=tracer_data.memory
-            )
-
-            # Un-bundle the profile.profile_from_tracer_data to hard fix the opcode_labels name mismatch
-            # between the debug_info and the identifiers; and adding a try/catch for the traces (pc going out of bounds).
-
-            # Functions.
-            for name, ident in program.identifiers.as_dict().items():
-                if not isinstance(ident, LabelDefinition):
-                    continue
-                builder.function_id(
-                    name="kakarot.constants"
-                    if str(name) == "kakarot.constants.opcodes_label"
-                    else str(name),
-                    inst_location=program.debug_info.instruction_locations[ident.pc],
-                )
-
-            # Locations.
-            for (
-                pc_offset,
-                inst_location,
-            ) in program.debug_info.instruction_locations.items():
-                builder.location_id(
-                    pc=tracer_data.get_pc_from_offset(pc_offset),
-                    inst_location=inst_location,
-                )
-
-            # Samples.
-            for trace_entry in tracer_data.trace:
-                try:
-                    builder.add_sample(trace_entry)
-                except KeyError:
-                    pass
-
-            data = builder.dump()
+            data = profile_from_tracer_data(tracer_data)
 
             with open(
                 request.node.path.parent
-                / f"{request.node.path.stem}.{request.node.name}.{entrypoint}({json.dumps(kwargs) if kwargs else ''}).pb.gz",
+                / f"{request.node.path.stem}.{entrypoint}({(json.dumps(kwargs) if kwargs else '')[:220]}).pb.gz",
                 "wb",
             ) as fp:
                 fp.write(data)
