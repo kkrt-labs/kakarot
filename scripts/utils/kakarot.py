@@ -133,7 +133,7 @@ async def deploy(
     contract = get_contract(contract_app, contract_name, caller_eoa=caller_eoa)
     max_fee = kwargs.pop("max_fee", None)
     value = kwargs.pop("value", 0)
-    receipt, response, success = await eth_send_transaction(
+    receipt, response, success, gas_used = await eth_send_transaction(
         to=0,
         gas=int(1e18),
         data=contract.constructor(*args, **kwargs).data_in_transaction,
@@ -240,7 +240,7 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
             return normalized[0] if len(normalized) == 1 else normalized
 
         logger.info(f"⏳ Executing {fun} at address {self.address}")
-        receipt, response, success = await eth_send_transaction(
+        receipt, response, success, gas_used = await eth_send_transaction(
             to=self.address,
             value=value,
             gas=gas_limit,
@@ -354,12 +354,13 @@ async def eth_send_transaction(
         response_len,
         *response,
         success,
+        gas_used,
     ) = transaction_events[0].data
 
     if response_len != len(response):
         raise ValueError("Not able to parse event data")
 
-    return receipt, response, success
+    return receipt, response, success, gas_used
 
 
 async def compute_starknet_address(address: Union[str, int]):
@@ -435,7 +436,7 @@ async def store_bytecode(bytecode: Union[str, bytes], **kwargs):
     {RETURN}
     {bytecode.hex()}"""
     )
-    receipt, response, success = await eth_send_transaction(
+    receipt, response, success, gas_used = await eth_send_transaction(
         to=0, data=deploy_bytecode, **kwargs
     )
     assert success

@@ -433,7 +433,7 @@ class TestPlainOpcodes:
             message,
             addresses,
         ):
-            receipt, response, success = await eth_send_transaction(
+            receipt, response, success, gas_used = await eth_send_transaction(
                 to=revert_on_fallbacks.address,
                 gas=200_000,
                 data=data,
