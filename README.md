@@ -129,6 +129,13 @@ You can also add Trunk to VSCode with
 Then, don't forget to select Trunk as your default formatter in VSCode (command
 palette > Format Document With > Trunk).
 
+Once Trunk is installed, you can install a pre-push hook to run the linters
+before each push:
+
+```bash
+trunk git-hooks sync
+```
+
 ## Test
 
 ### Kakarot tests
