@@ -51,9 +51,9 @@ namespace EnvironmentalInformation {
         let (address_uint256) = Stack.pop();
 
         let evm_address = uint256_to_uint160([address_uint256]);
-        let (starknet_address) = Account.compute_starknet_address(evm_address);
-        tempvar address = new model.Address(starknet_address, evm_address);
-        let account = State.get_account(address);
+        let starknet_address = Account.compute_starknet_address(evm_address);
+        tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
+        let account = State.get_account(address.evm);
         Stack.push(account.balance);
 
         return evm;
@@ -68,7 +68,7 @@ namespace EnvironmentalInformation {
         memory: model.Memory*,
         state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
-        let origin_address = Helpers.to_uint256(evm.message.env.origin.evm);
+        let origin_address = Helpers.to_uint256(evm.message.env.origin);
 
         Stack.push(origin_address);
         return evm;
@@ -84,7 +84,7 @@ namespace EnvironmentalInformation {
         state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         if (evm.message.depth == 0) {
-            tempvar caller = evm.message.env.origin.evm;
+            tempvar caller = evm.message.env.origin;
         } else {
             tempvar caller = evm.message.parent.evm.message.address.evm;
         }
@@ -246,9 +246,7 @@ namespace EnvironmentalInformation {
 
         let (address_uint256) = Stack.pop();
         let evm_address = uint256_to_uint160([address_uint256]);
-        let (starknet_address) = Account.compute_starknet_address(evm_address);
-        tempvar address = new model.Address(starknet_address, evm_address);
-        let account = State.get_account(address);
+        let account = State.get_account(evm_address);
 
         // bytecode_len cannot be greater than 24k in the EVM
         Stack.push_uint128(account.code_len);
@@ -288,9 +286,7 @@ namespace EnvironmentalInformation {
 
         let (sliced_data: felt*) = alloc();
         let evm_address = uint256_to_uint160(popped[0]);
-        let (starknet_address) = Account.compute_starknet_address(evm_address);
-        tempvar address = new model.Address(starknet_address, evm_address);
-        let account = State.get_account(address);
+        let account = State.get_account(evm_address);
         slice(sliced_data, account.code_len, account.code, offset.low, size.low);
 
         Memory.store_n(size.low, sliced_data, dest_offset.low);
@@ -324,10 +320,8 @@ namespace EnvironmentalInformation {
 
         let (address_uint256) = Stack.pop();
         let evm_address = uint256_to_uint160([address_uint256]);
-        let (starknet_address) = Account.compute_starknet_address(evm_address);
-        tempvar address = new model.Address(starknet_address, evm_address);
 
-        let account = State.get_account(address);
+        let account = State.get_account(evm_address);
         let has_code_or_nonce = Account.has_code_or_nonce(account);
         let account_exists = has_code_or_nonce + account.balance.low;
         // Relevant cases:
