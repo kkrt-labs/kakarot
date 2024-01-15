@@ -119,6 +119,7 @@ func deploy_externally_owned_account{
 // @return return_data_len The length of the return_data
 // @return return_data An array of returned felts
 // @return success An boolean, TRUE if the transaction succeeded, FALSE otherwise
+// @return gas_used The amount of gas used by the transaction
 @view
 func eth_call{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -130,9 +131,10 @@ func eth_call{
     value: felt,
     data_len: felt,
     data: felt*,
-) -> (return_data_len: felt, return_data: felt*, success: felt) {
+) -> (return_data_len: felt, return_data: felt*, success: felt, gas_used: felt) {
     let (evm, state) = Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
-    return (evm.return_data_len, evm.return_data, 1 - evm.reverted);
+    let gas_used = gas_limit - evm.gas_left;
+    return (evm.return_data_len, evm.return_data, 1 - evm.reverted, gas_used);
 }
 
 // @notice The eth_send_transaction function as described in the spec,
@@ -147,17 +149,19 @@ func eth_call{
 // @return return_data_len The length of the return_data
 // @return return_data An array of returned felts
 // @return success An boolean, TRUE if the transaction succeeded, FALSE otherwise
+// @return gas_used The amount of gas used by the transaction
 @external
 func eth_send_transaction{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
-    return_data_len: felt, return_data: felt*, success: felt
+    return_data_len: felt, return_data: felt*, success: felt, gas_used: felt
 ) {
     alloc_locals;
     let (local starknet_caller_address) = get_caller_address();
     let (local origin) = Kakarot.safe_get_evm_address(starknet_caller_address);
     let (evm, state) = Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
-    let result = (evm.return_data_len, evm.return_data, 1 - evm.reverted);
+    let gas_used = gas_limit - evm.gas_left;
+    let result = (evm.return_data_len, evm.return_data, 1 - evm.reverted, gas_used);
 
     if (evm.reverted != FALSE) {
         return result;
