@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import shutil
@@ -7,15 +8,22 @@ from typing import AsyncGenerator
 import pandas as pd
 import pytest
 import pytest_asyncio
-from cairo_coverage import cairo_coverage
-from starkware.starknet.business_logic.execution.execute_entry_point import (
-    ExecuteEntryPoint,
-)
+from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
+from starkware.cairo.lang.compiler.cairo_compile import compile_cairo
+from starkware.cairo.lang.compiler.identifier_definition import LabelDefinition
+from starkware.cairo.lang.compiler.scoped_name import ScopedName
+from starkware.cairo.lang.tracer.profile import ProfileBuilder
+from starkware.cairo.lang.tracer.tracer_data import TracerData
+from starkware.cairo.lang.vm import cairo_runner
+from starkware.cairo.lang.vm.cairo_runner import CairoRunner
+from starkware.cairo.lang.vm.memory_dict import MemoryDict
+from starkware.cairo.lang.vm.memory_segments import FIRST_MEMORY_ADDR as PROGRAM_BASE
 from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 from starkware.starknet.definitions.general_config import StarknetGeneralConfig
 from starkware.starknet.testing.starknet import Starknet
 
 from tests.utils.constants import BLOCK_NUMBER, BLOCK_TIMESTAMP
+from tests.utils.coverage import VmWithCoverage, report_runs
 from tests.utils.reporting import (
     dump_coverage,
     dump_reports,
@@ -23,6 +31,8 @@ from tests.utils.reporting import (
     timeit,
     traceit,
 )
+
+cairo_runner.VirtualMachine = VmWithCoverage
 
 pd.set_option("display.max_rows", 500)
 pd.set_option("display.max_columns", 500)
@@ -45,9 +55,8 @@ async def starknet(worker_id, request) -> AsyncGenerator[Starknet, None]:
     )
     starknet.deploy = traceit.trace_all(timeit(starknet.deploy))
     starknet.deprecated_declare = timeit(starknet.deprecated_declare)
-    if request.config.getoption("trace_run"):
+    if request.config.getoption("profile_cairo"):
         logger.info("trace-run option enabled")
-        ExecuteEntryPoint._run = traceit.trace_run(ExecuteEntryPoint._run)
     else:
         logger.info("trace-run option disabled")
     output_dir = Path("coverage")
@@ -56,7 +65,7 @@ async def starknet(worker_id, request) -> AsyncGenerator[Starknet, None]:
     yield starknet
 
     output_dir.mkdir(exist_ok=True, parents=True)
-    files = cairo_coverage.report_runs(excluded_file={"site-packages", "tests"})
+    files = report_runs(excluded_file={"site-packages", "tests"})
     total_covered = []
     for file in files:
         if file.pct_covered < 80:
@@ -118,3 +127,134 @@ def starknet_snapshot(starknet):
 
     initial_cache_state = initial_state.state._copy()
     starknet.state.state = initial_cache_state
+
+
+@pytest.fixture(scope="session")
+def cairo_compile(request):
+    def _factory(path) -> list:
+        return compile_cairo(
+            Path(path).read_text(),
+            cairo_path=["src"],
+            prime=DEFAULT_PRIME,
+            debug_info=request.config.getoption("profile_cairo"),
+        )
+
+    return _factory
+
+
+@pytest.fixture(scope="module")
+def cairo_run(request, cairo_compile) -> list:
+    """
+    Run the cairo program corresponding to the python test file at a given entrypoint with given program inputs as kwargs.
+    Returns the output of the cairo program put in the output memory segment.
+
+    When --profile-cairo is passed, the cairo program is run with the tracer enabled and the resulting trace is dumped.
+
+    Logic is mainly taken from starkware.cairo.lang.vm.cairo_run with minor updates like the addition of the output segment.
+    """
+    cairo_file = Path(request.node.fspath).with_suffix(".cairo")
+    if not cairo_file.exists():
+        raise ValueError(f"Missing cairo file: {cairo_file}")
+
+    program = cairo_compile(cairo_file)
+
+    def _factory(entrypoint, **kwargs) -> list:
+        runner = CairoRunner(
+            program=program,
+            layout="starknet_with_keccak",
+            memory=MemoryDict(),
+            proof_mode=False,
+            allow_missing_builtins=False,
+        )
+
+        runner.initialize_segments()
+        stack = []
+        for builtin_name in runner.program.builtins:
+            builtin_runner = runner.builtin_runners.get(f"{builtin_name}_builtin")
+            if builtin_runner is None:
+                assert runner.allow_missing_builtins, "Missing builtin."
+                stack += [0]
+            else:
+                stack += builtin_runner.initial_stack()
+
+        return_fp = runner.segments.add()
+        end = runner.segments.add()
+        output = runner.segments.add()
+        stack = stack + [return_fp, end, output]
+
+        runner.initialize_state(
+            entrypoint=program.identifiers.get_by_full_name(
+                ScopedName(path=["__main__", entrypoint])
+            ).pc,
+            stack=stack,
+        )
+        runner.initial_fp = runner.initial_ap = runner.execution_base + len(stack)
+        runner.final_pc = end
+
+        runner.initialize_vm(
+            hint_locals={"program_input": kwargs},
+            static_locals={"output": output},
+        )
+        runner.run_until_pc(stack[-1])
+        runner.original_steps = runner.vm.current_step
+        runner.end_run(disable_trace_padding=False)
+        runner.relocate()
+
+        if request.config.getoption("profile_cairo"):
+            tracer_data = TracerData(
+                program=program,
+                memory=runner.relocated_memory,
+                trace=runner.relocated_trace,
+                air_public_input=None,
+                debug_info=runner.get_relocated_debug_info(),
+                program_base=PROGRAM_BASE,
+            )
+
+            builder = ProfileBuilder(
+                initial_fp=tracer_data.trace[0].fp, memory=tracer_data.memory
+            )
+
+            # Un-bundle the profile.profile_from_tracer_data to hard fix the opcode_labels name mismatch
+            # between the debug_info and the identifiers; and adding a try/catch for the traces (pc going out of bounds).
+
+            # Functions.
+            for name, ident in program.identifiers.as_dict().items():
+                if not isinstance(ident, LabelDefinition):
+                    continue
+                builder.function_id(
+                    name="kakarot.constants"
+                    if str(name) == "kakarot.constants.opcodes_label"
+                    else str(name),
+                    inst_location=program.debug_info.instruction_locations[ident.pc],
+                )
+
+            # Locations.
+            for (
+                pc_offset,
+                inst_location,
+            ) in program.debug_info.instruction_locations.items():
+                builder.location_id(
+                    pc=tracer_data.get_pc_from_offset(pc_offset),
+                    inst_location=inst_location,
+                )
+
+            # Samples.
+            for trace_entry in tracer_data.trace:
+                try:
+                    builder.add_sample(trace_entry)
+                except KeyError:
+                    pass
+
+            data = builder.dump()
+
+            with open(
+                request.node.path.parent
+                / f"{request.node.path.stem}.{request.node.name}.{entrypoint}({json.dumps(kwargs) if kwargs else ''}).pb.gz",
+                "wb",
+            ) as fp:
+                fp.write(data)
+
+        output_size = runner.segments.get_segment_size(output.segment_index)
+        return [runner.segments.memory.get(output + i) for i in range(output_size)]
+
+    return _factory

@@ -1,28 +1,13 @@
 import pytest
-import pytest_asyncio
-from starkware.starknet.testing.starknet import Starknet
 
 
-@pytest_asyncio.fixture(scope="module")
-async def dict_(starknet: Starknet):
-    class_hash = await starknet.deprecated_declare(
-        source="./tests/src/utils/test_dict.cairo",
-        cairo_path=["src"],
-        disable_hint_validation=True,
-    )
-    return await starknet.deploy(class_hash=class_hash.class_hash)
-
-
-@pytest.mark.asyncio
-class TestDict:
-    class TestDictKeys:
-        async def test_should_return_keys(self, dict_):
-            await dict_.test__dict_keys__should_return_keys().call()
-
-    class TestDictValues:
-        async def test_should_return_values(self, dict_):
-            await dict_.test__dict_values__should_return_values().call()
-
-    class TestDefaultDictCopy:
-        async def test_should_return_copied_dict(self, dict_):
-            await dict_.test__default_dict_copy__should_return_copied_dict().call()
+@pytest.mark.parametrize(
+    "test_case",
+    [
+        "test__dict_keys__should_return_keys",
+        "test__dict_values__should_return_values",
+        "test__default_dict_copy__should_return_copied_dict",
+    ],
+)
+def test_dict(cairo_run, test_case):
+    cairo_run(test_case)

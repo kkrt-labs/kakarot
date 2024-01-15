@@ -1,22 +1,12 @@
-// SPDX-License-Identifier: MIT
+%builtins range_check
 
-%lang starknet
-
-// Starkware dependencies
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from starkware.cairo.common.memset import memset
 
-// Local dependencies
 from utils.utils import Helpers
 
-from tests.utils.helpers import TestHelpers
-
-@external
-func test__bytes_i_to_uint256{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
+func test__bytes_i_to_uint256{range_check_ptr}() {
     alloc_locals;
 
     let (bytecode) = alloc();
@@ -46,68 +36,55 @@ func test__bytes_i_to_uint256{
     return ();
 }
 
-@external
-func test__bytes_to_bytes4_array{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
+func test__bytes_to_bytes4_array{range_check_ptr}() {
     alloc_locals;
     // Given
-    // hello world: 0x68656c6c6f20776f726c64
     let (data) = alloc();
-    assert data[0] = 0x68;
-    assert data[1] = 0x65;
-    assert data[2] = 0x6c;
-    assert data[3] = 0x6c;
-    assert data[4] = 0x6f;
-    assert data[5] = 0x20;
-    assert data[6] = 0x77;
-    assert data[7] = 0x6f;
-    assert data[8] = 0x72;
-    assert data[9] = 0x6c;
-    assert data[10] = 0x64;
-    assert data[11] = 0x00;
+    let (expected) = alloc();
+    %{
+        segments.write_arg(ids.data, program_input["data"])
+        segments.write_arg(ids.expected, program_input["expected"])
+    %}
 
     // When
-    let (expected: felt*) = alloc();
-    let (_, expected: felt*) = Helpers.bytes_to_bytes4_array(12, data, 0, expected);
+    let (tmp: felt*) = alloc();
+    let (_, result: felt*) = Helpers.bytes_to_bytes4_array(12, data, 0, tmp);
 
     // Then
-    assert expected[0] = 1751477356;  // 'hell'
-    assert expected[1] = 1864398703;  // 'o wo'
-    assert expected[2] = 1919706112;  // 'rld\x00'
+    assert expected[0] = result[0];
+    assert expected[1] = result[1];
+    assert expected[2] = result[2];
 
     return ();
 }
 
-@external
-func test__bytes4_array_to_bytes{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
+func test__bytes4_array_to_bytes{range_check_ptr}() {
     alloc_locals;
     // Given
     let (data) = alloc();
-    assert data[0] = 1751477356;  // 'hell'
-    assert data[1] = 1864398703;  // 'o wo'
-    assert data[2] = 1919706112;  // 'rld\x00'
+    let (expected) = alloc();
+    %{
+        segments.write_arg(ids.data, program_input["data"])
+        segments.write_arg(ids.expected, program_input["expected"])
+    %}
 
     // When
-    let (expected: felt*) = alloc();
-    let (_, expected: felt*) = Helpers.bytes4_array_to_bytes(3, data, 0, expected);
+    let (tmp) = alloc();
+    let (_, result) = Helpers.bytes4_array_to_bytes(3, data, 0, tmp);
 
     // Then
-    // hello world: 0x68656c6c6f20776f726c64
-    assert expected[0] = 0x68;
-    assert expected[1] = 0x65;
-    assert expected[2] = 0x6c;
-    assert expected[3] = 0x6c;
-    assert expected[4] = 0x6f;
-    assert expected[5] = 0x20;
-    assert expected[6] = 0x77;
-    assert expected[7] = 0x6f;
-    assert expected[8] = 0x72;
-    assert expected[9] = 0x6c;
-    assert expected[10] = 0x64;
-    assert expected[11] = 0x00;
+    assert result[0] = expected[0];
+    assert result[1] = expected[1];
+    assert result[2] = expected[2];
+    assert result[3] = expected[3];
+    assert result[4] = expected[4];
+    assert result[5] = expected[5];
+    assert result[6] = expected[6];
+    assert result[7] = expected[7];
+    assert result[8] = expected[8];
+    assert result[9] = expected[9];
+    assert result[10] = expected[10];
+    assert result[11] = expected[11];
 
     return ();
 }

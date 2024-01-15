@@ -2,6 +2,7 @@ import random
 
 import pytest
 import pytest_asyncio
+from starkware.starknet.definitions.data_availability_mode import DataAvailabilityMode
 from starkware.starknet.public.abi import get_storage_var_address
 from starkware.starknet.testing.contract import StarknetContract
 from starkware.starknet.testing.starknet import Starknet
@@ -95,7 +96,7 @@ class TestContractAccount:
 
     class TestGetNonce:
         async def test_should_return_stored_nonce(
-            self, contract_account: StarknetContract, kakarot
+            self, contract_account: StarknetContract
         ):
             # Get storage key for nonce
             key = get_storage_var_address("nonce")
@@ -103,7 +104,7 @@ class TestContractAccount:
             # Set nonce to 1
             nonce = 1
             await contract_account.state.state.set_storage_at(
-                contract_account.contract_address, key, nonce
+                DataAvailabilityMode.L1, contract_account.contract_address, key, nonce
             )
 
             # Get nonce

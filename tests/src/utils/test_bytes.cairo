@@ -1,8 +1,5 @@
-// SPDX-License-Identifier: MIT
+%builtins range_check
 
-%lang starknet
-
-from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.uint256 import Uint256
 
@@ -17,82 +14,110 @@ from utils.bytes import (
     bytes_to_bytes8_little_endian,
 )
 
-@external
-func test__felt_to_ascii{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    n: felt
-) -> (ascii_len: felt, ascii: felt*) {
+func test__felt_to_ascii{range_check_ptr}() {
     alloc_locals;
-    let (ascii: felt*) = alloc();
-    let ascii_len = felt_to_ascii(ascii, n);
-    return (ascii_len, ascii);
+    tempvar n: felt;
+    %{ ids.n = program_input["n"] %}
+
+    tempvar ascii: felt*;
+    %{ ids.ascii = output %}
+    felt_to_ascii(ascii, n);
+    return ();
 }
 
-@external
-func test__felt_to_bytes_little{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    n: felt
-) -> (bytes_len: felt, bytes: felt*) {
+func test__felt_to_bytes_little() {
     alloc_locals;
-    let (bytes: felt*) = alloc();
-    let bytes_len = felt_to_bytes_little(bytes, n);
-    return (bytes_len, bytes);
+    tempvar n: felt;
+    %{ ids.n = program_input["n"] %}
+
+    tempvar bytes: felt*;
+    %{ ids.bytes = output %}
+
+    felt_to_bytes_little(bytes, n);
+    return ();
 }
 
-@external
-func test__felt_to_bytes{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    n: felt
-) -> (bytes_len: felt, bytes: felt*) {
+func test__felt_to_bytes() {
     alloc_locals;
-    let (bytes: felt*) = alloc();
-    let bytes_len = felt_to_bytes(bytes, n);
-    return (bytes_len, bytes);
+    tempvar n: felt;
+    %{ ids.n = program_input["n"] %}
+
+    tempvar bytes: felt*;
+    %{ ids.bytes = output %}
+
+    felt_to_bytes(bytes, n);
+    return ();
 }
 
-@external
-func test__felt_to_bytes20{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    n: felt
-) -> (bytes_len: felt, bytes: felt*) {
+func test__felt_to_bytes20{range_check_ptr}() {
     alloc_locals;
-    let (bytes20: felt*) = alloc();
+    tempvar n: felt;
+    %{ ids.n = program_input["n"] %}
+
+    tempvar bytes20: felt*;
+    %{ ids.bytes20 = output %}
+
     felt_to_bytes20(bytes20, n);
-    return (20, bytes20);
+    return ();
 }
 
-@external
-func test__uint256_to_bytes_little{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    n: Uint256
-) -> (bytes_len: felt, bytes: felt*) {
+func test__uint256_to_bytes_little{range_check_ptr}() {
     alloc_locals;
-    let (bytes: felt*) = alloc();
-    let bytes_len = uint256_to_bytes_little(bytes, n);
-    return (bytes_len, bytes);
+    tempvar n: Uint256;
+    %{
+        ids.n.low = program_input["n"][0]
+        ids.n.high = program_input["n"][1]
+    %}
+
+    tempvar bytes: felt*;
+    %{ ids.bytes = output %}
+
+    uint256_to_bytes_little(bytes, n);
+    return ();
 }
 
-@external
-func test__uint256_to_bytes{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    n: Uint256
-) -> (bytes_len: felt, bytes: felt*) {
+func test__uint256_to_bytes{range_check_ptr}() {
     alloc_locals;
-    let (bytes: felt*) = alloc();
-    let bytes_len = uint256_to_bytes(bytes, n);
-    return (bytes_len, bytes);
+    tempvar n: Uint256;
+    %{
+        ids.n.low = program_input["n"][0]
+        ids.n.high = program_input["n"][1]
+    %}
+
+    tempvar bytes: felt*;
+    %{ ids.bytes = output %}
+
+    uint256_to_bytes(bytes, n);
+    return ();
 }
 
-@external
-func test__uint256_to_bytes32{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    n: Uint256
-) -> (bytes_len: felt, bytes: felt*) {
+func test__uint256_to_bytes32{range_check_ptr}() {
     alloc_locals;
-    let (bytes: felt*) = alloc();
+    tempvar n: Uint256;
+    %{
+        ids.n.low = program_input["n"][0]
+        ids.n.high = program_input["n"][1]
+    %}
+
+    tempvar bytes: felt*;
+    %{ ids.bytes = output %}
+
     uint256_to_bytes32(bytes, n);
-    return (32, bytes);
+    return ();
 }
 
-@external
-func test__bytes_to_bytes8_little_endian{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}(bytes_len: felt, bytes: felt*) -> (res_len: felt, res: felt*) {
+func test__bytes_to_bytes8_little_endian() {
     alloc_locals;
-    let (res: felt*) = alloc();
-    let res_len = bytes_to_bytes8_little_endian(res, bytes_len, bytes);
-    return (res_len, res);
+    tempvar bytes_len: felt;
+    let (bytes) = alloc();
+    %{
+        ids.bytes_len = len(program_input["bytes"])
+        segments.write_arg(ids.bytes, program_input["bytes"])
+    %}
+
+    tempvar res: felt*;
+    %{ ids.res = output %}
+    bytes_to_bytes8_little_endian(res, bytes_len, bytes);
+
+    return ();
 }

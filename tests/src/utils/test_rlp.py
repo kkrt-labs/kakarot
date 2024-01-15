@@ -1,38 +1,21 @@
 import random
 
 import pytest
-import pytest_asyncio
 from rlp import decode, encode
-from starkware.starknet.testing.starknet import Starknet
 
 
-@pytest_asyncio.fixture(scope="module")
-async def rlp(starknet: Starknet):
-    class_hash = await starknet.deprecated_declare(
-        source="./tests/src/utils/test_rlp.cairo",
-        cairo_path=["src"],
-        disable_hint_validation=False,
-    )
-    return await starknet.deploy(class_hash=class_hash.class_hash)
-
-
-@pytest.mark.asyncio
 class TestRLP:
     class TestDecode:
         @pytest.mark.parametrize("payload_len", [55, 56])
         async def test_should_match_decode_reference_implementation(
-            self, rlp, payload_len
+            self, cairo_run, payload_len
         ):
             random.seed(0)
             data = [random.randbytes(payload_len - 1)]
             encoded_data = encode(data)
             expected_result = decode(encoded_data)
-            output = (
-                await rlp.test__decode_at_index(list(encoded_data), 0).call()
-            ).result
-            assert output.is_list
-            output = (
-                await rlp.test__decode_at_index(list(output.data), 0).call()
-            ).result
-            assert not output.is_list
-            assert expected_result == [bytes(output.data)]
+
+            output = cairo_run("test__decode", data=list(encoded_data), is_list=1)
+            output = cairo_run("test__decode", data=output, is_list=0)
+
+            assert expected_result == [bytes(output)]

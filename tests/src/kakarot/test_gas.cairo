@@ -1,15 +1,12 @@
-// SPDX-License-Identifier: MIT
-
-%lang starknet
-
-from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+%builtins range_check
 
 from kakarot.gas import Gas
 
-@external
-func test__memory_cost{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    words_len: felt
-) -> (cost: felt) {
+func test__memory_cost{range_check_ptr}() {
+    tempvar words_len: felt;
+    %{ ids.words_len = program_input["words_len"]; %}
     let cost = Gas.memory_cost(words_len);
-    return (cost=cost);
+
+    %{ segments.write_arg(output, [ids.cost]); %}
+    return ();
 }

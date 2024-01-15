@@ -1,19 +1,6 @@
 import pytest
-import pytest_asyncio
-from starkware.starknet.testing.starknet import Starknet
 
 
-@pytest_asyncio.fixture(scope="module")
-async def array_(starknet: Starknet):
-    class_hash = await starknet.deprecated_declare(
-        source="./tests/src/utils/test_array.cairo",
-        cairo_path=["src"],
-        disable_hint_validation=True,
-    )
-    return await starknet.deploy(class_hash=class_hash.class_hash)
-
-
-@pytest.mark.asyncio
 class TestArray:
     class TestReverse:
         @pytest.mark.parametrize(
@@ -27,8 +14,9 @@ class TestArray:
                 [],
             ],
         )
-        async def test_should_return_reversed_array(self, array_, arr):
-            assert arr[::-1] == ((await array_.test__reverse(arr).call()).result.rev)
+        def test_should_return_reversed_array(self, cairo_run, arr):
+            output = cairo_run("test__reverse", arr=arr)
+            assert arr[::-1] == output
 
     class TestCountNotZero:
         @pytest.mark.parametrize(
@@ -42,25 +30,17 @@ class TestArray:
                 [],
             ],
         )
-        async def test_should_return_count_of_non_zero_elements(self, array_, arr):
-            assert len(arr) - arr.count(0) == (
-                (await array_.test__count_not_zero(arr).call()).result.count
-            )
+        def test_should_return_count_of_non_zero_elements(self, cairo_run, arr):
+            output = cairo_run("test__count_not_zero", arr=arr)
+            assert len(arr) - arr.count(0) == output[0]
 
     class TestSlice:
-        @pytest.mark.parametrize(
-            "offset",
-            [0, 1, 2, 3, 4, 5, 6],
-        )
-        @pytest.mark.parametrize(
-            "size",
-            [0, 1, 2, 3, 4, 5, 6],
-        )
-        async def test_should_return_slice(self, array_, offset, size):
+        @pytest.mark.parametrize("offset", [0, 1, 2, 3, 4, 5, 6])
+        @pytest.mark.parametrize("size", [0, 1, 2, 3, 4, 5, 6])
+        def test_should_return_slice(self, cairo_run, offset, size):
             arr = [0, 1, 2, 3, 4]
-            assert (arr + (offset + size) * [0])[offset : offset + size] == (
-                (await array_.test__slice(arr, offset, size).call()).result.slice
-            )
+            output = cairo_run("test__slice", arr=arr, offset=offset, size=size)
+            assert (arr + (offset + size) * [0])[offset : offset + size] == output
 
     class TestContains:
         @pytest.mark.parametrize(
@@ -73,7 +53,6 @@ class TestArray:
                 ([], 1, False),
             ],
         )
-        async def test_should_return_if_contains(self, array_, arr, value, expected):
-            assert expected == (
-                (await array_.test_contains(arr, value).call()).result.is_contained
-            )
+        async def test_should_return_if_contains(self, cairo_run, arr, value, expected):
+            output = cairo_run("test_contains", arr=arr, value=value)
+            assert expected == output[0]

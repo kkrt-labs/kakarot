@@ -7,10 +7,11 @@ from time import perf_counter
 from typing import Any, Callable, Iterable, List, TypeVar, Union, cast
 
 import pandas as pd
-from cairo_coverage.cairo_coverage import CoverageFile
 from starkware.cairo.lang.tracer.tracer_data import TracerData
 from starkware.starknet.testing.objects import StarknetCallInfo
 from starkware.starknet.testing.starknet import StarknetContract
+
+from tests.utils.coverage import CoverageFile
 
 logging.basicConfig(format="%(levelname)-8s %(message)s")
 logger = logging.getLogger("timer")

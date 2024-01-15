@@ -1,5 +1,3 @@
-%lang starknet
-
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.dict import dict_write, dict_squash

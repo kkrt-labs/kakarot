@@ -1,42 +1,26 @@
-import pytest
-import pytest_asyncio
-from starkware.starknet.testing.starknet import Starknet
-
-
-@pytest_asyncio.fixture(scope="session")
-async def stack(starknet: Starknet):
-    class_hash = await starknet.deprecated_declare(
-        source="./tests/src/kakarot/test_stack.cairo",
-        cairo_path=["src"],
-        disable_hint_validation=True,
-    )
-    return await starknet.deploy(class_hash=class_hash.class_hash)
-
-
-@pytest.mark.asyncio
 class TestStack:
     class TestPeek:
-        async def test_should_return_stack_at_given_index__when_value_is_0(self, stack):
-            await stack.test__peek__should_return_stack_at_given_index__when_value_is_0().call()
+        def test_should_return_stack_at_given_index__when_value_is_0(self, cairo_run):
+            cairo_run("test__peek__should_return_stack_at_given_index__when_value_is_0")
 
-        async def test_should_return_stack_at_given_index__when_value_is_1(self, stack):
-            await stack.test__peek__should_return_stack_at_given_index__when_value_is_1().call()
+        def test_should_return_stack_at_given_index__when_value_is_1(self, cairo_run):
+            cairo_run("test__peek__should_return_stack_at_given_index__when_value_is_1")
 
     class TestInit:
-        async def test_should_return_an_empty_stack(self, stack):
-            await stack.test__init__should_return_an_empty_stack().call()
+        def test_should_return_an_empty_stack(self, cairo_run):
+            cairo_run("test__init__should_return_an_empty_stack")
 
     class TestPush:
-        async def test_should_add_an_element_to_the_stack(self, stack):
-            await stack.test__push__should_add_an_element_to_the_stack().call()
+        def test_should_add_an_element_to_the_stack(self, cairo_run):
+            cairo_run("test__push__should_add_an_element_to_the_stack")
 
     class TestPop:
-        async def test_should_pop_an_element_to_the_stack(self, stack):
-            await stack.test__pop__should_pop_an_element_to_the_stack().call()
+        def test_should_pop_an_element_to_the_stack(self, cairo_run):
+            cairo_run("test__pop__should_pop_an_element_to_the_stack")
 
-        async def test_should_pop_N_elements_to_the_stack(self, stack):
-            await stack.test__pop__should_pop_N_elements_to_the_stack().call()
+        def test_should_pop_N_elements_to_the_stack(self, cairo_run):
+            cairo_run("test__pop__should_pop_N_elements_to_the_stack")
 
     class TestSwap:
-        async def test_should_swap_2_stacks(self, stack):
-            await stack.test__swap__should_swap_2_stacks().call()
+        def test_should_swap_2_stacks(self, cairo_run):
+            cairo_run("test__swap__should_swap_2_stacks")

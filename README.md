@@ -142,7 +142,7 @@ trunk git-hooks sync
 
 Kakarot tests uses [pytest](https://docs.pytest.org/) as test runner. Make sure
 to read the [doc](https://docs.pytest.org/) and get familiar with the tool to
-benefit from all its features.
+benefit from all of its features.
 
 ```bash
 # Run all tests
@@ -164,12 +164,30 @@ pytest -m <MARK>
 Test architecture is the following:
 
 - tests/src contains cairo tests for each cairo function in the kakarot codebase
+  running either in plain cairo or with the starknet test runner;
 - tests/integration contains high level integrations tests running in the
-  starknet test runner.
+  starknet test runner;
 - tests/integration/end_to_end contains end-to-end tests running on an
   underlying Starknet-like network (using the Starknet RPC), currently
   [Katana](https://github.com/dojoengine/dojo). These end-to-end tests contain
   both raw bytecode execution tests and test on real solidity contracts.
+
+The difference between the starknet test runner and the plain cairo one is that
+the former emulate a whole starknet network and is as such much slower (~10x).
+
+Consequently, when writing tests, don't use `%lang starknet` and contracts
+unless it's really required.
+
+For an example of the starknet test runner, see for example
+[the Contract Account tests](tests/integration/accounts/test_contract_account.py).
+For an example of the cairo test runner, see for example
+[the RLP library tests](tests/src/utils/test_rlp.py). Especially, the cairo
+runner uses hints to communicate values and return outputs:
+
+- `kwargs` of `cairo_run` are available in the `program_input` variable
+- values written in the `output` segment available in hints as a constant value
+  are returned, e.g. `segments.write_arg(output, [ids.x])` will return the list
+  `[x]`.
 
 The project also contains a regular forge project (`./solidity_contracts`) to
 generate real artifacts to be tested against. This project also contains some
