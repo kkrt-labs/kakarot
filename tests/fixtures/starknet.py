@@ -177,10 +177,42 @@ def cairo_run(request, cairo_compile) -> list:
             else:
                 stack += builtin_runner.initial_stack()
 
+        output = runner.segments.add()
+        stack = stack + [output]
+
+        entrypoint_args = program.identifiers.get_by_full_name(
+            ScopedName(path=["__main__", entrypoint, "Args"])
+        )
+        # Entrypoints args need to be all in given kwargs, but there can be more kwargs
+        # to be used for some other custom computation in test hints.
+        if not set(
+            [n for n in entrypoint_args.members.keys() if not n.endswith("_len")]
+        ).issubset(set([n for n in kwargs.keys() if not n.endswith("_len")])):
+            raise ValueError(
+                f"Missing arguments, received: {kwargs.keys()}, expected: {entrypoint_args.members.keys()}"
+            )
+
+        for arg_name, arg in entrypoint_args.members.items():
+            if isinstance(arg.cairo_type, TypePointer):
+                stack += [runner.segments.add()]
+                runner.load_data(stack[-1], kwargs[arg_name])
+                continue
+            if isinstance(arg.cairo_type, TypeFelt):
+                if arg_name.endswith("_len"):
+                    stack += [len(kwargs[arg_name.replace("_len", "")])]
+                else:
+                    stack += [kwargs[arg_name]]
+                continue
+            if isinstance(arg.cairo_type, TypeStruct):
+                identifier = program.identifiers.get_by_full_name(arg.cairo_type.scope)
+                if identifier.size != len(kwargs[arg_name]):
+                    raise ValueError("Invalid struct size.")
+                stack += kwargs[arg_name]
+                continue
+
         return_fp = runner.segments.add()
         end = runner.segments.add()
-        output = runner.segments.add()
-        stack = stack + [return_fp, end, output]
+        stack = stack + [return_fp, end]
 
         runner.initialize_state(
             entrypoint=program.identifiers.get_by_full_name(
@@ -254,6 +286,19 @@ def cairo_run(request, cairo_compile) -> list:
             ) as fp:
                 fp.write(data)
 
+        entrypoint_return = program.identifiers.get_by_full_name(
+            ScopedName(path=["__main__", entrypoint, "Return"])
+        )
+        output = {}
+        for member in entrypoint_return.cairo_type.members:
+            if isinstance(member.typ, TypeFelt):
+                output[member.name] = runner.segments.memory.get(member.typ.location)
+                output_size = runner.segments.get_segment_size(output.segment_index)
+                return [
+                    runner.segments.memory.get(output + i) for i in range(output_size)
+                ]
+            if isinstance(member.cairo_type, TypeFelt):
+                pass
         output_size = runner.segments.get_segment_size(output.segment_index)
         return [runner.segments.memory.get(output + i) for i in range(output_size)]
 

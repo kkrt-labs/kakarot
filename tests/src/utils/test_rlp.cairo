@@ -15,19 +15,21 @@ func test__decode{range_check_ptr}() {
         segments.write_arg(ids.data, program_input["data"])
     %}
 
+func test__decode{range_check_ptr}(data_len: felt, data: felt*, is_list: felt) -> (
+    decoded_data_len: felt, decoded_data: felt*
+) {
+    alloc_locals;
     // When
     let (local items: RLP.Item*) = alloc();
     RLP.decode(data_len, data, items);
 
     // Then
     let item = items[0];
-    tempvar is_list: felt;
-    %{ ids.is_list = program_input["is_list"] %}
     assert item.is_list = is_list;
 
     tempvar output: felt*;
     %{ ids.output = output %}
     memcpy(output, item.data, item.data_len);
 
-    return ();
+    return (item.data_len, item.data);
 }

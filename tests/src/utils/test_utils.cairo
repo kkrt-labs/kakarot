@@ -36,15 +36,8 @@ func test__bytes_i_to_uint256{range_check_ptr}() {
     return ();
 }
 
-func test__bytes_to_bytes4_array{range_check_ptr}() {
+func test__bytes_to_bytes4_array{range_check_ptr}(data: felt*, expected: felt*) {
     alloc_locals;
-    // Given
-    let (data) = alloc();
-    let (expected) = alloc();
-    %{
-        segments.write_arg(ids.data, program_input["data"])
-        segments.write_arg(ids.expected, program_input["expected"])
-    %}
 
     // When
     let (tmp: felt*) = alloc();
@@ -58,16 +51,8 @@ func test__bytes_to_bytes4_array{range_check_ptr}() {
     return ();
 }
 
-func test__bytes4_array_to_bytes{range_check_ptr}() {
+func test__bytes4_array_to_bytes{range_check_ptr}(data: felt*, expected: felt*) {
     alloc_locals;
-    // Given
-    let (data) = alloc();
-    let (expected) = alloc();
-    %{
-        segments.write_arg(ids.data, program_input["data"])
-        segments.write_arg(ids.expected, program_input["expected"])
-    %}
-
     // When
     let (tmp) = alloc();
     let (_, result) = Helpers.bytes4_array_to_bytes(3, data, 0, tmp);

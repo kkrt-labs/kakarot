@@ -6,17 +6,9 @@ from starkware.cairo.common.alloc import alloc
 
 from utils.uint256 import uint256_to_uint160
 
-func test__uint256_to_uint160{range_check_ptr}() {
-    // Given
-    let (x) = alloc();
-    tempvar expected: felt;
-    %{
-        segments.write_arg(ids.x, program_input["x"])
-        ids.expected = program_input["expected"]
-    %}
-
+func test__uint256_to_uint160{range_check_ptr}(x: Uint256, expected: felt) {
     // When
-    let result = uint256_to_uint160([cast(x, Uint256*)]);
+    let result = uint256_to_uint160(x);
 
     // Then
     assert result = expected;
