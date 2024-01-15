@@ -52,8 +52,8 @@ namespace Precompiles {
         alloc_locals;
 
         // Build returned execution context
-        let (starknet_address) = Account.compute_starknet_address(evm_address);
-        tempvar address = new model.Address(starknet_address, evm_address);
+        // Precompiles don't have an actual Starknet address
+        tempvar address = new model.Address(starknet=0, evm=evm_address);
         let (valid_jumdests) = default_dict_new(0);
         tempvar message = new model.Message(
             bytecode=cast(0, felt*),

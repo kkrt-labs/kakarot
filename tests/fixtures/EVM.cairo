@@ -11,7 +11,9 @@ from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256
 
 // Local dependencies
+from kakarot.library import Kakarot
 from kakarot.interpreter import Interpreter
+from kakarot.account import Account
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.constants import Constants
@@ -45,7 +47,9 @@ func execute{
     calldata: felt*,
 ) -> (model.EVM*, model.Stack*, model.Memory*, model.State*) {
     alloc_locals;
-    tempvar address = new model.Address(1, 1);
+    let evm_address = 'target_evm_address';
+    let starknet_address = Account.compute_starknet_address(evm_address);
+    tempvar address = new model.Address(starknet_address, evm_address);
     let (evm, stack, memory, state) = Interpreter.execute(
         env=env,
         address=address,
@@ -64,7 +68,7 @@ func execute{
 func evm_call{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
-    origin: model.Address,
+    origin: felt,
     value: felt,
     bytecode_len: felt,
     bytecode: felt*,
@@ -92,10 +96,8 @@ func evm_call{
     program_counter: felt,
 ) {
     alloc_locals;
-    let fp_and_pc = get_fp_and_pc();
-    local __fp__: felt* = fp_and_pc.fp_val;
 
-    let env = Starknet.get_env(&origin, 0);
+    let env = Starknet.get_env(origin, 0);
     let (evm, stack, memory, state) = execute(
         env, value, bytecode_len, bytecode, calldata_len, calldata
     );
@@ -137,7 +139,7 @@ func evm_call{
 func evm_execute{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
-    origin: model.Address,
+    origin: felt,
     value: felt,
     bytecode_len: felt,
     bytecode: felt*,
@@ -145,10 +147,8 @@ func evm_execute{
     calldata: felt*,
 ) -> (return_data_len: felt, return_data: felt*, success: felt) {
     alloc_locals;
-    let fp_and_pc = get_fp_and_pc();
-    local __fp__: felt* = fp_and_pc.fp_val;
 
-    let env = Starknet.get_env(&origin, 0);
+    let env = Starknet.get_env(origin, 0);
     let (evm, stack, memory, state) = execute(
         env, value, bytecode_len, bytecode, calldata_len, calldata
     );
@@ -162,4 +162,15 @@ func evm_execute{
     // tests and requires a real Message.address (not Address(1, 1))
     StarknetInternals._emit_events(state.events_len, state.events);
     return result;
+}
+
+// @notice Compute the starknet address of a contract given its EVM address
+// @param evm_address The EVM address of the contract
+// @return contract_address The starknet address of the contract
+@view
+func compute_starknet_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    evm_address: felt
+) -> (contract_address: felt) {
+    let starknet_address = Account.compute_starknet_address(evm_address);
+    return (contract_address=starknet_address);
 }

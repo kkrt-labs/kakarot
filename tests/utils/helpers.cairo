@@ -38,9 +38,10 @@ namespace TestHelpers {
         alloc_locals;
 
         let (calldata) = alloc();
-        tempvar address_0 = new model.Address(0, 0);
-        let env = Starknet.get_env(address_0, 0);
-        tempvar address = new model.Address(starknet_contract_address, evm_contract_address);
+        let env = Starknet.get_env(0, 0);
+        tempvar address = new model.Address(
+            starknet=starknet_contract_address, evm=evm_contract_address
+        );
         let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
             bytecode_len=bytecode_len, bytecode=bytecode
         );

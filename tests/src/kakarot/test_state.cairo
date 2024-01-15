@@ -69,9 +69,9 @@ func test__copy__should_return_new_state_with_same_attributes{
     tempvar key_1 = new Uint256(3, 4);
     tempvar value = new Uint256(3, 4);
     with state {
-        State.write_storage(address_0, key_0, value);
-        State.write_storage(address_1, key_0, value);
-        State.write_storage(address_1, key_1, value);
+        State.write_storage(address_0.evm, key_0, value);
+        State.write_storage(address_1.evm, key_0, value);
+        State.write_storage(address_1.evm, key_1, value);
 
         // 3. Put some events
         let (local topics: felt*) = alloc();
@@ -100,11 +100,11 @@ func test__copy__should_return_new_state_with_same_attributes{
     // Then
 
     // Storage
-    let value_copy = State.read_storage{state=state_copy}(address_0, key_0);
+    let value_copy = State.read_storage{state=state_copy}(address_0.evm, key_0);
     assert_uint256_eq([value], [value_copy]);
-    let value_copy = State.read_storage{state=state_copy}(address_1, key_0);
+    let value_copy = State.read_storage{state=state_copy}(address_1.evm, key_0);
     assert_uint256_eq([value], [value_copy]);
-    let value_copy = State.read_storage{state=state_copy}(address_1, key_1);
+    let value_copy = State.read_storage{state=state_copy}(address_1.evm, key_1);
     assert_uint256_eq([value], [value_copy]);
 
     // Events
@@ -126,14 +126,15 @@ func test__copy__should_return_new_state_with_same_attributes{
 func test__is_account_alive__existing_account{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(nonce, code_len, code: felt*, balance_low) -> (is_alive: felt) {
-    tempvar balance = new Uint256(balance_low, 0);
     let evm_address = 'alive';
-    tempvar address = new model.Address(0, evm_address);
-    let account = Account.init(evm_address, code_len, code, nonce, balance);
+    let starknet_address = Account.compute_starknet_address(evm_address);
+    tempvar address = new model.Address(starknet_address, evm_address);
+    tempvar balance = new Uint256(balance_low, 0);
+    let account = Account.init(address, code_len, code, nonce, balance);
     let state = State.init();
 
     with state {
-        State.set_account(address, account);
+        State.update_account(account);
         let is_alive = State.is_account_alive(evm_address);
     }
 

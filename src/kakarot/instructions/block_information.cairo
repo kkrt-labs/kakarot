@@ -159,7 +159,7 @@ namespace Internals {
         stack: model.Stack*,
         state: model.State*,
     }(evm: model.EVM*) {
-        let account = State.get_account(evm.message.address);
+        let account = State.get_account(evm.message.address.evm);
         Stack.push(account.balance);
         return ();
     }
