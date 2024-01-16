@@ -296,30 +296,20 @@ namespace SystemOperations {
         // Note: We don't pop ret_offset and ret_size here but at the end of the sub context
         // See finalize_parent
         // Pop ret_offset and ret_size
-        let (popped) = Stack.pop_n(7);
+        let (popped) = Stack.pop_n(5);
         let gas_param = popped[0];
         let to = uint256_to_uint160(popped[1]);
         let value = popped[2];
         let args_offset = popped[3];
         let args_size = popped[4];
-        let ret_offset = popped[5];
-        let ret_size = popped[6];
+        let (ret_offset) = Stack.peek(0);
+        let (ret_size) = Stack.peek(1);
 
         // 2. Gas
         // Memory expansion cost
-        let max_expansion_is_ret = is_le(
-            args_offset.low + args_size.low, ret_offset.low + ret_size.low
+        let memory_expansion_cost = Gas.max_memory_expansion_cost(
+            memory.words_len, args_offset, args_size, [ret_offset], [ret_size]
         );
-        let max_expansion = max_expansion_is_ret * (ret_offset.low + ret_size.low) + (
-            1 - max_expansion_is_ret
-        ) * (args_offset.low + args_size.low);
-        // Memory expansion cost is computed over the `low` parts of the offsets and sizes.
-        // In the second step, we check whether the `high` parts are non-zero and if so,
-        // we add the cost of expanding the memory by 2**128 words (saturating).
-        let memory_expansion_cost = Gas.memory_expansion_cost(memory.words_len, max_expansion);
-        let memory_expansion_cost = memory_expansion_cost + (
-            args_offset.high + args_size.high + ret_offset.high + ret_size.high
-        ) * Gas.MEMORY_COST_U128;
 
         // Access gas cost
         // TODO
@@ -333,37 +323,14 @@ namespace SystemOperations {
         // Transfer gas cost
         let transfer_gas_cost = is_value_non_zero * Gas.CALL_VALUE;
 
-        // Prepare gas cost of the call + stipend for transfer
-        // Max between given gas arg and max allowed gas := available_gas - (available_gas // 64)
+        // Charge the fixed cost of the extra_gas + memory expansion
         tempvar extra_gas = access_gas_cost + create_gas_cost + transfer_gas_cost;
-        tempvar is_enough_gas_left = is_le(extra_gas + memory_expansion_cost, evm.gas_left + 1);
-        if (is_enough_gas_left == FALSE) {
-            let (revert_reason_len, revert_reason) = Errors.outOfGas(
-                evm.gas_left, extra_gas + memory_expansion_cost
-            );
-            let evm = EVM.stop(evm, revert_reason_len + 1, revert_reason, TRUE);
-            return evm;
-        }
+        EVM.charge_gas(evm, extra_gas + memory_expansion_cost);
 
-        // Closest multiple of 64 (floor)
-        tempvar adjusted_gas_left = evm.gas_left - extra_gas - memory_expansion_cost;
-        let (quotient, _) = unsigned_div_rem(adjusted_gas_left, 64);
-        tempvar adjusted_gas_left = adjusted_gas_left - quotient;
-        tempvar is_gas_param_lower = is_le(gas_param.low, adjusted_gas_left) * (
-            1 - is_not_zero(gas_param.high)
-        );
+        let gas = Gas.compute_message_call_gas(gas_param, evm.gas_left);
 
-        local gas: felt;
-        // The message gas is the minimum between the gas param and the remaining gas left.
-        if (is_gas_param_lower == FALSE) {
-            // If gas is lower, it means that it fits in a felt and this is safe
-            assert gas = gas_param.low + 2 ** 128 * gas_param.high;
-        } else {
-            assert gas = adjusted_gas_left;
-        }
-
-        // All the gas is charged upfront and remaining gas is refunded at the end
-        let evm = EVM.charge_gas(evm, gas + extra_gas + memory_expansion_cost);
+        // Charge the fixed message call gas
+        let evm = EVM.charge_gas(evm, gas);
         if (evm.reverted != FALSE) {
             return evm;
         }
@@ -380,20 +347,21 @@ namespace SystemOperations {
         let (sender_balance_lt_value) = uint256_lt([sender.balance], value);
 
         if (sender_balance_lt_value != FALSE) {
-            Stack.push(new Uint256(0, 0));
+            Stack.push_uint128(0);
             // Revert and refund gas stipend
-            let (revert_reason) = alloc();
+            let (return_data) = alloc();
             tempvar evm = new model.EVM(
                 message=evm.message,
                 return_data_len=0,
-                return_data=revert_reason,
+                return_data=return_data,
                 program_counter=evm.program_counter,
-                stopped=TRUE,
+                stopped=FALSE,
                 gas_left=evm.gas_left + gas_stipend,
-                reverted=TRUE,
+                reverted=FALSE,
             );
             return evm;
         }
+
         let child_evm = generic_call(
             evm,
             gas_stipend,
@@ -407,10 +375,26 @@ namespace SystemOperations {
             ret_offset,
             ret_size,
         );
+
+        if (child_evm.stopped != FALSE) {
+            return child_evm;
+        }
+
+        let (value_high, value_low) = split_felt(child_evm.message.value);
+        tempvar value = Uint256(value_low, value_high);
+
+        let transfer = model.Transfer(evm.message.address, child_evm.message.address, value);
+        let success = State.add_transfer(transfer);
+        if (success == 0) {
+            let (revert_reason_len, revert_reason) = Errors.balanceError();
+            tempvar child_evm = EVM.stop(child_evm, revert_reason_len, revert_reason, TRUE);
+        } else {
+            tempvar child_evm = child_evm;
+        }
+
         return child_evm;
     }
 
-    // TODO: make gas felt not u256
     func generic_call{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -429,14 +413,14 @@ namespace SystemOperations {
         is_staticcall: bool,
         args_offset: Uint256,
         args_size: Uint256,
-        ret_offset: Uint256,
-        ret_size: Uint256,
+        ret_offset: Uint256*,
+        ret_size: Uint256*,
     ) -> model.EVM* {
         alloc_locals;
         // TODO: check should_transfer_value param. delegatecall can have a
         // non-zero value but must not transfer value.
         tempvar is_max_depth_reached = 1 - is_not_zero(
-            Constants.STACK_MAX_DEPTH - evm.message.depth
+            (Constants.STACK_MAX_DEPTH + 1) - evm.message.depth
         );
         if (is_max_depth_reached != FALSE) {
             let (return_data) = alloc();
@@ -448,11 +432,12 @@ namespace SystemOperations {
                 return_data_len=return_data_len,
                 return_data=return_data,
                 program_counter=evm.program_counter,
-                stopped=TRUE,
+                stopped=FALSE,
                 gas_left=evm.gas_left + gas,
                 reverted=FALSE,
             );
-            Stack.push(new Uint256(0, 0));
+            Stack.push_uint128(0);
+            // TODO
             return evm;
         }
 
