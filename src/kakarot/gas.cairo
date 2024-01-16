@@ -1,5 +1,5 @@
 from starkware.cairo.common.math import unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_le, is_not_zero
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.uint256 import Uint256
 
@@ -100,5 +100,58 @@ namespace Gas {
         }
 
         return memory_expansion_cost(words_len, offset.low + size.low);
+    }
+
+    // @notice given two memory chunks, compute the maximum expansion cost
+    //  based on the maximum offset reached by each chunks.
+    // @param words_len The current length of the memory as felt252.
+    // @param offset_1 The offset of the first memory chunk as Uint256.
+    // @param size_1 The size of the first memory chunk as Uint256.
+    // @param offset_2 The offset of the second memory chunk as Uint256.
+    // @param size_2 The size of the second memory chunk as Uint256.
+    // @return cost The expansion gas cost for chunk who's ending offset is the largest.
+    func max_memory_expansion_cost{range_check_ptr}(
+        words_len: felt, offset_1: Uint256, size_1: Uint256, offset_2: Uint256, size_2: Uint256
+    ) -> felt {
+        alloc_locals;
+        let max_expansion_is_2 = is_le(offset_1.low + size_1.low, offset_2.low + size_2.low);
+        let max_expansion = max_expansion_is_2 * (offset_2.low + size_2.low) + (
+            1 - max_expansion_is_2
+        ) * (offset_1.low + size_1.low);
+        // Memory expansion cost is computed over the `low` parts of the offsets and sizes.
+        // In the second step, we check whether the `high` parts are non-zero and if so,
+        // we add the cost of expanding the memory by 2**128 words (saturating).
+        let memory_expansion_cost = Gas.memory_expansion_cost(words_len, max_expansion);
+        let memory_expansion_cost = memory_expansion_cost + (
+            offset_1.high + size_1.high + offset_2.high + size_2.high
+        ) * Gas.MEMORY_COST_U128;
+
+        return memory_expansion_cost;
+    }
+
+    // @notice Computes the base gas of a message call.
+    // @param gas_param The gas parameter of the message call, from the Stack.
+    // @param gas_left The gas left in the current execution frame.
+    // @param extra_gas The extra gas to be added to the base gas.
+    // @param memory_expansion_cost The memory expansion cost.
+    // @return gas The base gas of the message call.
+    func compute_message_call_gas{range_check_ptr}(gas_param: Uint256, gas_left: felt) -> felt {
+        alloc_locals;
+        // Closest multiple of 64 (floor)
+        let (quotient, _) = unsigned_div_rem(gas_left, 64);
+        tempvar gas_left = gas_left - quotient;
+        tempvar is_gas_param_lower = is_le(gas_param.low, gas_left) * (
+            1 - is_not_zero(gas_param.high)
+        );
+
+        local gas: felt;
+        // The message gas is the minimum between the gas param and the remaining gas left.
+        if (is_gas_param_lower != FALSE) {
+            // If gas is lower, it means that it fits in a felt and this is safe
+            assert gas = gas_param.low + 2 ** 128 * gas_param.high;
+        } else {
+            assert gas = gas_left;
+        }
+        return gas;
     }
 }
