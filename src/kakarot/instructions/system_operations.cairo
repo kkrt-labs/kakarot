@@ -295,7 +295,6 @@ namespace SystemOperations {
         // 1. Parse args from Stack
         // Note: We don't pop ret_offset and ret_size here but at the end of the sub context
         // See finalize_parent
-        // Pop ret_offset and ret_size
         let (popped) = Stack.pop_n(5);
         let gas_param = popped[0];
         let to = uint256_to_uint160(popped[1]);
@@ -332,23 +331,31 @@ namespace SystemOperations {
         // Charge the fixed message call gas
         let evm = EVM.charge_gas(evm, gas);
         if (evm.reverted != FALSE) {
+            // Early returns need to clear the remaining call stack values from the stack.
+            Stack.pop_n(2);
             return evm;
         }
-        tempvar gas_stipend = gas + (is_value_non_zero * Gas.CALL_STIPEND);
 
         // Operation
         if (evm.message.read_only * is_value_non_zero != FALSE) {
+            Stack.pop_n(2);
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
             let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
             return evm;
         }
 
+        tempvar gas_stipend = gas + is_value_non_zero * Gas.CALL_STIPEND;
+
         let sender = State.get_account(evm.message.address.evm);
         let (sender_balance_lt_value) = uint256_lt([sender.balance], value);
-
-        if (sender_balance_lt_value != FALSE) {
+        tempvar is_max_depth_reached = 1 - is_not_zero(
+            (Constants.STACK_MAX_DEPTH + 1) - evm.message.depth
+        );
+        tempvar is_call_invalid = sender_balance_lt_value + is_max_depth_reached;
+        if (is_call_invalid != FALSE) {
+            // Push 0 and only refund gas stipend - no child evm is created
+            Stack.pop_n(2);
             Stack.push_uint128(0);
-            // Revert and refund gas stipend
             let (return_data) = alloc();
             tempvar evm = new model.EVM(
                 message=evm.message,
@@ -375,10 +382,6 @@ namespace SystemOperations {
             ret_offset,
             ret_size,
         );
-
-        if (child_evm.stopped != FALSE) {
-            return child_evm;
-        }
 
         let (value_high, value_low) = split_felt(child_evm.message.value);
         tempvar value = Uint256(value_low, value_high);
@@ -417,29 +420,6 @@ namespace SystemOperations {
         ret_size: Uint256*,
     ) -> model.EVM* {
         alloc_locals;
-        // TODO: check should_transfer_value param. delegatecall can have a
-        // non-zero value but must not transfer value.
-        tempvar is_max_depth_reached = 1 - is_not_zero(
-            (Constants.STACK_MAX_DEPTH + 1) - evm.message.depth
-        );
-        if (is_max_depth_reached != FALSE) {
-            let (return_data) = alloc();
-            tempvar return_data_len = 0;
-            tempvar return_data = return_data;
-
-            tempvar evm = new model.EVM(
-                message=evm.message,
-                return_data_len=return_data_len,
-                return_data=return_data,
-                program_counter=evm.program_counter,
-                stopped=FALSE,
-                gas_left=evm.gas_left + gas,
-                reverted=FALSE,
-            );
-            Stack.push_uint128(0);
-            // TODO
-            return evm;
-        }
 
         // 3. Calldata
         let (calldata: felt*) = alloc();
