@@ -128,16 +128,16 @@ namespace EVM {
         );
     }
 
-    // @notice Increment the gas used.
-    // @dev The gas used is incremented by the given value.
-    // @param self The pointer to the execution context.
-    // @param inc_value The value to increment the gas used with.
+    // @notice Subtracts `amount` from `evm.gas_left`.
+    // @dev The gas left is decremented by the given amount.
+    // @param self The pointer to the current execution context.
+    // @param amount The amount of gas the current operation requires.
     // @return EVM The pointer to the updated execution context.
-    func charge_gas{range_check_ptr}(self: model.EVM*, inc_value: felt) -> model.EVM* {
-        let out_of_gas = is_le_felt(self.gas_left + 1, inc_value);
+    func charge_gas{range_check_ptr}(self: model.EVM*, amount: felt) -> model.EVM* {
+        let out_of_gas = is_le_felt(self.gas_left + 1, amount);
 
         if (out_of_gas != 0) {
-            let (revert_reason_len, revert_reason) = Errors.outOfGas(self.gas_left, inc_value);
+            let (revert_reason_len, revert_reason) = Errors.outOfGas(self.gas_left, amount);
             return new model.EVM(
                 message=self.message,
                 return_data_len=revert_reason_len,
@@ -155,7 +155,7 @@ namespace EVM {
             return_data=self.return_data,
             program_counter=self.program_counter,
             stopped=self.stopped,
-            gas_left=self.gas_left - inc_value,
+            gas_left=self.gas_left - amount,
             reverted=self.reverted,
         );
     }
