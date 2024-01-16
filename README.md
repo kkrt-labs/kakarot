@@ -189,6 +189,14 @@ runner uses hints to communicate values and return outputs:
   are returned, e.g. `segments.write_arg(output, [ids.x])` will return the list
   `[x]`.
 
+Both cairo and starknet tests can be used with the `--profile-cairo` flag to
+generate a profiling file (see the `--profile_output` flag of the `cairo-run`
+CLI). The file can then be used with `pprof`, for example:
+
+```bash
+go tool pprof --png <path_to_file.pb.gz>
+```
+
 The project also contains a regular forge project (`./solidity_contracts`) to
 generate real artifacts to be tested against. This project also contains some
 forge tests (e.g. `PlainOpcodes.t.sol`) which purpose is to test easily the
