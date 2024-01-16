@@ -33,10 +33,7 @@ func balanceOf{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     return (Uint256(0, 0),);
 }
 
-@external
-func test__init__should_return_state_with_default_dicts{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
+func test__init__should_return_state_with_default_dicts() {
     // When
     let state = State.init();
 
@@ -126,6 +123,7 @@ func test__copy__should_return_new_state_with_same_attributes{
 func test__is_account_alive__existing_account{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(nonce, code_len, code: felt*, balance_low) -> (is_alive: felt) {
+    alloc_locals;
     let evm_address = 'alive';
     let starknet_address = Account.compute_starknet_address(evm_address);
     tempvar address = new model.Address(starknet_address, evm_address);
@@ -141,14 +139,12 @@ func test__is_account_alive__existing_account{
     return (is_alive=is_alive);
 }
 
-@external
-func test__is_account_alive__not_in_state{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() -> (is_alive: felt) {
+func test__is_account_alive__not_in_state() {
     let state = State.init();
     with state {
         let is_alive = State.is_account_alive(0xdead);
     }
 
-    return (is_alive=is_alive);
+    assert is_alive = 0;
+    return ();
 }
