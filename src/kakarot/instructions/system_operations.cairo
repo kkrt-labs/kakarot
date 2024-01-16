@@ -9,7 +9,7 @@ from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, fina
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le, is_nn, is_not_zero
 from starkware.cairo.common.registers import get_fp_and_pc
-from starkware.cairo.common.uint256 import Uint256, uint256_lt
+from starkware.cairo.common.uint256 import Uint256, uint256_lt, uint256_le
 from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.dict_access import DictAccess
 
@@ -32,6 +32,8 @@ from utils.bytes import (
     uint256_to_bytes32,
 )
 from utils.uint256 import uint256_to_uint160
+
+using bool = felt;
 
 // @title System operations opcodes.
 // @notice This file contains the functions to execute for system operations opcodes.
@@ -272,7 +274,7 @@ namespace SystemOperations {
         return evm;
     }
 
-    // @notice CALL operation.
+    // @notice CALL operation. Message call into an account.
     // @dev
     // @custom:since Frontier
     // @custom:group System Operations
@@ -290,32 +292,226 @@ namespace SystemOperations {
         state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
-        let child_evm = CallHelper.init_sub_context(
-            evm=evm, with_value=TRUE, read_only=evm.message.read_only, self_call=FALSE
+        // 1. Parse args from Stack
+        // Note: We don't pop ret_offset and ret_size here but at the end of the sub context
+        // See finalize_parent
+        // Pop ret_offset and ret_size
+        let (popped) = Stack.pop_n(7);
+        let gas_param = popped[0];
+        let to = uint256_to_uint160(popped[1]);
+        let value = popped[2];
+        let args_offset = popped[3];
+        let args_size = popped[4];
+        let ret_offset = popped[5];
+        let ret_size = popped[6];
+
+        // 2. Gas
+        // Memory expansion cost
+        let max_expansion_is_ret = is_le(
+            args_offset.low + args_size.low, ret_offset.low + ret_size.low
         );
-        if (child_evm.reverted != 0) {
-            return child_evm;
+        let max_expansion = max_expansion_is_ret * (ret_offset.low + ret_size.low) + (
+            1 - max_expansion_is_ret
+        ) * (args_offset.low + args_size.low);
+        // Memory expansion cost is computed over the `low` parts of the offsets and sizes.
+        // In the second step, we check whether the `high` parts are non-zero and if so,
+        // we add the cost of expanding the memory by 2**128 words (saturating).
+        let memory_expansion_cost = Gas.memory_expansion_cost(memory.words_len, max_expansion);
+        let memory_expansion_cost = memory_expansion_cost + (
+            args_offset.high + args_size.high + ret_offset.high + ret_size.high
+        ) * Gas.MEMORY_COST_U128;
+
+        // Access gas cost
+        // TODO
+        let access_gas_cost = 0;
+
+        // Create gas cost
+        let is_account_alive = State.is_account_alive(to);
+        tempvar is_value_non_zero = is_not_zero(value.low) + is_not_zero(value.high);
+        let create_gas_cost = (1 - is_account_alive) * is_value_non_zero * Gas.NEW_ACCOUNT;
+
+        // Transfer gas cost
+        let transfer_gas_cost = is_value_non_zero * Gas.CALL_VALUE;
+
+        // Prepare gas cost of the call + stipend for transfer
+        // Max between given gas arg and max allowed gas := available_gas - (available_gas // 64)
+        tempvar extra_gas = access_gas_cost + create_gas_cost + transfer_gas_cost;
+        tempvar is_enough_gas_left = is_le(extra_gas + memory_expansion_cost, evm.gas_left + 1);
+        if (is_enough_gas_left == FALSE) {
+            let (revert_reason_len, revert_reason) = Errors.outOfGas(
+                evm.gas_left, extra_gas + memory_expansion_cost
+            );
+            let evm = EVM.stop(evm, revert_reason_len + 1, revert_reason, TRUE);
+            return evm;
         }
 
-        if (evm.message.read_only * child_evm.message.value != FALSE) {
+        // Closest multiple of 64 (floor)
+        tempvar adjusted_gas_left = evm.gas_left - extra_gas - memory_expansion_cost;
+        let (quotient, _) = unsigned_div_rem(adjusted_gas_left, 64);
+        tempvar adjusted_gas_left = adjusted_gas_left - quotient;
+        tempvar is_gas_param_lower = is_le(gas_param.low, adjusted_gas_left) * (
+            1 - is_not_zero(gas_param.high)
+        );
+
+        local gas: felt;
+        // The message gas is the minimum between the gas param and the remaining gas left.
+        if (is_gas_param_lower == FALSE) {
+            // If gas is lower, it means that it fits in a felt and this is safe
+            assert gas = gas_param.low + 2 ** 128 * gas_param.high;
+        } else {
+            assert gas = adjusted_gas_left;
+        }
+
+        // All the gas is charged upfront and remaining gas is refunded at the end
+        let evm = EVM.charge_gas(evm, gas + extra_gas + memory_expansion_cost);
+        if (evm.reverted != FALSE) {
+            return evm;
+        }
+        tempvar gas_stipend = gas + (is_value_non_zero * Gas.CALL_STIPEND);
+
+        // Operation
+        if (evm.message.read_only * is_value_non_zero != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
-            let evm = child_evm.message.parent.evm;
             let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
             return evm;
         }
 
-        let (value_high, value_low) = split_felt(child_evm.message.value);
-        tempvar value = Uint256(value_low, value_high);
+        let sender = State.get_account(evm.message.address.evm);
+        let (sender_balance_lt_value) = uint256_lt([sender.balance], value);
 
-        let transfer = model.Transfer(evm.message.address, child_evm.message.address, value);
-        let success = State.add_transfer(transfer);
-        if (success == 0) {
-            let (revert_reason_len, revert_reason) = Errors.balanceError();
-            tempvar child_evm = EVM.stop(child_evm, revert_reason_len, revert_reason, TRUE);
-        } else {
-            tempvar child_evm = child_evm;
+        if (sender_balance_lt_value != FALSE) {
+            Stack.push(new Uint256(0, 0));
+            // Revert and refund gas stipend
+            let (revert_reason) = alloc();
+            tempvar evm = new model.EVM(
+                message=evm.message,
+                return_data_len=0,
+                return_data=revert_reason,
+                program_counter=evm.program_counter,
+                stopped=TRUE,
+                gas_left=evm.gas_left + gas_stipend,
+                reverted=TRUE,
+            );
+            return evm;
+        }
+        let child_evm = generic_call(
+            evm,
+            gas_stipend,
+            value.low,
+            to,
+            to,
+            TRUE,
+            FALSE,
+            args_offset,
+            args_size,
+            ret_offset,
+            ret_size,
+        );
+        return child_evm;
+    }
+
+    // TODO: make gas felt not u256
+    func generic_call{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(
+        evm: model.EVM*,
+        gas: felt,
+        value: felt,
+        to: felt,
+        code_address: felt,
+        should_transfer_value: bool,
+        is_staticcall: bool,
+        args_offset: Uint256,
+        args_size: Uint256,
+        ret_offset: Uint256,
+        ret_size: Uint256,
+    ) -> model.EVM* {
+        alloc_locals;
+        // TODO: check should_transfer_value param. delegatecall can have a
+        // non-zero value but must not transfer value.
+        tempvar is_max_depth_reached = 1 - is_not_zero(
+            Constants.STACK_MAX_DEPTH - evm.message.depth
+        );
+        if (is_max_depth_reached != FALSE) {
+            let (return_data) = alloc();
+            tempvar return_data_len = 0;
+            tempvar return_data = return_data;
+
+            tempvar evm = new model.EVM(
+                message=evm.message,
+                return_data_len=return_data_len,
+                return_data=return_data,
+                program_counter=evm.program_counter,
+                stopped=TRUE,
+                gas_left=evm.gas_left + gas,
+                reverted=FALSE,
+            );
+            Stack.push(new Uint256(0, 0));
+            return evm;
         }
 
+        // 3. Calldata
+        let (calldata: felt*) = alloc();
+        Memory.load_n(args_size.low, calldata, args_offset.low);
+
+        // 4. Build child_evm
+        // Check if the called address is a precompiled contract
+        let is_precompile = Precompiles.is_precompile(address=to);
+        if (is_precompile != FALSE) {
+            tempvar parent = new model.Parent(evm, stack, memory, state);
+            let child_evm = Precompiles.run(
+                evm_address=to,
+                calldata_len=args_size.low,
+                calldata=calldata,
+                value=value,
+                parent=parent,
+                gas_left=gas,
+            );
+
+            return child_evm;
+        }
+
+        let to_account = State.get_account(code_address);
+        local code_len: felt = to_account.code_len;
+        local code: felt* = to_account.code;
+
+        tempvar parent = new model.Parent(evm, stack, memory, state);
+        let stack = Stack.init();
+        let memory = Memory.init();
+        let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
+            bytecode_len=code_len, bytecode=code
+        );
+
+        if (is_staticcall != FALSE) {
+            tempvar read_only = TRUE;
+        } else {
+            tempvar read_only = evm.message.read_only;
+        }
+
+        tempvar message = new model.Message(
+            bytecode=code,
+            bytecode_len=code_len,
+            valid_jumpdests_start=valid_jumpdests_start,
+            valid_jumpdests=valid_jumpdests,
+            calldata=calldata,
+            calldata_len=args_size.low,
+            value=value,
+            parent=parent,
+            address=to_account.address,
+            read_only=read_only,
+            is_create=FALSE,
+            depth=evm.message.depth + 1,
+            env=evm.message.env,
+        );
+
+        let child_evm = EVM.init(message, gas);
+        let state = State.copy();
         return child_evm;
     }
 
