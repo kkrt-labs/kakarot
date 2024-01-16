@@ -6,6 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.dict import dict_read, dict_write
+from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from starkware.cairo.common.math import assert_not_equal
 from starkware.cairo.common.dict_access import DictAccess
@@ -14,7 +15,7 @@ from starkware.starknet.common.syscalls import get_contract_address
 
 // Local dependencies
 from kakarot.model import model
-from kakarot.state import State
+from kakarot.state import State, Internals
 from kakarot.account import Account
 from kakarot.storages import native_token_address
 
@@ -146,5 +147,26 @@ func test__is_account_alive__not_in_state() {
     }
 
     assert is_alive = 0;
+    return ();
+}
+
+@external
+func test___copy_accounts__should_handle_null_pointers{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    alloc_locals;
+    let (accounts) = default_dict_new(0);
+    tempvar accounts_start = accounts;
+    tempvar address = new model.Address(1, 2);
+    tempvar balance = new Uint256(1, 0);
+    let (code) = alloc();
+    let account = Account.init(address, 0, code, 1, balance);
+    dict_write{dict_ptr=accounts}(address.evm, cast(account, felt));
+    let empty_address = 'empty address';
+    dict_read{dict_ptr=accounts}(empty_address);
+    let (local accounts_copy: DictAccess*) = default_dict_new(0);
+    tempvar accounts_copy_start = accounts_copy;
+    Internals._copy_accounts{accounts=accounts_copy}(accounts_start, accounts);
+
     return ();
 }

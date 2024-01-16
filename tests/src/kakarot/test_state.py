@@ -45,3 +45,10 @@ class TestState:
 
         async def test_not_in_state(self, cairo_run):
             cairo_run("test__is_account_alive__not_in_state")
+
+
+@pytest.mark.asyncio
+class TestInternals:
+    class TestCopyAccounts:
+        async def test_should_handle_null_pointers(self, state):
+            await state.test___copy_accounts__should_handle_null_pointers().call()
