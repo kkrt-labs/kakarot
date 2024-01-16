@@ -48,3 +48,10 @@ class TestState:
                 await state.test__is_account_alive__not_in_state().call()
             ).result.is_alive
             assert result == 0
+
+
+@pytest.mark.asyncio
+class TestInternals:
+    class TestCopyAccounts:
+        async def test_should_handle_null_pointers(self, state):
+            await state.test___copy_accounts__should_handle_null_pointers().call()

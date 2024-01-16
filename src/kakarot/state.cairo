@@ -63,18 +63,18 @@ namespace State {
     func finalize{range_check_ptr, state: model.State*}() {
         alloc_locals;
         // First squash to get only one account per key
-        let (local accounts_start, accounts) = default_dict_finalize(
+        let (local accounts_start, accounts_end) = default_dict_finalize(
             state.accounts_start, state.accounts, 0
         );
+
+        let (local accounts_copy: DictAccess*) = default_dict_new(0);
+        tempvar accounts_copy_start = accounts_copy;
         // Finalizing the accounts create another entry per account
-        Internals._copy_accounts{accounts=accounts}(accounts_start, accounts);
-        // Squash again to keep only one model.Account per key
-        // @dev: using default_dict_copy as default_dict_finalize doesn't return a default_dict
-        let (local accounts_start, accounts) = default_dict_copy(accounts_start, accounts);
+        Internals._copy_accounts{accounts=accounts_copy}(accounts_start, accounts_end);
 
         tempvar state = new model.State(
-            accounts_start=accounts_start,
-            accounts=accounts,
+            accounts_start=accounts_copy_start,
+            accounts=accounts_copy,
             events_len=state.events_len,
             events=state.events,
             transfers_len=state.transfers_len,
@@ -244,9 +244,7 @@ namespace State {
     // @notice Check whether an account is both in the state and non empty.
     // @param address EVM Address of the account that needs to be checked.
     // @return is_alive TRUE if the account is alive.
-    func is_account_alive{
-        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
-    }(address: felt) -> felt {
+    func is_account_alive{state: model.State*}(address: felt) -> felt {
         alloc_locals;
         let accounts = state.accounts;
         let (pointer) = dict_read{dict_ptr=accounts}(key=address);
@@ -281,6 +279,7 @@ namespace State {
 
 namespace Internals {
     // @notice Iterate through the accounts dict and copy them
+    // @dev Should be applied on a squashed dict
     // @param accounts_start The dict start pointer
     // @param accounts_end The dict end pointer
     func _copy_accounts{range_check_ptr, accounts: DictAccess*}(
@@ -288,6 +287,13 @@ namespace Internals {
     ) {
         if (accounts_start == accounts_end) {
             return ();
+        }
+
+        if (accounts_start.new_value == 0) {
+            // If we do a dict_read on an unexisting account, `prev_value` and `new_value` are set to 0.
+            // However we expected pointers to model.Account, and casting 0 to model.Account* will
+            // cause a "Memory address must be relocatable" error.
+            return _copy_accounts(accounts_start + DictAccess.SIZE, accounts_end);
         }
 
         let account = cast(accounts_start.new_value, model.Account*);
