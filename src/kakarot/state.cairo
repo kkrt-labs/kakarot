@@ -242,14 +242,14 @@ namespace State {
     }
 
     // @notice Check whether an account is both in the state and non empty.
-    // @param address Address of the account that needs to be checked.
+    // @param address EVM Address of the account that needs to be checked.
     // @return is_alive TRUE if the account is alive.
     func is_account_alive{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
-    }(evm_address: felt) -> felt {
+    }(address: felt) -> felt {
         alloc_locals;
         let accounts = state.accounts;
-        let (pointer) = dict_read{dict_ptr=accounts}(key=evm_address);
+        let (pointer) = dict_read{dict_ptr=accounts}(key=address);
         tempvar state = new model.State(
             accounts_start=state.accounts_start,
             accounts=accounts,
