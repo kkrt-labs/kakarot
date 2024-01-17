@@ -69,7 +69,7 @@ namespace State {
 
         let (local accounts_copy: DictAccess*) = default_dict_new(0);
         tempvar accounts_copy_start = accounts_copy;
-        // Finalizing the accounts create another entry per account
+        // Squashes the storage dicts of accounts, and copy the result to a new memory segment.
         Internals._copy_accounts{accounts=accounts_copy}(accounts_start, accounts_end);
 
         tempvar state = new model.State(

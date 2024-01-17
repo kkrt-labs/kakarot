@@ -165,8 +165,16 @@ func test___copy_accounts__should_handle_null_pointers{
     let empty_address = 'empty address';
     dict_read{dict_ptr=accounts}(empty_address);
     let (local accounts_copy: DictAccess*) = default_dict_new(0);
-    tempvar accounts_copy_start = accounts_copy;
     Internals._copy_accounts{accounts=accounts_copy}(accounts_start, accounts);
+
+    let (pointer) = dict_read{dict_ptr=accounts_copy}(address.evm);
+    tempvar existing_account = cast(pointer, model.Account*);
+
+    assert existing_account.address.starknet = address.starknet;
+    assert existing_account.address.evm = address.evm;
+    assert existing_account.balance.low = 1;
+    assert existing_account.balance.high = 0;
+    assert existing_account.code_len = 0;
 
     return ();
 }

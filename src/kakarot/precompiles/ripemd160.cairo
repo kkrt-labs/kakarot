@@ -11,7 +11,7 @@ from starkware.cairo.common.math_cmp import is_nn_le, is_le
 from starkware.cairo.common.bitwise import bitwise_and, bitwise_xor, bitwise_or
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.default_dict import default_dict_new, default_dict_finalize
-from starkware.cairo.common.dict import dict_new, dict_read, dict_write, dict_squash
+from starkware.cairo.common.dict import dict_read, dict_write
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.memset import memset
@@ -63,7 +63,7 @@ namespace PrecompileRIPEMD160 {
         let (res, rsize, new_msg) = compress_data{dict_ptr=x, bitwise_ptr=bitwise_ptr}(
             buf, 5, input_len, input
         );
-        let (_, _) = dict_squash{range_check_ptr=range_check_ptr}(start, x);
+        default_dict_finalize(start, x, 0);
 
         // 3. finish hash
         let (res, _) = finish(res, rsize, new_msg, input_len, 0);
@@ -73,7 +73,7 @@ namespace PrecompileRIPEMD160 {
         let h0 = hash;
         buf2hash{dict_ptr=hash, bitwise_ptr=bitwise_ptr}(res, 0);
         dict_to_array{dict_ptr=hash}(arr_x, 20);
-        let (_, _) = dict_squash{range_check_ptr=range_check_ptr}(h0, hash);
+        default_dict_finalize(h0, hash, 0);
 
         // 5. return bytes hash code.
         let (minimum_word_size) = Helpers.minimum_word_count(input_len);
@@ -428,7 +428,7 @@ func finish{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
 ) -> (res: felt*, rsize: felt) {
     alloc_locals;
     let (x) = default_dict_new(0);
-    let start = x;
+    tempvar start = x;
 
     // put data into x.
     let (local len) = uint32_and(dsize, 63);
@@ -458,25 +458,24 @@ func finish{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
 
         let (local arr_x: felt*) = alloc();
         dict_to_array{dict_ptr=x}(arr_x, 16);
-        let (_, _) = dict_squash{range_check_ptr=range_check_ptr}(start, x);
-        let (res, rsize) = compress(buf, bufsize, arr_x, 16);
-        return (res=res, rsize=rsize);
-    } else {
-        let (local arr_x: felt*) = alloc();
-        dict_to_array{dict_ptr=x}(arr_x, 16);
-        let (buf, bufsize) = compress(buf, bufsize, arr_x, 16);
-        // reset dict to all 0.
-        let (x) = default_dict_new(0);
-
-        dict_write{dict_ptr=x}(14, val);
-        dict_write{dict_ptr=x}(15, val_15);
-
-        let (local arr_x: felt*) = alloc();
-        dict_to_array{dict_ptr=x}(arr_x, 16);
-        let (_, _) = dict_squash{range_check_ptr=range_check_ptr}(start, x);
+        default_dict_finalize(start, x, 0);
         let (res, rsize) = compress(buf, bufsize, arr_x, 16);
         return (res=res, rsize=rsize);
     }
+    let (local arr_x: felt*) = alloc();
+    dict_to_array{dict_ptr=x}(arr_x, 16);
+    let (buf, bufsize) = compress(buf, bufsize, arr_x, 16);
+    // reset dict to all 0.
+    let (x) = default_dict_new(0);
+
+    dict_write{dict_ptr=x}(14, val);
+    dict_write{dict_ptr=x}(15, val_15);
+
+    let (local arr_x: felt*) = alloc();
+    dict_to_array{dict_ptr=x}(arr_x, 16);
+    default_dict_finalize(start, x, 0);
+    let (res, rsize) = compress(buf, bufsize, arr_x, 16);
+    return (res=res, rsize=rsize);
 }
 
 func uint8_div{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(x, y) -> (z: felt) {

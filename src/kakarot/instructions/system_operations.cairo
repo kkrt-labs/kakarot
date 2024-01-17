@@ -292,6 +292,8 @@ namespace SystemOperations {
         state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
+        let fp_and_pc = get_fp_and_pc();
+        local __fp__: felt* = fp_and_pc.fp_val;
         // 1. Parse args from Stack
         // Note: We don't pop ret_offset and ret_size here but at the end of the sub context
         // See finalize_parent
@@ -307,7 +309,7 @@ namespace SystemOperations {
         // 2. Gas
         // Memory expansion cost
         let memory_expansion_cost = Gas.max_memory_expansion_cost(
-            memory.words_len, args_offset, args_size, [ret_offset], [ret_size]
+            memory.words_len, &args_offset, &args_size, ret_offset, ret_size
         );
 
         // Access gas cost
@@ -332,14 +334,14 @@ namespace SystemOperations {
         // Charge the fixed message call gas
         let evm = EVM.charge_gas(evm, gas);
         if (evm.reverted != FALSE) {
-            // Early returns need to clear the remaining call stack values from the stack.
-            Stack.pop_n(2);
+            // This EVM's stack will not be used anymore, since it reverted - no need to pop the
+            // last remaining 2 values ret_offset and ret_size.
             return evm;
         }
 
         // Operation
         if (evm.message.read_only * is_value_non_zero != FALSE) {
-            Stack.pop_n(2);
+            // No need to pop
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
             let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
             return evm;
@@ -354,7 +356,7 @@ namespace SystemOperations {
         );
         tempvar is_call_invalid = sender_balance_lt_value + is_max_depth_reached;
         if (is_call_invalid != FALSE) {
-            // Push 0 and only refund gas stipend - no child evm is created
+            // Requires popping the returndata offset and size before pushing 0
             Stack.pop_n(2);
             Stack.push_uint128(0);
             let (return_data) = alloc();
@@ -371,7 +373,7 @@ namespace SystemOperations {
         }
 
         // TODO taking the lower part of the value, as anything higher than 2^128 will fail anyway
-        let child_evm = generic_call(
+        let child_evm = CallHelper.generic_call(
             evm,
             gas_stipend,
             value.low,
@@ -394,91 +396,6 @@ namespace SystemOperations {
             tempvar child_evm = child_evm;
         }
 
-        return child_evm;
-    }
-
-    func generic_call{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-        stack: model.Stack*,
-        memory: model.Memory*,
-        state: model.State*,
-    }(
-        evm: model.EVM*,
-        gas: felt,
-        value: felt,
-        to: felt,
-        code_address: felt,
-        should_transfer_value: bool,
-        is_staticcall: bool,
-        args_offset: Uint256,
-        args_size: Uint256,
-        ret_offset: Uint256*,
-        ret_size: Uint256*,
-    ) -> model.EVM* {
-        alloc_locals;
-
-        // 3. Calldata
-        let (calldata: felt*) = alloc();
-        Memory.load_n(args_size.low, calldata, args_offset.low);
-
-        // 4. Build child_evm
-        // Check if the called address is a precompiled contract
-        let is_precompile = Precompiles.is_precompile(address=code_address);
-        if (is_precompile != FALSE) {
-            tempvar parent = new model.Parent(evm, stack, memory, state);
-            let child_evm = Precompiles.run(
-                evm_address=code_address,
-                calldata_len=args_size.low,
-                calldata=calldata,
-                value=value,
-                parent=parent,
-                gas_left=gas,
-            );
-
-            return child_evm;
-        }
-
-        let code_account = State.get_account(code_address);
-        local code_len: felt = code_account.code_len;
-        local code: felt* = code_account.code;
-
-        let to_starknet_address = Account.compute_starknet_address(to);
-        tempvar to_address = new model.Address(starknet=to_starknet_address, evm=to);
-
-        tempvar parent = new model.Parent(evm, stack, memory, state);
-        let stack = Stack.init();
-        let memory = Memory.init();
-        let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
-            bytecode_len=code_len, bytecode=code
-        );
-
-        if (is_staticcall != FALSE) {
-            tempvar read_only = TRUE;
-        } else {
-            tempvar read_only = evm.message.read_only;
-        }
-
-        tempvar message = new model.Message(
-            bytecode=code,
-            bytecode_len=code_len,
-            valid_jumpdests_start=valid_jumpdests_start,
-            valid_jumpdests=valid_jumpdests,
-            calldata=calldata,
-            calldata_len=args_size.low,
-            value=value,
-            parent=parent,
-            address=to_address,
-            read_only=read_only,
-            is_create=FALSE,
-            depth=evm.message.depth + 1,
-            env=evm.message.env,
-        );
-
-        let child_evm = EVM.init(message, gas);
-        let state = State.copy();
         return child_evm;
     }
 
@@ -614,6 +531,106 @@ namespace SystemOperations {
 }
 
 namespace CallHelper {
+    // @notice The shared logic of the CALL, CALLCODE, STATICCALL, and DELEGATECALL ops.
+    // Loads the calldata from memory, executes the precompiles if the target is one, otherwise
+    // constructs the child evm corresponding to the new execution frame of the call and returns it.
+    // @param evm The current EVM, which is the parent of the new EVM.
+    // @param gas The gas to be used by the new EVM.
+    // @param value The value to be transferred in the call
+    // @param to The address of the target account.
+    // @param code_address The address of the code account.
+    // @param should_transfer_value A boolean indicating whether the value should be transferred to the target account.
+    // @param is_staticcall A boolean indicating whether the call is a static call.
+    // @param args_offset The offset of the calldata in memory.
+    // @param args_size The size of the calldata in memory.
+    // @param ret_offset The offset to store the return data at.
+    // @param ret_size The size of the return data.
+    // @return EVM The pointer to the newly created sub context.
+    func generic_call{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(
+        evm: model.EVM*,
+        gas: felt,
+        value: felt,
+        to: felt,
+        code_address: felt,
+        should_transfer_value: bool,
+        is_staticcall: bool,
+        args_offset: Uint256,
+        args_size: Uint256,
+        ret_offset: Uint256*,
+        ret_size: Uint256*,
+    ) -> model.EVM* {
+        alloc_locals;
+
+        // 3. Calldata
+        let (calldata: felt*) = alloc();
+        Memory.load_n(args_size.low, calldata, args_offset.low);
+
+        // 4. Build child_evm
+        // Check if the called address is a precompiled contract
+        let is_precompile = Precompiles.is_precompile(address=code_address);
+        if (is_precompile != FALSE) {
+            tempvar parent = new model.Parent(evm, stack, memory, state);
+            let child_evm = Precompiles.run(
+                evm_address=code_address,
+                calldata_len=args_size.low,
+                calldata=calldata,
+                value=value,
+                parent=parent,
+                gas_left=gas,
+            );
+
+            return child_evm;
+        }
+
+        let code_account = State.get_account(code_address);
+        local code_len: felt = code_account.code_len;
+        local code: felt* = code_account.code;
+
+        let to_starknet_address = Account.compute_starknet_address(to);
+        tempvar to_address = new model.Address(starknet=to_starknet_address, evm=to);
+
+        tempvar parent = new model.Parent(evm, stack, memory, state);
+        let stack = Stack.init();
+        let memory = Memory.init();
+        let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
+            bytecode_len=code_len, bytecode=code
+        );
+
+        if (is_staticcall != FALSE) {
+            tempvar read_only = TRUE;
+        } else {
+            tempvar read_only = evm.message.read_only;
+        }
+
+        tempvar message = new model.Message(
+            bytecode=code,
+            bytecode_len=code_len,
+            valid_jumpdests_start=valid_jumpdests_start,
+            valid_jumpdests=valid_jumpdests,
+            calldata=calldata,
+            calldata_len=args_size.low,
+            value=value,
+            parent=parent,
+            address=to_address,
+            read_only=read_only,
+            is_create=FALSE,
+            depth=evm.message.depth + 1,
+            env=evm.message.env,
+        );
+
+        let child_evm = EVM.init(message, gas);
+        let state = State.copy();
+        return child_evm;
+    }
+
     // @notice The shared logic of the CALL ops, allowing CALL, CALLCODE, STATICCALL, and DELEGATECALL to
     //         share structure and parameterize whether the call requires a value (CALL, CALLCODE) and
     //         whether the returned sub context's is read only (STATICCODE)
@@ -634,6 +651,8 @@ namespace CallHelper {
         state: model.State*,
     }(evm: model.EVM*, with_value: felt, read_only: felt, self_call: felt) -> model.EVM* {
         alloc_locals;
+        let fp_and_pc = get_fp_and_pc();
+        local __fp__: felt* = fp_and_pc.fp_val;
 
         // 1. Parse args from Stack
         // Note: We don't pop ret_offset and ret_size here but at the end of the sub context
@@ -654,12 +673,12 @@ namespace CallHelper {
         // 2. Gas
         // Memory expansion cost
         let memory_expansion_cost = Gas.max_memory_expansion_cost(
-            memory.words_len, args_offset, args_size, [ret_offset], [ret_size]
+            memory.words_len, &args_offset, &args_size, ret_offset, ret_size
         );
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         let gas = Gas.compute_message_call_gas(gas_param, evm.gas_left);
 
-        // All the gas is charged upfront and remaining gis is refunded at the end
+        // All the gas is charged upfront and remaining gas is refunded at the end
         let evm = EVM.charge_gas(evm, gas);
         if (evm.reverted != FALSE) {
             // Early returns need to clear the remaining call stack values from the stack.

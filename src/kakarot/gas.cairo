@@ -71,7 +71,7 @@ namespace Gas {
     // @param words_len The current length of the memory.
     // @param max_offset The target max_offset to be applied to the given memory.
     // @return cost The current expansion gas cost. 0 if no expansion is triggered.
-    func memory_expansion_cost{range_check_ptr}(words_len: felt, max_offset: felt) -> felt {
+    func calculate_gas_extend_memory{range_check_ptr}(words_len: felt, max_offset: felt) -> felt {
         alloc_locals;
         let memory_expansion = is_le(words_len * 32 - 1, max_offset);
         if (memory_expansion == FALSE) {
@@ -99,11 +99,15 @@ namespace Gas {
             return MEMORY_COST_U128;
         }
 
-        return memory_expansion_cost(words_len, offset.low + size.low);
+        return calculate_gas_extend_memory(words_len, offset.low + size.low);
     }
 
-    // @notice given two memory chunks, compute the maximum expansion cost
+    // @notice Given two memory chunks, compute the maximum expansion cost
     //  based on the maximum offset reached by each chunks.
+    // @dev Memory expansion cost is computed over the `low` parts of
+    // the offsets and sizes.  In the second step, we check whether the `high`
+    // parts are non-zero and if so, we add the cost of expanding the memory by
+    // 2**128 words (saturating).
     // @param words_len The current length of the memory as felt252.
     // @param offset_1 The offset of the first memory chunk as Uint256.
     // @param size_1 The size of the first memory chunk as Uint256.
@@ -111,17 +115,15 @@ namespace Gas {
     // @param size_2 The size of the second memory chunk as Uint256.
     // @return cost The expansion gas cost for chunk who's ending offset is the largest.
     func max_memory_expansion_cost{range_check_ptr}(
-        words_len: felt, offset_1: Uint256, size_1: Uint256, offset_2: Uint256, size_2: Uint256
+        words_len: felt, offset_1: Uint256*, size_1: Uint256*, offset_2: Uint256*, size_2: Uint256*
     ) -> felt {
         alloc_locals;
         let max_expansion_is_2 = is_le(offset_1.low + size_1.low, offset_2.low + size_2.low);
         let max_expansion = max_expansion_is_2 * (offset_2.low + size_2.low) + (
             1 - max_expansion_is_2
         ) * (offset_1.low + size_1.low);
-        // Memory expansion cost is computed over the `low` parts of the offsets and sizes.
-        // In the second step, we check whether the `high` parts are non-zero and if so,
-        // we add the cost of expanding the memory by 2**128 words (saturating).
-        let memory_expansion_cost = Gas.memory_expansion_cost(words_len, max_expansion);
+
+        let memory_expansion_cost = calculate_gas_extend_memory(words_len, max_expansion);
         let memory_expansion_cost = memory_expansion_cost + (
             offset_1.high + size_1.high + offset_2.high + size_2.high
         ) * Gas.MEMORY_COST_U128;
@@ -130,16 +132,18 @@ namespace Gas {
     }
 
     // @notice Computes the base gas of a message call.
+    // @dev This should be called after having withdrawn the gas relative to the
+    // memory expansion and eventual extra gas costs.
     // @param gas_param The gas parameter of the message call, from the Stack.
     // @param gas_left The gas left in the current execution frame.
-    // @param extra_gas The extra gas to be added to the base gas.
-    // @param memory_expansion_cost The memory expansion cost.
     // @return gas The base gas of the message call.
     func compute_message_call_gas{range_check_ptr}(gas_param: Uint256, gas_left: felt) -> felt {
         alloc_locals;
         let (quotient, _) = unsigned_div_rem(gas_left, 64);
-        tempvar gas_left_u256 = Uint256(gas_left - quotient, 0);
-        let (is_gas_param_lower) = uint256_lt(gas_param, gas_left_u256);
+        tempvar max_allowed_gas = gas_left - quotient;
+        let (max_allowed_high, max_allowed_low) = split_felt(max_allowed_gas);
+        tempvar max_allowed = Uint256(max_allowed_high, max_allowed_low);
+        let (is_gas_param_lower) = uint256_lt(gas_param, max_allowed);
 
         // The message gas is the minimum between the gas param and the remaining gas left.
         if (is_gas_param_lower != FALSE) {
@@ -147,6 +151,6 @@ namespace Gas {
             tempvar gas = gas_param.low + 2 ** 128 * gas_param.high;
             return gas;
         }
-        return gas_left_u256.low;
+        return max_allowed.low;
     }
 }
