@@ -30,14 +30,14 @@ lint:
     - cairo@SYSTEM
     - actionlint@1.6.26
     - black@23.12.1
-    - checkov@3.1.61
+    - checkov@3.1.63
     - codespell@2.2.6
     - git-diff-check
     - hadolint@2.12.0
     - isort@5.13.2
     - markdownlint@0.38.0
     - oxipng@9.0.0
-    - prettier@3.2.2
+    - prettier@3.2.3
     - ruff@0.1.13
     - shellcheck@0.9.0
     - shfmt@3.6.0
