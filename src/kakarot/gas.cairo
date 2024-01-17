@@ -1,7 +1,7 @@
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le, is_not_zero
+from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.bool import FALSE
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, uint256_lt
 
 from kakarot.model import model
 
@@ -137,21 +137,16 @@ namespace Gas {
     // @return gas The base gas of the message call.
     func compute_message_call_gas{range_check_ptr}(gas_param: Uint256, gas_left: felt) -> felt {
         alloc_locals;
-        // Closest multiple of 64 (floor)
         let (quotient, _) = unsigned_div_rem(gas_left, 64);
-        tempvar gas_left = gas_left - quotient;
-        let (gas_left_low, gas_left_high) = split_felt(gas_left);
-        tempvar is_gas_param_lower = is_le(gas_param.low, gas_left_low) * is_le(
-            gas_param.high, gas_left_high
-        );
+        tempvar gas_left_u256 = Uint256(gas_left - quotient, 0);
+        let (is_gas_param_lower) = uint256_lt(gas_param, gas_left_u256);
 
-        local gas: felt;
         // The message gas is the minimum between the gas param and the remaining gas left.
         if (is_gas_param_lower != FALSE) {
             // If gas is lower, it means that it fits in a felt and this is safe
             tempvar gas = gas_param.low + 2 ** 128 * gas_param.high;
             return gas;
         }
-        return gas_left;
+        return gas_left_u256.low;
     }
 }

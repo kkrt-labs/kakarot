@@ -47,3 +47,18 @@ func test__max_memory_expansion_cost{range_check_ptr}() {
     %{ segments.write_arg(output, [ids.cost]); %}
     return ();
 }
+
+func test__compute_message_call_gas{range_check_ptr}() {
+    tempvar gas_param: Uint256;
+    tempvar gas_left: felt;
+
+    %{
+        ids.gas_param.low = program_input["gas_param"];
+        ids.gas_param.high = 0;
+        ids.gas_left = program_input["gas_left"];
+    %}
+    let gas = Gas.compute_message_call_gas(gas_param, gas_left);
+
+    %{ segments.write_arg(output, [ids.gas]); %}
+    return ();
+}

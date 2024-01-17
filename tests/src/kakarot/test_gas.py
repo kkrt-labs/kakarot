@@ -40,16 +40,16 @@ class TestGas:
             assert diff == output[0]
 
         @pytest.mark.parametrize(
-            "offset_1", [random.randint(0, 0xFFFF) for _ in range(3)]
+            "offset_1", [random.randint(0, 0xFFFFF) for _ in range(3)]
         )
         @pytest.mark.parametrize(
-            "size_1", [random.randint(0, 0xFFFF) for _ in range(3)]
+            "size_1", [random.randint(0, 0xFFFFF) for _ in range(3)]
         )
         @pytest.mark.parametrize(
-            "offset_2", [random.randint(0, 0xFFFF) for _ in range(3)]
+            "offset_2", [random.randint(0, 0xFFFFF) for _ in range(3)]
         )
         @pytest.mark.parametrize(
-            "size_2", [random.randint(0, 0xFFFF) for _ in range(3)]
+            "size_2", [random.randint(0, 0xFFFFF) for _ in range(3)]
         )
         def test_should_return_max_expansion_cost(
             self, cairo_run, offset_1, size_1, offset_2, size_2
@@ -72,3 +72,21 @@ class TestGas:
                     ],
                 ).cost
             )
+
+    class TestMessageGas:
+        @pytest.mark.parametrize(
+            "gas_param, gas_left, expected",
+            [
+                (0, 0, 0),
+                (10, 100, 10),
+                (100, 100, 99),
+                (100, 10, 10),
+            ],
+        )
+        def test_should_return_message_base_gas(
+            self, cairo_run, gas_param, gas_left, expected
+        ):
+            output = cairo_run(
+                "test__compute_message_call_gas", gas_param=gas_param, gas_left=gas_left
+            )
+            assert output[0] == expected
