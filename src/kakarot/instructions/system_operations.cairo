@@ -317,6 +317,7 @@ namespace SystemOperations {
         // Create gas cost
         let is_account_alive = State.is_account_alive(to);
         tempvar is_value_non_zero = is_not_zero(value.low) + is_not_zero(value.high);
+        tempvar is_value_non_zero = is_not_zero(is_value_non_zero);
         let create_gas_cost = (1 - is_account_alive) * is_value_non_zero * Gas.NEW_ACCOUNT;
 
         // Transfer gas cost
@@ -324,7 +325,7 @@ namespace SystemOperations {
 
         // Charge the fixed cost of the extra_gas + memory expansion
         tempvar extra_gas = access_gas_cost + create_gas_cost + transfer_gas_cost;
-        EVM.charge_gas(evm, extra_gas + memory_expansion_cost);
+        let evm = EVM.charge_gas(evm, extra_gas + memory_expansion_cost);
 
         let gas = Gas.compute_message_call_gas(gas_param, evm.gas_left);
 
@@ -369,6 +370,7 @@ namespace SystemOperations {
             return evm;
         }
 
+        // TODO taking the lower part of the value, as anything higher than 2^128 will fail anyway
         let child_evm = generic_call(
             evm,
             gas_stipend,
@@ -382,9 +384,6 @@ namespace SystemOperations {
             ret_offset,
             ret_size,
         );
-
-        let (value_high, value_low) = split_felt(child_evm.message.value);
-        tempvar value = Uint256(value_low, value_high);
 
         let transfer = model.Transfer(evm.message.address, child_evm.message.address, value);
         let success = State.add_transfer(transfer);
@@ -427,11 +426,11 @@ namespace SystemOperations {
 
         // 4. Build child_evm
         // Check if the called address is a precompiled contract
-        let is_precompile = Precompiles.is_precompile(address=to);
+        let is_precompile = Precompiles.is_precompile(address=code_address);
         if (is_precompile != FALSE) {
             tempvar parent = new model.Parent(evm, stack, memory, state);
             let child_evm = Precompiles.run(
-                evm_address=to,
+                evm_address=code_address,
                 calldata_len=args_size.low,
                 calldata=calldata,
                 value=value,
@@ -442,9 +441,12 @@ namespace SystemOperations {
             return child_evm;
         }
 
-        let to_account = State.get_account(code_address);
-        local code_len: felt = to_account.code_len;
-        local code: felt* = to_account.code;
+        let code_account = State.get_account(code_address);
+        local code_len: felt = code_account.code_len;
+        local code: felt* = code_account.code;
+
+        let to_starknet_address = Account.compute_starknet_address(to);
+        tempvar to_address = new model.Address(starknet=to_starknet_address, evm=to);
 
         tempvar parent = new model.Parent(evm, stack, memory, state);
         let stack = Stack.init();
@@ -468,7 +470,7 @@ namespace SystemOperations {
             calldata_len=args_size.low,
             value=value,
             parent=parent,
-            address=to_account.address,
+            address=to_address,
             read_only=read_only,
             is_create=FALSE,
             depth=evm.message.depth + 1,
@@ -638,7 +640,7 @@ namespace CallHelper {
         // See finalize_parent
         // Pop ret_offset and ret_size
         let (popped) = Stack.pop_n(4 + with_value);
-        let gas = popped[0];
+        let gas_param = popped[0];
         let to = uint256_to_uint160(popped[1]);
         let stack_value = popped[2];
         let args_offset = popped[2 + with_value];
@@ -651,40 +653,17 @@ namespace CallHelper {
 
         // 2. Gas
         // Memory expansion cost
-        let max_expansion_is_ret = is_le(
-            args_offset.low + args_size.low, ret_offset.low + ret_size.low
+        let memory_expansion_cost = Gas.max_memory_expansion_cost(
+            memory.words_len, args_offset, args_size, [ret_offset], [ret_size]
         );
-        let max_expansion = max_expansion_is_ret * (ret_offset.low + ret_size.low) + (
-            1 - max_expansion_is_ret
-        ) * (args_offset.low + args_size.low);
-        let memory_expansion_cost = Gas.memory_expansion_cost(memory.words_len, max_expansion);
-        // See Gas.memory_expansion_cost_saturated for more details
-        let memory_expansion_cost = memory_expansion_cost + (
-            args_offset.high + args_size.high + ret_offset.high + ret_size.high
-        ) * Gas.MEMORY_COST_U128;
+        let evm = EVM.charge_gas(evm, memory_expansion_cost);
+        let gas = Gas.compute_message_call_gas(gas_param, evm.gas_left);
 
-        // Access list
-        // TODO
-
-        // Max between given gas arg and max allowed gas := available_gas - (available_gas // 64)
-        let (max_message_call_gas, _) = unsigned_div_rem(evm.gas_left, 64);
-        tempvar max_message_call_gas = evm.gas_left - max_message_call_gas;
-        let (max_message_call_gas_high, max_message_call_gas_low) = split_felt(
-            max_message_call_gas
-        );
-        let (max_gas_is_message_call_gas) = uint256_lt(
-            Uint256(max_message_call_gas_low, max_message_call_gas_high), gas
-        );
-        local gas_limit;
-        if (max_gas_is_message_call_gas == FALSE) {
-            // If gas is lower, it means that it fits in a felt and this is safe
-            assert gas_limit = gas.low + gas.high * 2 ** 128;
-        } else {
-            assert gas_limit = max_message_call_gas;
-        }
         // All the gas is charged upfront and remaining gis is refunded at the end
-        let evm = EVM.charge_gas(evm, gas_limit + memory_expansion_cost);
+        let evm = EVM.charge_gas(evm, gas);
         if (evm.reverted != FALSE) {
+            // Early returns need to clear the remaining call stack values from the stack.
+            Stack.pop_n(2);
             return evm;
         }
 
@@ -703,7 +682,7 @@ namespace CallHelper {
                 calldata=calldata,
                 value=value,
                 parent=parent,
-                gas_left=gas_limit,
+                gas_left=gas,
             );
 
             return child_evm;
@@ -738,7 +717,7 @@ namespace CallHelper {
             depth=evm.message.depth + 1,
             env=evm.message.env,
         );
-        let child_evm = EVM.init(message, gas_limit);
+        let child_evm = EVM.init(message, gas);
         let state = State.copy();
         return child_evm;
     }
