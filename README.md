@@ -10,7 +10,7 @@
 
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/kkrt-labs/kakarot/ci.yml?branch=main)
 ![GitHub](https://img.shields.io/github/license/abdelhamidbakhta/kakarot?style=flat-square&logo=github)
-[![GitHub contributors](https://img.shields.io/github/contributors/abdelhamidbakhta/kakarot?logo=github&style=flat-square)](https://github.com/abdelhamidbakhta/kakarot/graphs/contributors)
+[![GitHub contributors](https://img.shields.io/github/contributors/kkrt-labs/kakarot?logo=github&style=flat-square)](https://github.com/kkrt-labs/kakarot/graphs/contributors)
 ![GitHub top language](https://img.shields.io/github/languages/top/abdelhamidbakhta/kakarot?style=flat-square)
 [![Telegram](https://img.shields.io/badge/telegram-Kakarot-yellow.svg?logo=telegram)](https://t.me/KakarotZkEvm)
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
