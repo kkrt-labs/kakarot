@@ -2,6 +2,7 @@
 
 from kakarot.gas import Gas
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
 
 func test__memory_cost{range_check_ptr}() {
     tempvar words_len: felt;
@@ -26,13 +27,14 @@ func test__memory_expansion_cost{range_check_ptr}() {
 }
 
 func test__max_memory_expansion_cost{range_check_ptr}() {
+    alloc_locals;
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
-    tempvar words_len: felt;
-    tempvar offset_1: Uint256;
-    tempvar size_1: Uint256;
-    tempvar offset_2: Uint256;
-    tempvar size_2: Uint256;
+    local words_len: felt;
+    local offset_1: Uint256;
+    local size_1: Uint256;
+    local offset_2: Uint256;
+    local size_2: Uint256;
     %{
         ids.words_len = program_input["words_len"];
         ids.offset_1.low = program_input["offset_1"];
