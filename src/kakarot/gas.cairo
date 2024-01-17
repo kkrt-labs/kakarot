@@ -1,4 +1,4 @@
-from starkware.cairo.common.math import unsigned_div_rem
+from starkware.cairo.common.math import split_felt, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le, is_not_zero
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.uint256 import Uint256
@@ -53,17 +53,17 @@ namespace Gas {
     // @dev To avoid range_check overflow, we compute words_len / 512
     //      instead of words_len * words_len / 512. Then we recompute the
     //      resulting quotient: x^2 = 512q + r becomes
-    //      x = 512 q0 + r0 => x^2 = 512(512 q0^2 + q0 r0) + r0^2
+    //      x = 512 q0 + r0 => x^2 = 512(512 q0^2 + 2 q0 r0) + r0^2
     //      r0^2 = 512 q1 + r1
-    //      x^2 = 512(512 q0^2 + q0 r0 + q1) + r1
-    //      q = 512 * q0 * q0 + q0 * r0 + q1
+    //      x^2 = 512(512 q0^2 + 2 * q0 r0 + q1) + r1
+    //      q = 512 * q0 * q0 + 2 q0 * r0 + q1
     // @param words_len The given number of words (bytes32).
     // @return cost The associated gas cost.
     func memory_cost{range_check_ptr}(words_len: felt) -> felt {
         let (q0, r0) = unsigned_div_rem(words_len, 512);
         let (q1, r1) = unsigned_div_rem(r0 * r0, 512);
 
-        let memory_cost = 512 * q0 * q0 + q0 * r0 + q1 + (3 * words_len);
+        let memory_cost = 512 * q0 * q0 + 2 * q0 * r0 + q1 + (MEMORY * words_len);
         return memory_cost;
     }
 
@@ -140,18 +140,18 @@ namespace Gas {
         // Closest multiple of 64 (floor)
         let (quotient, _) = unsigned_div_rem(gas_left, 64);
         tempvar gas_left = gas_left - quotient;
-        tempvar is_gas_param_lower = is_le(gas_param.low, gas_left) * (
-            1 - is_not_zero(gas_param.high)
+        let (gas_left_low, gas_left_high) = split_felt(gas_left);
+        tempvar is_gas_param_lower = is_le(gas_param.low, gas_left_low) * is_le(
+            gas_param.high, gas_left_high
         );
 
         local gas: felt;
         // The message gas is the minimum between the gas param and the remaining gas left.
         if (is_gas_param_lower != FALSE) {
             // If gas is lower, it means that it fits in a felt and this is safe
-            assert gas = gas_param.low + 2 ** 128 * gas_param.high;
-        } else {
-            assert gas = gas_left;
+            tempvar gas = gas_param.low + 2 ** 128 * gas_param.high;
+            return gas;
         }
-        return gas;
+        return gas_left;
     }
 }
