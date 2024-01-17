@@ -9,7 +9,7 @@ import pandas as pd
 import pytest
 import pytest_asyncio
 from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
-from starkware.cairo.lang.compiler.cairo_compile import compile_cairo
+from starkware.cairo.lang.compiler.cairo_compile import compile_cairo, get_module_reader
 from starkware.cairo.lang.compiler.scoped_name import ScopedName
 from starkware.cairo.lang.tracer.tracer_data import TracerData
 from starkware.cairo.lang.vm import cairo_runner
@@ -20,6 +20,7 @@ from starkware.starknet.business_logic.execution.execute_entry_point import (
     ExecuteEntryPoint,
 )
 from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
+from starkware.starknet.compiler.starknet_pass_manager import starknet_pass_manager
 from starkware.starknet.definitions.general_config import StarknetGeneralConfig
 from starkware.starknet.testing.starknet import Starknet
 
@@ -132,10 +133,17 @@ def starknet_snapshot(starknet):
 @pytest.fixture(scope="session")
 def cairo_compile(request):
     def _factory(path) -> list:
+        module_reader = get_module_reader(cairo_path=["src"])
+
+        pass_manager = starknet_pass_manager(
+            prime=DEFAULT_PRIME,
+            read_module=module_reader.read,
+            disable_hint_validation=True,
+        )
+
         return compile_cairo(
             Path(path).read_text(),
-            cairo_path=["src"],
-            prime=DEFAULT_PRIME,
+            pass_manager=pass_manager,
             debug_info=request.config.getoption("profile_cairo"),
         )
 

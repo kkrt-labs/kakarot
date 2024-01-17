@@ -3,7 +3,7 @@ import pytest_asyncio
 from starkware.starknet.testing.starknet import Starknet
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="session")
 async def state(starknet: Starknet):
     class_hash = await starknet.deprecated_declare(
         source="./tests/src/kakarot/test_state.cairo",
@@ -16,8 +16,8 @@ async def state(starknet: Starknet):
 @pytest.mark.asyncio
 class TestState:
     class TestInit:
-        async def test_should_return_state_with_default_dicts(self, state):
-            await state.test__init__should_return_state_with_default_dicts().call()
+        async def test_should_return_state_with_default_dicts(self, cairo_run):
+            cairo_run("test__init__should_return_state_with_default_dicts")
 
     class TestCopy:
         async def test_should_return_new_state_with_same_attributes(self, state):
@@ -43,8 +43,5 @@ class TestState:
             ).result.is_alive
             assert result == expected_result
 
-        async def test_not_in_state(self, state):
-            result = (
-                await state.test__is_account_alive__not_in_state().call()
-            ).result.is_alive
-            assert result == 0
+        async def test_not_in_state(self, cairo_run):
+            cairo_run("test__is_account_alive__not_in_state")
