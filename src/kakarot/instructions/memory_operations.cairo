@@ -6,7 +6,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_le, is_le_felt
 
 from kakarot.errors import Errors
 from kakarot.evm import EVM
@@ -224,7 +224,7 @@ namespace MemoryOperations {
         let key = popped;  // Uint256*
         let value = popped + Uint256.SIZE;  // Uint256*
 
-        let is_enough_gasleft = is_le(Gas.CALL_STIPEND + 1, evm.gas_left);
+        let is_enough_gasleft = is_le_felt(Gas.CALL_STIPEND + 1, evm.gas_left);
         if (is_enough_gasleft == FALSE) {
             let (revert_reason_len, revert_reason) = Errors.outOfGas(
                 evm.gas_left, Gas.CALL_STIPEND
