@@ -6,6 +6,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_unsigned_div_rem
+from starkware.cairo.common.math_cmp import is_le, is_le_felt
 
 from kakarot.errors import Errors
 from kakarot.evm import EVM
@@ -219,6 +220,23 @@ namespace MemoryOperations {
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
+        let is_enough_gasleft = is_le_felt(Gas.CALL_STIPEND + 1, evm.gas_left);
+        if (is_enough_gasleft == FALSE) {
+            let (revert_reason_len, revert_reason) = Errors.outOfGas(
+                evm.gas_left, Gas.CALL_STIPEND
+            );
+            return new model.EVM(
+                message=evm.message,
+                return_data_len=revert_reason_len,
+                return_data=revert_reason,
+                program_counter=evm.program_counter,
+                stopped=TRUE,
+                gas_left=0,
+                reverted=TRUE,
+            );
+        }
+
+        // Operation
         if (evm.message.read_only != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
             let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
@@ -226,9 +244,9 @@ namespace MemoryOperations {
         }
 
         let (popped) = Stack.pop_n(2);
-
         let key = popped;  // Uint256*
         let value = popped + Uint256.SIZE;  // Uint256*
+
         State.write_storage(evm.message.address.evm, key, value);
         return evm;
     }
