@@ -4394,6 +4394,7 @@ testname:
     - SuicidesAndInternlCallSuicidesOOG_d0g0v0_Shanghai
     - SuicidesAndInternlCallSuicidesSuccess_d0g0v0_Shanghai
     - SuicidesAndInternlCallSuicidesSuccess_d1g0v0_Shanghai
+    - SuicidesAndInternlCallSuicidesBonusGasAtCall_d0g0v0_Shanghai
     - TransactionSendingToZero_d0g0v0_Shanghai
     - ValueOverflow_d0g0v0_Shanghai
   stTransitionTest:

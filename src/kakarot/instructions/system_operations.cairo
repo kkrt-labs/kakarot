@@ -275,7 +275,10 @@ namespace SystemOperations {
     }
 
     // @notice CALL operation. Message call into an account.
-    // @dev
+    // @dev we don't pop the two last arguments (ret_offset and ret_size) to get
+    // them at the end of the CALL. These two extra stack values need to be
+    // cleard if the CALL early return without reverting (value > balance, stack
+    // too deep).
     // @custom:since Frontier
     // @custom:group System Operations
     // @custom:gas 0 + dynamic gas
@@ -292,8 +295,6 @@ namespace SystemOperations {
         state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
-        let fp_and_pc = get_fp_and_pc();
-        local __fp__: felt* = fp_and_pc.fp_val;
         // 1. Parse args from Stack
         // Note: We don't pop ret_offset and ret_size here but at the end of the sub context
         // See finalize_parent
@@ -301,8 +302,8 @@ namespace SystemOperations {
         let gas_param = popped[0];
         let to = uint256_to_uint160(popped[1]);
         let value = popped[2];
-        let args_offset = popped[3];
-        let args_size = popped[4];
+        let args_offset = popped + 3 * Uint256.SIZE;
+        let args_size = popped + 4 * Uint256.SIZE;
         let (ret_offset) = Stack.peek(0);
         let (ret_size) = Stack.peek(1);
 
@@ -651,9 +652,6 @@ namespace CallHelper {
         state: model.State*,
     }(evm: model.EVM*, with_value: felt, read_only: felt, self_call: felt) -> model.EVM* {
         alloc_locals;
-        let fp_and_pc = get_fp_and_pc();
-        local __fp__: felt* = fp_and_pc.fp_val;
-
         // 1. Parse args from Stack
         // Note: We don't pop ret_offset and ret_size here but at the end of the sub context
         // See finalize_parent
@@ -662,8 +660,8 @@ namespace CallHelper {
         let gas_param = popped[0];
         let to = uint256_to_uint160(popped[1]);
         let stack_value = popped[2];
-        let args_offset = popped[2 + with_value];
-        let args_size = popped[3 + with_value];
+        let args_offset = popped + (2 + with_value) * Uint256.SIZE;
+        let args_size = popped + (3 + with_value) * Uint256.SIZE;
         let (ret_offset) = Stack.peek(0);
         let (ret_size) = Stack.peek(1);
 
@@ -675,13 +673,15 @@ namespace CallHelper {
         let memory_expansion_cost = Gas.max_memory_expansion_cost(
             memory.words_len, &args_offset, &args_size, ret_offset, ret_size
         );
+
+        // Access list
+        // TODO
         let evm = EVM.charge_gas(evm, memory_expansion_cost);
         let gas = Gas.compute_message_call_gas(gas_param, evm.gas_left);
 
         // All the gas is charged upfront and remaining gas is refunded at the end
         let evm = EVM.charge_gas(evm, gas);
         if (evm.reverted != FALSE) {
-            // Early returns need to clear the remaining call stack values from the stack.
             return evm;
         }
 
