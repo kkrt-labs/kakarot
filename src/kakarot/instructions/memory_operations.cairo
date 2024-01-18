@@ -220,10 +220,6 @@ namespace MemoryOperations {
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
-        let (popped) = Stack.pop_n(2);
-        let key = popped;  // Uint256*
-        let value = popped + Uint256.SIZE;  // Uint256*
-
         let is_enough_gasleft = is_le_felt(Gas.CALL_STIPEND + 1, evm.gas_left);
         if (is_enough_gasleft == FALSE) {
             let (revert_reason_len, revert_reason) = Errors.outOfGas(
@@ -246,6 +242,11 @@ namespace MemoryOperations {
             let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
             return evm;
         }
+
+        let (popped) = Stack.pop_n(2);
+        let key = popped;  // Uint256*
+        let value = popped + Uint256.SIZE;  // Uint256*
+
         State.write_storage(evm.message.address.evm, key, value);
         return evm;
     }

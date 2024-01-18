@@ -682,7 +682,6 @@ namespace CallHelper {
         let evm = EVM.charge_gas(evm, gas);
         if (evm.reverted != FALSE) {
             // Early returns need to clear the remaining call stack values from the stack.
-            Stack.pop_n(2);
             return evm;
         }
 

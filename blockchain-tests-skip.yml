@@ -5,6 +5,8 @@ filename:
 
 # List of specific tests names to be skipped with folder
 testname:
+  stArgsZeroOneBalance:
+    - callNonConst_d0g0v1_Shanghai
   stEIP3855-push0:
     - push0Gas_d0g0v0_Shanghai
     - push0_d1g0v0_Shanghai
@@ -106,6 +108,7 @@ testname:
   stChainId:
     - chainId_d0g0v0_Shanghai
   stCreate2:
+    - Create2OOGafterInitCodeRevert_d0g0v0_Shanghai
     - CREATE2_HighNonceDelegatecall_d11g0v0_Shanghai
     - CREATE2_HighNonceDelegatecall_d17g0v0_Shanghai
     - CREATE2_HighNonceDelegatecall_d18g0v0_Shanghai
@@ -2550,6 +2553,10 @@ testname:
     - modexp_0_0_0_35000_d0g2v0_Shanghai
     - modexp_0_0_0_35000_d0g3v0_Shanghai
   stPreCompiledContracts:
+    - precompsEIP2929_d26g0v0_Shanghai
+    - precompsEIP2929_d61g0v0_Shanghai
+    - precompsEIP2929_d62g0v0_Shanghai
+    - precompsEIP2929_d98g0v0_Shanghai
     - modexpTests_d0g0v0_Shanghai
     - modexpTests_d100g0v0_Shanghai
     - modexpTests_d101g0v0_Shanghai
@@ -3151,6 +3158,10 @@ testname:
     - tooLongReturnDataCopy_d8g0v0_Shanghai
     - tooLongReturnDataCopy_d9g0v0_Shanghai
   stRevertTest:
+    - costRevert_d0g0v0_Shanghai
+    - costRevert_d14g0v0_Shanghai
+    - costRevert_d21g0v0_Shanghai
+    - costRevert_d7g0v0_Shanghai
     - LoopCallsDepthThenRevert_d0g0v0_Shanghai
     - LoopDelegateCallsDepthThenRevert_d0g0v0_Shanghai
     - RevertDepthCreateAddressCollision_d0g0v0_Shanghai
@@ -3168,18 +3179,30 @@ testname:
     - RevertDepthCreateOOG_d1g0v0_Shanghai
     - RevertDepthCreateOOG_d1g0v1_Shanghai
     - RevertOpcodeCreate_d0g1v0_Shanghai
-    - RevertPrefoundEmpty_d0g0v0_Shanghai
+    - RevertOpcodeMultipleSubCalls_d0g2v0_Shanghai
+    - RevertOpcodeMultipleSubCalls_d0g2v1_Shanghai
+    - RevertOpcodeMultipleSubCalls_d0g3v1_Shanghai
+    - RevertOpcodeMultipleSubCalls_d1g2v0_Shanghai
+    - RevertOpcodeMultipleSubCalls_d1g2v1_Shanghai
+    - RevertOpcodeMultipleSubCalls_d1g3v1_Shanghai
+    - RevertOpcodeMultipleSubCalls_d2g2v0_Shanghai
+    - RevertOpcodeMultipleSubCalls_d2g2v1_Shanghai
+    - RevertOpcodeMultipleSubCalls_d2g3v1_Shanghai
+    - RevertOpcodeMultipleSubCalls_d3g2v0_Shanghai
+    - RevertOpcodeMultipleSubCalls_d3g2v1_Shanghai
+    - RevertOpcodeMultipleSubCalls_d3g3v1_Shanghai
+    - RevertOpcodeReturn_d0g1v0_Shanghai
     - RevertPrefound_d0g0v0_Shanghai
-    - costRevert_d0g0v0_Shanghai
-    - costRevert_d14g0v0_Shanghai
-    - costRevert_d21g0v0_Shanghai
-    - costRevert_d7g0v0_Shanghai
+    - RevertPrefoundEmpty_d0g0v0_Shanghai
   stSLoadTest:
     - sloadGasCost_d0g0v0_Shanghai
   stSStoreTest:
     - InitCollision_d1g0v0_Shanghai
     - InitCollision_d3g0v0_Shanghai
     - sstoreGas_d0g0v0_Shanghai
+    - sstore_gasLeft_d2g0v0_Shanghai
+    - sstore_gasLeft_d5g0v0_Shanghai
+    - sstore_gasLeft_d8g0v0_Shanghai
   stSolidityTest:
     - RecursiveCreateContracts_d0g0v0_Shanghai
     - TestCryptographicFunctions_d0g0v0_Shanghai
