@@ -310,7 +310,7 @@ namespace SystemOperations {
         // 2. Gas
         // Memory expansion cost
         let memory_expansion_cost = Gas.max_memory_expansion_cost(
-            memory.words_len, &args_offset, &args_size, ret_offset, ret_size
+            memory.words_len, args_offset, args_size, ret_offset, ret_size
         );
 
         // Access gas cost
@@ -563,8 +563,8 @@ namespace CallHelper {
         code_address: felt,
         should_transfer_value: bool,
         is_staticcall: bool,
-        args_offset: Uint256,
-        args_size: Uint256,
+        args_offset: Uint256*,
+        args_size: Uint256*,
         ret_offset: Uint256*,
         ret_size: Uint256*,
     ) -> model.EVM* {
@@ -671,7 +671,7 @@ namespace CallHelper {
         // 2. Gas
         // Memory expansion cost
         let memory_expansion_cost = Gas.max_memory_expansion_cost(
-            memory.words_len, &args_offset, &args_size, ret_offset, ret_size
+            memory.words_len, args_offset, args_size, ret_offset, ret_size
         );
 
         // Access list
