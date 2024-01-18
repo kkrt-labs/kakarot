@@ -5,7 +5,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
 
-func test__decode{range_check_ptr}() {
+func test__decode{range_check_ptr}(output_ptr: felt*) {
     alloc_locals;
     // Given
     tempvar data_len: felt;
@@ -25,9 +25,7 @@ func test__decode{range_check_ptr}() {
     %{ ids.is_list = program_input["is_list"] %}
     assert item.is_list = is_list;
 
-    tempvar output: felt*;
-    %{ ids.output = output %}
-    memcpy(output, item.data, item.data_len);
+    memcpy(output_ptr, item.data, item.data_len);
 
     return ();
 }

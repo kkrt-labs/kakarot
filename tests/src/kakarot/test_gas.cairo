@@ -4,12 +4,13 @@ from kakarot.gas import Gas
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
 
-func test__memory_cost{range_check_ptr}() {
+func test__memory_cost{range_check_ptr}(output_ptr: felt*) {
     tempvar words_len: felt;
     %{ ids.words_len = program_input["words_len"]; %}
     let cost = Gas.memory_cost(words_len);
 
-    %{ segments.write_arg(output, [ids.cost]); %}
+    assert [output_ptr] = cost;
+
     return ();
 }
 

@@ -6,7 +6,7 @@ from starkware.cairo.common.alloc import alloc
 
 from utils.array import reverse, count_not_zero, slice, contains
 
-func test__reverse() {
+func test__reverse(output_ptr: felt*) {
     alloc_locals;
     tempvar arr_len: felt;
     let (arr) = alloc();
@@ -15,14 +15,11 @@ func test__reverse() {
         segments.write_arg(ids.arr, program_input["arr"])
     %}
 
-    tempvar rev: felt*;
-    %{ ids.rev = output %}
-
-    reverse(rev, arr_len, arr);
+    reverse(output_ptr, arr_len, arr);
     return ();
 }
 
-func test__count_not_zero() {
+func test__count_not_zero(output_ptr: felt*) {
     tempvar arr_len: felt;
     let (arr) = alloc();
     %{
@@ -31,11 +28,11 @@ func test__count_not_zero() {
     %}
 
     let count = count_not_zero(arr_len, arr);
-    %{ segments.write_arg(output, [ids.count]) %}
+    assert [output_ptr] = count;
     return ();
 }
 
-func test__slice{range_check_ptr}() {
+func test__slice{range_check_ptr}(output_ptr: felt*) {
     alloc_locals;
     tempvar arr_len: felt;
     let (arr) = alloc();
@@ -48,13 +45,11 @@ func test__slice{range_check_ptr}() {
         ids.size = program_input["size"]
     %}
 
-    tempvar sliced: felt*;
-    %{ ids.sliced = output %}
-    slice(sliced, arr_len, arr, offset, size);
+    slice(output_ptr, arr_len, arr, offset, size);
     return ();
 }
 
-func test_contains{range_check_ptr}() {
+func test_contains{range_check_ptr}(output_ptr: felt*) {
     alloc_locals;
     tempvar arr_len: felt;
     let (arr) = alloc();
@@ -66,6 +61,6 @@ func test_contains{range_check_ptr}() {
     %}
 
     let result = contains(arr_len, arr, value);
-    %{ segments.write_arg(output, [ids.result]) %}
+    assert [output_ptr] = result;
     return ();
 }

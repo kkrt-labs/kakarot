@@ -14,54 +14,43 @@ from utils.bytes import (
     bytes_to_bytes8_little_endian,
 )
 
-func test__felt_to_ascii{range_check_ptr}() {
+func test__felt_to_ascii{range_check_ptr}(output_ptr: felt*) {
     alloc_locals;
     tempvar n: felt;
     %{ ids.n = program_input["n"] %}
 
-    tempvar ascii: felt*;
-    %{ ids.ascii = output %}
-    felt_to_ascii(ascii, n);
+    felt_to_ascii(output_ptr, n);
     return ();
 }
 
-func test__felt_to_bytes_little() {
+func test__felt_to_bytes_little(output_ptr: felt*) {
     alloc_locals;
     tempvar n: felt;
     %{ ids.n = program_input["n"] %}
 
-    tempvar bytes: felt*;
-    %{ ids.bytes = output %}
-
-    felt_to_bytes_little(bytes, n);
+    felt_to_bytes_little(output_ptr, n);
     return ();
 }
 
-func test__felt_to_bytes() {
+func test__felt_to_bytes(output_ptr: felt*) {
     alloc_locals;
     tempvar n: felt;
     %{ ids.n = program_input["n"] %}
 
-    tempvar bytes: felt*;
-    %{ ids.bytes = output %}
-
-    felt_to_bytes(bytes, n);
+    felt_to_bytes(output_ptr, n);
     return ();
 }
 
-func test__felt_to_bytes20{range_check_ptr}() {
+func test__felt_to_bytes20{range_check_ptr}(output_ptr: felt*) {
     alloc_locals;
     tempvar n: felt;
     %{ ids.n = program_input["n"] %}
 
-    tempvar bytes20: felt*;
-    %{ ids.bytes20 = output %}
-
-    felt_to_bytes20(bytes20, n);
+    felt_to_bytes20(output_ptr, n);
     return ();
 }
 
-func test__uint256_to_bytes_little{range_check_ptr}() {
+func test__uint256_to_bytes_little{range_check_ptr}(output_ptr: felt*) {
     alloc_locals;
     tempvar n: Uint256;
     %{
@@ -69,14 +58,11 @@ func test__uint256_to_bytes_little{range_check_ptr}() {
         ids.n.high = program_input["n"][1]
     %}
 
-    tempvar bytes: felt*;
-    %{ ids.bytes = output %}
-
-    uint256_to_bytes_little(bytes, n);
+    uint256_to_bytes_little(output_ptr, n);
     return ();
 }
 
-func test__uint256_to_bytes{range_check_ptr}() {
+func test__uint256_to_bytes{range_check_ptr}(output_ptr: felt*) {
     alloc_locals;
     tempvar n: Uint256;
     %{
@@ -84,14 +70,11 @@ func test__uint256_to_bytes{range_check_ptr}() {
         ids.n.high = program_input["n"][1]
     %}
 
-    tempvar bytes: felt*;
-    %{ ids.bytes = output %}
-
-    uint256_to_bytes(bytes, n);
+    uint256_to_bytes(output_ptr, n);
     return ();
 }
 
-func test__uint256_to_bytes32{range_check_ptr}() {
+func test__uint256_to_bytes32{range_check_ptr}(output_ptr: felt*) {
     alloc_locals;
     tempvar n: Uint256;
     %{
@@ -99,14 +82,11 @@ func test__uint256_to_bytes32{range_check_ptr}() {
         ids.n.high = program_input["n"][1]
     %}
 
-    tempvar bytes: felt*;
-    %{ ids.bytes = output %}
-
-    uint256_to_bytes32(bytes, n);
+    uint256_to_bytes32(output_ptr, n);
     return ();
 }
 
-func test__bytes_to_bytes8_little_endian() {
+func test__bytes_to_bytes8_little_endian(output_ptr: felt*) {
     alloc_locals;
     tempvar bytes_len: felt;
     let (bytes) = alloc();
@@ -115,9 +95,7 @@ func test__bytes_to_bytes8_little_endian() {
         segments.write_arg(ids.bytes, program_input["bytes"])
     %}
 
-    tempvar res: felt*;
-    %{ ids.res = output %}
-    bytes_to_bytes8_little_endian(res, bytes_len, bytes);
+    bytes_to_bytes8_little_endian(output_ptr, bytes_len, bytes);
 
     return ();
 }

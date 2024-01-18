@@ -6,7 +6,7 @@ from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
 
-func test__decode{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}() {
+func test__decode{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(output_ptr: felt*) {
     alloc_locals;
     // Given
     tempvar data_len: felt;
@@ -28,18 +28,16 @@ func test__decode{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}() {
         payload: felt*,
     ) = EthTransaction.decode(data_len, data);
 
-    tempvar output: felt*;
-    %{ ids.output = output %}
-    assert [output] = msg_hash.low;
-    assert [output + 1] = msg_hash.high;
-    assert [output + 2] = nonce;
-    assert [output + 3] = gas_price;
-    assert [output + 4] = gas_limit;
-    assert [output + 5] = destination;
-    assert [output + 6] = amount;
-    assert [output + 7] = chain_id;
-    assert [output + 8] = payload_len;
-    memcpy(output + 9, payload, payload_len);
+    assert [output_ptr] = msg_hash.low;
+    assert [output_ptr + 1] = msg_hash.high;
+    assert [output_ptr + 2] = nonce;
+    assert [output_ptr + 3] = gas_price;
+    assert [output_ptr + 4] = gas_limit;
+    assert [output_ptr + 5] = destination;
+    assert [output_ptr + 6] = amount;
+    assert [output_ptr + 7] = chain_id;
+    assert [output_ptr + 8] = payload_len;
+    memcpy(output_ptr + 9, payload, payload_len);
 
     return ();
 }

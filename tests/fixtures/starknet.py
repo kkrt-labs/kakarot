@@ -21,6 +21,7 @@ from starkware.starknet.business_logic.execution.execute_entry_point import (
 )
 from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 from starkware.starknet.compiler.starknet_pass_manager import starknet_pass_manager
+from starkware.starknet.core.os import os_utils
 from starkware.starknet.definitions.general_config import StarknetGeneralConfig
 from starkware.starknet.testing.starknet import Starknet
 
@@ -130,28 +131,24 @@ def starknet_snapshot(starknet):
     starknet.state.state = initial_cache_state
 
 
-@pytest.fixture(scope="session")
-def cairo_compile(request):
-    def _factory(path) -> list:
-        module_reader = get_module_reader(cairo_path=["src"])
+def cairo_compile(path):
+    module_reader = get_module_reader(cairo_path=["src"])
 
-        pass_manager = starknet_pass_manager(
-            prime=DEFAULT_PRIME,
-            read_module=module_reader.read,
-            disable_hint_validation=True,
-        )
+    pass_manager = starknet_pass_manager(
+        prime=DEFAULT_PRIME,
+        read_module=module_reader.read,
+        disable_hint_validation=True,
+    )
 
-        return compile_cairo(
-            Path(path).read_text(),
-            pass_manager=pass_manager,
-            debug_info=request.config.getoption("profile_cairo"),
-        )
-
-    return _factory
+    return compile_cairo(
+        Path(path).read_text(),
+        pass_manager=pass_manager,
+        debug_info=True,
+    )
 
 
 @pytest.fixture(scope="module")
-def cairo_run(request, cairo_compile) -> list:
+def cairo_run(request) -> list:
     """
     Run the cairo program corresponding to the python test file at a given entrypoint with given program inputs as kwargs.
     Returns the output of the cairo program put in the output memory segment.
@@ -174,21 +171,17 @@ def cairo_run(request, cairo_compile) -> list:
             proof_mode=False,
             allow_missing_builtins=False,
         )
-
         runner.initialize_segments()
-        stack = []
-        for builtin_name in runner.program.builtins:
-            builtin_runner = runner.builtin_runners.get(f"{builtin_name}_builtin")
-            if builtin_runner is None:
-                assert runner.allow_missing_builtins, "Missing builtin."
-                stack += [0]
-            else:
-                stack += builtin_runner.initial_stack()
 
+        # Prepare implicit arguments.
+        implicit_args = os_utils.prepare_os_implicit_args_for_version0_class(
+            runner=runner
+        )
+
+        output = runner.segments.add()
         return_fp = runner.segments.add()
         end = runner.segments.add()
-        output = runner.segments.add()
-        stack = stack + [return_fp, end, output]
+        stack = implicit_args + [output, return_fp, end]
 
         runner.initialize_state(
             entrypoint=program.identifiers.get_by_full_name(
