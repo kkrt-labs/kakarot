@@ -2462,6 +2462,7 @@ testname:
     - static_CheckOpcodes3_d3g0v1_Shanghai
     - static_CheckOpcodes3_d4g0v1_Shanghai
     - static_CheckOpcodes4_d0g1v1_Shanghai
+    - static_CheckOpcodes4_d0g0v1_Shanghai
     - static_CheckOpcodes5_d0g0v1_Shanghai
     - static_CheckOpcodes5_d1g0v0_Shanghai
     - static_CheckOpcodes5_d1g0v1_Shanghai
