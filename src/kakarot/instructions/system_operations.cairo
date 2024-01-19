@@ -375,7 +375,16 @@ namespace SystemOperations {
 
         // TODO: fix value
         let child_evm = CallHelper.generic_call(
-            evm, gas_stipend, value.low, to, to, FALSE, args_offset, args_size, ret_offset, ret_size
+            evm,
+            gas=gas_stipend,
+            value=value.low,
+            to=to,
+            code_address=to,
+            is_staticcall=FALSE,
+            args_offset=args_offset,
+            args_size=args_size,
+            ret_offset=ret_offset,
+            ret_size=ret_size,
         );
 
         let transfer = model.Transfer(evm.message.address, child_evm.message.address, value);
@@ -440,7 +449,16 @@ namespace SystemOperations {
 
         // Operation
         let child_evm = CallHelper.generic_call(
-            evm, gas, 0, to, to, TRUE, args_offset, args_size, ret_offset, ret_size
+            evm,
+            gas,
+            value=0,
+            to=to,
+            code_address=to,
+            is_staticcall=TRUE,
+            args_offset=args_offset,
+            args_size=args_size,
+            ret_offset=ret_offset,
+            ret_size=ret_size,
         );
 
         return child_evm;
@@ -528,15 +546,15 @@ namespace SystemOperations {
 
         let child_evm = CallHelper.generic_call(
             evm,
-            gas_stipend,
-            value.low,
-            evm.message.address.evm,
-            code_address,
-            FALSE,
-            args_offset,
-            args_size,
-            ret_offset,
-            ret_size,
+            gas=gas_stipend,
+            value=value.low,
+            to=evm.message.address.evm,
+            code_address=code_address,
+            is_staticcall=FALSE,
+            args_offset=args_offset,
+            args_size=args_size,
+            ret_offset=ret_offset,
+            ret_size=ret_size,
         );
 
         return child_evm;
@@ -616,14 +634,14 @@ namespace SystemOperations {
         let child_evm = CallHelper.generic_call(
             evm,
             gas,
-            evm.message.value,
-            to,
-            code_address,
-            FALSE,
-            args_offset,
-            args_size,
-            ret_offset,
-            ret_size,
+            value=evm.message.value,
+            to=to,
+            code_address=code_address,
+            is_staticcall=FALSE,
+            args_offset=args_offset,
+            args_size=args_size,
+            ret_offset=ret_offset,
+            ret_size=ret_size,
         );
 
         return child_evm;
