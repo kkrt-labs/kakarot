@@ -9,6 +9,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.math_cmp import is_le, is_not_zero
 from starkware.cairo.common.dict_access import DictAccess
+from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
 from kakarot.account import Account
@@ -32,7 +33,6 @@ namespace Precompiles {
     // @param evm_address The precompile evm_address to be executed
     // @param calldata_len The calldata length
     // @param calldata The calldata.
-    // @param value The value.
     // @param parent The calling context.
     // @param gas_left The gas left.
     // @return EVM The initialized execution context.
@@ -45,7 +45,6 @@ namespace Precompiles {
         evm_address: felt,
         calldata_len: felt,
         calldata: felt*,
-        value: felt,
         parent: model.Parent*,
         gas_left: felt,
     ) -> model.EVM* {
@@ -55,6 +54,7 @@ namespace Precompiles {
         // Precompiles don't have an actual Starknet address
         tempvar address = new model.Address(starknet=0, evm=evm_address);
         let (valid_jumdests) = default_dict_new(0);
+        tempvar value = new Uint256(0, 0);
         tempvar message = new model.Message(
             bytecode=cast(0, felt*),
             bytecode_len=0,
@@ -62,7 +62,7 @@ namespace Precompiles {
             valid_jumpdests=valid_jumdests,
             calldata=cast(0, felt*),
             calldata_len=0,
-            value=0,
+            value=value,
             parent=parent,
             address=address,
             read_only=FALSE,

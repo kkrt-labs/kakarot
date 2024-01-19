@@ -45,6 +45,7 @@ namespace TestHelpers {
         let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
             bytecode_len=bytecode_len, bytecode=bytecode
         );
+        tempvar zero = new Uint256(0, 0);
         local message: model.Message* = new model.Message(
             bytecode=bytecode,
             bytecode_len=bytecode_len,
@@ -52,7 +53,7 @@ namespace TestHelpers {
             valid_jumpdests=valid_jumpdests,
             calldata=calldata,
             calldata_len=1,
-            value=0,
+            value=zero,
             parent=cast(0, model.Parent*),
             address=address,
             read_only=FALSE,

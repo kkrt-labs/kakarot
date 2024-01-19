@@ -102,8 +102,7 @@ namespace EnvironmentalInformation {
         memory: model.Memory*,
         state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
-        let value = Helpers.to_uint256(evm.message.value);
-        Stack.push(value);
+        Stack.push(evm.message.value);
 
         return evm;
     }

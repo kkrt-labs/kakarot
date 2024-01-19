@@ -8,6 +8,7 @@ from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
+from starkware.cairo.common.uint256 import Uint256
 
 // Internal dependencies
 from kakarot.account import Account
@@ -721,7 +722,7 @@ namespace Interpreter {
         bytecode: felt*,
         calldata_len: felt,
         calldata: felt*,
-        value: felt,
+        value: Uint256*,
         gas_limit: felt,
     ) -> (model.EVM*, model.Stack*, model.Memory*, model.State*) {
         alloc_locals;
@@ -782,12 +783,11 @@ namespace Interpreter {
 
         with state {
             // Handle value
-            let amount = Helpers.to_uint256(value);
             let origin_starknet_address = Account.compute_starknet_address(env.origin);
             tempvar origin_address = new model.Address(
                 starknet=origin_starknet_address, evm=env.origin
             );
-            let transfer = model.Transfer(origin_address, address, [amount]);
+            let transfer = model.Transfer(origin_address, address, [value]);
             let success = State.add_transfer(transfer);
 
             // Check collision

@@ -31,7 +31,7 @@ namespace EthTransaction {
         gas_price: felt,
         gas_limit: felt,
         destination: felt,
-        amount: felt,
+        amount: Uint256,
         chain_id: felt,
         payload_len: felt,
         payload: felt*,
@@ -71,8 +71,8 @@ namespace EthTransaction {
         let destination = Helpers.bytes_to_felt(
             sub_items[nonce_idx + 3].data_len, sub_items[nonce_idx + 3].data
         );
-        let amount = Helpers.bytes_to_felt(
-            sub_items[nonce_idx + 4].data_len, sub_items[nonce_idx + 4].data
+        let amount = Helpers.bytes_i_to_uint256(
+            sub_items[nonce_idx + 4].data, sub_items[nonce_idx + 4].data_len
         );
         let payload_len = sub_items[nonce_idx + 5].data_len;
         let payload: felt* = sub_items[nonce_idx + 5].data;
@@ -109,7 +109,7 @@ namespace EthTransaction {
         gas_price: felt,
         gas_limit: felt,
         destination: felt,
-        amount: felt,
+        amount: Uint256,
         chain_id: felt,
         payload_len: felt,
         payload: felt*,
@@ -157,8 +157,8 @@ namespace EthTransaction {
         let destination = Helpers.bytes_to_felt(
             sub_items[gas_price_idx + 2].data_len, sub_items[gas_price_idx + 2].data
         );
-        let amount = Helpers.bytes_to_felt(
-            sub_items[gas_price_idx + 3].data_len, sub_items[gas_price_idx + 3].data
+        let amount = Helpers.bytes_i_to_uint256(
+            sub_items[gas_price_idx + 3].data, sub_items[gas_price_idx + 3].data_len
         );
         let payload_len = sub_items[gas_price_idx + 4].data_len;
         let payload: felt* = sub_items[gas_price_idx + 4].data;
@@ -199,7 +199,7 @@ namespace EthTransaction {
         gas_price: felt,
         gas_limit: felt,
         destination: felt,
-        amount: felt,
+        amount: Uint256,
         chain_id: felt,
         payload_len: felt,
         payload: felt*,

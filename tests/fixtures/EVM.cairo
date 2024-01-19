@@ -40,7 +40,7 @@ func execute{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
     env: model.Environment*,
-    value: felt,
+    value: Uint256*,
     bytecode_len: felt,
     bytecode: felt*,
     calldata_len: felt,
@@ -69,7 +69,7 @@ func evm_call{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
     origin: felt,
-    value: felt,
+    value: Uint256,
     bytecode_len: felt,
     bytecode: felt*,
     calldata_len: felt,
@@ -96,10 +96,12 @@ func evm_call{
     program_counter: felt,
 ) {
     alloc_locals;
+    let fp_and_pc = get_fp_and_pc();
+    local __fp__: felt* = fp_and_pc.fp_val;
 
     let env = Starknet.get_env(origin, 0);
     let (evm, stack, memory, state) = execute(
-        env, value, bytecode_len, bytecode, calldata_len, calldata
+        env, &value, bytecode_len, bytecode, calldata_len, calldata
     );
 
     let (stack_keys_len, stack_keys) = dict_keys(stack.dict_ptr_start, stack.dict_ptr);
@@ -140,17 +142,19 @@ func evm_execute{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
     origin: felt,
-    value: felt,
+    value: Uint256,
     bytecode_len: felt,
     bytecode: felt*,
     calldata_len: felt,
     calldata: felt*,
 ) -> (return_data_len: felt, return_data: felt*, success: felt) {
     alloc_locals;
+    let fp_and_pc = get_fp_and_pc();
+    local __fp__: felt* = fp_and_pc.fp_val;
 
     let env = Starknet.get_env(origin, 0);
     let (evm, stack, memory, state) = execute(
-        env, value, bytecode_len, bytecode, calldata_len, calldata
+        env, &value, bytecode_len, bytecode, calldata_len, calldata
     );
     let result = (evm.return_data_len, evm.return_data, 1 - evm.reverted);
 

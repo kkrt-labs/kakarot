@@ -8,6 +8,7 @@ from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import get_caller_address
+from starkware.cairo.common.registers import get_fp_and_pc
 
 // Local dependencies
 from backend.starknet import Starknet
@@ -130,11 +131,14 @@ func eth_call{
     to: felt,
     gas_limit: felt,
     gas_price: felt,
-    value: felt,
+    value: Uint256,
     data_len: felt,
     data: felt*,
 ) -> (return_data_len: felt, return_data: felt*, success: felt, gas_used: felt) {
-    let (evm, state) = Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
+    alloc_locals;
+    let fp_and_pc = get_fp_and_pc();
+    local __fp__: felt* = fp_and_pc.fp_val;
+    let (evm, state) = Kakarot.eth_call(origin, to, gas_limit, gas_price, &value, data_len, data);
     let gas_used = gas_limit - evm.gas_left;
     return (evm.return_data_len, evm.return_data, 1 - evm.reverted, gas_used);
 }
@@ -155,13 +159,15 @@ func eth_call{
 @external
 func eth_send_transaction{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(to: felt, gas_limit: felt, gas_price: felt, value: felt, data_len: felt, data: felt*) -> (
+}(to: felt, gas_limit: felt, gas_price: felt, value: Uint256, data_len: felt, data: felt*) -> (
     return_data_len: felt, return_data: felt*, success: felt, gas_used: felt
 ) {
     alloc_locals;
+    let fp_and_pc = get_fp_and_pc();
+    local __fp__: felt* = fp_and_pc.fp_val;
     let (local starknet_caller_address) = get_caller_address();
     let (local origin) = Kakarot.safe_get_evm_address(starknet_caller_address);
-    let (evm, state) = Kakarot.eth_call(origin, to, gas_limit, gas_price, value, data_len, data);
+    let (evm, state) = Kakarot.eth_call(origin, to, gas_limit, gas_price, &value, data_len, data);
     let gas_used = gas_limit - evm.gas_left;
     let result = (evm.return_data_len, evm.return_data, 1 - evm.reverted, gas_used);
 

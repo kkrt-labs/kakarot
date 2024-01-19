@@ -54,7 +54,7 @@ namespace SystemOperations {
         let popped_len = 3 + is_create2;
         let (popped) = Stack.pop_n(3 + is_create2);
 
-        let value = popped[0];
+        let value = popped;
         let offset = popped[1];
         let size = popped[2];
 
@@ -98,7 +98,7 @@ namespace SystemOperations {
         // Check sender balance and nonce
         let sender = State.get_account(evm.message.address.evm);
         let is_nonce_overflow = is_le(Constants.MAX_NONCE + 1, sender.nonce);
-        let (is_balance_overflow) = uint256_lt([sender.balance], value);
+        let (is_balance_overflow) = uint256_lt([sender.balance], [value]);
         let stack_depth_limit = is_le(1024, evm.message.depth);
         if (is_nonce_overflow + is_balance_overflow + stack_depth_limit != 0) {
             Stack.push_uint128(0);
@@ -146,7 +146,7 @@ namespace SystemOperations {
             valid_jumpdests=valid_jumpdests,
             calldata=calldata,
             calldata_len=0,
-            value=value.low + value.high * 2 ** 128,
+            value=value,
             parent=parent,
             address=target_account.address,
             read_only=FALSE,
@@ -161,7 +161,7 @@ namespace SystemOperations {
         let target_account = Account.set_nonce(target_account, 1);
         State.update_account(target_account);
 
-        let transfer = model.Transfer(evm.message.address, target_account.address, value);
+        let transfer = model.Transfer(evm.message.address, target_account.address, [value]);
         let success = State.add_transfer(transfer);
         if (success == 0) {
             Stack.push_uint128(0);
@@ -301,7 +301,7 @@ namespace SystemOperations {
         let (popped) = Stack.pop_n(5);
         let gas_param = popped[0];
         let to = uint256_to_uint160(popped[1]);
-        let value = popped[2];
+        let value = popped + 2 * Uint256.SIZE;
         let args_offset = popped + 3 * Uint256.SIZE;
         let args_size = popped + 4 * Uint256.SIZE;
         let (ret_offset) = Stack.peek(0);
@@ -351,7 +351,7 @@ namespace SystemOperations {
         tempvar gas_stipend = gas + is_value_non_zero * Gas.CALL_STIPEND;
 
         let sender = State.get_account(evm.message.address.evm);
-        let (sender_balance_lt_value) = uint256_lt([sender.balance], value);
+        let (sender_balance_lt_value) = uint256_lt([sender.balance], [value]);
         tempvar is_max_depth_reached = 1 - is_not_zero(
             (Constants.STACK_MAX_DEPTH + 1) - evm.message.depth
         );
@@ -373,11 +373,10 @@ namespace SystemOperations {
             return evm;
         }
 
-        // TODO: fix value
         let child_evm = CallHelper.generic_call(
             evm,
             gas=gas_stipend,
-            value=value.low,
+            value=value,
             to=to,
             code_address=to,
             is_staticcall=FALSE,
@@ -387,7 +386,7 @@ namespace SystemOperations {
             ret_size=ret_size,
         );
 
-        let transfer = model.Transfer(evm.message.address, child_evm.message.address, value);
+        let transfer = model.Transfer(evm.message.address, child_evm.message.address, [value]);
         let success = State.add_transfer(transfer);
         if (success == 0) {
             let (revert_reason_len, revert_reason) = Errors.balanceError();
@@ -447,11 +446,12 @@ namespace SystemOperations {
             return evm;
         }
 
+        tempvar zero = new Uint256(0, 0);
         // Operation
         let child_evm = CallHelper.generic_call(
             evm,
             gas,
-            value=0,
+            value=zero,
             to=to,
             code_address=to,
             is_staticcall=TRUE,
@@ -486,14 +486,11 @@ namespace SystemOperations {
         let (popped) = Stack.pop_n(5);
         let gas_param = popped[0];
         let code_address = uint256_to_uint160(popped[1]);
-        let value = popped[2];
+        let value = popped + 2 * Uint256.SIZE;
         let args_offset = popped + 3 * Uint256.SIZE;
         let args_size = popped + 4 * Uint256.SIZE;
         let (ret_offset) = Stack.peek(0);
         let (ret_size) = Stack.peek(1);
-
-        tempvar is_value_non_zero = is_not_zero(value.low) + is_not_zero(value.high);
-        tempvar is_value_non_zero = is_not_zero(is_value_non_zero);
 
         // Gas
         let memory_expansion_cost = Gas.max_memory_expansion_cost(
@@ -504,7 +501,8 @@ namespace SystemOperations {
         // TODO
         let access_gas_cost = 0;
 
-        // TODO: fix value when refactoring CALLs for proper gas accounting
+        tempvar is_value_non_zero = is_not_zero(value.low) + is_not_zero(value.high);
+        tempvar is_value_non_zero = is_not_zero(is_value_non_zero);
         let transfer_gas_cost = is_value_non_zero * Gas.CALL_VALUE;
 
         let extra_gas = access_gas_cost + transfer_gas_cost;
@@ -522,7 +520,7 @@ namespace SystemOperations {
         tempvar gas_stipend = gas + is_value_non_zero * Gas.CALL_STIPEND;
 
         let sender = State.get_account(evm.message.address.evm);
-        let (sender_balance_lt_value) = uint256_lt([sender.balance], value);
+        let (sender_balance_lt_value) = uint256_lt([sender.balance], [value]);
         tempvar is_max_depth_reached = 1 - is_not_zero(
             (Constants.STACK_MAX_DEPTH + 1) - evm.message.depth
         );
@@ -547,7 +545,7 @@ namespace SystemOperations {
         let child_evm = CallHelper.generic_call(
             evm,
             gas=gas_stipend,
-            value=value.low,
+            value=value,
             to=evm.message.address.evm,
             code_address=code_address,
             is_staticcall=FALSE,
@@ -733,7 +731,7 @@ namespace CallHelper {
     }(
         evm: model.EVM*,
         gas: felt,
-        value: felt,
+        value: Uint256*,
         to: felt,
         code_address: felt,
         is_staticcall: bool,
@@ -757,7 +755,6 @@ namespace CallHelper {
                 evm_address=code_address,
                 calldata_len=args_size.low,
                 calldata=calldata,
-                value=value,
                 parent=parent,
                 gas_left=gas,
             );
