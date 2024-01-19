@@ -4,16 +4,17 @@ from kakarot.gas import Gas
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
 
-func test__memory_cost{range_check_ptr}() {
+func test__memory_cost{range_check_ptr}(output_ptr: felt*) {
     tempvar words_len: felt;
     %{ ids.words_len = program_input["words_len"]; %}
     let cost = Gas.memory_cost(words_len);
 
-    %{ segments.write_arg(output, [ids.cost]); %}
+    assert [output_ptr] = cost;
+
     return ();
 }
 
-func test__memory_expansion_cost{range_check_ptr}() {
+func test__memory_expansion_cost{range_check_ptr}(output_ptr: felt*) {
     tempvar words_len: felt;
     tempvar max_offset: felt;
     %{
@@ -22,11 +23,11 @@ func test__memory_expansion_cost{range_check_ptr}() {
     %}
     let cost = Gas.calculate_gas_extend_memory(words_len, max_offset);
 
-    %{ segments.write_arg(output, [ids.cost]); %}
+    assert [output_ptr] = cost;
     return ();
 }
 
-func test__max_memory_expansion_cost{range_check_ptr}() {
+func test__max_memory_expansion_cost{range_check_ptr}(output_ptr: felt*) {
     alloc_locals;
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
@@ -48,11 +49,11 @@ func test__max_memory_expansion_cost{range_check_ptr}() {
     %}
     let cost = Gas.max_memory_expansion_cost(words_len, &offset_1, &size_1, &offset_2, &size_2);
 
-    %{ segments.write_arg(output, [ids.cost]); %}
+    assert [output_ptr] = cost;
     return ();
 }
 
-func test__compute_message_call_gas{range_check_ptr}() {
+func test__compute_message_call_gas{range_check_ptr}(output_ptr: felt*) {
     tempvar gas_param: Uint256;
     tempvar gas_left: felt;
     %{
@@ -62,6 +63,6 @@ func test__compute_message_call_gas{range_check_ptr}() {
     %}
     let gas = Gas.compute_message_call_gas(gas_param, gas_left);
 
-    %{ segments.write_arg(output, [ids.gas]); %}
+    assert [output_ptr] = gas;
     return ();
 }
