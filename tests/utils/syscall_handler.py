@@ -1,3 +1,5 @@
+import time
+
 from starkware.starknet.public.abi import get_selector_from_name
 
 
@@ -85,3 +87,45 @@ class MockSyscallHandler:
         retdata_segment = segments.add()
         segments.write_arg(retdata_segment, retdata)
         segments.write_arg(syscall_ptr + 5, [len(retdata), retdata_segment])
+
+    def get_block_number(self, segments, syscall_ptr):
+        """
+        Return a constant value for the get block number system call.
+
+        Syscall structure is:
+
+            struct GetBlockNumberRequest {
+                selector: felt,
+            }
+
+            struct GetBlockNumberResponse {
+                block_number: felt,
+            }
+
+            struct GetBlockNumber {
+                request: GetBlockNumberRequest,
+                response: GetBlockNumberResponse,
+            }
+        """
+        segments.write_arg(syscall_ptr + 1, [0xABDE1])
+
+    def get_block_timestamp(self, segments, syscall_ptr):
+        """
+        Return a constant value for the get block timestamp system call.
+
+        Syscall structure is:
+
+            struct GetBlockTimestampRequest {
+                selector: felt,
+            }
+
+            struct GetBlockTimestampResponse {
+                timestamp: felt,
+            }
+
+            struct GetBlockTimestamp {
+                request: GetBlockTimestampRequest,
+                response: GetBlockTimestampResponse,
+            }
+        """
+        segments.write_arg(syscall_ptr + 1, [int(time.time())])
