@@ -21,7 +21,6 @@ from starkware.starknet.business_logic.execution.execute_entry_point import (
 )
 from starkware.starknet.business_logic.state.state_api_objects import BlockInfo
 from starkware.starknet.compiler.starknet_pass_manager import starknet_pass_manager
-from starkware.starknet.core.os import os_utils
 from starkware.starknet.definitions.general_config import StarknetGeneralConfig
 from starkware.starknet.testing.starknet import Starknet
 
@@ -34,6 +33,7 @@ from tests.utils.reporting import (
     timeit,
     traceit,
 )
+from tests.utils.syscall_handler import SyscallHandler
 
 cairo_runner.VirtualMachine = VmWithCoverage
 
@@ -164,6 +164,26 @@ def cairo_run(request) -> list:
     program = cairo_compile(cairo_file)
 
     def _factory(entrypoint, **kwargs) -> list:
+        implicit_args = program.identifiers.get_by_full_name(
+            ScopedName(path=["__main__", entrypoint, "ImplicitArgs"])
+        ).members.keys()
+        # Fix builtins runner based on the implicit args since the compiler doesn't find them
+        program.builtins = [
+            builtin
+            # This list is extracted from the builtin runners
+            # Builtins have to be declared in this order
+            for builtin in [
+                "output",
+                "pedersen",
+                "range_check",
+                "ecdsa",
+                "bitwise",
+                "ec_op",
+                "keccak",
+                "poseidon",
+            ]
+            if builtin in {arg.replace("_ptr", "") for arg in implicit_args}
+        ]
         runner = CairoRunner(
             program=program,
             layout="starknet_with_keccak",
@@ -173,15 +193,30 @@ def cairo_run(request) -> list:
         )
         runner.initialize_segments()
 
-        # Prepare implicit arguments.
-        implicit_args = os_utils.prepare_os_implicit_args_for_version0_class(
-            runner=runner
-        )
+        stack = []
+        for arg in implicit_args:
+            builtin_runner = runner.builtin_runners.get(arg.replace("_ptr", "_builtin"))
+            if builtin_runner is not None:
+                stack.extend(builtin_runner.initial_stack())
+                continue
+            if arg == "syscall_ptr":
+                syscall = runner.segments.add()
+                stack.append(syscall)
+                continue
 
-        output = runner.segments.add()
+        add_output = (
+            "output_ptr"
+            in program.identifiers.get_by_full_name(
+                ScopedName(path=["__main__", entrypoint, "Args"])
+            ).members.keys()
+        )
+        if add_output:
+            output = runner.segments.add()
+            stack.append(output)
+
         return_fp = runner.segments.add()
         end = runner.segments.add()
-        stack = implicit_args + [output, return_fp, end]
+        stack += [return_fp, end]
 
         runner.initialize_state(
             entrypoint=program.identifiers.get_by_full_name(
@@ -193,8 +228,10 @@ def cairo_run(request) -> list:
         runner.final_pc = end
 
         runner.initialize_vm(
-            hint_locals={"program_input": kwargs},
-            static_locals={"output": output},
+            hint_locals={
+                "program_input": kwargs,
+                "syscall_handler": SyscallHandler(),
+            }
         )
         runner.run_until_pc(stack[-1])
         runner.original_steps = runner.vm.current_step
@@ -218,7 +255,10 @@ def cairo_run(request) -> list:
             ) as fp:
                 fp.write(data)
 
-        output_size = runner.segments.get_segment_size(output.segment_index)
-        return [runner.segments.memory.get(output + i) for i in range(output_size)]
+        if add_output:
+            output_size = runner.segments.get_segment_size(output.segment_index)
+            return [runner.segments.memory.get(output + i) for i in range(output_size)]
+        else:
+            return []
 
     return _factory
