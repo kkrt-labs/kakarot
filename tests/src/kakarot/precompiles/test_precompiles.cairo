@@ -4,6 +4,7 @@
 
 // Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.uint256 import Uint256
 
 // Local dependencies
 from kakarot.model import model
@@ -25,6 +26,7 @@ func test__precompiles_run{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(address: felt) -> (return_data_len: felt, return_data: felt*, reverted: felt) {
     // When
+    tempvar zero = new Uint256(0, 0);
     tempvar message = new model.Message(
         bytecode=cast(0, felt*),
         bytecode_len=0,
@@ -32,7 +34,7 @@ func test__precompiles_run{
         valid_jumpdests=cast(0, DictAccess*),
         calldata=cast(0, felt*),
         calldata_len=0,
-        value=0,
+        value=zero,
         parent=cast(0, model.Parent*),
         address=cast(0, model.Address*),
         read_only=0,
@@ -49,7 +51,6 @@ func test__precompiles_run{
         evm_address=address,
         calldata_len=0,
         calldata=cast(0, felt*),
-        value=0,
         parent=parent,
         gas_left=Constants.TRANSACTION_GAS_LIMIT,
     );

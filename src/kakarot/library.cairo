@@ -7,6 +7,7 @@ from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
 from starkware.cairo.common.math_cmp import is_not_zero
+from starkware.cairo.common.uint256 import Uint256
 
 from backend.starknet import Starknet
 from kakarot.account import Account
@@ -71,7 +72,7 @@ namespace Kakarot {
         to: felt,
         gas_limit: felt,
         gas_price: felt,
-        value: felt,
+        value: Uint256*,
         data_len: felt,
         data: felt*,
     ) -> (model.EVM*, model.State*) {

@@ -103,7 +103,7 @@ namespace model {
         valid_jumpdests: DictAccess*,
         calldata: felt*,
         calldata_len: felt,
-        value: felt,
+        value: Uint256*,
         parent: Parent*,
         address: Address*,
         read_only: felt,

@@ -22,7 +22,7 @@ func test__decode{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(output_ptr: fel
         gas_price: felt,
         gas_limit: felt,
         destination: felt,
-        amount: felt,
+        amount: Uint256,
         chain_id: felt,
         payload_len: felt,
         payload: felt*,
@@ -34,10 +34,11 @@ func test__decode{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(output_ptr: fel
     assert [output_ptr + 3] = gas_price;
     assert [output_ptr + 4] = gas_limit;
     assert [output_ptr + 5] = destination;
-    assert [output_ptr + 6] = amount;
-    assert [output_ptr + 7] = chain_id;
-    assert [output_ptr + 8] = payload_len;
-    memcpy(output_ptr + 9, payload, payload_len);
+    assert [output_ptr + 6] = amount.low;
+    assert [output_ptr + 7] = amount.low;
+    assert [output_ptr + 8] = chain_id;
+    assert [output_ptr + 9] = payload_len;
+    memcpy(output_ptr + 10, payload, payload_len);
 
     return ();
 }
