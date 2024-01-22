@@ -3,6 +3,7 @@ import logging
 import os
 import shutil
 from pathlib import Path
+from time import perf_counter
 from typing import AsyncGenerator
 
 import pandas as pd
@@ -161,7 +162,10 @@ def cairo_run(request) -> list:
     if not cairo_file.exists():
         raise ValueError(f"Missing cairo file: {cairo_file}")
 
+    start = perf_counter()
     program = cairo_compile(cairo_file)
+    stop = perf_counter()
+    logger.info(f"{cairo_file} compiled in {stop - start:.2f}s")
 
     def _factory(entrypoint, **kwargs) -> list:
         implicit_args = program.identifiers.get_by_full_name(
