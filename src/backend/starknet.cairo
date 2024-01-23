@@ -103,9 +103,7 @@ namespace Starknet {
         // TODO: fix how blockhashes are retrieved
         memset(block_hashes, 0, 256 * 2);
 
-        let coinbase = Uint256(
-            0xacdffe0cf08e20ed8ba10ea97a487004, 0x388ca486b82e20cc81965d056b4cdca
-        );
+        //TODO: fix hardcoded coinbase evm address
         return new model.Environment(
             origin=origin,
             gas_price=gas_price,
@@ -115,7 +113,7 @@ namespace Starknet {
             block_gas_limit=Constants.BLOCK_GAS_LIMIT,
             block_timestamp=block_timestamp,
             block_hashes=cast(block_hashes, Uint256*),
-            coinbase=coinbase,
+            coinbase=0xCA40796aFB5472abaeD28907D5ED6FC74c04954a,
         );
     }
 }

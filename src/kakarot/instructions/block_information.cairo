@@ -4,6 +4,7 @@
 
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.math_cmp import is_in_range
 from starkware.cairo.common.uint256 import Uint256
 
@@ -58,7 +59,10 @@ namespace BlockInformation {
         coinbase:
         let evm = cast([fp - 3], model.EVM*);
         let stack = cast([fp - 6], model.Stack*);
-        Stack.push_uint256(evm.message.env.coinbase);
+        let range_check_ptr = [fp - 8];
+        let (coinbase_high, coinbase_low) = split_felt(evm.message.env.coinbase);
+        tempvar coinbase_u256 = Uint256(low=coinbase_low, high=coinbase_high);
+        Stack.push_uint256(coinbase_u256);
         jmp end;
 
         timestamp:

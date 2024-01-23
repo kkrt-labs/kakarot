@@ -149,7 +149,7 @@ namespace model {
         block_gas_limit: felt,
         block_timestamp: felt,
         block_hashes: Uint256*,
-        coinbase: Uint256,
+        coinbase: felt,
     }
 
     // @dev The parent EVM struct is used to store the parent EVM context of the current execution context.
