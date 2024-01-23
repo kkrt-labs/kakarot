@@ -795,7 +795,15 @@ namespace Interpreter {
         let state = State.init();
         let evm = EVM.init(message, gas_limit - intrinsic_gas);
 
+        // TODO: add support for access list transactions
+
         with state {
+            // Cache the coinbase, precompiles, caller, and target, making them warm
+            State.get_account(env.coinbase);
+            State.cache_precompiles();
+            State.get_account(address.evm);
+            State.get_account(env.origin);
+
             // Handle value
             let origin_starknet_address = Account.compute_starknet_address(env.origin);
             tempvar origin_address = new model.Address(
