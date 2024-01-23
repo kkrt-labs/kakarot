@@ -41,11 +41,17 @@ class TestState:
             cairo_run("test__is_account_alive__not_in_state")
 
     class TestIsAccountWarm:
-        async def test_account_in_state(self, cairo_run):
+        def test_account_in_state(self, cairo_run):
             cairo_run("test__is_account_warm__account_in_state")
 
-        async def test_not_in_state(self, cairo_run):
+        def test_not_in_state(self, cairo_run):
             cairo_run("test__is_account_warm__account_not_in_state")
+
+    class TestCachePrecompiles:
+        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
+        def test_should_cache_precompiles(self, cairo_run):
+            output = cairo_run("test__cache_precompiles")
+            assert output == list(range(1, 10))
 
     class TestCopyAccounts:
         def test_should_handle_null_pointers(self, cairo_run):
