@@ -116,6 +116,8 @@ def get_block(data):
 
 def set_block(w3, data):
     block = get_block(data)
+    if len(block.transactions) > 0 and block.transactions[0].chain_id is not None:
+        w3.provider.make_request("anvil_setChainId", [block.transactions[0].chain_id])
     w3.provider.make_request("anvil_setCoinbase", [block.header.coinbase.hex()])
     w3.provider.make_request(
         "anvil_setNextBlockBaseFeePerGas", [block.header.base_fee_per_gas]
@@ -127,7 +129,7 @@ def send_transaction(w3, data):
     block = get_block(data)
     if len(block.transactions) == 0:
         raise ValueError("Could not find transaction in test data")
-    tx_hash = w3.eth.send_raw_transaction(rlp.encode(block.transactions[0])).hex()
+    tx_hash = w3.eth.send_raw_transaction(block.transactions[0].encode()).hex()
     return tx_hash
 
 
