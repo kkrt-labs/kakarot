@@ -129,28 +129,26 @@ namespace State {
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
     }() {
         alloc_locals;
-        let fp_and_pc = get_fp_and_pc();
-        local __fp__: felt* = fp_and_pc.fp_val;
-        local evm_address: felt = 9;
-        tempvar i = 1;
-
-        loop:
-        let i = [ap - 1];
-        let evm_address = [fp + i];
-        let starknet_address = Account.compute_starknet_address(evm_address);
-        tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
-        let balance = Account.fetch_balance(address);
-        tempvar balance_ptr = new Uint256(balance.low, balance.high);
-        let (bytecode) = alloc();
-        let account = Account.init(
-            address=address, code_len=0, code=bytecode, nonce=0, balance=balance_ptr
+        tempvar accounts_ptr = state.accounts;
+        with accounts_ptr {
+            Internals._cache_precompile(1);
+            Internals._cache_precompile(2);
+            Internals._cache_precompile(3);
+            Internals._cache_precompile(4);
+            Internals._cache_precompile(5);
+            Internals._cache_precompile(6);
+            Internals._cache_precompile(7);
+            Internals._cache_precompile(8);
+            Internals._cache_precompile(9);
+        }
+        tempvar state = new model.State(
+            accounts_start=state.accounts_start,
+            accounts=accounts_ptr,
+            events_len=state.events_len,
+            events=state.events,
+            transfers_len=state.transfers_len,
+            transfers=state.transfers,
         );
-        tempvar accounts = state.accounts;
-        dict_write{dict_ptr=accounts}(key=address.evm, new_value=cast(account, felt));
-        local evm_address = evm_address - 1;
-        tempvar i = i + 1;
-
-        jmp loop if evm_address != 0;
 
         return ();
     }
@@ -354,5 +352,21 @@ namespace Internals {
         dict_write{dict_ptr=accounts}(key=accounts_start.key, new_value=cast(account, felt));
 
         return _copy_accounts(accounts_start + DictAccess.SIZE, accounts_end);
+    }
+
+    func _cache_precompile{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, accounts_ptr: DictAccess*
+    }(evm_address: felt) {
+        alloc_locals;
+        let starknet_address = Account.compute_starknet_address(evm_address);
+        tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
+        let balance = Account.fetch_balance(address);
+        tempvar balance_ptr = new Uint256(balance.low, balance.high);
+        let (bytecode) = alloc();
+        let account = Account.init(
+            address=address, code_len=0, code=bytecode, nonce=0, balance=balance_ptr
+        );
+        dict_write{dict_ptr=accounts_ptr}(key=address.evm, new_value=cast(account, felt));
+        return ();
     }
 }

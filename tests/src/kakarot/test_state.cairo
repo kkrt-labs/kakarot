@@ -9,11 +9,13 @@ from starkware.cairo.common.math import assert_not_equal
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.starknet.common.syscalls import get_contract_address
+from starkware.cairo.common.memcpy import memcpy
 
 from kakarot.model import model
 from kakarot.state import State, Internals
 from kakarot.account import Account
 from kakarot.storages import native_token_address
+from utils.dict import dict_keys
 
 func test__init__should_return_state_with_default_dicts() {
     // When
@@ -193,5 +195,23 @@ func test__is_account_warm__account_not_in_state() {
         let is_warm = State.is_account_warm(evm_address);
     }
     assert is_warm = 0;
+    return ();
+}
+
+func test__cache_precompiles{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    output_ptr: felt*
+) {
+    alloc_locals;
+    let state = State.init();
+    tempvar syscall_ptr = syscall_ptr;
+    with state {
+        State.cache_precompiles();
+    }
+
+    let (keys_len, keys) = dict_keys(state.accounts_start, state.accounts);
+    memcpy(dst=output_ptr, src=keys, len=keys_len);
+
+    tempvar syscall_ptr = syscall_ptr;
+
     return ();
 }
