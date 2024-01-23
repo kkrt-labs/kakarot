@@ -1,15 +1,18 @@
 import random
 
 import pytest
-import pytest_asyncio
 from Crypto.Hash import keccak
-from starkware.starknet.testing.starknet import Starknet
+
+from tests.utils.syscall_handler import SyscallHandler
+
+EXISTING_ACCOUNT = 0xABDE1
+NON_EXISTING_ACCOUNT = 0xDEAD
 
 
-@pytest.fixture(scope="module")
-def bytecode():
+@pytest.fixture(scope="module", params=[0, 32], ids=["no bytecode", "32 bytes"])
+def bytecode(request):
     random.seed(0)
-    return [random.randint(0, 255) for _ in range(32)]
+    return [random.randint(0, 255) for _ in range(request.param)]
 
 
 @pytest.fixture(scope="module")
@@ -19,51 +22,37 @@ def bytecode_hash(bytecode):
     return int.from_bytes(keccak_hash.digest(), byteorder="big")
 
 
-@pytest_asyncio.fixture(scope="module")
-async def environmental_information(
-    starknet: Starknet, eth, contract_account_class, account_proxy_class, bytecode
-):
-    class_hash = await starknet.deprecated_declare(
-        source="./tests/src/kakarot/instructions/test_environmental_information.cairo",
-        cairo_path=["src"],
-        disable_hint_validation=True,
-    )
-
-    return await starknet.deploy(
-        class_hash=class_hash.class_hash,
-        constructor_calldata=[
-            eth.contract_address,
-            contract_account_class.class_hash,
-            account_proxy_class.class_hash,
-            len(bytecode),
-            *bytecode,
-        ],
-    )
+@pytest.fixture(
+    scope="module",
+    params=[EXISTING_ACCOUNT, NON_EXISTING_ACCOUNT],
+    ids=["existing", "non existing"],
+)
+def address(request):
+    return request.param
 
 
-@pytest.mark.asyncio
 class TestEnvironmentalInformation:
     class TestAddress:
-        async def test_should_push_address(self, environmental_information):
-            await environmental_information.test__exec_address__should_push_address_to_stack().call()
+        def test_should_push_address(self, cairo_run):
+            cairo_run("test__exec_address__should_push_address_to_stack")
 
     class TestExtCodeSize:
-        async def test_extcodesize_should_push_code_size(
-            self, environmental_information
-        ):
-            await environmental_information.test__exec_extcodesize__should_handle_address_with_code().call()
+        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
+        @SyscallHandler.patch(
+            "IAccount.account_type", lambda addr, data: [int.from_bytes(b"CA", "big")]
+        )
+        @SyscallHandler.patch("IContractAccount.get_nonce", lambda addr, data: [1])
+        @SyscallHandler.patch("evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234)
+        def test_extcodesize_should_push_code_size(self, cairo_run, bytecode, address):
+            with SyscallHandler.patch(
+                "IAccount.bytecode", lambda addr, data: [len(bytecode), *bytecode]
+            ):
+                output = cairo_run("test__exec_extcodesize", address=address)
 
-        async def test_extcodesize_should_handle_address_with_no_code(
-            self, environmental_information
-        ):
-            await environmental_information.test__exec_extcodesize__should_handle_address_with_no_code().call()
+            assert output[0] == (len(bytecode) if address == EXISTING_ACCOUNT else 0)
+            assert output[1] == 0
 
     class TestExtCodeCopy:
-        async def test_extcodecopy_should_handle_address_with_no_code(
-            self, environmental_information
-        ):
-            await environmental_information.test__exec_extcodecopy__should_handle_address_with_no_code().call()
-
         @pytest.mark.parametrize(
             "case",
             [
@@ -89,46 +78,57 @@ class TestEnvironmentalInformation:
                 "offset_is_bytecodelen",
             ],
         )
-        async def test_extcodecopy_should_handle_address_with_code(
-            self,
-            environmental_information,
-            case,
-        ):
-            random.seed(0)
-            bytecode = [random.randint(0, 255) for _ in range(32)]
-
+        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
+        @SyscallHandler.patch(
+            "IAccount.account_type", lambda addr, data: [int.from_bytes(b"CA", "big")]
+        )
+        @SyscallHandler.patch("IContractAccount.get_nonce", lambda addr, data: [1])
+        @SyscallHandler.patch("evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234)
+        def test_extcodecopy_should_copy_code(self, cairo_run, case, bytecode, address):
             size = case["size"]
             offset = case["offset"]
             dest_offset = case["dest_offset"]
 
-            res = await environmental_information.test__exec_extcodecopy__should_handle_address_with_code(
-                size, offset, dest_offset
-            ).call()
+            with SyscallHandler.patch(
+                "IAccount.bytecode", lambda addr, data: [len(bytecode), *bytecode]
+            ):
+                output = cairo_run(
+                    "test__exec_extcodecopy",
+                    size=size,
+                    offset=offset,
+                    dest_offset=dest_offset,
+                    address=address,
+                )
 
-            memory_result = res.result.memory
+            expected = (
+                (bytecode + [0] * (offset + size))[offset : (offset + size)]
+                if address == EXISTING_ACCOUNT
+                else [0] * size
+            )
 
-            expected = (bytecode + [0] * (offset + size))[offset : (offset + size)]
-
-            assert memory_result == expected
+            assert output == expected
 
     class TestGasPrice:
-        async def test_gasprice(self, environmental_information):
-            await environmental_information.test__exec_gasprice().call()
+        def test_gasprice(self, cairo_run):
+            cairo_run("test__exec_gasprice")
 
     class TestExtCodeHash:
-        async def test_extcodehash__should_handle_invalid_address(
-            self,
-            environmental_information,
+        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
+        @SyscallHandler.patch(
+            "IAccount.account_type", lambda addr, data: [int.from_bytes(b"CA", "big")]
+        )
+        @SyscallHandler.patch("IContractAccount.get_nonce", lambda addr, data: [1])
+        @SyscallHandler.patch("evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234)
+        def test_extcodehash__should_push_hash(
+            self, cairo_run, bytecode, bytecode_hash, address
         ):
-            await environmental_information.test__exec_extcodehash__should_handle_invalid_address().call()
+            with SyscallHandler.patch(
+                "IAccount.bytecode", lambda addr, data: [len(bytecode), *bytecode]
+            ):
+                output = cairo_run("test__exec_extcodehash", address=address)
 
-        async def test_extcodehash__should_handle_address_with_code(
-            self, environmental_information, bytecode_hash
-        ):
-            expected_hash_low = bytecode_hash % (2**128)
-            expected_hash_high = bytecode_hash >> 128
-
-            await environmental_information.test__exec_extcodehash__should_handle_address_with_code(
-                expected_hash_low=expected_hash_low,
-                expected_hash_high=expected_hash_high,
-            ).call()
+            assert output == (
+                [bytecode_hash % (2**128), bytecode_hash >> 128]
+                if address == EXISTING_ACCOUNT
+                else [0, 0]
+            )

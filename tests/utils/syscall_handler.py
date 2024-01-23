@@ -1,8 +1,12 @@
 import time
+from contextlib import contextmanager
 from dataclasses import dataclass
-from functools import wraps
+from typing import Optional, Union
 
-from starkware.starknet.public.abi import get_selector_from_name
+from starkware.starknet.public.abi import (
+    get_selector_from_name,
+    get_storage_var_address,
+)
 
 
 @dataclass
@@ -86,6 +90,7 @@ class SyscallHandler:
     def storage_read(self, segments, syscall_ptr):
         """
         Return a constant value for the storage read system call.
+        We use the patches dict to store the storage values; returned value is 0 if the address is not found as in Starknet.
 
         Syscall structure is:
 
@@ -103,7 +108,9 @@ class SyscallHandler:
                 response: StorageReadResponse,
             }
         """
-        segments.write_arg(syscall_ptr + 2, [0x1234])
+        address = segments.memory[syscall_ptr + 1]
+        value = self.patches.get(address, 0)
+        segments.write_arg(syscall_ptr + 2, [value])
 
     def call_contract(self, segments, syscall_ptr):
         """
@@ -147,25 +154,30 @@ class SyscallHandler:
         segments.write_arg(syscall_ptr + 5, [len(retdata), retdata_segment])
 
     @classmethod
-    def patch(cls, target: str, value: callable):
+    @contextmanager
+    def patch(cls, target: str, *args, value: Optional[Union[callable, int]] = None):
         """
         Patch the target with the value.
 
-        :param target: The target to patch, e.g. "IERC20.balanceOf". Note the only the last part of
-            the target is used, but the whole name is kept for readability.
+        :param target: The target to patch, e.g. "IERC20.balanceOf" or "evm_to_starknet_address".
+            Note than when patching a contract call, only the only the last part of the target is used.
+        :param args: Additional arguments to pass to the target (when patching a storage var, see get_storage_var_address signature).
         :param value: The value to patch with, a callable that will be called with the contract
             address and the calldata, and should return the retdata as a List[int].
         """
+        selector_if_call = get_selector_from_name(target.split(".")[-1])
+        if value is None:
+            args = list(args)
+            value = args.pop()
+        cls.patches[selector_if_call] = value
+        try:
+            selector_if_storage = get_storage_var_address(target, *args)
+            cls.patches[selector_if_storage] = value
+        except AssertionError:
+            pass
 
-        def decorator(test_fun):
-            @wraps(test_fun)
-            def decorated(self, *args, **kwargs):
-                selector = get_selector_from_name(target.split(".")[-1])
-                cls.patches[selector] = value
-                result = test_fun(self, *args, **kwargs)
-                del cls.patches[selector]
-                return result
+        yield
 
-            return decorated
-
-        return decorator
+        del cls.patches[selector_if_call]
+        if "selector_if_storage" in globals():
+            del cls.patches[selector_if_storage]
