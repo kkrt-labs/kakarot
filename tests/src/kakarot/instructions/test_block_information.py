@@ -10,7 +10,7 @@ class TestBlockInformation:
         [
             (
                 Opcodes.COINBASE,
-                [0xACDFFE0CF08E20ED8BA10EA97A487004, 0x388CA486B82E20CC81965D056B4CDCA],
+                [0xFB5472ABAED28907D5ED6FC74C04954A, 0xCA40796A],
             ),
             (Opcodes.TIMESTAMP, [SyscallHandler.block_timestamp, 0]),
             (Opcodes.NUMBER, [SyscallHandler.block_number, 0]),

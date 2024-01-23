@@ -63,7 +63,14 @@ namespace BlockInformation {
         let (coinbase_high, coinbase_low) = split_felt(evm.message.env.coinbase);
         tempvar coinbase_u256 = Uint256(low=coinbase_low, high=coinbase_high);
         Stack.push_uint256(coinbase_u256);
-        jmp end;
+
+        // Rebind unused args with fp
+        let syscall_ptr = cast([fp - 10], felt*);
+        let pedersen_ptr = cast([fp - 9], HashBuiltin*);
+        let bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
+        let memory = cast([fp - 5], model.Memory*);
+        let state = cast([fp - 4], model.State*);
+        return evm;
 
         timestamp:
         let evm = cast([fp - 3], model.EVM*);
