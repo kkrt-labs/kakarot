@@ -93,6 +93,9 @@ namespace SystemOperations {
         }
 
         // TODO: Clear return data
+        // @dev: performed before eventual early-returns of this function
+        // to mark the account as warm
+        let target_account = State.get_account(target_address);
 
         // Check sender balance and nonce
         let sender = State.get_account(evm.message.address.evm);
@@ -107,7 +110,6 @@ namespace SystemOperations {
         let evm = EVM.charge_gas(evm, gas_limit);
 
         // Check target account availabitliy
-        let target_account = State.get_account(target_address);
         let is_collision = Account.has_code_or_nonce(target_account);
         if (is_collision != 0) {
             let sender = Account.set_nonce(sender, sender.nonce + 1);
@@ -313,9 +315,11 @@ namespace SystemOperations {
             memory.words_len, args_offset, args_size, ret_offset, ret_size
         );
 
-        // Access gas cost
-        // TODO
-        let access_gas_cost = 0;
+        // Access gas cost. The account is marked as warm in the `generic_call` function,
+        // which performs a `get_account`.
+        let is_account_warm = State.is_account_warm(to);
+        tempvar access_gas_cost = is_account_warm * Gas.WARM_ACCESS + (1 - is_account_warm) *
+            Gas.COLD_ACCOUNT_ACCESS;
 
         // Create gas cost
         let is_account_alive = State.is_account_alive(to);
@@ -431,8 +435,11 @@ namespace SystemOperations {
             memory.words_len, args_offset, args_size, ret_offset, ret_size
         );
 
-        // TODO: Access gas cost
-        let access_gas_cost = 0;
+        // Access gas cost. The account is marked as warm in the `is_account_alive` instruction,
+        // which performs a `get_account`.
+        let is_account_warm = State.is_account_warm(to);
+        tempvar access_gas_cost = is_account_warm * Gas.WARM_ACCESS + (1 - is_account_warm) *
+            Gas.COLD_ACCOUNT_ACCESS;
 
         // Charge the fixed cost of the extra_gas + memory expansion
         let evm = EVM.charge_gas(evm, access_gas_cost + memory_expansion_cost);
@@ -497,9 +504,11 @@ namespace SystemOperations {
             memory.words_len, args_offset, args_size, ret_offset, ret_size
         );
 
-        // Access gas cost
-        // TODO
-        let access_gas_cost = 0;
+        // Access gas cost. The account is marked as warm in the `is_account_alive` instruction,
+        // which performs a `get_account`.
+        let is_account_warm = State.is_account_warm(code_address);
+        tempvar access_gas_cost = is_account_warm * Gas.WARM_ACCESS + (1 - is_account_warm) *
+            Gas.COLD_ACCOUNT_ACCESS;
 
         tempvar is_value_non_zero = is_not_zero(value.low) + is_not_zero(value.high);
         tempvar is_value_non_zero = is_not_zero(is_value_non_zero);
@@ -592,8 +601,11 @@ namespace SystemOperations {
             memory.words_len, args_offset, args_size, ret_offset, ret_size
         );
 
-        // TODO: Access gas cost
-        let access_gas_cost = 0;
+        // Access gas cost. The account is marked as warm in the `generic_call` function,
+        // which performs a `get_account`.
+        let is_account_warm = State.is_account_warm(code_address);
+        tempvar access_gas_cost = is_account_warm * Gas.WARM_ACCESS + (1 - is_account_warm) *
+            Gas.COLD_ACCOUNT_ACCESS;
 
         // Charge the fixed cost of the extra_gas + memory expansion
         let extra_gas = access_gas_cost;
@@ -662,16 +674,23 @@ namespace SystemOperations {
         state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
+        // Transfer funds
+        let (popped) = Stack.pop();
+        let recipient_evm_address = uint256_to_uint160([popped]);
+
+        // Gas
+        // Access gas cost. The account is marked as warm in the `is_account_alive` instruction,
+        // which performs a `get_account`.
+        let is_account_warm = State.is_account_warm(recipient_evm_address);
+        tempvar access_gas_cost = is_account_warm * Gas.WARM_ACCESS + (1 - is_account_warm) *
+            Gas.COLD_ACCOUNT_ACCESS;
+        // TODO: selfdestruct-specific gas cost
 
         if (evm.message.read_only != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
             let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
             return evm;
         }
-
-        // Transfer funds
-        let (popped) = Stack.pop();
-        let recipient_evm_address = uint256_to_uint160([popped]);
 
         // Remove this when https://eips.ethereum.org/EIPS/eip-6780 is validated
         if (recipient_evm_address == evm.message.address.evm) {
@@ -681,13 +700,11 @@ namespace SystemOperations {
         }
         let recipient_evm_address = (1 - is_recipient_self) * recipient_evm_address;
 
-        let recipient_starknet_address = Account.compute_starknet_address(recipient_evm_address);
-        tempvar recipient = new model.Address(
-            starknet=recipient_starknet_address, evm=recipient_evm_address
-        );
+        // Mark recipient account as warm
+        let recipient_account = State.get_account(recipient_evm_address);
         let account = State.get_account(evm.message.address.evm);
         let transfer = model.Transfer(
-            sender=account.address, recipient=recipient, amount=[account.balance]
+            sender=account.address, recipient=recipient_account.address, amount=[account.balance]
         );
         let success = State.add_transfer(transfer);
 
