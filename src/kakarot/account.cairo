@@ -193,33 +193,6 @@ namespace Account {
         return (self, value_ptr);
     }
 
-    // @dev Checks if a storage slot is warm (has been accessed before) in an account.
-    // @param self The account to check.
-    // @param key The key of the storage slot to check.
-    // @return A boolean indicating whether the storage slot is warm.
-    func is_storage_warm{pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Account*, key: Uint256*
-    ) -> felt {
-        alloc_locals;
-        let storage = self.storage;
-        let (local storage_addr) = Internals._storage_addr(key);
-        let (pointer) = dict_read{dict_ptr=storage}(key=storage_addr);
-        tempvar self = new model.Account(
-            address=self.address,
-            code_len=self.code_len,
-            code=self.code,
-            storage_start=self.storage_start,
-            storage=storage,
-            nonce=self.nonce,
-            balance=self.balance,
-            selfdestruct=self.selfdestruct,
-        );
-        if (pointer != 0) {
-            return TRUE;
-        }
-        return FALSE;
-    }
-
     // @notice Update a storage key with the given value
     // @param self The pointer to the Account.
     // @param key The pointer to the Uint256 storage key
@@ -289,6 +262,22 @@ namespace Account {
         let (native_token_address_) = native_token_address.read();
         let (balance) = IERC20.balanceOf(native_token_address_, address.starknet);
         return balance;
+    }
+
+    // @notice Fetches the storage of an account without loading the Account
+    // @dev The value is fetched from the Starknet state, and not from the local state
+    // in which it might have been modified.
+    // @param address (starknet, evm) of the account to fetch the storage from
+    // @param key The pointer to the Uint256 storage key
+    // @return The Uint256 value of the original storage.
+    func fetch_original_storage{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        address: model.Address*, key: Uint256*
+    ) -> Uint256 {
+        let (storage_addr) = Internals._storage_addr(key);
+        let (value) = IContractAccount.storage(
+            contract_address=address.starknet, storage_addr=storage_addr
+        );
+        return value;
     }
 
     // @notice Set the balance of the Account

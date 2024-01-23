@@ -61,13 +61,3 @@ class TestAccount:
         ):
             output = cairo_run("test__has_code_or_nonce", nonce=nonce, code=code)
             assert output[0] == expected_result
-
-    class TestIsStorageWarm:
-        async def test_should_return_true_when_already_read(self, cairo_run):
-            cairo_run("test__is_storage_warm__should_return_true_when_already_read")
-
-        async def test_should_return_true_when_already_written(self, cairo_run):
-            cairo_run("test__is_storage_warm__should_return_true_when_already_written")
-
-        async def test_should_return_false_when_not_accessed(self, cairo_run):
-            cairo_run("test__is_storage_warm__should_return_false_when_not_accessed")

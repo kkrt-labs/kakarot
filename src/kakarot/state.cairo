@@ -12,11 +12,12 @@ from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256, uint256_add, uint256_sub, uint256_le, uint256_eq
 from starkware.cairo.common.bool import FALSE, TRUE
 
-from kakarot.account import Account
+from kakarot.account import Account, Internals as AccountInternals
 from kakarot.model import model
 from kakarot.gas import Gas
 from utils.dict import default_dict_copy
 from utils.utils import Helpers
+from tests.utils.debug import Debug
 
 namespace State {
     // @dev Create a new empty State

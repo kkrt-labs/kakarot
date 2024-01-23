@@ -9,6 +9,7 @@ from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_unsigned
 from starkware.cairo.common.math_cmp import is_le, is_le_felt
 
 from kakarot.errors import Errors
+from kakarot.account import Account
 from kakarot.evm import EVM
 from kakarot.gas import Gas
 from kakarot.memory import Memory
@@ -219,6 +220,9 @@ namespace MemoryOperations {
         state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
+        let (popped) = Stack.pop_n(2);
+        let key = popped;  // Uint256*
+        let value = popped + Uint256.SIZE;  // Uint256*
 
         let is_enough_gasleft = is_le_felt(Gas.CALL_STIPEND + 1, evm.gas_left);
         if (is_enough_gasleft == FALSE) {
@@ -236,16 +240,46 @@ namespace MemoryOperations {
             );
         }
 
+        // Has to be done BEFORE fetching the current value from the state,
+        // otherwise it would warm up the storage slot.
+        let is_storage_warm = State.is_storage_warm(evm.message.address.evm, key);
+        let account = State.get_account(evm.message.address.evm);
+
+        let original_value = Account.fetch_original_storage(account.address, key);
+        let current_value = State.read_storage(evm.message.address.evm, key);
+        local gas_cost: felt;
+
+        if (is_storage_warm == FALSE) {
+            assert gas_cost = Gas.COLD_SLOAD;
+        } else {
+            assert gas_cost = gas_cost;
+        }
+
+        let (is_current_original) = uint256_eq(original_value, [current_value]);
+        let (is_current_new) = uint256_eq([value], [current_value]);
+        let (is_original_zero) = uint256_eq(Uint256(0, 0), original_value);
+
+        if (is_current_original * (1 - is_current_new) != FALSE) {
+            tempvar gas_cost = gas_cost + (is_original_zero * Gas.STORAGE_SET) + (
+                (1 - is_original_zero) * (Gas.STORAGE_UPDATE - Gas.COLD_SLOAD)
+            );
+        } else {
+            tempvar gas_cost = gas_cost + Gas.WARM_ACCESS;
+        }
+
+        let evm = EVM.charge_gas(evm, gas_cost);
+        if (evm.reverted != FALSE) {
+            return evm;
+        }
+
+        // TODO(gas): Gas refund mechanism
+
         // Operation
         if (evm.message.read_only != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
             let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
             return evm;
         }
-
-        let (popped) = Stack.pop_n(2);
-        let key = popped;  // Uint256*
-        let value = popped + Uint256.SIZE;  // Uint256*
 
         State.write_storage(evm.message.address.evm, key, value);
         return evm;
