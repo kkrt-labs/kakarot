@@ -364,7 +364,7 @@ namespace Internals {
         tempvar balance_ptr = new Uint256(balance.low, balance.high);
         let (bytecode) = alloc();
         let account = Account.init(
-            address=address, code_len=0, code=bytecode, nonce=0, balance=balance_ptr
+            address=address, code_len=0, code=bytecode, nonce=1, balance=balance_ptr
         );
         dict_write{dict_ptr=accounts_ptr}(key=address.evm, new_value=cast(account, felt));
         return ();
