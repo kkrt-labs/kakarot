@@ -7,6 +7,12 @@ from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.cairo.common.memset import memset
+from starkware.cairo.common.uint256 import (
+    Uint256,
+    uint256_add,
+    uint256_unsigned_div_rem,
+    uint256_mul,
+)
 
 from kakarot.account import Account
 from kakarot.evm import EVM
@@ -49,11 +55,15 @@ namespace EnvironmentalInformation {
         alloc_locals;
 
         let (address_uint256) = Stack.pop();
-
         let evm_address = uint256_to_uint160([address_uint256]);
-        let starknet_address = Account.compute_starknet_address(evm_address);
-        tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
-        let account = State.get_account(address.evm);
+
+        // Gas
+        // Calling `get_account` subsequently will make the account warm for the next interaction
+        let is_warm = State.is_account_warm(evm_address);
+        tempvar gas = is_warm * Gas.WARM_ACCESS + (1 - is_warm) * Gas.COLD_ACCOUNT_ACCESS;
+        let evm = EVM.charge_gas(evm, gas);
+
+        let account = State.get_account(evm_address);
         Stack.push(account.balance);
 
         return evm;
@@ -245,6 +255,13 @@ namespace EnvironmentalInformation {
 
         let (address_uint256) = Stack.pop();
         let evm_address = uint256_to_uint160([address_uint256]);
+
+        // Gas
+        // Calling `get_account` subsequently will make the account warm for the next interaction
+        let is_warm = State.is_account_warm(evm_address);
+        tempvar gas = is_warm * Gas.WARM_ACCESS + (1 - is_warm) * Gas.COLD_ACCOUNT_ACCESS;
+        let evm = EVM.charge_gas(evm, gas);
+
         let account = State.get_account(evm_address);
 
         // bytecode_len cannot be greater than 24k in the EVM
@@ -265,14 +282,26 @@ namespace EnvironmentalInformation {
         alloc_locals;
 
         let (popped) = Stack.pop_n(4);
+        let evm_address = uint256_to_uint160(popped[0]);
         let dest_offset = popped[1];
         let offset = popped[2];
         let size = popped[3];
 
+        // Gas
+        // Calling `get_account` subsequently will make the account warm for the next interaction
+        let is_warm = State.is_account_warm(evm_address);
+        tempvar access_gas_cost = is_warm * Gas.WARM_ACCESS + (1 - is_warm) *
+            Gas.COLD_ACCOUNT_ACCESS;
+
+        let (upper_bytes_bound, _) = uint256_add(size, 31);
+        let (words, _) = uint256_unsigned_div_rem(upper_bytes_bound, Uint256(32, 0));
+        let copy_gas_cost = uint256_mul(words, Uint256(Gas.COPY, 0));
+
         let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
             memory.words_len, dest_offset, size
         );
-        let evm = EVM.charge_gas(evm, memory_expansion_cost);
+
+        let evm = EVM.charge_gas(evm, access_gas_cost + copy_gas_cost + memory_expansion_cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
@@ -284,7 +313,6 @@ namespace EnvironmentalInformation {
         }
 
         let (sliced_data: felt*) = alloc();
-        let evm_address = uint256_to_uint160(popped[0]);
         let account = State.get_account(evm_address);
         slice(sliced_data, account.code_len, account.code, offset.low, size.low);
 
@@ -319,6 +347,13 @@ namespace EnvironmentalInformation {
 
         let (address_uint256) = Stack.pop();
         let evm_address = uint256_to_uint160([address_uint256]);
+
+        // Gas
+        // Calling `get_account` subsequently will make the account warm for the next interaction
+        let is_warm = State.is_account_warm(evm_address);
+        tempvar access_gas_cost = is_warm * Gas.WARM_ACCESS + (1 - is_warm) *
+            Gas.COLD_ACCOUNT_ACCESS;
+        let evm = EVM.charge_gas(evm, access_gas_cost);
 
         let account = State.get_account(evm_address);
         let has_code_or_nonce = Account.has_code_or_nonce(account);

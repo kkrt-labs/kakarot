@@ -103,7 +103,7 @@ namespace Starknet {
         // TODO: fix how blockhashes are retrieved
         memset(block_hashes, 0, 256 * 2);
 
-        //TODO: fix hardcoded coinbase evm address
+        // TODO: fix hardcoded coinbase evm address
         return new model.Environment(
             origin=origin,
             gas_price=gas_price,
