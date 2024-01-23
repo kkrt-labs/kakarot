@@ -125,6 +125,36 @@ namespace State {
         }
     }
 
+    func cache_precompiles{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
+    }() {
+        alloc_locals;
+        let fp_and_pc = get_fp_and_pc();
+        local __fp__: felt* = fp_and_pc.fp_val;
+        local evm_address: felt = 9;
+        tempvar i = 1;
+
+        loop:
+        let i = [ap - 1];
+        let evm_address = [fp + i];
+        let starknet_address = Account.compute_starknet_address(evm_address);
+        tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
+        let balance = Account.fetch_balance(address);
+        tempvar balance_ptr = new Uint256(balance.low, balance.high);
+        let (bytecode) = alloc();
+        let account = Account.init(
+            address=address, code_len=0, code=bytecode, nonce=0, balance=balance_ptr
+        );
+        tempvar accounts = state.accounts;
+        dict_write{dict_ptr=accounts}(key=address.evm, new_value=cast(account, felt));
+        local evm_address = evm_address - 1;
+        tempvar i = i + 1;
+
+        jmp loop if evm_address != 0;
+
+        return ();
+    }
+
     // @dev Checks if an address is warm (has been accessed before or in access list).
     // @param address The address to check.
     // @return A boolean indicating whether the address is warm.
