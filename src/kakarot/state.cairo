@@ -125,6 +125,29 @@ namespace State {
         }
     }
 
+    // @dev Checks if an address is warm (has been accessed before or in access list).
+    // @param address The address to check.
+    // @return A boolean indicating whether the address is warm.
+    func is_account_warm{state: model.State*}(address: felt) -> felt {
+        alloc_locals;
+        let accounts = state.accounts;
+        let (pointer) = dict_read{dict_ptr=accounts}(key=address);
+        tempvar state = new model.State(
+            accounts_start=state.accounts_start,
+            accounts=accounts,
+            events_len=state.events_len,
+            events=state.events,
+            transfers_len=state.transfers_len,
+            transfers=state.transfers,
+        );
+
+        // If not found in state, the account is not warm
+        if (pointer != 0) {
+            return TRUE;
+        }
+        return FALSE;
+    }
+
     // @notice Updates the given account in the state.
     // @param account The new account
     func update_account{state: model.State*}(account: model.Account*) {

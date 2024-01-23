@@ -167,3 +167,31 @@ func test___copy_accounts__should_handle_null_pointers{range_check_ptr}() {
 
     return ();
 }
+
+func test__is_account_warm__account_in_state() {
+    let evm_address = 'alive';
+    let starknet_address = 'starknet_alive';
+    tempvar address = new model.Address(starknet_address, evm_address);
+    tempvar balance = new Uint256(1, 0);
+    let (code) = alloc();
+    let account = Account.init(address, 0, code, 1, balance);
+    tempvar state = State.init();
+
+    with state {
+        State.update_account(account);
+        let is_warm = State.is_account_warm(evm_address);
+    }
+
+    assert is_warm = 1;
+    return ();
+}
+
+func test__is_account_warm__account_not_in_state() {
+    let state = State.init();
+    let evm_address = 'alive';
+    with state {
+        let is_warm = State.is_account_warm(evm_address);
+    }
+    assert is_warm = 0;
+    return ();
+}
