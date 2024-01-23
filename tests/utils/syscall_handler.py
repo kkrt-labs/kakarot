@@ -114,7 +114,8 @@ class SyscallHandler:
 
     def call_contract(self, segments, syscall_ptr):
         """
-        Return a constant List[int] as a random value for the call contract system call.
+        Call the registered mock function for the given selector.
+        Raise ValueError if the selector is not found in the patches dict.
 
         Syscall structure is:
 
@@ -160,7 +161,7 @@ class SyscallHandler:
         Patch the target with the value.
 
         :param target: The target to patch, e.g. "IERC20.balanceOf" or "evm_to_starknet_address".
-            Note than when patching a contract call, only the only the last part of the target is used.
+            Note that when patching a contract call, only the last part of the target is used.
         :param args: Additional arguments to pass to the target (when patching a storage var, see get_storage_var_address signature).
         :param value: The value to patch with, a callable that will be called with the contract
             address and the calldata, and should return the retdata as a List[int].
