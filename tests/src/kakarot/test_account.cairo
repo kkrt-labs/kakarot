@@ -1,28 +1,38 @@
-// SPDX-License-Identifier: MIT
-
 %lang starknet
 
-// Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.dict import dict_read
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
-from starkware.cairo.common.math import assert_not_equal
 from starkware.cairo.common.dict_access import DictAccess
-from starkware.cairo.common.registers import get_fp_and_pc
 
-// Local dependencies
 from kakarot.model import model
 from kakarot.account import Account
 
-@external
 func test__init__should_return_account_with_default_dict_as_storage{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(evm_address: felt, code_len: felt, code: felt*, nonce: felt, balance_low: felt) {
-    // When
+}() {
+    alloc_locals;
+
+    // Given
+    local evm_address: felt;
+    local code_len: felt;
+    let (code) = alloc();
+    local nonce: felt;
+    local balance_low: felt;
+    %{
+        ids.evm_address = program_input["evm_address"]
+        ids.code_len = len(program_input["code"])
+        segments.write_arg(ids.code, program_input["code"])
+        ids.nonce = program_input["nonce"]
+        ids.balance_low = program_input["balance_low"]
+    %}
+
     let starknet_address = Account.compute_starknet_address(evm_address);
     tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
     tempvar balance = new Uint256(balance_low, 0);
+
+    // When
     let account = Account.init(address, code_len, code, nonce, balance);
 
     // Then
@@ -38,12 +48,24 @@ func test__init__should_return_account_with_default_dict_as_storage{
     return ();
 }
 
-@external
 func test__copy__should_return_new_account_with_same_attributes{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(evm_address: felt, code_len: felt, code: felt*, nonce: felt, balance_low: felt) {
+}() {
     alloc_locals;
     // Given
+    local evm_address: felt;
+    local code_len: felt;
+    let (code) = alloc();
+    local nonce: felt;
+    local balance_low: felt;
+    %{
+        ids.evm_address = program_input["evm_address"]
+        ids.code_len = len(program_input["code"])
+        segments.write_arg(ids.code, program_input["code"])
+        ids.nonce = program_input["nonce"]
+        ids.balance_low = program_input["balance_low"]
+    %}
+
     let starknet_address = Account.compute_starknet_address(evm_address);
     tempvar address = new model.Address(starknet=starknet_address, evm=evm_address);
     tempvar balance = new Uint256(balance_low, 0);
@@ -81,14 +103,22 @@ func test__copy__should_return_new_account_with_same_attributes{
     return ();
 }
 
-@external
 func test__write_storage__should_store_value_at_key{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}(key: Uint256, value: Uint256) {
+}() {
     // Given
     alloc_locals;
-    let fp_and_pc = get_fp_and_pc();
-    local __fp__: felt* = fp_and_pc.fp_val;
+    let (key_ptr) = alloc();
+    let (value_ptr) = alloc();
+
+    %{
+        segments.write_arg(ids.key_ptr, program_input["key"])
+        segments.write_arg(ids.value_ptr, program_input["value"])
+    %}
+
+    let key = cast(key_ptr, Uint256*);
+    let value = cast(value_ptr, Uint256*);
+
     let starknet_address = Account.compute_starknet_address(0);
     tempvar address = new model.Address(starknet_address, 0);
     let (local code: felt*) = alloc();
@@ -96,22 +126,31 @@ func test__write_storage__should_store_value_at_key{
     let account = Account.init(address, 0, code, 0, balance);
 
     // When
-    let account = Account.write_storage(account, &key, &value);
+    let account = Account.write_storage(account, key, value);
 
     // Then
     let storage_len = account.storage - account.storage_start;
     assert storage_len = DictAccess.SIZE;
-    let (account, value_read) = Account.read_storage(account, &key);
-    assert_uint256_eq([value_read], value);
+    let (account, value_read) = Account.read_storage(account, key);
+    assert_uint256_eq([value_read], [value]);
 
     return ();
 }
 
-@external
 func test__has_code_or_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    nonce: felt, code_len: felt, code: felt*
-) -> (has_code_or_nonce: felt) {
+    output_ptr: felt*
+) {
+    alloc_locals;
     // Given
+    local code_len: felt;
+    let (code) = alloc();
+    local nonce: felt;
+    %{
+        ids.code_len = len(program_input["code"])
+        segments.write_arg(ids.code, program_input["code"])
+        ids.nonce = program_input["nonce"]
+    %}
+
     let starknet_address = Account.compute_starknet_address(0);
     tempvar address = new model.Address(starknet_address, 0);
     tempvar balance = new Uint256(0, 0);
@@ -121,5 +160,6 @@ func test__has_code_or_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
     let result = Account.has_code_or_nonce(account);
 
     // Then
-    return (result,);
+    assert [output_ptr] = result;
+    return ();
 }

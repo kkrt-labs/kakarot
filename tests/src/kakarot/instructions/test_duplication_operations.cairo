@@ -1,13 +1,9 @@
-// SPDX-License-Identifier: MIT
-
 %lang starknet
 
-// Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 
-// Local dependencies
 from utils.utils import Helpers
 from kakarot.model import model
 from kakarot.stack import Stack
@@ -16,11 +12,21 @@ from kakarot.memory import Memory
 from kakarot.instructions.duplication_operations import DuplicationOperations
 from tests.utils.helpers import TestHelpers
 
-@external
 func test__exec_dup{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(i: felt, initial_stack_len: felt, initial_stack: Uint256*) -> (result: Uint256) {
+}(output_ptr: felt*) {
     alloc_locals;
+    local i: felt;
+    local initial_stack_len: felt;
+    let (initial_stack_ptr) = alloc();
+    let initial_stack = cast(initial_stack_ptr, Uint256*);
+    %{
+        from itertools import chain
+        ids.i = program_input["i"]
+        ids.initial_stack_len = len(program_input["initial_stack"])
+        segments.write_arg(ids.initial_stack_ptr, list(chain.from_iterable(program_input["initial_stack"])))
+    %}
+
     let stack = TestHelpers.init_stack_with_values(initial_stack_len, initial_stack);
     let memory = Memory.init();
     let state = State.init();
@@ -33,5 +39,7 @@ func test__exec_dup{
         let (top) = Stack.peek(0);
     }
 
-    return ([top],);
+    assert [output_ptr] = top.low;
+    assert [output_ptr + 1] = top.high;
+    return ();
 }

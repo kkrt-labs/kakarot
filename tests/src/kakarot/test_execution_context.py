@@ -1,19 +1,6 @@
 import pytest
-import pytest_asyncio
-from starkware.starknet.testing.starknet import Starknet
 
 
-@pytest_asyncio.fixture(scope="module")
-async def execution_context(starknet: Starknet):
-    class_hash = await starknet.deprecated_declare(
-        source="./tests/src/kakarot/test_execution_context.cairo",
-        cairo_path=["src"],
-        disable_hint_validation=True,
-    )
-    return await starknet.deploy(class_hash=class_hash.class_hash)
-
-
-@pytest.mark.asyncio
 class TestExecutionContext:
     @pytest.mark.parametrize(
         "bytecode, jumpdest, new_pc, expected_return_data",
@@ -30,11 +17,9 @@ class TestExecutionContext:
             ),  # post-push2 opcode
         ],
     )
-    async def test_jump(
-        self, bytecode, execution_context, jumpdest, new_pc, expected_return_data
-    ):
-        (pc, return_data) = (
-            await execution_context.test__jump(bytecode, jumpdest).call()
-        ).result
+    def test_jump(self, cairo_run, bytecode, jumpdest, new_pc, expected_return_data):
+        pc, _, *return_data = cairo_run(
+            "test__jump", bytecode=bytecode, jumpdest=jumpdest
+        )
         assert pc == new_pc
         assert return_data == expected_return_data

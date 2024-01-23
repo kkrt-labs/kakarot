@@ -1,10 +1,7 @@
-// SPDX-License-Identifier: MIT
-
 %lang starknet
 
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.uint256 import Uint256
 
 from kakarot.model import model
 from kakarot.stack import Stack
@@ -13,13 +10,15 @@ from kakarot.memory import Memory
 from kakarot.instructions.block_information import BlockInformation
 from tests.utils.helpers import TestHelpers
 
-@external
 func test__exec_block_information{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(opcode: felt, initial_stack_len: felt, initial_stack: Uint256*) -> (result: Uint256) {
+}(output_ptr: felt*) {
     // Given
     alloc_locals;
-    let stack = TestHelpers.init_stack_with_values(initial_stack_len, initial_stack);
+    tempvar opcode: felt;
+    %{ ids.opcode = program_input["opcode"] %}
+
+    let stack = Stack.init();
     let memory = Memory.init();
     let state = State.init();
     let (bytecode) = alloc();
@@ -33,5 +32,7 @@ func test__exec_block_information{
     }
 
     // Then
-    return (result[0],);
+    assert [output_ptr] = result.low;
+    assert [output_ptr + 1] = result.high;
+    return ();
 }
