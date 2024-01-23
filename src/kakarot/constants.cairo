@@ -1494,13 +1494,13 @@ dw 3;
 dw -2;
 // CALL
 dw 0xf1;
-dw 100;
+dw 0;
 dw 7;
 dw 7;
 dw -6;
 // CALLCODE
 dw 0xf2;
-dw 100;
+dw 0;
 dw 7;
 dw 7;
 dw -6;
@@ -1512,7 +1512,7 @@ dw 2;
 dw -2;
 // DELEGATECALL
 dw 0xf4;
-dw 100;
+dw 0;
 dw 6;
 dw 6;
 dw -5;
@@ -1548,7 +1548,7 @@ dw 0;
 dw 0;
 // STATICCALL
 dw 0xfa;
-dw 100;
+dw 0;
 dw 6;
 dw 6;
 dw -5;
