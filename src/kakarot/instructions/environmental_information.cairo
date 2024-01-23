@@ -7,12 +7,7 @@ from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.cairo.common.memset import memset
-from starkware.cairo.common.uint256 import (
-    Uint256,
-    uint256_add,
-    uint256_unsigned_div_rem,
-    uint256_mul,
-)
+from starkware.cairo.common.math import unsigned_div_rem
 
 from kakarot.account import Account
 from kakarot.evm import EVM
@@ -293,9 +288,10 @@ namespace EnvironmentalInformation {
         tempvar access_gas_cost = is_warm * Gas.WARM_ACCESS + (1 - is_warm) *
             Gas.COLD_ACCOUNT_ACCESS;
 
-        let (upper_bytes_bound, _) = uint256_add(size, 31);
-        let (words, _) = uint256_unsigned_div_rem(upper_bytes_bound, Uint256(32, 0));
-        let copy_gas_cost = uint256_mul(words, Uint256(Gas.COPY, 0));
+        // Any size upper than 2**128 will cause an OOG error, considering the maximum gas for a transaction.
+        let upper_bytes_bound = size.low + 31;
+        let (words, _) = unsigned_div_rem(upper_bytes_bound, 32);
+        let copy_gas_cost = words * Gas.COPY;
 
         let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
             memory.words_len, dest_offset, size
