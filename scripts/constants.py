@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from enum import IntEnum
+from enum import Enum, IntEnum
 from math import ceil, log
 from pathlib import Path
 
@@ -127,6 +127,14 @@ BUILD_DIR = Path("build")
 BUILD_DIR_FIXTURES = BUILD_DIR / "fixtures"
 BUILD_DIR.mkdir(exist_ok=True, parents=True)
 BUILD_DIR_FIXTURES.mkdir(exist_ok=True, parents=True)
+SSJ_BUILD_DIR = Path("../kakarot-ssj/target/dev")
+
+
+class ArtifactType(Enum):
+    cairo0 = 0
+    cairo1 = 1
+
+
 DEPLOYMENTS_DIR = Path("deployments") / NETWORK["name"]
 DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
 
