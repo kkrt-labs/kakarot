@@ -1,19 +1,6 @@
 import pytest
-import pytest_asyncio
-from starkware.starknet.testing.starknet import Starknet
 
 
-@pytest_asyncio.fixture(scope="module")
-async def precompiles(starknet: Starknet):
-    class_hash = await starknet.deprecated_declare(
-        source="./tests/src/kakarot/precompiles/test_precompiles.cairo",
-        cairo_path=["src"],
-        disable_hint_validation=True,
-    )
-    return await starknet.deploy(class_hash=class_hash.class_hash)
-
-
-@pytest.mark.asyncio
 class TestPrecompiles:
     class TestRun:
         @pytest.mark.parametrize(
@@ -27,19 +14,13 @@ class TestPrecompiles:
                 (0x8, "Kakarot: NotImplementedPrecompile 8"),
             ],
         )
-        async def test__precompiles_run(self, precompiles, address, error_message):
-            return_data, reverted = (
-                await precompiles.test__precompiles_run(address=address).call()
-            ).result
+        def test__precompiles_run(self, cairo_run, address, error_message):
+            *return_data, reverted = cairo_run("test__precompiles_run", address=address)
             assert bytes(return_data).decode() == error_message
             assert reverted
 
     class TestIsPrecompile:
         @pytest.mark.parametrize("address", range(1, 11))
-        async def test__is_precompile_should_return_true_up_to_9(
-            self, precompiles, address
-        ):
-            is_precompile = (
-                await precompiles.test__is_precompile(address).call()
-            ).result[0]
-            assert is_precompile == (address <= 0x9)
+        def test__is_precompile_should_return_true_up_to_9(self, cairo_run, address):
+            output = cairo_run("test__is_precompile", address=address)
+            assert output[0] == (address <= 0x9)

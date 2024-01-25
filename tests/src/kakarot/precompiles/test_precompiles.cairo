@@ -1,59 +1,38 @@
-// SPDX-License-Identifier: MIT
-
 %lang starknet
 
-// Starkware dependencies
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.memcpy import memcpy
 
-// Local dependencies
-from kakarot.model import model
-from kakarot.constants import Constants
-from kakarot.evm import EVM
-from kakarot.stack import Stack
-from kakarot.memory import Memory
-from kakarot.state import State
 from kakarot.precompiles.precompiles import Precompiles
-from starkware.cairo.common.dict_access import DictAccess
 
-@external
-func test__is_precompile{range_check_ptr}(address: felt) -> (is_precompile: felt) {
-    return (is_precompile=Precompiles.is_precompile(address));
+func test__is_precompile{range_check_ptr}(output_ptr: felt*) {
+    alloc_locals;
+    // Given
+    local address;
+    %{ ids.address = program_input["address"] %}
+
+    // When
+    let is_precompile = Precompiles.is_precompile(address);
+    assert [output_ptr] = is_precompile;
+    return ();
 }
 
-@external
 func test__precompiles_run{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(address: felt) -> (return_data_len: felt, return_data: felt*, reverted: felt) {
+}(output_ptr: felt*) {
+    alloc_locals;
+    // Given
+    local address;
+    %{ ids.address = program_input["address"] %}
+
     // When
-    tempvar zero = new Uint256(0, 0);
-    tempvar message = new model.Message(
-        bytecode=cast(0, felt*),
-        bytecode_len=0,
-        valid_jumpdests_start=cast(0, DictAccess*),
-        valid_jumpdests=cast(0, DictAccess*),
-        calldata=cast(0, felt*),
-        calldata_len=0,
-        value=zero,
-        parent=cast(0, model.Parent*),
-        address=cast(0, model.Address*),
-        read_only=0,
-        is_create=0,
-        depth=0,
-        env=cast(0, model.Environment*),
-    );
-    let evm = EVM.init(message, Constants.TRANSACTION_GAS_LIMIT);
-    let stack = Stack.init();
-    let memory = Memory.init();
-    let state = State.init();
-    tempvar parent = new model.Parent(evm, stack, memory, state);
-    let result = Precompiles.run(
+    let result = Precompiles.exec_precompile(
         evm_address=address,
-        calldata_len=0,
-        calldata=cast(0, felt*),
-        parent=parent,
-        gas_left=Constants.TRANSACTION_GAS_LIMIT,
+        input_len=0,
+        input=cast(0, felt*),
     );
 
-    return (result.return_data_len, result.return_data, result.reverted);
+    memcpy(output_ptr, result.output, result.output_len);
+    assert [output_ptr + result.output_len] = result.reverted;
+    return ();
 }

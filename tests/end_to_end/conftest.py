@@ -140,14 +140,14 @@ def fund_starknet_address(deployer, eth):
     return partial(fund_address, funding_account=deployer, token_contract=eth)
 
 
-@pytest_asyncio.fixture(scope="session")
-async def kakarot(deployer) -> Contract:
+@pytest.fixture(scope="session")
+def kakarot(deployer) -> Contract:
     """
     Return a cached deployer for the whole session.
     """
     from scripts.utils.starknet import get_contract
 
-    return await get_contract("kakarot", provider=deployer)
+    return get_contract("kakarot", provider=deployer)
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -207,12 +207,12 @@ def deploy_externally_owned_account(
 @pytest.fixture(scope="session")
 def get_contract(deployer):
     """
-    Wrap script.utils.starknet.get_contract to make the test agnostics of the utils.
+    Wrap script.utils.starknet.get_contract to make the test are agnostics of the utils.
     """
     from scripts.utils.starknet import get_contract
 
-    async def _factory(contract_name, address=None, provider=deployer):
-        return await get_contract(
+    def _factory(contract_name, address=None, provider=deployer):
+        return get_contract(
             contract_name=contract_name,
             address=address,
             provider=provider,

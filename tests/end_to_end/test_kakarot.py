@@ -4,7 +4,6 @@ import pytest
 import pytest_asyncio
 from starknet_py.contract import Contract
 from starknet_py.net.account.account import Account
-from starknet_py.net.client_models import TransactionStatus
 from starknet_py.net.full_node_client import FullNodeClient
 
 from tests.end_to_end.bytecodes import test_cases
@@ -19,14 +18,13 @@ from tests.utils.reporting import traceit
 params_execute = [pytest.param(case.pop("params"), **case) for case in test_cases]
 
 
-@pytest_asyncio.fixture(scope="session")
-async def evm():
+@pytest.fixture(scope="session")
+def evm(get_contract):
     """
     Return a cached EVM contract.
     """
-    from scripts.utils.starknet import get_contract
 
-    return await get_contract("EVM")
+    return get_contract("EVM")
 
 
 @pytest_asyncio.fixture(scope="session")
@@ -100,7 +98,7 @@ class TestKakarot:
                     max_fee=max_fee,
                 )
                 status = await wait_for_transaction(tx.hash)
-                assert status == TransactionStatus.ACCEPTED_ON_L2
+                assert status == "✅"
                 receipt = await starknet.get_transaction_receipt(tx.hash)
                 assert [
                     [
@@ -133,9 +131,7 @@ class TestKakarot:
             await fund_starknet_address(starknet_address, PRE_FUND_AMOUNT / 1e18)
 
             await deploy_externally_owned_account(evm_address)
-            eoa = await get_contract(
-                "externally_owned_account", address=starknet_address
-            )
+            eoa = get_contract("externally_owned_account", address=starknet_address)
             actual_evm_address = (
                 await eoa.functions["get_evm_address"].call()
             ).evm_address
