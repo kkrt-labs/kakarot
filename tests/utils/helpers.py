@@ -196,3 +196,17 @@ def flatten(data):
 
     _flatten(data)
     return result
+
+
+def serialize_accesslist(access_list):
+    # return a flat access list, with [address, keys, address, keys, ...]
+    result = []
+    for item in access_list:
+        result.append(int(item["address"], 16))
+        for key in item["storageKeys"]:
+            value = int(key, 16)
+            value_low = value & (2**128 - 1)
+            value_high = value >> 128
+            result.append(value_low)
+            result.append(value_high)
+    return result

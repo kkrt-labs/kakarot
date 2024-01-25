@@ -10,3 +10,20 @@ def flatten_list(list_ptr, list_len, output_ptr, memory, segments):
             bytes = [memory[data_ptr + j] for j in range(data_len)]
             segments.write_arg(output_ptr, bytes)
             output_ptr += data_len
+
+
+def flatten_access_list(access_list_ptr, access_list_len, output_ptr, memory, segments):
+    for i in range(access_list_len):
+        output = []
+        address = memory[access_list_ptr + i]
+        storage_keys_len = memory[access_list_ptr + i + 1]
+        storage_keys_ptr = memory[access_list_ptr + i + 2]
+
+        output.append(address)
+        for j in range(storage_keys_len):
+            storage_key_low = memory[storage_keys_ptr + j * 2]
+            storage_key_high = memory[storage_keys_ptr + 1 + j * 2]
+            storage_key = [storage_key_low, storage_key_high]
+            output.extend(storage_key)
+
+        segments.write_arg(output_ptr, output)

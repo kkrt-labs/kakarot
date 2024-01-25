@@ -1,10 +1,12 @@
 %builtins range_check bitwise
 
-from utils.eth_transaction import EthTransaction
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
+
+from utils.eth_transaction import EthTransaction
+from utils.rlp import RLP
 
 func test__decode{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(output_ptr: felt*) {
     alloc_locals;
@@ -67,5 +69,40 @@ func test__validate{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}() {
     // When
     EthTransaction.validate(address, nonce, r, s, v, tx_data_len, tx_data);
 
+    return ();
+}
+
+func test__parse_access_list{range_check_ptr}(output_ptr: felt*) {
+    alloc_locals;
+    // Given
+    tempvar data_len: felt;
+    let (data) = alloc();
+    %{
+        ids.data_len = len(program_input["data"])
+        segments.write_arg(ids.data, program_input["data"])
+    %}
+
+    // Decode the RLP-encoded access list to get the data in the cairo format
+    let (items: RLP.Item*) = alloc();
+    RLP.decode(items, data_len, data);
+
+    // first level RLP decoding is a list of items. In our case the only item we decoded was the access list.
+    // the access list is a list of tuples (address, list(keys)), hence first level RLP decoding
+    // is a single item, which is indeed the sought list
+    let access_list_item = cast(items.data, RLP.Item*);
+    let access_list_len = access_list_item.data_len;
+    let access_list = cast(access_list_item.data, RLP.Item*);
+
+    // When
+    let (parsed_access_list_len, parsed_access_list) = EthTransaction.parse_access_list(
+        access_list_len, access_list
+    );
+
+    // Then
+    %{
+        from tests.utils.hints import flatten_access_list
+        # The cairo functions returns a single RLP list of size 1 containing the decoded objects.
+        flatten_access_list(ids.parsed_access_list.address_, ids.parsed_access_list_len, ids.output_ptr, memory, segments)
+    %}
     return ();
 }
