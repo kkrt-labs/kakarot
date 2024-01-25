@@ -238,9 +238,10 @@ def get_deployments():
 
 
 @functools.lru_cache
-def get_artifact(contract_name):
+def get_artifact(contract_name, cairo_version=None):
     is_ssj = is_ssj_contract(contract_name)
-    if is_ssj:
+    cairo_version = cairo_version or ArtifactType(is_ssj)
+    if cairo_version == ArtifactType.cairo1:
         return (SSJ_BUILD_DIR / f"contracts_{contract_name}", ArtifactType.cairo1)
 
     return (
@@ -371,9 +372,9 @@ async def deploy_starknet_account(class_hash, private_key=None, amount=1):
     }
 
 
-async def declare(contract_name):
-    logger.info(f"ℹ️  Declaring {contract_name}")
-    artifact, cairo_version = get_artifact(contract_name)
+async def declare(contract):
+    logger.info(f"ℹ️  Declaring {contract['contract_name']}")
+    artifact, cairo_version = get_artifact(**contract)
     account = await get_starknet_account()
 
     if cairo_version == ArtifactType.cairo1:
@@ -447,7 +448,9 @@ async def declare(contract_name):
         )
 
     status = await wait_for_transaction(resp.transaction_hash)
-    logger.info(f"{status} {contract_name} class hash: {hex(resp.class_hash)}")
+    logger.info(
+        f"{status} {contract['contract_name']} class hash: {hex(resp.class_hash)}"
+    )
     return resp.class_hash
 
 

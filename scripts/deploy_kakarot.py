@@ -4,7 +4,7 @@ import os
 from asyncio import run
 
 from scripts.constants import (
-    COMPILED_CONTRACTS,
+    DECLARED_CONTRACTS,
     DEPLOY_FEE,
     DEPLOYER_ACCOUNT_PRIVATE_KEY,
     ETH_TOKEN_ADDRESS,
@@ -33,8 +33,8 @@ async def main():
     logger.info(f"ℹ️  Using account {hex(account.address)} as deployer")
 
     class_hash = {
-        contract["contract_name"]: await declare(contract["contract_name"])
-        for contract in COMPILED_CONTRACTS
+        contract["contract_name"]: await declare(contract)
+        for contract in DECLARED_CONTRACTS
     }
     dump_declarations(class_hash)
 
@@ -50,16 +50,16 @@ async def main():
         class_hash["externally_owned_account"],  # externally_owned_account_class_hash
         class_hash["proxy"],  # account_proxy_class_hash
         DEPLOY_FEE,
-    )
-
-    deployments["EVM"] = await deploy(
-        "EVM",
-        ETH_TOKEN_ADDRESS,  # native_token_address_
-        class_hash["contract_account"],  # contract_account_class_hash_
-        class_hash["proxy"],  # account_proxy_class_hash
+        class_hash["Precompiles"],
     )
 
     if NETWORK["name"] in ["madara", "katana", os.getenv("RPC_NAME", "custom-rpc")]:
+        deployments["EVM"] = await deploy(
+            "EVM",
+            ETH_TOKEN_ADDRESS,  # native_token_address_
+            class_hash["contract_account"],  # contract_account_class_hash_
+            class_hash["proxy"],  # account_proxy_class_hash
+        )
         deployments["deployer_account"] = await deploy_starknet_account(
             class_hash["OpenzeppelinAccount"], private_key=DEPLOYER_ACCOUNT_PRIVATE_KEY
         )
