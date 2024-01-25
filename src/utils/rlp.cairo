@@ -78,40 +78,27 @@ namespace RLP {
 
         let (rlp_type, offset, len) = decode_type(data_len=data_len, data=data);
 
-        if (rlp_type == 0) {
-            // Case string
-            if (len == 0) {
-                let (empty_array: felt*) = alloc();
-                tempvar rlp_string = Item(data_len=0, data=empty_array, is_list=0);
-                assert [items + items_len] = rlp_string;
-                tempvar items_len = items_len + 1 * Item.SIZE;
-                tempvar range_check_ptr = range_check_ptr;
-            } else {
-                let rlp_string = Item(data_len=len, data=data + offset, is_list=0);
-                assert [items + items_len] = rlp_string;
-                tempvar items_len = items_len + 1 * Item.SIZE;
-                tempvar range_check_ptr = range_check_ptr;
-            }
+        if (len == 0) {
+            let (empty_array: felt*) = alloc();
+            assert [items + items_len] = Item(data_len=0, data=empty_array, is_list=rlp_type);
+            tempvar range_check_ptr = range_check_ptr;
         } else {
-            // Case List
-            if (len == 0) {
-                let (empty_list: Item*) = alloc();
-                tempvar rlp_list = Item(data_len=0, data=cast(empty_list, felt*), is_list=1);
-                assert [items + items_len] = rlp_list;
-                tempvar items_len = items_len + 1 * Item.SIZE;
+            if (rlp_type == 0) {
+                // Case string
+                assert [items + items_len] = Item(data_len=len, data=data + offset, is_list=0);
                 tempvar range_check_ptr = range_check_ptr;
             } else {
+                // Case list
                 let sub_items_len = 0;
                 let (sub_items: Item*) = alloc();
                 decode{items_len=sub_items_len, items=sub_items}(data_len=len, data=data + offset);
-                tempvar rlp_list = Item(
+                assert [items + items_len] = Item(
                     data_len=sub_items_len, data=cast(sub_items, felt*), is_list=1
                 );
-                assert [items + items_len] = rlp_list;
-                tempvar items_len = items_len + 1 * Item.SIZE;
                 tempvar range_check_ptr = range_check_ptr;
             }
         }
+        let items_len = items_len + 1 * Item.SIZE;
 
         let total_item_len = len + offset;
         let is_lt_input = is_le(total_item_len, data_len + 1);
