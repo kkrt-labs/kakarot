@@ -1,5 +1,4 @@
 from starkware.cairo.common.bool import FALSE
-
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
@@ -30,30 +29,30 @@ namespace RLP {
         let prefix = [data];
 
         // Char
-        let is_le_127 = is_le(prefix, 127);
+        let is_le_127 = is_le(prefix, 0x7f);
         if (is_le_127 != FALSE) {
             return (0, 0, 1);
         }
 
-        let is_le_183 = is_le(prefix, 183);  // a max 55 bytes long string
+        let is_le_183 = is_le(prefix, 0xb7);  // a max 55 bytes long string
         if (is_le_183 != FALSE) {
-            return (0, 1, prefix - 128);
+            return (0, 1, prefix - 0x80);
         }
 
-        let is_le_191 = is_le(prefix, 191);  // string longer than 55 bytes
+        let is_le_191 = is_le(prefix, 0xbf);  // string longer than 55 bytes
         if (is_le_191 != FALSE) {
-            local len_bytes_count = prefix - 183;
+            local len_bytes_count = prefix - 0xb7;
             let string_len = Helpers.bytes_to_felt(len_bytes_count, data + 1);
             return (0, 1 + len_bytes_count, string_len);
         }
 
-        let is_le_247 = is_le(prefix, 247);  // list 0-55 bytes long
+        let is_le_247 = is_le(prefix, 0xf7);  // list 0-55 bytes long
         if (is_le_247 != FALSE) {
-            local list_len = prefix - 192;
+            local list_len = prefix - 0xc0;
             return (1, 1, list_len);
         }
 
-        local len_bytes_count = prefix - 247;
+        local len_bytes_count = prefix - 0xf7;
         let list_len = Helpers.bytes_to_felt(len_bytes_count, data + 1);
         return (1, 1 + len_bytes_count, list_len);
     }
@@ -70,13 +69,11 @@ namespace RLP {
     // @param data The RLP encoded data.
     // @return items_len The number of items decoded.
     // @return items The decoded RLP items.
-    func decode{range_check_ptr}(data_len: felt, data: felt*) -> (items_len: felt, items: Item*) {
+    func decode{range_check_ptr, items_len: felt, items: Item*}(data_len: felt, data: felt*) {
         alloc_locals;
-        tempvar items_len: felt = 0;
-        let (items: Item*) = alloc();
 
         if (data_len == 0) {
-            return (items_len=0, items=items);
+            return ();
         }
 
         let (rlp_type, offset, len) = decode_type(data_len=data_len, data=data);
@@ -87,12 +84,12 @@ namespace RLP {
                 let (empty_array: felt*) = alloc();
                 tempvar rlp_string = Item(data_len=0, data=empty_array, is_list=0);
                 assert [items + items_len] = rlp_string;
-                tempvar items_len = items_len + 1;
+                tempvar items_len = items_len + 1 * Item.SIZE;
                 tempvar range_check_ptr = range_check_ptr;
             } else {
                 let rlp_string = Item(data_len=len, data=data + offset, is_list=0);
                 assert [items + items_len] = rlp_string;
-                tempvar items_len = items_len + 1;
+                tempvar items_len = items_len + 1 * Item.SIZE;
                 tempvar range_check_ptr = range_check_ptr;
             }
         } else {
@@ -101,37 +98,39 @@ namespace RLP {
                 let (empty_list: Item*) = alloc();
                 tempvar rlp_list = Item(data_len=0, data=cast(empty_list, felt*), is_list=1);
                 assert [items + items_len] = rlp_list;
-                tempvar items_len = items_len + 1;
+                tempvar items_len = items_len + 1 * Item.SIZE;
                 tempvar range_check_ptr = range_check_ptr;
             } else {
-                let (sub_items_len, sub_items) = decode(data_len=len, data=data + offset);
+                let sub_items_len = 0;
+                let (sub_items: Item*) = alloc();
+                decode{items_len=sub_items_len, items=sub_items}(data_len=len, data=data + offset);
                 tempvar rlp_list = Item(
                     data_len=sub_items_len, data=cast(sub_items, felt*), is_list=1
                 );
                 assert [items + items_len] = rlp_list;
-                tempvar items_len = items_len + 1;
+                tempvar items_len = items_len + 1 * Item.SIZE;
                 tempvar range_check_ptr = range_check_ptr;
             }
         }
 
+        tempvar items = items;
         tempvar items_len = items_len;
 
         let total_item_len = len + offset;
         let is_lt_input = is_le(total_item_len, data_len + 1);
         if (is_lt_input != FALSE) {
-            let decoded_len = data_len - total_item_len;
-            let (subitems_len, subitems) = decode(
+            decode{items_len=items_len, items=items}(
                 data_len=data_len - total_item_len, data=data + total_item_len
             );
-
-            memcpy(dst=items + items_len * Item.SIZE, src=subitems, len=subitems_len * Item.SIZE);
-            tempvar items_len = items_len + subitems_len;
+            tempvar items = items;
+            tempvar items_len = items_len;
             tempvar range_check_ptr = range_check_ptr;
         } else {
+            tempvar items = items;
             tempvar items_len = items_len;
             tempvar range_check_ptr = range_check_ptr;
         }
 
-        return (items_len=items_len, items=items);
+        return ();
     }
 }

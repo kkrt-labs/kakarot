@@ -4,7 +4,7 @@ import pytest
 from rlp import codec, decode, encode
 
 from tests.utils.constants import TRANSACTIONS
-from tests.utils.helpers import rlp_encode_signed_data
+from tests.utils.helpers import flatten, rlp_encode_signed_data
 
 
 class TestRLP:
@@ -32,13 +32,10 @@ class TestRLP:
             expected_type = 0 if rlp_type == bytes else 1
 
             output = cairo_run("test__decode_type", data=encoded_data)
-            type = expected_type
-            offset = output[1]
-            len = output[2]
 
-            assert type == expected_type
-            assert offset == expected_offset
-            assert len == expected_len
+            assert output[0] == expected_type
+            assert output[1] == expected_offset
+            assert output[2] == expected_len
 
         @pytest.mark.parametrize("payload_len", [0, 55, 256])
         def test_should_match_decoded_rlp_type_list(self, cairo_run, payload_len):
@@ -53,19 +50,12 @@ class TestRLP:
                 expected_offset,
             ] = codec.consume_length_prefix(encoded_data, 0)
             expected_type = 1 if rlp_type == list else 0
-            # print the instance of type
-
-            # expected_type = 1 if rlp_type is a list class
-            expected_type = 1 if rlp_type == list else 0
 
             output = cairo_run("test__decode_type", data=encoded_data)
-            type = output[0]
-            offset = output[1]
-            len = output[2]
 
-            assert type == expected_type
-            assert offset == expected_offset
-            assert len == expected_len
+            assert output[0] == expected_type
+            assert output[1] == expected_offset
+            assert output[2] == expected_len
 
     class TestDecode:
         @pytest.mark.parametrize("payload_len", [55, 56])
@@ -79,7 +69,7 @@ class TestRLP:
 
             # flatten the decoded data into a single bytes l
             # there must be no nested lists at the end
-            flattened_data = flatten_and_concatenate(expected_result)
+            flattened_data = flatten(list(expected_result))
             flattened_output = cairo_run(
                 "test__decode", data=list(encoded_data), is_list=1
             )
@@ -101,23 +91,9 @@ class TestRLP:
 
             # flatten the decoded data into a single bytes l
             # there must be no nested lists at the end
-            flattened_data = flatten_and_concatenate(decoded_tx)
+            flattened_data = flatten(decoded_tx)
             flattened_output = cairo_run(
                 "test__decode_transaction", data=rlp_encoding, is_list=1
             )
 
             assert flattened_data == flattened_output
-
-
-def flatten_and_concatenate(data):
-    result = []
-
-    def flatten(item):
-        if isinstance(item, list):
-            for sub_item in item:
-                flatten(sub_item)
-        else:
-            result.extend(item)
-
-    flatten(data)
-    return result

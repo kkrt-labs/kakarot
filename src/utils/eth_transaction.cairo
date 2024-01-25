@@ -52,7 +52,11 @@ namespace EthTransaction {
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
 
-        let (items_len, items) = RLP.decode(tx_data_len, tx_data);
+        let items_len = 0;
+        let (items: RLP.Item*) = alloc();
+        with items, items_len {
+            RLP.decode(tx_data_len, tx_data);
+        }
 
         // the tx is a list of fields, hence first level RLP decoding
         // is a single item, which is indeed the sought list
@@ -132,7 +136,11 @@ namespace EthTransaction {
 
         tempvar tx_type = [tx_data];
 
-        let (items_len, items) = RLP.decode(tx_data_len - 1, tx_data + 1);
+        let items_len = 0;
+        let (items: RLP.Item*) = alloc();
+        with items, items_len {
+            RLP.decode(tx_data_len - 1, tx_data + 1);
+        }
         // the tx is a list of fields, hence first level RLP decoding
         // is a single item, which is indeed the sought list
         assert [items].is_list = TRUE;
@@ -205,12 +213,7 @@ namespace EthTransaction {
     ) {
         let _is_legacy = is_legacy_tx(tx_data);
         if (_is_legacy == FALSE) {
-            if ([tx_data] == 0x01) {
-                // EIP-2930
-                return decode_tx(tx_data_len, tx_data);
-            } else {
-                return decode_tx(tx_data_len, tx_data);
-            }
+            return decode_tx(tx_data_len, tx_data);
         } else {
             return decode_legacy_tx(tx_data_len, tx_data);
         }
