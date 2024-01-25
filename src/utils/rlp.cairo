@@ -69,7 +69,7 @@ namespace RLP {
     // @param data The RLP encoded data.
     // @return items_len The number of items decoded.
     // @return items The decoded RLP items.
-    func decode{range_check_ptr, items_len: felt, items: Item*}(data_len: felt, data: felt*) {
+    func decode{range_check_ptr, items: Item*}(data_len: felt, data: felt*) {
         alloc_locals;
 
         if (data_len == 0) {
@@ -80,32 +80,31 @@ namespace RLP {
 
         if (len == 0) {
             let (empty_array: felt*) = alloc();
-            assert [items + items_len] = Item(data_len=0, data=empty_array, is_list=rlp_type);
+            assert [items] = Item(data_len=0, data=empty_array, is_list=rlp_type);
             tempvar range_check_ptr = range_check_ptr;
         } else {
             if (rlp_type == 0) {
                 // Case string
-                assert [items + items_len] = Item(data_len=len, data=data + offset, is_list=0);
+                assert [items] = Item(data_len=len, data=data + offset, is_list=0);
                 tempvar range_check_ptr = range_check_ptr;
             } else {
                 // Case list
-                let sub_items_len = 0;
                 let (sub_items: Item*) = alloc();
-                decode{items_len=sub_items_len, items=sub_items}(data_len=len, data=data + offset);
-                assert [items + items_len] = Item(
-                    data_len=sub_items_len, data=cast(sub_items, felt*), is_list=1
+                let sub_items_start = sub_items;
+                decode{items=sub_items}(data_len=len, data=data + offset);
+                let sub_items_len = sub_items - sub_items_start;
+                assert [items] = Item(
+                    data_len=sub_items_len, data=cast(sub_items_start, felt*), is_list=1
                 );
                 tempvar range_check_ptr = range_check_ptr;
             }
         }
-        let items_len = items_len + 1 * Item.SIZE;
+        tempvar items = items + 1 * Item.SIZE;
 
         let total_item_len = len + offset;
         let is_lt_input = is_le(total_item_len, data_len + 1);
         if (is_lt_input != FALSE) {
-            decode{items_len=items_len, items=items}(
-                data_len=data_len - total_item_len, data=data + total_item_len
-            );
+            decode{items=items}(data_len=data_len - total_item_len, data=data + total_item_len);
             return ();
         }
         return ();

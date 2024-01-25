@@ -52,17 +52,17 @@ namespace EthTransaction {
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
 
-        let items_len = 0;
         let (items: RLP.Item*) = alloc();
-        with items, items_len {
+        let items_start = items;
+        with items {
             RLP.decode(tx_data_len, tx_data);
         }
 
         // the tx is a list of fields, hence first level RLP decoding
         // is a single item, which is indeed the sought list
-        assert [items].is_list = TRUE;
-        let sub_items_len = [items].data_len;
-        let sub_items = cast([items].data, RLP.Item*);
+        assert [items_start].is_list = TRUE;
+        let sub_items_len = [items_start].data_len;
+        let sub_items = cast([items_start].data, RLP.Item*);
 
         let nonce_idx = 0;
         let nonce = Helpers.bytes_to_felt(sub_items[nonce_idx].data_len, sub_items[nonce_idx].data);
@@ -136,16 +136,16 @@ namespace EthTransaction {
 
         tempvar tx_type = [tx_data];
 
-        let items_len = 0;
         let (items: RLP.Item*) = alloc();
-        with items, items_len {
+        let items_start = items;
+        with items {
             RLP.decode(tx_data_len - 1, tx_data + 1);
         }
         // the tx is a list of fields, hence first level RLP decoding
         // is a single item, which is indeed the sought list
-        assert [items].is_list = TRUE;
-        let sub_items_len = [items].data_len;
-        let sub_items = cast([items].data, RLP.Item*);
+        assert [items_start].is_list = TRUE;
+        let sub_items_len = [items_start].data_len;
+        let sub_items = cast([items_start].data, RLP.Item*);
 
         local chain_id_idx = 0;
         let chain_id = Helpers.bytes_to_felt(
