@@ -113,9 +113,6 @@ namespace RLP {
             }
         }
 
-        tempvar items = items;
-        tempvar items_len = items_len;
-
         let total_item_len = len + offset;
         let is_lt_input = is_le(total_item_len, data_len + 1);
         if (is_lt_input != FALSE) {
