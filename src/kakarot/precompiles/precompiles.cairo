@@ -6,7 +6,6 @@ from starkware.starknet.common.syscalls import library_call
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
 
-from kakarot.constants import Constants
 from kakarot.storages import precompiles_class_hash
 from kakarot.errors import Errors
 from kakarot.precompiles.blake2f import PrecompileBlake2f
@@ -15,10 +14,13 @@ from kakarot.precompiles.ec_recover import PrecompileEcRecover
 from kakarot.precompiles.ripemd160 import PrecompileRIPEMD160
 from kakarot.precompiles.sha256 import PrecompileSHA256
 
+const LAST_PRECOMPILE_ADDRESS = 0x09;
+const EXEC_PRECOMPILE_SELECTOR = 0x01e3e7ac032066525c37d0791c3c0f5fbb1c17f1cb6fe00afc206faa3fbd18e1;
+
 // @title Precompile related functions.
 namespace Precompiles {
     func is_precompile{range_check_ptr}(address: felt) -> felt {
-        return is_not_zero(address) * is_le(address, Constants.LAST_PRECOMPILE_ADDRESS);
+        return is_not_zero(address) * is_le(address, LAST_PRECOMPILE_ADDRESS);
     }
 
     // @notice Executes associated function of precompiled evm_address.
@@ -125,11 +127,10 @@ namespace Precompiles {
         memcpy(calldata + 2, input, input_len);
         let (retdata_size, retdata) = library_call(
             class_hash=implementation,
-            function_selector=Constants.EXEC_PRECOMPILE_SELECTOR,
+            function_selector=EXEC_PRECOMPILE_SELECTOR,
             calldata_size=input_len + 2,
             calldata=calldata,
         );
         return (retdata_size, retdata, 0, 0);
     }
-
 }

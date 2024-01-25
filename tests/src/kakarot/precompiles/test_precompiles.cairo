@@ -27,9 +27,7 @@ func test__precompiles_run{
 
     // When
     let result = Precompiles.exec_precompile(
-        evm_address=address,
-        input_len=0,
-        input=cast(0, felt*),
+        evm_address=address, input_len=0, input=cast(0, felt*)
     );
 
     memcpy(output_ptr, result.output, result.output_len);
