@@ -2,8 +2,12 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_le, is_not_zero
+from starkware.starknet.common.syscalls import library_call
+from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.memcpy import memcpy
 
 from kakarot.constants import Constants
+from kakarot.storages import precompiles_class_hash
 from kakarot.errors import Errors
 from kakarot.precompiles.blake2f import PrecompileBlake2f
 from kakarot.precompiles.datacopy import PrecompileDataCopy
@@ -53,7 +57,7 @@ namespace Precompiles {
         ret;
         call PrecompileEcRecover.run;  // 0x1
         ret;
-        call not_implemented_precompile;  // 0x2
+        call external_precompile;  // 0x2
         ret;
         call PrecompileRIPEMD160.run;  // 0x3
         ret;
@@ -103,6 +107,29 @@ namespace Precompiles {
     ) {
         let (revert_reason_len, revert_reason) = Errors.notImplementedPrecompile(evm_address);
         return (revert_reason_len, revert_reason, 0, 1);
+    }
+
+    func external_precompile{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+    }(evm_address: felt, input_len: felt, input: felt*) -> (
+        output_len: felt, output: felt*, gas_used: felt, reverted: felt
+    ) {
+        alloc_locals;
+        let (implementation) = precompiles_class_hash.read();
+        let (calldata: felt*) = alloc();
+        assert [calldata] = evm_address;
+        assert [calldata + 1] = input_len;
+        memcpy(calldata + 2, input, input_len);
+        let (retdata_size, retdata) = library_call(
+            class_hash=implementation,
+            function_selector=Constants.EXEC_PRECOMPILE_SELECTOR,
+            calldata_size=input_len + 2,
+            calldata=calldata,
+        );
+        return (retdata_size, retdata, 0, 0);
     }
 
 }
