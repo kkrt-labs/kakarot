@@ -55,15 +55,24 @@ namespace Interpreter {
         local opcode_number;
         local opcode: model.Opcode*;
 
-        // Get the current opcode number
         let pc = evm.program_counter;
-
         let is_pc_ge_code_len = is_le(evm.message.bytecode_len, pc);
         if (is_pc_ge_code_len != FALSE) {
-            assert opcode_number = 0;
-        } else {
-            assert opcode_number = [evm.message.bytecode + pc];
+            let is_precompile = Precompiles.is_precompile(evm.message.address.evm);
+            if (is_precompile != FALSE) {
+                let (output_len, output, gas_used, reverted) = Precompiles.exec_precompile(
+                    evm.message.address.evm, evm.message.calldata_len, evm.message.calldata
+                );
+                let evm = EVM.charge_gas(evm, gas_used);
+                let evm = EVM.stop(evm, output_len, output, reverted);
+                return evm;
+            } else {
+                let (return_data: felt*) = alloc();
+                let evm = EVM.stop(evm, 0, return_data, FALSE);
+                return evm;
+            }
         }
+        assert opcode_number = [evm.message.bytecode + pc];
 
         // Get the corresponding opcode data
         // To cast the codeoffset opcodes_label to a model.Opcode*, we need to use it to offset

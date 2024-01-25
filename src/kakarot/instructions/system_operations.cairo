@@ -20,7 +20,6 @@ from kakarot.evm import EVM
 from kakarot.gas import Gas
 from kakarot.memory import Memory
 from kakarot.model import model
-from kakarot.precompiles.precompiles import Precompiles
 from kakarot.stack import Stack
 from kakarot.state import State
 from utils.utils import Helpers
@@ -707,8 +706,8 @@ namespace SystemOperations {
 
 namespace CallHelper {
     // @notice The shared logic of the CALL, CALLCODE, STATICCALL, and DELEGATECALL ops.
-    // Loads the calldata from memory, executes the precompiles if the target is one, otherwise
-    // constructs the child evm corresponding to the new execution frame of the call and returns it.
+    // Loads the calldata from memory, constructs the child evm corresponding to the new
+    //  execution frame of the call and returns it.
     // @param evm The current EVM, which is the parent of the new EVM.
     // @param gas The gas to be used by the new EVM.
     // @param value The value to be transferred in the call
@@ -747,21 +746,6 @@ namespace CallHelper {
         Memory.load_n(args_size.low, calldata, args_offset.low);
 
         // 2. Build child_evm
-        // Check if the called address is a precompiled contract
-        let is_precompile = Precompiles.is_precompile(address=code_address);
-        if (is_precompile != FALSE) {
-            tempvar parent = new model.Parent(evm, stack, memory, state);
-            let child_evm = Precompiles.run(
-                evm_address=code_address,
-                calldata_len=args_size.low,
-                calldata=calldata,
-                parent=parent,
-                gas_left=gas,
-            );
-
-            return child_evm;
-        }
-
         let code_account = State.get_account(code_address);
         local code_len: felt = code_account.code_len;
         local code: felt* = code_account.code;
