@@ -68,8 +68,9 @@ format-check:
 	trunk check --ci
 
 clean:
-	rm -rf build
-	mkdir build
+	rm -rf build/*.json
+	rm -rf build/fixtures/*.json
+	mkdir -p build
 
 check-resources:
 	poetry run python scripts/check_resources.py

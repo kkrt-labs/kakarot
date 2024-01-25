@@ -140,12 +140,14 @@ async def get_eth_contract(provider=None) -> Contract:
 
 
 @cache
-def get_contract(contract_name, address=None, provider=None) -> Contract:
+def get_contract(
+    contract_name, address=None, provider=None, cairo_version=None
+) -> Contract:
     return Contract(
         address or get_deployments()[contract_name]["address"],
-        get_abi(contract_name),
+        get_abi(contract_name, cairo_version),
         provider or RPC_CLIENT,
-        cairo_version=int(is_ssj_contract(contract_name)),
+        cairo_version=get_artifact_version(contract_name).value,
     )
 
 
@@ -237,13 +239,10 @@ def get_deployments():
         return {}
 
 
-@functools.lru_cache
+@cache
 def get_artifact(contract_name, cairo_version=None):
     if cairo_version is None:
-        # When cairo_version is not given, we try to infer it from the contract name
-        # Contract name can collude though
-        is_ssj = is_ssj_contract(contract_name)
-        cairo_version = ArtifactType(is_ssj)
+        cairo_version = get_artifact_version(contract_name)
     if cairo_version == ArtifactType.cairo1:
         return (BUILD_DIR_SSJ / f"contracts_{contract_name}", ArtifactType.cairo1)
 
@@ -257,14 +256,13 @@ def get_artifact(contract_name, cairo_version=None):
     )
 
 
-@functools.lru_cache
-def get_abi(contract_name):
-    artifact, cairo_version = get_artifact(contract_name)
-    if cairo_version == ArtifactType.cairo0:
-        return json.load(open(artifact))["abi"]
+@cache
+def get_abi(contract_name, cairo_version=None):
+    artifact, cairo_version = get_artifact(contract_name, cairo_version)
+    if cairo_version == ArtifactType.cairo1:
+        artifact = artifact.with_suffix(".contract_class.json")
 
-    sierra_compiled_contract = artifact.with_suffix(".contract_class.json").read_text()
-    return json.loads(sierra_compiled_contract)["abi"]
+    return json.loads(artifact.read_text())["abi"]
 
 
 def get_tx_url(tx_hash: int) -> str:
@@ -275,8 +273,18 @@ def is_fixture_contract(contract_name):
     return CONTRACTS_FIXTURES.get(contract_name) is not None
 
 
-def is_ssj_contract(contract_name):
-    return contract_name not in CONTRACTS_FIXTURES and contract_name not in CONTRACTS
+def get_artifact_version(contract_name):
+    cairo_0 = contract_name in set(CONTRACTS_FIXTURES).union(set(CONTRACTS))
+    cairo_1 = any(
+        contract_name in str(artifact) for artifact in BUILD_DIR_SSJ.glob("*.json")
+    )
+    if cairo_0 and cairo_1:
+        raise ValueError(f"Contract {contract_name} is ambiguous")
+    if cairo_0:
+        return ArtifactType.cairo0
+    if cairo_1:
+        return ArtifactType.cairo1
+    raise ValueError(f"Cannot find artifact for contract {contract_name}")
 
 
 def compile_contract(contract):
@@ -484,7 +492,7 @@ async def deploy(contract_name, *args):
         abi=abi,
         constructor_args=list(args),
         max_fee=_max_fee,
-        cairo_version=cairo_version.value,  # note the `cairo_version` parameter
+        cairo_version=cairo_version.value,
     )
     status = await wait_for_transaction(deploy_result.hash)
     logger.info(
