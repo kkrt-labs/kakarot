@@ -119,15 +119,8 @@ namespace RLP {
             decode{items_len=items_len, items=items}(
                 data_len=data_len - total_item_len, data=data + total_item_len
             );
-            tempvar items = items;
-            tempvar items_len = items_len;
-            tempvar range_check_ptr = range_check_ptr;
-        } else {
-            tempvar items = items;
-            tempvar items_len = items_len;
-            tempvar range_check_ptr = range_check_ptr;
+            return ();
         }
-
         return ();
     }
 }
