@@ -40,6 +40,7 @@ from starkware.starknet.public.abi import get_selector_from_name
 from scripts.constants import (
     BUILD_DIR,
     BUILD_DIR_FIXTURES,
+    BUILD_DIR_SSJ,
     CONTRACTS,
     CONTRACTS_FIXTURES,
     DEPLOYMENTS_DIR,
@@ -47,7 +48,6 @@ from scripts.constants import (
     NETWORK,
     RPC_CLIENT,
     SOURCE_DIR,
-    SSJ_BUILD_DIR,
     ArtifactType,
 )
 
@@ -239,10 +239,13 @@ def get_deployments():
 
 @functools.lru_cache
 def get_artifact(contract_name, cairo_version=None):
-    is_ssj = is_ssj_contract(contract_name)
-    cairo_version = cairo_version or ArtifactType(is_ssj)
+    if cairo_version is None:
+        # When cairo_version is not given, we try to infer it from the contract name
+        # Contract name can collude though
+        is_ssj = is_ssj_contract(contract_name)
+        cairo_version = ArtifactType(is_ssj)
     if cairo_version == ArtifactType.cairo1:
-        return (SSJ_BUILD_DIR / f"contracts_{contract_name}", ArtifactType.cairo1)
+        return (BUILD_DIR_SSJ / f"contracts_{contract_name}", ArtifactType.cairo1)
 
     return (
         (

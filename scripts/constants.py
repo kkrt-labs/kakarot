@@ -127,7 +127,7 @@ BUILD_DIR = Path("build")
 BUILD_DIR_FIXTURES = BUILD_DIR / "fixtures"
 BUILD_DIR.mkdir(exist_ok=True, parents=True)
 BUILD_DIR_FIXTURES.mkdir(exist_ok=True, parents=True)
-SSJ_BUILD_DIR = Path("../kakarot-ssj/target/dev")
+BUILD_DIR_SSJ = BUILD_DIR / "ssj"
 
 
 class ArtifactType(Enum):
