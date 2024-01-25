@@ -6,16 +6,23 @@ import subprocess
 import time
 from copy import deepcopy
 from datetime import datetime
+from functools import cache
 from pathlib import Path
 from typing import List, Union, cast
 
 import requests
 from async_lru import alru_cache
 from marshmallow import EXCLUDE
-from starknet_py.common import create_compiled_contract
+from starknet_py.common import (
+    create_casm_class,
+    create_compiled_contract,
+    create_sierra_compiled_contract,
+)
 from starknet_py.contract import Contract
 from starknet_py.hash.address import compute_address
+from starknet_py.hash.casm_class_hash import compute_casm_class_hash
 from starknet_py.hash.class_hash import compute_class_hash
+from starknet_py.hash.sierra_class_hash import compute_sierra_class_hash
 from starknet_py.hash.transaction import compute_declare_transaction_hash
 from starknet_py.hash.utils import message_signature
 from starknet_py.net.account.account import Account, _add_signature_to_transaction
@@ -40,6 +47,8 @@ from scripts.constants import (
     NETWORK,
     RPC_CLIENT,
     SOURCE_DIR,
+    SSJ_BUILD_DIR,
+    ArtifactType,
 )
 
 logging.basicConfig()
@@ -130,12 +139,13 @@ async def get_eth_contract(provider=None) -> Contract:
     )
 
 
-@alru_cache
-async def get_contract(contract_name, address=None, provider=None) -> Contract:
+@cache
+def get_contract(contract_name, address=None, provider=None) -> Contract:
     return Contract(
         address or get_deployments()[contract_name]["address"],
-        json.loads(get_artifact(contract_name).read_text())["abi"],
-        provider or await get_starknet_account(),
+        get_abi(contract_name),
+        provider or RPC_CLIENT,
+        cairo_version=int(is_ssj_contract(contract_name)),
     )
 
 
@@ -170,7 +180,6 @@ async def fund_address(
         tx = await prepared.invoke(max_fee=_max_fee)
 
         status = await wait_for_transaction(tx.hash)
-        status = "✅" if status == TransactionStatus.ACCEPTED_ON_L2 else "❌"
         logger.info(
             f"{status} {amount / 1e18} ETH sent from {hex(account.address)} to {hex(address)}"
         )
@@ -230,12 +239,28 @@ def get_deployments():
 
 @functools.lru_cache
 def get_artifact(contract_name):
-    is_fixture = is_fixture_contract(contract_name)
+    is_ssj = is_ssj_contract(contract_name)
+    if is_ssj:
+        return (SSJ_BUILD_DIR / f"contracts_{contract_name}", ArtifactType.cairo1)
+
     return (
-        BUILD_DIR / f"{contract_name}.json"
-        if not is_fixture
-        else BUILD_DIR_FIXTURES / f"{contract_name}.json"
+        (
+            BUILD_DIR / f"{contract_name}.json"
+            if not is_fixture_contract(contract_name)
+            else BUILD_DIR_FIXTURES / f"{contract_name}.json"
+        ),
+        ArtifactType.cairo0,
     )
+
+
+@functools.lru_cache
+def get_abi(contract_name):
+    artifact, cairo_version = get_artifact(contract_name)
+    if cairo_version == ArtifactType.cairo0:
+        return json.load(open(artifact))["abi"]
+
+    sierra_compiled_contract = artifact.with_suffix(".contract_class.json").read_text()
+    return json.loads(sierra_compiled_contract)["abi"]
 
 
 def get_tx_url(tx_hash: int) -> str:
@@ -246,11 +271,18 @@ def is_fixture_contract(contract_name):
     return CONTRACTS_FIXTURES.get(contract_name) is not None
 
 
+def is_ssj_contract(contract_name):
+    return contract_name not in CONTRACTS_FIXTURES and contract_name not in CONTRACTS
+
+
 def compile_contract(contract):
     logger.info(f"⏳ Compiling {contract['contract_name']}")
     start = datetime.now()
     is_fixture = is_fixture_contract(contract["contract_name"])
-    contract_build_path = get_artifact(contract["contract_name"])
+    artifact, cairo_version = get_artifact(contract["contract_name"])
+
+    if cairo_version == ArtifactType.cairo1:
+        raise NotImplementedError("SSJ compilation not implemented yet")
 
     output = subprocess.run(
         [
@@ -259,7 +291,7 @@ def compile_contract(contract):
             if not is_fixture
             else CONTRACTS_FIXTURES[contract["contract_name"]],
             "--output",
-            contract_build_path,
+            artifact,
             "--cairo_path",
             str(SOURCE_DIR),
             *(["--no_debug_info"] if not NETWORK["devnet"] else []),
@@ -280,7 +312,7 @@ def compile_contract(contract):
             return hex(obj)
         return obj
 
-    compiled = json.loads(contract_build_path.read_text())
+    compiled = json.loads(artifact.read_text())
     compiled = {
         **compiled,
         "entry_points_by_type": _convert_offset_to_hex(
@@ -290,7 +322,7 @@ def compile_contract(contract):
     json.dump(
         compiled,
         open(
-            contract_build_path,
+            artifact,
             "w",
         ),
         indent=2,
@@ -330,71 +362,111 @@ async def deploy_starknet_account(class_hash, private_key=None, amount=1):
         max_fee=_max_fee,
     )
     status = await wait_for_transaction(res.hash)
-    status = "✅" if status == TransactionStatus.ACCEPTED_ON_L2 else "❌"
     logger.info(f"{status} Account deployed at address {hex(res.account.address)}")
 
     return {
         "address": res.account.address,
         "tx": res.hash,
-        "artifact": get_artifact("OpenzeppelinAccount"),
+        "artifact": get_artifact("OpenzeppelinAccount")[0],
     }
 
 
 async def declare(contract_name):
     logger.info(f"ℹ️  Declaring {contract_name}")
-    artifact = get_artifact(contract_name)
-    compiled_contract = Path(artifact).read_text()
-    contract_class = create_compiled_contract(compiled_contract=compiled_contract)
-    class_hash = compute_class_hash(contract_class=deepcopy(contract_class))
-    try:
-        await RPC_CLIENT.get_class_by_hash(class_hash)
-        logger.info("✅ Class already declared, skipping")
-        return class_hash
-    except Exception:
-        pass
+    artifact, cairo_version = get_artifact(contract_name)
     account = await get_starknet_account()
-    transaction = Declare(
-        contract_class=contract_class,
-        sender_address=account.address,
-        max_fee=_max_fee,
-        signature=[],
-        nonce=await account.get_nonce(),
-        version=1,
-    )
-    tx_hash = compute_declare_transaction_hash(
-        contract_class=deepcopy(transaction.contract_class),
-        chain_id=account.signer.chain_id.value,
-        sender_address=account.address,
-        max_fee=transaction.max_fee,
-        version=transaction.version,
-        nonce=transaction.nonce,
-    )
-    signature = message_signature(msg_hash=tx_hash, priv_key=account.signer.private_key)
-    transaction = _add_signature_to_transaction(transaction, signature)
-    params = _create_broadcasted_txn(transaction=transaction)
 
-    res = await RPC_CLIENT._client.call(
-        method_name="addDeclareTransaction",
-        params=[params],
-    )
-    resp = cast(
-        DeclareTransactionResponse,
-        DeclareTransactionResponseSchema().load(res, unknown=EXCLUDE),
-    )
+    if cairo_version == ArtifactType.cairo1:
+        casm_compiled_contract = artifact.with_suffix(
+            ".compiled_contract_class.json"
+        ).read_text()
+        sierra_compiled_contract = artifact.with_suffix(
+            ".contract_class.json"
+        ).read_text()
+
+        casm_class = create_casm_class(casm_compiled_contract)
+        class_hash = compute_casm_class_hash(casm_class)
+        compiled_contract = create_sierra_compiled_contract(sierra_compiled_contract)
+        deployed_class_hash = compute_sierra_class_hash(compiled_contract)
+
+        try:
+            await RPC_CLIENT.get_class_by_hash(deployed_class_hash)
+            logger.info("✅ Class already declared, skipping")
+            return deployed_class_hash
+        except Exception:
+            pass
+
+        declare_v2_transaction = await account.sign_declare_v2_transaction(
+            compiled_contract=sierra_compiled_contract,
+            compiled_class_hash=class_hash,
+            max_fee=_max_fee,
+        )
+
+        resp = await account.client.declare(transaction=declare_v2_transaction)
+    else:
+        contract_class = create_compiled_contract(
+            compiled_contract=artifact.read_text()
+        )
+        class_hash = compute_class_hash(contract_class=deepcopy(contract_class))
+        try:
+            await RPC_CLIENT.get_class_by_hash(class_hash)
+            logger.info("✅ Class already declared, skipping")
+            return class_hash
+        except Exception:
+            pass
+
+        transaction = Declare(
+            contract_class=contract_class,
+            sender_address=account.address,
+            max_fee=_max_fee,
+            signature=[],
+            nonce=await account.get_nonce(),
+            version=1,
+        )
+        tx_hash = compute_declare_transaction_hash(
+            contract_class=deepcopy(transaction.contract_class),
+            chain_id=account.signer.chain_id.value,
+            sender_address=account.address,
+            max_fee=transaction.max_fee,
+            version=transaction.version,
+            nonce=transaction.nonce,
+        )
+        signature = message_signature(
+            msg_hash=tx_hash, priv_key=account.signer.private_key
+        )
+        transaction = _add_signature_to_transaction(transaction, signature)
+        params = _create_broadcasted_txn(transaction=transaction)
+
+        res = await RPC_CLIENT._client.call(
+            method_name="addDeclareTransaction",
+            params=[params],
+        )
+        resp = cast(
+            DeclareTransactionResponse,
+            DeclareTransactionResponseSchema().load(res, unknown=EXCLUDE),
+        )
 
     status = await wait_for_transaction(resp.transaction_hash)
-    status = "✅" if status == TransactionStatus.ACCEPTED_ON_L2 else "❌"
     logger.info(f"{status} {contract_name} class hash: {hex(resp.class_hash)}")
     return resp.class_hash
 
 
 async def deploy(contract_name, *args):
     logger.info(f"ℹ️  Deploying {contract_name}")
-    artifact = get_artifact(contract_name)
-    compiled_contract = Path(artifact).read_text()
-    abi = json.loads(compiled_contract)["abi"]
-    contract_class = create_compiled_contract(compiled_contract=compiled_contract)
-    class_hash = compute_class_hash(contract_class=deepcopy(contract_class))
+    artifact, cairo_version = get_artifact(contract_name)
+    if cairo_version == ArtifactType.cairo0:
+        compiled_contract = Path(artifact).read_text()
+        abi = json.loads(compiled_contract)["abi"]
+        contract_class = create_compiled_contract(compiled_contract=compiled_contract)
+        class_hash = compute_class_hash(contract_class=deepcopy(contract_class))
+    else:
+        sierra_compiled_contract = artifact.with_suffix(
+            ".contract_class.json"
+        ).read_text()
+        abi = json.loads(sierra_compiled_contract)["abi"]
+        compiled_contract = create_sierra_compiled_contract(sierra_compiled_contract)
+        class_hash = compute_sierra_class_hash(compiled_contract)
+
     account = await get_starknet_account()
     deploy_result = await Contract.deploy_contract(
         account=account,
@@ -402,16 +474,16 @@ async def deploy(contract_name, *args):
         abi=abi,
         constructor_args=list(args),
         max_fee=_max_fee,
+        cairo_version=cairo_version.value,  # note the `cairo_version` parameter
     )
     status = await wait_for_transaction(deploy_result.hash)
-    status = "✅" if status == TransactionStatus.ACCEPTED_ON_L2 else "❌"
     logger.info(
         f"{status} {contract_name} deployed at: {hex(deploy_result.deployed_contract.address)}"
     )
     return {
         "address": deploy_result.deployed_contract.address,
         "tx": deploy_result.hash,
-        "artifact": get_artifact(contract_name),
+        "artifact": get_artifact(contract_name)[0],
     }
 
 
@@ -435,12 +507,7 @@ async def invoke_contract(
     contract_name, function_name, *inputs, address=None, account=None
 ):
     account = account or (await get_starknet_account())
-    deployments = get_deployments()
-    contract = Contract(
-        deployments[contract_name]["address"] if address is None else address,
-        json.load(open(get_artifact(contract_name)))["abi"],
-        account,
-    )
+    contract = get_contract(contract_name, address=address, provider=account)
     call = contract.functions[function_name].prepare(*inputs, max_fee=_max_fee)
     logger.info(
         f"ℹ️  Invoking {contract_name}.{function_name}({json.dumps(inputs) if inputs else ''})"
@@ -462,7 +529,6 @@ async def invoke(contract: Union[str, int], *args, **kwargs):
         else invoke_contract(contract, *args, **kwargs)
     )
     status = await wait_for_transaction(response.transaction_hash)
-    status = "✅" if status == TransactionStatus.ACCEPTED_ON_L2 else "❌"
     logger.info(
         f"{status} {contract}.{args[0]} invoked at tx: %s",
         hex(response.transaction_hash),
@@ -482,13 +548,7 @@ async def call_address(contract_address, function_name, *calldata):
 
 
 async def call_contract(contract_name, function_name, *inputs, address=None):
-    deployments = get_deployments()
-    account = await get_starknet_account()
-    contract = Contract(
-        deployments[contract_name]["address"] if address is None else address,
-        json.load(open(get_artifact(contract_name)))["abi"],
-        account,
-    )
+    contract = get_contract(contract_name, address=address)
     return await contract.functions[function_name].call(*inputs)
 
 
@@ -507,8 +567,6 @@ async def call(contract: Union[str, int], *args, **kwargs):
     )
 
 
-# TODO: use RPC_CLIENT when RPC wait_for_tx is fixed, see https://github.com/kkrt-labs/kakarot/issues/586
-# TODO: Currently, the first ping often throws "transaction not found"
 @functools.wraps(RPC_CLIENT.wait_for_tx)
 async def wait_for_transaction(*args, **kwargs):
     """
@@ -517,18 +575,19 @@ async def wait_for_transaction(*args, **kwargs):
     """
     start = datetime.now()
     elapsed = 0
-    check_interval = kwargs.get("check_interval", NETWORK.get("check_interval", 15))
-    max_wait = kwargs.get("max_wait", NETWORK.get("max_wait", 30))
+    check_interval = kwargs.get("check_interval", NETWORK.get("check_interval", 5))
+    max_wait = kwargs.get("max_wait", NETWORK.get("max_wait", 20))
     transaction_hash = args[0] if args else kwargs["tx_hash"]
-    status = None
+    finality_status = None
     logger.info(f"⏳ Waiting for tx {get_tx_url(transaction_hash)}")
     while (
-        status not in [TransactionStatus.ACCEPTED_ON_L2, TransactionStatus.REJECTED]
+        finality_status
+        not in [TransactionStatus.ACCEPTED_ON_L2, TransactionStatus.REJECTED]
         and elapsed < max_wait
     ):
         if elapsed > 0:
             # don't log at the first iteration
-            logger.info(f"ℹ️  Current status: {status}")
+            logger.info(f"ℹ️  Current status: {finality_status}")
         logger.info(f"ℹ️  Sleeping for {check_interval}s")
         time.sleep(check_interval)
         response = requests.post(
@@ -547,15 +606,18 @@ async def wait_for_transaction(*args, **kwargs):
                     f"tx {transaction_hash:x} error: {json.dumps(payload['error'])}"
                 )
                 break
-        status = payload.get("result", {}).get("status") or payload.get(
-            "result", {}
-        ).get("finality_status")
-        if status is not None:
-            status = TransactionStatus(status)
-        else:
-            # no status, but RPC currently doesn't return status for ACCEPTED_ON_L2 still PENDING
-            # we take actual_fee as a proxy for ACCEPTED_ON_L2
-            if payload.get("result", {}).get("actual_fee"):
-                status = TransactionStatus.ACCEPTED_ON_L2
+        finality_status = payload.get("result", {}).get("finality_status")
+        execution_status = payload.get("result", {}).get("execution_status")
+        if finality_status is not None:
+            finality_status = TransactionStatus(finality_status)
+        if execution_status is not None:
+            execution_status = TransactionStatus(execution_status)
         elapsed = (datetime.now() - start).total_seconds()
-    return status
+    return (
+        "✅"
+        if (
+            finality_status == TransactionStatus.ACCEPTED_ON_L2
+            and execution_status == TransactionStatus.SUCCEEDED
+        )
+        else "❌"
+    )
