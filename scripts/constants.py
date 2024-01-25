@@ -147,6 +147,15 @@ COMPILED_CONTRACTS = [
     {"contract_name": "OpenzeppelinAccount", "is_account_contract": True},
     {"contract_name": "ERC20", "is_account_contract": False},
 ]
+DECLARED_CONTRACTS = [
+    {"contract_name": "kakarot", "cairo_version": ArtifactType.cairo0},
+    {"contract_name": "contract_account", "cairo_version": ArtifactType.cairo0},
+    {"contract_name": "externally_owned_account", "cairo_version": ArtifactType.cairo0},
+    {"contract_name": "proxy", "cairo_version": ArtifactType.cairo0},
+    {"contract_name": "EVM", "cairo_version": ArtifactType.cairo0},
+    {"contract_name": "OpenzeppelinAccount", "cairo_version": ArtifactType.cairo0},
+    {"contract_name": "Precompiles", "cairo_version": ArtifactType.cairo1},
+]
 
 KAKAROT_CHAIN_ID = 1263227476  # KKRT (0x4b4b5254) in ASCII
 EVM_PRIVATE_KEY = os.getenv("EVM_PRIVATE_KEY")

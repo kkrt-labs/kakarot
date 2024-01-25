@@ -21,10 +21,11 @@ from utils.utils import Helpers
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     owner: felt,
     native_token_address_: felt,
-    contract_account_class_hash_,
-    externally_owned_account_class_hash,
-    account_proxy_class_hash,
-    deploy_fee,
+    contract_account_class_hash_: felt,
+    externally_owned_account_class_hash: felt,
+    account_proxy_class_hash: felt,
+    deploy_fee: felt,
+    precompiles_class_hash: felt,
 ) {
     return Kakarot.constructor(
         owner,
@@ -33,6 +34,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
         externally_owned_account_class_hash,
         account_proxy_class_hash,
         deploy_fee,
+        precompiles_class_hash,
     );
 }
 

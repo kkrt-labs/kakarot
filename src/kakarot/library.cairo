@@ -17,6 +17,7 @@ from kakarot.storages import (
     deploy_fee,
     externally_owned_account_class_hash,
     native_token_address,
+    precompiles_class_hash,
 )
 from kakarot.interpreter import Interpreter
 from kakarot.instructions.system_operations import CreateHelper
@@ -34,6 +35,8 @@ namespace Kakarot {
     // @param contract_account_class_hash_ The clash hash of the contract account.
     // @param externally_owned_account_class_hash_ The externally owned account class hash.
     // @param account_proxy_class_hash_ The account proxy class hash.
+    // @param deploy_fee_ The deploy fee for deploying EOA on Kakarot.
+    // @param precompiles_class_hash_ The precompiles class hash for precompiles not implemented in Kakarot.
     func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         owner: felt,
         native_token_address_,
@@ -41,6 +44,7 @@ namespace Kakarot {
         externally_owned_account_class_hash_,
         account_proxy_class_hash_,
         deploy_fee_,
+        precompiles_class_hash_,
     ) {
         Ownable.initializer(owner);
         native_token_address.write(native_token_address_);
@@ -48,6 +52,7 @@ namespace Kakarot {
         externally_owned_account_class_hash.write(externally_owned_account_class_hash_);
         account_proxy_class_hash.write(account_proxy_class_hash_);
         deploy_fee.write(deploy_fee_);
+        precompiles_class_hash.write(precompiles_class_hash_);
         return ();
     }
 

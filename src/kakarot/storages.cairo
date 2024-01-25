@@ -3,6 +3,10 @@
 %lang starknet
 
 @storage_var
+func precompiles_class_hash() -> (res: felt) {
+}
+
+@storage_var
 func native_token_address() -> (res: felt) {
 }
 
