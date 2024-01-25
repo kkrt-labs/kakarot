@@ -7,7 +7,6 @@ class TestPrecompiles:
             "address,error_message",
             [
                 (0x0, "Kakarot: UnknownPrecompile 0"),
-                (0x2, "Kakarot: NotImplementedPrecompile 2"),
                 (0x5, "Kakarot: NotImplementedPrecompile 5"),
                 (0x6, "Kakarot: NotImplementedPrecompile 6"),
                 (0x7, "Kakarot: NotImplementedPrecompile 7"),
