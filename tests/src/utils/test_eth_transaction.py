@@ -1,7 +1,9 @@
 import random
 
 import pytest
+from eth_account._utils.transaction_utils import transaction_rpc_to_rlp_structure
 from eth_account.account import Account
+from rlp import encode
 
 from tests.utils.constants import TRANSACTIONS
 from tests.utils.errors import cairo_error
@@ -9,6 +11,7 @@ from tests.utils.helpers import (
     generate_random_evm_address,
     generate_random_private_key,
     rlp_encode_signed_data,
+    serialize_accesslist,
 )
 from tests.utils.uint256 import int_to_uint256
 
@@ -104,3 +107,25 @@ class TestEthTransaction:
                     v=signed["v"],
                     tx_data=list(encoded_unsigned_tx),
                 )
+
+        def test_should_parse_access_list(self, cairo_run):
+            tx = transaction_rpc_to_rlp_structure(TRANSACTIONS[1])
+            access_list = tx["accessList"]
+            sanitized_access_list = [
+                (
+                    bytes.fromhex(address[2:]),
+                    tuple(
+                        bytes.fromhex(storage_key[2:]) for storage_key in storage_keys
+                    ),
+                )
+                for address, storage_keys in access_list
+            ]
+
+            encoded_access_list = encode(sanitized_access_list)
+            print(list(encoded_access_list))
+
+            output = cairo_run(
+                "test__parse_access_list", data=list(encoded_access_list)
+            )
+            expected_output = serialize_accesslist(TRANSACTIONS[1]["accessList"])
+            assert output == expected_output

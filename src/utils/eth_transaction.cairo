@@ -141,14 +141,11 @@ namespace EthTransaction {
         let sub_items_len = [items].data_len;
         let sub_items = cast([items].data, RLP.Item*);
 
-        local chain_id_idx = 0;
-        let chain_id = Helpers.bytes_to_felt(
-            sub_items[chain_id_idx].data_len, sub_items[chain_id_idx].data
-        );
+        let chain_id = Helpers.bytes_to_felt(sub_items[0].data_len, sub_items[0].data);
 
         let nonce_idx = 1;
-        let nonce = Helpers.bytes_to_felt(sub_items[nonce_idx].data_len, sub_items[nonce_idx].data);
-        let gas_price_idx = tx_type + nonce_idx;
+        let nonce = Helpers.bytes_to_felt(sub_items[1].data_len, sub_items[1].data);
+        let gas_price_idx = tx_type + 1;
         let gas_price = Helpers.bytes_to_felt(
             sub_items[gas_price_idx].data_len, sub_items[gas_price_idx].data
         );
@@ -163,6 +160,9 @@ namespace EthTransaction {
         );
         let payload_len = sub_items[gas_price_idx + 4].data_len;
         let payload: felt* = sub_items[gas_price_idx + 4].data;
+
+        let access_list_len = sub_items[gas_price_idx + 5].data_len;
+        let access_list_ptr = sub_items[gas_price_idx + 5].data;
         return (
             msg_hash,
             nonce,
@@ -258,5 +258,100 @@ namespace EthTransaction {
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
         return ();
+    }
+
+    struct AccessList {
+        address: felt,
+        storage_keys_len: felt,
+        storage_keys: Uint256*,
+    }
+
+    // @notice Parses the RLP-decoded access list and returns an array containing tuples
+    // of (address, storage_keys_len, storage_keys) for each entry in the access list.
+    // @param list_len The length of the access list. Each entry in the access list
+    // takes 3 felts, so a length of 6 means 2 entries.
+    // @param access_list The RLP-decoded access list.
+    func parse_access_list{range_check_ptr}(list_len: felt, list_items: RLP.Item*) -> (
+        felt, AccessList*
+    ) {
+        alloc_locals;
+        if (list_len == 0) {
+            return (0, cast(0, AccessList*));
+        }
+
+        let (parsed_list: AccessList*) = alloc();
+
+        let parsed_len = _parse_access_list(list_len, list_items, 0, parsed_list);
+
+        return (parsed_len, parsed_list);
+    }
+
+    // Each item in the access list is a List of two elements [Address, List<StorageKeys>]
+    func _parse_access_list{range_check_ptr}(
+        list_len: felt, list_items: RLP.Item*, parsed_list_len: felt, parsed_list: AccessList*
+    ) -> felt {
+        alloc_locals;
+        if (list_len == 0) {
+            return parsed_list_len;
+        }
+
+        // Each item should be of length 2, as it's a List<address, List<storage_keys>>
+        let address_item = [list_items];
+        let address_ptr = list_items.data;
+        let address_len = list_items.data_len;
+        let address = Helpers.bytes_to_felt(address_len, address_ptr);
+
+        let keys_item = [list_items + RLP.Item.SIZE];
+        let keys_list_len = keys_item.data_len;
+        let keys_list = cast(keys_item.data, RLP.Item*);
+
+        let (parsed_keys_len, parsed_keys) = parse_storage_keys(keys_list_len, keys_list);
+        assert [parsed_list] = AccessList(
+            address=address, storage_keys_len=parsed_keys_len, storage_keys=parsed_keys
+        );
+
+        return _parse_access_list(
+            list_len - 2 * RLP.Item.SIZE,
+            list_items + 2 * RLP.Item.SIZE,
+            parsed_list_len + 1,
+            parsed_list + AccessList.SIZE,
+        );
+    }
+
+    // Parses the List of storage keys associated to an address
+    func parse_storage_keys{range_check_ptr}(keys_list_len: felt, keys_list: RLP.Item*) -> (
+        felt, Uint256*
+    ) {
+        alloc_locals;
+        if (keys_list_len == 0) {
+            return (0, cast(0, Uint256*));
+        }
+
+        let (parsed_keys: Uint256*) = alloc();
+        let parsed_keys_len = _parse_storage_keys(keys_list_len, keys_list, 0, parsed_keys);
+
+        return (parsed_keys_len, parsed_keys);
+    }
+
+    // Recursively parses storage keys associated to an address
+    func _parse_storage_keys{range_check_ptr}(
+        keys_list_len: felt, keys_list: RLP.Item*, parsed_keys_len: felt, parsed_keys: Uint256*
+    ) -> felt {
+        alloc_locals;
+        if (keys_list_len == 0) {
+            return parsed_keys_len;
+        }
+
+        let key_len = keys_list.data_len;
+        let key_bytes = keys_list.data;
+        let key = Helpers.bytes_i_to_uint256(key_bytes, key_len);
+        assert [parsed_keys] = key;
+
+        return _parse_storage_keys(
+            keys_list_len - RLP.Item.SIZE,
+            keys_list + RLP.Item.SIZE,
+            parsed_keys_len + 1,
+            parsed_keys + Uint256.SIZE,
+        );
     }
 }
