@@ -3,10 +3,6 @@
 // @title Constants file.
 // @notice This file contains global constants.
 namespace Constants {
-    // Define constants
-
-    // ADDRESSES
-    const ADDRESS_BYTES_LEN = 20;
 
     // BLOCK
     // CHAIN_ID = KKRT (0x4b4b5254) in ASCII
@@ -18,13 +14,12 @@ namespace Constants {
     const STACK_MAX_DEPTH = 1024;
 
     // TRANSACTION
-    // TODO: handle tx gas limit properly and remove this constant
-    // Temporarily set tx gas limit to 1M gas
+    // Used in tests only
     const TRANSACTION_GAS_LIMIT = 1000000;
 
     // PRECOMPILES
-    // There is no gap between precompiles addresses so we can use the last address as a reference point to determine whether an address is a precompile or not
     const LAST_PRECOMPILE_ADDRESS = 0x09;
+    const EXEC_PRECOMPILE_SELECTOR = 0x01e3e7ac032066525c37d0791c3c0f5fbb1c17f1cb6fe00afc206faa3fbd18e1;
 
     // PROXY
     const INITIALIZE_SELECTOR = 0x79dc0da7c54b95f10aa182ad0a46400db63156920adb65eca2654c0945a463;
