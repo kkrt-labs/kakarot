@@ -14,6 +14,7 @@ from starkware.cairo.common.bool import FALSE, TRUE
 
 from kakarot.account import Account
 from kakarot.model import model
+from kakarot.gas import Gas
 from utils.dict import default_dict_copy
 from utils.utils import Helpers
 
@@ -155,11 +156,11 @@ namespace State {
 
     func cache_access_list{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
-    }(access_list_len: felt, access_list: model.AccessListItem*) {
+    }(access_list_len: felt, access_list: model.AccessListItem*) -> felt {
         alloc_locals;
         tempvar accounts_ptr = state.accounts;
         with accounts_ptr {
-            _cache_access_list(access_list_len, access_list);
+            let gas_cost = _cache_access_list(access_list_len, access_list);
         }
         tempvar state = new model.State(
             accounts_start=state.accounts_start,
@@ -170,15 +171,15 @@ namespace State {
             transfers=state.transfers,
         );
 
-        return ();
+        return gas_cost;
     }
 
     func _cache_access_list{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, accounts_ptr: DictAccess*
-    }(access_list_len: felt, access_list: model.AccessListItem*) {
+    }(access_list_len: felt, access_list: model.AccessListItem*) -> felt {
         alloc_locals;
         if (access_list_len == 0) {
-            return ();
+            return 0;
         }
 
         let access_list_item = [access_list];
@@ -203,7 +204,11 @@ namespace State {
         }
         dict_write{dict_ptr=accounts_ptr}(key=address, new_value=cast(account, felt));
 
-        return _cache_access_list(access_list_len - 1, access_list + model.AccessListItem.SIZE);
+        let cum_gas_cost = _cache_access_list(
+            access_list_len - 1, access_list + model.AccessListItem.SIZE
+        );
+        return cum_gas_cost + Gas.TX_ACCESS_LIST_ADDRESS_COST + access_list_item.storage_keys_len *
+            Gas.TX_ACCESS_LIST_STORAGE_KEY_COST;
     }
 
     // @dev Checks if an address is warm (has been accessed before or in access list).

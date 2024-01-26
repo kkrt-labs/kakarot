@@ -231,8 +231,11 @@ func test__cache_access_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
     %}
     let state = State.init();
     with state {
-        State.cache_access_list(access_list_len, cast(access_list, model.AccessListItem*));
+        let access_list_cost = State.cache_access_list(
+            access_list_len, cast(access_list, model.AccessListItem*)
+        );
     }
+    assert [output_ptr] = access_list_cost;
 
     %{
         from starknet_py.hash.utils import pedersen_hash
