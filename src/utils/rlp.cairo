@@ -1,7 +1,6 @@
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.memcpy import memcpy
 
 from utils.utils import Helpers
 
@@ -67,46 +66,48 @@ namespace RLP {
     // it recursively decodes the remaining data and adds the decoded items to the list of items.
     // @param data_len The length of the data to decode.
     // @param data The RLP encoded data.
+    // @param items_len The number of items decoded (0 when called first).
+    // @param items The pointer to the next free cell in the list of items decoded.
     // @return items_len The number of items decoded.
-    // @return items The decoded RLP items.
-    func decode{range_check_ptr, items: Item*}(data_len: felt, data: felt*) {
+    func decode{range_check_ptr}(
+        data_len: felt, data: felt*, items_len: felt, items: Item*
+    ) -> felt {
         alloc_locals;
 
         if (data_len == 0) {
-            return ();
+            return items_len;
         }
 
         let (rlp_type, offset, len) = decode_type(data_len=data_len, data=data);
 
-        if (len == 0) {
-            let (empty_array: felt*) = alloc();
-            assert [items] = Item(data_len=0, data=empty_array, is_list=rlp_type);
+        if (rlp_type == 1) {
+            // Case list
+            let (sub_items: Item*) = alloc();
+            let sub_items_len = decode(
+                data_len=len, data=data + offset, items_len=0, items=sub_items
+            );
+            assert [items] = Item(data_len=sub_items_len, data=cast(sub_items, felt*), is_list=1);
             tempvar range_check_ptr = range_check_ptr;
         } else {
-            if (rlp_type == 0) {
-                // Case string
-                assert [items] = Item(data_len=len, data=data + offset, is_list=0);
-                tempvar range_check_ptr = range_check_ptr;
-            } else {
-                // Case list
-                let (sub_items: Item*) = alloc();
-                let sub_items_start = sub_items;
-                decode{items=sub_items}(data_len=len, data=data + offset);
-                let sub_items_len = sub_items - sub_items_start;
-                assert [items] = Item(
-                    data_len=sub_items_len, data=cast(sub_items_start, felt*), is_list=1
-                );
-                tempvar range_check_ptr = range_check_ptr;
-            }
+            // Case string or empty list. If the list or string is empty,
+            // the data_len is 0 so not passing an empty data segment is fine.
+            assert [items] = Item(data_len=len, data=data + offset, is_list=rlp_type);
+            tempvar range_check_ptr = range_check_ptr;
         }
         tempvar items = items + 1 * Item.SIZE;
+        tempvar items_len = items_len + 1;
 
         let total_item_len = len + offset;
         let is_lt_input = is_le(total_item_len, data_len + 1);
         if (is_lt_input != FALSE) {
-            decode{items=items}(data_len=data_len - total_item_len, data=data + total_item_len);
-            return ();
+            let items_len = decode(
+                data_len=data_len - total_item_len,
+                data=data + total_item_len,
+                items_len=items_len,
+                items=items,
+            );
+            return items_len;
         }
-        return ();
+        return items_len;
     }
 }

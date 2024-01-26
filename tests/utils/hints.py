@@ -5,7 +5,7 @@ def flatten_list(list_ptr, list_len, output_ptr, memory, segments):
         is_list = memory[list_ptr + i * 3 + 2]
 
         if is_list:
-            flatten_list(data_ptr, data_len // 3, output_ptr, memory, segments)
+            flatten_list(data_ptr, data_len, output_ptr, memory, segments)
         else:
             bytes = [memory[data_ptr + j] for j in range(data_len)]
             segments.write_arg(output_ptr, bytes)

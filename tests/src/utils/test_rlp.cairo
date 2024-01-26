@@ -16,17 +16,13 @@ func test__decode{range_check_ptr}(output_ptr: felt*) {
     %}
 
     // When
-    let items_len = 0;
-    let (items: RLP.Item*) = alloc();
-    local items_start: RLP.Item* = items;
-    with items {
-        RLP.decode(data_len, data);
-    }
+    let (local items: RLP.Item*) = alloc();
+    RLP.decode(data_len, data, 0, items);
 
     %{
         from tests.utils.hints import flatten_list
         # The cairo functions returns a single RLP list of size 1 containing the decoded objects.
-        flatten_list(ids.items_start.address_, 1, ids.output_ptr, memory, segments)
+        flatten_list(ids.items.address_, 1, ids.output_ptr, memory, segments)
     %}
     return ();
 }
@@ -63,17 +59,13 @@ func test__decode_transaction{range_check_ptr}(output_ptr: felt*) {
     %}
 
     // When
-    let items_len = 0;
-    let (items: RLP.Item*) = alloc();
-    local items_start: RLP.Item* = items;
-    with items {
-        RLP.decode(data_len, data);
-    }
+    let (local items: RLP.Item*) = alloc();
+    RLP.decode(data_len, data, 0, items);
 
     %{
         from tests.utils.hints import flatten_list
         # The cairo functions returns a single RLP list of size 1 containing the decoded objects.
-        flatten_list(ids.items_start.address_, 1, ids.output_ptr, memory, segments)
+        flatten_list(ids.items.address_, 1, ids.output_ptr, memory, segments)
     %}
     return ();
 }
