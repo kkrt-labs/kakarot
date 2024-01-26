@@ -75,6 +75,8 @@ namespace Kakarot {
         value: Uint256*,
         data_len: felt,
         data: felt*,
+        access_list_len: felt,
+        access_list: model.AccessListItem*,
     ) -> (model.EVM*, model.State*) {
         alloc_locals;
         let evm_contract_address = resolve_to(to, origin);
@@ -90,7 +92,17 @@ namespace Kakarot {
         let env = Starknet.get_env(origin, gas_price);
 
         let (evm, stack, memory, state) = Interpreter.execute(
-            env, address, is_deploy_tx, bytecode_len, bytecode, data_len, data, value, gas_limit
+            env,
+            address,
+            is_deploy_tx,
+            bytecode_len,
+            bytecode,
+            data_len,
+            data,
+            value,
+            gas_limit,
+            access_list_len,
+            access_list,
         );
         return (evm, state);
     }

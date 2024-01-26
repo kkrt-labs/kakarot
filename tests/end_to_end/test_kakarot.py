@@ -69,6 +69,7 @@ class TestKakarot:
                     value=int(params["value"]),
                     bytecode=hex_string_to_bytes_array(params["code"]),
                     calldata=hex_string_to_bytes_array(params["calldata"]),
+                    access_list=[],
                 )
 
             assert result.success == params["success"]
@@ -98,6 +99,7 @@ class TestKakarot:
                     bytecode=hex_string_to_bytes_array(params["code"]),
                     calldata=hex_string_to_bytes_array(params["calldata"]),
                     max_fee=max_fee,
+                    access_list=[],
                 )
                 status = await wait_for_transaction(tx.hash)
                 assert status == TransactionStatus.ACCEPTED_ON_L2

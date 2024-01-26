@@ -45,6 +45,8 @@ func execute{
     bytecode: felt*,
     calldata_len: felt,
     calldata: felt*,
+    access_list_len: felt,
+    access_list: felt*,
 ) -> (model.EVM*, model.Stack*, model.Memory*, model.State*) {
     alloc_locals;
     let evm_address = 'target_evm_address';
@@ -60,6 +62,8 @@ func execute{
         calldata=calldata,
         value=value,
         gas_limit=Constants.TRANSACTION_GAS_LIMIT,
+        access_list_len=0,
+        access_list=cast(access_list, model.AccessListItem*),
     );
     return (evm, stack, memory, state);
 }
@@ -74,6 +78,8 @@ func evm_call{
     bytecode: felt*,
     calldata_len: felt,
     calldata: felt*,
+    access_list_len: felt,
+    access_list: felt*,
 ) -> (
     block_number: felt,
     block_timestamp: felt,
@@ -101,7 +107,7 @@ func evm_call{
 
     let env = Starknet.get_env(origin, 0);
     let (evm, stack, memory, state) = execute(
-        env, &value, bytecode_len, bytecode, calldata_len, calldata
+        env, &value, bytecode_len, bytecode, calldata_len, calldata, access_list_len, access_list
     );
 
     let (stack_keys_len, stack_keys) = dict_keys(stack.dict_ptr_start, stack.dict_ptr);
@@ -147,6 +153,8 @@ func evm_execute{
     bytecode: felt*,
     calldata_len: felt,
     calldata: felt*,
+    access_list_len: felt,
+    access_list: felt*,
 ) -> (return_data_len: felt, return_data: felt*, success: felt) {
     alloc_locals;
     let fp_and_pc = get_fp_and_pc();
@@ -154,7 +162,7 @@ func evm_execute{
 
     let env = Starknet.get_env(origin, 0);
     let (evm, stack, memory, state) = execute(
-        env, &value, bytecode_len, bytecode, calldata_len, calldata
+        env, &value, bytecode_len, bytecode, calldata_len, calldata, access_list_len, access_list
     );
     let result = (evm.return_data_len, evm.return_data, 1 - evm.reverted);
 
