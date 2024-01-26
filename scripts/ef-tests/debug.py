@@ -18,9 +18,7 @@ logger.setLevel(logging.INFO)
 
 load_dotenv()
 
-TESTS_PATH = Path(
-    "tests/ef_tests/test_data/BlockchainTests/GeneralStateTests"
-)
+TESTS_PATH = Path("tests/ef_tests/test_data/BlockchainTests/GeneralStateTests")
 TEST_NAME = os.getenv("TEST_NAME")
 if TEST_NAME is None:
     raise ValueError("Please set TEST_NAME")
