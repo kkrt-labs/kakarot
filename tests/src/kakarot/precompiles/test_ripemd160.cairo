@@ -1,31 +1,26 @@
-// SPDX-License-Identifier: MIT
-
 %lang starknet
 
-// Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.memcpy import memcpy
 
-// Local dependencies
-from utils.utils import Helpers
 from kakarot.precompiles.ripemd160 import PrecompileRIPEMD160
-from kakarot.model import model
-from kakarot.memory import Memory
-from kakarot.constants import Constants
-from kakarot.stack import Stack
-from kakarot.evm import EVM
-from kakarot.instructions.memory_operations import MemoryOperations
-from kakarot.instructions.system_operations import SystemOperations, CallHelper, CreateHelper
-from tests.utils.helpers import TestHelpers
 
-@external
 func test__ripemd160{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(msg_len: felt, msg: felt*) -> (hash_len: felt, hash: felt*) {
+}(output_ptr: felt*) {
     alloc_locals;
+    tempvar msg_len: felt;
+    let (msg: felt*) = alloc();
+    %{
+        ids.msg_len = len(program_input["msg"])
+        segments.write_arg(ids.msg, program_input["msg"])
+    %}
+
     let (hash_len, hash, gas, reverted) = PrecompileRIPEMD160.run(
         PrecompileRIPEMD160.PRECOMPILE_ADDRESS, msg_len, msg
     );
 
-    return (hash_len, hash);
+    memcpy(output_ptr, hash, hash_len);
+    return ();
 }
