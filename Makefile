@@ -21,15 +21,15 @@ build: check
 check:
 	poetry check --lock
 
-setup: $(EF_TESTS_DIR)
+setup:
 	poetry install
 
 test: build-sol deploy
-	poetry run tests/src --log-cli-level=INFO -n logical
+	poetry run tests/src -m "not EFTests" --log-cli-level=INFO -n logical
 	poetry run pytest tests/end_to_end
 
 test-no-log: build-sol deploy
-	poetry run tests/src -n logical
+	poetry run tests/src -m "not EFTests" -n logical
 	poetry run pytest tests/end_to_end
 
 test-unit:
@@ -38,17 +38,6 @@ test-unit:
 test-end-to-end: deploy
 	poetry run pytest tests/end_to_end --log-cli-level=INFO
 
-run-test-log: build-sol
-	poetry run pytest -k $(test) -m "not EFTests" --log-cli-level=INFO -vvv -s
-
-run-test: build-sol
-	poetry run pytest -k $(test) -m "not EFTests"
-
-run-test-mark-log: build-sol
-	poetry run pytest -m $(mark) --log-cli-level=INFO -vvv -s
-
-run-test-mark: build-sol
-	poetry run pytest -m $(mark)
 
 deploy: build
 	poetry run python ./scripts/deploy_kakarot.py
@@ -69,7 +58,8 @@ check-resources:
 get-blockhashes:
 	poetry run python scripts/get_latest_blockhashes.py
 
-build-sol: .gitmodules
+build-sol:
+	git submodule update --init --recursive
 	forge build --names --force
 
 run:
