@@ -17,15 +17,55 @@ func test__decode{range_check_ptr}(output_ptr: felt*) {
 
     // When
     let (local items: RLP.Item*) = alloc();
-    RLP.decode(data_len, data, items);
+    RLP.decode(items, data_len, data);
+
+    %{
+        from tests.utils.hints import flatten_list
+        # The cairo functions returns a single RLP list of size 1 containing the decoded objects.
+        flatten_list(ids.items.address_, 1, ids.output_ptr, memory, segments)
+    %}
+    return ();
+}
+
+func test__decode_type{range_check_ptr}(output_ptr: felt*) {
+    alloc_locals;
+    // Given
+    tempvar data_len: felt;
+    let (data) = alloc();
+    %{
+        ids.data_len = len(program_input["data"])
+        segments.write_arg(ids.data, program_input["data"])
+    %}
+
+    // When
+    let (type, offset, len) = RLP.decode_type(data_len, data);
 
     // Then
-    let item = items[0];
-    tempvar is_list: felt;
-    %{ ids.is_list = program_input["is_list"] %}
-    assert item.is_list = is_list;
+    assert [output_ptr] = type;
+    assert [output_ptr + 1] = offset;
+    assert [output_ptr + 2] = len;
 
-    memcpy(output_ptr, item.data, item.data_len);
+    return ();
+}
 
+func test__decode_transaction{range_check_ptr}(output_ptr: felt*) {
+    alloc_locals;
+    // Given
+    tempvar data_len: felt;
+    let (data) = alloc();
+    %{
+        ids.data_len = len(program_input["data"])
+        segments.write_arg(ids.data, program_input["data"])
+    %}
+
+    // When
+    let (local items: RLP.Item*) = alloc();
+    RLP.decode(items, data_len, data);
+
+    %{
+        from tests.utils.hints import flatten_list
+        # The cairo functions returns a single RLP list of size 1 containing the decoded objects.
+        flatten_list(ids.items.address_, 1, ids.output_ptr, memory, segments)
+    %}
     return ();
 }

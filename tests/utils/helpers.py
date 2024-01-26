@@ -182,3 +182,17 @@ def ec_sign(
 
 def pack_64_bits_little(input: List[int]):
     return sum([x * 256**i for (i, x) in enumerate(input)])
+
+
+def flatten(data):
+    result = []
+
+    def _flatten(item):
+        if isinstance(item, list):
+            for sub_item in item:
+                _flatten(sub_item)
+        else:
+            result.extend(item)
+
+    _flatten(data)
+    return result
