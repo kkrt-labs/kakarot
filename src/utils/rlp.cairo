@@ -68,7 +68,7 @@ namespace RLP {
     // @param data The RLP encoded data.
     // @param items The pointer to the next free cell in the list of items decoded.
     // @return items_len The number of items decoded.
-    func decode{range_check_ptr}(data_len: felt, data: felt*, items: Item*) -> felt {
+    func decode{range_check_ptr}(items: Item*, data_len: felt, data: felt*) -> felt {
         alloc_locals;
 
         if (data_len == 0) {
@@ -80,7 +80,7 @@ namespace RLP {
         if (rlp_type == 1) {
             // Case list
             let (sub_items: Item*) = alloc();
-            let sub_items_len = decode(data_len=len, data=data + offset, items=sub_items);
+            let sub_items_len = decode(items=sub_items, data_len=len, data=data + offset);
             assert [items] = Item(data_len=sub_items_len, data=cast(sub_items, felt*), is_list=1);
             tempvar range_check_ptr = range_check_ptr;
         } else {
@@ -95,7 +95,7 @@ namespace RLP {
         let is_lt_input = is_le(total_item_len, data_len + 1);
         if (is_lt_input != FALSE) {
             let items_len = decode(
-                data_len=data_len - total_item_len, data=data + total_item_len, items=items
+                items=items, data_len=data_len - total_item_len, data=data + total_item_len
             );
             return 1 + items_len;
         }

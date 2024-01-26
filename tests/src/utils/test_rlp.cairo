@@ -17,7 +17,7 @@ func test__decode{range_check_ptr}(output_ptr: felt*) {
 
     // When
     let (local items: RLP.Item*) = alloc();
-    RLP.decode(data_len, data, items);
+    RLP.decode(items, data_len, data);
 
     %{
         from tests.utils.hints import flatten_list
@@ -60,7 +60,7 @@ func test__decode_transaction{range_check_ptr}(output_ptr: felt*) {
 
     // When
     let (local items: RLP.Item*) = alloc();
-    RLP.decode(data_len, data, items);
+    RLP.decode(items, data_len, data);
 
     %{
         from tests.utils.hints import flatten_list
