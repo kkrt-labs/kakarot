@@ -7,7 +7,6 @@ from starkware.cairo.common.memcpy import memcpy
 from kakarot.precompiles.sha256 import PrecompileSHA256
 from utils.utils import Helpers
 
-
 func test__sha256{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(output_ptr: felt*) {
