@@ -1,7 +1,18 @@
-.PHONY: build test coverage
+# The release tag of https://github.com/ethereum/tests to use for EF tests
+EF_TESTS_TAG := v12.4
+EF_TESTS_URL := https://github.com/ethereum/tests/archive/refs/tags/$(EF_TESTS_TAG).tar.gz
+EF_TESTS_DIR := ./tests/ef_tests/test_data
 
-pull-ef-tests: .gitmodules
-	git submodule update --init --recursive
+# Downloads and unpacks Ethereum Foundation tests in the `$(EF_TESTS_DIR)` directory.
+# Requires `wget` and `tar`
+$(EF_TESTS_DIR):
+	mkdir -p $(EF_TESTS_DIR)
+	wget $(EF_TESTS_URL) -O ethereum-tests.tar.gz
+	tar -xzf ethereum-tests.tar.gz --strip-components=1 -C $(EF_TESTS_DIR)
+	rm ethereum-tests.tar.gz
+
+
+.PHONY: build test coverage $(EF_TESTS_DIR)
 
 build: check
 	$(MAKE) clean
@@ -10,7 +21,7 @@ build: check
 check:
 	poetry check --lock
 
-setup:
+setup: $(EF_TESTS_DIR)
 	poetry install
 
 test: build-sol deploy
