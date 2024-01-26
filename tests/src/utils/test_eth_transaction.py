@@ -108,24 +108,77 @@ class TestEthTransaction:
                     tx_data=list(encoded_unsigned_tx),
                 )
 
-    class TestAccessList:
+    class TestDecodeTransaction:
+        @pytest.mark.parametrize("transaction", TRANSACTIONS)
+        @pytest.mark.xfail(
+            reason="TODO: https://github.com/kkrt-labs/kakarot/issues/899"
+        )
+        async def test_should_decode_all_transactions_types(
+            self, cairo_run, transaction
+        ):
+            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
+            output = cairo_run(
+                "test__decode",
+                data=list(encoded_unsigned_tx),
+            )
+
+            expected_access_list = serialize_accesslist(
+                transaction.get("accessList") or []
+            )
+            expected_access_list_len = len(transaction.get("accessList") or [])
+            expected_gas_price = (
+                transaction.get("gasPrice") or transaction["maxFeePerGas"]
+            )
+            expected_to = (
+                int(transaction["to"], 16)
+                if isinstance(transaction["to"], str)
+                else transaction["to"]
+            )
+            expected_data = (
+                bytes.fromhex(transaction["data"][2:])
+                if isinstance(transaction["data"], str)
+                else transaction["data"]
+            )
+
+            value = output[6] + output[7] * 2**128
+            data_len = output[9]
+            data = bytes(output[10 : 10 + data_len])
+            access_list_len = output[10 + data_len]
+            access_list = output[
+                11 + data_len : 11 + data_len + len(expected_access_list)
+            ]
+
+            assert transaction["nonce"] == output[2]
+            assert expected_gas_price == output[3]
+            assert transaction["gas"] == output[4]
+            assert expected_to == output[5]
+            assert transaction["value"] == value
+            assert transaction["chainId"] == output[8]
+            assert expected_data == data
+            assert expected_access_list_len == access_list_len
+            assert access_list == expected_access_list
+
+    class TestParseAccessList:
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         def test_should_parse_access_list(self, cairo_run, transaction):
             rlp_structure_tx = transaction_rpc_to_rlp_structure(transaction)
-            access_list = rlp_structure_tx["accessList"]
-            sanitized_access_list = [
-                (
-                    bytes.fromhex(address[2:]),
-                    tuple(
-                        bytes.fromhex(storage_key[2:]) for storage_key in storage_keys
-                    ),
-                )
-                for address, storage_keys in access_list
-            ]
+            access_list = rlp_structure_tx.get("accessList")
+            sanitized_access_list = []
+            if access_list is not None:
+                sanitized_access_list = [
+                    (
+                        bytes.fromhex(address[2:]),
+                        tuple(
+                            bytes.fromhex(storage_key[2:])
+                            for storage_key in storage_keys
+                        ),
+                    )
+                    for address, storage_keys in access_list
+                ]
             encoded_access_list = encode(sanitized_access_list)
 
             output = cairo_run(
                 "test__parse_access_list", data=list(encoded_access_list)
             )
-            expected_output = serialize_accesslist(transaction["accessList"])
+            expected_output = serialize_accesslist(transaction.get("accessList") or [])
             assert output == expected_output
