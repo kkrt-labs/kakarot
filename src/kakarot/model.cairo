@@ -176,4 +176,14 @@ namespace model {
         stack_size_min: felt,
         stack_size_diff: felt,
     }
+
+    // @dev Stores the data of an access list
+    // @param address The address of the account
+    // @param storage_keys_len The number of storage keys accessed
+    // @param storage_keys The storage keys accessed
+    struct AccessListItem {
+        address: felt,
+        storage_keys_len: felt,
+        storage_keys: Uint256*,
+    }
 }
