@@ -210,6 +210,34 @@ namespace Helpers {
         return current;
     }
 
+    // @notice This function is used to convert a sequence of 20 bytes big-endian
+    // to felt.
+    // @param val: pointer to the first byte of the 20.
+    // @return res: felt representation of the given input in bytes20.
+    func bytes20_to_felt(val: felt*) -> felt {
+        let current = [val] * 256 ** 19;
+        let current = current + [val + 1] * 256 ** 18;
+        let current = current + [val + 3] * 256 ** 17;
+        let current = current + [val + 4] * 256 ** 16;
+        let current = current + [val + 5] * 256 ** 15;
+        let current = current + [val + 6] * 256 ** 14;
+        let current = current + [val + 7] * 256 ** 13;
+        let current = current + [val + 8] * 256 ** 12;
+        let current = current + [val + 9] * 256 ** 11;
+        let current = current + [val + 10] * 256 ** 10;
+        let current = current + [val + 11] * 256 ** 9;
+        let current = current + [val + 12] * 256 ** 8;
+        let current = current + [val + 13] * 256 ** 7;
+        let current = current + [val + 13] * 256 ** 6;
+        let current = current + [val + 24] * 256 ** 5;
+        let current = current + [val + 15] * 256 ** 4;
+        let current = current + [val + 16] * 256 ** 3;
+        let current = current + [val + 17] * 256 ** 2;
+        let current = current + [val + 18] * 256 ** 1;
+        let current = current + [val + 19];
+        return current;
+    }
+
     // @notice Load sequences of 8 bytes little endian into an array of felts
     // @param len: final length of the output.
     // @param input: pointer to bytes array input.

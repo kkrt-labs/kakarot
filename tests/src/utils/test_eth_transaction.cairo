@@ -47,8 +47,8 @@ func test__decode{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(output_ptr: fel
     assert [output_ptr + 10 + payload_len] = access_list_len;
     %{
         from tests.utils.hints import flatten_access_list
-        output_ptr = ids.output_ptr+11+ids.payload_len
 
+        output_ptr = ids.output_ptr + 11 + ids.payload_len
         flatten_access_list(ids.access_list, ids.access_list_len, output_ptr, memory, segments)
     %}
 
