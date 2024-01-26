@@ -6,6 +6,9 @@ on:
       - main
   pull_request: {}
 
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -139,7 +142,7 @@ jobs:
         with:
           cache-on-failure: "true"
       - name: setup
-        run: make setup
+        run: make setup setup-kakarot-v1
       - uses: taiki-e/install-action@nextest
 
       - name: Download Kakarot build artifacts in v0
@@ -148,9 +151,7 @@ jobs:
           name: kakarot-build
           path: ./build/v0
       - name: Move ERC20
-        run: |
-          mkdir build/common
-          mv build/v0/fixtures/ERC20.json build/common
+        run: mv build/v0/fixtures/ERC20.json build/common
       - name: Set up Python
         uses: actions/setup-python@v4
         with:

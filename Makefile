@@ -25,11 +25,11 @@ setup:
 	poetry install
 
 test: build-sol deploy
-	poetry run tests/src -m "not EFTests" --log-cli-level=INFO -n logical
+	poetry run pytest tests/src -m "not EFTests" --log-cli-level=INFO -n logical
 	poetry run pytest tests/end_to_end
 
 test-no-log: build-sol deploy
-	poetry run tests/src -m "not EFTests" -n logical
+	poetry run pytest tests/src -m "not EFTests" -n logical
 	poetry run pytest tests/end_to_end
 
 test-unit:
