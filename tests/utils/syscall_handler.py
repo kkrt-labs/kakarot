@@ -2,6 +2,7 @@ import time
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Optional, Union
+from unittest import mock
 
 from starkware.starknet.public.abi import (
     get_selector_from_name,
@@ -21,6 +22,7 @@ class SyscallHandler:
     block_timestamp: int = int(time.time())
     contract_address: int = 0xABDE1
     patches = {}
+    mock_storage = mock.MagicMock()
 
     def get_contract_address(self, segments, syscall_ptr):
         """
@@ -111,6 +113,23 @@ class SyscallHandler:
         address = segments.memory[syscall_ptr + 1]
         value = self.patches.get(address, 0)
         segments.write_arg(syscall_ptr + 2, [value])
+
+    def storage_write(self, segments, syscall_ptr):
+        """
+        Record the call in the internal mock object.
+
+        Syscall structure is:
+
+            struct StorageWrite {
+                selector: felt,
+                address: felt,
+                value: felt,
+            }
+        """
+        self.mock_storage(
+            address=segments.memory[syscall_ptr + 1],
+            value=segments.memory[syscall_ptr + 2],
+        )
 
     def call_contract(self, segments, syscall_ptr):
         """
