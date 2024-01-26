@@ -744,7 +744,7 @@ namespace Interpreter {
         let count = count_not_zero(calldata_len, calldata);
         let zeroes = calldata_len - count;
         let calldata_gas = zeroes * 4 + count * 16;
-        let intrinsic_gas = 21000 + calldata_gas;
+        let intrinsic_gas = Gas.TX_BASE_COST + calldata_gas;
 
         // If is_deploy_tx is TRUE, then
         // bytecode is data and data is empty
@@ -795,7 +795,6 @@ namespace Interpreter {
         let stack = Stack.init();
         let memory = Memory.init();
         let state = State.init();
-        let evm = EVM.init(message, gas_limit - intrinsic_gas);
 
         with state {
             // Cache the coinbase, precompiles, caller, and target, making them warm
@@ -803,8 +802,10 @@ namespace Interpreter {
             State.cache_precompiles();
             State.get_account(address.evm);
             State.get_account(env.origin);
-            // TODO: compute access_list gas
-            State.cache_access_list(access_list_len, access_list);
+            let access_list_cost = State.cache_access_list(access_list_len, access_list);
+            let intrinsic_gas = intrinsic_gas + access_list_cost;
+
+            let evm = EVM.init(message, gas_limit - intrinsic_gas);
 
             // Handle value
             let origin_starknet_address = Account.compute_starknet_address(env.origin);

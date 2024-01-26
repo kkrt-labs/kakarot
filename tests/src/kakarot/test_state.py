@@ -1,4 +1,8 @@
 import pytest
+from ethereum.shanghai.fork_types import (
+    TX_ACCESS_LIST_ADDRESS_COST,
+    TX_ACCESS_LIST_STORAGE_KEY_COST,
+)
 
 from tests.utils.constants import TRANSACTIONS
 from tests.utils.syscall_handler import SyscallHandler
@@ -58,7 +62,17 @@ class TestState:
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         def test_should_cache_access_list(self, cairo_run, transaction):
             access_list = transaction.get("accessList") or ()
-            cairo_run("test__cache_access_list", access_list=access_list)
+            gas_cost = cairo_run("test__cache_access_list", access_list=access_list)[0]
+            print(gas_cost)
+
+            # count addresses key in access list, with duplicates
+            len_access_list = len(access_list)
+            len_storage_keys = sum(len(x["storageKeys"]) for x in access_list)
+            assert (
+                gas_cost
+                == TX_ACCESS_LIST_ADDRESS_COST * len_access_list
+                + TX_ACCESS_LIST_STORAGE_KEY_COST * len_storage_keys
+            )
 
     class TestCopyAccounts:
         def test_should_handle_null_pointers(self, cairo_run):
