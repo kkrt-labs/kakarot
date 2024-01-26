@@ -27,6 +27,7 @@ from starkware.starknet.testing.starknet import Starknet
 
 from tests.utils.constants import BLOCK_NUMBER, BLOCK_TIMESTAMP
 from tests.utils.coverage import VmWithCoverage, report_runs
+from tests.utils.hints import debug_info
 from tests.utils.reporting import (
     dump_coverage,
     dump_reports,
@@ -235,7 +236,8 @@ def cairo_run(request) -> list:
             hint_locals={
                 "program_input": kwargs,
                 "syscall_handler": SyscallHandler(),
-            }
+            },
+            static_locals={"debug_info": debug_info(program)},
         )
         runner.run_until_pc(stack[-1])
         runner.original_steps = runner.vm.current_step

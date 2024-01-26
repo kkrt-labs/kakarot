@@ -1,3 +1,13 @@
+def debug_info(program):
+    def _debug_info(pc):
+        print(
+            program.debug_info.instruction_locations.get(
+                pc.offset
+            ).inst.to_string_with_content("")
+        )
+
+    return _debug_info
+
 def flatten_list(list_ptr, list_len, output_ptr, memory, segments):
     for i in range(list_len):
         data_len = memory[list_ptr + i * 3]
