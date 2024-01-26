@@ -105,9 +105,11 @@ class TestEthTransaction:
                     tx_data=list(encoded_unsigned_tx),
                 )
 
-        def test_should_parse_access_list(self, cairo_run):
-            tx = transaction_rpc_to_rlp_structure(TRANSACTIONS[1])
-            access_list = tx["accessList"]
+    class TestAccessList:
+        @pytest.mark.parametrize("transaction", TRANSACTIONS)
+        def test_should_parse_access_list(self, cairo_run, transaction):
+            rlp_structure_tx = transaction_rpc_to_rlp_structure(transaction)
+            access_list = rlp_structure_tx["accessList"]
             sanitized_access_list = [
                 (
                     bytes.fromhex(address[2:]),
@@ -117,12 +119,10 @@ class TestEthTransaction:
                 )
                 for address, storage_keys in access_list
             ]
-
             encoded_access_list = encode(sanitized_access_list)
-            print(list(encoded_access_list))
 
             output = cairo_run(
                 "test__parse_access_list", data=list(encoded_access_list)
             )
-            expected_output = serialize_accesslist(TRANSACTIONS[1]["accessList"])
+            expected_output = serialize_accesslist(transaction["accessList"])
             assert output == expected_output

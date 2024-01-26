@@ -8,6 +8,7 @@ from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
 
 from kakarot.constants import Constants
+from kakarot.model import model
 from utils.rlp import RLP
 from utils.utils import Helpers
 from utils.bytes import bytes_to_bytes8_little_endian
@@ -259,86 +260,73 @@ namespace EthTransaction {
         return ();
     }
 
-    struct AccessList {
-        address: felt,
-        storage_keys_len: felt,
-        storage_keys: Uint256*,
-    }
-
-    // @notice Parses the RLP-decoded access list and returns an array containing tuples
-    // of (address, storage_keys_len, storage_keys) for each entry in the access list.
-    // @param list_len The length of the access list. Each entry in the access list
-    // takes 3 felts, so a length of 6 means 2 entries.
-    // @param access_list The RLP-decoded access list.
+    // @notice Parses the RLP-decoded access list and returns an array containing of
+    // {address, storage_keys_len, storage_keys} for each entry in the access list.
+    // @param list_len The length of the RLP-decoded access list. A length of 2 means that
+    // there are two addresses in the access list.
+    // @param list_items The RLP-decoded access list.
     func parse_access_list{range_check_ptr}(list_len: felt, list_items: RLP.Item*) -> (
-        felt, AccessList*
+        felt, model.AccessListItem*
     ) {
         alloc_locals;
         if (list_len == 0) {
-            return (0, cast(0, AccessList*));
+            return (0, cast(0, model.AccessListItem*));
         }
 
-        let (parsed_list: AccessList*) = alloc();
-
-        let parsed_len = _parse_access_list(list_len, list_items, 0, parsed_list);
+        let (parsed_list: model.AccessListItem*) = alloc();
+        let parsed_len = _parse_access_list(parsed_list, list_len, list_items);
 
         return (parsed_len, parsed_list);
     }
 
-    // Each item in the access list is a List of two elements [Address, List<StorageKeys>]
+    // @notice Recursively parses the RLP-decoded access list.
+    // @param parsed_list The pointer to the next free cell in the parsed access list.
+    // @param list_len The remaining length of the RLP-decoded access list to parse.
+    // @param list_items The pointer to the current RLP-decoded access list item to parse.
+    // @return The number of parsed access list entries.
     func _parse_access_list{range_check_ptr}(
-        list_len: felt, list_items: RLP.Item*, parsed_list_len: felt, parsed_list: AccessList*
+        parsed_list: model.AccessListItem*, list_len: felt, list_items: RLP.Item*
     ) -> felt {
         alloc_locals;
         if (list_len == 0) {
-            return parsed_list_len;
+            return 0;
         }
 
-        // Each item should be of length 2, as it's a List<address, List<storage_keys>>
-        let address_item = [list_items];
-        let address_ptr = list_items.data;
-        let address_len = list_items.data_len;
+        // Address
+        let address_item = list_items;
+        let address_ptr = address_item.data;
+        let address_len = address_item.data_len;
         let address = Helpers.bytes_to_felt(address_len, address_ptr);
 
-        let keys_item = [list_items + RLP.Item.SIZE];
-        let keys_list_len = keys_item.data_len;
-        let keys_list = cast(keys_item.data, RLP.Item*);
+        // List<StorageKeys>
+        let keys_item = list_items + RLP.Item.SIZE;
+        let keys_len = keys_item.data_len;
+        let keys = cast(keys_item.data, RLP.Item*);
 
-        let (parsed_keys_len, parsed_keys) = parse_storage_keys(keys_list_len, keys_list);
-        assert [parsed_list] = AccessList(
+        let (parsed_keys: Uint256*) = alloc();
+        let parsed_keys_len = parse_storage_keys(parsed_keys, keys_len, keys);
+        assert [parsed_list] = model.AccessListItem(
             address=address, storage_keys_len=parsed_keys_len, storage_keys=parsed_keys
         );
 
-        return _parse_access_list(
-            list_len - 2 * RLP.Item.SIZE,
-            list_items + 2 * RLP.Item.SIZE,
-            parsed_list_len + 1,
-            parsed_list + AccessList.SIZE,
+        let parsed_list_len = _parse_access_list(
+            parsed_list + model.AccessListItem.SIZE, list_len - 2, list_items + 2 * RLP.Item.SIZE
         );
+        return parsed_list_len + 1;
     }
 
-    // Parses the List of storage keys associated to an address
-    func parse_storage_keys{range_check_ptr}(keys_list_len: felt, keys_list: RLP.Item*) -> (
-        felt, Uint256*
-    ) {
-        alloc_locals;
-        if (keys_list_len == 0) {
-            return (0, cast(0, Uint256*));
-        }
-
-        let (parsed_keys: Uint256*) = alloc();
-        let parsed_keys_len = _parse_storage_keys(keys_list_len, keys_list, 0, parsed_keys);
-
-        return (parsed_keys_len, parsed_keys);
-    }
-
-    // Recursively parses storage keys associated to an address
-    func _parse_storage_keys{range_check_ptr}(
-        keys_list_len: felt, keys_list: RLP.Item*, parsed_keys_len: felt, parsed_keys: Uint256*
+    // @notice Recursively parses the RLP-decoded storage keys list of an address
+    // and returns an array containing the parsed storage keys.
+    // @param parsed_keys The pointer to the next free cell in the parsed storage keys array.
+    // @param keys_list_len The remaining length of the RLP-decoded storage keys list to parse.
+    // @param keys_list The pointer to the current RLP-decoded storage keys list item to parse.
+    // @return The number of parsed storage keys.
+    func parse_storage_keys{range_check_ptr}(
+        parsed_keys: Uint256*, keys_list_len: felt, keys_list: RLP.Item*
     ) -> felt {
         alloc_locals;
         if (keys_list_len == 0) {
-            return parsed_keys_len;
+            return 0;
         }
 
         let key_len = keys_list.data_len;
@@ -346,11 +334,9 @@ namespace EthTransaction {
         let key = Helpers.bytes_i_to_uint256(key_bytes, key_len);
         assert [parsed_keys] = key;
 
-        return _parse_storage_keys(
-            keys_list_len - RLP.Item.SIZE,
-            keys_list + RLP.Item.SIZE,
-            parsed_keys_len + 1,
-            parsed_keys + Uint256.SIZE,
+        let parsed_keys_len = parse_storage_keys(
+            parsed_keys + Uint256.SIZE, keys_list_len - 1, keys_list + RLP.Item.SIZE
         );
+        return parsed_keys_len + 1;
     }
 }
