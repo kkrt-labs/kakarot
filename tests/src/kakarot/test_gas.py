@@ -6,6 +6,8 @@ from ethereum.shanghai.vm.gas import (
     calculate_memory_gas_cost,
 )
 
+random.seed(0)
+
 
 class TestGas:
     class TestCost:
