@@ -33,11 +33,10 @@ test-no-log: build-sol deploy
 	poetry run pytest tests/end_to_end
 
 test-unit:
-	poetry run pytest tests/src --log-cli-level=INFO
+	poetry run pytest tests/src -n logical
 
-test-end-to-end: deploy
-	poetry run pytest tests/end_to_end --log-cli-level=INFO
-
+test-end-to-end: build-sol deploy
+	poetry run pytest tests/end_to_end
 
 deploy: build
 	poetry run python ./scripts/deploy_kakarot.py
