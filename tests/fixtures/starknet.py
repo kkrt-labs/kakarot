@@ -254,11 +254,14 @@ def cairo_run(request) -> list:
             )
             data = profile_from_tracer_data(tracer_data)
 
-            with open(
-                request.node.path.parent
-                / f"{request.node.path.stem}.{entrypoint}({(json.dumps(kwargs) if kwargs else '')[:220]}).pb.gz",
-                "wb",
-            ) as fp:
+            output_path = (
+                str(
+                    request.node.path.parent
+                    / f"{request.node.path.stem}.{entrypoint}({(json.dumps(kwargs) if kwargs else '')})"
+                )[:220]
+                + ".pb.gz"
+            )
+            with open(output_path, "wb") as fp:
                 fp.write(data)
 
         if add_output:

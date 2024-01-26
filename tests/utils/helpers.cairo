@@ -146,6 +146,11 @@ namespace TestHelpers {
         return ();
     }
 
+    func print_felt(x: felt) {
+        %{ print(ids.x) %}
+        return ();
+    }
+
     func print_uint256(val: Uint256) {
         %{
             low = ids.val.low
@@ -176,36 +181,24 @@ namespace TestHelpers {
     }
 
     func print_message(message: model.Message*) {
-        %{ print("print_message") %}
         print_array('calldata', message.calldata_len, message.calldata);
         print_array('bytecode', message.bytecode_len, message.bytecode);
-        %{
-            print(f"{ids.message.env.gas_price=}")
-            print(f"{ids.message.env.origin.evm=:040x}")
-            print(f"{ids.message.env.origin.starknet=:064x}")
-            print(f"{ids.message.address.evm=:040x}")
-            print(f"{ids.message.address.starknet=:064x}")
-            print(f"{ids.message.read_only=}")
-            print(f"{ids.message.is_create=}")
-        %}
+        print_felt(message.env.gas_price);
+        print_felt(message.env.origin);
+        print_felt(message.address.evm);
+        print_felt(message.address.starknet);
+        print_felt(message.read_only);
+        print_felt(message.is_create);
         return ();
     }
 
-    func print_execution_context(execution_context: model.EVM*) {
-        %{ print("print_execution_context") %}
-
-        print_message(execution_context.message);
-        print_dict('stack', execution_context.stack.dict_ptr, Uint256.SIZE);
-
-        print_array(
-            'return_data', execution_context.return_data_len, execution_context.return_data
-        );
-        %{
-            print(f"{ids.execution_context.program_counter=}")
-            print(f"{ids.execution_context.stopped=}")
-            print(f"{ids.execution_context.gas_left=}")
-            print(f"{ids.execution_context.reverted=}")
-        %}
+    func print_execution_context(evm: model.EVM*) {
+        print_message(evm.message);
+        print_array('return_data', evm.return_data_len, evm.return_data);
+        print_felt(evm.program_counter);
+        print_felt(evm.stopped);
+        print_felt(evm.gas_left);
+        print_felt(evm.reverted);
         return ();
     }
 }

@@ -264,11 +264,7 @@ def compile_contract(contract):
             str(SOURCE_DIR),
             *(["--no_debug_info"] if not NETWORK["devnet"] else []),
             *(["--account_contract"] if contract["is_account_contract"] else []),
-            *(
-                ["--disable_hint_validation"]
-                if NETWORK["name"] == "starknet-devnet"
-                else []
-            ),
+            *(["--disable_hint_validation"] if NETWORK["devnet"] else []),
         ],
         capture_output=True,
     )
