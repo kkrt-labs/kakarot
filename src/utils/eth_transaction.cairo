@@ -53,7 +53,7 @@ namespace EthTransaction {
         finalize_keccak(keccak_ptr_start, keccak_ptr);
 
         let (items: RLP.Item*) = alloc();
-        RLP.decode(tx_data_len, tx_data, 0, items);
+        RLP.decode(tx_data_len, tx_data, items);
 
         // the tx is a list of fields, hence first level RLP decoding
         // is a single item, which is indeed the sought list
@@ -134,7 +134,7 @@ namespace EthTransaction {
         tempvar tx_type = [tx_data];
 
         let (items: RLP.Item*) = alloc();
-        RLP.decode(tx_data_len - 1, tx_data + 1, 0, items);
+        RLP.decode(tx_data_len - 1, tx_data + 1, items);
         // the tx is a list of fields, hence first level RLP decoding
         // is a single item, which is indeed the sought list
         assert [items].is_list = TRUE;
