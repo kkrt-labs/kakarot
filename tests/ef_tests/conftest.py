@@ -40,7 +40,7 @@ def pytest_generate_tests(metafunc):
 
     if not EF_GENERAL_STATE_TEST_ROOT_PATH.exists():
         logger.warning(
-            "EFTests directory %s doesn't exist. Run `make pull-ef-tests`",
+            "EFTests directory %s doesn't exist. Run `make setup`",
             str(EF_GENERAL_STATE_TEST_ROOT_PATH),
         )
         metafunc.parametrize("ef_blockchain_test", [])
