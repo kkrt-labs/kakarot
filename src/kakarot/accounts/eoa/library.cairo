@@ -160,6 +160,8 @@ namespace ExternallyOwnedAccount {
             _chain_id,
             payload_len,
             payload,
+            access_list_len,
+            access_list,
         ) = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
 
         let (_kakarot_address) = kakarot_address.read();

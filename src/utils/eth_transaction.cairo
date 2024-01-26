@@ -36,6 +36,8 @@ namespace EthTransaction {
         chain_id: felt,
         payload_len: felt,
         payload: felt*,
+        access_list_len: felt,
+        access_list: model.AccessListItem*,
     ) {
         // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md
         alloc_locals;
@@ -93,6 +95,8 @@ namespace EthTransaction {
             chain_id,
             payload_len,
             payload,
+            0,
+            cast(0, model.AccessListItem*),
         );
     }
 
@@ -115,6 +119,8 @@ namespace EthTransaction {
         chain_id: felt,
         payload_len: felt,
         payload: felt*,
+        access_list_len: felt,
+        access_list: model.AccessListItem*,
     ) {
         // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-2718.md#specification
         alloc_locals;
@@ -163,7 +169,13 @@ namespace EthTransaction {
         let payload: felt* = sub_items[gas_price_idx + 4].data;
 
         let access_list_len = sub_items[gas_price_idx + 5].data_len;
-        let access_list_ptr = sub_items[gas_price_idx + 5].data;
+        let access_list_items = cast(sub_items[gas_price_idx + 5].data, RLP.Item*);
+        let (parsed_access_list: model.AccessListItem*) = alloc();
+        let parsed_access_list_len = parse_access_list(
+            parsed_access_list,
+            sub_items[gas_price_idx + 5].data_len,
+            cast(sub_items[gas_price_idx + 5].data, RLP.Item*),
+        );
         return (
             msg_hash,
             nonce,
@@ -174,6 +186,8 @@ namespace EthTransaction {
             chain_id,
             payload_len,
             payload,
+            parsed_access_list_len,
+            parsed_access_list,
         );
     }
 
@@ -205,6 +219,8 @@ namespace EthTransaction {
         chain_id: felt,
         payload_len: felt,
         payload: felt*,
+        access_list_len: felt,
+        access_list: model.AccessListItem*,
     ) {
         let _is_legacy = is_legacy_tx(tx_data);
         if (_is_legacy == FALSE) {
@@ -233,7 +249,7 @@ namespace EthTransaction {
         tx_data: felt*,
     ) {
         alloc_locals;
-        let (msg_hash, nonce, _gas_price, _gas_limit, _, _, chain_id, _, _) = decode(
+        let (msg_hash, nonce, _gas_price, _gas_limit, _, _, chain_id, _, _, _, _) = decode(
             tx_data_len, tx_data
         );
         assert nonce = account_nonce;
@@ -260,31 +276,12 @@ namespace EthTransaction {
         return ();
     }
 
-    // @notice Parses the RLP-decoded access list and returns an array containing of
-    // {address, storage_keys_len, storage_keys} for each entry in the access list.
-    // @param list_len The length of the RLP-decoded access list. A length of 2 means that
-    // there are two addresses in the access list.
-    // @param list_items The RLP-decoded access list.
-    func parse_access_list{range_check_ptr}(list_len: felt, list_items: RLP.Item*) -> (
-        felt, model.AccessListItem*
-    ) {
-        alloc_locals;
-        if (list_len == 0) {
-            return (0, cast(0, model.AccessListItem*));
-        }
-
-        let (parsed_list: model.AccessListItem*) = alloc();
-        let parsed_len = _parse_access_list(parsed_list, list_len, list_items);
-
-        return (parsed_len, parsed_list);
-    }
-
     // @notice Recursively parses the RLP-decoded access list.
     // @param parsed_list The pointer to the next free cell in the parsed access list.
     // @param list_len The remaining length of the RLP-decoded access list to parse.
     // @param list_items The pointer to the current RLP-decoded access list item to parse.
     // @return The number of parsed access list entries.
-    func _parse_access_list{range_check_ptr}(
+    func parse_access_list{range_check_ptr}(
         parsed_list: model.AccessListItem*, list_len: felt, list_items: RLP.Item*
     ) -> felt {
         alloc_locals;
@@ -293,24 +290,24 @@ namespace EthTransaction {
         }
 
         // Address
-        let address_item = list_items;
+        let address_item = cast(list_items.data, RLP.Item*);
         let address_ptr = address_item.data;
         let address_len = address_item.data_len;
         let address = Helpers.bytes_to_felt(address_len, address_ptr);
 
         // List<StorageKeys>
-        let keys_item = list_items + RLP.Item.SIZE;
+        let keys_item = cast(address_item + 3, RLP.Item*);
         let keys_len = keys_item.data_len;
         let keys = cast(keys_item.data, RLP.Item*);
 
-        let (parsed_keys: Uint256*) = alloc();
+        let (local parsed_keys: Uint256*) = alloc();
         let parsed_keys_len = parse_storage_keys(parsed_keys, keys_len, keys);
         assert [parsed_list] = model.AccessListItem(
             address=address, storage_keys_len=parsed_keys_len, storage_keys=parsed_keys
         );
 
-        let parsed_list_len = _parse_access_list(
-            parsed_list + model.AccessListItem.SIZE, list_len - 2, list_items + 2 * RLP.Item.SIZE
+        let parsed_list_len = parse_access_list(
+            parsed_list + model.AccessListItem.SIZE, list_len - 1, list_items + RLP.Item.SIZE
         );
         return parsed_list_len + 1;
     }
