@@ -23,7 +23,4 @@ def event_loop():
     loop.close()
 
 
-pytest_plugins = [
-    "tests.fixtures.starknet",
-    "tests.fixtures.accounts",
-]
+pytest_plugins = ["tests.fixtures.starknet"]

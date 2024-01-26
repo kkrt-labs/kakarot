@@ -166,29 +166,26 @@ Test architecture is the following:
 
 - tests/src contains cairo tests for each cairo function in the kakarot codebase
   running either in plain cairo or with the starknet test runner;
-- tests/integration contains high level integrations tests running in the
-  starknet test runner;
-- tests/integration/end_to_end contains end-to-end tests running on an
-  underlying Starknet-like network (using the Starknet RPC), currently
+- tests/end_to_end contains end-to-end tests running on an underlying
+  Starknet-like network (using the Starknet RPC), currently
   [Katana](https://github.com/dojoengine/dojo). These end-to-end tests contain
   both raw bytecode execution tests and test on real solidity contracts.
 
-The difference between the starknet test runner and the plain cairo one is that
-the former emulate a whole starknet network and is as such much slower (~10x).
+The difference between the starknet test runner (when using contracts) and the
+plain cairo one is that the former emulate a whole starknet network and is as
+such much slower (~10x).
 
-Consequently, when writing tests, don't use `%lang starknet` and contracts
-unless it's really required.
+Consequently, when writing tests, don't use contracts unless it's really
+required. Actually, for tests requiring a Starknet devnet, prefer end-to-end
+relying only on a RPC endpoint and currently running on Katana.
 
-For an example of the starknet test runner, see for example
-[the Contract Account tests](tests/integration/accounts/test_contract_account.py).
 For an example of the cairo test runner, see for example
 [the RLP library tests](tests/src/utils/test_rlp.py). Especially, the cairo
 runner uses hints to communicate values and return outputs:
 
 - `kwargs` of `cairo_run` are available in the `program_input` variable
-- values written in the `output` segment available in hints as a constant value
-  are returned, e.g. `segments.write_arg(output, [ids.x])` will return the list
-  `[x]`.
+- values written in the `output_ptr` segment are returned, e.g.
+  `segments.write_arg(output_ptr, [ids.x])` will return the list `[x]`.
 
 Both cairo and starknet tests can be used with the `--profile-cairo` flag to
 generate a profiling file (see the `--profile_output` flag of the `cairo-run`

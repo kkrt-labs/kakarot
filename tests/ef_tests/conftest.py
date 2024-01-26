@@ -107,3 +107,71 @@ def get_starknet_address(account_proxy_class, kakarot):
         )
 
     return _factory
+
+
+@pytest_asyncio.fixture(scope="session")
+async def eth(starknet: Starknet):
+    class_hash = await starknet.deprecated_declare(
+        source="./tests/fixtures/ERC20.cairo"
+    )
+    return await starknet.deploy(
+        class_hash=class_hash.class_hash,
+        constructor_calldata=[
+            int.from_bytes(b"Ether", "big"),  # name
+            int.from_bytes(b"ETH", "big"),  # symbol
+            18,  # decimals
+        ],
+    )
+
+
+@pytest.fixture()
+def starknet_snapshot(starknet):
+    """
+    Use this fixture to snapshot the starknet state before each test and reset it at teardown.
+    """
+    initial_state = starknet.state.copy()
+
+    yield
+
+    initial_cache_state = initial_state.state._copy()
+    starknet.state.state = initial_cache_state
+
+
+@pytest_asyncio.fixture(scope="session")
+async def contract_account_class(starknet: Starknet) -> DeclaredClass:
+    return await starknet.deprecated_declare(
+        source="./src/kakarot/accounts/contract/contract_account.cairo",
+        cairo_path=["src"],
+        disable_hint_validation=True,
+    )
+
+
+@pytest_asyncio.fixture(scope="session")
+async def externally_owned_account_class(starknet: Starknet):
+    return await starknet.deprecated_declare(
+        source="src/kakarot/accounts/eoa/externally_owned_account.cairo",
+        cairo_path=["src"],
+        disable_hint_validation=True,
+    )
+
+
+@pytest_asyncio.fixture(scope="session")
+async def account_proxy_class(starknet: Starknet):
+    return await starknet.deprecated_declare(
+        source="src/kakarot/accounts/proxy/proxy.cairo",
+        cairo_path=["src"],
+        disable_hint_validation=True,
+    )
+
+
+@pytest_asyncio.fixture(scope="session")
+def get_contract_account(starknet, contract_account_class):
+    def _factory(starknet_address):
+        return StarknetContract(
+            starknet.state,
+            contract_account_class.abi,
+            starknet_address,
+            None,
+        )
+
+    return _factory

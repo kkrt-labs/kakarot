@@ -25,15 +25,12 @@ setup: $(EF_TESTS_DIR)
 	poetry install
 
 test: build-sol deploy
-	poetry run pytest tests/integration tests/src -m "not EFTests" --log-cli-level=INFO -n logical
+	poetry run tests/src --log-cli-level=INFO -n logical
 	poetry run pytest tests/end_to_end
 
 test-no-log: build-sol deploy
-	poetry run pytest tests/integration tests/src -m "not EFTests" -n logical
+	poetry run tests/src -n logical
 	poetry run pytest tests/end_to_end
-
-test-integration: build-sol
-	poetry run pytest tests/integration -m "not EFTests"  --log-cli-level=INFO -n logical
 
 test-unit:
 	poetry run pytest tests/src --log-cli-level=INFO
@@ -72,7 +69,7 @@ check-resources:
 get-blockhashes:
 	poetry run python scripts/get_latest_blockhashes.py
 
-build-sol:
+build-sol: .gitmodules
 	forge build --names --force
 
 run:
