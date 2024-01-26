@@ -150,7 +150,6 @@ namespace EthTransaction {
 
         let chain_id = Helpers.bytes_to_felt(sub_items[0].data_len, sub_items[0].data);
 
-        let nonce_idx = 1;
         let nonce = Helpers.bytes_to_felt(sub_items[1].data_len, sub_items[1].data);
         let gas_price_idx = tx_type + 1;
         let gas_price = Helpers.bytes_to_felt(
@@ -168,11 +167,9 @@ namespace EthTransaction {
         let payload_len = sub_items[gas_price_idx + 4].data_len;
         let payload: felt* = sub_items[gas_price_idx + 4].data;
 
-        let access_list_len = sub_items[gas_price_idx + 5].data_len;
-        let access_list_items = cast(sub_items[gas_price_idx + 5].data, RLP.Item*);
-        let (parsed_access_list: model.AccessListItem*) = alloc();
-        let parsed_access_list_len = parse_access_list(
-            parsed_access_list,
+        let (access_list: model.AccessListItem*) = alloc();
+        let access_list_len = parse_access_list(
+            access_list,
             sub_items[gas_price_idx + 5].data_len,
             cast(sub_items[gas_price_idx + 5].data, RLP.Item*),
         );
@@ -186,8 +183,8 @@ namespace EthTransaction {
             chain_id,
             payload_len,
             payload,
-            parsed_access_list_len,
-            parsed_access_list,
+            access_list_len,
+            access_list,
         );
     }
 
@@ -294,7 +291,7 @@ namespace EthTransaction {
         let address_item = cast(list_items.data, RLP.Item*);
         let address_ptr = address_item.data;
         let address_len = address_item.data_len;
-        let address = Helpers.bytes_to_felt(address_len, address_ptr);
+        let address = Helpers.bytes20_to_felt(address_ptr);
 
         // List<StorageKeys>
         let keys_item = cast(address_item + 3, RLP.Item*);
@@ -329,7 +326,7 @@ namespace EthTransaction {
 
         let key_len = keys_list.data_len;
         let key_bytes = keys_list.data;
-        let key = Helpers.bytes_i_to_uint256(key_bytes, key_len);
+        let key = Helpers.bytes32_to_uint256(key_bytes);
         assert [parsed_keys] = key;
 
         let parsed_keys_len = parse_storage_keys(

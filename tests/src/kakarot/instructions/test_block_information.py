@@ -2,6 +2,7 @@ import pytest
 
 from tests.utils.constants import BLOCK_GAS_LIMIT, CHAIN_ID, Opcodes
 from tests.utils.syscall_handler import SyscallHandler
+from tests.utils.uint256 import int_to_uint256
 
 
 class TestBlockInformation:
@@ -10,7 +11,7 @@ class TestBlockInformation:
         [
             (
                 Opcodes.COINBASE,
-                [0xFB5472ABAED28907D5ED6FC74C04954A, 0xCA40796A],
+                int_to_uint256(0xCA40796AFB5472ABAED28907D5ED6FC74C04954A),
             ),
             (Opcodes.TIMESTAMP, [SyscallHandler.block_timestamp, 0]),
             (Opcodes.NUMBER, [SyscallHandler.block_number, 0]),
