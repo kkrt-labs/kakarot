@@ -1,29 +1,25 @@
-// SPDX-License-Identifier: MIT
-
 %lang starknet
 
-// Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 
-// Local dependencies
-from utils.utils import Helpers
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.state import State
 from kakarot.memory import Memory
 from kakarot.evm import EVM
 from kakarot.instructions.memory_operations import MemoryOperations
-from kakarot.constants import Constants
 from tests.utils.helpers import TestHelpers
 
-@external
-func test__exec_pc__should_update_after_incrementing{
+func test__exec_pc__should_return_evm_program_counter{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(increment) {
+}() {
     // Given
     alloc_locals;
+
+    local increment: felt;
+    %{ ids.increment = program_input["increment"] %}
 
     let (bytecode) = alloc();
     let evm = TestHelpers.init_evm_with_bytecode(0, bytecode);
@@ -45,7 +41,6 @@ func test__exec_pc__should_update_after_incrementing{
     return ();
 }
 
-@external
 func test__exec_pop_should_pop_an_item_from_execution_context{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
@@ -75,7 +70,6 @@ func test__exec_pop_should_pop_an_item_from_execution_context{
     return ();
 }
 
-@external
 func test__exec_mload_should_load_a_value_from_memory{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
@@ -109,7 +103,6 @@ func test__exec_mload_should_load_a_value_from_memory{
     return ();
 }
 
-@external
 func test__exec_mload_should_load_a_value_from_memory_with_memory_expansion{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
@@ -143,7 +136,6 @@ func test__exec_mload_should_load_a_value_from_memory_with_memory_expansion{
     return ();
 }
 
-@external
 func test__exec_mload_should_load_a_value_from_memory_with_offset_larger_than_msize{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {

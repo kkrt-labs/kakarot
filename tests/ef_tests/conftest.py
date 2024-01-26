@@ -15,7 +15,7 @@ from tests.utils.constants import DEPLOY_FEE
 
 # Root of the GeneralStateTest in BlockchainTest format
 EF_GENERAL_STATE_TEST_ROOT_PATH = Path(
-    "./tests/integration/ef_tests/test_data/BlockchainTests/GeneralStateTests/"
+    "./tests/ef_tests/test_data/BlockchainTests/GeneralStateTests/"
 )
 
 

@@ -186,10 +186,10 @@ def use_kakarot_backend(contract: Contract, kakarot: StarknetContract):
 
 # When fetching a contract, you need to provide a contract_app and contract_name
 # to get the corresponding solidity file.
-# An app is a group of solidity files living in tests/integration/solidity_contracts.
+# An app is a group of solidity files living in the forge project solidity_contracts.
 #
-# Example: get_contract("Solmate", "ERC721") will load the ERC721.sol file in the tests/integration/solidity_contracts/Solmate folder
-# Example: get_contract("StarkEx", "StarkExchange") will load the StarkExchange.sol file in the tests/integration/solidity_contracts/StarkEx/starkex folder
+# Example: get_contract("Solmate", "ERC721") will load the ERC721.sol file in the solidity_contracts/Solmate folder
+# Example: get_contract("StarkEx", "StarkExchange") will load the StarkExchange.sol file in the solidity_contracts/StarkEx/starkex folder
 #
 def get_contract(
     contract_app: str,
@@ -199,7 +199,7 @@ def get_contract(
 ) -> Contract:
     """
     Return a web3.contract instance based on the corresponding solidity files
-    defined in tests/integration/solidity_files.
+    defined in solidity_files.
 
     If contract_alias is provided, use it instead of contract_name for the result of compilation_outputs.
     """
