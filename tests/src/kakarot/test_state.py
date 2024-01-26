@@ -1,5 +1,6 @@
 import pytest
 
+from tests.utils.constants import TRANSACTIONS
 from tests.utils.syscall_handler import SyscallHandler
 
 
@@ -47,11 +48,17 @@ class TestState:
         def test_not_in_state(self, cairo_run):
             cairo_run("test__is_account_warm__account_not_in_state")
 
-    class TestCachePrecompiles:
+    class TestCachePreaccessedAddresses:
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
         def test_should_cache_precompiles(self, cairo_run):
             output = cairo_run("test__cache_precompiles")
             assert output == list(range(1, 10))
+
+        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
+        @pytest.mark.parametrize("transaction", TRANSACTIONS)
+        def test_should_cache_access_list(self, cairo_run, transaction):
+            access_list = transaction.get("accessList") or ()
+            cairo_run("test__cache_access_list", access_list=access_list)
 
     class TestCopyAccounts:
         def test_should_handle_null_pointers(self, cairo_run):

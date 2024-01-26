@@ -457,6 +457,24 @@ namespace Account {
         tempvar range_check_ptr = [ap - 3];
         return (valid_jumpdests_start, valid_jumpdests);
     }
+
+    // @notice Caches the given storage keys by creating an entry in the storage dict of the account.
+    // @dev This is used for access list transactions that provide a list of preaccessed keys
+    // @param storage_keys_len The number of storage keys to cache.
+    // @param storage_keys The pointer to the first storage key.
+    func cache_storage_keys{pedersen_ptr: HashBuiltin*, range_check_ptr, storage_ptr: DictAccess*}(
+        storage_keys_len: felt, storage_keys: Uint256*
+    ) {
+        if (storage_keys_len == 0) {
+            return ();
+        }
+
+        let key = storage_keys;
+        let (storage_addr) = Internals._storage_addr(key);
+        dict_read{dict_ptr=storage_ptr}(key=storage_addr);
+
+        return cache_storage_keys(storage_keys_len - 1, storage_keys + Uint256.SIZE);
+    }
 }
 
 namespace Internals {

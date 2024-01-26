@@ -8,10 +8,10 @@ from rlp import encode
 from tests.utils.constants import TRANSACTIONS
 from tests.utils.errors import cairo_error
 from tests.utils.helpers import (
+    flatten_tx_accesslist,
     generate_random_evm_address,
     generate_random_private_key,
     rlp_encode_signed_data,
-    serialize_accesslist,
 )
 from tests.utils.uint256 import int_to_uint256
 
@@ -122,7 +122,7 @@ class TestEthTransaction:
                 data=list(encoded_unsigned_tx),
             )
 
-            expected_access_list = serialize_accesslist(
+            expected_access_list = flatten_tx_accesslist(
                 transaction.get("accessList") or []
             )
             expected_access_list_len = len(transaction.get("accessList") or [])
@@ -180,5 +180,5 @@ class TestEthTransaction:
             output = cairo_run(
                 "test__parse_access_list", data=list(encoded_access_list)
             )
-            expected_output = serialize_accesslist(transaction.get("accessList") or [])
+            expected_output = flatten_tx_accesslist(transaction.get("accessList") or [])
             assert output == expected_output

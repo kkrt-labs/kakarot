@@ -198,8 +198,11 @@ def flatten(data):
     return result
 
 
-def serialize_accesslist(access_list):
-    # return a flat access list, with [address, keys, address, keys, ...]
+def flatten_tx_accesslist(access_list):
+    """
+    Transform the access list from the transaction dict into a flattened list of
+    [address, storage_keys, ...].
+    """
     result = []
     for item in access_list:
         result.append(int(item["address"], 16))
@@ -209,4 +212,19 @@ def serialize_accesslist(access_list):
             value_high = value >> 128
             result.append(value_low)
             result.append(value_high)
+    return result
+
+
+def serialize_accesslist(access_list):
+    """
+    Transform the access list from a transaction dict to a serialized data structure,
+    that is cairo compatible.
+    """
+    result = []
+    for item in access_list:
+        result.append(int(item["address"], 16))
+        for key in item["storageKeys"]:
+            value = int(key, 16)
+            result.append(value & 2**128 - 1)
+            result.append(value >> 128)
     return result

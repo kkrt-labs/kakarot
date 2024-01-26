@@ -10,6 +10,7 @@ from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.starknet.common.syscalls import get_contract_address
 from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.find_element import find_element
 
 from kakarot.model import model
 from kakarot.state import State, Internals
@@ -212,6 +213,77 @@ func test__cache_precompiles{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
     memcpy(dst=output_ptr, src=keys, len=keys_len);
 
     tempvar syscall_ptr = syscall_ptr;
+
+    return ();
+}
+
+func test__cache_access_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    output_ptr: felt*
+) {
+    alloc_locals;
+    local access_list_len: felt;
+    let (access_list) = alloc();
+    %{
+        from tests.utils.hints import serialize_cairo_access_list
+
+        access_list = program_input["access_list"]
+        ids.access_list_len = serialize_cairo_access_list(access_list, ids.access_list, memory, segments)
+    %}
+    let state = State.init();
+    with state {
+        State.cache_access_list(access_list_len, cast(access_list, model.AccessListItem*));
+    }
+
+    %{
+        from starknet_py.hash.utils import pedersen_hash
+        from starkware.starknet.public.abi import get_storage_var_address
+
+        def assert_correct_storage_keys(expected_access_list, accounts_len):
+            """
+            Assert that the storage keys in the expected access list are correct.
+
+            Args:
+            ----
+                expected_access_list (list): The expected access list with storage keys, in the dict format.
+                accounts_len (int): The number of accounts in the access list.
+
+            Raises:
+            ------
+                AssertionError: If the storage keys in the expected access list are not correct.
+
+            Returns:
+            -------
+                None
+            """
+
+            for i in range(0, accounts_len):
+                expected_item = expected_access_list[i]
+                address = ids.state.accounts_start[i].key
+                assert address == int(expected_item["address"], 16)
+
+                account_ptr = ids.state.accounts_start[i].new_value
+                account_storage_start = memory[account_ptr + 3]
+                account_storage = memory[account_ptr + 4]
+                storage_size = (account_storage - account_storage_start) // 3
+                for j in range(0, storage_size):
+                    internal_key_hash = memory[account_storage_start + j * 3]
+                    expected_storage_keys = expected_item["storageKeys"]
+                    value = int(expected_storage_keys[j], 16)
+                    value_low = value & 2**128 - 1
+                    value_high = value >> 128
+                    expected_key_hash = get_storage_var_address(
+                        "storage_", value_low, value_high
+                    )
+                    assert internal_key_hash == expected_key_hash
+
+
+        # 1. assert correct amount of accounts
+        accounts_len = (ids.state.accounts.address_ - ids.state.accounts_start.address_) // 3 # Each entry is (key, prev_value, new_value)
+        assert accounts_len == ids.access_list_len
+
+        # 2. Assert correct storage keys for the accounts
+        assert_correct_storage_keys(program_input["access_list"], accounts_len)
+    %}
 
     return ();
 }
