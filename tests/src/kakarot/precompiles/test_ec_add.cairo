@@ -8,6 +8,7 @@ from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256,
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.alloc import alloc
 
 // Local dependencies
 from utils.utils import Helpers
@@ -24,12 +25,17 @@ from tests.utils.helpers import TestHelpers
 
 const G1POINT_BYTES_LEN = 32;
 
-@external
 func test__ecadd_impl{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(calldata_len: felt, calldata: felt*) {
+}() {
     // Given
     alloc_locals;
+    local calldata_len: felt;
+    let (calldata: felt*) = alloc();
+    %{
+        ids.calldata_len = len(program_input["calldata"]);
+        segments.write_arg(ids.calldata, program_input["calldata"]);
+    %}
 
     let x0: BigInt3 = Helpers.bytes32_to_bigint(calldata);
     let y0: BigInt3 = Helpers.bytes32_to_bigint(calldata + G1POINT_BYTES_LEN);
