@@ -58,10 +58,10 @@ namespace Interpreter {
         let pc = evm.program_counter;
         let is_pc_ge_code_len = is_le(evm.message.bytecode_len, pc);
         if (is_pc_ge_code_len != FALSE) {
-            let is_precompile = Precompiles.is_precompile(evm.message.address.evm);
+            let is_precompile = Precompiles.is_precompile(evm.message.code_address);
             if (is_precompile != FALSE) {
                 let (output_len, output, gas_used, reverted) = Precompiles.exec_precompile(
-                    evm.message.address.evm, evm.message.calldata_len, evm.message.calldata
+                    evm.message.code_address, evm.message.calldata_len, evm.message.calldata
                 );
                 // We first stop the EVM with precompile status
                 // Then charge the gas, which might update the status to REVERTED.
@@ -759,15 +759,18 @@ namespace Interpreter {
         local bytecode: felt*;
         local calldata: felt*;
         local intrinsic_gas: felt;
-        if (is_deploy_tx != 0) {
+        local code_address: felt;
+        if (is_deploy_tx != FALSE) {
             let (empty: felt*) = alloc();
             assert bytecode = tmp_calldata;
             assert calldata = empty;
             assert intrinsic_gas = tmp_intrinsic_gas + Gas.CREATE;
+            assert code_address = 0;
         } else {
             assert bytecode = tmp_bytecode;
             assert calldata = tmp_calldata;
             assert intrinsic_gas = tmp_intrinsic_gas;
+            assert code_address = address.evm;
         }
 
         let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
@@ -783,6 +786,7 @@ namespace Interpreter {
             value=value,
             parent=cast(0, model.Parent*),
             address=address,
+            code_address=code_address,
             read_only=FALSE,
             is_create=is_deploy_tx,
             depth=0,

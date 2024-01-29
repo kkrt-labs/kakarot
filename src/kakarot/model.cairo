@@ -93,6 +93,7 @@ namespace model {
     // @param parent The parent context of the current execution context, can be empty.
     // @param address The address of the current EVM account. Note that the bytecode may not be the one
     //        of the account in case of a CALLCODE or DELEGATECALL
+    // @param code_address The EVM address the bytecode of the message is taken from.
     // @param read_only if set to true, context cannot do any state modifying instructions or send ETH in the sub context.
     // @param is_create if set to true, the call context is a CREATEs or deploy execution
     // @param depth The depth of the current execution context.
@@ -106,6 +107,7 @@ namespace model {
         value: Uint256*,
         parent: Parent*,
         address: Address*,
+        code_address: felt,
         read_only: felt,
         is_create: felt,
         depth: felt,
