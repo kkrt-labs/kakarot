@@ -95,3 +95,12 @@ class TestContractAccount:
             )
             calls = [call(address=i, value=byte) for i, byte in enumerate(bytecode)]
             SyscallHandler.mock_storage.assert_has_calls(calls[::-1])
+
+    class TestBytecode:
+        @pytest.mark.parametrize("bytecode_len", [10, 100, 1000])
+        def test_should_read_bytecode(self, cairo_run, bytecode_len):
+            with SyscallHandler.patch("bytecode_len_", bytecode_len):
+                output = cairo_run("test__read_bytecode")
+            assert output[0] == bytecode_len
+            calls = [call(address=i) for i in range(bytecode_len)]
+            SyscallHandler.mock_storage.assert_has_calls(calls[::-1])
