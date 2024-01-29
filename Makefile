@@ -1,7 +1,18 @@
-.PHONY: build test coverage
+# The release tag of https://github.com/ethereum/tests to use for EF tests
+EF_TESTS_TAG := v12.4
+EF_TESTS_URL := https://github.com/ethereum/tests/archive/refs/tags/$(EF_TESTS_TAG).tar.gz
+EF_TESTS_DIR := ./tests/ef_tests/test_data
 
-pull-ef-tests: .gitmodules
-	git submodule update --init --recursive
+# Downloads and unpacks Ethereum Foundation tests in the `$(EF_TESTS_DIR)` directory.
+# Requires `wget` and `tar`
+$(EF_TESTS_DIR):
+	mkdir -p $(EF_TESTS_DIR)
+	wget $(EF_TESTS_URL) -O ethereum-tests.tar.gz
+	tar -xzf ethereum-tests.tar.gz --strip-components=1 -C $(EF_TESTS_DIR)
+	rm ethereum-tests.tar.gz
+
+
+.PHONY: build test coverage $(EF_TESTS_DIR)
 
 build: check
 	$(MAKE) clean
@@ -14,33 +25,18 @@ setup:
 	poetry install
 
 test: build-sol deploy
-	poetry run pytest tests/integration tests/src -m "not EFTests" --log-cli-level=INFO -n logical
+	poetry run pytest tests/src -m "not EFTests" --log-cli-level=INFO -n logical
 	poetry run pytest tests/end_to_end
 
 test-no-log: build-sol deploy
-	poetry run pytest tests/integration tests/src -m "not EFTests" -n logical
+	poetry run pytest tests/src -m "not EFTests" -n logical
 	poetry run pytest tests/end_to_end
 
-test-integration: build-sol
-	poetry run pytest tests/integration -m "not EFTests"  --log-cli-level=INFO -n logical
-
 test-unit:
-	poetry run pytest tests/src --log-cli-level=INFO
+	poetry run pytest tests/src -n logical
 
-test-end-to-end: deploy
-	poetry run pytest tests/end_to_end --log-cli-level=INFO
-
-run-test-log: build-sol
-	poetry run pytest -k $(test) -m "not EFTests" --log-cli-level=INFO -vvv -s
-
-run-test: build-sol
-	poetry run pytest -k $(test) -m "not EFTests"
-
-run-test-mark-log: build-sol
-	poetry run pytest -m $(mark) --log-cli-level=INFO -vvv -s
-
-run-test-mark: build-sol
-	poetry run pytest -m $(mark)
+test-end-to-end: build-sol deploy
+	poetry run pytest tests/end_to_end
 
 deploy: build
 	poetry run python ./scripts/deploy_kakarot.py
@@ -62,6 +58,7 @@ get-blockhashes:
 	poetry run python scripts/get_latest_blockhashes.py
 
 build-sol:
+	git submodule update --init --recursive
 	forge build --names --force
 
 run:

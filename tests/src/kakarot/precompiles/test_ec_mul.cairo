@@ -1,31 +1,18 @@
-// SPDX-License-Identifier: MIT
-
 %lang starknet
 
-// Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
-from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
-from starkware.cairo.common.math import split_felt
+from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.memcpy import memcpy
 
-// Local dependencies
 from utils.utils import Helpers
 from utils.alt_bn128.alt_bn128_g1 import ALT_BN128, G1Point
 from kakarot.precompiles.ecmul import PrecompileEcMul
-from kakarot.model import model
-from kakarot.memory import Memory
-from kakarot.constants import Constants
-from kakarot.stack import Stack
-from kakarot.evm import EVM
-from kakarot.instructions.memory_operations import MemoryOperations
-from kakarot.instructions.system_operations import SystemOperations, CallHelper, CreateHelper
 from tests.utils.helpers import TestHelpers
 
 const G1POINT_BYTES_LEN = 32;
 
-@external
 func test__ecmul_impl{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {

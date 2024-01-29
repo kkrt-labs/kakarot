@@ -2,6 +2,7 @@ import time
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Optional, Union
+from unittest import mock
 
 from starkware.starknet.public.abi import (
     get_selector_from_name,
@@ -20,7 +21,11 @@ class SyscallHandler:
     block_number: int = 0xABDE1
     block_timestamp: int = int(time.time())
     contract_address: int = 0xABDE1
+    caller_address: int = 0xABDE1
     patches = {}
+    mock_call = mock.MagicMock()
+    mock_storage = mock.MagicMock()
+    mock_event = mock.MagicMock()
 
     def get_contract_address(self, segments, syscall_ptr):
         """
@@ -44,6 +49,27 @@ class SyscallHandler:
             }
         """
         segments.write_arg(syscall_ptr + 1, [self.contract_address])
+
+    def get_caller_address(self, segments, syscall_ptr):
+        """
+        Return a constant value for the get caller address system call.
+
+        Syscall structure is:
+
+            struct GetCallerAddressRequest {
+                selector: felt,
+            }
+
+            struct GetCallerAddressResponse {
+                caller_address: felt,
+            }
+
+            struct GetCallerAddress {
+                request: GetCallerAddressRequest,
+                response: GetCallerAddressResponse,
+            }
+        """
+        segments.write_arg(syscall_ptr + 1, [self.caller_address])
 
     def get_block_number(self, segments, syscall_ptr):
         """
@@ -112,6 +138,45 @@ class SyscallHandler:
         value = self.patches.get(address, 0)
         segments.write_arg(syscall_ptr + 2, [value])
 
+    def storage_write(self, segments, syscall_ptr):
+        """
+        Record the call in the internal mock object.
+
+        Syscall structure is:
+
+            struct StorageWrite {
+                selector: felt,
+                address: felt,
+                value: felt,
+            }
+        """
+        self.mock_storage(
+            address=segments.memory[syscall_ptr + 1],
+            value=segments.memory[syscall_ptr + 2],
+        )
+
+    def emit_event(self, segments, syscall_ptr):
+        """
+        Record the call in the internal mock object.
+
+        Syscall structure is:
+
+            struct EmitEvent {
+                selector: felt,
+                keys_len: felt,
+                keys: felt*,
+                data_len: felt,
+                data: felt*,
+            }
+        """
+        keys_len = segments.memory[syscall_ptr + 1]
+        keys_ptr = segments.memory[syscall_ptr + 2]
+        keys = [segments.memory[keys_ptr + i] for i in range(keys_len)]
+        data_len = segments.memory[syscall_ptr + 3]
+        data_ptr = segments.memory[syscall_ptr + 4]
+        data = [segments.memory[data_ptr + i] for i in range(data_len)]
+        self.mock_event(keys=keys, data=data)
+
     def call_contract(self, segments, syscall_ptr):
         """
         Call the registered mock function for the given selector.
@@ -149,6 +214,11 @@ class SyscallHandler:
             segments.memory[calldata_ptr + i]
             for i in range(segments.memory[syscall_ptr + 3])
         ]
+        self.mock_call(
+            contract_address=contract_address,
+            function_selector=function_selector,
+            calldata=calldata,
+        )
         retdata = self.patches.get(function_selector)(contract_address, calldata)
         retdata_segment = segments.add()
         segments.write_arg(retdata_segment, retdata)

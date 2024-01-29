@@ -2,7 +2,7 @@ import pytest
 from starkware.starknet.public.abi import get_storage_var_address
 from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
 
-from tests.integration.ef_tests.utils import is_account_eoa
+from tests.ef_tests.utils import is_account_eoa
 from tests.utils.constants import MAX_INT
 from tests.utils.helpers import hex_string_to_bytes_array
 from tests.utils.uint256 import int_to_uint256, uint256_to_int

@@ -105,34 +105,6 @@ async def starknet(worker_id, request) -> AsyncGenerator[Starknet, None]:
                 )
 
 
-@pytest_asyncio.fixture(scope="session")
-async def eth(starknet: Starknet):
-    class_hash = await starknet.deprecated_declare(
-        source="./tests/fixtures/ERC20.cairo"
-    )
-    return await starknet.deploy(
-        class_hash=class_hash.class_hash,
-        constructor_calldata=[
-            int.from_bytes(b"Ether", "big"),  # name
-            int.from_bytes(b"ETH", "big"),  # symbol
-            18,  # decimals
-        ],
-    )
-
-
-@pytest.fixture()
-def starknet_snapshot(starknet):
-    """
-    Use this fixture to snapshot the starknet state before each test and reset it at teardown.
-    """
-    initial_state = starknet.state.copy()
-
-    yield
-
-    initial_cache_state = initial_state.state._copy()
-    starknet.state.state = initial_cache_state
-
-
 def cairo_compile(path):
     module_reader = get_module_reader(cairo_path=["src"])
 

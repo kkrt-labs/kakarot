@@ -6,6 +6,9 @@ on:
       - main
   pull_request: {}
 
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -60,8 +63,48 @@ jobs:
           name: kakarot-build
           path: ./build
 
-  tests:
+  tests-unit:
     runs-on: ubuntu-latest-16-cores
+    env:
+      PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Load cached Poetry installation
+        id: cached-poetry
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}
+      - name: Install Poetry
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+      - run: poetry config installer.modern-installation false
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: make setup
+      - name: Run tests
+        run: make test-unit
+      - name: Upload coverage report to codecov
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./coverage/
+
+  tests-end-to-end:
+    runs-on: ubuntu-latest
     env:
       STARKNET_NETWORK: katana
       PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
@@ -110,11 +153,7 @@ jobs:
       - name: Run tests
         run: |
           cp .env.example .env
-          make run-katana & make test-no-log
-      - name: Upload coverage report to codecov
-        uses: codecov/codecov-action@v3
-        with:
-          directory: ./coverage/
+          make run-katana & make test-end-to-end
 
   ef-tests:
     runs-on: ubuntu-latest-32-cores
@@ -139,7 +178,7 @@ jobs:
         with:
           cache-on-failure: "true"
       - name: setup
-        run: make setup
+        run: make setup setup-kakarot-v1
       - uses: taiki-e/install-action@nextest
 
       - name: Download Kakarot build artifacts in v0
@@ -148,9 +187,7 @@ jobs:
           name: kakarot-build
           path: ./build/v0
       - name: Move ERC20
-        run: |
-          mkdir build/common
-          mv build/v0/fixtures/ERC20.json build/common
+        run: mv build/v0/fixtures/ERC20.json build/common
       - name: Set up Python
         uses: actions/setup-python@v4
         with:

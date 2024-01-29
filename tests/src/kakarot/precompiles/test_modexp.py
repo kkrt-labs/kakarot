@@ -2,24 +2,11 @@ import math
 import random
 
 import pytest
-import pytest_asyncio
-from starkware.starknet.testing.starknet import Starknet
 
 
-@pytest_asyncio.fixture(scope="module")
-async def modexp(starknet: Starknet):
-    class_hash = await starknet.deprecated_declare(
-        source="./tests/src/kakarot/precompiles/test_modexp.cairo",
-        cairo_path=["src"],
-        disable_hint_validation=True,
-    )
-    return await starknet.deploy(class_hash=class_hash.class_hash)
-
-
-@pytest.mark.asyncio
 @pytest.mark.MOD_EXP
 class TestModExp:
-    async def test_modexp(self, modexp):
+    def test_modexp(self, cairo_run):
         random.seed(0)
         b = 3
         b_size = math.ceil(math.log(b, 256))
@@ -41,8 +28,6 @@ class TestModExp:
         )
         expected_result = pow(b, e, m)
 
-        cairo_modexp = await modexp.test__modexp_impl(bytes_array).call()
-        cairo_result = cairo_modexp.result[0]
-        gas_cost = cairo_modexp.result[1]
+        cairo_result, gas_cost = cairo_run("test__modexp_impl", data=bytes_array)
         assert expected_result == cairo_result
         assert 1360 == gas_cost
