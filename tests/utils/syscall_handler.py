@@ -1,4 +1,5 @@
 import time
+from collections import OrderedDict
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Optional, Union
@@ -22,16 +23,19 @@ class SyscallHandler:
 
     block_number: int = 0xABDE1
     block_timestamp: int = int(time.time())
-    tx_info = {
-        "version": 1,
-        "account_contract_address": 0xABDE1,
-        "max_fee": int(1e17),
-        "signature_len": 0,
-        "signature": [],
-        "transaction_hash": 0xABDE1,
-        "chain_id": CHAIN_ID,
-        "nonce": 1,
-    }
+    tx_info = OrderedDict(
+        {
+            "version": 1,
+            "account_contract_address": 0xABDE1,
+            "max_fee": int(1e17),
+            # Signature len will be set later based on the signature.
+            "signature_len": None,
+            "signature": [],
+            "transaction_hash": 0xABDE1,
+            "chain_id": CHAIN_ID,
+            "nonce": 1,
+        }
+    )
     contract_address: int = 0xABDE1
     caller_address: int = 0xABDE1
     patches = {}
@@ -145,7 +149,11 @@ class SyscallHandler:
         """
         signature_segment = segments.add()
         segments.write_arg(signature_segment, self.tx_info["signature"])
-        tx_info = {**self.tx_info, "signature": signature_segment}
+        tx_info = {
+            **self.tx_info,
+            "signature_len": len(self.tx_info["signature"]),
+            "signature": signature_segment,
+        }
         tx_info_segment = segments.add()
         segments.write_arg(tx_info_segment, tx_info.values())
         segments.write_arg(syscall_ptr + 1, [tx_info_segment])
