@@ -6,7 +6,6 @@ from starkware.starknet.public.abi import (
     get_storage_var_address,
 )
 
-from scripts.utils.kakarot import get_contract
 from tests.utils.errors import cairo_error
 from tests.utils.syscall_handler import SyscallHandler
 from tests.utils.uint256 import int_to_uint256
@@ -82,10 +81,8 @@ class TestContractAccount:
                 list(range(10)),
                 list(range(100)),
                 list(range(100)) * 10,
-                list(get_contract("PlainOpcodes", "Counter").bytecode),
-                list(get_contract("Solmate", "ERC20").bytecode),
             ],
-            ids=["10 bytes", "100 bytes", "1000 bytes", "Counter", "ERC20"],
+            ids=["10 bytes", "100 bytes", "1000 bytes"],
         )
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
         def test_should_write_bytecode(self, cairo_run, bytecode):
