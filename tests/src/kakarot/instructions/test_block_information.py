@@ -23,4 +23,4 @@ class TestBlockInformation:
     )
     def test__exec_block_information(self, cairo_run, opcode, expected_result):
         output = cairo_run("test__exec_block_information", opcode=opcode)
-        assert output == expected_result
+        assert output == list(expected_result)

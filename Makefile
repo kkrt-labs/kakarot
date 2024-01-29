@@ -16,7 +16,8 @@ $(EF_TESTS_DIR):
 
 # Include .env file to get GITHUB_TOKEN
 ifneq ("$(wildcard .env)","")
-	include .env
+    include .env
+    export $(shell sed 's/=.*//' .env)
 endif
 
 .PHONY: build test coverage
