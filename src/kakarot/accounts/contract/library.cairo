@@ -7,7 +7,15 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256, uint256_not
-from starkware.starknet.common.syscalls import storage_read, storage_write
+from starkware.starknet.common.syscalls import (
+    StorageRead,
+    StorageWrite,
+    STORAGE_READ_SELECTOR,
+    STORAGE_WRITE_SELECTOR,
+    storage_read,
+    storage_write,
+    StorageReadRequest
+)
 from starkware.cairo.common.memset import memset
 
 from kakarot.interfaces.interfaces import IERC20, IKakarot
@@ -222,7 +230,13 @@ namespace internal {
         let syscall_ptr = cast([ap - 2], felt*);
         let bytecode_len = [ap - 1];
         let bytecode = cast([fp - 3], felt*);
-        storage_write(bytecode_len - 1, bytecode[bytecode_len - 1]);
+        assert [cast(syscall_ptr, StorageWrite*)] = StorageWrite(
+            selector=STORAGE_WRITE_SELECTOR,
+            address=bytecode_len - 1,
+            value=bytecode[bytecode_len - 1],
+        );
+        %{ syscall_handler.storage_write(segments=segments, syscall_ptr=ids.syscall_ptr) %}
+        tempvar syscall_ptr = syscall_ptr + StorageWrite.SIZE;
         tempvar bytecode_len = bytecode_len - 1;
 
         static_assert syscall_ptr == [ap - 2];
@@ -258,9 +272,13 @@ namespace internal {
         let syscall_ptr = cast([ap - 2], felt*);
         let bytecode_len = [ap - 1];
         let bytecode = cast([fp], felt*);
-        let (byte) = storage_read(bytecode_len - 1);
-        assert bytecode[bytecode_len - 1] = byte;
-        tempvar syscall_ptr = syscall_ptr;
+
+        let syscall = [cast(syscall_ptr, StorageRead*)];
+        assert syscall.request = StorageReadRequest(selector=STORAGE_READ_SELECTOR, address=bytecode_len - 1);
+        %{ syscall_handler.storage_read(segments=segments, syscall_ptr=ids.syscall_ptr) %}
+        let response = syscall.response;
+        assert bytecode[bytecode_len - 1] = response.value;
+        tempvar syscall_ptr = syscall_ptr + StorageRead.SIZE;
         tempvar bytecode_len = bytecode_len - 1;
 
         static_assert syscall_ptr == [ap - 2];
