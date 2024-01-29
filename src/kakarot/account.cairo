@@ -199,7 +199,7 @@ namespace Account {
     // @return A boolean indicating whether the storage slot is warm.
     func is_storage_warm{pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.Account*, key: Uint256*
-    ) -> felt {
+    ) -> (model.Account*, felt) {
         alloc_locals;
         let storage = self.storage;
         let (local storage_addr) = Internals._storage_addr(key);
@@ -215,9 +215,9 @@ namespace Account {
             selfdestruct=self.selfdestruct,
         );
         if (pointer != 0) {
-            return TRUE;
+            return (self, TRUE);
         }
-        return FALSE;
+        return (self, FALSE);
     }
 
     // @notice Update a storage key with the given value
@@ -289,6 +289,22 @@ namespace Account {
         let (native_token_address_) = native_token_address.read();
         let (balance) = IERC20.balanceOf(native_token_address_, address.starknet);
         return balance;
+    }
+
+    // @notice Fetches the storage of an account without loading the Account
+    // @dev The value is fetched from the Starknet state, and not from the local state
+    // in which it might have been modified.
+    // @param address (starknet, evm) of the account to fetch the storage from
+    // @param key The pointer to the Uint256 storage key
+    // @return The Uint256 value of the original storage.
+    func fetch_original_storage{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        address: model.Address*, key: Uint256*
+    ) -> Uint256 {
+        let (storage_addr) = Internals._storage_addr(key);
+        let (value) = IContractAccount.storage(
+            contract_address=address.starknet, storage_addr=storage_addr
+        );
+        return value;
     }
 
     // @notice Set the balance of the Account

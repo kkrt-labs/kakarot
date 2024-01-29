@@ -17,6 +17,7 @@ from kakarot.model import model
 from kakarot.gas import Gas
 from utils.dict import default_dict_copy
 from utils.utils import Helpers
+from tests.utils.debug import Debug
 
 namespace State {
     // @dev Create a new empty State
@@ -395,18 +396,28 @@ namespace Internals {
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, accounts_ptr: DictAccess*
     }(access_list_len: felt, access_list: model.AccessListItem*) -> felt {
         alloc_locals;
+        Debug.print_array('access_list', 2, cast(access_list, felt*));
         if (access_list_len == 0) {
             return 0;
         }
 
-        let access_list_item = [access_list];
-        let address = access_list_item.address;
+        let current_item = access_list;
+        let address = current_item.address;
         let account = Account.fetch_or_create(address);
         tempvar storage_ptr = account.storage;
-        with storage_ptr {
-            Account.cache_storage_keys(
-                access_list_item.storage_keys_len, access_list_item.storage_keys
-            );
+        if (current_item.storage_keys_len == 0) {
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+            tempvar storage_ptr = storage_ptr;
+        } else {
+            with storage_ptr {
+                Account.cache_storage_keys(
+                    current_item.storage_keys_len, current_item.storage_keys
+                );
+            }
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+            tempvar storage_ptr = storage_ptr;
         }
 
         tempvar account = new model.Account(
@@ -424,7 +435,7 @@ namespace Internals {
         let cum_gas_cost = _cache_access_list(
             access_list_len - 1, access_list + model.AccessListItem.SIZE
         );
-        return cum_gas_cost + Gas.TX_ACCESS_LIST_ADDRESS_COST + access_list_item.storage_keys_len *
+        return cum_gas_cost + Gas.TX_ACCESS_LIST_ADDRESS_COST + current_item.storage_keys_len *
             Gas.TX_ACCESS_LIST_STORAGE_KEY_COST;
     }
 }

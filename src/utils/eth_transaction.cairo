@@ -12,6 +12,7 @@ from kakarot.model import model
 from utils.rlp import RLP
 from utils.utils import Helpers
 from utils.bytes import bytes_to_bytes8_little_endian
+from tests.utils.debug import Debug
 
 // @title EthTransaction utils
 // @notice This file contains utils for decoding eth transactions
@@ -168,11 +169,12 @@ namespace EthTransaction {
         let payload: felt* = sub_items[gas_price_idx + 4].data;
 
         let (access_list: model.AccessListItem*) = alloc();
-        let access_list_len = parse_access_list(
-            access_list,
-            sub_items[gas_price_idx + 5].data_len,
-            cast(sub_items[gas_price_idx + 5].data, RLP.Item*),
+        let access_list_len = sub_items[gas_price_idx + 5].data_len;
+        parse_access_list(
+            access_list, access_list_len, cast(sub_items[gas_price_idx + 5].data, RLP.Item*)
         );
+        Debug.print_array('access_list', 2, access_list);
+        Debug.print_array('access_list', 2, access_list + 3);
         return (
             msg_hash,
             nonce,
@@ -281,10 +283,10 @@ namespace EthTransaction {
     // @return The number of parsed access list entries.
     func parse_access_list{range_check_ptr}(
         parsed_list: model.AccessListItem*, list_len: felt, list_items: RLP.Item*
-    ) -> felt {
+    ) {
         alloc_locals;
         if (list_len == 0) {
-            return 0;
+            return ();
         }
 
         // Address
@@ -297,15 +299,15 @@ namespace EthTransaction {
         let keys = cast(keys_item.data, RLP.Item*);
 
         let (local parsed_keys: Uint256*) = alloc();
-        let parsed_keys_len = parse_storage_keys(parsed_keys, keys_len, keys);
+        parse_storage_keys(parsed_keys, keys_len, keys);
         assert [parsed_list] = model.AccessListItem(
-            address=address, storage_keys_len=parsed_keys_len, storage_keys=parsed_keys
+            address=address, storage_keys_len=keys_len, storage_keys=parsed_keys
         );
 
-        let parsed_list_len = parse_access_list(
+        parse_access_list(
             parsed_list + model.AccessListItem.SIZE, list_len - 1, list_items + RLP.Item.SIZE
         );
-        return parsed_list_len + 1;
+        return ();
     }
 
     // @notice Recursively parses the RLP-decoded storage keys list of an address
@@ -313,13 +315,12 @@ namespace EthTransaction {
     // @param parsed_keys The pointer to the next free cell in the parsed storage keys array.
     // @param keys_list_len The remaining length of the RLP-decoded storage keys list to parse.
     // @param keys_list The pointer to the current RLP-decoded storage keys list item to parse.
-    // @return The number of parsed storage keys.
     func parse_storage_keys{range_check_ptr}(
         parsed_keys: Uint256*, keys_list_len: felt, keys_list: RLP.Item*
-    ) -> felt {
+    ) {
         alloc_locals;
         if (keys_list_len == 0) {
-            return 0;
+            return ();
         }
 
         let key = Helpers.bytes32_to_uint256(keys_list.data);
@@ -328,6 +329,6 @@ namespace EthTransaction {
         let parsed_keys_len = parse_storage_keys(
             parsed_keys + Uint256.SIZE, keys_list_len - 1, keys_list + RLP.Item.SIZE
         );
-        return parsed_keys_len + 1;
+        return ();
     }
 }

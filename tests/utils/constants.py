@@ -110,8 +110,30 @@ TRANSACTIONS = [
             {
                 "address": "0x0000000000000000000000000000000000000001",
                 "storageKeys": (
-                    "0x0100000000000000000000000000000000000000000000000000000000000000",
+                    "0x0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF",
                 ),
+            },
+        ),
+        "chainId": CHAIN_ID,
+    },
+    # eip1559 without storage keys in accesslist
+    {
+        "type": 2,
+        "gas": 100_000,
+        "maxFeePerGas": 2_000_000_000,
+        "maxPriorityFeePerGas": 2_000_000_000,
+        "data": "0x616263646566",
+        "nonce": 34,
+        "to": "0x09616C3d61b3331fc4109a9E41a8BDB7d9776609",
+        "value": 0x5AF3107A4000,
+        "accessList": (
+            {
+                "address": "0x0000000000000000000000000000000000000001",
+                "storageKeys": (),
+            },
+            {
+                "address": "0x0000000000000000000000000000000000000002",
+                "storageKeys": (),
             },
         ),
         "chainId": CHAIN_ID,

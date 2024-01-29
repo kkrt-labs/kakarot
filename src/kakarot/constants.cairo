@@ -540,7 +540,7 @@ dw 2;
 dw -2;
 // SLOAD
 dw 0x54;
-dw 100;
+dw 0;  // gas cost is dynamic
 dw 1;
 dw 1;
 dw 0;

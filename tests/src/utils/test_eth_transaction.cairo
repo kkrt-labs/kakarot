@@ -106,15 +106,13 @@ func test__parse_access_list{range_check_ptr}(output_ptr: felt*) {
 
     let (local parsed_access_list: model.AccessListItem*) = alloc();
     // When
-    let parsed_access_list_len = EthTransaction.parse_access_list(
-        parsed_access_list, access_list_len, access_list
-    );
+    EthTransaction.parse_access_list(parsed_access_list, access_list_len, access_list);
 
     // Then
     %{
         from tests.utils.hints import flatten_access_list
         # The cairo functions returns a single RLP list of size 1 containing the decoded objects.
-        flatten_access_list(ids.parsed_access_list, ids.parsed_access_list_len, ids.output_ptr, memory, segments)
+        flatten_access_list(ids.parsed_access_list, ids.access_list_len, ids.output_ptr, memory, segments)
     %}
     return ();
 }
