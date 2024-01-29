@@ -217,7 +217,7 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
         )._encode_transaction_data()
 
         if abi["stateMutability"] in ["pure", "view"]:
-            kakarot_contract = await _get_starknet_contract("kakarot")
+            kakarot_contract = _get_starknet_contract("kakarot")
             origin = (
                 int(caller_eoa_.signer.public_key.to_address(), 16)
                 if caller_eoa_
@@ -365,7 +365,7 @@ async def eth_send_transaction(
 
 async def compute_starknet_address(address: Union[str, int]):
     evm_address = int(address, 16) if isinstance(address, str) else address
-    kakarot_contract = await _get_starknet_contract("kakarot")
+    kakarot_contract = _get_starknet_contract("kakarot")
     return (
         await kakarot_contract.functions["compute_starknet_address"].call(evm_address)
     ).contract_address

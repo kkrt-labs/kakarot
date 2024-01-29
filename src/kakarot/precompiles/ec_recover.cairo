@@ -1,8 +1,5 @@
-// SPDX-License-Identifier: MIT
-
 %lang starknet
 
-// Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import finalize_keccak
@@ -14,8 +11,8 @@ from starkware.cairo.common.cairo_secp.signature import (
     public_key_point_to_eth_address,
 )
 
-// Internal dependencies
 from utils.utils import Helpers
+from utils.array import slice
 from kakarot.errors import Errors
 
 // @title EcRecover Precompile related functions.
@@ -43,22 +40,20 @@ namespace PrecompileEcRecover {
     ) {
         alloc_locals;
 
-        if (input_len != 4 * 32) {
-            let (revert_reason_len, revert_reason) = Errors.precompileInputError();
-            return (revert_reason_len, revert_reason, 0, 1);
-        }
+        let (input_padded) = alloc();
+        slice(input_padded, input_len, input, 0, 4 * 32);
 
-        let hash = Helpers.bytes32_to_bigint(input);
-        let v_uint256 = Helpers.bytes32_to_uint256(input + 32);
+        let hash = Helpers.bytes32_to_bigint(input_padded);
+        let v_uint256 = Helpers.bytes32_to_uint256(input_padded + 32);
         let v = Helpers.uint256_to_felt(v_uint256);
 
         if ((v - 27) * (v - 28) != 0) {
-            let (revert_reason_len, revert_reason) = Errors.precompileFlagError();
-            return (revert_reason_len, revert_reason, 0, 1);
+            let (output) = alloc();
+            return (0, output, GAS_COST_EC_RECOVER, 0);
         }
 
-        let r = Helpers.bytes32_to_bigint(input + 32 * 2);
-        let s = Helpers.bytes32_to_bigint(input + 32 * 3);
+        let r = Helpers.bytes32_to_bigint(input_padded + 32 * 2);
+        let s = Helpers.bytes32_to_bigint(input_padded + 32 * 3);
 
         // v - 27, see recover_public_key comment
         let (public_key_point) = recover_public_key(hash, r, s, v - 27);
@@ -67,7 +62,8 @@ namespace PrecompileEcRecover {
         );
 
         if (is_public_key_invalid != FALSE) {
-            return (32, input, GAS_COST_EC_RECOVER, 0);
+            let (output) = alloc();
+            return (0, output, GAS_COST_EC_RECOVER, 0);
         }
 
         let (keccak_ptr: felt*) = alloc();

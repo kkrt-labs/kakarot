@@ -3329,12 +3329,12 @@ tests = ["cython", "littleutils", "pygments", "pytest", "typeguard"]
 
 [[package]]
 name = "starknet-py"
-version = "0.17.1"
+version = "0.18.3"
 description = "A python SDK for Starknet"
 optional = false
 python-versions = ">=3.8,<3.12"
 files = [
-    {file = "starknet_py-0.17.1.tar.gz", hash = "sha256:279188516653a4eb0859dd661d65602e41eb0d0397d8a1776017abd3b4213bb5"},
+    {file = "starknet_py-0.18.3.tar.gz", hash = "sha256:2e794dd3e4d3e062b654c2e6aea771010a454c7f8278b76ce896501f7c0e52b1"},
 ]
 
 [package.dependencies]
@@ -3350,7 +3350,7 @@ pycryptodome = ">=3.17,<4.0"
 typing-extensions = ">=4.3.0,<5.0.0"
 
 [package.extras]
-docs = ["enum-tools[sphinx] (==0.9.0.post1)", "furo (>=2023.5.20,<2024.0.0)", "sphinx (>=4.3.1,<8.0.0)"]
+docs = ["enum-tools[sphinx] (==0.10.0)", "furo (>=2023.5.20,<2024.0.0)", "sphinx (>=4.3.1,<8.0.0)"]
 
 [[package]]
 name = "sympy"
@@ -3760,4 +3760,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9,<3.10"
-content-hash = "b0eca400643ce7bad63726496e4cf0aec90e8604b0484e9b26628f0c9c8236fc"
+content-hash = "f659d6589c7f2dc2f2ccc219e5febf4c5e3d5f654fed73fd50ede5f99b810d82"

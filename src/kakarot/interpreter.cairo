@@ -55,15 +55,25 @@ namespace Interpreter {
         local opcode_number;
         local opcode: model.Opcode*;
 
-        // Get the current opcode number
         let pc = evm.program_counter;
-
         let is_pc_ge_code_len = is_le(evm.message.bytecode_len, pc);
         if (is_pc_ge_code_len != FALSE) {
-            assert opcode_number = 0;
-        } else {
-            assert opcode_number = [evm.message.bytecode + pc];
+            let is_precompile = Precompiles.is_precompile(evm.message.code_address);
+            if (is_precompile != FALSE) {
+                let (output_len, output, gas_used, reverted) = Precompiles.exec_precompile(
+                    evm.message.code_address, evm.message.calldata_len, evm.message.calldata
+                );
+                let evm = EVM.charge_gas(evm, gas_used);
+                let success = (1 - reverted) * (1 - evm.reverted);
+                let evm = EVM.stop(evm, output_len, output, 1 - success);
+                return evm;
+            } else {
+                let (return_data: felt*) = alloc();
+                let evm = EVM.stop(evm, 0, return_data, FALSE);
+                return evm;
+            }
         }
+        assert opcode_number = [evm.message.bytecode + pc];
 
         // Get the corresponding opcode data
         // To cast the codeoffset opcodes_label to a model.Opcode*, we need to use it to offset
@@ -746,15 +756,18 @@ namespace Interpreter {
         local bytecode: felt*;
         local calldata: felt*;
         local intrinsic_gas: felt;
-        if (is_deploy_tx != 0) {
+        local code_address: felt;
+        if (is_deploy_tx != FALSE) {
             let (empty: felt*) = alloc();
             assert bytecode = tmp_calldata;
             assert calldata = empty;
             assert intrinsic_gas = tmp_intrinsic_gas + Gas.CREATE;
+            assert code_address = 0;
         } else {
             assert bytecode = tmp_bytecode;
             assert calldata = tmp_calldata;
             assert intrinsic_gas = tmp_intrinsic_gas;
+            assert code_address = address.evm;
         }
 
         let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
@@ -770,6 +783,7 @@ namespace Interpreter {
             value=value,
             parent=cast(0, model.Parent*),
             address=address,
+            code_address=code_address,
             read_only=FALSE,
             is_create=is_deploy_tx,
             depth=0,

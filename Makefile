@@ -14,6 +14,17 @@ $(EF_TESTS_DIR):
 
 .PHONY: build test coverage $(EF_TESTS_DIR)
 
+# Include .env file to get GITHUB_TOKEN
+ifneq ("$(wildcard .env)","")
+	include .env
+endif
+
+.PHONY: build test coverage
+
+# Kakarot SSJ artifacts for precompiles
+KKRT_SSJ_ARTIFACTS_URL = $(shell curl -sL -H "Authorization: token $(GITHUB_TOKEN)" "https://api.github.com/repos/kkrt-labs/kakarot-ssj/actions/workflows/artifacts.yml/runs?per_page=1&branch=main&event=push&status=success" | jq -r '.workflow_runs[0].artifacts_url')
+KKRT_SSJ_BUILD_ARTIFACT_URL = $(shell curl -sL -H "Authorization: token $(GITHUB_TOKEN)" "$(KKRT_SSJ_ARTIFACTS_URL)" | jq -r '.artifacts[] | select(.name=="dev-artifacts").url')/zip
+
 build: check
 	$(MAKE) clean
 	poetry run python ./scripts/compile_kakarot.py
@@ -21,7 +32,14 @@ build: check
 check:
 	poetry check --lock
 
-setup:
+fetch-ssj-artifacts:
+	rm -rf build/ssj
+	mkdir -p build/ssj
+	@curl -sL -o dev-artifacts.zip -H "Authorization: token $(GITHUB_TOKEN)" "$(KKRT_SSJ_BUILD_ARTIFACT_URL)"
+	unzip -o dev-artifacts.zip -d build/ssj
+	rm -f dev-artifacts.zip
+
+setup: fetch-ssj-artifacts
 	poetry install
 
 test: build-sol deploy
@@ -48,8 +66,9 @@ format-check:
 	trunk check --ci
 
 clean:
-	rm -rf build
-	mkdir build
+	rm -rf build/*.json
+	rm -rf build/fixtures/*.json
+	mkdir -p build
 
 check-resources:
 	poetry run python scripts/check_resources.py

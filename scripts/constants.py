@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from enum import IntEnum
+from enum import Enum, IntEnum
 from math import ceil, log
 from pathlib import Path
 
@@ -127,6 +127,14 @@ BUILD_DIR = Path("build")
 BUILD_DIR_FIXTURES = BUILD_DIR / "fixtures"
 BUILD_DIR.mkdir(exist_ok=True, parents=True)
 BUILD_DIR_FIXTURES.mkdir(exist_ok=True, parents=True)
+BUILD_DIR_SSJ = BUILD_DIR / "ssj"
+
+
+class ArtifactType(Enum):
+    cairo0 = 0
+    cairo1 = 1
+
+
 DEPLOYMENTS_DIR = Path("deployments") / NETWORK["name"]
 DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
 
@@ -138,6 +146,15 @@ COMPILED_CONTRACTS = [
     {"contract_name": "EVM", "is_account_contract": False},
     {"contract_name": "OpenzeppelinAccount", "is_account_contract": True},
     {"contract_name": "ERC20", "is_account_contract": False},
+]
+DECLARED_CONTRACTS = [
+    {"contract_name": "kakarot", "cairo_version": ArtifactType.cairo0},
+    {"contract_name": "contract_account", "cairo_version": ArtifactType.cairo0},
+    {"contract_name": "externally_owned_account", "cairo_version": ArtifactType.cairo0},
+    {"contract_name": "proxy", "cairo_version": ArtifactType.cairo0},
+    {"contract_name": "EVM", "cairo_version": ArtifactType.cairo0},
+    {"contract_name": "OpenzeppelinAccount", "cairo_version": ArtifactType.cairo0},
+    {"contract_name": "Precompiles", "cairo_version": ArtifactType.cairo1},
 ]
 
 KAKAROT_CHAIN_ID = 1263227476  # KKRT (0x4b4b5254) in ASCII

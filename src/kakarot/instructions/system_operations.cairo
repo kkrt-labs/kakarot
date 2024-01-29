@@ -20,7 +20,6 @@ from kakarot.evm import EVM
 from kakarot.gas import Gas
 from kakarot.memory import Memory
 from kakarot.model import model
-from kakarot.precompiles.precompiles import Precompiles
 from kakarot.stack import Stack
 from kakarot.state import State
 from utils.utils import Helpers
@@ -149,6 +148,7 @@ namespace SystemOperations {
             value=value,
             parent=parent,
             address=target_account.address,
+            code_address=0,
             read_only=FALSE,
             is_create=TRUE,
             depth=evm.message.depth + 1,
@@ -707,8 +707,8 @@ namespace SystemOperations {
 
 namespace CallHelper {
     // @notice The shared logic of the CALL, CALLCODE, STATICCALL, and DELEGATECALL ops.
-    // Loads the calldata from memory, executes the precompiles if the target is one, otherwise
-    // constructs the child evm corresponding to the new execution frame of the call and returns it.
+    // Loads the calldata from memory, constructs the child evm corresponding to the new
+    //  execution frame of the call and returns it.
     // @param evm The current EVM, which is the parent of the new EVM.
     // @param gas The gas to be used by the new EVM.
     // @param value The value to be transferred in the call
@@ -747,21 +747,6 @@ namespace CallHelper {
         Memory.load_n(args_size.low, calldata, args_offset.low);
 
         // 2. Build child_evm
-        // Check if the called address is a precompiled contract
-        let is_precompile = Precompiles.is_precompile(address=code_address);
-        if (is_precompile != FALSE) {
-            tempvar parent = new model.Parent(evm, stack, memory, state);
-            let child_evm = Precompiles.run(
-                evm_address=code_address,
-                calldata_len=args_size.low,
-                calldata=calldata,
-                parent=parent,
-                gas_left=gas,
-            );
-
-            return child_evm;
-        }
-
         let code_account = State.get_account(code_address);
         local code_len: felt = code_account.code_len;
         local code: felt* = code_account.code;
@@ -792,6 +777,7 @@ namespace CallHelper {
             value=value,
             parent=parent,
             address=to_address,
+            code_address=code_address,
             read_only=read_only,
             is_create=FALSE,
             depth=evm.message.depth + 1,
@@ -827,9 +813,11 @@ namespace CallHelper {
         Stack.push_uint128(1 - evm.reverted);
 
         // Store RETURN_DATA in memory
-        let (return_data: felt*) = alloc();
-        slice(return_data, evm.return_data_len, evm.return_data, 0, ret_size.low);
-        Memory.store_n(ret_size.low, return_data, ret_offset.low);
+        let actual_output_size_is_ret_size = is_le(ret_size.low, evm.return_data_len);
+        let actual_output_size = actual_output_size_is_ret_size * ret_size.low + (
+            1 - actual_output_size_is_ret_size
+        ) * evm.return_data_len;
+        Memory.store_n(actual_output_size, evm.return_data, ret_offset.low);
 
         // Gas not used is returned when evm is not reverted
         local gas_left;
