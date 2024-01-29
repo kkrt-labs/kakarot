@@ -97,13 +97,5 @@ class TestContractAccount:
             SyscallHandler.mock_storage.assert_any_call(
                 address=get_storage_var_address("bytecode_len_"), value=len(bytecode)
             )
-            calls = [
-                call(
-                    address=get_storage_var_address("bytecode_", i // 16),
-                    value=int.from_bytes(
-                        bytes((bytecode[i : i + 16] + [0] * 16)[:16]), "big"
-                    ),
-                )
-                for i in range(0, len(bytecode), 16)
-            ]
-            SyscallHandler.mock_storage.assert_has_calls(calls)
+            calls = [call(address=i, value=byte) for i, byte in enumerate(bytecode)]
+            SyscallHandler.mock_storage.assert_has_calls(calls[::-1])

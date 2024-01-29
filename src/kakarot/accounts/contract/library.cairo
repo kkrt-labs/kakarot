@@ -1,8 +1,5 @@
-// SPDX-License-Identifier: MIT
-
 %lang starknet
 
-// Starkware dependencies
 from openzeppelin.access.ownable.library import Ownable
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
@@ -14,12 +11,6 @@ from starkware.starknet.common.syscalls import storage_read, storage_write
 from starkware.cairo.common.memset import memset
 
 from kakarot.interfaces.interfaces import IERC20, IKakarot
-
-// Storage
-
-@storage_var
-func bytecode_(index: felt) -> (res: felt) {
-}
 
 @storage_var
 func bytecode_len_() -> (res: felt) {
@@ -89,13 +80,7 @@ namespace ContractAccount {
         Ownable.assert_only_owner();
         // Recursively store the bytecode.
         bytecode_len_.write(bytecode_len);
-        internal.write_bytecode(
-            index=0,
-            bytecode_len=bytecode_len,
-            bytecode=bytecode,
-            current_felt=0,
-            remaining_shift=BYTES_PER_FELT,
-        );
+        internal.write_bytecode(bytecode_len=bytecode_len, bytecode=bytecode);
         return ();
     }
 
@@ -117,17 +102,8 @@ namespace ContractAccount {
         bitwise_ptr: BitwiseBuiltin*,
     }() -> (bytecode_len: felt, bytecode: felt*) {
         alloc_locals;
-        // Read bytecode length from storage.
         let (bytecode_len) = bytecode_len_.read();
-        // Recursively load bytecode into specified memory location.
-        let bytecode_: felt* = alloc();
-        internal.load_bytecode(
-            index=0,
-            bytecode_len=bytecode_len,
-            bytecode=bytecode_,
-            current_felt=0,
-            remaining_shift=0,
-        );
+        let (bytecode_) = internal.load_bytecode(bytecode_len);
         return (bytecode_len, bytecode_);
     }
 
@@ -224,68 +200,36 @@ namespace ContractAccount {
 }
 
 namespace internal {
-    // Use a precomputed 2 ** n array to save on resources usage.
-    // Array starts with a 0 to be shifted and have pow[i] = bit shift for byte i with
-    // i as a counter, ie i \in (0, BYTES_PER_FELT]
-    pow_:
-    dw 0;
-    dw 1;
-    dw 2 ** 8;
-    dw 2 ** 16;
-    dw 2 ** 24;
-    dw 2 ** 32;
-    dw 2 ** 40;
-    dw 2 ** 48;
-    dw 2 ** 56;
-    dw 2 ** 64;
-    dw 2 ** 72;
-    dw 2 ** 80;
-    dw 2 ** 88;
-    dw 2 ** 96;
-    dw 2 ** 104;
-    dw 2 ** 112;
-    dw 2 ** 120;
-
     // @notice Store the bytecode of the contract.
     // @param index The current free index in the bytecode_ storage.
     // @param bytecode_len The length of the bytecode.
     // @param bytecode The bytecode of the contract.
     func write_bytecode{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        index: felt, bytecode_len: felt, bytecode: felt*, current_felt: felt, remaining_shift: felt
+        bytecode_len: felt, bytecode: felt*
     ) {
         alloc_locals;
 
         if (bytecode_len == 0) {
-            // end of bytecode case, break loop storing latest "pending" packed felt
-            bytecode_.write(index, current_felt);
             return ();
         }
 
-        if (remaining_shift == 0) {
-            // end of packed felt case, store current "pending" felt
-            // continue loop with a new current_felt and increment index in bytecode_ storage
-            bytecode_.write(index, current_felt);
-            return write_bytecode(
-                index + 1, bytecode_len, bytecode, 0, ContractAccount.BYTES_PER_FELT
-            );
-        }
+        tempvar syscall_ptr = syscall_ptr;
+        tempvar bytecode_len = bytecode_len;
+        static_assert syscall_ptr == [ap - 2];
+        static_assert bytecode_len == [ap - 1];
 
-        // retrieve the precomputed pow array
-        let (pow_address) = get_label_location(pow_);
-        let pow = cast(pow_address, felt*);
+        body:
+        let syscall_ptr = cast([ap - 2], felt*);
+        let bytecode_len = [ap - 1];
+        let bytecode = cast([fp - 3], felt*);
+        storage_write(bytecode_len - 1, bytecode[bytecode_len - 1]);
+        tempvar bytecode_len = bytecode_len - 1;
 
-        // shift the current byte and add it to the current felt
-        // bytes are stored big endian, ie that 3 bytes ends up being stored as a felt whose representation is 0xabcdef000...000
-        // for a given remaining_shift:
-        // current_felt = 0x 12 34 00 00...00 00
-        // bytecode = 0x 56
-        // pow[remaining_shift] * bytecode = 0x 00 00 56 00...00 00
-        // resulting in 0x 12 34 56 00...00 00
-        let current_felt = pow[remaining_shift] * [bytecode] + current_felt;
+        static_assert syscall_ptr == [ap - 2];
+        static_assert bytecode_len == [ap - 1];
+        jmp body if bytecode_len != 0;
 
-        return write_bytecode(
-            index, bytecode_len - 1, bytecode + 1, current_felt, remaining_shift - 1
-        );
+        return ();
     }
 
     // @notice Load the bytecode of the contract in the specified array.
@@ -297,34 +241,32 @@ namespace internal {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(index: felt, bytecode_len: felt, bytecode: felt*, current_felt: felt, remaining_shift: felt) {
+    }(bytecode_len: felt) -> (bytecode: felt*) {
         alloc_locals;
+        let (local bytecode: felt*) = alloc();
 
         if (bytecode_len == 0) {
-            // end of loop
-            return ();
+            return (bytecode=bytecode);
         }
 
-        if (remaining_shift == 0) {
-            // end of current packed felt, loading next stored felt and increase storage index
-            let (current_felt) = bytecode_.read(index);
-            return load_bytecode(
-                index + 1, bytecode_len, bytecode, current_felt, ContractAccount.BYTES_PER_FELT
-            );
-        }
+        tempvar syscall_ptr = syscall_ptr;
+        tempvar bytecode_len = bytecode_len;
+        static_assert syscall_ptr == [ap - 2];
+        static_assert bytecode_len == [ap - 1];
 
-        // retrieve the precomputed pow array
-        let (pow_address) = get_label_location(pow_);
-        let pow = cast(pow_address, felt*);
+        body:
+        let syscall_ptr = cast([ap - 2], felt*);
+        let bytecode_len = [ap - 1];
+        let bytecode = cast([fp], felt*);
+        let (byte) = storage_read(bytecode_len - 1);
+        assert bytecode[bytecode_len - 1] = byte;
+        tempvar syscall_ptr = syscall_ptr;
+        tempvar bytecode_len = bytecode_len - 1;
 
-        // get the leading (big endian) byte of the current_felt
-        // reassign current_felt to the be remainder
-        let (current_byte, current_felt) = unsigned_div_rem(current_felt, pow[remaining_shift]);
-        // add byte to returned array
-        assert [bytecode] = current_byte;
+        static_assert syscall_ptr == [ap - 2];
+        static_assert bytecode_len == [ap - 1];
+        jmp body if bytecode_len != 0;
 
-        return load_bytecode(
-            index, bytecode_len - 1, bytecode + 1, current_felt, remaining_shift - 1
-        );
+        return (bytecode=bytecode);
     }
 }
