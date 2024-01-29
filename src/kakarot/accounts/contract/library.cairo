@@ -14,7 +14,7 @@ from starkware.starknet.common.syscalls import (
     STORAGE_WRITE_SELECTOR,
     storage_read,
     storage_write,
-    StorageReadRequest
+    StorageReadRequest,
 )
 from starkware.cairo.common.memset import memset
 
@@ -274,7 +274,9 @@ namespace internal {
         let bytecode = cast([fp], felt*);
 
         let syscall = [cast(syscall_ptr, StorageRead*)];
-        assert syscall.request = StorageReadRequest(selector=STORAGE_READ_SELECTOR, address=bytecode_len - 1);
+        assert syscall.request = StorageReadRequest(
+            selector=STORAGE_READ_SELECTOR, address=bytecode_len - 1
+        );
         %{ syscall_handler.storage_read(segments=segments, syscall_ptr=ids.syscall_ptr) %}
         let response = syscall.response;
         assert bytecode[bytecode_len - 1] = response.value;
