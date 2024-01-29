@@ -63,12 +63,9 @@ namespace Interpreter {
                 let (output_len, output, gas_used, reverted) = Precompiles.exec_precompile(
                     evm.message.code_address, evm.message.calldata_len, evm.message.calldata
                 );
-                // We first stop the EVM with precompile status
-                // Then charge the gas, which might update the status to REVERTED.
-                // Inverting these two lines would cause a bug in the case of a precompile
-                // reverting triggering an OOG.
-                let evm = EVM.stop(evm, output_len, output, reverted);
                 let evm = EVM.charge_gas(evm, gas_used);
+                let success = (1 - reverted) * (1 - evm.reverted);
+                let evm = EVM.stop(evm, output_len, output, 1 - success);
                 return evm;
             } else {
                 let (return_data: felt*) = alloc();
