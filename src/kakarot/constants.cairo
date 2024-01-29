@@ -9,8 +9,6 @@ namespace Constants {
     const ADDRESS_BYTES_LEN = 20;
 
     // BLOCK
-    // CHAIN_ID = KKRT (0x4b4b5254) in ASCII
-    const CHAIN_ID = 1263227476;
     // Hardcode block gas limit to 20M
     const BLOCK_GAS_LIMIT = 20000000;
 
