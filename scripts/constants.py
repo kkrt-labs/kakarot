@@ -157,7 +157,6 @@ DECLARED_CONTRACTS = [
     {"contract_name": "Precompiles", "cairo_version": ArtifactType.cairo1},
 ]
 
-KAKAROT_CHAIN_ID = 1263227476  # KKRT (0x4b4b5254) in ASCII
 EVM_PRIVATE_KEY = os.getenv("EVM_PRIVATE_KEY")
 EVM_ADDRESS = (
     EVM_PRIVATE_KEY

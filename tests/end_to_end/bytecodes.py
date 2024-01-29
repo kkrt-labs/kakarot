@@ -1,5 +1,7 @@
 import pytest
 
+from scripts.constants import NETWORK
+
 test_cases = [
     {
         "params": {
@@ -734,7 +736,7 @@ test_cases = [
             "value": 0,
             "code": "600160024600",
             "calldata": "",
-            "stack": "1,2,1263227476",
+            "stack": f"1,2,{NETWORK['chain_id']}",
             "memory": "",
             "return_data": "",
             "success": 1,
@@ -1901,7 +1903,6 @@ test_cases = [
         "marks": [
             pytest.mark.SHA256,
             pytest.mark.Precompiles,
-            pytest.mark.xfail(reason="Hint is not whitelisted"),
         ],
     },
     {

@@ -31,7 +31,6 @@ from scripts.artifacts import fetch_deployments
 from scripts.constants import (
     EVM_ADDRESS,
     EVM_PRIVATE_KEY,
-    KAKAROT_CHAIN_ID,
     NETWORK,
     RPC_CLIENT,
 )
@@ -296,7 +295,7 @@ async def eth_send_transaction(
 
     payload = {
         "type": 0x2,
-        "chainId": KAKAROT_CHAIN_ID,
+        "chainId": NETWORK["chain_id"],
         "nonce": nonce,
         "gas": gas,
         "maxPriorityFeePerGas": int(1e19),

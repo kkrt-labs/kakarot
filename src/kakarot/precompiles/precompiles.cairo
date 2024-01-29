@@ -131,6 +131,8 @@ namespace Precompiles {
             calldata_size=input_len + 2,
             calldata=calldata,
         );
-        return (retdata_size, retdata, 0, 0);
+        // Precompiles always return a felt*, meaning that the first felt
+        // is the length of the output.
+        return (retdata[0], retdata + 1, 0, 0);
     }
 }
