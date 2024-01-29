@@ -109,6 +109,7 @@ namespace ExternallyOwnedAccount {
         EthTransaction.validate(
             address,
             tx_info.nonce,
+            tx_info.chain_id,
             r,
             s,
             v,

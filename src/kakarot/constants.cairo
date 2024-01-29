@@ -4,8 +4,6 @@
 // @notice This file contains global constants.
 namespace Constants {
     // BLOCK
-    // CHAIN_ID = KKRT (0x4b4b5254) in ASCII
-    const CHAIN_ID = 1263227476;
     // Hardcode block gas limit to 20M
     const BLOCK_GAS_LIMIT = 20000000;
 
