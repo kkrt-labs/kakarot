@@ -1,8 +1,12 @@
+from unittest.mock import call
+
+import pytest
 from starkware.starknet.public.abi import (
     get_selector_from_name,
     get_storage_var_address,
 )
 
+from scripts.utils.kakarot import get_contract
 from tests.utils.errors import cairo_error
 from tests.utils.syscall_handler import SyscallHandler
 from tests.utils.uint256 import int_to_uint256
@@ -72,17 +76,34 @@ class TestContractAccount:
             with cairo_error():
                 cairo_run("test__write_bytecode", bytecode=[])
 
+        @pytest.mark.parametrize(
+            "bytecode",
+            [
+                list(range(10)),
+                list(range(100)),
+                list(range(100)) * 10,
+                list(get_contract("PlainOpcodes", "Counter").bytecode),
+            ],
+            ids=[
+                "10 bytes",
+                "100 bytes",
+                "1000 bytes",
+                "Counter",
+            ],
+        )
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
-        def test_should_write_bytecode(self, cairo_run):
-            cairo_run("test__write_bytecode", bytecode=list(range(32)))
+        def test_should_write_bytecode(self, cairo_run, bytecode):
+            cairo_run("test__write_bytecode", bytecode=bytecode)
             SyscallHandler.mock_storage.assert_any_call(
-                address=get_storage_var_address("bytecode_len_"), value=32
+                address=get_storage_var_address("bytecode_len_"), value=len(bytecode)
             )
-            SyscallHandler.mock_storage.assert_any_call(
-                address=get_storage_var_address("bytecode_", 0),
-                value=int.from_bytes(bytes(list(range(16))), "big"),
-            )
-            SyscallHandler.mock_storage.assert_any_call(
-                address=get_storage_var_address("bytecode_", 1),
-                value=int.from_bytes(bytes(list(range(16, 32))), "big"),
-            )
+            calls = [
+                call(
+                    address=get_storage_var_address("bytecode_", i // 16),
+                    value=int.from_bytes(
+                        bytes((bytecode[i : i + 16] + [0] * 16)[:16]), "big"
+                    ),
+                )
+                for i in range(0, len(bytecode), 16)
+            ]
+            SyscallHandler.mock_storage.assert_has_calls(calls)
