@@ -83,13 +83,9 @@ class TestContractAccount:
                 list(range(100)),
                 list(range(100)) * 10,
                 list(get_contract("PlainOpcodes", "Counter").bytecode),
+                list(get_contract("Solmate", "ERC20").bytecode),
             ],
-            ids=[
-                "10 bytes",
-                "100 bytes",
-                "1000 bytes",
-                "Counter",
-            ],
+            ids=["10 bytes", "100 bytes", "1000 bytes", "Counter", "ERC20"],
         )
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
         def test_should_write_bytecode(self, cairo_run, bytecode):
