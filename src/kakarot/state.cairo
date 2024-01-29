@@ -160,7 +160,7 @@ namespace State {
         alloc_locals;
         tempvar accounts_ptr = state.accounts;
         with accounts_ptr {
-            let gas_cost = _cache_access_list(access_list_len, access_list);
+            let gas_cost = Internals._cache_access_list(access_list_len, access_list);
         }
         tempvar state = new model.State(
             accounts_start=state.accounts_start,
