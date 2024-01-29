@@ -14,6 +14,7 @@ from starkware.starknet.common.syscalls import (
     deploy as deploy_syscall,
     get_block_number,
     get_block_timestamp,
+    get_tx_info,
 )
 
 from kakarot.account import Account
@@ -99,6 +100,7 @@ namespace Starknet {
         alloc_locals;
         let (block_number) = get_block_number();
         let (block_timestamp) = get_block_timestamp();
+        let (tx_info) = get_tx_info();
         let (block_hashes) = alloc();
         // TODO: fix how blockhashes are retrieved
         memset(block_hashes, 0, 256 * 2);
@@ -109,7 +111,7 @@ namespace Starknet {
         return new model.Environment(
             origin=origin,
             gas_price=gas_price,
-            chain_id=Constants.CHAIN_ID,
+            chain_id=tx_info.chain_id,
             prev_randao=Uint256(0, 0),
             block_number=block_number,
             block_gas_limit=Constants.BLOCK_GAS_LIMIT,

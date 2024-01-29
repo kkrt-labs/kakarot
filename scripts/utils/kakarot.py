@@ -28,13 +28,7 @@ from web3.exceptions import LogTopicError, MismatchedABI, NoABIFunctionsFound
 from web3.types import LogReceipt
 
 from scripts.artifacts import fetch_deployments
-from scripts.constants import (
-    EVM_ADDRESS,
-    EVM_PRIVATE_KEY,
-    KAKAROT_CHAIN_ID,
-    NETWORK,
-    RPC_CLIENT,
-)
+from scripts.constants import EVM_ADDRESS, EVM_PRIVATE_KEY, NETWORK, RPC_CLIENT
 from scripts.utils.starknet import call as _call_starknet
 from scripts.utils.starknet import fund_address as _fund_starknet_address
 from scripts.utils.starknet import get_contract as _get_starknet_contract
@@ -296,7 +290,7 @@ async def eth_send_transaction(
 
     payload = {
         "type": 0x2,
-        "chainId": KAKAROT_CHAIN_ID,
+        "chainId": NETWORK["chain_id"],
         "nonce": nonce,
         "gas": gas,
         "maxPriorityFeePerGas": int(1e19),

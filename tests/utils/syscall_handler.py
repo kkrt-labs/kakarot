@@ -1,4 +1,5 @@
 import time
+from collections import OrderedDict
 from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import Optional, Union
@@ -8,6 +9,8 @@ from starkware.starknet.public.abi import (
     get_selector_from_name,
     get_storage_var_address,
 )
+
+from tests.utils.constants import CHAIN_ID
 
 
 @dataclass
@@ -20,6 +23,19 @@ class SyscallHandler:
 
     block_number: int = 0xABDE1
     block_timestamp: int = int(time.time())
+    tx_info = OrderedDict(
+        {
+            "version": 1,
+            "account_contract_address": 0xABDE1,
+            "max_fee": int(1e17),
+            # Signature len will be set later based on the signature.
+            "signature_len": None,
+            "signature": [],
+            "transaction_hash": 0xABDE1,
+            "chain_id": CHAIN_ID,
+            "nonce": 1,
+        }
+    )
     contract_address: int = 0xABDE1
     caller_address: int = 0xABDE1
     patches = {}
@@ -112,6 +128,35 @@ class SyscallHandler:
             }
         """
         segments.write_arg(syscall_ptr + 1, [self.block_timestamp])
+
+    def get_tx_info(self, segments, syscall_ptr):
+        """
+        Return a constant value for the get tx info system call.
+
+        Syscall structure is:
+            struct GetTxInfoRequest {
+                selector: felt,
+            }
+
+            struct GetTxInfoResponse {
+                tx_info: TxInfo*,
+            }
+
+            struct GetTxInfo {
+                request: GetTxInfoRequest,
+                response: GetTxInfoResponse,
+            }
+        """
+        signature_segment = segments.add()
+        segments.write_arg(signature_segment, self.tx_info["signature"])
+        tx_info = {
+            **self.tx_info,
+            "signature_len": len(self.tx_info["signature"]),
+            "signature": signature_segment,
+        }
+        tx_info_segment = segments.add()
+        segments.write_arg(tx_info_segment, tx_info.values())
+        segments.write_arg(syscall_ptr + 1, [tx_info_segment])
 
     def storage_read(self, segments, syscall_ptr):
         """

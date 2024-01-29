@@ -225,6 +225,7 @@ namespace EthTransaction {
     func validate{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
         address: felt,
         account_nonce: felt,
+        chain_id: felt,
         r: Uint256,
         s: Uint256,
         v: felt,
@@ -232,17 +233,17 @@ namespace EthTransaction {
         tx_data: felt*,
     ) {
         alloc_locals;
-        let (msg_hash, nonce, _gas_price, _gas_limit, _, _, chain_id, _, _) = decode(
+        let (msg_hash, nonce, _gas_price, _gas_limit, _, _, _chain_id, _, _) = decode(
             tx_data_len, tx_data
         );
         assert nonce = account_nonce;
-        assert chain_id = Constants.CHAIN_ID;
+        assert chain_id = _chain_id;
 
         // Note: here, the validate process assumes an ECDSA signature, and r, s, v field
         // Technically, the transaction type can determine the signature scheme.
         let _is_legacy = is_legacy_tx(tx_data);
         if (_is_legacy != FALSE) {
-            tempvar y_parity = (v - 2 * Constants.CHAIN_ID - 35);
+            tempvar y_parity = (v - 2 * chain_id - 35);
         } else {
             tempvar y_parity = v;
         }

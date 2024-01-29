@@ -59,6 +59,7 @@ async def main():
             ETH_TOKEN_ADDRESS,  # native_token_address_
             class_hash["contract_account"],  # contract_account_class_hash_
             class_hash["proxy"],  # account_proxy_class_hash
+            class_hash["Precompiles"],
         )
         deployments["deployer_account"] = await deploy_starknet_account(
             class_hash["OpenzeppelinAccount"], private_key=DEPLOYER_ACCOUNT_PRIVATE_KEY

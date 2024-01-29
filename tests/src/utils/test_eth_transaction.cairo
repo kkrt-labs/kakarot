@@ -47,6 +47,7 @@ func test__validate{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}() {
     // Given
     tempvar address: felt;
     tempvar nonce: felt;
+    tempvar chain_id: felt;
     tempvar r: Uint256;
     tempvar s: Uint256;
     tempvar v: felt;
@@ -55,6 +56,7 @@ func test__validate{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}() {
     %{
         ids.address = program_input["address"]
         ids.nonce = program_input["nonce"]
+        ids.chain_id = program_input["chain_id"]
         ids.r.low = program_input["r"][0]
         ids.r.high = program_input["r"][1]
         ids.s.low = program_input["s"][0]
@@ -65,7 +67,7 @@ func test__validate{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}() {
     %}
 
     // When
-    EthTransaction.validate(address, nonce, r, s, v, tx_data_len, tx_data);
+    EthTransaction.validate(address, nonce, chain_id, r, s, v, tx_data_len, tx_data);
 
     return ();
 }

@@ -36,6 +36,7 @@ class TestEthTransaction:
                 "test__validate",
                 address=int(address, 16),
                 nonce=transaction["nonce"],
+                chain_id=transaction["chainId"],
                 r=int_to_uint256(signed.r),
                 s=int_to_uint256(signed.s),
                 v=signed["v"],
@@ -46,7 +47,6 @@ class TestEthTransaction:
         async def test_should_raise_with_wrong_chain_id(self, cairo_run, transaction):
             private_key = generate_random_private_key()
             address = private_key.public_key.to_checksum_address()
-            transaction = {**transaction, "chainId": 1}
             signed = Account.sign_transaction(transaction, private_key)
 
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
@@ -56,6 +56,7 @@ class TestEthTransaction:
                     "test__validate",
                     address=int(address, 16),
                     nonce=transaction["nonce"],
+                    chain_id=transaction["chainId"] + 1,
                     r=int_to_uint256(signed.r),
                     s=int_to_uint256(signed.s),
                     v=signed["v"],
@@ -76,6 +77,7 @@ class TestEthTransaction:
                     "test__validate",
                     address=int(address, 16),
                     nonce=transaction["nonce"],
+                    chain_id=transaction["chainId"],
                     r=int_to_uint256(signed.r),
                     s=int_to_uint256(signed.s),
                     v=signed["v"],
@@ -96,6 +98,7 @@ class TestEthTransaction:
                     "test__validate",
                     address=int(address, 16),
                     nonce=transaction["nonce"],
+                    chain_id=transaction["chainId"],
                     r=int_to_uint256(signed.r),
                     s=int_to_uint256(signed.s),
                     v=signed["v"],
