@@ -813,9 +813,11 @@ namespace CallHelper {
         Stack.push_uint128(1 - evm.reverted);
 
         // Store RETURN_DATA in memory
-        let (return_data: felt*) = alloc();
-        slice(return_data, evm.return_data_len, evm.return_data, 0, ret_size.low);
-        Memory.store_n(ret_size.low, return_data, ret_offset.low);
+        let actual_output_size_is_ret_size = is_le(ret_size.low, evm.return_data_len);
+        let actual_output_size = actual_output_size_is_ret_size * ret_size.low + (
+            1 - actual_output_size_is_ret_size
+        ) * evm.return_data_len;
+        Memory.store_n(actual_output_size, evm.return_data, ret_offset.low);
 
         // Gas not used is returned when evm is not reverted
         local gas_left;
