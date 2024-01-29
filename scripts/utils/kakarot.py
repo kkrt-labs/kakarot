@@ -28,12 +28,7 @@ from web3.exceptions import LogTopicError, MismatchedABI, NoABIFunctionsFound
 from web3.types import LogReceipt
 
 from scripts.artifacts import fetch_deployments
-from scripts.constants import (
-    EVM_ADDRESS,
-    EVM_PRIVATE_KEY,
-    NETWORK,
-    RPC_CLIENT,
-)
+from scripts.constants import EVM_ADDRESS, EVM_PRIVATE_KEY, NETWORK, RPC_CLIENT
 from scripts.utils.starknet import call as _call_starknet
 from scripts.utils.starknet import fund_address as _fund_starknet_address
 from scripts.utils.starknet import get_contract as _get_starknet_contract

@@ -21,7 +21,7 @@ from kakarot.storages import (
     native_token_address,
     contract_account_class_hash,
     account_proxy_class_hash,
-    precompiles_class_hash
+    precompiles_class_hash,
 )
 from backend.starknet import Starknet, Internals as StarknetInternals
 from utils.dict import dict_keys, dict_values
@@ -29,7 +29,10 @@ from utils.dict import dict_keys, dict_values
 // Constructor
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    native_token_address_: felt, contract_account_class_hash_: felt, account_proxy_class_hash_: felt, precompiles_class_hash_: felt
+    native_token_address_: felt,
+    contract_account_class_hash_: felt,
+    account_proxy_class_hash_: felt,
+    precompiles_class_hash_: felt,
 ) {
     native_token_address.write(native_token_address_);
     contract_account_class_hash.write(contract_account_class_hash_);
