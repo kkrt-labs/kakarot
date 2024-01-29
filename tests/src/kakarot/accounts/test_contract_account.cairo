@@ -51,3 +51,13 @@ func test__write_bytecode{
 
     return ();
 }
+
+func test__read_bytecode{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(output_ptr: felt*) {
+    alloc_locals;
+    let (bytecode_len, _) = ContractAccount.bytecode();
+    assert [output_ptr] = bytecode_len;
+
+    return ();
+}

@@ -6,7 +6,6 @@
 from openzeppelin.access.ownable.library import Ownable
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
-from starkware.starknet.common.syscalls import storage_read, storage_write
 
 // Local dependencies
 from kakarot.accounts.contract.library import ContractAccount

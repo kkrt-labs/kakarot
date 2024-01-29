@@ -180,6 +180,7 @@ class SyscallHandler:
             }
         """
         address = segments.memory[syscall_ptr + 1]
+        self.mock_storage(address=address)
         value = self.patches.get(address, 0)
         segments.write_arg(syscall_ptr + 2, [value])
 
