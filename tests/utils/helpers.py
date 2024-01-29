@@ -9,7 +9,7 @@ from eth_account._utils.typed_transactions import TypedTransaction
 from eth_keys import keys
 from eth_utils import decode_hex, keccak, to_checksum_address
 
-from tests.utils.constants import CHAIN_ID
+from scripts.constants import NETWORK
 
 PERMIT_TYPEHASH = keccak(
     text="Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
@@ -83,7 +83,7 @@ def get_domain_separator(name: str, token_address: str) -> bytes:
                 ),
                 keccak(text=name),
                 keccak(text="1"),
-                CHAIN_ID,
+                NETWORK["chain_id"],
                 token_address,
             ],
         )
