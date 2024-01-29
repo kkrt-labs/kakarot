@@ -46,10 +46,10 @@ class TestState:
             cairo_run("test__is_account_alive__not_in_state")
 
     class TestIsAccountWarm:
-        def test_account_in_state(self, cairo_run):
+        def test_should_return_true_when_account_in_state(self, cairo_run):
             cairo_run("test__is_account_warm__account_in_state")
 
-        def test_not_in_state(self, cairo_run):
+        def test_should_return_false_when_account_not_state(self, cairo_run):
             cairo_run("test__is_account_warm__account_not_in_state")
 
     class TestCachePreaccessedAddresses:

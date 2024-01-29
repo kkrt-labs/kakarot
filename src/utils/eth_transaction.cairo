@@ -289,12 +289,10 @@ namespace EthTransaction {
 
         // Address
         let address_item = cast(list_items.data, RLP.Item*);
-        let address_ptr = address_item.data;
-        let address_len = address_item.data_len;
-        let address = Helpers.bytes20_to_felt(address_ptr);
+        let address = Helpers.bytes20_to_felt(address_item.data);
 
         // List<StorageKeys>
-        let keys_item = cast(address_item + 3, RLP.Item*);
+        let keys_item = address_item + RLP.Item.SIZE;
         let keys_len = keys_item.data_len;
         let keys = cast(keys_item.data, RLP.Item*);
 
@@ -324,9 +322,7 @@ namespace EthTransaction {
             return 0;
         }
 
-        let key_len = keys_list.data_len;
-        let key_bytes = keys_list.data;
-        let key = Helpers.bytes32_to_uint256(key_bytes);
+        let key = Helpers.bytes32_to_uint256(keys_list.data);
         assert [parsed_keys] = key;
 
         let parsed_keys_len = parse_storage_keys(

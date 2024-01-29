@@ -174,43 +174,6 @@ namespace State {
         return gas_cost;
     }
 
-    func _cache_access_list{
-        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, accounts_ptr: DictAccess*
-    }(access_list_len: felt, access_list: model.AccessListItem*) -> felt {
-        alloc_locals;
-        if (access_list_len == 0) {
-            return 0;
-        }
-
-        let access_list_item = [access_list];
-        let address = access_list_item.address;
-        let account = Account.fetch_or_create(address);
-        tempvar storage_ptr = account.storage;
-        with storage_ptr {
-            Account.cache_storage_keys(
-                access_list_item.storage_keys_len, access_list_item.storage_keys
-            );
-
-            tempvar account = new model.Account(
-                address=account.address,
-                code_len=account.code_len,
-                code=account.code,
-                storage_start=account.storage_start,
-                storage=storage_ptr,
-                nonce=account.nonce,
-                balance=account.balance,
-                selfdestruct=account.selfdestruct,
-            );
-        }
-        dict_write{dict_ptr=accounts_ptr}(key=address, new_value=cast(account, felt));
-
-        let cum_gas_cost = _cache_access_list(
-            access_list_len - 1, access_list + model.AccessListItem.SIZE
-        );
-        return cum_gas_cost + Gas.TX_ACCESS_LIST_ADDRESS_COST + access_list_item.storage_keys_len *
-            Gas.TX_ACCESS_LIST_STORAGE_KEY_COST;
-    }
-
     // @dev Checks if an address is warm (has been accessed before or in access list).
     // @param address The address to check.
     // @return A boolean indicating whether the address is warm.
@@ -426,5 +389,42 @@ namespace Internals {
         );
         dict_write{dict_ptr=accounts_ptr}(key=address.evm, new_value=cast(account, felt));
         return ();
+    }
+
+    func _cache_access_list{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, accounts_ptr: DictAccess*
+    }(access_list_len: felt, access_list: model.AccessListItem*) -> felt {
+        alloc_locals;
+        if (access_list_len == 0) {
+            return 0;
+        }
+
+        let access_list_item = [access_list];
+        let address = access_list_item.address;
+        let account = Account.fetch_or_create(address);
+        tempvar storage_ptr = account.storage;
+        with storage_ptr {
+            Account.cache_storage_keys(
+                access_list_item.storage_keys_len, access_list_item.storage_keys
+            );
+        }
+
+        tempvar account = new model.Account(
+            address=account.address,
+            code_len=account.code_len,
+            code=account.code,
+            storage_start=account.storage_start,
+            storage=storage_ptr,
+            nonce=account.nonce,
+            balance=account.balance,
+            selfdestruct=account.selfdestruct,
+        );
+        dict_write{dict_ptr=accounts_ptr}(key=address, new_value=cast(account, felt));
+
+        let cum_gas_cost = _cache_access_list(
+            access_list_len - 1, access_list + model.AccessListItem.SIZE
+        );
+        return cum_gas_cost + Gas.TX_ACCESS_LIST_ADDRESS_COST + access_list_item.storage_keys_len *
+            Gas.TX_ACCESS_LIST_STORAGE_KEY_COST;
     }
 }

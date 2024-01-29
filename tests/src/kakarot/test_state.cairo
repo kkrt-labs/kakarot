@@ -204,15 +204,12 @@ func test__cache_precompiles{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
 ) {
     alloc_locals;
     let state = State.init();
-    tempvar syscall_ptr = syscall_ptr;
     with state {
         State.cache_precompiles();
     }
 
     let (keys_len, keys) = dict_keys(state.accounts_start, state.accounts);
     memcpy(dst=output_ptr, src=keys, len=keys_len);
-
-    tempvar syscall_ptr = syscall_ptr;
 
     return ();
 }
