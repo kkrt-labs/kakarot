@@ -6,6 +6,7 @@ from starkware.starknet.common.syscalls import library_call
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
 
+from kakarot.interfaces.interfaces import IPrecompiles
 from kakarot.storages import precompiles_class_hash
 from kakarot.errors import Errors
 from kakarot.precompiles.blake2f import PrecompileBlake2f
@@ -125,14 +126,12 @@ namespace Precompiles {
         assert [calldata] = evm_address;
         assert [calldata + 1] = input_len;
         memcpy(calldata + 2, input, input_len);
-        let (retdata_size, retdata) = library_call(
-            class_hash=implementation,
-            function_selector=EXEC_PRECOMPILE_SELECTOR,
-            calldata_size=input_len + 2,
-            calldata=calldata,
+        let (
+            success, gas, return_data_len, return_data
+        ) = IPrecompiles.library_call_exec_precompile(
+            class_hash=implementation, address=evm_address, data_len=input_len, data=input
         );
-        // Precompiles always return a felt*, meaning that the first felt
-        // is the length of the output.
-        return (retdata[0], retdata + 1, 0, 0);
+
+        return (return_data_len, return_data, gas, 1 - success);
     }
 }
