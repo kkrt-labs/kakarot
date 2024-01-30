@@ -16,7 +16,8 @@ $(EF_TESTS_DIR):
 
 # Include .env file to get GITHUB_TOKEN
 ifneq ("$(wildcard .env)","")
-	include .env
+    include .env
+    export $(shell sed 's/=.*//' .env)
 endif
 
 .PHONY: build test coverage
@@ -32,6 +33,10 @@ build: check
 check:
 	poetry check --lock
 
+# This action fetches the latest Kakarot SSJ (Cairo compiler version >=2) artifacts
+# from the main branch and unzips them into the build/ssj directory.
+# This is required because Kakarot Zero (Cairo Zero, compiler version <1) uses some SSJ Cairo programs.
+# Most notably for precompiles.
 fetch-ssj-artifacts:
 	rm -rf build/ssj
 	mkdir -p build/ssj
@@ -44,10 +49,6 @@ setup: fetch-ssj-artifacts
 
 test: build-sol deploy
 	poetry run pytest tests/src -m "not EFTests" --log-cli-level=INFO -n logical
-	poetry run pytest tests/end_to_end
-
-test-no-log: build-sol deploy
-	poetry run pytest tests/src -m "not EFTests" -n logical
 	poetry run pytest tests/end_to_end
 
 test-unit:
@@ -73,22 +74,12 @@ clean:
 check-resources:
 	poetry run python scripts/check_resources.py
 
-get-blockhashes:
-	poetry run python scripts/get_latest_blockhashes.py
-
 build-sol:
 	git submodule update --init --recursive
 	forge build --names --force
 
-run:
-	mkdir -p deployments/starknet-devnet
-	docker run -p 5050:5050 shardlabs/starknet-devnet-rs --seed 0
-
 install-katana:
 	cargo install --git https://github.com/dojoengine/dojo --locked --rev e0054e7 katana
 
-run-katana:
+run-katana: install-katana
 	katana --validate-max-steps 16777216 --invoke-max-steps 16777216
-
-run-katana-with-dump:
-	katana --validate-max-steps 16777216 --invoke-max-steps 16777216 --dump-state ./kakarot-katana-dump
