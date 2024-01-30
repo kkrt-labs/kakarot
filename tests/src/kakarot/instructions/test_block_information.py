@@ -2,6 +2,7 @@ import pytest
 
 from tests.utils.constants import BLOCK_GAS_LIMIT, CHAIN_ID, Opcodes
 from tests.utils.syscall_handler import SyscallHandler
+from tests.utils.uint256 import int_to_uint256
 
 
 class TestBlockInformation:
@@ -10,7 +11,7 @@ class TestBlockInformation:
         [
             (
                 Opcodes.COINBASE,
-                [0xACDFFE0CF08E20ED8BA10EA97A487004, 0x388CA486B82E20CC81965D056B4CDCA],
+                int_to_uint256(0xCA40796AFB5472ABAED28907D5ED6FC74C04954A),
             ),
             (Opcodes.TIMESTAMP, [SyscallHandler.block_timestamp, 0]),
             (Opcodes.NUMBER, [SyscallHandler.block_number, 0]),
@@ -22,4 +23,4 @@ class TestBlockInformation:
     )
     def test__exec_block_information(self, cairo_run, opcode, expected_result):
         output = cairo_run("test__exec_block_information", opcode=opcode)
-        assert output == expected_result
+        assert output == list(expected_result)

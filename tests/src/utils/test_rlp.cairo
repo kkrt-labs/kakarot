@@ -20,9 +20,9 @@ func test__decode{range_check_ptr}(output_ptr: felt*) {
     RLP.decode(items, data_len, data);
 
     %{
-        from tests.utils.hints import flatten_list
+        from tests.utils.hints import flatten_rlp_list
         # The cairo functions returns a single RLP list of size 1 containing the decoded objects.
-        flatten_list(ids.items.address_, 1, ids.output_ptr, memory, segments)
+        flatten_rlp_list(ids.items.address_, 1, ids.output_ptr, memory, segments)
     %}
     return ();
 }
