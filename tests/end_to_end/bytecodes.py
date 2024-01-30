@@ -749,7 +749,7 @@ test_cases = [
             "value": 0,
             "code": "4100",
             "calldata": "",
-            "stack": "1598625851760128517552627854997699631064626954749952456622017584404508471300",
+            "stack": f"{0xca40796afb5472abaed28907d5ed6fc74c04954a}",
             "memory": "",
             "return_data": "",
             "success": 1,

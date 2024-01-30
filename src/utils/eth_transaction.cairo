@@ -35,6 +35,8 @@ namespace EthTransaction {
         chain_id: felt,
         payload_len: felt,
         payload: felt*,
+        access_list_len: felt,
+        access_list: felt*,
     ) {
         // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md
         alloc_locals;
@@ -92,6 +94,8 @@ namespace EthTransaction {
             chain_id,
             payload_len,
             payload,
+            0,
+            cast(0, felt*),
         );
     }
 
@@ -114,6 +118,8 @@ namespace EthTransaction {
         chain_id: felt,
         payload_len: felt,
         payload: felt*,
+        access_list_len: felt,
+        access_list: felt*,
     ) {
         // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-2718.md#specification
         alloc_locals;
@@ -163,6 +169,12 @@ namespace EthTransaction {
         );
         let payload_len = sub_items[gas_price_idx + 4].data_len;
         let payload: felt* = sub_items[gas_price_idx + 4].data;
+
+        let (access_list: felt*) = alloc();
+        let access_list_len = sub_items[gas_price_idx + 5].data_len;
+        parse_access_list(
+            access_list, access_list_len, cast(sub_items[gas_price_idx + 5].data, RLP.Item*)
+        );
         return (
             msg_hash,
             nonce,
@@ -173,6 +185,8 @@ namespace EthTransaction {
             chain_id,
             payload_len,
             payload,
+            access_list_len,
+            access_list,
         );
     }
 
@@ -204,6 +218,8 @@ namespace EthTransaction {
         chain_id: felt,
         payload_len: felt,
         payload: felt*,
+        access_list_len: felt,
+        access_list: felt*,
     ) {
         let _is_legacy = is_legacy_tx(tx_data);
         if (_is_legacy == FALSE) {
@@ -233,7 +249,7 @@ namespace EthTransaction {
         tx_data: felt*,
     ) {
         alloc_locals;
-        let (msg_hash, nonce, _gas_price, _gas_limit, _, _, _chain_id, _, _) = decode(
+        let (msg_hash, nonce, _gas_price, _gas_limit, _, _, _chain_id, _, _, _, _) = decode(
             tx_data_len, tx_data
         );
         assert nonce = account_nonce;
@@ -257,6 +273,66 @@ namespace EthTransaction {
             );
         }
         finalize_keccak(keccak_ptr_start, keccak_ptr);
+        return ();
+    }
+
+    // @notice Recursively parses the RLP-decoded access list.
+    // @dev the parsed format is [address, storage_keys_len, *[storage_keys], address, storage_keys_len, *[storage_keys]]
+    // where keys_len is the number of storage keys, and each storage key takes 2 felts.
+    // @param parsed_list The pointer to the next free cell in the parsed access list.
+    // @param list_len The remaining length of the RLP-decoded access list to parse.
+    // @param list_items The pointer to the current RLP-decoded access list item to parse.
+    // @return The number of parsed access list entries.
+    func parse_access_list{range_check_ptr}(
+        parsed_list: felt*, access_list_len: felt, access_list: RLP.Item*
+    ) {
+        alloc_locals;
+        if (access_list_len == 0) {
+            return ();
+        }
+
+        // Address
+        let address_item = cast(access_list.data, RLP.Item*);
+        let address = Helpers.bytes20_to_felt(address_item.data);
+
+        // List<StorageKeys>
+        let keys_item = address_item + RLP.Item.SIZE;
+        let keys_len = keys_item.data_len;
+        assert [parsed_list] = address;
+        assert [parsed_list + 1] = keys_len;
+
+        let keys = cast(keys_item.data, RLP.Item*);
+        parse_storage_keys(parsed_list + 2, keys_len, keys);
+
+        parse_access_list(
+            parsed_list + 2 + keys_len * Uint256.SIZE,
+            access_list_len - 1,
+            access_list + RLP.Item.SIZE,
+        );
+        return ();
+    }
+
+    // @notice Recursively parses the RLP-decoded storage keys list of an address
+    // and returns an array containing the parsed storage keys.
+    // @dev the keys are stored in the parsed format [key_low, key_high, key_low, key_high]
+    // @param parsed_keys The pointer to the next free cell in the parsed access list array.
+    // @param keys_list_len The remaining length of the RLP-decoded storage keys list to parse.
+    // @param keys_list The pointer to the current RLP-decoded storage keys list item to parse.
+    func parse_storage_keys{range_check_ptr}(
+        parsed_keys: felt*, keys_list_len: felt, keys_list: RLP.Item*
+    ) {
+        alloc_locals;
+        if (keys_list_len == 0) {
+            return ();
+        }
+
+        let key = Helpers.bytes32_to_uint256(keys_list.data);
+        assert [parsed_keys] = key.low;
+        assert [parsed_keys + 1] = key.high;
+
+        parse_storage_keys(
+            parsed_keys + Uint256.SIZE, keys_list_len - 1, keys_list + RLP.Item.SIZE
+        );
         return ();
     }
 }

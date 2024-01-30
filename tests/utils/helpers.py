@@ -196,3 +196,20 @@ def flatten(data):
 
     _flatten(data)
     return result
+
+
+def flatten_tx_accesslist(access_list):
+    """
+    Transform the access list from the transaction dict into a flattened list of
+    [address, storage_keys, ...].
+    """
+    result = []
+    for item in access_list:
+        result.append(int(item["address"], 16))
+        for key in item["storageKeys"]:
+            value = int(key, 16)
+            value_low = value & (2**128 - 1)
+            value_high = value >> 128
+            result.append(value_low)
+            result.append(value_high)
+    return result
