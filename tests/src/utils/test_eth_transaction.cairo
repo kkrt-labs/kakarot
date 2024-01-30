@@ -49,7 +49,7 @@ func test__decode{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(output_ptr: fel
         from tests.utils.hints import serialize_cairo_access_list
 
         output_ptr = ids.output_ptr + 11 + ids.payload_len
-        serialize_cairo_access_list(ids.access_list, ids.access_list_len, output_ptr, memory)
+        serialize_cairo_access_list(ids.access_list, ids.access_list_len, output_ptr, memory, segments)
     %}
 
     return ();
@@ -111,7 +111,7 @@ func test__parse_access_list{range_check_ptr}(output_ptr: felt*) {
     %{
         from tests.utils.hints import serialize_cairo_access_list
         # The cairo functions returns a single RLP list of size 1 containing the decoded objects.
-        serialize_cairo_access_list(ids.parsed_access_list, ids.access_list_len, ids.output_ptr, memory)
+        serialize_cairo_access_list(ids.parsed_access_list, ids.access_list_len, ids.output_ptr, memory, segments)
     %}
     return ();
 }

@@ -12,7 +12,7 @@ from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256, uint256_add, uint256_sub, uint256_le, uint256_eq
 from starkware.cairo.common.bool import FALSE, TRUE
 
-from kakarot.account import Account, Internals as AccountInternals
+from kakarot.account import Account
 from kakarot.model import model
 from kakarot.gas import Gas
 from utils.dict import default_dict_copy
@@ -451,19 +451,8 @@ namespace Internals {
         let account = Account.fetch_or_create(address);
         tempvar storage_ptr = account.storage;
         with storage_ptr {
-            AccountInternals.cache_storage_keys(storage_keys_len, cast(access_list + 2, Uint256*));
+            let account = Account.cache_storage_keys(account, storage_keys_len, access_list + 2);
         }
-
-        tempvar account = new model.Account(
-            address=account.address,
-            code_len=account.code_len,
-            code=account.code,
-            storage_start=account.storage_start,
-            storage=storage_ptr,
-            nonce=account.nonce,
-            balance=account.balance,
-            selfdestruct=account.selfdestruct,
-        );
         dict_write{dict_ptr=accounts_ptr}(key=address, new_value=cast(account, felt));
 
         tempvar item_len = 2 + storage_keys_len;
