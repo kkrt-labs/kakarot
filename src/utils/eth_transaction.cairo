@@ -171,9 +171,10 @@ namespace EthTransaction {
         let payload: felt* = sub_items[gas_price_idx + 4].data;
 
         let (access_list: felt*) = alloc();
-        let access_list_len = sub_items[gas_price_idx + 5].data_len;
-        parse_access_list(
-            access_list, access_list_len, cast(sub_items[gas_price_idx + 5].data, RLP.Item*)
+        let access_list_len = parse_access_list(
+            access_list,
+            sub_items[gas_price_idx + 5].data_len,
+            cast(sub_items[gas_price_idx + 5].data, RLP.Item*),
         );
         return (
             msg_hash,
@@ -282,13 +283,13 @@ namespace EthTransaction {
     // @param parsed_list The pointer to the next free cell in the parsed access list.
     // @param list_len The remaining length of the RLP-decoded access list to parse.
     // @param list_items The pointer to the current RLP-decoded access list item to parse.
-    // @return The number of parsed access list entries.
+    // @return The length of the serialized access list, expressed in total amount of felts in the list.
     func parse_access_list{range_check_ptr}(
         parsed_list: felt*, access_list_len: felt, access_list: RLP.Item*
-    ) {
+    ) -> felt {
         alloc_locals;
         if (access_list_len == 0) {
-            return ();
+            return 0;
         }
 
         // Address
@@ -296,7 +297,7 @@ namespace EthTransaction {
         let address = Helpers.bytes20_to_felt(address_item.data);
 
         // List<StorageKeys>
-        let keys_item = address_item + RLP.Item.SIZE;
+        let keys_item = cast(access_list.data + RLP.Item.SIZE, RLP.Item*);
         let keys_len = keys_item.data_len;
         assert [parsed_list] = address;
         assert [parsed_list + 1] = keys_len;
@@ -304,12 +305,12 @@ namespace EthTransaction {
         let keys = cast(keys_item.data, RLP.Item*);
         parse_storage_keys(parsed_list + 2, keys_len, keys);
 
-        parse_access_list(
+        let serialized_len = parse_access_list(
             parsed_list + 2 + keys_len * Uint256.SIZE,
             access_list_len - 1,
             access_list + RLP.Item.SIZE,
         );
-        return ();
+        return serialized_len + 2 + keys_len * Uint256.SIZE;
     }
 
     // @notice Recursively parses the RLP-decoded storage keys list of an address

@@ -9,11 +9,13 @@ from starkware.cairo.common.math import assert_not_equal
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.starknet.common.syscalls import get_contract_address
+from starkware.cairo.common.memcpy import memcpy
 
 from kakarot.model import model
 from kakarot.state import State, Internals
 from kakarot.account import Account
 from kakarot.storages import native_token_address
+from utils.dict import dict_keys
 
 func test__init__should_return_state_with_default_dicts() {
     // When
@@ -165,5 +167,182 @@ func test___copy_accounts__should_handle_null_pointers{range_check_ptr}() {
     assert existing_account.balance.high = 0;
     assert existing_account.code_len = 0;
 
+    return ();
+}
+
+func test__is_account_warm__account_in_state() {
+    let evm_address = 'alive';
+    let starknet_address = 'starknet_alive';
+    tempvar address = new model.Address(starknet_address, evm_address);
+    tempvar balance = new Uint256(1, 0);
+    let (code) = alloc();
+    let account = Account.init(address, 0, code, 1, balance);
+    tempvar state = State.init();
+
+    with state {
+        State.update_account(account);
+        let is_warm = State.is_account_warm(evm_address);
+    }
+
+    assert is_warm = 1;
+    return ();
+}
+
+func test__is_account_warm__account_not_in_state() {
+    let state = State.init();
+    let evm_address = 'alive';
+    with state {
+        let is_warm = State.is_account_warm(evm_address);
+    }
+    assert is_warm = 0;
+    return ();
+}
+
+func test__cache_precompiles{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    output_ptr: felt*
+) {
+    alloc_locals;
+    let state = State.init();
+    with state {
+        State.cache_precompiles();
+    }
+
+    let (keys_len, keys) = dict_keys(state.accounts_start, state.accounts);
+    memcpy(dst=output_ptr, src=keys, len=keys_len);
+
+    return ();
+}
+
+func test__cache_access_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    output_ptr: felt*
+) {
+    alloc_locals;
+    local access_list_len: felt;
+    let (access_list) = alloc();
+    %{
+        from tests.utils.hints import deserialize_cairo_access_list
+
+        access_list = program_input["access_list"]
+        storage_keys_len = [len(item["storageKeys"])*2 for item in access_list]
+        ids.access_list_len = 2 * len(access_list) + sum(storage_keys_len) # for each address: (address, storage_keys_len, storage_keys)
+        deserialize_cairo_access_list(access_list, ids.access_list, memory)
+    %}
+    let state = State.init();
+    with state {
+        let access_list_cost = State.cache_access_list(access_list_len, access_list);
+    }
+    assert [output_ptr] = access_list_cost;
+
+    %{
+        from starknet_py.hash.utils import pedersen_hash
+        from starkware.starknet.public.abi import get_storage_var_address
+
+        def assert_correct_storage_keys(expected_access_list, accounts_len):
+            """
+            Assert that the storage keys in the expected access list are correct.
+
+            Args:
+            ----
+                expected_access_list (list): The expected access list with storage keys, in the dict format.
+                accounts_len (int): The number of accounts in the access list.
+
+            Raises:
+            ------
+                AssertionError: If the storage keys in the expected access list are not correct.
+
+            Returns:
+            -------
+                None
+            """
+
+            for i in range(0, accounts_len):
+                expected_item = expected_access_list[i]
+                address = ids.state.accounts_start[i].key
+                assert address == int(expected_item["address"], 16)
+
+                account_ptr = ids.state.accounts_start[i].new_value
+                account_storage_start = memory[account_ptr + 3]
+                account_storage = memory[account_ptr + 4]
+                storage_size = (account_storage - account_storage_start) // 3
+                for j in range(0, storage_size):
+                    internal_key_hash = memory[account_storage_start + j * 3]
+                    expected_storage_keys = expected_item["storageKeys"]
+                    value = int(expected_storage_keys[j], 16)
+                    value_low = value & 2**128 - 1
+                    value_high = value >> 128
+                    expected_key_hash = get_storage_var_address(
+                        "storage_", value_low, value_high
+                    )
+                    assert internal_key_hash == expected_key_hash
+
+
+        # 1. assert correct amount of accounts
+        accounts_len = (ids.state.accounts.address_ - ids.state.accounts_start.address_) // 3 # Each entry is (key, prev_value, new_value)
+        assert accounts_len == len(program_input["access_list"])
+
+        # 2. Assert correct storage keys for the accounts
+        assert_correct_storage_keys(program_input["access_list"], accounts_len)
+    %}
+
+    return ();
+}
+
+func test__is_storage_warm__should_return_true_when_already_read{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}() {
+    alloc_locals;
+    let state = State.init();
+    tempvar key = new Uint256(1, 2);
+    tempvar address = 'evm_address';
+    with state {
+        let account = State.get_account('evm_address');
+        let (account, value) = Account.read_storage(account, key);
+        State.update_account(account);
+
+        // When
+        let result = State.is_storage_warm(address, key);
+    }
+
+    // Then
+    assert result = 1;
+    return ();
+}
+
+func test__is_storage_warm__should_return_true_when_already_written{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}() {
+    alloc_locals;
+    let state = State.init();
+    tempvar key = new Uint256(1, 2);
+    tempvar address = 'evm_address';
+    tempvar value = new Uint256(2, 3);
+    with state {
+        let account = State.get_account('evm_address');
+        let account = Account.write_storage(account, key, value);
+        State.update_account(account);
+
+        // When
+        let result = State.is_storage_warm(address, key);
+    }
+
+    // Then
+    assert result = 1;
+    return ();
+}
+
+func test__is_storage_warm__should_return_false_when_not_accessed{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}() {
+    alloc_locals;
+    let state = State.init();
+    tempvar address = 'evm_address';
+    tempvar key = new Uint256(1, 2);
+
+    // When
+    with state {
+        let result = State.is_storage_warm(address, key);
+    }
+    // Then
+    assert result = 0;
     return ();
 }

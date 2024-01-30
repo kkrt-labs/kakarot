@@ -101,12 +101,11 @@ func test__parse_access_list{range_check_ptr}(output_ptr: felt*) {
     // first level RLP decoding is a list of items. In our case the only item we decoded was the access list.
     // the access list is a list of tuples (address, list(keys)), hence first level RLP decoding
     // is a single item of type list.
-    let access_list_len = items.data_len;
-    let access_list = cast(items.data, RLP.Item*);
-
     let (local parsed_access_list: felt*) = alloc();
     // When
-    EthTransaction.parse_access_list(parsed_access_list, access_list_len, access_list);
+    let access_list_len = EthTransaction.parse_access_list(
+        parsed_access_list, items.data_len, cast(items.data, RLP.Item*)
+    );
 
     // Then
     %{

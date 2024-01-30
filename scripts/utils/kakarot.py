@@ -224,6 +224,7 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
                 gas_price=gas_price,
                 value=value,
                 data=list(HexBytes(calldata)),
+                access_list=[],
             )
             if result.success == 0:
                 raise EvmTransactionError(result.return_data)

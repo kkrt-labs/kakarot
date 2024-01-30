@@ -430,6 +430,56 @@ namespace Account {
         tempvar range_check_ptr = [ap - 3];
         return (valid_jumpdests_start, valid_jumpdests);
     }
+
+    func is_storage_warm{pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.Account*, key: Uint256*
+    ) -> (model.Account*, felt) {
+        alloc_locals;
+        local storage: DictAccess* = self.storage;
+        let (local storage_addr) = Internals._storage_addr(key);
+        let (pointer) = dict_read{dict_ptr=storage}(key=storage_addr);
+
+        tempvar account = new model.Account(
+            address=self.address,
+            code_len=self.code_len,
+            code=self.code,
+            storage_start=self.storage_start,
+            storage=storage,
+            nonce=self.nonce,
+            balance=self.balance,
+            selfdestruct=self.selfdestruct,
+        );
+
+        if (pointer != 0) {
+            return (account, TRUE);
+        }
+        return (account, FALSE);
+    }
+
+    // @notice Caches the given storage keys by creating an entry in the storage dict of the account.
+    // @dev This is used for access list transactions that provide a list of preaccessed keys
+    // @param storage_keys_len The number of storage keys to cache.
+    // @param storage_keys The pointer to the first storage key.
+    func cache_storage_keys{pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.Account*, storage_keys_len: felt, storage_keys: felt*
+    ) -> model.Account* {
+        alloc_locals;
+        let storage_ptr = self.storage;
+        with storage_ptr {
+            Internals._cache_storage_keys(storage_keys_len, storage_keys);
+        }
+        tempvar self = new model.Account(
+            address=self.address,
+            code_len=self.code_len,
+            code=self.code,
+            storage_start=self.storage_start,
+            storage=storage_ptr,
+            nonce=self.nonce,
+            balance=self.balance,
+            selfdestruct=self.selfdestruct,
+        );
+        return self;
+    }
 }
 
 namespace Internals {
@@ -442,5 +492,19 @@ namespace Internals {
         let (res) = hash2{hash_ptr=pedersen_ptr}(res, cast(key, felt*)[1]);
         let (res) = normalize_address(addr=res);
         return (res=res);
+    }
+
+    func _cache_storage_keys{pedersen_ptr: HashBuiltin*, range_check_ptr, storage_ptr: DictAccess*}(
+        storage_keys_len: felt, storage_keys: felt*
+    ) {
+        if (storage_keys_len == 0) {
+            return ();
+        }
+
+        let key = cast(storage_keys, Uint256*);
+        let (storage_addr) = Internals._storage_addr(key);
+        dict_read{dict_ptr=storage_ptr}(key=storage_addr);
+
+        return _cache_storage_keys(storage_keys_len - Uint256.SIZE, storage_keys + Uint256.SIZE);
     }
 }

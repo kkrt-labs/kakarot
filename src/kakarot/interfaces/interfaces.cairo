@@ -100,7 +100,14 @@ namespace IKakarot {
     }
 
     func eth_send_transaction(
-        to: felt, gas_limit: felt, gas_price: felt, value: Uint256, data_len: felt, data: felt*
+        to: felt,
+        gas_limit: felt,
+        gas_price: felt,
+        value: Uint256,
+        data_len: felt,
+        data: felt*,
+        access_list_len: felt,
+        access_list: felt*,
     ) -> (return_data_len: felt, return_data: felt*, success: felt, gas_used: felt) {
     }
 }

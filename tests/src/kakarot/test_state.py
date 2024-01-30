@@ -1,5 +1,10 @@
 import pytest
+from ethereum.shanghai.fork_types import (
+    TX_ACCESS_LIST_ADDRESS_COST,
+    TX_ACCESS_LIST_STORAGE_KEY_COST,
+)
 
+from tests.utils.constants import TRANSACTIONS
 from tests.utils.syscall_handler import SyscallHandler
 
 
@@ -39,6 +44,47 @@ class TestState:
 
         def test_not_in_state(self, cairo_run):
             cairo_run("test__is_account_alive__not_in_state")
+
+    class TestIsAccountWarm:
+        def test_should_return_true_when_account_in_state(self, cairo_run):
+            cairo_run("test__is_account_warm__account_in_state")
+
+        def test_should_return_false_when_account_not_state(self, cairo_run):
+            cairo_run("test__is_account_warm__account_not_in_state")
+
+    class TestIsStorageWarm:
+        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
+        def test_should_return_true_when_already_read(self, cairo_run):
+            cairo_run("test__is_storage_warm__should_return_true_when_already_read")
+
+        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
+        def test_should_return_true_when_already_written(self, cairo_run):
+            cairo_run("test__is_storage_warm__should_return_true_when_already_written")
+
+        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
+        def test_should_return_false_when_not_accessed(self, cairo_run):
+            cairo_run("test__is_storage_warm__should_return_false_when_not_accessed")
+
+    class TestCachePreaccessedAddresses:
+        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
+        def test_should_cache_precompiles(self, cairo_run):
+            output = cairo_run("test__cache_precompiles")
+            assert output == list(range(1, 10))
+
+        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
+        @pytest.mark.parametrize("transaction", TRANSACTIONS)
+        def test_should_cache_access_list(self, cairo_run, transaction):
+            access_list = transaction.get("accessList") or ()
+            gas_cost = cairo_run("test__cache_access_list", access_list=access_list)[0]
+
+            # count addresses key in access list, with duplicates
+            len_access_list = len(access_list)
+            len_storage_keys = sum(len(x["storageKeys"]) for x in access_list)
+            assert (
+                gas_cost
+                == TX_ACCESS_LIST_ADDRESS_COST * len_access_list
+                + TX_ACCESS_LIST_STORAGE_KEY_COST * len_storage_keys
+            )
 
     class TestCopyAccounts:
         def test_should_handle_null_pointers(self, cairo_run):
