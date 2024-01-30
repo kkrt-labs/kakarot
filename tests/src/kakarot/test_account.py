@@ -1,5 +1,6 @@
 import pytest
 
+from tests.utils.syscall_handler import SyscallHandler
 from tests.utils.uint256 import int_to_uint256
 
 
@@ -45,6 +46,44 @@ class TestAccount:
                 key=int_to_uint256(key),
                 value=int_to_uint256(value),
             )
+
+    class TestOriginalStorage:
+        @pytest.mark.parametrize("key, value", [(0, 0), (2**256 - 1, 2**256 - 1)])
+        @SyscallHandler.patch(
+            "IContractAccount.storage", lambda addr, data: [0x1337, 0]
+        )
+        @SyscallHandler.patch(
+            "evm_to_starknet_address",
+            0xABDE1,
+            0x1234,
+        )
+        def test_should_return_original_storage_when_state_modified(
+            self, cairo_run, key, value
+        ):
+            address = 0xABDE1
+            output = cairo_run(
+                "test__fetch_original_storage__state_modified",
+                address=address,
+                key=int_to_uint256(key),
+                value=int_to_uint256(value),
+            )
+            assert output == [0x1337, 0]
+
+        @SyscallHandler.patch(
+            "evm_to_starknet_address",
+            0xABDE1,
+            0,
+        )
+        @pytest.mark.parametrize("key, value", [(0, 0), (2**256 - 1, 2**256 - 1)])
+        def test_should_return_zero_account_not_registered(self, cairo_run, key, value):
+            address = 0xABDE1
+            output = cairo_run(
+                "test__fetch_original_storage__state_modified",
+                address=address,
+                key=int_to_uint256(key),
+                value=int_to_uint256(value),
+            )
+            assert output == [0, 0]
 
     class TestHasCodeOrNonce:
         @pytest.mark.parametrize(

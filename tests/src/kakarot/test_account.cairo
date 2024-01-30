@@ -137,6 +137,40 @@ func test__write_storage__should_store_value_at_key{
     return ();
 }
 
+func test__fetch_original_storage__state_modified{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+}(output_ptr: felt*) {
+    alloc_locals;
+    // Given
+    let (key_ptr) = alloc();
+    let (value_ptr) = alloc();
+    local evm_address: felt;
+
+    %{
+        ids.evm_address = program_input["address"]
+        segments.write_arg(ids.key_ptr, program_input["key"])
+        segments.write_arg(ids.value_ptr, program_input["value"])
+    %}
+
+    let key = cast(key_ptr, Uint256*);
+    let value = cast(value_ptr, Uint256*);
+
+    let starknet_address = Account.compute_starknet_address(evm_address);
+    tempvar address = new model.Address(starknet_address, evm_address);
+    let (local code: felt*) = alloc();
+    tempvar balance = new Uint256(0, 0);
+    let account = Account.init(address, 0, code, 0, balance);
+
+    // When
+    let account = Account.write_storage(account, key, value);
+
+    // Then
+    let original_storage = Account.fetch_original_storage(account, key);
+    assert [output_ptr] = original_storage.low;
+    assert [output_ptr + 1] = original_storage.high;
+    return ();
+}
+
 func test__has_code_or_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     output_ptr: felt*
 ) {

@@ -267,15 +267,21 @@ namespace Account {
     // @notice Fetches the storage of an account without loading the Account
     // @dev The value is fetched from the Starknet state, and not from the local state
     // in which it might have been modified.
-    // @param address (starknet, evm) of the account to fetch the storage from
+    // @param Account to fetch the storage from
     // @param key The pointer to the Uint256 storage key
     // @return The Uint256 value of the original storage.
     func fetch_original_storage{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        address: model.Address*, key: Uint256*
+        account: model.Account*, key: Uint256*
     ) -> Uint256 {
+        alloc_locals;
+        let starknet_account_exists = is_registered(account.address.evm);
+        if (starknet_account_exists == FALSE) {
+            tempvar value = Uint256(0, 0);
+            return value;
+        }
         let (storage_addr) = Internals._storage_addr(key);
         let (value) = IContractAccount.storage(
-            contract_address=address.starknet, storage_addr=storage_addr
+            contract_address=account.address.starknet, storage_addr=storage_addr
         );
         return value;
     }

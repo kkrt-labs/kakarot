@@ -245,7 +245,7 @@ namespace MemoryOperations {
         let is_storage_warm = State.is_storage_warm(evm.message.address.evm, key);
         let account = State.get_account(evm.message.address.evm);
 
-        let original_value = Account.fetch_original_storage(account.address, key);
+        let original_value = Account.fetch_original_storage(account, key);
         let current_value = State.read_storage(evm.message.address.evm, key);
         local gas_cost: felt;
 
