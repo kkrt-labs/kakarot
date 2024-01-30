@@ -31,17 +31,20 @@ def serialize_cairo_access_list(
 ):
     """
     Serialize an access list in the Cairo format [address, keys_len, [...keys]] (Cairo object)
-    to a flat list of [address, keys].
+    to a flat list of [address, keys]. The `access_list_len` argument is the len, in felts,
+    of the access list.
     """
     access_list_ptr = access_list
-    for _ in range(0, access_list_len):
+    i = 0
+    while i < access_list_len:
         address = memory[access_list_ptr]
         storage_keys_len = memory[access_list_ptr + 1]
-        storage_keys_ptr = access_list_ptr + 2
+        storage_keys_start = access_list_ptr + 2
         storage_keys = [
-            memory[storage_keys_ptr + j] for j in range(storage_keys_len * 2)
+            memory[storage_keys_start + j] for j in range(storage_keys_len * 2)
         ]
-        access_list_ptr += 2 + storage_keys_len * 2
+        i += 2 + storage_keys_len * 2
+        access_list_ptr += i
         segments.write_arg(output_ptr, [address, *storage_keys])
         output_ptr += 1 + storage_keys_len * 2
 

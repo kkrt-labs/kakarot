@@ -48,6 +48,9 @@ namespace Gas {
     const WARM_ACCESS = 100;
     const INIT_CODE_WORD_COST = 2;
     const MEMORY_COST_U128 = 0x200000000000000000000000000018000000000000000000000000000000;
+    const TX_BASE_COST = 21000;
+    const TX_ACCESS_LIST_ADDRESS_COST = 2400;
+    const TX_ACCESS_LIST_STORAGE_KEY_COST = 1900;
 
     // @notice Compute the cost of the memory for a given words length.
     // @dev To avoid range_check overflow, we compute words_len / 512

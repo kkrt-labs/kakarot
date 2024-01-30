@@ -140,7 +140,9 @@ func eth_call{
     alloc_locals;
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
-    let (evm, state) = Kakarot.eth_call(origin, to, gas_limit, gas_price, &value, data_len, data);
+    let (evm, state) = Kakarot.eth_call(
+        origin, to, gas_limit, gas_price, &value, data_len, data, 0, cast(0, felt*)
+    );
     let gas_used = gas_limit - evm.gas_left;
     return (evm.return_data_len, evm.return_data, 1 - evm.reverted, gas_used);
 }
@@ -154,6 +156,8 @@ func eth_call{
 // @param value Integer of the value sent with this transaction
 // @param data_len The length of the data
 // @param data Hash of the method signature and encoded parameters. For details see Ethereum Contract ABI in the Solidity documentation
+// @param access_list_len The length of the access list
+// @param access_list The access list passed in the transaction
 // @return return_data_len The length of the return_data
 // @return return_data An array of returned felts
 // @return success An boolean, TRUE if the transaction succeeded, FALSE otherwise
@@ -161,15 +165,24 @@ func eth_call{
 @external
 func eth_send_transaction{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(to: felt, gas_limit: felt, gas_price: felt, value: Uint256, data_len: felt, data: felt*) -> (
-    return_data_len: felt, return_data: felt*, success: felt, gas_used: felt
-) {
+}(
+    to: felt,
+    gas_limit: felt,
+    gas_price: felt,
+    value: Uint256,
+    data_len: felt,
+    data: felt*,
+    access_list_len: felt,
+    access_list: felt*,
+) -> (return_data_len: felt, return_data: felt*, success: felt, gas_used: felt) {
     alloc_locals;
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
     let (local starknet_caller_address) = get_caller_address();
     let (local origin) = Kakarot.safe_get_evm_address(starknet_caller_address);
-    let (evm, state) = Kakarot.eth_call(origin, to, gas_limit, gas_price, &value, data_len, data);
+    let (evm, state) = Kakarot.eth_call(
+        origin, to, gas_limit, gas_price, &value, data_len, data, access_list_len, access_list
+    );
     let gas_used = gas_limit - evm.gas_left;
     let result = (evm.return_data_len, evm.return_data, 1 - evm.reverted, gas_used);
 

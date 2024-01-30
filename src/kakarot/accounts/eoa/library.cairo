@@ -174,6 +174,8 @@ namespace ExternallyOwnedAccount {
             value=amount,
             data_len=payload_len,
             data=payload,
+            access_list_len=access_list_len,
+            access_list=access_list,
         );
         memcpy(response, return_data, return_data_len);
 
