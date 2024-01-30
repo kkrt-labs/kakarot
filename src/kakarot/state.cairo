@@ -441,6 +441,7 @@ namespace Internals {
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, accounts_ptr: DictAccess*
     }(access_list_len: felt, access_list: felt*) -> felt {
         alloc_locals;
+
         if (access_list_len == 0) {
             return 0;
         }
@@ -465,9 +466,11 @@ namespace Internals {
         );
         dict_write{dict_ptr=accounts_ptr}(key=address, new_value=cast(account, felt));
 
-        tempvar item_len = 2 + storage_keys_len * Uint256.SIZE;
+        tempvar item_len = 2 + storage_keys_len;
+        // since storage_keys take 2 felt each
+        let storage_keys_count = storage_keys_len / 2;
         let cum_gas_cost = _cache_access_list(access_list_len - item_len, access_list + item_len);
-        return cum_gas_cost + Gas.TX_ACCESS_LIST_ADDRESS_COST + storage_keys_len *
+        return cum_gas_cost + Gas.TX_ACCESS_LIST_ADDRESS_COST + storage_keys_count *
             Gas.TX_ACCESS_LIST_STORAGE_KEY_COST;
     }
 }

@@ -69,11 +69,11 @@ def deserialize_cairo_access_list(access_list, access_list_ptr, memory):
 
     for item in access_list:
         memory[access_list_ptr] = int(item["address"], 16)
-        storage_keys_len = len(item.get("storageKeys") or [])
+        storage_keys_len = 2 * len(item.get("storageKeys") or [])
         memory[access_list_ptr + 1] = storage_keys_len
         for j in range(len(item["storageKeys"])):
             value = int(item["storageKeys"][j], 16)
             memory[access_list_ptr + 2 + j * 2] = value & 2**128 - 1
             memory[access_list_ptr + 2 + j * 2 + 1] = value >> 128
 
-        access_list_ptr += 2 + storage_keys_len * 2
+        access_list_ptr += 2 + storage_keys_len

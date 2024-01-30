@@ -434,6 +434,7 @@ namespace Account {
     func is_storage_warm{pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.Account*, key: Uint256*
     ) -> (model.Account*, felt) {
+        alloc_locals;
         local storage: DictAccess* = self.storage;
         let (local storage_addr) = Internals._storage_addr(key);
         let (pointer) = dict_read{dict_ptr=storage}(key=storage_addr);
@@ -483,6 +484,6 @@ namespace Internals {
         let (storage_addr) = Internals._storage_addr(key);
         dict_read{dict_ptr=storage_ptr}(key=storage_addr);
 
-        return cache_storage_keys(storage_keys_len - 1, storage_keys + Uint256.SIZE);
+        return cache_storage_keys(storage_keys_len - Uint256.SIZE, storage_keys + Uint256.SIZE);
     }
 }
