@@ -78,11 +78,12 @@ class TestContractAccount:
         @pytest.mark.parametrize(
             "bytecode",
             [
+                [],
                 list(range(10)),
                 list(range(100)),
                 list(range(100)) * 10,
             ],
-            ids=["10 bytes", "100 bytes", "1000 bytes"],
+            ids=["0 bytes", "10 bytes", "100 bytes", "1000 bytes"],
         )
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
         def test_should_write_bytecode(self, cairo_run, bytecode):
@@ -94,10 +95,10 @@ class TestContractAccount:
             SyscallHandler.mock_storage.assert_has_calls(calls[::-1])
 
     class TestBytecode:
-        @pytest.mark.parametrize("bytecode_len", [10, 100, 1000])
+        @pytest.mark.parametrize("bytecode_len", [0, 10, 100, 1000, 10000])
         def test_should_read_bytecode(self, cairo_run, bytecode_len):
             with SyscallHandler.patch("bytecode_len_", bytecode_len):
-                output = cairo_run("test__read_bytecode")
+                output = cairo_run("test__read_bytecode", bytecode_len=bytecode_len)
             assert output[0] == bytecode_len
             calls = [call(address=i) for i in range(bytecode_len)]
             SyscallHandler.mock_storage.assert_has_calls(calls[::-1])
