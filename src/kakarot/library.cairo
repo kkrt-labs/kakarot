@@ -65,7 +65,7 @@ namespace Kakarot {
     // @param data_len The length of the data
     // @param data Hash of the method signature and encoded parameters. For details see Ethereum Contract ABI in the Solidity documentation
     // @param access_list_len The length of the access list
-    // @param access_list The parsed access list provided in the transaction
+    // @param access_list The access list provided in the transaction serialized as a list of [address, storage_keys_len, ...storage_keys]
     // @return return_data_len The length of the returned bytes
     // @return return_data The returned bytes array
     // @return success A boolean TRUE if the transaction succeeded, FALSE if it's reverted

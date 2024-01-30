@@ -136,12 +136,14 @@ func eth_call{
     value: Uint256,
     data_len: felt,
     data: felt*,
+    access_list_len: felt,
+    access_list: felt*,
 ) -> (return_data_len: felt, return_data: felt*, success: felt, gas_used: felt) {
     alloc_locals;
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
     let (evm, state) = Kakarot.eth_call(
-        origin, to, gas_limit, gas_price, &value, data_len, data, 0, cast(0, felt*)
+        origin, to, gas_limit, gas_price, &value, data_len, data, access_list_len, access_list
     );
     let gas_used = gas_limit - evm.gas_left;
     return (evm.return_data_len, evm.return_data, 1 - evm.reverted, gas_used);

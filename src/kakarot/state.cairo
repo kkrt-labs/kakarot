@@ -126,6 +126,7 @@ namespace State {
         }
     }
 
+    // @notice Cache precompiles accounts in the state, making them warm.
     func cache_precompiles{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
     }() {
@@ -154,6 +155,12 @@ namespace State {
         return ();
     }
 
+    // @notice Cache the addresses and storage keys from the access list
+    //  in the state, making them warm.
+    // @param access_list_len The length of the access list. Denotes the total number of `felts` in
+    // the access list.
+    // @param access_list The pointer to the access list.
+    // @return The gas cost of caching the access list.
     func cache_access_list{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
     }(access_list_len: felt, access_list: felt*) -> felt {
@@ -209,8 +216,8 @@ namespace State {
 
         // Get the account
         let accounts = state.accounts;
-        let (account_ptr) = dict_read{dict_ptr=accounts}(key=address);
-        if (account_ptr == 0) {
+        let (pointer) = dict_read{dict_ptr=accounts}(key=address);
+        if (pointer == 0) {
             tempvar state = new model.State(
                 accounts_start=state.accounts_start,
                 accounts=accounts,
@@ -222,23 +229,9 @@ namespace State {
             return FALSE;
         }
 
-        let account = cast(account_ptr, model.Account*);
-        let account_storage = account.storage;
-        let (local storage_addr) = AccountInternals._storage_addr(key);
-        let (storage_ptr) = dict_read{dict_ptr=account_storage}(key=storage_addr);
+        let (account, res) = Account.is_storage_warm(cast(pointer, model.Account*), key);
+        dict_write{dict_ptr=accounts}(key=account.address.evm, new_value=cast(account, felt));
 
-        tempvar account = new model.Account(
-            address=account.address,
-            code_len=account.code_len,
-            code=account.code,
-            storage_start=account.storage_start,
-            storage=account_storage,
-            nonce=account.nonce,
-            balance=account.balance,
-            selfdestruct=account.selfdestruct,
-        );
-        // Update the account in the state as we modified the storage pointers
-        dict_write{dict_ptr=accounts}(key=address, new_value=cast(account, felt));
         tempvar state = new model.State(
             accounts_start=state.accounts_start,
             accounts=accounts,
@@ -247,10 +240,7 @@ namespace State {
             transfers_len=state.transfers_len,
             transfers=state.transfers,
         );
-        if (storage_ptr == 0) {
-            return FALSE;
-        }
-        return TRUE;
+        return res;
     }
 
     // @notice Updates the given account in the state.

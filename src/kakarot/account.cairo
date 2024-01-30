@@ -430,6 +430,30 @@ namespace Account {
         tempvar range_check_ptr = [ap - 3];
         return (valid_jumpdests_start, valid_jumpdests);
     }
+
+    func is_storage_warm{pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.Account*, key: Uint256*
+    ) -> (model.Account*, felt) {
+        local storage: DictAccess* = self.storage;
+        let (local storage_addr) = Internals._storage_addr(key);
+        let (pointer) = dict_read{dict_ptr=storage}(key=storage_addr);
+
+        tempvar account = new model.Account(
+            address=self.address,
+            code_len=self.code_len,
+            code=self.code,
+            storage_start=self.storage_start,
+            storage=storage,
+            nonce=self.nonce,
+            balance=self.balance,
+            selfdestruct=self.selfdestruct,
+        );
+
+        if (pointer != 0) {
+            return (account, TRUE);
+        }
+        return (account, FALSE);
+    }
 }
 
 namespace Internals {

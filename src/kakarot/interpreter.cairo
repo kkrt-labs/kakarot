@@ -719,6 +719,8 @@ namespace Interpreter {
     // @param value The value of the execution
     // @param gas_limit The gas limit of the execution
     // @param gas_price The gas price for the execution
+    // @param access_list_len The length (in number of felts) of the serialized access list
+    // @param access_list The access list
     func execute{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -805,7 +807,11 @@ namespace Interpreter {
             let access_list_cost = State.cache_access_list(access_list_len, access_list);
             let intrinsic_gas = intrinsic_gas + access_list_cost;
 
-            let evm = EVM.init(message, gas_limit - intrinsic_gas);
+            let evm = EVM.init(message, gas_limit);
+            let evm = EVM.charge_gas(evm, intrinsic_gas);
+            if (evm.reverted != FALSE) {
+                return (evm, stack, memory, state);
+            }
 
             // Handle value
             let origin_starknet_address = Account.compute_starknet_address(env.origin);

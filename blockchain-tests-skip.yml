@@ -7,6 +7,7 @@ filename:
 testname:
   stArgsZeroOneBalance:
     - callNonConst_d0g0v1_Shanghai
+    - suicideNonConst_d0g0v1_Shanghai
   stEIP3855-push0:
     - push0Gas_d0g0v0_Shanghai
     - push0_d1g0v0_Shanghai
@@ -108,6 +109,11 @@ testname:
   stChainId:
     - chainId_d0g0v0_Shanghai
   stCreate2:
+    - CREATE2_ContractSuicideDuringInit_ThenStoreThenReturn_d0g0v0_Shanghai
+    - CREATE2_Suicide_d2g0v0_Shanghai
+    - CREATE2_Suicide_d3g0v0_Shanghai
+    - create2InitCodes_d6g0v0_Shanghai
+    - create2SmartInitCode_d0g0v0_Shanghai
     - Create2OOGafterInitCodeRevert_d0g0v0_Shanghai
     - CREATE2_HighNonceDelegatecall_d11g0v0_Shanghai
     - CREATE2_HighNonceDelegatecall_d17g0v0_Shanghai
@@ -1395,6 +1401,13 @@ testname:
     - EXTCODESIZE_toEpmty_d0g0v0_Shanghai
     - EXTCODESIZE_toNonExistent_d0g0v0_Shanghai
   stEIP2930:
+    - addressOpcodes_d18g0v0_Shanghai
+    - addressOpcodes_d20g0v0_Shanghai
+    - addressOpcodes_d30g0v0_Shanghai
+    - addressOpcodes_d32g0v0_Shanghai
+    - addressOpcodes_d6g0v0_Shanghai
+    - addressOpcodes_d8g0v0_Shanghai
+    - variedContext_d7g0v0_Shanghai
     - addressOpcodes_d14g0v0_Shanghai
     - addressOpcodes_d15g0v0_Shanghai
     - addressOpcodes_d26g0v0_Shanghai
@@ -1491,10 +1504,21 @@ testname:
     - variedContext_d8g0v0_Shanghai
     - variedContext_d9g0v0_Shanghai
   stExample:
+    - accessListExample_d0g0v0_Shanghai
+    - basefeeExample_d0g0v0_Shanghai
     - eip1559_d0g0v0_Shanghai
     - invalidTr_d0g0v0_Shanghai
     - mergeTest_d0g0v0_Shanghai
   stExtCodeHash:
+    - extCodeHashDynamicArgument_d0g0v0_Shanghai
+    - extCodeHashPrecompiles_d1g0v0_Shanghai
+    - extCodeHashPrecompiles_d2g0v0_Shanghai
+    - extCodeHashPrecompiles_d3g0v0_Shanghai
+    - extCodeHashPrecompiles_d4g0v0_Shanghai
+    - extCodeHashPrecompiles_d5g0v0_Shanghai
+    - extCodeHashPrecompiles_d6g0v0_Shanghai
+    - extCodeHashPrecompiles_d7g0v0_Shanghai
+    - extCodeHashPrecompiles_d8g0v0_Shanghai
     - dynamicAccountOverwriteEmpty_d0g0v0_Shanghai
     - extCodeHashSubcallOOG_d3g0v0_Shanghai
     - extCodeHashSubcallOOG_d4g0v0_Shanghai
@@ -2146,6 +2170,8 @@ testname:
     - sec80_d0g0v0_Shanghai
   stRandom2:
     - randomStatetest458_d0g0v0_Shanghai
+    - randomStatetest644_d0g0v0_Shanghai
+    - randomStatetest645_d0g0v0_Shanghai
     - randomStatetest466_d0g0v0_Shanghai
     - randomStatetest476_d0g0v0_Shanghai
     - randomStatetest487_d0g0v0_Shanghai
@@ -2168,6 +2194,9 @@ testname:
     - Return50000_d0g1v0_Shanghai
   stRandom:
     - randomStatetest100_d0g0v0_Shanghai
+    - randomStatetest212_d0g0v0_Shanghai
+    - randomStatetest273_d0g0v0_Shanghai
+    - randomStatetest376_d0g0v0_Shanghai
     - randomStatetest138_d0g0v0_Shanghai
     - randomStatetest139_d0g0v0_Shanghai
     - randomStatetest143_d0g0v0_Shanghai
@@ -2283,6 +2312,10 @@ testname:
     - tooLongReturnDataCopy_d9g0v0_Shanghai
   stRevertTest:
     - costRevert_d0g0v0_Shanghai
+    - RevertPrecompiledTouch_storage_d0g0v0_Shanghai
+    - RevertPrecompiledTouch_storage_d1g0v0_Shanghai
+    - RevertPrecompiledTouch_storage_d2g0v0_Shanghai
+    - RevertPrecompiledTouch_storage_d3g0v0_Shanghai
     - costRevert_d14g0v0_Shanghai
     - costRevert_d21g0v0_Shanghai
     - costRevert_d7g0v0_Shanghai
