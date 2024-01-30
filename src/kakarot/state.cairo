@@ -449,10 +449,7 @@ namespace Internals {
         let address = [access_list];
         let storage_keys_len = [access_list + 1];
         let account = Account.fetch_or_create(address);
-        tempvar storage_ptr = account.storage;
-        with storage_ptr {
-            let account = Account.cache_storage_keys(account, storage_keys_len, access_list + 2);
-        }
+        let account = Account.cache_storage_keys(account, storage_keys_len, access_list + 2);
         dict_write{dict_ptr=accounts_ptr}(key=address, new_value=cast(account, felt));
 
         tempvar item_len = 2 + storage_keys_len;
