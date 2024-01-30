@@ -26,11 +26,11 @@ def flatten_rlp_list(list_ptr, list_len, output_ptr, memory, segments):
     return output_ptr
 
 
-def deserialize_cairo_access_list(
+def serialize_cairo_access_list(
     access_list, access_list_len, output_ptr, memory, segments
 ):
     """
-    Deserializes an access list [address, keys_len, [...keys]] (Cairo object)
+    Serialize an access list in the Cairo format [address, keys_len, [...keys]] (Cairo object)
     to a flat list of [address, keys].
     """
     access_list_ptr = access_list
@@ -46,9 +46,9 @@ def deserialize_cairo_access_list(
         output_ptr += 1 + storage_keys_len * 2
 
 
-def serialize_cairo_access_list(access_list, access_list_ptr, memory):
+def deserialize_cairo_access_list(access_list, access_list_ptr, memory):
     """
-    Transform the access list from a transaction dictionary into a serialized data structure
+    Transform the access list from a transaction dictionary into a deserialized data structure
     in a Cairo-compatible format [*[addr, keys_len, keys], *[address, keys_len, keys]].
 
     Args:

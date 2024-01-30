@@ -284,15 +284,15 @@ namespace EthTransaction {
     // @param list_items The pointer to the current RLP-decoded access list item to parse.
     // @return The number of parsed access list entries.
     func parse_access_list{range_check_ptr}(
-        parsed_list: felt*, list_len: felt, list_items: RLP.Item*
+        parsed_list: felt*, access_list_len: felt, access_list: RLP.Item*
     ) {
         alloc_locals;
-        if (list_len == 0) {
+        if (access_list_len == 0) {
             return ();
         }
 
         // Address
-        let address_item = cast(list_items.data, RLP.Item*);
+        let address_item = cast(access_list.data, RLP.Item*);
         let address = Helpers.bytes20_to_felt(address_item.data);
 
         // List<StorageKeys>
@@ -305,7 +305,9 @@ namespace EthTransaction {
         parse_storage_keys(parsed_list + 2, keys_len, keys);
 
         parse_access_list(
-            parsed_list + 2 + keys_len * Uint256.SIZE, list_len - 1, list_items + RLP.Item.SIZE
+            parsed_list + 2 + keys_len * Uint256.SIZE,
+            access_list_len - 1,
+            access_list + RLP.Item.SIZE,
         );
         return ();
     }

@@ -123,9 +123,9 @@ class TestEthTransaction:
             )
 
             expected_access_list = flatten_tx_accesslist(
-                transaction.get("accessList") or []
+                transaction.get("accessList", [])
             )
-            expected_access_list_len = len(transaction.get("accessList") or [])
+            expected_access_list_len = len(transaction.get("accessList", []))
             expected_gas_price = (
                 transaction.get("gasPrice") or transaction["maxFeePerGas"]
             )
@@ -162,23 +162,19 @@ class TestEthTransaction:
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         def test_should_parse_access_list(self, cairo_run, transaction):
             rlp_structure_tx = transaction_rpc_to_rlp_structure(transaction)
-            access_list = rlp_structure_tx.get("accessList")
-            sanitized_access_list = []
-            if access_list is not None:
-                sanitized_access_list = [
-                    (
-                        bytes.fromhex(address[2:]),
-                        tuple(
-                            bytes.fromhex(storage_key[2:])
-                            for storage_key in storage_keys
-                        ),
-                    )
-                    for address, storage_keys in access_list
-                ]
+            sanitized_access_list = [
+                (
+                    bytes.fromhex(address[2:]),
+                    tuple(
+                        bytes.fromhex(storage_key[2:]) for storage_key in storage_keys
+                    ),
+                )
+                for address, storage_keys in rlp_structure_tx.get("accessList", [])
+            ]
             encoded_access_list = encode(sanitized_access_list)
 
             output = cairo_run(
                 "test__parse_access_list", data=list(encoded_access_list)
             )
-            expected_output = flatten_tx_accesslist(transaction.get("accessList") or [])
+            expected_output = flatten_tx_accesslist(transaction.get("accessList", []))
             assert output == expected_output
