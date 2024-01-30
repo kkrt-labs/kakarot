@@ -104,3 +104,11 @@ namespace IKakarot {
     ) -> (return_data_len: felt, return_data: felt*, success: felt, gas_used: felt) {
     }
 }
+
+@contract_interface
+namespace IPrecompiles {
+    func exec_precompile(address: felt, data_len: felt, data: felt*) -> (
+        success: felt, gas: felt, return_data_len: felt, return_data: felt*
+    ) {
+    }
+}
