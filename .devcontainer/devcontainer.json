@@ -20,16 +20,16 @@
         "python.linting.pydocstylePath": "/usr/local/py-utils/bin/pydocstyle",
         "python.linting.pylintPath": "/usr/local/py-utils/bin/pylint",
         "cairols.sourceDir": "src",
-        "cairols.cairoPath": ["src", "tests"]
+        "cairols.cairoPath": ["src", "tests"],
       },
       // Add the IDs of extensions you want installed when the container is created.
       "extensions": [
         "ms-python.python",
         "ms-python.vscode-pylance",
         "starkware.cairo",
-        "ericglau.cairo-ls"
-      ]
-    }
+        "ericglau.cairo-ls",
+      ],
+    },
   },
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   // "forwardPorts": [],
@@ -38,6 +38,6 @@
   // Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
   "remoteUser": "vscode",
   "features": {
-    "ghcr.io/devcontainers-contrib/features/poetry:2": {}
-  }
+    "ghcr.io/devcontainers-contrib/features/poetry:2": {},
+  },
 }
