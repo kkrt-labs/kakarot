@@ -2,6 +2,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.memcpy import memcpy
 
 from kakarot.accounts.contract.library import ContractAccount
 
@@ -56,8 +57,7 @@ func test__read_bytecode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(output_ptr: felt*) {
     alloc_locals;
-    let (bytecode_len, _) = ContractAccount.bytecode();
-    assert [output_ptr] = bytecode_len;
-
+    let (bytecode_len, bytecode) = ContractAccount.bytecode();
+    memcpy(output_ptr, bytecode, bytecode_len);
     return ();
 }

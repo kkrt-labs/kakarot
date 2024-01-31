@@ -1,4 +1,6 @@
-from unittest.mock import call
+import random
+from textwrap import wrap
+from unittest.mock import call, patch
 
 import pytest
 from starkware.starknet.public.abi import (
@@ -87,18 +89,44 @@ class TestContractAccount:
         )
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
         def test_should_write_bytecode(self, cairo_run, bytecode):
-            cairo_run("test__write_bytecode", bytecode=bytecode)
+            cairo_run(
+                "test__write_bytecode", bytecode_len=len(bytecode), bytecode=bytecode
+            )
             SyscallHandler.mock_storage.assert_any_call(
                 address=get_storage_var_address("bytecode_len_"), value=len(bytecode)
             )
-            calls = [call(address=i, value=byte) for i, byte in enumerate(bytecode)]
-            SyscallHandler.mock_storage.assert_has_calls(calls[::-1])
+            calls = [
+                call(address=i, value=int(value, 16))
+                for i, value in enumerate(wrap(bytes(bytecode).hex(), 2 * 31))
+            ]
+            SyscallHandler.mock_storage.assert_has_calls(calls)
 
     class TestBytecode:
-        @pytest.mark.parametrize("bytecode_len", [0, 10, 100, 1000, 10000])
-        def test_should_read_bytecode(self, cairo_run, bytecode_len):
-            with SyscallHandler.patch("bytecode_len_", bytecode_len):
-                output = cairo_run("test__read_bytecode", bytecode_len=bytecode_len)
-            assert output[0] == bytecode_len
-            calls = [call(address=i) for i in range(bytecode_len)]
-            SyscallHandler.mock_storage.assert_has_calls(calls[::-1])
+        @pytest.fixture(params=[0, 10, 100, 1000, 10000])
+        def bytecode(self, request):
+            random.seed(0)
+            return random.randbytes(request.param)
+
+        @pytest.fixture
+        def storage(self, bytecode):
+            chunks = wrap(bytecode.hex(), 2 * 31)
+
+            def _storage(address):
+                return (
+                    int(chunks[address], 16)
+                    if address != get_storage_var_address("bytecode_len_")
+                    else len(bytecode)
+                )
+
+            return _storage
+
+        def test_should_read_bytecode(self, cairo_run, bytecode, storage):
+            with patch.object(
+                SyscallHandler, "mock_storage", side_effect=storage
+            ) as mock_storage:
+                output = cairo_run("test__read_bytecode")
+            chunk_counts, remainder = divmod(len(bytecode), 31)
+            addresses = list(range(chunk_counts + (remainder > 0)))
+            calls = [call(address=address) for address in addresses]
+            mock_storage.assert_has_calls(calls)
+            assert output == list(bytecode)

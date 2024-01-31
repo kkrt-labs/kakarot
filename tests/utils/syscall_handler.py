@@ -162,6 +162,7 @@ class SyscallHandler:
         """
         Return a constant value for the storage read system call.
         We use the patches dict to store the storage values; returned value is 0 if the address is not found as in Starknet.
+        Value can also be set by patching the underling mock_storage object.
 
         Syscall structure is:
 
@@ -180,8 +181,11 @@ class SyscallHandler:
             }
         """
         address = segments.memory[syscall_ptr + 1]
-        self.mock_storage(address=address)
-        value = self.patches.get(address, 0)
+        mock = self.mock_storage(address=address)
+        patched = self.patches.get(address)
+        value = (
+            patched if patched is not None else (mock if isinstance(mock, int) else 0)
+        )
         segments.write_arg(syscall_ptr + 2, [value])
 
     def storage_write(self, segments, syscall_ptr):
