@@ -30,6 +30,8 @@ from kakarot.storages import (
     evm_to_starknet_address,
 )
 
+from tests.utils.debug import Debug
+
 namespace Starknet {
     // @notice Commit the current state to the underlying data backend (here, Starknet)
     // @param self The pointer to the State
@@ -260,6 +262,12 @@ namespace Internals {
             return ();
         }
         let value = cast(storage_start.new_value, Uint256*);
+        // If the storage key has been cached as it's part of an access list,
+        // the `new_value` is `0` as there has only been a read without a write,
+        // thus value would be the default 0 value instead of a pointer.
+        if (value == 0) {
+            return _save_storage(starknet_address, storage_start + DictAccess.SIZE, storage_end);
+        }
 
         IContractAccount.write_storage(
             contract_address=starknet_address, storage_addr=storage_start.key, value=[value]
