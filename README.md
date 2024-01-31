@@ -3,8 +3,7 @@
 </p>
 <div align="center">
   <h3 align="center">
-  zkEVM written in Cairo.
-  proof system.
+  Kakarot, the zkEVM written in Cairo.
   </h3>
 </div>
 
@@ -18,51 +17,64 @@
 [![Twitter Follow](https://img.shields.io/twitter/follow/KakarotZkEvm?style=social)](https://twitter.com/KakarotZkEvm)
 [![Discord](https://img.shields.io/discord/984015101017346058?color=%235865F2&label=Discord&logo=discord&logoColor=%23fff)](https://discord.gg/kakarotzkevm)
 
-<div align="center">
+This repository contains the set of Cairo (Cairo compiler version Zero) programs
+that implement the core EVM logic of Kakarot zkEVM.
 
-Kakarot is an EVM implementation in Cairo. As such, it allows for provable
-executions of EVM transactions, and is _de facto_ a so-called _zkEVM_. While
-other zkEVM implementations (see for example
-[Scroll](https://github.com/scroll-tech/zkevm-circuits),
-[Polygon zkEVM](https://github.com/0xpolygonhermez) or
+Kakarot is an EVM implementation in Cairo. Cairo being a high-level
+zero-knowledge domain specific language (zkDSL), Kakarot is provable by design.
+This allows for proving the execution of EVM transactions, and makes Kakarot a
+_de facto_ so-called _zkEVM_.
+
+While some zkEVM implementations (see for example
+[Scroll](https://github.com/scroll-tech/zkevm-circuits) or
 [Taiko](https://github.com/taikoxyz/taiko-geth)) try to prove existing EVM
 implementations (mainly Geth), Kakarot is like another new Geth, but provable by
 design, simply because it runs on the CairoVM.
 
-Indeed, we strongly believe the CairoVM will provide the best zero-knowledge
-toolbox in the coming years and that the Ethereum network effect will remain
-prevalent in the meantime. We present to developers an abstraction layer they're
-familiar with: the EVM. Build and deploy as if you were working on Ethereum, be
-forward compatible with the future of zero-knowledge.
+We strongly believe the CairoVM will provide the best zero-knowledge toolbox in
+the coming years and that the Ethereum network effect will remain prevalent. We
+present to developers an abstraction layer they're familiar with: the EVM. Build
+and deploy as if you were working on Ethereum, be forward compatible with the
+future of zero-knowledge.
 
 Kakarot is a work in progress, and it is not ready for production.
 
 [Kakarot presentations and talks around the world](https://www.youtube.com/playlist?list=PLF3T1714MyKDwjjA8oHizXAdLNx62ka5U)
 
-[Getting started](#getting-started) • [Supported opcodes](#supported-opcodes) •
-[Build](#build) • [Test](#test) •
+[Getting started](#getting-started) • [Build](#build) • [Test](#test) •
 [Report a bug](https://github.com/kkrt-labs/kakarot/issues/new?assignees=&labels=bug&template=01_BUG_REPORT.md&title=bug%3A+)
-
-</div>
 
 ## Supported opcodes
 
-We support 100% of EVM [opcodes](docs/supported_opcodes.md) and 8 out of 9
+We support 100% of EVM [opcodes](docs/supported_opcodes.md) and 6 out of 9
 precompiles.
 
 ## Documentation
 
 ### Architecture
 
-- ✅ Kakarot is a set of Cairo programs
+Here is a high-level architecture diagram of the entire Kakarot zkEVM system.
+
+<p align="center">
+  <img src="./docs/img/architecture.png" width="70%" alt="Kakarot high-level architecture">
+</p>
+
+The set of Cairo programs in this repository are represented below:
+
+<p align="center">
+  <img src="./docs/img/core_evm_diagram.png" width="60%" alt="Kakarot Core EVM diagram">
+</p>
+
+- ✅ Kakarot Core EVM is a set of Cairo programs
 
 - ✅ Kakarot can be packaged as a smart contract and deployed on any chain that
-  runs the CairoVM (currently only Starknet mainnet).
+  runs the CairoVM (StarknetOS chains, Starknet Appchains, Starknet clients).
 
 - ✅ Kakarot is an EVM implementation.
 
-- ❌ Kakarot is not a blockchain by itself. It still needs a chain that runs the
-  CairoVM to be deployed
+- ⚠️ Kakarot Core EVM (the Cairo programs in this repository) is not a
+  blockchain by itself. Combined with an underlying CairoVM chain, an RPC layer,
+  it forms an Ethereum-compatible L2 network.
 
 - ❌ Kakarot is not a compiler.
 
@@ -146,7 +158,10 @@ to read the [doc](https://docs.pytest.org/) and get familiar with the tool to
 benefit from all of its features.
 
 ```bash
-# Run all tests
+# Runs a local CairoVM client (or StarknetOS chain)
+make run-katana
+
+# Run all tests. This requires a Katana instance running in the background: `make run-katana`
 make test
 
 # Run only unit tests
@@ -231,7 +246,8 @@ cairo trace when the CairoVM reverts.
 
 ## Deploy
 
-The following describes how to deploy the Kakarot as a Starknet smart contract.
+The following describes how to deploy the Kakarot as a Starknet smart contract
+on an underlying StarknetOS network.
 
 It is **not** a description on how to deploy a solidity contract on the Kakarot
 EVM.
