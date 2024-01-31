@@ -309,6 +309,7 @@ namespace internal {
         jmp full_chunk if remaining_chunk != 0;
         tempvar count = remainder;
         jmp next;
+
         full_chunk:
         tempvar count = BYTES_PER_FELT;
 
