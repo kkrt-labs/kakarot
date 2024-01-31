@@ -1,3 +1,4 @@
+import logging
 import random
 
 import pytest
@@ -16,6 +17,11 @@ from tests.utils.helpers import (
 from tests.utils.reporting import traceit
 
 params_execute = [pytest.param(case.pop("params"), **case) for case in test_cases]
+
+
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 @pytest.fixture(scope="session")
@@ -173,3 +179,41 @@ class TestKakarot:
                 == deploy_fee - receipt.actual_fee
             )
             assert eoa_balance_prev - eoa_balance_after == deploy_fee
+
+    class TestEthCallNativeCoinTransfer:
+        async def test_eth_call_should_succeed(
+            self,
+            fund_starknet_address,
+            deploy_externally_owned_account,
+            is_account_deployed,
+            compute_starknet_address,
+            wait_for_transaction,
+            kakarot,
+        ):
+            seed = random.randint(0, 0x5EED)
+            evm_address = generate_random_evm_address(seed=seed)
+            while await is_account_deployed(evm_address):
+                seed += 1
+                evm_address = generate_random_evm_address(seed=seed)
+
+            starknet_address = await compute_starknet_address(evm_address)
+            amount = PRE_FUND_AMOUNT / 1e16
+            await fund_starknet_address(starknet_address, amount)
+            tx = await deploy_externally_owned_account(evm_address)
+            status = await wait_for_transaction(tx.hash)
+            assert status == "✅"
+
+            result = await kakarot.functions["eth_call"].call(
+                origin=int(evm_address, 16),
+                to=int(generate_random_evm_address(seed=3), 16),
+                gas_limit=1_000_000_000,
+                gas_price=1_000,
+                value=1_000,
+                data=bytes(),
+                access_list=[],
+            )
+
+            logger.info(f"result: {result}")
+            assert result.success == 1
+            assert result.return_data == []
+            assert result.gas_used == 21_000
