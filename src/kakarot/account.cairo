@@ -267,7 +267,7 @@ namespace Account {
     // @notice Fetches the storage of an account without loading the Account
     // @dev The value is fetched from the Starknet state, and not from the local state
     // in which it might have been modified.
-    // @param Account to fetch the storage from
+    // @param account The account to fetch the storage from
     // @param key The pointer to the Uint256 storage key
     // @return The Uint256 value of the original storage.
     func fetch_original_storage{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(

@@ -252,7 +252,7 @@ namespace MemoryOperations {
         if (is_storage_warm == FALSE) {
             assert gas_cost = Gas.COLD_SLOAD;
         } else {
-            assert gas_cost = gas_cost;
+            assert gas_cost = 0;
         }
 
         let (is_current_original) = uint256_eq(original_value, [current_value]);
