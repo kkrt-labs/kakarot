@@ -14,6 +14,11 @@ from tests.utils.uint256 import int_to_uint256
 
 
 class TestContractAccount:
+    @pytest.fixture(params=[0, 10, 100, 1000, 10000])
+    def bytecode(self, request):
+        random.seed(0)
+        return random.randbytes(request.param)
+
     class TestInitialize:
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
         @SyscallHandler.patch("IERC20.approve", lambda addr, data: [1])
@@ -77,36 +82,19 @@ class TestContractAccount:
             with cairo_error():
                 cairo_run("test__write_bytecode", bytecode=[])
 
-        @pytest.mark.parametrize(
-            "bytecode",
-            [
-                [],
-                list(range(10)),
-                list(range(100)),
-                list(range(100)) * 10,
-            ],
-            ids=["0 bytes", "10 bytes", "100 bytes", "1000 bytes"],
-        )
         @SyscallHandler.patch("Ownable_owner", SyscallHandler.caller_address)
         def test_should_write_bytecode(self, cairo_run, bytecode):
-            cairo_run(
-                "test__write_bytecode", bytecode_len=len(bytecode), bytecode=bytecode
-            )
+            cairo_run("test__write_bytecode", bytecode=list(bytecode))
             SyscallHandler.mock_storage.assert_any_call(
                 address=get_storage_var_address("bytecode_len_"), value=len(bytecode)
             )
             calls = [
                 call(address=i, value=int(value, 16))
-                for i, value in enumerate(wrap(bytes(bytecode).hex(), 2 * 31))
+                for i, value in enumerate(wrap(bytecode.hex(), 2 * 31))
             ]
             SyscallHandler.mock_storage.assert_has_calls(calls)
 
     class TestBytecode:
-        @pytest.fixture(params=[0, 10, 100, 1000, 10000])
-        def bytecode(self, request):
-            random.seed(0)
-            return random.randbytes(request.param)
-
         @pytest.fixture
         def storage(self, bytecode):
             chunks = wrap(bytecode.hex(), 2 * 31)
