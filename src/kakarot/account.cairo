@@ -482,14 +482,19 @@ namespace Account {
     // @dev This is used for access list transactions that provide a list of preaccessed keys
     // @param storage_keys_len The number of storage keys to cache.
     // @param storage_keys The pointer to the first storage key.
-    func cache_storage_keys{pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Account*, storage_keys_len: felt, storage_keys: felt*
-    ) -> model.Account* {
+    func cache_storage_keys{
+        pedersen_ptr: HashBuiltin*, range_check_ptr, seen_addresses: DictAccess*
+    }(self: model.Account*, storage_keys_len: felt, storage_keys: felt*) -> (model.Account*, felt) {
         alloc_locals;
+        // Read the dict containing already seen keys for this account stored in seen_addresses.
+        let (seen_keys_felt) = dict_read{dict_ptr=seen_addresses}(key=self.address.evm);
+        let seen_keys = cast(seen_keys_felt, DictAccess*);
         let storage_ptr = self.storage;
-        with storage_ptr {
-            Internals._cache_storage_keys(storage_keys_len, storage_keys);
+        with storage_ptr, seen_keys {
+            let cached_keys = Internals._cache_storage_keys(storage_keys_len, storage_keys);
         }
+        // Update the pointer to the dict containing already seen keys for this account.
+        dict_write{dict_ptr=seen_addresses}(key=self.address.evm, new_value=cast(seen_keys, felt));
         tempvar self = new model.Account(
             address=self.address,
             code_len=self.code_len,
@@ -500,7 +505,7 @@ namespace Account {
             balance=self.balance,
             selfdestruct=self.selfdestruct,
         );
-        return self;
+        return (self, cached_keys);
     }
 }
 
@@ -516,17 +521,32 @@ namespace Internals {
         return (res=res);
     }
 
-    func _cache_storage_keys{pedersen_ptr: HashBuiltin*, range_check_ptr, storage_ptr: DictAccess*}(
-        storage_keys_len: felt, storage_keys: felt*
-    ) {
+    // @returns the actual number of cached keys during the recursion, not taking into account duplicates.
+    func _cache_storage_keys{
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        storage_ptr: DictAccess*,
+        seen_keys: DictAccess*,
+    }(storage_keys_len: felt, storage_keys: felt*) -> felt {
+        alloc_locals;
         if (storage_keys_len == 0) {
-            return ();
+            return 0;
         }
 
         let key = cast(storage_keys, Uint256*);
         let (storage_addr) = Internals._storage_addr(key);
-        dict_read{dict_ptr=storage_ptr}(key=storage_addr);
+        let (is_seen) = dict_read{dict_ptr=seen_keys}(key=storage_addr);
+        if (is_seen != 0) {
+            return _cache_storage_keys(
+                storage_keys_len - Uint256.SIZE, storage_keys + Uint256.SIZE
+            );
+        }
 
-        return _cache_storage_keys(storage_keys_len - Uint256.SIZE, storage_keys + Uint256.SIZE);
+        dict_read{dict_ptr=storage_ptr}(key=storage_addr);
+        dict_write{dict_ptr=seen_keys}(key=storage_addr, new_value=TRUE);
+        let cached_keys = _cache_storage_keys(
+            storage_keys_len - Uint256.SIZE, storage_keys + Uint256.SIZE
+        );
+        return cached_keys + (1 - is_seen);
     }
 }

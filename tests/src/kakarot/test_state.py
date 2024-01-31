@@ -5,6 +5,7 @@ from ethereum.shanghai.fork_types import (
 )
 
 from tests.utils.constants import TRANSACTIONS
+from tests.utils.helpers import sanitize_access_list
 from tests.utils.syscall_handler import SyscallHandler
 
 
@@ -71,19 +72,28 @@ class TestState:
             output = cairo_run("test__cache_precompiles")
             assert output == list(range(1, 10))
 
-        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
+        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
         def test_should_cache_access_list(self, cairo_run, transaction):
-            access_list = transaction.get("accessList") or ()
-            gas_cost = cairo_run("test__cache_access_list", access_list=access_list)[0]
+            access_list = transaction.get("accessList", ())
 
-            # count addresses key in access list, with duplicates
-            len_access_list = len(access_list)
-            len_storage_keys = sum(len(x["storageKeys"]) for x in access_list)
+            # Remove duplicates from addresses and addresses's storage keys
+            sanitized_access_list = sanitize_access_list(access_list)
+
+            gas_cost = cairo_run(
+                "test__cache_access_list",
+                access_list=access_list,
+                sanitized_access_list=sanitized_access_list,
+            )[0]
+
+            unique_address_count = len(sanitized_access_list)
+            total_unique_storage_keys = sum(
+                len(item["storageKeys"]) for item in sanitized_access_list
+            )
             assert (
                 gas_cost
-                == TX_ACCESS_LIST_ADDRESS_COST * len_access_list
-                + TX_ACCESS_LIST_STORAGE_KEY_COST * len_storage_keys
+                == TX_ACCESS_LIST_ADDRESS_COST * unique_address_count
+                + TX_ACCESS_LIST_STORAGE_KEY_COST * total_unique_storage_keys
             )
 
     class TestCopyAccounts:
