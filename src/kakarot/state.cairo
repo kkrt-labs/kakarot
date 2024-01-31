@@ -11,7 +11,6 @@ from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256, uint256_add, uint256_sub, uint256_le, uint256_eq
 from starkware.cairo.common.bool import FALSE, TRUE
-from starkware.cairo.common.math_cmp import is_not_zero
 
 from kakarot.account import Account
 from kakarot.model import model
@@ -167,8 +166,7 @@ namespace State {
     }(access_list_len: felt, access_list: felt*) -> felt {
         alloc_locals;
         tempvar accounts_ptr = state.accounts;
-        let (local seen_addresses: DictAccess*) = default_dict_new(0);
-        with accounts_ptr, seen_addresses {
+        with accounts_ptr {
             let gas_cost = Internals._cache_access_list(access_list_len, access_list);
         }
         tempvar state = new model.State(
@@ -439,13 +437,8 @@ namespace Internals {
         return ();
     }
 
-    // @returns the gas cost of the cumulated caching of the access list.
     func _cache_access_list{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        accounts_ptr: DictAccess*,
-        seen_addresses: DictAccess*,
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, accounts_ptr: DictAccess*
     }(access_list_len: felt, access_list: felt*) -> felt {
         alloc_locals;
 
@@ -455,33 +448,15 @@ namespace Internals {
 
         let address = [access_list];
         let storage_keys_len = [access_list + 1];
-        // since storage_keys take 2 felt each
-        let storage_keys_count = storage_keys_len / 2;
-        tempvar item_len = 2 + storage_keys_len;
-
-        // If the address has never been seen, create a new DictAccess* to hold it's associated storage keys.
-        let (seen_keys_ptr) = dict_read{dict_ptr=seen_addresses}(key=address);
-        let is_seen = is_not_zero(seen_keys_ptr);
-        if (is_seen == FALSE) {
-            let (local seen_keys: DictAccess*) = default_dict_new(0);
-            dict_write{dict_ptr=seen_addresses}(key=address, new_value=cast(seen_keys, felt));
-            tempvar seen_addresses = seen_addresses;
-        } else {
-            tempvar seen_addresses = seen_addresses;
-        }
-
-        let seen_addresses = cast([ap - 1], DictAccess*);
-
         let account = Account.fetch_or_create(address);
-        with seen_addresses {
-            let (account, cached_keys) = Account.cache_storage_keys(
-                account, storage_keys_len, access_list + 2
-            );
-        }
+        let account = Account.cache_storage_keys(account, storage_keys_len, access_list + 2);
         dict_write{dict_ptr=accounts_ptr}(key=address, new_value=cast(account, felt));
 
+        tempvar item_len = 2 + storage_keys_len;
+        // since storage_keys take 2 felt each
+        let storage_keys_count = storage_keys_len / 2;
         let cum_gas_cost = _cache_access_list(access_list_len - item_len, access_list + item_len);
-        return cum_gas_cost + (1 - is_seen) * Gas.TX_ACCESS_LIST_ADDRESS_COST + cached_keys *
+        return cum_gas_cost + Gas.TX_ACCESS_LIST_ADDRESS_COST + storage_keys_count *
             Gas.TX_ACCESS_LIST_STORAGE_KEY_COST;
     }
 }

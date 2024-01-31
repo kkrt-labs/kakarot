@@ -1,5 +1,4 @@
 import random
-from collections import OrderedDict
 from textwrap import wrap
 from typing import List, Tuple, Union
 
@@ -214,38 +213,3 @@ def flatten_tx_accesslist(access_list):
             result.append(value_low)
             result.append(value_high)
     return result
-
-
-def sanitize_access_list(access_list):
-    """
-    Sanitize the access list by merging duplicate addresses and ensuring all distinct
-    storage keys are kept without disturbing their order.
-
-    Args:
-    ----
-    ----
-    access_list (list of dict): A list where each element is a dictionary containing an
-                                'address' key and a 'storageKeys' list or tuple.
-
-    Returns:
-    -------
-    list of dict: A list of dictionaries with unique addresses and their associated
-                  ordered storage keys.
-    """
-    sanitized_access_list = OrderedDict()
-
-    for entry in access_list:
-        address = entry["address"]
-        sanitized_access_list.setdefault(address, [])
-
-        for key in entry.get("storageKeys", []):
-            if key not in sanitized_access_list[address]:
-                sanitized_access_list[address].append(key)
-
-    # Convert back to the initial format using list comprehension
-    sanitized_list = [
-        {"address": address, "storageKeys": tuple(storage_keys)}
-        for address, storage_keys in sanitized_access_list.items()
-    ]
-
-    return sanitized_list

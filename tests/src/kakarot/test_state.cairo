@@ -277,17 +277,11 @@ func test__cache_access_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
 
 
         # 1. assert correct amount of accounts
-        # The account len is the number of disting account keys in the ids.state.accounts dict.
-        account_dict_len = (ids.state.accounts.address_ - ids.state.accounts_start.address_)
-        cached_accounts = set()
-        for i in range(0, account_dict_len, 3):
-            account_key = memory[ids.state.accounts_start.address_ + i]
-            cached_accounts.add(account_key)
-
-        assert len(cached_accounts) == len(program_input["sanitized_access_list"])
+        accounts_len = (ids.state.accounts.address_ - ids.state.accounts_start.address_) // 3 # Each entry is (key, prev_value, new_value)
+        assert accounts_len == len(program_input["access_list"])
 
         # 2. Assert correct storage keys for the accounts
-        assert_correct_storage_keys(program_input["sanitized_access_list"], len(cached_accounts))
+        assert_correct_storage_keys(program_input["access_list"], accounts_len)
     %}
 
     return ();
