@@ -5,7 +5,6 @@ from ethereum.shanghai.fork_types import (
 )
 
 from tests.utils.constants import TRANSACTIONS
-from tests.utils.helpers import sanitize_access_list
 from tests.utils.syscall_handler import SyscallHandler
 
 

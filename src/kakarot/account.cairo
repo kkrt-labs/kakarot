@@ -483,7 +483,7 @@ namespace Account {
     // @param storage_keys_len The number of storage keys to cache.
     // @param storage_keys The pointer to the first storage key.
     func cache_storage_keys{pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Account*, storage_keys_len: felt, storage_keys: felt*
+        self: model.Account*, storage_keys_len: felt, storage_keys: Uint256*
     ) -> model.Account* {
         alloc_locals;
         let storage_ptr = self.storage;
@@ -527,6 +527,6 @@ namespace Internals {
         let (storage_addr) = Internals._storage_addr(key);
         dict_read{dict_ptr=storage_ptr}(key=storage_addr);
 
-        return _cache_storage_keys(storage_keys_len - Uint256.SIZE, storage_keys + Uint256.SIZE);
+        return _cache_storage_keys(storage_keys_len - 1, storage_keys + Uint256.SIZE);
     }
 }

@@ -116,7 +116,7 @@ TRANSACTIONS = [
         ),
         "chainId": CHAIN_ID,
     },
-    # eip1559 without storage keys in accesslist
+    # eip1559 with storage keys in accesslist and 2 addresses, including one duplication
     {
         "type": 2,
         "gas": 100_000,
@@ -128,12 +128,16 @@ TRANSACTIONS = [
         "value": 0x5AF3107A4000,
         "accessList": (
             {
-                "address": "0x0000000000000000000000000000000000000001",
-                "storageKeys": (),
+                "address": "0x0000000000000000000000000000000000000101",
+                "storageKeys": [
+                    "0x0000000000000000000000000000000000000000000000000000000000000000"
+                ],
             },
             {
-                "address": "0x0000000000000000000000000000000000000002",
-                "storageKeys": (),
+                "address": "0x0000000000000000000000000000000000000101",
+                "storageKeys": [
+                    "0x0000000000000000000000000000000000000000000000000000000000000001"
+                ],
             },
         ),
         "chainId": CHAIN_ID,
