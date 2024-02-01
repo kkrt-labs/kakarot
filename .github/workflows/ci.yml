@@ -162,8 +162,7 @@ jobs:
       - name: Checkout ef-tests
         uses: actions/checkout@v3
         with:
-          repository: greged93/ef-tests
-          ref: feat/update-storage-bytecode-v0
+          repository: kkrt-labs/ef-tests
       - name: Checkout local skip file
         uses: actions/checkout@v3
         with:
