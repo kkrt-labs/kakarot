@@ -20,7 +20,11 @@ logger = logging.getLogger("timer")
 
 _time_report: List[dict] = []
 _resources_report: List[dict] = []
-
+# A mapping to fix the mismatch between the debug_info and the identifiers.
+_label_scope = {
+    "kakarot.constants.opcodes_label": "kakarot.constants",
+    "kakarot.accounts.contract.library.internal.pow_": "kakarot.accounts.contract.library.internal",
+}
 T = TypeVar("T", bound=Callable[..., Any])
 
 
@@ -300,9 +304,7 @@ def profile_from_tracer_data(tracer_data):
         if not isinstance(ident, LabelDefinition):
             continue
         builder.function_id(
-            name="kakarot.constants"
-            if str(name) == "kakarot.constants.opcodes_label"
-            else str(name),
+            name=_label_scope.get(str(name), str(name)),
             inst_location=tracer_data.program.debug_info.instruction_locations[
                 ident.pc
             ],
