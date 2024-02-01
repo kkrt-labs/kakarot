@@ -1,3 +1,5 @@
+import random
+
 import pytest
 
 
@@ -53,3 +55,16 @@ import pytest
 )
 def test_utils(cairo_run, test_case, data, expected):
     cairo_run(test_case, data=data, expected=expected)
+
+
+def test_should_return_bytes_used_in_128_word(cairo_run):
+    random.seed(0)
+    # Generate 50 random 128-bit words
+    for _ in range(20):
+        word = random.randint(0, 2**128 - 1)
+        bytes_length = (word.bit_length() + 7) // 8
+        output = cairo_run(
+            "test__bytes_used_128",
+            word=word,
+        )
+        assert bytes_length == output[0]

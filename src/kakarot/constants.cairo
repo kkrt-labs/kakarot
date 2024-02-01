@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 
+from kakarot.gas import Gas
+
 // @title Constants file.
 // @notice This file contains global constants.
 namespace Constants {
@@ -96,7 +98,7 @@ dw 3;
 dw -1;
 // EXP
 dw 0x0a;
-dw 10;
+dw Gas.EXPONENTIATION;
 dw 2;
 dw 2;
 dw -1;

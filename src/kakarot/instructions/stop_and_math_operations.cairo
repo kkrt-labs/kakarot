@@ -29,8 +29,10 @@ from kakarot.constants import opcodes_label
 from kakarot.model import model
 from kakarot.evm import EVM
 from kakarot.stack import Stack
+from kakarot.gas import Gas
 from kakarot.state import State
 from utils.uint256 import uint256_fast_exp, uint256_signextend
+from utils.utils import Helpers
 
 // @title Stop and Math operations opcodes.
 // @notice Math operations gathers Arithmetic and Comparison operations
@@ -267,11 +269,35 @@ namespace StopAndMathOperations {
         EXP:
         let range_check_ptr = [ap - 2];
         let popped = cast([ap - 1], Uint256*);
+        let exponent = popped[1];
 
-        let result = uint256_fast_exp(popped[0], popped[1]);
 
-        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
-        tempvar range_check_ptr = range_check_ptr;
+        // Gas
+        local bytes_used: felt;
+        if (exponent.high == 0){
+            let bytes_used_low = Helpers.bytes_used_128(exponent.low);
+            assert bytes_used = bytes_used_low;
+        } else {
+            let bytes_used_high = Helpers.bytes_used_128(exponent.high);
+            assert bytes_used = bytes_used_high + 16;
+        }
+
+
+        let syscall_ptr = cast([fp - 10], felt*);
+        let pedersen_ptr = cast([fp - 9], HashBuiltin*);
+        let bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
+        let memory = cast([fp - 5], model.Memory*);
+        let state = cast([fp - 4], model.State*);
+        let evm = cast([fp - 3], model.EVM*);
+        let stack = cast([fp + 1], model.Stack*);
+
+        let evm = EVM.charge_gas(evm, Gas.EXPONENTIATION_PER_BYTE * bytes_used);
+        if (evm.reverted != FALSE){
+            return evm;
+        }
+
+        let result = uint256_fast_exp(popped[0], exponent);
+
         tempvar result = Uint256(result.low, result.high);
         jmp end;
 

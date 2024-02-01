@@ -3,7 +3,7 @@
 // StarkWare dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import assert_le, split_felt, assert_nn_le, unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_le, is_not_zero
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.pow import pow
 from starkware.cairo.common.uint256 import Uint256, uint256_check
@@ -545,6 +545,38 @@ namespace Helpers {
 
         assert value = 0;
         return ();
+    }
+
+    // @notice Counts how many bytes are used in a 128-bit number.
+    // @dev We count how many zeroes are in the beginning of the number and subtract
+    // 16 from that.
+    func bytes_used_128{range_check_ptr}(word: felt) -> felt {
+        alloc_locals;
+        if (word == 0) {
+            return 0;
+        }
+
+        // Store big-endian bytes
+        let (local word_bytes) = alloc();
+        split_word_128(word, word_bytes);
+
+        tempvar ptr = word_bytes;
+
+        body:
+        let starting_ptr = cast([fp], felt*);
+        let ptr = cast([ap - 1], felt*);
+        let current_value = [ptr];
+        tempvar is_done = (1 - is_not_zero(current_value)) + (1 - is_not_zero(ptr-starting_ptr));
+        tempvar ptr = ptr;
+        jmp end if is_done !=0;
+        tempvar ptr = ptr-1;
+        jmp body;
+
+        end:
+        let starting_ptr = cast([fp], felt*);
+        let ending_ptr = cast([ap - 1], felt*);
+        tempvar bytes_used = 16 - (ending_ptr - starting_ptr);
+        return bytes_used;
     }
 
     // @notice transform multiple bytes into words of 32 bits (big endian)
