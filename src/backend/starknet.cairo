@@ -30,8 +30,6 @@ from kakarot.storages import (
     evm_to_starknet_address,
 )
 
-from tests.utils.debug import Debug
-
 namespace Starknet {
     // @notice Commit the current state to the underlying data backend (here, Starknet)
     // @param self The pointer to the State

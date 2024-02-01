@@ -276,7 +276,7 @@ namespace Account {
         alloc_locals;
         let starknet_account_exists = is_registered(account.address.evm);
         if (starknet_account_exists == FALSE) {
-            tempvar value = Uint256(0, 0);
+            let value = Uint256(0, 0);
             return value;
         }
         let (storage_addr) = Internals._storage_addr(key);
@@ -517,13 +517,13 @@ namespace Internals {
     }
 
     func _cache_storage_keys{pedersen_ptr: HashBuiltin*, range_check_ptr, storage_ptr: DictAccess*}(
-        storage_keys_len: felt, storage_keys: felt*
+        storage_keys_len: felt, storage_keys: Uint256*
     ) {
         if (storage_keys_len == 0) {
             return ();
         }
 
-        let key = cast(storage_keys, Uint256*);
+        let key = storage_keys;
         let (storage_addr) = Internals._storage_addr(key);
         dict_read{dict_ptr=storage_ptr}(key=storage_addr);
 

@@ -291,7 +291,6 @@ namespace EthTransaction {
         // Address
         let address_item = cast(access_list.data, RLP.Item*);
         let address = Helpers.bytes20_to_felt(address_item.data);
-        // %{breakpoint()%}
 
         // List<StorageKeys>
         let keys_item = cast(access_list.data + RLP.Item.SIZE, RLP.Item*);
@@ -301,8 +300,6 @@ namespace EthTransaction {
 
         let keys = cast(keys_item.data, RLP.Item*);
         parse_storage_keys(parsed_list + 2, keys_len, keys);
-
-        // %{breakpoint()%}
 
         let serialized_len = parse_access_list(
             parsed_list + 2 + keys_len * Uint256.SIZE,

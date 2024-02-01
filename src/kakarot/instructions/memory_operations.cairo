@@ -243,17 +243,16 @@ namespace MemoryOperations {
         // Has to be done BEFORE fetching the current value from the state,
         // otherwise it would warm up the storage slot.
         let is_storage_warm = State.is_storage_warm(evm.message.address.evm, key);
-        let account = State.get_account(evm.message.address.evm);
-
-        let original_value = Account.fetch_original_storage(account, key);
-        let current_value = State.read_storage(evm.message.address.evm, key);
         local gas_cost: felt;
-
         if (is_storage_warm == FALSE) {
             assert gas_cost = Gas.COLD_SLOAD;
         } else {
             assert gas_cost = 0;
         }
+
+        let account = State.get_account(evm.message.address.evm);
+        let original_value = Account.fetch_original_storage(account, key);
+        let current_value = State.read_storage(evm.message.address.evm, key);
 
         let (is_current_original) = uint256_eq(original_value, [current_value]);
         let (is_current_new) = uint256_eq([value], [current_value]);

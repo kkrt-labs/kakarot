@@ -69,11 +69,13 @@ def deserialize_cairo_access_list(access_list, access_list_ptr, memory):
 
     for item in access_list:
         memory[access_list_ptr] = int(item["address"], 16)
-        storage_keys_len = 2 * len(item.get("storageKeys") or [])
-        memory[access_list_ptr + 1] = storage_keys_len
+        storage_keys_count = len(
+            item.get("storageKeys") or []
+        )  # It's not the length in felts, but the count of storage_keys
+        memory[access_list_ptr + 1] = storage_keys_count
         for j in range(len(item["storageKeys"])):
             value = int(item["storageKeys"][j], 16)
             memory[access_list_ptr + 2 + j * 2] = value & 2**128 - 1
             memory[access_list_ptr + 2 + j * 2 + 1] = value >> 128
 
-        access_list_ptr += 2 + storage_keys_len
+        access_list_ptr += 2 + storage_keys_count * 2

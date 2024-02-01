@@ -454,9 +454,9 @@ namespace Internals {
         );
         dict_write{dict_ptr=accounts_ptr}(key=address, new_value=cast(account, felt));
 
-        // storage_keys_len tracks the count storage keys in the same array.
+        // storage_keys_len tracks the count of storage keys (of Uint256 type).
         // Each storage key takes 2 felt each
-        tempvar item_len = 2 + storage_keys_len * 2;
+        tempvar item_len = 2 + storage_keys_len * Uint256.SIZE;
         let cum_gas_cost = _cache_access_list(access_list_len - item_len, access_list + item_len);
         return cum_gas_cost + Gas.TX_ACCESS_LIST_ADDRESS_COST + storage_keys_len *
             Gas.TX_ACCESS_LIST_STORAGE_KEY_COST;
