@@ -2452,7 +2452,6 @@ testname:
     - stackOverflowSWAP_d0g0v0_Shanghai
     - stacksanitySWAP_d0g0v0_Shanghai
   stStaticCall:
-    - RevertOpcodeCalls_d0g1v0_Shanghai
     - StaticcallToPrecompileFromCalledContract_d0g0v0_Shanghai
     - StaticcallToPrecompileFromContractInitialization_d0g0v0_Shanghai
     - StaticcallToPrecompileFromTransaction_d0g0v0_Shanghai
@@ -2538,6 +2537,7 @@ testname:
     - static_callWithHighValueAndGasOOG_d1g0v0_Shanghai
     - static_call_value_inherit_d0g0v0_Shanghai
     - static_call_value_inherit_from_call_d0g0v0_Shanghai
+    - static_RevertOpcodeCalls_d0g1v0_Shanghai
   stStaticFlagEnabled:
     - CallWithNOTZeroValueToPrecompileFromCalledContract_d0g0v0_Shanghai
     - CallWithNOTZeroValueToPrecompileFromCalledContract_d1g0v0_Shanghai
