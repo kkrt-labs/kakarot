@@ -368,7 +368,7 @@ dw 0;
 dw 1;
 // CALLDATACOPY
 dw 0x37;
-dw 3;
+dw Gas.VERY_LOW;
 dw 3;
 dw 3;
 dw 0;
@@ -380,7 +380,7 @@ dw 0;
 dw 1;
 // CODECOPY
 dw 0x39;
-dw 3;
+dw Gas.VERY_LOW;
 dw 3;
 dw 3;
 dw 0;
@@ -410,7 +410,7 @@ dw 0;
 dw 1;
 // RETURNDATACOPY
 dw 0x3e;
-dw 3;
+dw Gas.VERY_LOW;
 dw 3;
 dw 3;
 dw 0;

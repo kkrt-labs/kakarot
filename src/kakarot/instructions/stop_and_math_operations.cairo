@@ -271,17 +271,15 @@ namespace StopAndMathOperations {
         let popped = cast([ap - 1], Uint256*);
         let exponent = popped[1];
 
-
         // Gas
         local bytes_used: felt;
-        if (exponent.high == 0){
+        if (exponent.high == 0) {
             let bytes_used_low = Helpers.bytes_used_128(exponent.low);
             assert bytes_used = bytes_used_low;
         } else {
             let bytes_used_high = Helpers.bytes_used_128(exponent.high);
             assert bytes_used = bytes_used_high + 16;
         }
-
 
         let syscall_ptr = cast([fp - 10], felt*);
         let pedersen_ptr = cast([fp - 9], HashBuiltin*);
@@ -292,7 +290,7 @@ namespace StopAndMathOperations {
         let stack = cast([fp + 1], model.Stack*);
 
         let evm = EVM.charge_gas(evm, Gas.EXPONENTIATION_PER_BYTE * bytes_used);
-        if (evm.reverted != FALSE){
+        if (evm.reverted != FALSE) {
             return evm;
         }
 

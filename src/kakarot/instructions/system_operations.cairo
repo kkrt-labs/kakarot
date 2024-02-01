@@ -65,9 +65,12 @@ namespace SystemOperations {
             memory.words_len, offset, size
         );
         let (calldata_words, _) = unsigned_div_rem(size.low + 31, 31);
-        let init_code_gas = Gas.INIT_CODE_WORD_COST * calldata_words;
+        let init_code_gas_low = Gas.INIT_CODE_WORD_COST * calldata_words;
+        tempvar init_code_gas_high = is_not_zero(size.high) * 2 ** 128;
         let calldata_word_gas = is_create2 * Gas.KECCAK256_WORD * calldata_words;
-        let evm = EVM.charge_gas(evm, memory_expansion_cost + init_code_gas + calldata_word_gas);
+        let evm = EVM.charge_gas(
+            evm, memory_expansion_cost + init_code_gas_low + init_code_gas_high + calldata_word_gas
+        );
         if (evm.reverted != FALSE) {
             return evm;
         }

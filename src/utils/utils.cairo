@@ -566,10 +566,10 @@ namespace Helpers {
         let starting_ptr = cast([fp], felt*);
         let ptr = cast([ap - 1], felt*);
         let current_value = [ptr];
-        tempvar is_done = (1 - is_not_zero(current_value)) + (1 - is_not_zero(ptr-starting_ptr));
+        tempvar is_done = (1 - is_not_zero(current_value)) + (1 - is_not_zero(ptr - starting_ptr));
         tempvar ptr = ptr;
-        jmp end if is_done !=0;
-        tempvar ptr = ptr-1;
+        jmp end if is_done != 0;
+        tempvar ptr = ptr - 1;
         jmp body;
 
         end:

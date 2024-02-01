@@ -5,6 +5,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.math_cmp import is_not_zero
 
 from kakarot.errors import Errors
 from kakarot.evm import EVM
@@ -53,7 +54,13 @@ namespace LoggingOperations {
         let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
             memory.words_len, offset, size
         );
-        let evm = EVM.charge_gas(evm, memory_expansion_cost);
+
+        let size_cost_low = Gas.LOG_DATA * size.low;
+        tempvar size_cost_high = is_not_zero(size.high) * 2 ** 128;
+        let topics_cost = Gas.LOG_TOPIC * topics_len;
+        let evm = EVM.charge_gas(
+            evm, memory_expansion_cost + size_cost_low + size_cost_high + topics_cost
+        );
         if (evm.reverted != FALSE) {
             return evm;
         }

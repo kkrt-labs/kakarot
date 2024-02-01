@@ -4,9 +4,11 @@
 
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.math import split_felt, unsigned_div_rem
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.math_cmp import is_not_zero
 
 from kakarot.evm import EVM
 from kakarot.gas import Gas
@@ -34,7 +36,12 @@ namespace Sha3 {
         let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
             memory.words_len, offset, size
         );
-        let evm = EVM.charge_gas(evm, memory_expansion_cost);
+        let (words, _) = unsigned_div_rem(size.low + 31, 31);
+        let words_gas_cost_low = Gas.KECCAK256_WORD * words;
+        tempvar words_gas_cost_high = is_not_zero(size.high) * 2 ** 128;
+        let evm = EVM.charge_gas(
+            evm, memory_expansion_cost + words_gas_cost_low + words_gas_cost_high
+        );
         if (evm.reverted != FALSE) {
             return evm;
         }

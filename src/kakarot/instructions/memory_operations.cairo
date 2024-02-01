@@ -296,6 +296,17 @@ namespace MemoryOperations {
         alloc_locals;
 
         let (key) = Stack.pop();
+
+        // Has to be done BEFORE fetching the current value from the state,
+        // otherwise it would warm up the storage slot.
+        let is_storage_warm = State.is_storage_warm(evm.message.address.evm, key);
+        tempvar gas_cost = is_storage_warm * Gas.WARM_ACCESS + (1 - is_storage_warm) *
+            Gas.COLD_SLOAD;
+        let evm = EVM.charge_gas(evm, gas_cost);
+        if (evm.reverted != FALSE) {
+            return evm;
+        }
+
         let value = State.read_storage(evm.message.address.evm, key);
         Stack.push(value);
         return evm;
