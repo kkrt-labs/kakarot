@@ -71,7 +71,7 @@ class TestState:
             output = cairo_run("test__cache_precompiles")
             assert output == list(range(1, 10))
 
-        @SyscallHandler.patch("IERC20.balanceO", lambda addr, data: [0, 1])
+        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         def test_should_cache_access_list(self, cairo_run, transaction):
             access_list = transaction.get("accessList") or ()
