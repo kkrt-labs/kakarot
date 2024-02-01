@@ -29,7 +29,7 @@ namespace Constants {
 
 // See model.Opcode:
 // number
-// gas
+// gas. Some opcodes have a zero fixed gas cost, only depending on dynamic gas cost. (e.g. warm/cold costs).
 // stack_input
 // stack_size_min
 // stack_size_diff
@@ -330,7 +330,7 @@ dw 0;
 dw 1;
 // BALANCE
 dw 0x31;
-dw 100;
+dw 0;
 dw 1;
 dw 1;
 dw 0;
@@ -390,13 +390,13 @@ dw 0;
 dw 1;
 // EXTCODESIZE
 dw 0x3b;
-dw 100;
+dw 0;
 dw 1;
 dw 1;
 dw 0;
 // EXTCODECOPY
 dw 0x3c;
-dw 100;
+dw 0;
 dw 4;
 dw 4;
 dw 0;
@@ -414,7 +414,7 @@ dw 3;
 dw 0;
 // EXTCODEHASH
 dw 0x3f;
-dw 100;
+dw 0;
 dw 1;
 dw 1;
 dw 0;
@@ -540,7 +540,7 @@ dw 2;
 dw -2;
 // SLOAD
 dw 0x54;
-dw 100;
+dw 0;  // gas cost is dynamic
 dw 1;
 dw 1;
 dw 0;
@@ -1482,13 +1482,13 @@ dw 3;
 dw -2;
 // CALL
 dw 0xf1;
-dw 100;
+dw 0;
 dw 7;
 dw 7;
 dw -6;
 // CALLCODE
 dw 0xf2;
-dw 100;
+dw 0;
 dw 7;
 dw 7;
 dw -6;
@@ -1500,7 +1500,7 @@ dw 2;
 dw -2;
 // DELEGATECALL
 dw 0xf4;
-dw 100;
+dw 0;
 dw 6;
 dw 6;
 dw -5;
@@ -1536,7 +1536,7 @@ dw 0;
 dw 0;
 // STATICCALL
 dw 0xfa;
-dw 100;
+dw 0;
 dw 6;
 dw 6;
 dw -5;

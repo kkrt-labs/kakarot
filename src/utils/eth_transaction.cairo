@@ -147,14 +147,10 @@ namespace EthTransaction {
         let sub_items_len = [items].data_len;
         let sub_items = cast([items].data, RLP.Item*);
 
-        local chain_id_idx = 0;
-        let chain_id = Helpers.bytes_to_felt(
-            sub_items[chain_id_idx].data_len, sub_items[chain_id_idx].data
-        );
+        let chain_id = Helpers.bytes_to_felt(sub_items[0].data_len, sub_items[0].data);
 
-        let nonce_idx = 1;
-        let nonce = Helpers.bytes_to_felt(sub_items[nonce_idx].data_len, sub_items[nonce_idx].data);
-        let gas_price_idx = tx_type + nonce_idx;
+        let nonce = Helpers.bytes_to_felt(sub_items[1].data_len, sub_items[1].data);
+        let gas_price_idx = tx_type + 1;
         let gas_price = Helpers.bytes_to_felt(
             sub_items[gas_price_idx].data_len, sub_items[gas_price_idx].data
         );

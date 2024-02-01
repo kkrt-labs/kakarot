@@ -449,14 +449,16 @@ namespace Internals {
         let address = [access_list];
         let storage_keys_len = [access_list + 1];
         let account = Account.fetch_or_create(address);
-        let account = Account.cache_storage_keys(account, storage_keys_len, access_list + 2);
+        let account = Account.cache_storage_keys(
+            account, storage_keys_len, cast(access_list + 2, Uint256*)
+        );
         dict_write{dict_ptr=accounts_ptr}(key=address, new_value=cast(account, felt));
 
-        tempvar item_len = 2 + storage_keys_len;
-        // since storage_keys take 2 felt each
-        let storage_keys_count = storage_keys_len / 2;
+        // storage_keys_len tracks the count of storage keys (of Uint256 type).
+        // Each storage key takes 2 felt each
+        tempvar item_len = 2 + storage_keys_len * Uint256.SIZE;
         let cum_gas_cost = _cache_access_list(access_list_len - item_len, access_list + item_len);
-        return cum_gas_cost + Gas.TX_ACCESS_LIST_ADDRESS_COST + storage_keys_count *
+        return cum_gas_cost + Gas.TX_ACCESS_LIST_ADDRESS_COST + storage_keys_len *
             Gas.TX_ACCESS_LIST_STORAGE_KEY_COST;
     }
 }

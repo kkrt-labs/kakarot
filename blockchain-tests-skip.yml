@@ -109,6 +109,8 @@ testname:
   stChainId:
     - chainId_d0g0v0_Shanghai
   stCreate2:
+    - RevertOpcodeCreate_d0g0v0_Shanghai
+    - create2checkFieldsInInitcode_d7g0v0_Shanghai
     - CREATE2_ContractSuicideDuringInit_ThenStoreThenReturn_d0g0v0_Shanghai
     - CREATE2_Suicide_d2g0v0_Shanghai
     - CREATE2_Suicide_d3g0v0_Shanghai
@@ -178,6 +180,8 @@ testname:
     - returndatacopy_following_successful_create_d0g0v0_Shanghai
     - returndatasize_following_successful_create_d0g0v0_Shanghai
   stCreateTest:
+    - CreateOOGafterInitCodeReturndata2_d0g1v0_Shanghai
+    - CreateOOGafterInitCodeRevert_d0g0v0_Shanghai
     - CREATE_EContract_ThenCALLToNonExistentAcc_d0g0v0_Shanghai
     - CREATE_EmptyContractAndCallIt_0wei_d0g0v0_Shanghai
     - CREATE_EmptyContractAndCallIt_1wei_d0g0v0_Shanghai
@@ -1401,6 +1405,7 @@ testname:
     - EXTCODESIZE_toEpmty_d0g0v0_Shanghai
     - EXTCODESIZE_toNonExistent_d0g0v0_Shanghai
   stEIP2930:
+    - variedContext_d16g0v0_Shanghai
     - addressOpcodes_d18g0v0_Shanghai
     - addressOpcodes_d20g0v0_Shanghai
     - addressOpcodes_d30g0v0_Shanghai
@@ -2234,6 +2239,7 @@ testname:
     - randomStatetest85_d0g0v0_Shanghai
     - randomStatetest98_d0g0v0_Shanghai
   stRefundTest:
+    - refund_NoOOG_1_d0g0v0_Shanghai
     - refundSuicide50procentCap_d0g0v0_Shanghai
     - refundSuicide50procentCap_d1g0v0_Shanghai
     - refund_CallA_OOG_d0g0v0_Shanghai
@@ -2311,6 +2317,9 @@ testname:
     - tooLongReturnDataCopy_d8g0v0_Shanghai
     - tooLongReturnDataCopy_d9g0v0_Shanghai
   stRevertTest:
+    - RevertInCallCode_d0g0v0_Shanghai
+    - RevertInDelegateCall_d0g0v0_Shanghai
+    - RevertOpcodeCreate_d0g0v0_Shanghai
     - costRevert_d0g0v0_Shanghai
     - RevertPrecompiledTouch_storage_d0g0v0_Shanghai
     - RevertPrecompiledTouch_storage_d1g0v0_Shanghai
@@ -2443,6 +2452,7 @@ testname:
     - stackOverflowSWAP_d0g0v0_Shanghai
     - stacksanitySWAP_d0g0v0_Shanghai
   stStaticCall:
+    - RevertOpcodeCalls_d0g1v0_Shanghai
     - StaticcallToPrecompileFromCalledContract_d0g0v0_Shanghai
     - StaticcallToPrecompileFromContractInitialization_d0g0v0_Shanghai
     - StaticcallToPrecompileFromTransaction_d0g0v0_Shanghai

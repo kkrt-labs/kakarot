@@ -109,10 +109,11 @@ class TestEthTransaction:
                 )
 
     class TestDecodeTransaction:
-        @pytest.mark.parametrize("transaction", TRANSACTIONS)
-        @pytest.mark.xfail(
-            reason="TODO: https://github.com/kkrt-labs/kakarot/issues/899"
-        )
+        @pytest.mark.parametrize("transaction", TRANSACTIONS[:-6])
+        # TODO: restore last two tests with empty destination when issue solved
+        # @pytest.mark.xfail(
+        #     reason="TODO: https://github.com/kkrt-labs/kakarot/issues/899"
+        # )
         async def test_should_decode_all_transactions_types(
             self, cairo_run, transaction
         ):
@@ -125,7 +126,10 @@ class TestEthTransaction:
             expected_access_list = flatten_tx_accesslist(
                 transaction.get("accessList", [])
             )
-            expected_access_list_len = len(transaction.get("accessList", []))
+            # count of addresses and each storage key in access list
+            expected_access_list_len = sum(
+                2 * len(x["storageKeys"]) + 2 for x in transaction.get("accessList", [])
+            )
             expected_gas_price = (
                 transaction.get("gasPrice") or transaction["maxFeePerGas"]
             )

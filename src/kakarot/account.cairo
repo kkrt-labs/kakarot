@@ -264,6 +264,28 @@ namespace Account {
         return balance;
     }
 
+    // @notice Fetches the storage of an account without loading the Account
+    // @dev The value is fetched from the Starknet state, and not from the local state
+    // in which it might have been modified.
+    // @param account The account to fetch the storage from
+    // @param key The pointer to the Uint256 storage key
+    // @return The Uint256 value of the original storage.
+    func fetch_original_storage{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        account: model.Account*, key: Uint256*
+    ) -> Uint256 {
+        alloc_locals;
+        let starknet_account_exists = is_registered(account.address.evm);
+        if (starknet_account_exists == FALSE) {
+            let value = Uint256(0, 0);
+            return value;
+        }
+        let (storage_addr) = Internals._storage_addr(key);
+        let (value) = IContractAccount.storage(
+            contract_address=account.address.starknet, storage_addr=storage_addr
+        );
+        return value;
+    }
+
     // @notice Set the balance of the Account
     // @param self The pointer to the Account
     // @param balance The new balance
@@ -461,7 +483,7 @@ namespace Account {
     // @param storage_keys_len The number of storage keys to cache.
     // @param storage_keys The pointer to the first storage key.
     func cache_storage_keys{pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Account*, storage_keys_len: felt, storage_keys: felt*
+        self: model.Account*, storage_keys_len: felt, storage_keys: Uint256*
     ) -> model.Account* {
         alloc_locals;
         let storage_ptr = self.storage;
@@ -495,16 +517,16 @@ namespace Internals {
     }
 
     func _cache_storage_keys{pedersen_ptr: HashBuiltin*, range_check_ptr, storage_ptr: DictAccess*}(
-        storage_keys_len: felt, storage_keys: felt*
+        storage_keys_len: felt, storage_keys: Uint256*
     ) {
         if (storage_keys_len == 0) {
             return ();
         }
 
-        let key = cast(storage_keys, Uint256*);
+        let key = storage_keys;
         let (storage_addr) = Internals._storage_addr(key);
         dict_read{dict_ptr=storage_ptr}(key=storage_addr);
 
-        return _cache_storage_keys(storage_keys_len - Uint256.SIZE, storage_keys + Uint256.SIZE);
+        return _cache_storage_keys(storage_keys_len - 1, storage_keys + Uint256.SIZE);
     }
 }
