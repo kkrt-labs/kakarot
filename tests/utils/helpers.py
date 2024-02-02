@@ -1,4 +1,5 @@
 import random
+from collections import defaultdict
 from textwrap import wrap
 from typing import List, Tuple, Union
 
@@ -8,8 +9,10 @@ from eth_account._utils.transaction_utils import transaction_rpc_to_rlp_structur
 from eth_account._utils.typed_transactions import TypedTransaction
 from eth_keys import keys
 from eth_utils import decode_hex, keccak, to_checksum_address
+from starkware.starknet.public.abi import get_storage_var_address
 
 from scripts.constants import NETWORK
+from tests.utils.uint256 import int_to_uint256
 
 PERMIT_TYPEHASH = keccak(
     text="Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
@@ -198,7 +201,7 @@ def flatten(data):
     return result
 
 
-def flatten_tx_accesslist(access_list):
+def flatten_tx_access_list(access_list):
     """
     Transform the access list from the transaction dict into a flattened list of
     [address, storage_keys, ...].
@@ -206,10 +209,24 @@ def flatten_tx_accesslist(access_list):
     result = []
     for item in access_list:
         result.append(int(item["address"], 16))
+        result.append(len(item["storageKeys"]))
         for key in item["storageKeys"]:
-            value = int(key, 16)
-            value_low = value & (2**128 - 1)
-            value_high = value >> 128
-            result.append(value_low)
-            result.append(value_high)
+            result.extend(int_to_uint256(int(key, 16)))
     return result
+
+
+def merge_access_list(access_list):
+    """
+    Merge all entries of the access list to get one entry per account with all its storage keys.
+    """
+    merged_list = defaultdict(set)
+    for access in access_list:
+        merged_list[int(access["address"], 16)] = merged_list[
+            int(access["address"], 16)
+        ].union(
+            {
+                get_storage_var_address("storage_", *int_to_uint256(int(key, 16)))
+                for key in access["storageKeys"]
+            }
+        )
+    return merged_list

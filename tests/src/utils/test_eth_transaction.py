@@ -8,7 +8,7 @@ from rlp import encode
 from tests.utils.constants import TRANSACTIONS
 from tests.utils.errors import cairo_error
 from tests.utils.helpers import (
-    flatten_tx_accesslist,
+    flatten_tx_access_list,
     generate_random_evm_address,
     generate_random_private_key,
     rlp_encode_signed_data,
@@ -109,11 +109,24 @@ class TestEthTransaction:
                 )
 
     class TestDecodeTransaction:
-        @pytest.mark.parametrize("transaction", TRANSACTIONS[:-6])
-        # TODO: restore last two tests with empty destination when issue solved
-        # @pytest.mark.xfail(
-        #     reason="TODO: https://github.com/kkrt-labs/kakarot/issues/899"
-        # )
+        @pytest.mark.parametrize(
+            "transaction",
+            [
+                *TRANSACTIONS[:-2],
+                pytest.param(
+                    TRANSACTIONS[-2],
+                    marks=pytest.mark.xfail(
+                        reason="TODO: https://github.com/kkrt-labs/kakarot/issues/899"
+                    ),
+                ),
+                pytest.param(
+                    TRANSACTIONS[-1],
+                    marks=pytest.mark.xfail(
+                        reason="TODO: https://github.com/kkrt-labs/kakarot/issues/899"
+                    ),
+                ),
+            ],
+        )
         async def test_should_decode_all_transactions_types(
             self, cairo_run, transaction
         ):
@@ -123,7 +136,7 @@ class TestEthTransaction:
                 data=list(encoded_unsigned_tx),
             )
 
-            expected_access_list = flatten_tx_accesslist(
+            expected_access_list = flatten_tx_access_list(
                 transaction.get("accessList", [])
             )
             # count of addresses and each storage key in access list
@@ -180,5 +193,5 @@ class TestEthTransaction:
             output = cairo_run(
                 "test__parse_access_list", data=list(encoded_access_list)
             )
-            expected_output = flatten_tx_accesslist(transaction.get("accessList", []))
+            expected_output = flatten_tx_access_list(transaction.get("accessList", []))
             assert output == expected_output
