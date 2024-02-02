@@ -276,10 +276,13 @@ namespace StopAndMathOperations {
         if (exponent.high == 0) {
             let bytes_used_low = Helpers.bytes_used_128(exponent.low);
             assert bytes_used = bytes_used_low;
+            tempvar range_check_ptr = range_check_ptr;
         } else {
             let bytes_used_high = Helpers.bytes_used_128(exponent.high);
             assert bytes_used = bytes_used_high + 16;
+            tempvar range_check_ptr = range_check_ptr;
         }
+        let range_check_ptr = [ap - 1];
 
         let syscall_ptr = cast([fp - 10], felt*);
         let pedersen_ptr = cast([fp - 9], HashBuiltin*);
@@ -296,10 +299,11 @@ namespace StopAndMathOperations {
 
         let result = uint256_fast_exp(popped[0], exponent);
 
+        tempvar result_ptr = new Uint256(result.low, result.high);
+        Stack.push(result_ptr);
         tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
-        tempvar result = Uint256(result.low, result.high);
-        jmp end;
+        return evm;
 
         SIGNEXTEND:
         let range_check_ptr = [ap - 2];

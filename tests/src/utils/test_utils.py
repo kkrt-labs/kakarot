@@ -58,10 +58,11 @@ def test_utils(cairo_run, test_case, data, expected):
 
 
 def test_should_return_bytes_used_in_128_word(cairo_run):
-    random.seed(0)
     # Generate 50 random 128-bit words
     for _ in range(20):
-        word = random.randint(0, 2**128 - 1)
+        # generate a random number with between 0 and 16 bytes
+        # according to the value of i
+        word = random.getrandbits(random.randint(0, 128))
         bytes_length = (word.bit_length() + 7) // 8
         output = cairo_run(
             "test__bytes_used_128",
