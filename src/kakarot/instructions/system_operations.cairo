@@ -702,17 +702,27 @@ namespace SystemOperations {
         state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
-        // Transfer funds
         let (popped) = Stack.pop();
         let recipient_evm_address = uint256_to_uint160([popped]);
 
         // Gas
         // Access gas cost. The account is marked as warm in the `is_account_alive` instruction,
-        // which performs a `get_account`.
-        let is_account_warm = State.is_account_warm(recipient_evm_address);
-        tempvar access_gas_cost = is_account_warm * Gas.WARM_ACCESS + (1 - is_account_warm) *
-            Gas.COLD_ACCOUNT_ACCESS;
-        // TODO: selfdestruct-specific gas cost
+        // which performs a `get_account` and thus must be performed after the warn check.
+        let is_recipient_warm = State.is_account_warm(recipient_evm_address);
+        tempvar access_gas_cost = (1 - is_recipient_warm) * Gas.COLD_ACCOUNT_ACCESS;
+
+        let is_recipient_alive = State.is_account_alive(recipient_evm_address);
+        let self_account = State.get_account(evm.message.address.evm);
+        tempvar is_self_balance_not_zero = is_not_zero(self_account.balance.low) + is_not_zero(
+            self_account.balance.high
+        );
+        tempvar gas_selfdestruct_new_account = (1 - is_recipient_alive) * is_self_balance_not_zero *
+            Gas.SELF_DESTRUCT_NEW_ACCOUNT;
+
+        let evm = EVM.charge_gas(evm, access_gas_cost + gas_selfdestruct_new_account);
+        if (evm.reverted != FALSE) {
+            return evm;
+        }
 
         if (evm.message.read_only != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
@@ -728,11 +738,11 @@ namespace SystemOperations {
         }
         let recipient_evm_address = (1 - is_recipient_self) * recipient_evm_address;
 
-        // Mark recipient account as warm
         let recipient_account = State.get_account(recipient_evm_address);
-        let account = State.get_account(evm.message.address.evm);
         let transfer = model.Transfer(
-            sender=account.address, recipient=recipient_account.address, amount=[account.balance]
+            sender=self_account.address,
+            recipient=recipient_account.address,
+            amount=[self_account.balance],
         );
         let success = State.add_transfer(transfer);
 
