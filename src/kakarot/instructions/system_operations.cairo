@@ -457,6 +457,28 @@ namespace SystemOperations {
             return evm;
         }
 
+        tempvar is_max_depth_reached = 1 - is_not_zero(
+            (Constants.STACK_MAX_DEPTH + 1) - evm.message.depth
+        );
+
+        if (is_max_depth_reached != FALSE) {
+            // Requires popping the returndata offset and size before pushing 0
+            Stack.pop_n(2);
+            Stack.push_uint128(0);
+            let (return_data) = alloc();
+            tempvar evm = new model.EVM(
+                message=evm.message,
+                return_data_len=0,
+                return_data=return_data,
+                program_counter=evm.program_counter,
+                stopped=FALSE,
+                gas_left=evm.gas_left + gas,
+                gas_refund=evm.gas_refund,
+                reverted=FALSE,
+            );
+            return evm;
+        }
+
         tempvar zero = new Uint256(0, 0);
         // Operation
         let child_evm = CallHelper.generic_call(
