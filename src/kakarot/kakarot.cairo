@@ -142,10 +142,9 @@ func eth_call{
     alloc_locals;
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
-    let (evm, state) = Kakarot.eth_call(
+    let (evm, state, gas_used) = Kakarot.eth_call(
         origin, to, gas_limit, gas_price, &value, data_len, data, access_list_len, access_list
     );
-    let gas_used = gas_limit - evm.gas_left;
     return (evm.return_data_len, evm.return_data, 1 - evm.reverted, gas_used);
 }
 
@@ -182,10 +181,9 @@ func eth_send_transaction{
     local __fp__: felt* = fp_and_pc.fp_val;
     let (local starknet_caller_address) = get_caller_address();
     let (local origin) = Kakarot.safe_get_evm_address(starknet_caller_address);
-    let (evm, state) = Kakarot.eth_call(
+    let (evm, state, gas_used) = Kakarot.eth_call(
         origin, to, gas_limit, gas_price, &value, data_len, data, access_list_len, access_list
     );
-    let gas_used = gas_limit - evm.gas_left;
     let result = (evm.return_data_len, evm.return_data, 1 - evm.reverted, gas_used);
 
     if (evm.reverted != FALSE) {

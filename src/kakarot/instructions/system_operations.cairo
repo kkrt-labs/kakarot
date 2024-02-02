@@ -473,6 +473,7 @@ namespace SystemOperations {
                 program_counter=evm.program_counter,
                 stopped=FALSE,
                 gas_left=evm.gas_left + gas,
+                gas_refund=evm.gas_refund,
                 reverted=FALSE,
             );
             return evm;

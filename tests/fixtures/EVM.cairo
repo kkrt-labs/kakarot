@@ -52,12 +52,12 @@ func execute{
     calldata: felt*,
     access_list_len: felt,
     access_list: felt*,
-) -> (model.EVM*, model.Stack*, model.Memory*, model.State*) {
+) -> (model.EVM*, model.Stack*, model.Memory*, model.State*, felt) {
     alloc_locals;
     let evm_address = 'target_evm_address';
     let starknet_address = Account.compute_starknet_address(evm_address);
     tempvar address = new model.Address(starknet_address, evm_address);
-    let (evm, stack, memory, state) = Interpreter.execute(
+    let (evm, stack, memory, state, gas_used) = Interpreter.execute(
         env=env,
         address=address,
         is_deploy_tx=0,
@@ -70,7 +70,7 @@ func execute{
         access_list_len=access_list_len,
         access_list=access_list,
     );
-    return (evm, stack, memory, state);
+    return (evm, stack, memory, state, gas_used);
 }
 
 @view
@@ -111,7 +111,7 @@ func evm_call{
     local __fp__: felt* = fp_and_pc.fp_val;
 
     let env = Starknet.get_env(origin, 0);
-    let (evm, stack, memory, state) = execute(
+    let (evm, stack, memory, state, _) = execute(
         env, &value, bytecode_len, bytecode, calldata_len, calldata, access_list_len, access_list
     );
 
@@ -166,7 +166,7 @@ func evm_execute{
     local __fp__: felt* = fp_and_pc.fp_val;
 
     let env = Starknet.get_env(origin, 0);
-    let (evm, stack, memory, state) = execute(
+    let (evm, stack, memory, state, _) = execute(
         env, &value, bytecode_len, bytecode, calldata_len, calldata, access_list_len, access_list
     );
     let result = (evm.return_data_len, evm.return_data, 1 - evm.reverted);

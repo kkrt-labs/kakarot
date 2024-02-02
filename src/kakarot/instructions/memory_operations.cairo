@@ -272,7 +272,6 @@ namespace MemoryOperations {
             return evm;
         }
 
-        // TODO(gas): Gas refund mechanism
         let (is_current_zero) = uint256_eq(Uint256(0, 0), [current_value]);
         let (is_new_zero) = uint256_eq(Uint256(0, 0), [new_value]);
         tempvar is_storage_cleared = (1 - is_current_new) * (1 - is_original_zero) * (
@@ -289,7 +288,6 @@ namespace MemoryOperations {
 
         // Operation
         if (evm.message.read_only != FALSE) {
-            // Early return reverted
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
             return new model.EVM(
                 message=evm.message,
@@ -298,7 +296,7 @@ namespace MemoryOperations {
                 program_counter=evm.program_counter,
                 stopped=TRUE,
                 gas_left=evm.gas_left,
-                gas_refund=gas_refund,
+                gas_refund=evm.gas_refund + gas_refund,
                 reverted=TRUE,
             );
         }
@@ -312,7 +310,7 @@ namespace MemoryOperations {
             program_counter=evm.program_counter,
             stopped=evm.stopped,
             gas_left=evm.gas_left,
-            gas_refund=gas_refund,
+            gas_refund=evm.gas_refund + gas_refund,
             reverted=evm.reverted,
         );
     }
