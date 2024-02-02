@@ -1,3 +1,4 @@
+# trunk-ignore-all(checkov/CKV2_GHA_1)
 name: Release
 
 on:
