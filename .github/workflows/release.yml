@@ -11,13 +11,6 @@ jobs:
   build_and_push_deployer:
     runs-on: ubuntu-latest
     steps:
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: ${{ env.REGISTRY_IMAGE }}
-          tags: |
-            type=raw
       - uses: actions/checkout@v3
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
