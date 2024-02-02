@@ -26,7 +26,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: ghcr.io/kkrt-labs/kakarot/deployer:latest
+          tags: ${{ env.REGISTRY_IMAGE }}:latest
           context: .
           file: ./docker/deployer/Dockerfile
           platforms: linux/amd64,linux/arm64
