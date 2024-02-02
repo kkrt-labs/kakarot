@@ -5,7 +5,9 @@ FROM python:3.9.13
 
 HEALTHCHECK NONE
 
-RUN apt-get update && apt-get install -y \
+# trunk-ignore(terrascan/AC_DOCKER_0002)
+# trunk-ignore(hadolint/DL3008)
+RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-transport-https \
     ca-certificates \
     wget \
