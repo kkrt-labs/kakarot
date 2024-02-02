@@ -129,6 +129,7 @@ namespace model {
         program_counter: felt,
         stopped: felt,
         gas_left: felt,
+        gas_refund: felt,
         reverted: felt,
     }
 

@@ -34,6 +34,7 @@ namespace EVM {
             program_counter=0,
             stopped=FALSE,
             gas_left=gas_left,
+            gas_refund=0,
             reverted=FALSE,
         );
     }
@@ -66,6 +67,7 @@ namespace EVM {
             program_counter=evm.program_counter,
             stopped=evm.stopped,
             gas_left=evm.gas_left,
+            gas_refund=evm.gas_refund,
             reverted=evm.reverted,
         );
 
@@ -89,6 +91,7 @@ namespace EVM {
             program_counter=self.program_counter,
             stopped=TRUE,
             gas_left=self.gas_left,
+            gas_refund=self.gas_refund,
             reverted=reverted,
         );
     }
@@ -108,6 +111,7 @@ namespace EVM {
             program_counter=self.program_counter,
             stopped=self.stopped,
             gas_left=self.gas_left,
+            gas_refund=self.gas_refund,
             reverted=self.reverted,
         );
     }
@@ -125,6 +129,7 @@ namespace EVM {
             program_counter=self.program_counter + inc_value,
             stopped=self.stopped,
             gas_left=self.gas_left,
+            gas_refund=self.gas_refund,
             reverted=self.reverted,
         );
     }
@@ -146,6 +151,7 @@ namespace EVM {
                 program_counter=self.program_counter,
                 stopped=TRUE,
                 gas_left=0,
+                gas_refund=self.gas_refund,
                 reverted=TRUE,
             );
         }
@@ -157,6 +163,7 @@ namespace EVM {
             program_counter=self.program_counter,
             stopped=self.stopped,
             gas_left=self.gas_left - amount,
+            gas_refund=self.gas_refund,
             reverted=self.reverted,
         );
     }
@@ -234,6 +241,7 @@ namespace EVM {
                 program_counter=self.program_counter,
                 stopped=TRUE,
                 gas_left=self.gas_left,
+                gas_refund=self.gas_refund,
                 reverted=TRUE,
             );
             return evm;
@@ -246,6 +254,7 @@ namespace EVM {
             program_counter=new_pc_offset,
             stopped=self.stopped,
             gas_left=self.gas_left,
+            gas_refund=self.gas_refund,
             reverted=self.reverted,
         );
     }
