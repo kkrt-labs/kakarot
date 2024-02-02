@@ -296,6 +296,8 @@ namespace StopAndMathOperations {
 
         let result = uint256_fast_exp(popped[0], exponent);
 
+        tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
+        tempvar range_check_ptr = range_check_ptr;
         tempvar result = Uint256(result.low, result.high);
         jmp end;
 
