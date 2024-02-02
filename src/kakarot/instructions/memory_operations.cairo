@@ -222,7 +222,7 @@ namespace MemoryOperations {
         alloc_locals;
         let (popped) = Stack.pop_n(2);
         let key = popped;  // Uint256*
-        let value = popped + Uint256.SIZE;  // Uint256*
+        let new_value = popped + Uint256.SIZE;  // Uint256*
 
         let is_enough_gasleft = is_le_felt(Gas.CALL_STIPEND + 1, evm.gas_left);
         if (is_enough_gasleft == FALSE) {
@@ -256,7 +256,7 @@ namespace MemoryOperations {
         let current_value = State.read_storage(evm.message.address.evm, key);
 
         let (is_current_original) = uint256_eq(original_value, [current_value]);
-        let (is_current_new) = uint256_eq([value], [current_value]);
+        let (is_current_new) = uint256_eq([new_value], [current_value]);
         let (is_original_zero) = uint256_eq(Uint256(0, 0), original_value);
 
         if (is_current_original * (1 - is_current_new) != FALSE) {
@@ -273,16 +273,48 @@ namespace MemoryOperations {
         }
 
         // TODO(gas): Gas refund mechanism
+        let (is_current_zero) = uint256_eq(Uint256(0, 0), [current_value]);
+        let (is_new_zero) = uint256_eq(Uint256(0, 0), [new_value]);
+        tempvar is_storage_cleared = (1 - is_current_new) * (1 - is_original_zero) * (
+            1 - is_current_zero
+        ) * is_new_zero;
+        tempvar is_clear_undone = (1 - is_current_new) * (1 - is_original_zero) * is_current_zero;
+        tempvar is_storage_restored = (1 - is_current_new) * is_current_original;
+
+        tempvar gas_refund = is_storage_cleared * Gas.STORAGE_CLEAR_REFUND - is_clear_undone *
+            Gas.STORAGE_CLEAR_REFUND + is_storage_restored * (
+                is_original_zero * (Gas.STORAGE_SET - Gas.WARM_ACCESS) +
+                (1 - is_original_zero) * (Gas.STORAGE_UPDATE - Gas.COLD_SLOAD - Gas.WARM_ACCESS)
+            );
 
         // Operation
         if (evm.message.read_only != FALSE) {
+            // Early return reverted
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
-            let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
-            return evm;
+            return new model.EVM(
+                message=evm.message,
+                return_data_len=revert_reason_len,
+                return_data=revert_reason,
+                program_counter=evm.program_counter,
+                stopped=TRUE,
+                gas_left=evm.gas_left,
+                gas_refund=gas_refund,
+                reverted=TRUE,
+            );
         }
 
-        State.write_storage(evm.message.address.evm, key, value);
-        return evm;
+        State.write_storage(evm.message.address.evm, key, new_value);
+        // Return with the updated gas refund
+        return new model.EVM(
+            message=evm.message,
+            return_data_len=evm.return_data_len,
+            return_data=evm.return_data,
+            program_counter=evm.program_counter,
+            stopped=evm.stopped,
+            gas_left=evm.gas_left,
+            gas_refund=gas_refund,
+            reverted=evm.reverted,
+        );
     }
 
     func exec_sload{
