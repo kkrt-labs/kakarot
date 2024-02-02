@@ -36,7 +36,7 @@ namespace Sha3 {
         let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
             memory.words_len, offset, size
         );
-        let (words, _) = unsigned_div_rem(size.low + 31, 31);
+        let (words, _) = unsigned_div_rem(size.low + 31, 32);
         let words_gas_cost_low = Gas.KECCAK256_WORD * words;
         tempvar words_gas_cost_high = is_not_zero(size.high) * 2 ** 128;
         let evm = EVM.charge_gas(
