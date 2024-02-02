@@ -35,6 +35,7 @@ from tests.utils.reporting import (
     timeit,
     traceit,
 )
+from tests.utils.serde import Serde
 from tests.utils.syscall_handler import SyscallHandler
 
 cairo_runner.VirtualMachine = VmWithCoverage
@@ -161,10 +162,12 @@ def cairo_run(request) -> list:
             ]
             if builtin in {arg.replace("_ptr", "") for arg in implicit_args}
         ]
+
+        memory = MemoryDict()
         runner = CairoRunner(
             program=program,
             layout="starknet_with_keccak",
-            memory=MemoryDict(),
+            memory=memory,
             proof_mode=False,
             allow_missing_builtins=False,
         )
@@ -236,10 +239,25 @@ def cairo_run(request) -> list:
             with open(output_path, "wb") as fp:
                 fp.write(data)
 
+        serde = Serde(runner)
+        returned_data = program.identifiers.get_by_full_name(
+            ScopedName(path=["__main__", entrypoint, "Return"])
+        )
+        final_output = None
         if add_output:
-            output_size = runner.segments.get_segment_size(output.segment_index)
-            return [runner.segments.memory.get(output + i) for i in range(output_size)]
-        else:
-            return []
+            final_output = serde.read_segment(output)
+        if returned_data is not None:
+            function_output = serde.serialize(returned_data.cairo_type)
+            if final_output is not None:
+                function_output = (
+                    function_output
+                    if isinstance(function_output, list)
+                    else [function_output]
+                )
+                final_output += function_output
+            else:
+                final_output = function_output
+
+        return final_output
 
     return _factory

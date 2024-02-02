@@ -104,7 +104,7 @@ func test__copy__should_return_new_state_with_same_attributes{
 
 func test__is_account_alive__existing_account{
     pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr
-}(output_ptr: felt*) {
+}() -> felt {
     alloc_locals;
     local nonce: felt;
     local balance_low: felt;
@@ -129,9 +129,7 @@ func test__is_account_alive__existing_account{
         let is_alive = State.is_account_alive(evm_address);
     }
 
-    assert [output_ptr] = is_alive;
-
-    return ();
+    return is_alive;
 }
 
 func test__is_account_alive__not_in_state() {
@@ -199,92 +197,32 @@ func test__is_account_warm__account_not_in_state() {
 }
 
 func test__cache_precompiles{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    output_ptr: felt*
-) {
+    ) -> model.State* {
     alloc_locals;
     let state = State.init();
     with state {
         State.cache_precompiles();
     }
 
-    let (keys_len, keys) = dict_keys(state.accounts_start, state.accounts);
-    memcpy(dst=output_ptr, src=keys, len=keys_len);
-
-    return ();
+    return state;
 }
 
-func test__cache_access_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    output_ptr: felt*
+func test__cache_access_list{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    access_list_cost: felt, state: model.State*
 ) {
     alloc_locals;
     local access_list_len: felt;
     let (access_list) = alloc();
     %{
-        from tests.utils.hints import deserialize_cairo_access_list
-
-        access_list = program_input["access_list"]
-        storage_keys_len = [len(item["storageKeys"])*2 for item in access_list]
-        ids.access_list_len = 2 * len(access_list) + sum(storage_keys_len) # for each address: (address, storage_keys_len, storage_keys)
-        deserialize_cairo_access_list(access_list, ids.access_list, memory)
+        ids.access_list_len = len(program_input["access_list"])
+        segments.write_arg(ids.access_list, program_input["access_list"])
     %}
     let state = State.init();
     with state {
         let access_list_cost = State.cache_access_list(access_list_len, access_list);
     }
-    assert [output_ptr] = access_list_cost;
 
-    %{
-        from starknet_py.hash.utils import pedersen_hash
-        from starkware.starknet.public.abi import get_storage_var_address
-
-        def assert_correct_storage_keys(expected_access_list, accounts_len):
-            """
-            Assert that the storage keys in the expected access list are correct.
-
-            Args:
-            ----
-                expected_access_list (list): The expected access list with storage keys, in the dict format.
-                accounts_len (int): The number of accounts in the access list.
-
-            Raises:
-            ------
-                AssertionError: If the storage keys in the expected access list are not correct.
-
-            Returns:
-            -------
-                None
-            """
-
-            for i in range(0, accounts_len):
-                expected_item = expected_access_list[i]
-                address = ids.state.accounts_start[i].key
-                assert address == int(expected_item["address"], 16)
-
-                account_ptr = ids.state.accounts_start[i].new_value
-                account_storage_start = memory[account_ptr + 3]
-                account_storage = memory[account_ptr + 4]
-                storage_size = (account_storage - account_storage_start) // 3
-                for j in range(0, storage_size):
-                    internal_key_hash = memory[account_storage_start + j * 3]
-                    expected_storage_keys = expected_item["storageKeys"]
-                    value = int(expected_storage_keys[j], 16)
-                    value_low = value & 2**128 - 1
-                    value_high = value >> 128
-                    expected_key_hash = get_storage_var_address(
-                        "storage_", value_low, value_high
-                    )
-                    assert internal_key_hash == expected_key_hash
-
-
-        # 1. assert correct amount of accounts
-        accounts_len = (ids.state.accounts.address_ - ids.state.accounts_start.address_) // 3 # Each entry is (key, prev_value, new_value)
-        assert accounts_len == len(program_input["access_list"])
-
-        # 2. Assert correct storage keys for the accounts
-        assert_correct_storage_keys(program_input["access_list"], accounts_len)
-    %}
-
-    return ();
+    return (access_list_cost, state);
 }
 
 func test__is_storage_warm__should_return_true_when_already_read{

@@ -448,7 +448,23 @@ namespace Internals {
 
         let address = [access_list];
         let storage_keys_len = [access_list + 1];
-        let account = Account.fetch_or_create(address);
+        // Access list can contain several entries for the same account, so the account
+        // may already be in the state. If not, we need to fetch it from the contract storage.
+        let (account_ptr) = dict_read{dict_ptr=accounts_ptr}(key=address);
+        if (account_ptr != 0) {
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+            tempvar account = cast(account_ptr, model.Account*);
+        } else {
+            let account = Account.fetch_or_create(address);
+            tempvar account = account;
+        }
+        let syscall_ptr = cast([ap - 4], felt*);
+        let pedersen_ptr = cast([ap - 3], HashBuiltin*);
+        let range_check_ptr = [ap - 2];
+        let account = cast([ap - 1], model.Account*);
+
         let account = Account.cache_storage_keys(
             account, storage_keys_len, cast(access_list + 2, Uint256*)
         );

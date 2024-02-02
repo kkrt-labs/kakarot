@@ -5,6 +5,7 @@ from ethereum.shanghai.fork_types import (
 )
 
 from tests.utils.constants import TRANSACTIONS
+from tests.utils.helpers import flatten_tx_access_list, merge_access_list
 from tests.utils.syscall_handler import SyscallHandler
 
 
@@ -34,13 +35,13 @@ class TestState:
         def test_existing_account(
             self, cairo_run, nonce, code, balance_low, expected_result
         ):
-            output = cairo_run(
+            is_alive = cairo_run(
                 "test__is_account_alive__existing_account",
                 nonce=nonce,
                 code=code,
                 balance_low=balance_low,
             )
-            assert output[0] == expected_result
+            assert is_alive == expected_result
 
         def test_not_in_state(self, cairo_run):
             cairo_run("test__is_account_alive__not_in_state")
@@ -68,23 +69,30 @@ class TestState:
     class TestCachePreaccessedAddresses:
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
         def test_should_cache_precompiles(self, cairo_run):
-            output = cairo_run("test__cache_precompiles")
-            assert output == list(range(1, 10))
+            state = cairo_run("test__cache_precompiles")
+            assert list(state["accounts"].keys()) == list(range(1, 10))
 
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
         def test_should_cache_access_list(self, cairo_run, transaction):
             access_list = transaction.get("accessList") or ()
-            gas_cost = cairo_run("test__cache_access_list", access_list=access_list)[0]
+            gas_cost, state = cairo_run(
+                "test__cache_access_list",
+                access_list=flatten_tx_access_list(access_list),
+            )
 
             # count addresses key in access list, with duplicates
-            len_access_list = len(access_list)
-            len_storage_keys = sum(len(x["storageKeys"]) for x in access_list)
-            assert (
-                gas_cost
-                == TX_ACCESS_LIST_ADDRESS_COST * len_access_list
-                + TX_ACCESS_LIST_STORAGE_KEY_COST * len_storage_keys
+            assert gas_cost == TX_ACCESS_LIST_ADDRESS_COST * len(
+                access_list
+            ) + TX_ACCESS_LIST_STORAGE_KEY_COST * sum(
+                len(x["storageKeys"]) for x in access_list
             )
+
+            # check that all addresses and storage keys are in the state
+            expected_result = merge_access_list(access_list)
+            for address, storage_keys in expected_result.items():
+                assert state["accounts"].get(address) is not None
+                assert set(state["accounts"][address]["storage"].keys()) == storage_keys
 
     class TestCopyAccounts:
         def test_should_handle_null_pointers(self, cairo_run):

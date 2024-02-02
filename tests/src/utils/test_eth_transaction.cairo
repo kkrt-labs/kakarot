@@ -45,12 +45,7 @@ func test__decode{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(output_ptr: fel
     assert [output_ptr + 9] = payload_len;
     memcpy(output_ptr + 10, payload, payload_len);
     assert [output_ptr + 10 + payload_len] = access_list_len;
-    %{
-        from tests.utils.hints import serialize_cairo_access_list
-
-        output_ptr = ids.output_ptr + 11 + ids.payload_len
-        serialize_cairo_access_list(ids.access_list, ids.access_list_len, output_ptr, memory, segments)
-    %}
+    memcpy(output_ptr + 11 + payload_len, access_list, access_list_len);
 
     return ();
 }
@@ -101,17 +96,12 @@ func test__parse_access_list{range_check_ptr}(output_ptr: felt*) {
     // first level RLP decoding is a list of items. In our case the only item we decoded was the access list.
     // the access list is a list of tuples (address, list(keys)), hence first level RLP decoding
     // is a single item of type list.
-    let (local parsed_access_list: felt*) = alloc();
+    let (local access_list: felt*) = alloc();
     // When
     let access_list_len = EthTransaction.parse_access_list(
-        parsed_access_list, items.data_len, cast(items.data, RLP.Item*)
+        access_list, items.data_len, cast(items.data, RLP.Item*)
     );
 
-    // Then
-    %{
-        from tests.utils.hints import serialize_cairo_access_list
-        # The cairo functions returns a single RLP list of size 1 containing the decoded objects.
-        serialize_cairo_access_list(ids.parsed_access_list, ids.access_list_len, ids.output_ptr, memory, segments)
-    %}
+    memcpy(output_ptr, access_list, access_list_len);
     return ();
 }
