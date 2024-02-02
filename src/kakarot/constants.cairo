@@ -820,7 +820,7 @@ dw 1;
 dw 0x82;
 dw Gas.VERY_LOW;
 dw 0;
-dw Gas.VERY_LOW;
+dw 3;
 dw 1;
 // DUP4
 dw 0x83;
