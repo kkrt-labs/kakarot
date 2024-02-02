@@ -5,6 +5,21 @@ FROM python:3.9.13
 
 HEALTHCHECK NONE
 
+# trunk-ignore(terrascan/AC_DOCKER_0002)
+# trunk-ignore(hadolint/DL3008)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    apt-transport-https \
+    ca-certificates \
+    wget \
+    tar \
+    unzip \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+ARG GITHUB_TOKEN
+ENV GITHUB_TOKEN=${GITHUB_TOKEN}
+
 # install poetry
 RUN curl -sSL https://install.python-poetry.org | python3 -
 ENV PATH="$PATH:/root/.local/bin"
@@ -20,8 +35,7 @@ COPY tests ./tests
 RUN poetry install
 # split install in two steps to leverage docker cache
 COPY . .
-RUN poetry install \
-    && python scripts/compile_kakarot.py
+RUN make setup && make build
 
 # Deploy kakarot
 CMD ["python", "scripts/deploy_kakarot.py"]

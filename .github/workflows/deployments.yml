@@ -16,6 +16,7 @@ jobs:
       matrix:
         network: [testnet]
     env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ACCOUNT_ADDRESS: ${{ secrets.ACCOUNT_ADDRESS }}
       PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
       INFURA_KEY: ${{ secrets.INFURA_KEY }}
@@ -55,26 +56,3 @@ jobs:
         with:
           path: ./deployments/
           name: deployments
-
-  build_and_push_deployer:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push
-        uses: docker/build-push-action@v4
-        with:
-          push: true
-          tags: ghcr.io/kkrt-labs/kakarot/deployer:latest
-          context: .
-          file: ./docker/deployer/Dockerfile
-          platforms: linux/amd64,linux/arm64
