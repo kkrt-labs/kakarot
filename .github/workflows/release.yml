@@ -4,6 +4,9 @@ on:
   release:
     types: [published]
 
+env:
+  REGISTRY_IMAGE: ghcr.io/${{ github.repository }}/deployer
+
 jobs:
   build_and_push_deployer:
     runs-on: ubuntu-latest
