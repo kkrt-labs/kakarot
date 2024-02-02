@@ -236,7 +236,6 @@ namespace MemoryOperations {
                 program_counter=evm.program_counter,
                 stopped=TRUE,
                 gas_left=0,
-                gas_refund=evm.gas_refund,
                 reverted=TRUE,
             );
         }

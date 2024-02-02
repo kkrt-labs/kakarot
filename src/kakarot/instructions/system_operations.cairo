@@ -375,7 +375,6 @@ namespace SystemOperations {
                 program_counter=evm.program_counter,
                 stopped=FALSE,
                 gas_left=evm.gas_left + gas_stipend,
-                gas_refund=evm.gas_refund,
                 reverted=FALSE,
             );
             return evm;
@@ -473,7 +472,6 @@ namespace SystemOperations {
                 program_counter=evm.program_counter,
                 stopped=FALSE,
                 gas_left=evm.gas_left + gas,
-                gas_refund=evm.gas_refund,
                 reverted=FALSE,
             );
             return evm;
@@ -572,7 +570,6 @@ namespace SystemOperations {
                 program_counter=evm.program_counter,
                 stopped=FALSE,
                 gas_left=evm.gas_left + gas_stipend,
-                gas_refund=evm.gas_refund,
                 reverted=FALSE,
             );
             return evm;
@@ -662,7 +659,6 @@ namespace SystemOperations {
                 program_counter=evm.program_counter,
                 stopped=FALSE,
                 gas_left=evm.gas_left + gas,
-                gas_refund=evm.gas_refund,
                 reverted=FALSE,
             );
             return evm;
@@ -876,13 +872,10 @@ namespace CallHelper {
 
         // Gas not used is returned when evm is not reverted
         local gas_left;
-        local gas_refund;
         if (evm.reverted == FALSE) {
             assert gas_left = evm.message.parent.evm.gas_left + evm.gas_left;
-            assert gas_refund = evm.message.parent.evm.gas_refund + evm.gas_refund;
         } else {
             assert gas_left = evm.message.parent.evm.gas_left;
-            assert gas_refund = evm.gas_refund;
         }
 
         tempvar evm = new model.EVM(
@@ -892,7 +885,6 @@ namespace CallHelper {
             program_counter=evm.message.parent.evm.program_counter + 1,
             stopped=evm.message.parent.evm.stopped,
             gas_left=gas_left,
-            gas_refund=gas_refund,
             reverted=evm.message.parent.evm.reverted,
         );
 
@@ -1070,7 +1062,6 @@ namespace CreateHelper {
                 program_counter=evm.message.parent.evm.program_counter + 1,
                 stopped=evm.message.parent.evm.stopped,
                 gas_left=evm.message.parent.evm.gas_left,
-                gas_refund=evm.message.parent.evm.gas_refund,
                 reverted=evm.message.parent.evm.reverted,
             );
             return evm;
@@ -1088,7 +1079,6 @@ namespace CreateHelper {
             program_counter=evm.message.parent.evm.program_counter + 1,
             stopped=evm.message.parent.evm.stopped,
             gas_left=evm.message.parent.evm.gas_left + remaining_gas,
-            gas_refund=evm.message.parent.evm.gas_refund + evm.gas_refund,
             reverted=evm.message.parent.evm.reverted,
         );
 
