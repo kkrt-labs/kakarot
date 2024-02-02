@@ -6,8 +6,8 @@ from tests.utils.uint256 import int_to_uint256
 
 class TestStopMathOperations:
     class TestStop:
-        async def test__exec_stop(self, cairo_run):
-            await cairo_run("test__exec_stop")
+        def test__exec_stop(self, cairo_run):
+            cairo_run("test__exec_stop")
 
     class TestMathOperations:
         @pytest.mark.parametrize(
