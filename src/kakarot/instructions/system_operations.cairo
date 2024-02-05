@@ -882,7 +882,7 @@ namespace CallHelper {
             assert gas_refund = evm.message.parent.evm.gas_refund + evm.gas_refund;
         } else {
             assert gas_left = evm.message.parent.evm.gas_left;
-            assert gas_refund = evm.gas_refund;
+            assert gas_refund = evm.message.parent.evm.gas_refund;
         }
 
         tempvar evm = new model.EVM(

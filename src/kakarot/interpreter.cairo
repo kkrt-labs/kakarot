@@ -9,6 +9,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.math import unsigned_div_rem
 
 // Internal dependencies
 from kakarot.account import Account
@@ -855,7 +856,7 @@ namespace Interpreter {
         }
 
         let gas_used = gas_limit - evm.gas_left;
-        let max_refund = gas_used / 5;
+        let (max_refund, _) = unsigned_div_rem(gas_used, 5);
         let is_max_refund_le_gas_refund = is_le(max_refund, evm.gas_refund);
         tempvar gas_refund = is_max_refund_le_gas_refund * max_refund + (
             1 - is_max_refund_le_gas_refund

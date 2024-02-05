@@ -274,17 +274,20 @@ namespace MemoryOperations {
 
         let (is_current_zero) = uint256_eq(Uint256(0, 0), [current_value]);
         let (is_new_zero) = uint256_eq(Uint256(0, 0), [new_value]);
-        tempvar is_storage_cleared = (1 - is_current_new) * (1 - is_original_zero) * (
-            1 - is_current_zero
-        ) * is_new_zero;
-        tempvar is_clear_undone = (1 - is_current_new) * (1 - is_original_zero) * is_current_zero;
-        tempvar is_storage_restored = (1 - is_current_new) * is_current_original;
 
-        tempvar gas_refund = is_storage_cleared * Gas.STORAGE_CLEAR_REFUND - is_clear_undone *
-            Gas.STORAGE_CLEAR_REFUND + is_storage_restored * (
-                is_original_zero * (Gas.STORAGE_SET - Gas.WARM_ACCESS) +
-                (1 - is_original_zero) * (Gas.STORAGE_UPDATE - Gas.COLD_SLOAD - Gas.WARM_ACCESS)
-            );
+        // storage is being changed and the original value was not zero
+        tempvar is_storage_set_changed = (1 - is_current_new) * (1 - is_original_zero);
+
+        // storage is being changed and the original value is the new value
+        let (is_new_original) = uint256_eq([new_value], original_value);
+        tempvar is_storage_restored = (1 - is_current_new) * is_new_original;
+
+        tempvar gas_refund = is_storage_set_changed * Gas.STORAGE_CLEAR_REFUND * (
+            (1 - is_current_zero) * is_new_zero - is_current_zero
+        ) + is_storage_restored * (
+            is_original_zero * (Gas.STORAGE_SET - Gas.WARM_ACCESS) +
+            (1 - is_original_zero) * (Gas.STORAGE_UPDATE - Gas.COLD_SLOAD - Gas.WARM_ACCESS)
+        );
 
         // Operation
         if (evm.message.read_only != FALSE) {
