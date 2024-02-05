@@ -61,15 +61,16 @@ COPY --from=builder /build/build /app/kakarot/build/
 COPY --from=builder /build/Makefile /app/kakarot/
 COPY --from=builder /build/tests /app/kakarot/tests/
 
-# Used in deploy_kakarot.py
-COPY --from=builder /build/src/kakarot/kakarot.cairo /app/kakarot/src/kakarot/
-COPY --from=builder /build/src/kakarot/accounts /app/kakarot/src/kakarot/accounts/
-COPY --from=builder /build/src/kakarot/precompiles /app/kakarot/src/kakarot/precompiles/
-COPY --from=builder /build/src/utils/OpenzeppelinAccount.cairo /app/kakarot/src/utils/
+# Cairo Smart contracts are used in deploy_kakarot.py
+# To limit the probability of this Dockerfile to break, we copy the entire src and not individual files
+COPY --from=builder /build/src /app/kakarot/src/
 
 # Copy poetry lock and toml
 COPY --from=builder /build/poetry.lock /app/kakarot/
 COPY --from=builder /build/pyproject.toml /app/kakarot/
+
+# Copy foundry.toml
+COPY --from=builder /build/foundry.toml /app/kakarot/
 
 RUN poetry install
 
