@@ -79,7 +79,8 @@ namespace EVM {
     // @param self The pointer to the execution context.
     // @param return_data_len The length of the return_data.
     // @param return_data The pointer to the return_data array.
-    // @param reverted A boolean indicating whether the EVM is reverted or not.
+    // @param reverted A code indicating whether the EVM is reverted or not.
+    // 0 - not reverted, 1 - reverted, 2 - exceptional revert
     // @return EVM The pointer to the updated execution context.
     func stop(
         self: model.EVM*, return_data_len: felt, return_data: felt*, reverted: felt
@@ -152,7 +153,7 @@ namespace EVM {
                 stopped=TRUE,
                 gas_left=0,
                 gas_refund=self.gas_refund,
-                reverted=TRUE,
+                reverted=Errors.EXCEPTIONAL_HALT,
             );
         }
 
@@ -208,7 +209,7 @@ namespace EVM {
         let out_of_range = is_le(self.message.bytecode_len, new_pc_offset);
         if (out_of_range != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.invalidJumpDestError();
-            let evm = EVM.stop(self, revert_reason_len, revert_reason, TRUE);
+            let evm = EVM.stop(self, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
             return evm;
         }
 
@@ -242,7 +243,7 @@ namespace EVM {
                 stopped=TRUE,
                 gas_left=self.gas_left,
                 gas_refund=self.gas_refund,
-                reverted=TRUE,
+                reverted=Errors.EXCEPTIONAL_HALT,
             );
             return evm;
         }

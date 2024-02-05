@@ -91,7 +91,7 @@ namespace SystemOperations {
         if (evm.message.read_only != FALSE) {
             let evm = EVM.charge_gas(evm, gas_limit);
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
-            let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
+            let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
             return evm;
         }
 
@@ -195,9 +195,17 @@ namespace SystemOperations {
         memory: model.Memory*,
         state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
-        let evm = EVM.charge_gas(evm, evm.gas_left);
         let (revert_reason: felt*) = alloc();
-        let evm = EVM.stop(evm, 0, revert_reason, TRUE);
+        tempvar evm = new model.EVM(
+            message=evm.message,
+            return_data_len=0,
+            return_data=revert_reason,
+            program_counter=evm.program_counter,
+            stopped=TRUE,
+            gas_left=0,
+            gas_refund=evm.gas_refund,
+            reverted=Errors.EXCEPTIONAL_HALT,
+        );
         return evm;
     }
 
@@ -275,7 +283,7 @@ namespace SystemOperations {
         let (return_data: felt*) = alloc();
         Memory.load_n(size.low, return_data, offset.low);
 
-        let evm = EVM.stop(evm, size.low, return_data, TRUE);
+        let evm = EVM.stop(evm, size.low, return_data, Errors.REVERT);
         return evm;
     }
 
@@ -351,7 +359,7 @@ namespace SystemOperations {
         if (evm.message.read_only * is_value_non_zero != FALSE) {
             // No need to pop
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
-            let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
+            let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
             return evm;
         }
 
@@ -398,7 +406,9 @@ namespace SystemOperations {
         let success = State.add_transfer(transfer);
         if (success == 0) {
             let (revert_reason_len, revert_reason) = Errors.balanceError();
-            tempvar child_evm = EVM.stop(child_evm, revert_reason_len, revert_reason, TRUE);
+            tempvar child_evm = EVM.stop(
+                child_evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT
+            );
         } else {
             tempvar child_evm = child_evm;
         }
@@ -726,7 +736,7 @@ namespace SystemOperations {
 
         if (evm.message.read_only != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
-            let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
+            let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
             return evm;
         }
 
@@ -865,7 +875,8 @@ namespace CallHelper {
         let ret_size = popped[1];
 
         // Put status in stack
-        Stack.push_uint128(1 - evm.reverted);
+        let is_reverted = is_not_zero(evm.reverted);
+        Stack.push_uint128(1 - is_reverted);
 
         // Store RETURN_DATA in memory
         let actual_output_size_is_ret_size = is_le(ret_size.low, evm.return_data_len);
@@ -1053,7 +1064,8 @@ namespace CreateHelper {
         let code_deposit_cost = Gas.CODE_DEPOSIT * evm.return_data_len;
         let remaining_gas = evm.gas_left - code_deposit_cost;
         let enough_gas = is_nn(remaining_gas);
-        let success = (1 - evm.reverted) * enough_gas * code_size_limit;
+        let is_reverted = is_not_zero(evm.reverted);
+        let success = (1 - is_reverted) * enough_gas * code_size_limit;
 
         // Stack output: the address of the deployed contract, 0 if the deployment failed.
         let (address_high, address_low) = split_felt(evm.message.address.evm * success);
