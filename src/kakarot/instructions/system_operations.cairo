@@ -65,9 +65,12 @@ namespace SystemOperations {
             memory.words_len, offset, size
         );
         let (calldata_words, _) = unsigned_div_rem(size.low + 31, 31);
-        let init_code_gas = Gas.INIT_CODE_WORD_COST * calldata_words;
+        let init_code_gas_low = Gas.INIT_CODE_WORD_COST * calldata_words;
+        tempvar init_code_gas_high = is_not_zero(size.high) * 2 ** 128;
         let calldata_word_gas = is_create2 * Gas.KECCAK256_WORD * calldata_words;
-        let evm = EVM.charge_gas(evm, memory_expansion_cost + init_code_gas + calldata_word_gas);
+        let evm = EVM.charge_gas(
+            evm, memory_expansion_cost + init_code_gas_low + init_code_gas_high + calldata_word_gas
+        );
         if (evm.reverted != FALSE) {
             return evm;
         }
@@ -453,6 +456,27 @@ namespace SystemOperations {
             return evm;
         }
 
+        tempvar is_max_depth_reached = 1 - is_not_zero(
+            (Constants.STACK_MAX_DEPTH + 1) - evm.message.depth
+        );
+
+        if (is_max_depth_reached != FALSE) {
+            // Requires popping the returndata offset and size before pushing 0
+            Stack.pop_n(2);
+            Stack.push_uint128(0);
+            let (return_data) = alloc();
+            tempvar evm = new model.EVM(
+                message=evm.message,
+                return_data_len=0,
+                return_data=return_data,
+                program_counter=evm.program_counter,
+                stopped=FALSE,
+                gas_left=evm.gas_left + gas,
+                reverted=FALSE,
+            );
+            return evm;
+        }
+
         tempvar zero = new Uint256(0, 0);
         // Operation
         let child_evm = CallHelper.generic_call(
@@ -674,17 +698,27 @@ namespace SystemOperations {
         state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
-        // Transfer funds
         let (popped) = Stack.pop();
         let recipient_evm_address = uint256_to_uint160([popped]);
 
         // Gas
         // Access gas cost. The account is marked as warm in the `is_account_alive` instruction,
-        // which performs a `get_account`.
-        let is_account_warm = State.is_account_warm(recipient_evm_address);
-        tempvar access_gas_cost = is_account_warm * Gas.WARM_ACCESS + (1 - is_account_warm) *
-            Gas.COLD_ACCOUNT_ACCESS;
-        // TODO: selfdestruct-specific gas cost
+        // which performs a `get_account` and thus must be performed after the warm check.
+        let is_recipient_warm = State.is_account_warm(recipient_evm_address);
+        tempvar access_gas_cost = (1 - is_recipient_warm) * Gas.COLD_ACCOUNT_ACCESS;
+
+        let is_recipient_alive = State.is_account_alive(recipient_evm_address);
+        let self_account = State.get_account(evm.message.address.evm);
+        tempvar is_self_balance_not_zero = is_not_zero(self_account.balance.low) + is_not_zero(
+            self_account.balance.high
+        );
+        tempvar gas_selfdestruct_new_account = (1 - is_recipient_alive) * is_self_balance_not_zero *
+            Gas.SELF_DESTRUCT_NEW_ACCOUNT;
+
+        let evm = EVM.charge_gas(evm, access_gas_cost + gas_selfdestruct_new_account);
+        if (evm.reverted != FALSE) {
+            return evm;
+        }
 
         if (evm.message.read_only != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
@@ -700,11 +734,11 @@ namespace SystemOperations {
         }
         let recipient_evm_address = (1 - is_recipient_self) * recipient_evm_address;
 
-        // Mark recipient account as warm
         let recipient_account = State.get_account(recipient_evm_address);
-        let account = State.get_account(evm.message.address.evm);
         let transfer = model.Transfer(
-            sender=account.address, recipient=recipient_account.address, amount=[account.balance]
+            sender=self_account.address,
+            recipient=recipient_account.address,
+            amount=[self_account.balance],
         );
         let success = State.add_transfer(transfer);
 

@@ -88,3 +88,15 @@ func test__bytes4_array_to_bytes{range_check_ptr}() {
 
     return ();
 }
+
+func test__bytes_used_128{range_check_ptr}(output_ptr: felt*) {
+    tempvar word;
+    %{ ids.word = program_input["word"] %}
+
+    // When
+    let bytes_used = Helpers.bytes_used_128(word);
+
+    // Then
+    assert [output_ptr] = bytes_used;
+    return ();
+}

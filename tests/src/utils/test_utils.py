@@ -1,4 +1,6 @@
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 
 @pytest.mark.parametrize(
@@ -53,3 +55,14 @@ import pytest
 )
 def test_utils(cairo_run, test_case, data, expected):
     cairo_run(test_case, data=data, expected=expected)
+
+
+@given(word=st.integers(min_value=0, max_value=2**128 - 1))
+@settings(max_examples=20, deadline=None)
+def test_should_return_bytes_used_in_128_word(cairo_run, word):
+    bytes_length = (word.bit_length() + 7) // 8
+    output = cairo_run(
+        "test__bytes_used_128",
+        word=word,
+    )
+    assert bytes_length == output[0]

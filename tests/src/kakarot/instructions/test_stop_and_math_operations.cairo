@@ -13,7 +13,6 @@ from kakarot.memory import Memory
 from kakarot.instructions.stop_and_math_operations import StopAndMathOperations
 from tests.utils.helpers import TestHelpers
 
-@external
 func test__exec_stop{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
@@ -34,16 +33,27 @@ func test__exec_stop{
     return ();
 }
 
-@external
 func test__exec_math_operation{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(opcode: felt, initial_stack_len: felt, initial_stack: Uint256*, expected_result: Uint256) {
+}(output_ptr: felt*) {
     // Given
     alloc_locals;
+
+    tempvar opcode;
+    tempvar initial_stack_len: felt;
+    let (initial_stack: felt*) = alloc();
+    %{
+        ids.opcode = program_input["opcode"];
+        ids.initial_stack_len = len(program_input["stack"]);
+        segments.write_arg(ids.initial_stack, program_input["stack"])
+    %}
+
     let (bytecode) = alloc();
     assert [bytecode] = opcode;
     let memory = Memory.init();
-    let stack = TestHelpers.init_stack_with_values(initial_stack_len, initial_stack);
+    let stack = TestHelpers.init_stack_with_values(
+        initial_stack_len, cast(initial_stack, Uint256*)
+    );
     let evm = TestHelpers.init_evm_with_bytecode(1, bytecode);
     let state = State.init();
 
@@ -54,6 +64,7 @@ func test__exec_math_operation{
     }
 
     // Then
-    assert result[0] = expected_result;
+    assert [output_ptr] = result.low;
+    assert [output_ptr + 1] = result.high;
     return ();
 }

@@ -547,6 +547,286 @@ namespace Helpers {
         return ();
     }
 
+    // @notice Calculates the number of bytes used by a 128-bit value.
+    // @param value The 128-bit value.
+    // @return The number of bytes used by the value.
+    func bytes_used_128{range_check_ptr}(value: felt) -> felt {
+        tempvar base = 256 ** 15;
+        let bound = base;
+        tempvar max = base - 1;
+        let (output) = alloc();
+
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+
+        let range_check_ptr = range_check_ptr + 2;
+        if (value - x != 0) {
+            return 16;
+        }
+        tempvar base = base / 256;
+        let bound = base;
+        tempvar max = base - 1;
+        // 1.
+        let output = output + 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+
+        let range_check_ptr = range_check_ptr + 2;
+        if (value - x != 0) {
+            return 15;
+        }
+        tempvar base = base / 256;
+        let bound = base;
+        tempvar max = base - 1;
+        // 2.
+        let output = output + 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+
+        let range_check_ptr = range_check_ptr + 2;
+        if (value - x != 0) {
+            return 14;
+        }
+        tempvar base = base / 256;
+        let bound = base;
+        tempvar max = base - 1;
+        // 3.
+        let output = output + 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+
+        let range_check_ptr = range_check_ptr + 2;
+        if (value - x != 0) {
+            return 13;
+        }
+        tempvar base = base / 256;
+        let bound = base;
+        tempvar max = base - 1;
+        // 0.
+        let output = output + 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+
+        let range_check_ptr = range_check_ptr + 2;
+        if (value - x != 0) {
+            return 12;
+        }
+        tempvar base = base / 256;
+        let bound = base;
+        tempvar max = base - 1;
+        // 1.
+        let output = output + 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+
+        let range_check_ptr = range_check_ptr + 2;
+        if (value - x != 0) {
+            return 11;
+        }
+        tempvar base = base / 256;
+        let bound = base;
+        tempvar max = base - 1;
+        // 2.
+        let output = output + 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+
+        let range_check_ptr = range_check_ptr + 2;
+        if (value - x != 0) {
+            return 10;
+        }
+        tempvar base = base / 256;
+        let bound = base;
+        tempvar max = base - 1;
+        // 3.
+        let output = output + 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+
+        let range_check_ptr = range_check_ptr + 2;
+        if (value - x != 0) {
+            return 9;
+        }
+        tempvar base = base / 256;
+        let bound = base;
+        tempvar max = base - 1;
+        // 0.
+        let output = output + 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+
+        let range_check_ptr = range_check_ptr + 2;
+        if (value - x != 0) {
+            return 8;
+        }
+        tempvar base = base / 256;
+        let bound = base;
+        tempvar max = base - 1;
+        // 1.
+        let output = output + 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+
+        let range_check_ptr = range_check_ptr + 2;
+        if (value - x != 0) {
+            return 7;
+        }
+        tempvar base = base / 256;
+        let bound = base;
+        tempvar max = base - 1;
+        // 2.
+        let output = output + 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+
+        let range_check_ptr = range_check_ptr + 2;
+        if (value - x != 0) {
+            return 6;
+        }
+        tempvar base = base / 256;
+        let bound = base;
+        tempvar max = base - 1;
+        // 3.
+        let output = output + 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+
+        let range_check_ptr = range_check_ptr + 2;
+        if (value - x != 0) {
+            return 5;
+        }
+        tempvar base = base / 256;
+        let bound = base;
+        tempvar max = base - 1;
+        // 0.
+        let output = output + 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+
+        let range_check_ptr = range_check_ptr + 2;
+        if (value - x != 0) {
+            return 4;
+        }
+        tempvar base = base / 256;
+        let bound = base;
+        tempvar max = base - 1;
+        // 1.
+        let output = output + 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+
+        let range_check_ptr = range_check_ptr + 2;
+        if (value - x != 0) {
+            return 3;
+        }
+        tempvar base = base / 256;
+        let bound = base;
+        tempvar max = base - 1;
+        // 2.
+        let output = output + 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+
+        let range_check_ptr = range_check_ptr + 2;
+        if (value - x != 0) {
+            return 2;
+        }
+        tempvar base = base / 256;
+        let bound = base;
+        tempvar max = base - 1;
+        // 3.
+        let output = output + 1;
+        %{
+            memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
+            assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
+        %}
+        tempvar x = [output];
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
+
+        let range_check_ptr = range_check_ptr + 2;
+        if (value - x != 0) {
+            return 1;
+        }
+
+        return 0;
+    }
+
     // @notice transform multiple bytes into words of 32 bits (big endian)
     // @dev the input data must have length in multiples of 4
     // @param data_len The length of the bytes

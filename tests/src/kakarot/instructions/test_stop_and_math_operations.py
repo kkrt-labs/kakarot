@@ -1,26 +1,13 @@
 import pytest
-import pytest_asyncio
-from starkware.starknet.testing.starknet import Starknet
 
 from tests.utils.constants import Opcodes
 from tests.utils.uint256 import int_to_uint256
 
 
-@pytest_asyncio.fixture(scope="module")
-async def math_operations(starknet: Starknet):
-    class_hash = await starknet.deprecated_declare(
-        source="./tests/src/kakarot/instructions/test_stop_and_math_operations.cairo",
-        cairo_path=["src"],
-        disable_hint_validation=True,
-    )
-    return await starknet.deploy(class_hash=class_hash.class_hash)
-
-
-@pytest.mark.asyncio
 class TestStopMathOperations:
     class TestStop:
-        async def test__exec_stop(self, math_operations):
-            await math_operations.test__exec_stop().call()
+        def test__exec_stop(self, cairo_run):
+            cairo_run("test__exec_stop")
 
     class TestMathOperations:
         @pytest.mark.parametrize(
@@ -93,10 +80,10 @@ class TestStopMathOperations:
             ],
         )
         async def test__exec_math_operation(
-            self, math_operations, opcode, stack, expected_result
+            self, cairo_run, opcode, stack, expected_result
         ):
-            await math_operations.test__exec_math_operation(
-                opcode,
-                [int_to_uint256(v) for v in stack],
-                int_to_uint256(expected_result),
-            ).call()
+            stack = [
+                u256_member for value in stack for u256_member in int_to_uint256(value)
+            ]
+            output = cairo_run("test__exec_math_operation", opcode=opcode, stack=stack)
+            assert output == list(int_to_uint256(expected_result))

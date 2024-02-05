@@ -8,6 +8,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.cairo.common.memset import memset
 from starkware.cairo.common.math import unsigned_div_rem
+from starkware.cairo.common.math_cmp import is_not_zero
 
 from kakarot.account import Account
 from kakarot.evm import EVM
@@ -57,6 +58,9 @@ namespace EnvironmentalInformation {
         let is_warm = State.is_account_warm(evm_address);
         tempvar gas = is_warm * Gas.WARM_ACCESS + (1 - is_warm) * Gas.COLD_ACCOUNT_ACCESS;
         let evm = EVM.charge_gas(evm, gas);
+        if (evm.reverted != FALSE) {
+            return evm;
+        }
 
         let account = State.get_account(evm_address);
         Stack.push(account.balance);
@@ -170,7 +174,17 @@ namespace EnvironmentalInformation {
         let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
             memory.words_len, dest_offset, size
         );
-        let evm = EVM.charge_gas(evm, memory_expansion_cost);
+
+        // Any size upper than 2**128 will cause an OOG error, considering the maximum gas for a transaction.
+        let upper_bytes_bound = size.low + 31;
+        let (words, _) = unsigned_div_rem(upper_bytes_bound, 32);
+        let copy_gas_cost_low = words * Gas.COPY;
+        tempvar copy_gas_cost_high = is_not_zero(size.high) * 2 ** 128;
+
+        // static cost handled in jump table
+        let evm = EVM.charge_gas(
+            evm, memory_expansion_cost + copy_gas_cost_low + copy_gas_cost_high
+        );
         if (evm.reverted != FALSE) {
             return evm;
         }
@@ -256,6 +270,9 @@ namespace EnvironmentalInformation {
         let is_warm = State.is_account_warm(evm_address);
         tempvar gas = is_warm * Gas.WARM_ACCESS + (1 - is_warm) * Gas.COLD_ACCOUNT_ACCESS;
         let evm = EVM.charge_gas(evm, gas);
+        if (evm.reverted != FALSE) {
+            return evm;
+        }
 
         let account = State.get_account(evm_address);
 
@@ -291,13 +308,16 @@ namespace EnvironmentalInformation {
         // Any size upper than 2**128 will cause an OOG error, considering the maximum gas for a transaction.
         let upper_bytes_bound = size.low + 31;
         let (words, _) = unsigned_div_rem(upper_bytes_bound, 32);
-        let copy_gas_cost = words * Gas.COPY;
+        let copy_gas_cost_low = words * Gas.COPY;
+        tempvar copy_gas_cost_high = is_not_zero(size.high) * 2 ** 128;
 
         let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
             memory.words_len, dest_offset, size
         );
 
-        let evm = EVM.charge_gas(evm, access_gas_cost + copy_gas_cost + memory_expansion_cost);
+        let evm = EVM.charge_gas(
+            evm, access_gas_cost + copy_gas_cost_low + copy_gas_cost_high + memory_expansion_cost
+        );
         if (evm.reverted != FALSE) {
             return evm;
         }
@@ -350,6 +370,9 @@ namespace EnvironmentalInformation {
         tempvar access_gas_cost = is_warm * Gas.WARM_ACCESS + (1 - is_warm) *
             Gas.COLD_ACCOUNT_ACCESS;
         let evm = EVM.charge_gas(evm, access_gas_cost);
+        if (evm.reverted != FALSE) {
+            return evm;
+        }
 
         let account = State.get_account(evm_address);
         let has_code_or_nonce = Account.has_code_or_nonce(account);
