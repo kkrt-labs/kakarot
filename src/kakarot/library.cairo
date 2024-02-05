@@ -66,9 +66,9 @@ namespace Kakarot {
     // @param data Hash of the method signature and encoded parameters. For details see Ethereum Contract ABI in the Solidity documentation
     // @param access_list_len The length of the access list
     // @param access_list The access list provided in the transaction serialized as a list of [address, storage_keys_len, ...storage_keys]
-    // @return return_data_len The length of the returned bytes
-    // @return return_data The returned bytes array
-    // @return success A boolean TRUE if the transaction succeeded, FALSE if it's reverted
+    // @return evm The EVM post-execution
+    // @return state The state post-execution
+    // @return gas_used the gas used by the transaction
     func eth_call{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -84,7 +84,7 @@ namespace Kakarot {
         data: felt*,
         access_list_len: felt,
         access_list: felt*,
-    ) -> (model.EVM*, model.State*) {
+    ) -> (model.EVM*, model.State*, felt) {
         alloc_locals;
         let evm_contract_address = resolve_to(to, origin);
         let starknet_contract_address = Account.compute_starknet_address(evm_contract_address);
@@ -98,7 +98,7 @@ namespace Kakarot {
 
         let env = Starknet.get_env(origin, gas_price);
 
-        let (evm, stack, memory, state) = Interpreter.execute(
+        let (evm, stack, memory, state, gas_used) = Interpreter.execute(
             env,
             address,
             is_deploy_tx,
@@ -111,7 +111,7 @@ namespace Kakarot {
             access_list_len,
             access_list,
         );
-        return (evm, state);
+        return (evm, state, gas_used);
     }
 
     // @notice Set the native Starknet ERC20 token used by kakarot.

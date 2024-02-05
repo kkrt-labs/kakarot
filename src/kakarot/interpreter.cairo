@@ -9,6 +9,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.math import unsigned_div_rem
 
 // Internal dependencies
 from kakarot.account import Account
@@ -721,6 +722,11 @@ namespace Interpreter {
     // @param gas_price The gas price for the execution
     // @param access_list_len The length (in number of felts) of the serialized access list
     // @param access_list The access list
+    // @return evm The EVM post-execution
+    // @return state The state post-execution
+    // @return stack The stack post-execution
+    // @return memory The memory post-execution
+    // @return gas_used the gas used by the transaction
     func execute{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -738,7 +744,7 @@ namespace Interpreter {
         gas_limit: felt,
         access_list_len: felt,
         access_list: felt*,
-    ) -> (model.EVM*, model.Stack*, model.Memory*, model.State*) {
+    ) -> (model.EVM*, model.Stack*, model.Memory*, model.State*, felt) {
         alloc_locals;
 
         // Compute intrinsic gas usage
@@ -810,7 +816,7 @@ namespace Interpreter {
             let evm = EVM.init(message, gas_limit);
             let evm = EVM.charge_gas(evm, intrinsic_gas);
             if (evm.reverted != FALSE) {
-                return (evm, stack, memory, state);
+                return (evm, stack, memory, state, gas_limit);
             }
 
             // Handle value
@@ -849,7 +855,16 @@ namespace Interpreter {
             let evm = run(evm);
         }
 
-        return (evm, stack, memory, state);
+        let gas_used = gas_limit - evm.gas_left;
+        let (max_refund, _) = unsigned_div_rem(gas_used, 5);
+        let is_max_refund_le_gas_refund = is_le(max_refund, evm.gas_refund);
+        tempvar gas_refund = is_max_refund_le_gas_refund * max_refund + (
+            1 - is_max_refund_le_gas_refund
+        ) * evm.gas_refund;
+
+        let total_gas_used = gas_used - gas_refund;
+
+        return (evm, stack, memory, state, total_gas_used);
     }
 
     // @notice A placeholder for opcodes that don't exist
