@@ -547,316 +547,299 @@ namespace Helpers {
         return ();
     }
 
-    // @notice Splits a felt into 16 bytes, big-endian, and outputs to `dst`.
+    // @notice Calculates the number of bytes used by a 128-bit value.
+    // @param value The 128-bit value.
+    // @return The number of bytes used by the value.
     func bytes_used_128{range_check_ptr}(value: felt) -> felt {
-        // Fill dst using only hints with no opcodes.
-        let offset = 0;
         tempvar base = 256 ** 15;
         let bound = base;
         tempvar max = base - 1;
-        let (dst) = alloc();
+        let (output) = alloc();
+        let output_start = output;
 
-        // 0.
-        let output = &dst[offset];
-        let offset = offset + 1;
         %{
             memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
             assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
         %}
         tempvar x = [output];
-        tempvar is_x_lt_value = is_le(x + 1, value);
-        if (is_x_lt_value != FALSE) {
-            return 16 - offset + 1;
-        }
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
 
-        [range_check_ptr] = value;
-        assert [range_check_ptr + 1] = max - value;
         let range_check_ptr = range_check_ptr + 2;
+        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
+        if (is_x_eq_value == FALSE) {
+            return 16;
+        }
         tempvar base = base / 256;
         let bound = base;
         tempvar max = base - 1;
         // 1.
-        let output = &dst[offset];
-        let offset = offset + 1;
+        let output = output + 1;
         %{
             memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
             assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
         %}
         tempvar x = [output];
-        tempvar is_x_lt_value = is_le(x + 1, value);
-        if (is_x_lt_value != FALSE) {
-            return 16 - offset + 1;
-        }
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
 
-        [range_check_ptr] = value;
-        assert [range_check_ptr + 1] = max - value;
         let range_check_ptr = range_check_ptr + 2;
+        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
+        if (is_x_eq_value == FALSE) {
+            return 15;
+        }
         tempvar base = base / 256;
         let bound = base;
         tempvar max = base - 1;
         // 2.
-        let output = &dst[offset];
-        let offset = offset + 1;
+        let output = output + 1;
         %{
             memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
             assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
         %}
         tempvar x = [output];
-        tempvar is_x_lt_value = is_le(x + 1, value);
-        if (is_x_lt_value != FALSE) {
-            return 16 - offset + 1;
-        }
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
 
-        [range_check_ptr] = value;
-        assert [range_check_ptr + 1] = max - value;
         let range_check_ptr = range_check_ptr + 2;
+        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
+        if (is_x_eq_value == FALSE) {
+            return 14;
+        }
         tempvar base = base / 256;
         let bound = base;
         tempvar max = base - 1;
         // 3.
-        let output = &dst[offset];
-        let offset = offset + 1;
+        let output = output + 1;
         %{
             memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
             assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
         %}
         tempvar x = [output];
-        tempvar is_x_lt_value = is_le(x + 1, value);
-        if (is_x_lt_value != FALSE) {
-            return 16 - offset + 1;
-        }
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
 
-        [range_check_ptr] = value;
-        assert [range_check_ptr + 1] = max - value;
         let range_check_ptr = range_check_ptr + 2;
+        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
+        if (is_x_eq_value == FALSE) {
+            return 13;
+        }
         tempvar base = base / 256;
         let bound = base;
         tempvar max = base - 1;
         // 0.
-        let output = &dst[offset];
-        let offset = offset + 1;
+        let output = output + 1;
         %{
             memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
             assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
         %}
         tempvar x = [output];
-        tempvar is_x_lt_value = is_le(x + 1, value);
-        if (is_x_lt_value != FALSE) {
-            return 16 - offset + 1;
-        }
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
 
-        [range_check_ptr] = value;
-        assert [range_check_ptr + 1] = max - value;
         let range_check_ptr = range_check_ptr + 2;
+        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
+        if (is_x_eq_value == FALSE) {
+            return 12;
+        }
         tempvar base = base / 256;
         let bound = base;
         tempvar max = base - 1;
         // 1.
-        let output = &dst[offset];
-        let offset = offset + 1;
+        let output = output + 1;
         %{
             memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
             assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
         %}
         tempvar x = [output];
-        tempvar is_x_lt_value = is_le(x + 1, value);
-        if (is_x_lt_value != FALSE) {
-            return 16 - offset + 1;
-        }
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
 
-        [range_check_ptr] = value;
-        assert [range_check_ptr + 1] = max - value;
         let range_check_ptr = range_check_ptr + 2;
+        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
+        if (is_x_eq_value == FALSE) {
+            return 11;
+        }
         tempvar base = base / 256;
         let bound = base;
         tempvar max = base - 1;
         // 2.
-        let output = &dst[offset];
-        let offset = offset + 1;
+        let output = output + 1;
         %{
             memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
             assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
         %}
         tempvar x = [output];
-        tempvar is_x_lt_value = is_le(x + 1, value);
-        if (is_x_lt_value != FALSE) {
-            return 16 - offset + 1;
-        }
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
 
-        [range_check_ptr] = value;
-        assert [range_check_ptr + 1] = max - value;
         let range_check_ptr = range_check_ptr + 2;
+        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
+        if (is_x_eq_value == FALSE) {
+            return 10;
+        }
         tempvar base = base / 256;
         let bound = base;
         tempvar max = base - 1;
         // 3.
-        let output = &dst[offset];
-        let offset = offset + 1;
+        let output = output + 1;
         %{
             memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
             assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
         %}
         tempvar x = [output];
-        tempvar is_x_lt_value = is_le(x + 1, value);
-        if (is_x_lt_value != FALSE) {
-            return 16 - offset + 1;
-        }
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
 
-        [range_check_ptr] = value;
-        assert [range_check_ptr + 1] = max - value;
         let range_check_ptr = range_check_ptr + 2;
+        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
+        if (is_x_eq_value == FALSE) {
+            return 9;
+        }
         tempvar base = base / 256;
         let bound = base;
         tempvar max = base - 1;
         // 0.
-        let output = &dst[offset];
-        let offset = offset + 1;
+        let output = output + 1;
         %{
             memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
             assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
         %}
         tempvar x = [output];
-        tempvar is_x_lt_value = is_le(x + 1, value);
-        if (is_x_lt_value != FALSE) {
-            return 16 - offset + 1;
-        }
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
 
-        [range_check_ptr] = value;
-        assert [range_check_ptr + 1] = max - value;
         let range_check_ptr = range_check_ptr + 2;
+        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
+        if (is_x_eq_value == FALSE) {
+            return 8;
+        }
         tempvar base = base / 256;
         let bound = base;
         tempvar max = base - 1;
         // 1.
-        let output = &dst[offset];
-        let offset = offset + 1;
+        let output = output + 1;
         %{
             memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
             assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
         %}
         tempvar x = [output];
-        tempvar is_x_lt_value = is_le(x + 1, value);
-        if (is_x_lt_value != FALSE) {
-            return 16 - offset + 1;
-        }
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
 
-        [range_check_ptr] = value;
-        assert [range_check_ptr + 1] = max - value;
         let range_check_ptr = range_check_ptr + 2;
+        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
+        if (is_x_eq_value == FALSE) {
+            return 7;
+        }
         tempvar base = base / 256;
         let bound = base;
         tempvar max = base - 1;
         // 2.
-        let output = &dst[offset];
-        let offset = offset + 1;
+        let output = output + 1;
         %{
             memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
             assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
         %}
         tempvar x = [output];
-        tempvar is_x_lt_value = is_le(x + 1, value);
-        if (is_x_lt_value != FALSE) {
-            return 16 - offset + 1;
-        }
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
 
-        [range_check_ptr] = value;
-        assert [range_check_ptr + 1] = max - value;
         let range_check_ptr = range_check_ptr + 2;
+        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
+        if (is_x_eq_value == FALSE) {
+            return 6;
+        }
         tempvar base = base / 256;
         let bound = base;
         tempvar max = base - 1;
         // 3.
-        let output = &dst[offset];
-        let offset = offset + 1;
+        let output = output + 1;
         %{
             memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
             assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
         %}
         tempvar x = [output];
-        tempvar is_x_lt_value = is_le(x + 1, value);
-        if (is_x_lt_value != FALSE) {
-            return 16 - offset + 1;
-        }
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
 
-        [range_check_ptr] = value;
-        assert [range_check_ptr + 1] = max - value;
         let range_check_ptr = range_check_ptr + 2;
+        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
+        if (is_x_eq_value == FALSE) {
+            return 5;
+        }
         tempvar base = base / 256;
         let bound = base;
         tempvar max = base - 1;
         // 0.
-        let output = &dst[offset];
-        let offset = offset + 1;
+        let output = output + 1;
         %{
             memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
             assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
         %}
         tempvar x = [output];
-        tempvar is_x_lt_value = is_le(x + 1, value);
-        if (is_x_lt_value != FALSE) {
-            return 16 - offset + 1;
-        }
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
 
-        [range_check_ptr] = value;
-        assert [range_check_ptr + 1] = max - value;
         let range_check_ptr = range_check_ptr + 2;
+        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
+        if (is_x_eq_value == FALSE) {
+            return 4;
+        }
         tempvar base = base / 256;
         let bound = base;
         tempvar max = base - 1;
         // 1.
-        let output = &dst[offset];
-        let offset = offset + 1;
+        let output = output + 1;
         %{
             memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
             assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
         %}
         tempvar x = [output];
-        tempvar is_x_lt_value = is_le(x + 1, value);
-        if (is_x_lt_value != FALSE) {
-            return 16 - offset + 1;
-        }
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
 
-        [range_check_ptr] = value;
-        assert [range_check_ptr + 1] = max - value;
         let range_check_ptr = range_check_ptr + 2;
+        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
+        if (is_x_eq_value == FALSE) {
+            return 3;
+        }
         tempvar base = base / 256;
         let bound = base;
         tempvar max = base - 1;
         // 2.
-        let output = &dst[offset];
-        let offset = offset + 1;
+        let output = output + 1;
         %{
             memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
             assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
         %}
         tempvar x = [output];
-        tempvar is_x_lt_value = is_le(x + 1, value);
-        if (is_x_lt_value != FALSE) {
-            return 16 - offset + 1;
-        }
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
 
-        [range_check_ptr] = value;
-        assert [range_check_ptr + 1] = max - value;
         let range_check_ptr = range_check_ptr + 2;
+        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
+        if (is_x_eq_value == FALSE) {
+            return 2;
+        }
         tempvar base = base / 256;
         let bound = base;
         tempvar max = base - 1;
         // 3.
-        let output = &dst[offset];
-        let offset = offset + 1;
+        let output = output + 1;
         %{
             memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
             assert res < ids.bound, f'split_int(): Limb {res} is out of range.'
         %}
         tempvar x = [output];
-        tempvar is_x_lt_value = is_le(x + 1, value);
-        if (is_x_lt_value != FALSE) {
-            return 16 - offset + 1;
-        }
+        [range_check_ptr] = x;
+        assert [range_check_ptr + 1] = max - x;
 
-        [range_check_ptr] = value;
-        assert [range_check_ptr + 1] = max - value;
         let range_check_ptr = range_check_ptr + 2;
+        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
+        if (is_x_eq_value == FALSE) {
+            return 1;
+        }
 
         return 0;
     }

@@ -299,8 +299,7 @@ namespace StopAndMathOperations {
 
         let result = uint256_fast_exp(popped[0], exponent);
 
-        tempvar result_ptr = new Uint256(result.low, result.high);
-        Stack.push(result_ptr);
+        Stack.push_uint256(result);
         tempvar bitwise_ptr = cast([fp - 7], BitwiseBuiltin*);
         tempvar range_check_ptr = range_check_ptr;
         return evm;

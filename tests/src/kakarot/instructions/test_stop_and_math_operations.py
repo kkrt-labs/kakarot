@@ -82,8 +82,8 @@ class TestStopMathOperations:
         async def test__exec_math_operation(
             self, cairo_run, opcode, stack, expected_result
         ):
-            stack = [tuple for value in stack for tuple in int_to_uint256(value)]
+            stack = [
+                u256_member for value in stack for u256_member in int_to_uint256(value)
+            ]
             output = cairo_run("test__exec_math_operation", opcode=opcode, stack=stack)
-            expected_low, expected_high = int_to_uint256(expected_result)
-            assert output[0] == expected_low
-            assert output[1] == expected_high
+            assert output == list(int_to_uint256(expected_result))

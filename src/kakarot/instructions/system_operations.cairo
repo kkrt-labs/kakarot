@@ -703,7 +703,7 @@ namespace SystemOperations {
 
         // Gas
         // Access gas cost. The account is marked as warm in the `is_account_alive` instruction,
-        // which performs a `get_account` and thus must be performed after the warn check.
+        // which performs a `get_account` and thus must be performed after the warm check.
         let is_recipient_warm = State.is_account_warm(recipient_evm_address);
         tempvar access_gas_cost = (1 - is_recipient_warm) * Gas.COLD_ACCOUNT_ACCESS;
 
