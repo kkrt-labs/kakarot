@@ -1,4 +1,4 @@
-%builtins range_check bitwise
+%lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256
@@ -9,7 +9,7 @@ from kakarot.model import model
 from utils.eth_transaction import EthTransaction
 from utils.rlp import RLP
 
-func test__decode{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(output_ptr: felt*) {
+func test__decode{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}() -> model.EthTransaction* {
     alloc_locals;
     // Given
     tempvar data_len: felt;
@@ -19,35 +19,8 @@ func test__decode{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(output_ptr: fel
         segments.write_arg(ids.data, program_input["data"])
     %}
 
-    let (
-        msg_hash: Uint256,
-        nonce: felt,
-        gas_price: felt,
-        gas_limit: felt,
-        destination: felt,
-        amount: Uint256,
-        chain_id: felt,
-        payload_len: felt,
-        payload: felt*,
-        access_list_len: felt,
-        local access_list: felt*,
-    ) = EthTransaction.decode(data_len, data);
-
-    assert [output_ptr] = msg_hash.low;
-    assert [output_ptr + 1] = msg_hash.high;
-    assert [output_ptr + 2] = nonce;
-    assert [output_ptr + 3] = gas_price;
-    assert [output_ptr + 4] = gas_limit;
-    assert [output_ptr + 5] = destination;
-    assert [output_ptr + 6] = amount.low;
-    assert [output_ptr + 7] = amount.high;
-    assert [output_ptr + 8] = chain_id;
-    assert [output_ptr + 9] = payload_len;
-    memcpy(output_ptr + 10, payload, payload_len);
-    assert [output_ptr + 10 + payload_len] = access_list_len;
-    memcpy(output_ptr + 11 + payload_len, access_list, access_list_len);
-
-    return ();
+    let tx = EthTransaction.decode(data_len, data);
+    return tx;
 }
 
 func test__validate{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}() {
@@ -104,4 +77,16 @@ func test__parse_access_list{range_check_ptr}(output_ptr: felt*) {
 
     memcpy(output_ptr, access_list, access_list_len);
     return ();
+}
+
+func test__get_tx_type{range_check_ptr}() -> felt {
+    alloc_locals;
+    // Given
+    let (data) = alloc();
+    %{ segments.write_arg(ids.data, program_input["data"]) %}
+
+    // When
+    let tx_type = EthTransaction.get_tx_type(data);
+
+    return tx_type;
 }

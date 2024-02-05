@@ -344,8 +344,6 @@ async def eth_send_transaction(
     if len(transaction_events) != 1:
         raise ValueError("Cannot locate the single event giving the actual tx status")
     (
-        _msg_hash_low,
-        _msg_hash_high,
         response_len,
         *response,
         success,

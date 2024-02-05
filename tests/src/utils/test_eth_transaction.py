@@ -131,49 +131,31 @@ class TestEthTransaction:
             self, cairo_run, transaction
         ):
             encoded_unsigned_tx = rlp_encode_signed_data(transaction)
-            output = cairo_run(
+            decoded_tx = cairo_run(
                 "test__decode",
                 data=list(encoded_unsigned_tx),
             )
 
+            expected_data = (
+                "0x" + transaction["data"].hex()
+                if isinstance(transaction["data"], bytes)
+                else transaction["data"]
+            )
             expected_access_list = flatten_tx_access_list(
                 transaction.get("accessList", [])
             )
-            # count of addresses and each storage key in access list
-            expected_access_list_len = sum(
-                2 * len(x["storageKeys"]) + 2 for x in transaction.get("accessList", [])
-            )
-            expected_gas_price = (
-                transaction.get("gasPrice") or transaction["maxFeePerGas"]
-            )
-            expected_to = (
-                int(transaction["to"], 16)
-                if isinstance(transaction["to"], str)
-                else transaction["to"]
-            )
-            expected_data = (
-                bytes.fromhex(transaction["data"][2:])
-                if isinstance(transaction["data"], str)
-                else transaction["data"]
-            )
 
-            value = output[6] + output[7] * 2**128
-            data_len = output[9]
-            data = bytes(output[10 : 10 + data_len])
-            access_list_len = output[10 + data_len]
-            access_list = output[
-                11 + data_len : 11 + data_len + len(expected_access_list)
-            ]
-
-            assert transaction["nonce"] == output[2]
-            assert expected_gas_price == output[3]
-            assert transaction["gas"] == output[4]
-            assert expected_to == output[5]
-            assert transaction["value"] == value
-            assert transaction["chainId"] == output[8]
-            assert expected_data == data
-            assert expected_access_list_len == access_list_len
-            assert access_list == expected_access_list
+            assert transaction["nonce"] == decoded_tx["signer_nonce"]
+            assert (
+                transaction.get("gasPrice", transaction.get("maxFeePerGas"))
+                == decoded_tx["max_fee_per_gas"]
+            )
+            assert transaction["gas"] == decoded_tx["gas_limit"]
+            assert transaction["to"] == decoded_tx["destination"]
+            assert transaction["value"] == int(decoded_tx["amount"], 16)
+            assert transaction["chainId"] == decoded_tx["chain_id"]
+            assert expected_data == decoded_tx["payload"]
+            assert expected_access_list == decoded_tx["access_list"]
 
     class TestParseAccessList:
         @pytest.mark.parametrize("transaction", TRANSACTIONS)
@@ -195,3 +177,10 @@ class TestEthTransaction:
             )
             expected_output = flatten_tx_access_list(transaction.get("accessList", []))
             assert output == expected_output
+
+    class TestGetTxType:
+        @pytest.mark.parametrize("transaction", TRANSACTIONS)
+        def test_should_return_tx_type(self, cairo_run, transaction):
+            encoded_unsigned_tx = rlp_encode_signed_data(transaction)
+            tx_type = cairo_run("test__get_tx_type", data=list(encoded_unsigned_tx))
+            assert tx_type == transaction.get("type", 0)

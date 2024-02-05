@@ -25,9 +25,7 @@ func is_initialized_() -> (res: felt) {
 }
 
 @event
-func transaction_executed(
-    msg_hash: Uint256, response_len: felt, response: felt*, success: felt, gas_used: felt
-) {
+func transaction_executed(response_len: felt, response: felt*, success: felt, gas_used: felt) {
 }
 
 namespace ExternallyOwnedAccount {
@@ -151,42 +149,26 @@ namespace ExternallyOwnedAccount {
             return (response_len=0);
         }
 
-        let (
-            msg_hash,
-            nonce,
-            gas_price,
-            gas_limit,
-            destination,
-            amount,
-            _chain_id,
-            payload_len,
-            payload,
-            access_list_len,
-            access_list,
-        ) = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
+        let tx = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
 
         let (_kakarot_address) = kakarot_address.read();
         let (return_data_len, return_data, success, gas_used) = IKakarot.eth_send_transaction(
             contract_address=_kakarot_address,
-            to=destination,
-            gas_limit=gas_limit,
-            gas_price=gas_price,
-            value=amount,
-            data_len=payload_len,
-            data=payload,
-            access_list_len=access_list_len,
-            access_list=access_list,
+            to=tx.destination,
+            gas_limit=tx.gas_limit,
+            gas_price=tx.max_fee_per_gas,
+            value=tx.amount,
+            data_len=tx.payload_len,
+            data=tx.payload,
+            access_list_len=tx.access_list_len,
+            access_list=tx.access_list,
         );
         memcpy(response, return_data, return_data_len);
 
         // See Argent account
         // https://github.com/argentlabs/argent-contracts-starknet/blob/c6d3ee5e05f0f4b8a5c707b4094446c3bc822427/contracts/account/ArgentAccount.cairo#L132
         transaction_executed.emit(
-            msg_hash=msg_hash,
-            response_len=return_data_len,
-            response=return_data,
-            success=success,
-            gas_used=gas_used,
+            response_len=return_data_len, response=return_data, success=success, gas_used=gas_used
         );
 
         let (response_len) = execute(

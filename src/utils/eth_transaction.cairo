@@ -1,3 +1,5 @@
+%lang starknet
+
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin, HashBuiltin
@@ -7,7 +9,9 @@ from starkware.cairo.common.math_cmp import is_not_zero, is_le
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256
 
+from kakarot.model import model
 from kakarot.constants import Constants
+from kakarot.interfaces.interfaces import IKakarot
 from utils.rlp import RLP
 from utils.utils import Helpers
 from utils.bytes import bytes_to_bytes8_little_endian
@@ -25,35 +29,9 @@ namespace EthTransaction {
     // @param tx_data The raw transaction data
     func decode_legacy_tx{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
         tx_data_len: felt, tx_data: felt*
-    ) -> (
-        msg_hash: Uint256,
-        nonce: felt,
-        gas_price: felt,
-        gas_limit: felt,
-        destination: felt,
-        amount: Uint256,
-        chain_id: felt,
-        payload_len: felt,
-        payload: felt*,
-        access_list_len: felt,
-        access_list: felt*,
-    ) {
+    ) -> model.EthTransaction* {
         // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md
         alloc_locals;
-
-        let (local words: felt*) = alloc();
-        let (keccak_ptr: felt*) = alloc();
-        let keccak_ptr_start = keccak_ptr;
-        with keccak_ptr {
-            // From keccak/cairo_keccak_bigend doc:
-            // > To use this function, split the input into words of 64 bits (little endian).
-            // > Same as keccak, but outputs the hash in big endian representation.
-            // > Note that the input is still treated as little endian.
-            bytes_to_bytes8_little_endian(words, tx_data_len, tx_data);
-            let (msg_hash) = cairo_keccak_bigend(inputs=words, n_bytes=tx_data_len);
-        }
-        finalize_keccak(keccak_ptr_start, keccak_ptr);
-
         let (items: RLP.Item*) = alloc();
         RLP.decode(items, tx_data_len, tx_data);
 
@@ -63,81 +41,82 @@ namespace EthTransaction {
         let sub_items_len = [items].data_len;
         let sub_items = cast([items].data, RLP.Item*);
 
-        let nonce_idx = 0;
-        let nonce = Helpers.bytes_to_felt(sub_items[nonce_idx].data_len, sub_items[nonce_idx].data);
-        let gas_price = Helpers.bytes_to_felt(
-            sub_items[nonce_idx + 1].data_len, sub_items[nonce_idx + 1].data
-        );
-        let gas_limit = Helpers.bytes_to_felt(
-            sub_items[nonce_idx + 2].data_len, sub_items[nonce_idx + 2].data
-        );
-        let destination = Helpers.bytes_to_felt(
-            sub_items[nonce_idx + 3].data_len, sub_items[nonce_idx + 3].data
-        );
-        let amount = Helpers.bytes_i_to_uint256(
-            sub_items[nonce_idx + 4].data, sub_items[nonce_idx + 4].data_len
-        );
-        let payload_len = sub_items[nonce_idx + 5].data_len;
-        let payload: felt* = sub_items[nonce_idx + 5].data;
+        let nonce = Helpers.bytes_to_felt(sub_items[0].data_len, sub_items[0].data);
+        let gas_price = Helpers.bytes_to_felt(sub_items[1].data_len, sub_items[1].data);
+        let gas_limit = Helpers.bytes_to_felt(sub_items[2].data_len, sub_items[2].data);
+        let destination = Helpers.bytes_to_felt(sub_items[3].data_len, sub_items[3].data);
+        let amount = Helpers.bytes_i_to_uint256(sub_items[4].data, sub_items[4].data_len);
+        let payload_len = sub_items[5].data_len;
+        let payload = sub_items[5].data;
+        let chain_id = Helpers.bytes_to_felt(sub_items[6].data_len, sub_items[6].data);
 
-        let chain_id = Helpers.bytes_to_felt(
-            sub_items[nonce_idx + 6].data_len, sub_items[nonce_idx + 6].data
+        tempvar tx = new model.EthTransaction(
+            signer_nonce=nonce,
+            gas_limit=gas_limit,
+            max_priority_fee_per_gas=gas_price,
+            max_fee_per_gas=gas_price,
+            destination=destination,
+            amount=amount,
+            payload_len=payload_len,
+            payload=payload,
+            access_list_len=0,
+            access_list=cast(0, felt*),
+            chain_id=chain_id,
         );
-
-        return (
-            msg_hash,
-            nonce,
-            gas_price,
-            gas_limit,
-            destination,
-            amount,
-            chain_id,
-            payload_len,
-            payload,
-            0,
-            cast(0, felt*),
-        );
+        return tx;
     }
 
-    // @notice Decode a modern Ethereum transaction
-    // @dev This function decodes a modern Ethereum transaction in accordance with EIP-2718.
-    // It returns transaction details including nonce, gas price, gas limit, destination address, amount, payload,
-    // transaction hash, and signature (v, r, s). The transaction hash is computed by keccak hashing the signed
-    // transaction data, which includes the chain ID as part of the transaction data itself.
+    // @notice Decode an Ethereum transaction with optional access list
+    // @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-2930.md
     // @param tx_data_len The length of the raw transaction data
     // @param tx_data The raw transaction data
-    func decode_tx{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
+    func decode_2930{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
         tx_data_len: felt, tx_data: felt*
-    ) -> (
-        msg_hash: Uint256,
-        nonce: felt,
-        gas_price: felt,
-        gas_limit: felt,
-        destination: felt,
-        amount: Uint256,
-        chain_id: felt,
-        payload_len: felt,
-        payload: felt*,
-        access_list_len: felt,
-        access_list: felt*,
-    ) {
-        // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-2718.md#specification
+    ) -> model.EthTransaction* {
         alloc_locals;
 
-        let (local words: felt*) = alloc();
-        let (keccak_ptr: felt*) = alloc();
-        let keccak_ptr_start = keccak_ptr;
-        with keccak_ptr {
-            // From keccak/cairo_keccak_bigend doc:
-            // > To use this function, split the input into words of 64 bits (little endian).
-            // > Same as keccak, but outputs the hash in big endian representation.
-            // > Note that the input is still treated as little endian.
-            bytes_to_bytes8_little_endian(words, tx_data_len, tx_data);
-            let (msg_hash) = cairo_keccak_bigend(inputs=words, n_bytes=tx_data_len);
-        }
-        finalize_keccak(keccak_ptr_start, keccak_ptr);
+        let (items: RLP.Item*) = alloc();
+        RLP.decode(items, tx_data_len - 1, tx_data + 1);
+        let sub_items_len = [items].data_len;
+        let sub_items = cast([items].data, RLP.Item*);
 
-        tempvar tx_type = [tx_data];
+        let chain_id = Helpers.bytes_to_felt(sub_items[0].data_len, sub_items[0].data);
+        let nonce = Helpers.bytes_to_felt(sub_items[1].data_len, sub_items[1].data);
+        let gas_price = Helpers.bytes_to_felt(sub_items[2].data_len, sub_items[2].data);
+        let gas_limit = Helpers.bytes_to_felt(sub_items[3].data_len, sub_items[3].data);
+        let destination = Helpers.bytes_to_felt(sub_items[4].data_len, sub_items[4].data);
+        let amount = Helpers.bytes_i_to_uint256(sub_items[5].data, sub_items[5].data_len);
+        let payload_len = sub_items[6].data_len;
+        let payload = sub_items[6].data;
+
+        let (access_list: felt*) = alloc();
+        let access_list_len = parse_access_list(
+            access_list, sub_items[7].data_len, cast(sub_items[7].data, RLP.Item*)
+        );
+        tempvar tx = new model.EthTransaction(
+            signer_nonce=nonce,
+            gas_limit=gas_limit,
+            max_priority_fee_per_gas=gas_price,
+            max_fee_per_gas=gas_price,
+            destination=destination,
+            amount=amount,
+            payload_len=payload_len,
+            payload=payload,
+            access_list_len=access_list_len,
+            access_list=access_list,
+            chain_id=chain_id,
+        );
+        return tx;
+    }
+
+    // @notice Decode an Ethereum transaction with fee market
+    // @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1559.md
+    // @param tx_data_len The length of the raw transaction data
+    // @param tx_data The raw transaction data
+    func decode_1559{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
+        tx_data_len: felt, tx_data: felt*
+    ) -> model.EthTransaction* {
+        alloc_locals;
 
         let (items: RLP.Item*) = alloc();
         RLP.decode(items, tx_data_len - 1, tx_data + 1);
@@ -148,82 +127,73 @@ namespace EthTransaction {
         let sub_items = cast([items].data, RLP.Item*);
 
         let chain_id = Helpers.bytes_to_felt(sub_items[0].data_len, sub_items[0].data);
-
         let nonce = Helpers.bytes_to_felt(sub_items[1].data_len, sub_items[1].data);
-        let gas_price_idx = tx_type + 1;
-        let gas_price = Helpers.bytes_to_felt(
-            sub_items[gas_price_idx].data_len, sub_items[gas_price_idx].data
+        let max_priority_fee_per_gas = Helpers.bytes_to_felt(
+            sub_items[2].data_len, sub_items[2].data
         );
-        let gas_limit = Helpers.bytes_to_felt(
-            sub_items[gas_price_idx + 1].data_len, sub_items[gas_price_idx + 1].data
-        );
-        let destination = Helpers.bytes_to_felt(
-            sub_items[gas_price_idx + 2].data_len, sub_items[gas_price_idx + 2].data
-        );
-        let amount = Helpers.bytes_i_to_uint256(
-            sub_items[gas_price_idx + 3].data, sub_items[gas_price_idx + 3].data_len
-        );
-        let payload_len = sub_items[gas_price_idx + 4].data_len;
-        let payload: felt* = sub_items[gas_price_idx + 4].data;
-
+        let max_fee_per_gas = Helpers.bytes_to_felt(sub_items[3].data_len, sub_items[3].data);
+        let gas_limit = Helpers.bytes_to_felt(sub_items[4].data_len, sub_items[4].data);
+        let destination = Helpers.bytes_to_felt(sub_items[5].data_len, sub_items[5].data);
+        let amount = Helpers.bytes_i_to_uint256(sub_items[6].data, sub_items[6].data_len);
+        let payload_len = sub_items[7].data_len;
+        let payload = sub_items[7].data;
         let (access_list: felt*) = alloc();
         let access_list_len = parse_access_list(
-            access_list,
-            sub_items[gas_price_idx + 5].data_len,
-            cast(sub_items[gas_price_idx + 5].data, RLP.Item*),
+            access_list, sub_items[8].data_len, cast(sub_items[8].data, RLP.Item*)
         );
-        return (
-            msg_hash,
-            nonce,
-            gas_price,
-            gas_limit,
-            destination,
-            amount,
-            chain_id,
-            payload_len,
-            payload,
-            access_list_len,
-            access_list,
+        tempvar tx = new model.EthTransaction(
+            signer_nonce=nonce,
+            gas_limit=gas_limit,
+            max_priority_fee_per_gas=max_priority_fee_per_gas,
+            max_fee_per_gas=max_fee_per_gas,
+            destination=destination,
+            amount=amount,
+            payload_len=payload_len,
+            payload=payload,
+            access_list_len=access_list_len,
+            access_list=access_list,
+            chain_id=chain_id,
         );
+        return tx;
     }
 
-    // @notice Check if a raw transaction is a legacy Ethereum transaction
+    // @notice Returns the type of a tx, considering that legacy tx are type 0.
     // @dev This function checks if a raw transaction is a legacy Ethereum transaction by checking the transaction type
-    // according to EIP-2718. If the transaction type is less than or equal to 0xc0, it's a legacy transaction.
+    // according to EIP-2718. If the transaction type is greater than or equal to 0xc0, it's a legacy transaction.
+    // See https://eips.ethereum.org/EIPS/eip-2718#transactiontype-only-goes-up-to-0x7f
     // @param tx_data The raw transaction data
-    func is_legacy_tx{range_check_ptr}(tx_data: felt*) -> felt {
-        // See https://eips.ethereum.org/EIPS/eip-2718#transactiontype-only-goes-up-to-0x7f
-        tempvar type = [tx_data];
-        return is_le(0xc0, type);
+    func get_tx_type{range_check_ptr}(tx_data: felt*) -> felt {
+        let type = [tx_data];
+        let is_legacy = is_le(0xc0, type);
+        if (is_legacy != FALSE) {
+            return 0;
+        }
+        return type;
     }
 
     // @notice Decode a raw Ethereum transaction
     // @dev This function decodes a raw Ethereum transaction. It checks if the transaction
     // is a legacy transaction or a modern transaction, and calls the appropriate decode function
-    // (decode_legacy_tx or decode_tx) based on the result.
+    // (decode_legacy_tx or decode_2930) based on the result.
     // @param tx_data_len The length of the raw transaction data
     // @param tx_data The raw transaction data
     func decode{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
         tx_data_len: felt, tx_data: felt*
-    ) -> (
-        msg_hash: Uint256,
-        nonce: felt,
-        gas_price: felt,
-        gas_limit: felt,
-        destination: felt,
-        amount: Uint256,
-        chain_id: felt,
-        payload_len: felt,
-        payload: felt*,
-        access_list_len: felt,
-        access_list: felt*,
-    ) {
-        let _is_legacy = is_legacy_tx(tx_data);
-        if (_is_legacy == FALSE) {
-            return decode_tx(tx_data_len, tx_data);
-        } else {
-            return decode_legacy_tx(tx_data_len, tx_data);
-        }
+    ) -> model.EthTransaction* {
+        let tx_type = get_tx_type(tx_data);
+        tempvar offset = 1 + 3 * tx_type;
+
+        [ap] = bitwise_ptr, ap++;
+        [ap] = range_check_ptr, ap++;
+        [ap] = tx_data_len, ap++;
+        [ap] = tx_data, ap++;
+        jmp rel offset;
+        call decode_legacy_tx;
+        ret;
+        call decode_2930;
+        ret;
+        call decode_1559;
+        ret;
     }
 
     // @notice Validate an Ethereum transaction
@@ -246,25 +216,31 @@ namespace EthTransaction {
         tx_data: felt*,
     ) {
         alloc_locals;
-        let (msg_hash, nonce, _gas_price, _gas_limit, _, _, _chain_id, _, _, _, _) = decode(
-            tx_data_len, tx_data
-        );
-        assert nonce = account_nonce;
-        assert chain_id = _chain_id;
+        let tx = decode(tx_data_len, tx_data);
+        assert tx.signer_nonce = account_nonce;
+        assert tx.chain_id = chain_id;
 
         // Note: here, the validate process assumes an ECDSA signature, and r, s, v field
         // Technically, the transaction type can determine the signature scheme.
-        let _is_legacy = is_legacy_tx(tx_data);
-        if (_is_legacy != FALSE) {
-            tempvar y_parity = (v - 2 * chain_id - 35);
+        let tx_type = get_tx_type(tx_data);
+        local y_parity: felt;
+        if (tx_type == 0) {
+            assert y_parity = (v - 2 * chain_id - 35);
         } else {
-            tempvar y_parity = v;
+            assert y_parity = v;
         }
 
         let (local words: felt*) = alloc();
+        bytes_to_bytes8_little_endian(words, tx_data_len, tx_data);
+
         let (keccak_ptr: felt*) = alloc();
         let keccak_ptr_start = keccak_ptr;
         with keccak_ptr {
+            // From keccak/cairo_keccak_bigend doc:
+            // > To use this function, split the input into words of 64 bits (little endian).
+            // > Same as keccak, but outputs the hash in big endian representation.
+            // > Note that the input is still treated as little endian.
+            let (msg_hash) = cairo_keccak_bigend(inputs=words, n_bytes=tx_data_len);
             verify_eth_signature_uint256(
                 msg_hash=msg_hash, r=r, s=s, v=y_parity, eth_address=address
             );

@@ -22,7 +22,7 @@ from kakarot.storages import (
     contract_account_class_hash,
     account_proxy_class_hash,
     precompiles_class_hash,
-    coinbase
+    coinbase,
 )
 from backend.starknet import Starknet, Internals as StarknetInternals
 from utils.dict import dict_keys, dict_values
