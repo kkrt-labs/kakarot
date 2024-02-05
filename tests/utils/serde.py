@@ -40,15 +40,15 @@ class Serde:
             ),
         }
 
-    def serialize_storage(self, storage_ptr):
-        storage_ptr = storage_ptr - storage_ptr.offset
-        storage_size = self.runner.segments.get_segment_size(storage_ptr.segment_index)
-        storage = {}
-        for storage_index in range(0, storage_size, 3):
-            key = self.memory.get(storage_ptr + storage_index)
-            value_ptr = self.memory.get(storage_ptr + storage_index + 2)
-            storage[key] = self.serialize_uint256(value_ptr) if value_ptr != 0 else ""
-        return storage
+    def serialize_dict(self, dict_ptr):
+        dict_ptr = dict_ptr - dict_ptr.offset
+        dict_size = self.runner.segments.get_segment_size(dict_ptr.segment_index)
+        output = {}
+        for dict_index in range(0, dict_size, 3):
+            key = self.memory.get(dict_ptr + dict_index)
+            value_ptr = self.memory.get(dict_ptr + dict_index + 2)
+            output[key] = self.serialize_uint256(value_ptr) if value_ptr != 0 else ""
+        return output
 
     def serialize_uint256(self, uint256_ptr):
         return hex(
@@ -70,7 +70,7 @@ class Serde:
         return {
             "address": self.serialize_address(address_ptr),
             "code": self.read_segment(code_ptr),
-            "storage": self.serialize_storage(storage_ptr),
+            "storage": self.serialize_dict(storage_ptr),
             "nonce": self.memory.get(
                 account_ptr + account_scope.members["nonce"].offset
             ),
@@ -187,6 +187,15 @@ class Serde:
             "chain_id": self.memory.get(tx_ptr + tx_scope.members["chain_id"].offset),
         }
 
+    def serialize_stack(self, stack_ptr):
+        stack_scope = get_struct_scope(self.runner, "Stack")
+        dict_ptr = self.memory.get(
+            stack_ptr + stack_scope.members["dict_ptr_start"].offset
+        )
+        stack_dict = self.serialize_dict(dict_ptr)
+        stack_size = self.memory.get(stack_ptr + stack_scope.members["size"].offset)
+        return [stack_dict[i] for i in range(stack_size)]
+
     def serialize_scope(self, scope, scope_ptr):
         if scope.path[-1] == "State":
             return self.serialize_state(scope_ptr)
@@ -200,6 +209,8 @@ class Serde:
             return self.serialize_transfer(scope_ptr)
         if scope.path[-1] == "EthTransaction":
             return self.serialize_eth_transaction(scope_ptr)
+        if scope.path[-1] == "Stack":
+            return self.serialize_stack(scope_ptr)
         raise ValueError(f"Unknown scope {scope}")
 
     def serialize(self, cairo_type, i=1):
