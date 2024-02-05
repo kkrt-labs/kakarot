@@ -33,3 +33,7 @@ func evm_to_starknet_address(evm_address: felt) -> (starknet_address: felt) {
 @storage_var
 func coinbase() -> (res: felt) {
 }
+
+@storage_var
+func base_fee() -> (res: felt) {
+}

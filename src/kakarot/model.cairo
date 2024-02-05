@@ -143,6 +143,7 @@ namespace model {
     // @param block_timestamp The timestamp of the current block.
     // @param block_hashes The last 256 accessible block hashes
     // @param coinbase The address of the miner of the current block.
+    // @param base_fee The basefee of the current block.
     struct Environment {
         origin: felt,
         gas_price: felt,
@@ -153,6 +154,7 @@ namespace model {
         block_timestamp: felt,
         block_hashes: Uint256*,
         coinbase: felt,
+        base_fee: felt,
     }
 
     // @dev The parent EVM struct is used to store the parent EVM context of the current execution context.

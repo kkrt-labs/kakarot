@@ -119,7 +119,7 @@ namespace BlockInformation {
         basefee:
         let evm = cast([fp - 3], model.EVM*);
         let stack = cast([fp - 6], model.Stack*);
-        Stack.push_uint128(evm.message.env.gas_price);
+        Stack.push_uint128(evm.message.env.base_fee);
         jmp end;
 
         end:

@@ -18,7 +18,7 @@ from kakarot.storages import (
     externally_owned_account_class_hash,
     native_token_address,
     precompiles_class_hash,
-    coinbase
+    coinbase,
 )
 from kakarot.interpreter import Interpreter
 from kakarot.instructions.system_operations import CreateHelper
