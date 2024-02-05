@@ -172,9 +172,6 @@ namespace EthTransaction {
     }
 
     // @notice Decode a raw Ethereum transaction
-    // @dev This function decodes a raw Ethereum transaction. It checks if the transaction
-    // is a legacy transaction or a modern transaction, and calls the appropriate decode function
-    // (decode_legacy_tx or decode_2930) based on the result.
     // @param tx_data_len The length of the raw transaction data
     // @param tx_data The raw transaction data
     func decode{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
