@@ -79,6 +79,18 @@ namespace IKakarot {
     func get_native_token() -> (native_token_address: felt) {
     }
 
+    func set_base_fee(base_fee_: felt) {
+    }
+
+    func get_base_fee() -> (base_fee: felt) {
+    }
+
+    func set_coinbase(coinbase_: felt) {
+    }
+
+    func get_coinbase() -> (coinbase: felt) {
+    }
+
     func deploy_externally_owned_account(evm_address: felt) {
     }
 

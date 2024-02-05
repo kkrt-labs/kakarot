@@ -4,7 +4,6 @@ import random
 import pytest
 import pytest_asyncio
 from starknet_py.contract import Contract
-from starknet_py.net.account.account import Account
 from starknet_py.net.full_node_client import FullNodeClient
 
 from tests.end_to_end.bytecodes import test_cases
@@ -144,41 +143,6 @@ class TestKakarot:
                 await eoa.functions["get_evm_address"].call()
             ).evm_address
             assert actual_evm_address == int(evm_address, 16)
-
-        async def test_should_send_fees_to_caller(
-            self,
-            starknet: FullNodeClient,
-            fund_starknet_address,
-            deploy_externally_owned_account,
-            is_account_deployed,
-            compute_starknet_address,
-            deployer: Account,
-            eth_balance_of,
-            deploy_fee: int,
-        ):
-            seed = random.randint(0, 0x5EED)
-            evm_address = generate_random_evm_address(seed=seed)
-            while await is_account_deployed(evm_address):
-                seed += 1
-                evm_address = generate_random_evm_address(seed=seed)
-
-            starknet_address = await compute_starknet_address(evm_address)
-            await fund_starknet_address(starknet_address, PRE_FUND_AMOUNT / 1e18)
-
-            eoa_balance_prev = await eth_balance_of(starknet_address)
-            deployer_balance_prev = await eth_balance_of(deployer.address)
-
-            tx = await deploy_externally_owned_account(evm_address)
-            receipt = await starknet.get_transaction_receipt(tx.hash)
-
-            deployer_balance_after = await eth_balance_of(deployer.address)
-            eoa_balance_after = await eth_balance_of(starknet_address)
-
-            assert (
-                deployer_balance_after - deployer_balance_prev
-                == deploy_fee - receipt.actual_fee
-            )
-            assert eoa_balance_prev - eoa_balance_after == deploy_fee
 
     class TestEthCallNativeCoinTransfer:
         async def test_eth_call_should_succeed(

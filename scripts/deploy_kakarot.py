@@ -5,7 +5,6 @@ from asyncio import run
 
 from scripts.constants import (
     DECLARED_CONTRACTS,
-    DEPLOY_FEE,
     DEPLOYER_ACCOUNT_PRIVATE_KEY,
     ETH_TOKEN_ADDRESS,
     EVM_ADDRESS,
@@ -49,7 +48,6 @@ async def main():
         class_hash["contract_account"],  # contract_account_class_hash_
         class_hash["externally_owned_account"],  # externally_owned_account_class_hash
         class_hash["proxy"],  # account_proxy_class_hash
-        DEPLOY_FEE,
         class_hash["Precompiles"],
     )
 
