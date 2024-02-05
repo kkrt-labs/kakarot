@@ -18,7 +18,7 @@ from starkware.starknet.common.syscalls import (
 )
 
 from kakarot.account import Account
-from kakarot.precompiles import Precompiles
+from kakarot.precompiles.precompiles import Precompiles
 from kakarot.constants import Constants
 from kakarot.events import evm_contract_deployed
 from kakarot.interfaces.interfaces import IERC20, IContractAccount, IAccount
@@ -162,7 +162,7 @@ namespace Internals {
             // There is no reason to have has_code_or_nonce available in the public API
             // for model.Account, but safe to use here
             let code_or_nonce = Account.has_code_or_nonce(self);
-            let is_precompile = Precompile.is_precompile(self.address.evm);
+            let is_precompile = Precompiles.is_precompile(self.address.evm);
 
             if (code_or_nonce * (1 - is_precompile) != FALSE) {
                 // Deploy accounts
