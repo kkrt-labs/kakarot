@@ -65,6 +65,7 @@ COPY --from=builder /build/tests /app/kakarot/tests/
 COPY --from=builder /build/src/kakarot/kakarot.cairo /app/kakarot/src/kakarot/
 COPY --from=builder /build/src/kakarot/accounts /app/kakarot/src/kakarot/accounts/
 COPY --from=builder /build/src/kakarot/precompiles /app/kakarot/src/kakarot/precompiles/
+COPY --from=builder /build/src/utils/OpenzeppelinAccount.cairo /app/kakarot/src/utils/
 
 # Copy poetry lock and toml
 COPY --from=builder /build/poetry.lock /app/kakarot/
