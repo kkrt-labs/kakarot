@@ -143,6 +143,7 @@ namespace model {
     // @param block_timestamp The timestamp of the current block.
     // @param block_hashes The last 256 accessible block hashes
     // @param coinbase The address of the miner of the current block.
+    // @param base_fee The basefee of the current block.
     struct Environment {
         origin: felt,
         gas_price: felt,
@@ -153,6 +154,7 @@ namespace model {
         block_timestamp: felt,
         block_hashes: Uint256*,
         coinbase: felt,
+        base_fee: felt,
     }
 
     // @dev The parent EVM struct is used to store the parent EVM context of the current execution context.
@@ -163,7 +165,6 @@ namespace model {
         state: State*,
     }
 
-    // @dev Stores the constant data of an opcode
     // @dev Stores the constant data of an opcode
     // @param number The opcode number
     // @param gas The minimum gas used by the opcode (not including possible dynamic gas)
@@ -176,5 +177,21 @@ namespace model {
         stack_input: felt,
         stack_size_min: felt,
         stack_size_diff: felt,
+    }
+
+    // @notice A normalized Ethereum transaction
+    // @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1559.md
+    struct EthTransaction {
+        signer_nonce: felt,
+        gas_limit: felt,
+        max_priority_fee_per_gas: felt,
+        max_fee_per_gas: felt,
+        destination: felt,
+        amount: Uint256,
+        payload_len: felt,
+        payload: felt*,
+        access_list_len: felt,
+        access_list: felt*,
+        chain_id: felt,
     }
 }

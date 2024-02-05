@@ -22,6 +22,7 @@ from kakarot.storages import (
     contract_account_class_hash,
     account_proxy_class_hash,
     precompiles_class_hash,
+    coinbase,
 )
 from backend.starknet import Starknet, Internals as StarknetInternals
 from utils.dict import dict_keys, dict_values
@@ -38,6 +39,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     contract_account_class_hash.write(contract_account_class_hash_);
     account_proxy_class_hash.write(account_proxy_class_hash_);
     precompiles_class_hash.write(precompiles_class_hash_);
+    coinbase.write(0xCA40796aFB5472abaeD28907D5ED6FC74c04954a);
     return ();
 }
 

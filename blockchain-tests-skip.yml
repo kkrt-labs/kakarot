@@ -1298,7 +1298,9 @@ testname:
     - storageCosts_d5g0v0_Shanghai
     - variedContext_d0g0v0_Shanghai
     - variedContext_d10g0v0_Shanghai
+    - variedContext_d11g0v0_Shanghai
     - variedContext_d12g0v0_Shanghai
+    - variedContext_d13g0v0_Shanghai
     - variedContext_d14g0v0_Shanghai
     - variedContext_d15g0v0_Shanghai
     - variedContext_d16g0v0_Shanghai
@@ -1753,11 +1755,12 @@ testname:
     - Return50000_2_d0g1v0_Shanghai
     - Return50000_d0g1v0_Shanghai
   stRandom:
+    - randomStatetest1_d0g0v0_Shanghai
     - randomStatetest100_d0g0v0_Shanghai
     - randomStatetest138_d0g0v0_Shanghai
     - randomStatetest139_d0g0v0_Shanghai
-    - randomStatetest143_d0g0v0_Shanghai
     - randomStatetest14_d0g0v0_Shanghai
+    - randomStatetest143_d0g0v0_Shanghai
     - randomStatetest153_d0g0v0_Shanghai
     - randomStatetest157_d0g0v0_Shanghai
     - randomStatetest159_d0g0v0_Shanghai
@@ -1776,17 +1779,19 @@ testname:
     - randomStatetest248_d0g0v0_Shanghai
     - randomStatetest26_d0g0v0_Shanghai
     - randomStatetest273_d0g0v0_Shanghai
-    - randomStatetest303_d0g0v0_Shanghai
+    - randomStatetest3_d0g0v0_Shanghai
     - randomStatetest30_d0g0v0_Shanghai
+    - randomStatetest303_d0g0v0_Shanghai
+    - randomStatetest32_d0g0v0_Shanghai
     - randomStatetest326_d0g0v0_Shanghai
+    - randomStatetest343_d0g0v0_Shanghai
     - randomStatetest354_d0g0v0_Shanghai
+    - randomStatetest36_d0g0v0_Shanghai
     - randomStatetest365_d0g0v0_Shanghai
     - randomStatetest367_d0g0v0_Shanghai
-    - randomStatetest36_d0g0v0_Shanghai
     - randomStatetest376_d0g0v0_Shanghai
     - randomStatetest382_d0g0v0_Shanghai
     - randomStatetest384_d0g0v0_Shanghai
-    - randomStatetest3_d0g0v0_Shanghai
     - randomStatetest43_d0g0v0_Shanghai
     - randomStatetest48_d0g0v0_Shanghai
     - randomStatetest64_d0g0v0_Shanghai
@@ -2059,6 +2064,7 @@ testname:
     - SuicidesAndInternlCallSuicidesSuccess_d1g0v0_Shanghai
     - TransactionSendingToZero_d0g0v0_Shanghai
     - ValueOverflow_d0g0v0_Shanghai
+    - SuicidesAndInternlCallSuicidesOOG_d0g0v0_Shanghai
   stTransitionTest:
     - delegatecallAfterTransition_d0g0v0_Shanghai
     - delegatecallAtTransition_d0g0v0_Shanghai

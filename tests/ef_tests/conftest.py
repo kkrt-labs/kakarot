@@ -11,8 +11,6 @@ from starkware.starknet.core.os.contract_address.contract_address import (
 from starkware.starknet.testing.contract import DeclaredClass, StarknetContract
 from starkware.starknet.testing.starknet import Starknet
 
-from tests.utils.constants import DEPLOY_FEE
-
 # Root of the GeneralStateTest in BlockchainTest format
 EF_GENERAL_STATE_TEST_ROOT_PATH = Path(
     "./tests/ef_tests/test_data/BlockchainTests/GeneralStateTests/"
@@ -86,7 +84,6 @@ async def kakarot(
             contract_account_class.class_hash,  # contract_account_class_hash_
             externally_owned_account_class.class_hash,  # externally_owned_account_class_hash
             account_proxy_class.class_hash,  # account_proxy_class_hash
-            DEPLOY_FEE,
         ],
     )
     return kakarot

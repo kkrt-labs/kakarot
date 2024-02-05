@@ -29,6 +29,8 @@ from kakarot.storages import (
     contract_account_class_hash,
     account_proxy_class_hash,
     evm_to_starknet_address,
+    coinbase,
+    base_fee,
 )
 
 namespace Starknet {
@@ -97,11 +99,15 @@ namespace Starknet {
     }
 
     // @notice Populate a Environment with Starknet syscalls
-    func get_env{syscall_ptr: felt*}(origin: felt, gas_price: felt) -> model.Environment* {
+    func get_env{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        origin: felt, gas_price: felt
+    ) -> model.Environment* {
         alloc_locals;
         let (block_number) = get_block_number();
         let (block_timestamp) = get_block_timestamp();
         let (tx_info) = get_tx_info();
+        let (coinbase_) = coinbase.read();
+        let (base_fee_) = base_fee.read();
         let (block_hashes) = alloc();
         // TODO: fix how blockhashes are retrieved
         memset(block_hashes, 0, 256 * 2);
@@ -116,7 +122,8 @@ namespace Starknet {
             block_gas_limit=Constants.BLOCK_GAS_LIMIT,
             block_timestamp=block_timestamp,
             block_hashes=cast(block_hashes, Uint256*),
-            coinbase=0xCA40796aFB5472abaeD28907D5ED6FC74c04954a,
+            coinbase=coinbase_,
+            base_fee=base_fee_,
         );
     }
 }

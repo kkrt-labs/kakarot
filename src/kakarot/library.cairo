@@ -14,10 +14,11 @@ from kakarot.account import Account
 from kakarot.storages import (
     account_proxy_class_hash,
     contract_account_class_hash,
-    deploy_fee,
+    base_fee,
     externally_owned_account_class_hash,
     native_token_address,
     precompiles_class_hash,
+    coinbase,
 )
 from kakarot.interpreter import Interpreter
 from kakarot.instructions.system_operations import CreateHelper
@@ -35,7 +36,6 @@ namespace Kakarot {
     // @param contract_account_class_hash_ The clash hash of the contract account.
     // @param externally_owned_account_class_hash_ The externally owned account class hash.
     // @param account_proxy_class_hash_ The account proxy class hash.
-    // @param deploy_fee_ The deploy fee for deploying EOA on Kakarot.
     // @param precompiles_class_hash_ The precompiles class hash for precompiles not implemented in Kakarot.
     func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         owner: felt,
@@ -43,7 +43,6 @@ namespace Kakarot {
         contract_account_class_hash_,
         externally_owned_account_class_hash_,
         account_proxy_class_hash_,
-        deploy_fee_,
         precompiles_class_hash_,
     ) {
         Ownable.initializer(owner);
@@ -51,8 +50,8 @@ namespace Kakarot {
         contract_account_class_hash.write(contract_account_class_hash_);
         externally_owned_account_class_hash.write(externally_owned_account_class_hash_);
         account_proxy_class_hash.write(account_proxy_class_hash_);
-        deploy_fee.write(deploy_fee_);
         precompiles_class_hash.write(precompiles_class_hash_);
+        coinbase.write(0xCA40796aFB5472abaeD28907D5ED6FC74c04954a);
         return ();
     }
 
@@ -135,25 +134,42 @@ namespace Kakarot {
         return (native_token_address_,);
     }
 
-    // @notice Set the deploy fee for deploying EOA on Kakarot.
-    // @dev Set the deploy fee to be returned to a deployer for deploying accounts.
-    // @param deploy_fee_ The new deploy fee.
-    func set_deploy_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        deploy_fee_: felt
+    // @notice Set the block base fee.
+    // @param base_fee_ The new base fee.
+    func set_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        base_fee_: felt
     ) {
         Ownable.assert_only_owner();
-        deploy_fee.write(deploy_fee_);
+        base_fee.write(base_fee_);
         return ();
     }
 
-    // @notice Get the deploy fee for deploying EOA on Kakarot.
-    // @dev Return the deploy fee which is returned to a deployer for deploying accounts.
-    // @return deploy_fee The deploy fee which is returned to a deployer for deploying accounts.
-    func get_deploy_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
-        deploy_fee: felt
+    // @notice Get the block base fee.
+    // @return base_fee The current block base fee.
+    func get_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        base_fee: felt
     ) {
-        let (deploy_fee_) = deploy_fee.read();
-        return (deploy_fee_,);
+        let (base_fee_) = base_fee.read();
+        return (base_fee_,);
+    }
+
+    // @notice Set the coinbase address.
+    // @param coinbase_ The new coinbase address.
+    func set_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        coinbase_: felt
+    ) {
+        Ownable.assert_only_owner();
+        coinbase.write(coinbase_);
+        return ();
+    }
+
+    // @notice Get the coinbase address.
+    // @return coinbase The current coinbase.
+    func get_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        coinbase: felt
+    ) {
+        let (coinbase_) = coinbase.read();
+        return (coinbase_,);
     }
 
     // @notice Deploy a new externally owned account.
@@ -166,18 +182,6 @@ namespace Kakarot {
 
         let (class_hash) = externally_owned_account_class_hash.read();
         let (starknet_contract_address) = Starknet.deploy(class_hash, evm_contract_address);
-
-        let (local native_token_address) = get_native_token();
-        let (local deploy_fee) = get_deploy_fee();
-
-        let amount = Helpers.to_uint256(deploy_fee);
-        let (caller_address) = get_caller_address();
-        let (success) = IERC20.transferFrom(
-            contract_address=native_token_address,
-            sender=starknet_contract_address,
-            recipient=caller_address,
-            amount=[amount],
-        );
 
         return (starknet_contract_address=starknet_contract_address);
     }

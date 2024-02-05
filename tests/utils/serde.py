@@ -1,5 +1,6 @@
 from functools import cache
 
+from eth_utils.address import to_checksum_address
 from starkware.cairo.lang.compiler.ast.cairo_types import (
     TypeFelt,
     TypePointer,
@@ -33,11 +34,9 @@ class Serde:
     def serialize_address(self, address_ptr):
         address_scope = get_struct_scope(self.runner, "Address")
         return {
-            "starknet": hex(
-                self.memory.get(address_ptr + address_scope.members["starknet"].offset)
-            ),
-            "evm": hex(
-                self.memory.get(address_ptr + address_scope.members["evm"].offset)
+            "starknet": f'0x{self.memory.get(address_ptr + address_scope.members["starknet"].offset):064x}',
+            "evm": to_checksum_address(
+                f'0x{self.memory.get(address_ptr + address_scope.members["evm"].offset):040x}'
             ),
         }
 
@@ -149,6 +148,40 @@ class Serde:
             ),
         }
 
+    def serialize_eth_transaction(self, tx_ptr):
+        tx_scope = get_struct_scope(self.runner, "EthTransaction")
+        payload_ptr = self.memory.get(tx_ptr + tx_scope.members["payload"].offset)
+        payload_len = self.memory.get(tx_ptr + tx_scope.members["payload_len"].offset)
+        access_list_ptr = self.memory.get(
+            tx_ptr + tx_scope.members["access_list"].offset
+        )
+        access_list_len = self.memory.get(
+            tx_ptr + tx_scope.members["access_list_len"].offset
+        )
+        return {
+            "signer_nonce": self.memory.get(
+                tx_ptr + tx_scope.members["signer_nonce"].offset
+            ),
+            "gas_limit": self.memory.get(tx_ptr + tx_scope.members["gas_limit"].offset),
+            "max_priority_fee_per_gas": self.memory.get(
+                tx_ptr + tx_scope.members["max_priority_fee_per_gas"].offset
+            ),
+            "max_fee_per_gas": self.memory.get(
+                tx_ptr + tx_scope.members["max_fee_per_gas"].offset
+            ),
+            "destination": to_checksum_address(
+                f'0x{self.memory.get(tx_ptr + tx_scope.members["destination"].offset):040x}'
+            ),
+            "amount": self.serialize_uint256(
+                tx_ptr + tx_scope.members["amount"].offset
+            ),
+            "payload": "0x" + bytes(self.read_segment(payload_ptr)[:payload_len]).hex(),
+            "access_list": self.read_segment(access_list_ptr)[:access_list_len]
+            if access_list_len > 0
+            else [],
+            "chain_id": self.memory.get(tx_ptr + tx_scope.members["chain_id"].offset),
+        }
+
     def serialize_scope(self, scope, scope_ptr):
         if scope.path[-1] == "State":
             return self.serialize_state(scope_ptr)
@@ -160,6 +193,8 @@ class Serde:
             return self.serialize_event(scope_ptr)
         if scope.path[-1] == "Transfer":
             return self.serialize_transfer(scope_ptr)
+        if scope.path[-1] == "EthTransaction":
+            return self.serialize_eth_transaction(scope_ptr)
         raise ValueError(f"Unknown scope {scope}")
 
     def serialize(self, cairo_type, i=1):

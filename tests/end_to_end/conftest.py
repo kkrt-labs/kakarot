@@ -150,14 +150,6 @@ def kakarot(deployer) -> Contract:
     return get_contract("kakarot", provider=deployer)
 
 
-@pytest_asyncio.fixture(scope="session")
-async def deploy_fee(kakarot: Contract) -> int:
-    """
-    Return a cached deploy_fee for the whole session.
-    """
-    return (await kakarot.functions["get_deploy_fee"].call()).deploy_fee
-
-
 @pytest.fixture(scope="session")
 def compute_starknet_address(kakarot: Contract):
     """

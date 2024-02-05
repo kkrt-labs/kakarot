@@ -24,7 +24,6 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     contract_account_class_hash_: felt,
     externally_owned_account_class_hash: felt,
     account_proxy_class_hash: felt,
-    deploy_fee: felt,
     precompiles_class_hash: felt,
 ) {
     return Kakarot.constructor(
@@ -33,7 +32,6 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
         contract_account_class_hash_,
         externally_owned_account_class_hash,
         account_proxy_class_hash,
-        deploy_fee,
         precompiles_class_hash,
     );
 }
@@ -58,24 +56,40 @@ func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
     return Kakarot.get_native_token();
 }
 
-// @notice Set the deploy fee for deploying EOA on Kakarot.
-// @dev Set the deploy fee to be returned to a deployer for deploying accounts.
-// @param deploy_fee_ The new deploy fee.
+// @notice Set the block base fee.
+// @param base_fee_ The new base fee.
 @external
-func set_deploy_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    deploy_fee_: felt
+func set_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    base_fee_: felt
 ) {
-    return Kakarot.set_deploy_fee(deploy_fee_);
+    return Kakarot.set_base_fee(base_fee_);
 }
 
-// @notice Get the deploy fee for deploying EOA on Kakarot.
-// @dev Return the deploy fee which is returned to a deployer for deploying accounts.
-// @return deploy_fee The deploy fee which is returned to a deployer for deploying accounts.
+// @notice Get the block base fee.
+// @return base_fee The current block base fee.
 @view
-func get_deploy_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
-    deploy_fee: felt
+func get_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    base_fee: felt
 ) {
-    return Kakarot.get_deploy_fee();
+    return Kakarot.get_base_fee();
+}
+
+// @notice Set the coinbase.
+// @param coinbase_ The new coinbase address.
+@external
+func set_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    coinbase_: felt
+) {
+    return Kakarot.set_coinbase(coinbase_);
+}
+
+// @notice Get the coinbase address.
+// @return coinbase The coinbase address.
+@view
+func get_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    coinbase: felt
+) {
+    return Kakarot.get_coinbase();
 }
 
 // @notice Compute the starknet address of a contract given its EVM address

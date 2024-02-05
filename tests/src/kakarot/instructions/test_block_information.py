@@ -21,6 +21,7 @@ class TestBlockInformation:
             (Opcodes.BASEFEE, [0, 0]),
         ],
     )
+    @SyscallHandler.patch("coinbase", 0xCA40796AFB5472ABAED28907D5ED6FC74C04954A)
     def test__exec_block_information(self, cairo_run, opcode, expected_result):
         output = cairo_run("test__exec_block_information", opcode=opcode)
         assert output == list(expected_result)

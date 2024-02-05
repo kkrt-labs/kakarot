@@ -2,7 +2,6 @@
 
 %lang starknet
 
-// Starkware dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
@@ -18,18 +17,17 @@ from starkware.cairo.common.uint256 import (
 )
 from starkware.cairo.common.dict_access import DictAccess
 
-// Internal dependencies
+from backend.starknet import Starknet
+from kakarot.account import Account
 from kakarot.constants import Constants
 from kakarot.evm import EVM
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.account import Account
 from utils.utils import Helpers
-from backend.starknet import Starknet
 
 namespace TestHelpers {
-    func init_evm_at_address{syscall_ptr: felt*, range_check_ptr}(
+    func init_evm_at_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         bytecode_len: felt,
         bytecode: felt*,
         starknet_contract_address: felt,
@@ -66,12 +64,12 @@ namespace TestHelpers {
         return evm;
     }
 
-    func init_evm{syscall_ptr: felt*, range_check_ptr}() -> model.EVM* {
+    func init_evm{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> model.EVM* {
         let (bytecode) = alloc();
         return init_evm_at_address(0, bytecode, 0, 0);
     }
 
-    func init_evm_with_bytecode{syscall_ptr: felt*, range_check_ptr}(
+    func init_evm_with_bytecode{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         bytecode_len: felt, bytecode: felt*
     ) -> model.EVM* {
         return init_evm_at_address(bytecode_len, bytecode, 0, 0);
