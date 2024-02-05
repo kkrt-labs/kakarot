@@ -28,6 +28,7 @@ from kakarot.storages import (
     contract_account_class_hash,
     account_proxy_class_hash,
     evm_to_starknet_address,
+    coinbase
 )
 
 namespace Starknet {
@@ -101,6 +102,7 @@ namespace Starknet {
         let (block_number) = get_block_number();
         let (block_timestamp) = get_block_timestamp();
         let (tx_info) = get_tx_info();
+        let (coinbase_) = coinbase.read();
         let (block_hashes) = alloc();
         // TODO: fix how blockhashes are retrieved
         memset(block_hashes, 0, 256 * 2);
@@ -115,7 +117,7 @@ namespace Starknet {
             block_gas_limit=Constants.BLOCK_GAS_LIMIT,
             block_timestamp=block_timestamp,
             block_hashes=cast(block_hashes, Uint256*),
-            coinbase=0xCA40796aFB5472abaeD28907D5ED6FC74c04954a,
+            coinbase=coinbase_,
         );
     }
 }

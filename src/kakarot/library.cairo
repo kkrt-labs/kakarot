@@ -18,6 +18,7 @@ from kakarot.storages import (
     externally_owned_account_class_hash,
     native_token_address,
     precompiles_class_hash,
+    coinbase
 )
 from kakarot.interpreter import Interpreter
 from kakarot.instructions.system_operations import CreateHelper
@@ -53,6 +54,7 @@ namespace Kakarot {
         account_proxy_class_hash.write(account_proxy_class_hash_);
         deploy_fee.write(deploy_fee_);
         precompiles_class_hash.write(precompiles_class_hash_);
+        coinbase.write(0xCA40796aFB5472abaeD28907D5ED6FC74c04954a);
         return ();
     }
 
