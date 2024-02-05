@@ -878,13 +878,6 @@ namespace CallHelper {
         let is_reverted = is_not_zero(evm.reverted);
         Stack.push_uint128(1 - is_reverted);
 
-        // Store RETURN_DATA in memory
-        let actual_output_size_is_ret_size = is_le(ret_size.low, evm.return_data_len);
-        let actual_output_size = actual_output_size_is_ret_size * ret_size.low + (
-            1 - actual_output_size_is_ret_size
-        ) * evm.return_data_len;
-        Memory.store_n(actual_output_size, evm.return_data, ret_offset.low);
-
         // Gas not used is returned when evm is not reverted
         local gas_left;
         local gas_refund;
@@ -895,6 +888,28 @@ namespace CallHelper {
             assert gas_left = evm.message.parent.evm.gas_left;
             assert gas_refund = evm.message.parent.evm.gas_refund;
         }
+
+        // If the call has halted exceptionnaly, the return_data is empty
+        // and nothing is copied to memory.
+        if (evm.reverted == 2) {
+            tempvar evm = new model.EVM(
+                message=evm.message.parent.evm.message,
+                return_data_len=0,
+                return_data=evm.return_data,
+                program_counter=evm.message.parent.evm.program_counter + 1,
+                stopped=evm.message.parent.evm.stopped,
+                gas_left=gas_left,
+                gas_refund=gas_refund,
+                reverted=evm.message.parent.evm.reverted,
+            );
+            return evm;
+        }
+
+        let actual_output_size_is_ret_size = is_le(ret_size.low, evm.return_data_len);
+        let actual_output_size = actual_output_size_is_ret_size * ret_size.low + (
+            1 - actual_output_size_is_ret_size
+        ) * evm.return_data_len;
+        Memory.store_n(actual_output_size, evm.return_data, ret_offset.low);
 
         tempvar evm = new model.EVM(
             message=evm.message.parent.evm.message,
@@ -1074,7 +1089,12 @@ namespace CreateHelper {
         Stack.push(address);
 
         if (success == FALSE) {
-            // REVERTED, just returns previous EVM
+            // On revert, return the previous evm with an empty
+            // return data if the revert is an exceptional halt (type 2),
+            // otherwise return with the return data.
+            tempvar is_exceptional_revert = (is_not_zero(1 - evm.reverted));
+            let return_data_len = (1 - is_exceptional_revert) * evm.return_data_len;
+
             tempvar evm = new model.EVM(
                 message=evm.message.parent.evm.message,
                 return_data_len=evm.return_data_len,
@@ -1095,7 +1115,7 @@ namespace CreateHelper {
 
         tempvar evm = new model.EVM(
             message=evm.message.parent.evm.message,
-            return_data_len=evm.return_data_len,
+            return_data_len=0,
             return_data=evm.return_data,
             program_counter=evm.message.parent.evm.program_counter + 1,
             stopped=evm.message.parent.evm.stopped,
