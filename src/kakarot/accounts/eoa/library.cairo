@@ -6,6 +6,7 @@ from starkware.cairo.common.uint256 import Uint256, uint256_not
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.memcpy import memcpy
+from starkware.cairo.common.math_cmp import is_le
 
 from kakarot.account import Account
 from kakarot.interfaces.interfaces import IERC20, IKakarot
@@ -152,17 +153,59 @@ namespace ExternallyOwnedAccount {
         let tx = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
 
         let (_kakarot_address) = kakarot_address.read();
-        let (return_data_len, return_data, success, gas_used) = IKakarot.eth_send_transaction(
-            contract_address=_kakarot_address,
-            to=tx.destination,
-            gas_limit=tx.gas_limit,
-            gas_price=tx.max_fee_per_gas,
-            value=tx.amount,
-            data_len=tx.payload_len,
-            data=tx.payload,
-            access_list_len=tx.access_list_len,
-            access_list=tx.access_list,
-        );
+        let (base_fee) = IKakarot.get_base_fee(_kakarot_address);
+
+        // ensure that the user was willing to at least pay the base fee
+        let enough_fee = is_le(base_fee, tx.max_fee_per_gas);
+        let max_fee_greater_priority_fee = is_le(tx.max_priority_fee_per_gas, tx.max_fee_per_gas);
+        if (enough_fee * max_fee_greater_priority_fee == 0) {
+            let (return_data: felt*) = alloc();
+            tempvar range_check_ptr = range_check_ptr;
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar return_data_len = 0;
+            tempvar return_data = return_data;
+            tempvar success = FALSE;
+            tempvar gas_used = 0;
+        } else {
+            // priority fee is capped because the base fee is filled first
+            let possible_priority_fee = tx.max_fee_per_gas - base_fee;
+            let priority_fee_is_max_priority_fee = is_le(
+                tx.max_priority_fee_per_gas, possible_priority_fee
+            );
+            let priority_fee_per_gas = priority_fee_is_max_priority_fee *
+                tx.max_priority_fee_per_gas + (1 - priority_fee_is_max_priority_fee) *
+                possible_priority_fee;
+            // signer pays both the priority fee and the base fee
+            let effective_gas_price = priority_fee_per_gas + base_fee;
+
+            let (return_data_len, return_data, success, gas_used) = IKakarot.eth_send_transaction(
+                contract_address=_kakarot_address,
+                to=tx.destination,
+                gas_limit=tx.gas_limit,
+                gas_price=effective_gas_price,
+                value=tx.amount,
+                data_len=tx.payload_len,
+                data=tx.payload,
+                access_list_len=tx.access_list_len,
+                access_list=tx.access_list,
+            );
+            tempvar range_check_ptr = range_check_ptr;
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar return_data_len = return_data_len;
+            tempvar return_data = return_data;
+            tempvar success = success;
+            tempvar gas_used = gas_used;
+        }
+        let range_check_ptr = [ap - 7];
+        let syscall_ptr = cast([ap - 6], felt*);
+        let pedersen_ptr = cast([ap - 5], HashBuiltin*);
+        let return_data_len = [ap - 4];
+        let return_data = cast([ap - 3], felt*);
+        let success = [ap - 2];
+        let gas_used = [ap - 1];
+
         memcpy(response, return_data, return_data_len);
 
         // See Argent account
