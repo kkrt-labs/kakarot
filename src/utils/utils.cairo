@@ -555,7 +555,6 @@ namespace Helpers {
         let bound = base;
         tempvar max = base - 1;
         let (output) = alloc();
-        let output_start = output;
 
         %{
             memory[ids.output] = res = (int(ids.value) % PRIME) % ids.base
@@ -566,8 +565,7 @@ namespace Helpers {
         assert [range_check_ptr + 1] = max - x;
 
         let range_check_ptr = range_check_ptr + 2;
-        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
-        if (is_x_eq_value == FALSE) {
+        if (value - x != 0) {
             return 16;
         }
         tempvar base = base / 256;
@@ -584,8 +582,7 @@ namespace Helpers {
         assert [range_check_ptr + 1] = max - x;
 
         let range_check_ptr = range_check_ptr + 2;
-        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
-        if (is_x_eq_value == FALSE) {
+        if (value - x != 0) {
             return 15;
         }
         tempvar base = base / 256;
@@ -602,8 +599,7 @@ namespace Helpers {
         assert [range_check_ptr + 1] = max - x;
 
         let range_check_ptr = range_check_ptr + 2;
-        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
-        if (is_x_eq_value == FALSE) {
+        if (value - x != 0) {
             return 14;
         }
         tempvar base = base / 256;
@@ -620,8 +616,7 @@ namespace Helpers {
         assert [range_check_ptr + 1] = max - x;
 
         let range_check_ptr = range_check_ptr + 2;
-        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
-        if (is_x_eq_value == FALSE) {
+        if (value - x != 0) {
             return 13;
         }
         tempvar base = base / 256;
@@ -638,8 +633,7 @@ namespace Helpers {
         assert [range_check_ptr + 1] = max - x;
 
         let range_check_ptr = range_check_ptr + 2;
-        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
-        if (is_x_eq_value == FALSE) {
+        if (value - x != 0) {
             return 12;
         }
         tempvar base = base / 256;
@@ -656,8 +650,7 @@ namespace Helpers {
         assert [range_check_ptr + 1] = max - x;
 
         let range_check_ptr = range_check_ptr + 2;
-        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
-        if (is_x_eq_value == FALSE) {
+        if (value - x != 0) {
             return 11;
         }
         tempvar base = base / 256;
@@ -674,8 +667,7 @@ namespace Helpers {
         assert [range_check_ptr + 1] = max - x;
 
         let range_check_ptr = range_check_ptr + 2;
-        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
-        if (is_x_eq_value == FALSE) {
+        if (value - x != 0) {
             return 10;
         }
         tempvar base = base / 256;
@@ -692,8 +684,7 @@ namespace Helpers {
         assert [range_check_ptr + 1] = max - x;
 
         let range_check_ptr = range_check_ptr + 2;
-        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
-        if (is_x_eq_value == FALSE) {
+        if (value - x != 0) {
             return 9;
         }
         tempvar base = base / 256;
@@ -710,8 +701,7 @@ namespace Helpers {
         assert [range_check_ptr + 1] = max - x;
 
         let range_check_ptr = range_check_ptr + 2;
-        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
-        if (is_x_eq_value == FALSE) {
+        if (value - x != 0) {
             return 8;
         }
         tempvar base = base / 256;
@@ -728,8 +718,7 @@ namespace Helpers {
         assert [range_check_ptr + 1] = max - x;
 
         let range_check_ptr = range_check_ptr + 2;
-        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
-        if (is_x_eq_value == FALSE) {
+        if (value - x != 0) {
             return 7;
         }
         tempvar base = base / 256;
@@ -746,8 +735,7 @@ namespace Helpers {
         assert [range_check_ptr + 1] = max - x;
 
         let range_check_ptr = range_check_ptr + 2;
-        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
-        if (is_x_eq_value == FALSE) {
+        if (value - x != 0) {
             return 6;
         }
         tempvar base = base / 256;
@@ -764,8 +752,7 @@ namespace Helpers {
         assert [range_check_ptr + 1] = max - x;
 
         let range_check_ptr = range_check_ptr + 2;
-        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
-        if (is_x_eq_value == FALSE) {
+        if (value - x != 0) {
             return 5;
         }
         tempvar base = base / 256;
@@ -782,8 +769,7 @@ namespace Helpers {
         assert [range_check_ptr + 1] = max - x;
 
         let range_check_ptr = range_check_ptr + 2;
-        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
-        if (is_x_eq_value == FALSE) {
+        if (value - x != 0) {
             return 4;
         }
         tempvar base = base / 256;
@@ -800,8 +786,7 @@ namespace Helpers {
         assert [range_check_ptr + 1] = max - x;
 
         let range_check_ptr = range_check_ptr + 2;
-        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
-        if (is_x_eq_value == FALSE) {
+        if (value - x != 0) {
             return 3;
         }
         tempvar base = base / 256;
@@ -818,8 +803,7 @@ namespace Helpers {
         assert [range_check_ptr + 1] = max - x;
 
         let range_check_ptr = range_check_ptr + 2;
-        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
-        if (is_x_eq_value == FALSE) {
+        if (value - x != 0) {
             return 2;
         }
         tempvar base = base / 256;
@@ -836,8 +820,7 @@ namespace Helpers {
         assert [range_check_ptr + 1] = max - x;
 
         let range_check_ptr = range_check_ptr + 2;
-        tempvar is_x_eq_value = (1 - is_not_zero(value - x));
-        if (is_x_eq_value == FALSE) {
+        if (value - x != 0) {
             return 1;
         }
 
