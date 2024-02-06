@@ -79,7 +79,7 @@ else:
         "rpc_url": os.getenv("RPC_URL"),
         "explorer_url": "",
         "devnet": False,
-        "check_interval": float(os.getenv("CHECK_INTERVAL", 0.3)),
+        "check_interval": float(os.getenv("CHECK_INTERVAL", 0.1)),
         "max_wait": float(os.getenv("MAX_WAIT", 30)),
     }
 

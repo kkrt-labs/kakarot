@@ -53,25 +53,28 @@ ENV PATH="$PATH:/root/.local/bin"
 ENV PYTHONPATH="/app/kakarot"
 RUN poetry config virtualenvs.create false
 
+# Copy poetry lock and toml
+COPY --from=builder /build/poetry.lock .
+COPY --from=builder /build/pyproject.toml .
+RUN poetry install
+
 # Copy only necessary artifacts from the builder stage
 # Correctly copy the deploy_kakarot.py script to its intended location
-COPY --from=builder /build/scripts/ /app/kakarot/scripts/
-COPY --from=builder /build/build /app/kakarot/build/
-COPY --from=builder /build/Makefile /app/kakarot/
-COPY --from=builder /build/tests /app/kakarot/tests/
+COPY --from=builder /build/scripts/ ./scripts/
+COPY --from=builder /build/build ./build/
+COPY --from=builder /build/Makefile .
+COPY --from=builder /build/tests ./tests/
 
 # Cairo Smart contracts are used in deploy_kakarot.py
 # To limit the probability of this Dockerfile to break, we copy the entire src and not individual files
-COPY --from=builder /build/src /app/kakarot/src/
+COPY --from=builder /build/src ./src/
 
-# Copy poetry lock and toml
-COPY --from=builder /build/poetry.lock /app/kakarot/
-COPY --from=builder /build/pyproject.toml /app/kakarot/
+
 
 # Copy foundry.toml
-COPY --from=builder /build/foundry.toml /app/kakarot/
+COPY --from=builder /build/foundry.toml .
 
-RUN poetry install
+
 
 # Deploy kakarot
 CMD ["python", "scripts/deploy_kakarot.py"]
