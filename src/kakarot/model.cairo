@@ -121,7 +121,8 @@ namespace model {
     // @param program_counter The keep track of the current position in the program as it is being executed.
     // @param stopped A boolean that state if the current execution is halted.
     // @param gas_left The gas consumed by the current state of the execution.
-    // @param reverted If the EVM is reverted.
+    // @param reverted A code indicating whether the EVM is reverted or not.
+    // can be either 0 - not reverted, Errors.REVERTED or Errors.EXCEPTIONAL_HALT
     struct EVM {
         message: Message*,
         return_data_len: felt,

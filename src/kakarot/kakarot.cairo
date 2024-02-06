@@ -6,6 +6,7 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.math_cmp import is_not_zero
 from starkware.cairo.common.uint256 import Uint256
 from starkware.starknet.common.syscalls import get_caller_address
 from starkware.cairo.common.registers import get_fp_and_pc
@@ -159,7 +160,8 @@ func eth_call{
     let (evm, state, gas_used) = Kakarot.eth_call(
         origin, to, gas_limit, gas_price, &value, data_len, data, access_list_len, access_list
     );
-    return (evm.return_data_len, evm.return_data, 1 - evm.reverted, gas_used);
+    let is_reverted = is_not_zero(evm.reverted);
+    return (evm.return_data_len, evm.return_data, 1 - is_reverted, gas_used);
 }
 
 // @notice The eth_send_transaction function as described in the spec,
@@ -198,7 +200,8 @@ func eth_send_transaction{
     let (evm, state, gas_used) = Kakarot.eth_call(
         origin, to, gas_limit, gas_price, &value, data_len, data, access_list_len, access_list
     );
-    let result = (evm.return_data_len, evm.return_data, 1 - evm.reverted, gas_used);
+    let is_reverted = is_not_zero(evm.reverted);
+    let result = (evm.return_data_len, evm.return_data, 1 - is_reverted, gas_used);
 
     if (evm.reverted != FALSE) {
         return result;

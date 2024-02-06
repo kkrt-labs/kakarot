@@ -170,6 +170,7 @@ testname:
     - createLargeResult_d7g0v0_Shanghai
     - createLargeResult_d8g0v0_Shanghai
     - createLargeResult_d9g0v0_Shanghai
+    - CreateOOGafterInitCodeReturndata_d0g1v0_Shanghai
     - CreateOOGafterInitCodeReturndata2_d0g1v0_Shanghai
     - CreateOOGafterInitCodeReturndataSize_d0g0v0_Shanghai
     - CreateOOGafterInitCodeRevert_d0g0v0_Shanghai
@@ -1802,28 +1803,10 @@ testname:
     - refundSuicide50procentCap_d1g0v0_Shanghai
     - refund_NoOOG_1_d0g0v0_Shanghai
   stReturnDataTest:
-    - call_outsize_then_create_successful_then_returndatasize_d0g0v0_Shanghai
-    - call_then_create_successful_then_returndatasize_d0g0v0_Shanghai
-    - clearReturnBuffer_d70g0v0_Shanghai
-    - clearReturnBuffer_d71g0v0_Shanghai
-    - clearReturnBuffer_d72g0v0_Shanghai
-    - clearReturnBuffer_d73g0v0_Shanghai
-    - clearReturnBuffer_d74g0v0_Shanghai
-    - clearReturnBuffer_d75g0v0_Shanghai
-    - clearReturnBuffer_d76g0v0_Shanghai
-    - clearReturnBuffer_d77g0v0_Shanghai
-    - clearReturnBuffer_d78g0v0_Shanghai
-    - clearReturnBuffer_d79g0v0_Shanghai
-    - clearReturnBuffer_d80g0v0_Shanghai
-    - clearReturnBuffer_d81g0v0_Shanghai
-    - clearReturnBuffer_d82g0v0_Shanghai
-    - clearReturnBuffer_d83g0v0_Shanghai
-    - create_callprecompile_returndatasize_d0g0v0_Shanghai
     - modexp_modsize0_returndatasize_d0g0v0_Shanghai
     - modexp_modsize0_returndatasize_d1g0v0_Shanghai
     - modexp_modsize0_returndatasize_d2g0v0_Shanghai
     - modexp_modsize0_returndatasize_d3g0v0_Shanghai
-    - modexp_modsize0_returndatasize_d4g0v0_Shanghai
     - returndatacopy_after_failing_callcode_d0g0v0_Shanghai
     - returndatacopy_after_failing_staticcall_d0g0v0_Shanghai
     - returndatacopy_after_successful_delegatecall_d0g0v0_Shanghai
@@ -1833,28 +1816,6 @@ testname:
     - returndatacopy_following_too_big_transfer_d0g0v0_Shanghai
     - returndatacopy_initial_d0g0v0_Shanghai
     - returndatacopy_overrun_d0g0v0_Shanghai
-    - returndatasize_after_failing_callcode_d0g0v0_Shanghai
-    - returndatasize_after_failing_delegatecall_d0g0v0_Shanghai
-    - returndatasize_after_failing_staticcall_d0g0v0_Shanghai
-    - returndatasize_after_oog_after_deeper_d0g0v0_Shanghai
-    - returndatasize_bug_d0g0v0_Shanghai
-    - returndatasize_following_successful_create_d0g0v0_Shanghai
-    - revertRetDataSize_d0g0v0_Shanghai
-    - revertRetDataSize_d12g0v0_Shanghai
-    - revertRetDataSize_d13g0v0_Shanghai
-    - revertRetDataSize_d14g0v0_Shanghai
-    - revertRetDataSize_d15g0v0_Shanghai
-    - revertRetDataSize_d18g0v0_Shanghai
-    - revertRetDataSize_d19g0v0_Shanghai
-    - revertRetDataSize_d1g0v0_Shanghai
-    - revertRetDataSize_d20g0v0_Shanghai
-    - revertRetDataSize_d21g0v0_Shanghai
-    - revertRetDataSize_d2g0v0_Shanghai
-    - revertRetDataSize_d3g0v0_Shanghai
-    - revertRetDataSize_d6g0v0_Shanghai
-    - revertRetDataSize_d7g0v0_Shanghai
-    - revertRetDataSize_d8g0v0_Shanghai
-    - revertRetDataSize_d9g0v0_Shanghai
     - subcallReturnMoreThenExpected_d0g0v0_Shanghai
     - tooLongReturnDataCopy_d10g0v0_Shanghai
     - tooLongReturnDataCopy_d11g0v0_Shanghai
@@ -1871,6 +1832,10 @@ testname:
     - tooLongReturnDataCopy_d8g0v0_Shanghai
     - tooLongReturnDataCopy_d9g0v0_Shanghai
   stRevertTest:
+    - costRevert_d0g0v0_Shanghai
+    - costRevert_d14g0v0_Shanghai
+    - costRevert_d21g0v0_Shanghai
+    - costRevert_d7g0v0_Shanghai
     - RevertInCallCode_d0g0v0_Shanghai
     - RevertInDelegateCall_d0g0v0_Shanghai
     - RevertOpcodeCreate_d0g0v0_Shanghai
@@ -1891,12 +1856,8 @@ testname:
     - RevertPrecompiledTouch_storage_d1g0v0_Shanghai
     - RevertPrecompiledTouch_storage_d2g0v0_Shanghai
     - RevertPrecompiledTouch_storage_d3g0v0_Shanghai
-    - RevertPrefoundEmpty_d0g0v0_Shanghai
     - RevertPrefound_d0g0v0_Shanghai
-    - costRevert_d0g0v0_Shanghai
-    - costRevert_d14g0v0_Shanghai
-    - costRevert_d21g0v0_Shanghai
-    - costRevert_d7g0v0_Shanghai
+    - RevertPrefoundEmpty_d0g0v0_Shanghai
   stSLoadTest:
     - sloadGasCost_d0g0v0_Shanghai
   stSStoreTest:

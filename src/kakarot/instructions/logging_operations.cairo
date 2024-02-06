@@ -39,7 +39,7 @@ namespace LoggingOperations {
 
         if (evm.message.read_only != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
-            let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
+            let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
             return evm;
         }
 

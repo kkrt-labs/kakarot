@@ -92,7 +92,7 @@ namespace Precompiles {
         output_len: felt, output: felt*, gas_used: felt, reverted: felt
     ) {
         let (revert_reason_len, revert_reason) = Errors.unknownPrecompile(evm_address);
-        return (revert_reason_len, revert_reason, 0, 1);
+        return (revert_reason_len, revert_reason, 0, Errors.EXCEPTIONAL_HALT);
     }
 
     // @notice A placeholder for precompile that are not implemented yet.
@@ -109,7 +109,7 @@ namespace Precompiles {
         output_len: felt, output: felt*, gas_used: felt, reverted: felt
     ) {
         let (revert_reason_len, revert_reason) = Errors.notImplementedPrecompile(evm_address);
-        return (revert_reason_len, revert_reason, 0, 1);
+        return (revert_reason_len, revert_reason, 0, Errors.EXCEPTIONAL_HALT);
     }
 
     func external_precompile{
