@@ -245,7 +245,7 @@ def cairo_run(request) -> list:
         )
         final_output = None
         if add_output:
-            final_output = serde.read_segment(output)
+            final_output = serde.serialize_list(output)
         if returned_data is not None:
             function_output = serde.serialize(returned_data.cairo_type)
             if final_output is not None:
