@@ -218,7 +218,7 @@ namespace Helpers {
         return current;
     }
 
-    func try_parse_address_from_bytes(bytes_len: felt, bytes:felt*) -> Option {
+    func try_parse_address_from_bytes(bytes_len: felt, bytes: felt*) -> Option {
         if (bytes_len != 20) {
             let res = Option(is_some=0, value=0);
             return res;

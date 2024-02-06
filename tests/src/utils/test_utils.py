@@ -66,3 +66,18 @@ def test_should_return_bytes_used_in_128_word(cairo_run, word):
         word=word,
     )
     assert bytes_length == output[0]
+
+
+@pytest.mark.parametrize(
+    "bytes,expected",
+    [
+        (b"", [0, 0]),  # An empty field
+        (
+            b"\x01" * 20,
+            [1, 0x0101010101010101010101010101010101010101],
+        ),  # An address of 20 bytes
+    ],
+)
+def test_should_parse_address_from_bytes(cairo_run, bytes, expected):
+    result = cairo_run("test__try_parse_address_from_bytes", bytes=list(bytes))
+    assert result == expected
