@@ -151,7 +151,7 @@ class TestEthTransaction:
                 == decoded_tx["max_fee_per_gas"]
             )
             assert transaction["gas"] == decoded_tx["gas_limit"]
-            assert transaction["to"] == decoded_tx["destination"]
+            assert transaction["to"] == decoded_tx["destination"]["value"]
             assert transaction["value"] == int(decoded_tx["amount"], 16)
             assert transaction["chainId"] == decoded_tx["chain_id"]
             assert expected_data == decoded_tx["payload"]
