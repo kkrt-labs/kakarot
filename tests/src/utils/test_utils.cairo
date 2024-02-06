@@ -101,7 +101,7 @@ func test__bytes_used_128{range_check_ptr}(output_ptr: felt*) {
     return ();
 }
 
-func test__try_parse_address_from_bytes{range_check_ptr}(output_ptr: felt*) {
+func test__try_parse_destination_from_bytes{range_check_ptr}(output_ptr: felt*) {
     let (bytes) = alloc();
     tempvar bytes_len;
     %{
@@ -110,11 +110,12 @@ func test__try_parse_address_from_bytes{range_check_ptr}(output_ptr: felt*) {
     %}
 
     // When
-    let maybe_address = Helpers.try_parse_address_from_bytes(bytes_len, bytes);
+    let (success, maybe_address) = Helpers.try_parse_destination_from_bytes(bytes_len, bytes);
 
     // Then
-    assert [output_ptr] = maybe_address.is_some;
-    assert [output_ptr + 1] = maybe_address.value;
+    assert [output_ptr] = success;
+    assert [output_ptr + 1] = maybe_address.is_some;
+    assert [output_ptr + 2] = maybe_address.value;
 
     return ();
 }

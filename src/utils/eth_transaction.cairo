@@ -29,7 +29,7 @@ namespace EthTransaction {
     // @param tx_data The raw transaction data
     func decode_legacy_tx{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
         tx_data_len: felt, tx_data: felt*
-    ) -> model.EthTransaction* {
+    ) -> (felt, model.EthTransaction*) {
         // see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-155.md
         alloc_locals;
         let (items: RLP.Item*) = alloc();
@@ -44,9 +44,12 @@ namespace EthTransaction {
         let nonce = Helpers.bytes_to_felt(sub_items[0].data_len, sub_items[0].data);
         let gas_price = Helpers.bytes_to_felt(sub_items[1].data_len, sub_items[1].data);
         let gas_limit = Helpers.bytes_to_felt(sub_items[2].data_len, sub_items[2].data);
-        let destination = Helpers.try_parse_address_from_bytes(
+        let (success, destination) = Helpers.try_parse_destination_from_bytes(
             sub_items[3].data_len, sub_items[3].data
         );
+        if (success == FALSE) {
+            return (success, cast(0, model.EthTransaction*));
+        }
         let amount = Helpers.bytes_i_to_uint256(sub_items[4].data, sub_items[4].data_len);
         let payload_len = sub_items[5].data_len;
         let payload = sub_items[5].data;
@@ -65,7 +68,7 @@ namespace EthTransaction {
             access_list=cast(0, felt*),
             chain_id=chain_id,
         );
-        return tx;
+        return (success, tx);
     }
 
     // @notice Decode an Ethereum transaction with optional access list
@@ -74,7 +77,7 @@ namespace EthTransaction {
     // @param tx_data The raw transaction data
     func decode_2930{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
         tx_data_len: felt, tx_data: felt*
-    ) -> model.EthTransaction* {
+    ) -> (felt, model.EthTransaction*) {
         alloc_locals;
 
         let (items: RLP.Item*) = alloc();
@@ -86,9 +89,12 @@ namespace EthTransaction {
         let nonce = Helpers.bytes_to_felt(sub_items[1].data_len, sub_items[1].data);
         let gas_price = Helpers.bytes_to_felt(sub_items[2].data_len, sub_items[2].data);
         let gas_limit = Helpers.bytes_to_felt(sub_items[3].data_len, sub_items[3].data);
-        let destination = Helpers.try_parse_address_from_bytes(
+        let (success, destination) = Helpers.try_parse_destination_from_bytes(
             sub_items[4].data_len, sub_items[4].data
         );
+        if (success == FALSE) {
+            return (success, cast(0, model.EthTransaction*));
+        }
         let amount = Helpers.bytes_i_to_uint256(sub_items[5].data, sub_items[5].data_len);
         let payload_len = sub_items[6].data_len;
         let payload = sub_items[6].data;
@@ -110,7 +116,7 @@ namespace EthTransaction {
             access_list=access_list,
             chain_id=chain_id,
         );
-        return tx;
+        return (success, tx);
     }
 
     // @notice Decode an Ethereum transaction with fee market
@@ -119,7 +125,7 @@ namespace EthTransaction {
     // @param tx_data The raw transaction data
     func decode_1559{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
         tx_data_len: felt, tx_data: felt*
-    ) -> model.EthTransaction* {
+    ) -> (success: felt, tx: model.EthTransaction*) {
         alloc_locals;
 
         let (items: RLP.Item*) = alloc();
@@ -137,9 +143,12 @@ namespace EthTransaction {
         );
         let max_fee_per_gas = Helpers.bytes_to_felt(sub_items[3].data_len, sub_items[3].data);
         let gas_limit = Helpers.bytes_to_felt(sub_items[4].data_len, sub_items[4].data);
-        let destination = Helpers.try_parse_address_from_bytes(
+        let (success, destination) = Helpers.try_parse_destination_from_bytes(
             sub_items[5].data_len, sub_items[5].data
         );
+        if (success == FALSE) {
+            return (success, cast(0, model.EthTransaction*));
+        }
         let amount = Helpers.bytes_i_to_uint256(sub_items[6].data, sub_items[6].data_len);
         let payload_len = sub_items[7].data_len;
         let payload = sub_items[7].data;
@@ -160,7 +169,7 @@ namespace EthTransaction {
             access_list=access_list,
             chain_id=chain_id,
         );
-        return tx;
+        return (success, tx);
     }
 
     // @notice Returns the type of a tx, considering that legacy tx are type 0.
@@ -182,7 +191,7 @@ namespace EthTransaction {
     // @param tx_data The raw transaction data
     func decode{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}(
         tx_data_len: felt, tx_data: felt*
-    ) -> model.EthTransaction* {
+    ) -> (felt, model.EthTransaction*) {
         let tx_type = get_tx_type(tx_data);
         tempvar offset = 1 + 3 * tx_type;
 
@@ -219,7 +228,8 @@ namespace EthTransaction {
         tx_data: felt*,
     ) {
         alloc_locals;
-        let tx = decode(tx_data_len, tx_data);
+        let (success, tx) = decode(tx_data_len, tx_data);
+        assert success = TRUE;
         assert tx.signer_nonce = account_nonce;
         assert tx.chain_id = chain_id;
 

@@ -24,7 +24,6 @@ from kakarot.interpreter import Interpreter
 from kakarot.instructions.system_operations import CreateHelper
 from kakarot.interfaces.interfaces import IAccount, IERC20
 from kakarot.model import model
-from utils.utils import Helpers, Option
 
 // @title Kakarot main library file.
 // @notice This file contains the core EVM execution logic.
@@ -75,7 +74,7 @@ namespace Kakarot {
         bitwise_ptr: BitwiseBuiltin*,
     }(
         origin: felt,
-        to: Option,
+        to: model.Option,
         gas_limit: felt,
         gas_price: felt,
         value: Uint256*,
@@ -196,7 +195,7 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(to: Option, origin: felt) -> felt {
+    }(to: model.Option, origin: felt) -> felt {
         alloc_locals;
         if (to.is_some != 0) {
             return to.value;
