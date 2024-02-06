@@ -211,19 +211,14 @@ namespace Helpers {
         return current;
     }
 
-    func try_parse_destination_from_bytes(bytes_len: felt, bytes: felt*) -> (
-        success: felt, destination: model.Option
-    ) {
+    func try_parse_destination_from_bytes(bytes_len: felt, bytes: felt*) -> model.Option {
         if (bytes_len != 20) {
             let res = model.Option(is_some=0, value=0);
-            if (bytes_len != 0) {
-                return (0, res);
-            }
-            return (1, res);
+            return res;
         }
         let address = bytes20_to_felt(bytes);
         let res = model.Option(is_some=1, value=address);
-        return (1, res);
+        return res;
     }
 
     // @notice This function is used to convert a sequence of 20 bytes big-endian

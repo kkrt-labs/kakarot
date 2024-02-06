@@ -150,9 +150,7 @@ namespace ExternallyOwnedAccount {
             return (response_len=0);
         }
 
-        let (decode_success, tx) = EthTransaction.decode(
-            [call_array].data_len, calldata + [call_array].data_offset
-        );
+        let tx = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
 
         let (_kakarot_address) = kakarot_address.read();
         let (base_fee) = IKakarot.get_base_fee(_kakarot_address);
@@ -160,7 +158,7 @@ namespace ExternallyOwnedAccount {
         // ensure that the user was willing to at least pay the base fee
         let enough_fee = is_le(base_fee, tx.max_fee_per_gas);
         let max_fee_greater_priority_fee = is_le(tx.max_priority_fee_per_gas, tx.max_fee_per_gas);
-        if (enough_fee * max_fee_greater_priority_fee * decode_success == 0) {
+        if (enough_fee * max_fee_greater_priority_fee == 0) {
             let (return_data: felt*) = alloc();
             tempvar range_check_ptr = range_check_ptr;
             tempvar syscall_ptr = syscall_ptr;

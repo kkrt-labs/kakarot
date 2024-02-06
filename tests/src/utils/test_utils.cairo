@@ -110,12 +110,11 @@ func test__try_parse_destination_from_bytes{range_check_ptr}(output_ptr: felt*) 
     %}
 
     // When
-    let (success, maybe_address) = Helpers.try_parse_destination_from_bytes(bytes_len, bytes);
+    let maybe_address = Helpers.try_parse_destination_from_bytes(bytes_len, bytes);
 
     // Then
-    assert [output_ptr] = success;
-    assert [output_ptr + 1] = maybe_address.is_some;
-    assert [output_ptr + 2] = maybe_address.value;
+    assert [output_ptr] = maybe_address.is_some;
+    assert [output_ptr + 1] = maybe_address.value;
 
     return ();
 }

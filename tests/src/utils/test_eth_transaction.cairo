@@ -19,7 +19,7 @@ func test__decode{bitwise_ptr: BitwiseBuiltin*, range_check_ptr}() -> model.EthT
         segments.write_arg(ids.data, program_input["data"])
     %}
 
-    let (success, tx) = EthTransaction.decode(data_len, data);
+    let tx = EthTransaction.decode(data_len, data);
     return tx;
 }
 
