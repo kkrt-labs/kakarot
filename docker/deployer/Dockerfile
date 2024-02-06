@@ -69,12 +69,8 @@ COPY --from=builder /build/tests ./tests/
 # To limit the probability of this Dockerfile to break, we copy the entire src and not individual files
 COPY --from=builder /build/src ./src/
 
-
-
 # Copy foundry.toml
 COPY --from=builder /build/foundry.toml .
-
-
 
 # Deploy kakarot
 CMD ["python", "scripts/deploy_kakarot.py"]
