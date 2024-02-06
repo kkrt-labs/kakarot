@@ -109,24 +109,7 @@ class TestEthTransaction:
                 )
 
     class TestDecodeTransaction:
-        @pytest.mark.parametrize(
-            "transaction",
-            [
-                *TRANSACTIONS[:-2],
-                pytest.param(
-                    TRANSACTIONS[-2],
-                    marks=pytest.mark.xfail(
-                        reason="TODO: https://github.com/kkrt-labs/kakarot/issues/899"
-                    ),
-                ),
-                pytest.param(
-                    TRANSACTIONS[-1],
-                    marks=pytest.mark.xfail(
-                        reason="TODO: https://github.com/kkrt-labs/kakarot/issues/899"
-                    ),
-                ),
-            ],
-        )
+        @pytest.mark.parametrize("transaction", TRANSACTIONS)
         async def test_should_decode_all_transactions_types(
             self, cairo_run, transaction
         ):
@@ -144,6 +127,7 @@ class TestEthTransaction:
             expected_access_list = flatten_tx_access_list(
                 transaction.get("accessList", [])
             )
+            expected_to = transaction["to"] or None
 
             assert transaction["nonce"] == decoded_tx["signer_nonce"]
             assert (
@@ -151,7 +135,7 @@ class TestEthTransaction:
                 == decoded_tx["max_fee_per_gas"]
             )
             assert transaction["gas"] == decoded_tx["gas_limit"]
-            assert transaction["to"] == decoded_tx["destination"]
+            assert expected_to == decoded_tx["destination"]
             assert transaction["value"] == int(decoded_tx["amount"], 16)
             assert transaction["chainId"] == decoded_tx["chain_id"]
             assert expected_data == decoded_tx["payload"]
