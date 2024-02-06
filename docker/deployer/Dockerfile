@@ -37,7 +37,7 @@ RUN poetry install
 COPY . .
 RUN make setup && make build
 
-FROM python:3.9.13
+FROM python:3.9.13-slim-bullseye
 
 WORKDIR /app/kakarot
 
@@ -47,6 +47,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     apt-transport-https \
     ca-certificates \
+    gcc \
+    libgmp-dev \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/* \
     && curl -sSL https://install.python-poetry.org | python3 -
 
