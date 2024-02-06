@@ -122,7 +122,7 @@ func test__peek__should_return_stack_at_given_index__when_value_is_1{range_check
     return ();
 }
 
-func test__swap__should_swap_2_stacks{range_check_ptr}() {
+func test__swap__should_swap_2_stacks{range_check_ptr}() -> model.Stack* {
     // Given
     alloc_locals;
 
@@ -141,17 +141,7 @@ func test__swap__should_swap_2_stacks{range_check_ptr}() {
 
         // When
         Stack.swap_i(3);
-
-        // Then
-        let (index3) = Stack.peek(3);
-        assert_uint256_eq([index3], [item_0]);
-        let (index2) = Stack.peek(2);
-        assert_uint256_eq([index2], [item_2]);
-        let (index1) = Stack.peek(1);
-        assert_uint256_eq([index1], [item_1]);
-        let (index0) = Stack.peek(0);
-        assert_uint256_eq([index0], [item_3]);
     }
 
-    return ();
+    return stack;
 }

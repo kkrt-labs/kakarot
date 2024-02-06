@@ -3,6 +3,7 @@
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 
 from kakarot.memory import Memory
+from kakarot.model import model
 
 func test__init__should_return_an_empty_memory() {
     // When
@@ -13,7 +14,7 @@ func test__init__should_return_an_empty_memory() {
     return ();
 }
 
-func test__store__should_add_an_element_to_the_memory{range_check_ptr}() {
+func test__store__should_add_an_element_to_the_memory{range_check_ptr}() -> model.Memory* {
     alloc_locals;
     // Given
     let memory = Memory.init();
@@ -25,8 +26,7 @@ func test__store__should_add_an_element_to_the_memory{range_check_ptr}() {
     }
 
     // Then
-    assert memory.words_len = 1;
-    return ();
+    return memory;
 }
 
 func test__load__should_load_an_element_from_the_memory_with_offset{range_check_ptr}() {
@@ -36,9 +36,9 @@ func test__load__should_load_an_element_from_the_memory_with_offset{range_check_
     local low: felt;
     local high: felt;
     %{
-        ids.offset = program_input["offset"];
-        ids.low = program_input["low"];
-        ids.high = program_input["high"];
+        ids.offset = program_input["offset"]
+        ids.low = program_input["low"]
+        ids.high = program_input["high"]
     %}
 
     let memory = Memory.init();

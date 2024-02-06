@@ -8,7 +8,8 @@ class TestMemory:
 
     class TestStore:
         def test_should_add_an_element_to_the_memory(self, cairo_run):
-            cairo_run("test__store__should_add_an_element_to_the_memory")
+            memory = cairo_run("test__store__should_add_an_element_to_the_memory")
+            assert memory == f"{1:064x}"
 
     class TestLoad:
         @pytest.mark.parametrize(
