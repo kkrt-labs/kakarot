@@ -219,7 +219,10 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
             )
             result = await kakarot_contract.functions["eth_call"].call(
                 origin=origin,
-                to=int(self.address, 16),
+                to={
+                    "is_some": 1,
+                    "value": int(self.address, 16),
+                },
                 gas_limit=gas_limit,
                 gas_price=gas_price,
                 value=value,
