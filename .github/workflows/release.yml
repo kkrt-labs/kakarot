@@ -9,7 +9,7 @@ env:
   REGISTRY_IMAGE: ghcr.io/${{ github.repository }}/deployer
 
 jobs:
-  build_and_push_deployer:
+  build_and_push_docker_deployer:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -34,3 +34,47 @@ jobs:
           file: ./docker/deployer/Dockerfile
           platforms: linux/amd64,linux/arm64
           build-args: GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+
+  build_and_push_artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - name: Load cached Poetry installation
+        id: cached-poetry
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}
+      - name: Install Poetry
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+      - run: poetry config installer.modern-installation false
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: make setup
+      - name: Compile all the cairo files
+        run: make build
+      - name: Zip the build
+        run: zip -r build.zip build
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: build.zip
+          asset_name: kakarot-build.zip
+          tag: ${{ github.ref_name }}
+          overwrite: true
