@@ -114,17 +114,6 @@ class Serde:
             "selfdestruct": raw["selfdestruct"],
         }
 
-    def serialize_event(self, ptr):
-        return self.serialize_struct("model.Event", ptr)
-
-    def serialize_transfer(self, ptr):
-        raw = self.serialize_struct("model.Transfer", ptr)
-        return {
-            "sender": self.serialize_address(raw["sender"]),
-            "recipient": self.serialize_address(raw["recipient"]),
-            "amount": self.serialize_uint256(raw["amount"]),
-        }
-
     def serialize_state(self, ptr):
         raw = self.serialize_pointers("model.State", ptr)
         return {
@@ -167,9 +156,6 @@ class Serde:
             [f"{memory_dict.get(i, 0):032x}" for i in range(2 * raw["words_len"])]
         )
 
-    def serialize_environment(self, ptr):
-        return self.serialize_struct("model.Environment", ptr)
-
     def serialize_scope(self, scope, scope_ptr):
         if scope.path[-1] == "State":
             return self.serialize_state(scope_ptr)
@@ -177,10 +163,6 @@ class Serde:
             return self.serialize_account(scope_ptr)
         if scope.path[-1] == "Address":
             return self.serialize_address(scope_ptr)
-        if scope.path[-1] == "Event":
-            return self.serialize_event(scope_ptr)
-        if scope.path[-1] == "Transfer":
-            return self.serialize_transfer(scope_ptr)
         if scope.path[-1] == "EthTransaction":
             return self.serialize_eth_transaction(scope_ptr)
         if scope.path[-1] == "Stack":
@@ -189,8 +171,6 @@ class Serde:
             return self.serialize_memory(scope_ptr)
         if scope.path[-1] == "Uint256":
             return self.serialize_uint256(scope_ptr)
-        if scope.path[-1] == "Environment":
-            return self.serialize_environment(scope_ptr)
         try:
             return self.serialize_struct(str(scope), scope_ptr)
         except MissingIdentifierError:
