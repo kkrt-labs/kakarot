@@ -1,5 +1,3 @@
-from functools import cache
-
 from eth_utils.address import to_checksum_address
 from starkware.cairo.lang.compiler.ast.cairo_types import (
     TypeFelt,
@@ -7,28 +5,8 @@ from starkware.cairo.lang.compiler.ast.cairo_types import (
     TypeStruct,
     TypeTuple,
 )
-from starkware.cairo.lang.compiler.identifier_definition import (
-    AliasDefinition,
-    StructDefinition,
-)
+from starkware.cairo.lang.compiler.identifier_definition import StructDefinition
 from starkware.cairo.lang.compiler.identifier_manager import MissingIdentifierError
-
-
-@cache
-def get_identifier_definition(runner, struct_name):
-    scoped_names = [
-        name
-        for name in runner.program.identifiers.as_dict()
-        if f"model.{struct_name}" in str(name)
-    ]
-    if len(scoped_names) != 1:
-        raise ValueError(
-            f"Expected one struct named {struct_name}, found {scoped_names}"
-        )
-    scope = runner.program.identifiers.get_by_full_name(scoped_names[0])
-    if isinstance(scope, AliasDefinition):
-        scope = scope.destination
-    return scope
 
 
 class Serde:
@@ -36,32 +14,51 @@ class Serde:
         self.runner = runner
         self.memory = runner.segments.memory
 
-    def serialize_list(self, segment_ptr, item_scope=None):
-        segment_size = self.runner.segments.get_segment_size(segment_ptr.segment_index)
-        output = []
+    def get_identifier(self, struct_name, expected_type):
+        identifiers = [
+            value
+            for key, value in self.runner.program.identifiers.as_dict().items()
+            if struct_name in str(key) and isinstance(value, expected_type)
+        ]
+        if len(identifiers) != 1:
+            raise ValueError(
+                f"Expected one struct named {struct_name}, found {identifiers}"
+            )
+        return identifiers[0]
+
+    def serialize_list(self, segment_ptr, item_scope=None, list_len=None):
+        list_len = (
+            list_len
+            if list_len is not None
+            else self.runner.segments.get_segment_size(segment_ptr.segment_index)
+        )
         item_identifier = (
-            self.runner.program.get_identifier(item_scope, StructDefinition)
+            self.get_identifier(item_scope, StructDefinition)
             if item_scope is not None
             else None
         )
+        item_type = (
+            TypeStruct(item_identifier.full_name)
+            if item_scope is not None
+            else TypeFelt()
+        )
         item_size = item_identifier.size if item_identifier is not None else 1
-        for i in range(0, segment_size, item_size):
-            item_ptr = self.memory.get(segment_ptr + i)
-            if item_ptr is None:
+        output = []
+        for i in range(0, list_len, item_size):
+            try:
+                output.append(self._serialize(item_type, segment_ptr + i))
+            # Because there is no way to know for sure the length of the list, we stop when we
+            # encounter an error.
+            # trunk-ignore(ruff/E722)
+            except:
                 break
-            item = (
-                self.serialize_scope(item_identifier.full_name, item_ptr)
-                if item_identifier is not None
-                else item_ptr
-            )
-            output.append(item)
         return output
 
     def serialize_dict(self, dict_ptr, value_scope=None):
         dict_size = self.runner.segments.get_segment_size(dict_ptr.segment_index)
         output = {}
         value_scope = (
-            self.runner.program.get_identifier(value_scope, StructDefinition).full_name
+            self.get_identifier(value_scope, StructDefinition).full_name
             if value_scope is not None
             else None
         )
@@ -78,41 +75,47 @@ class Serde:
                 )
         return output
 
+    def serialize_pointers(self, name, ptr):
+        members = self.get_identifier(name, StructDefinition).members
+        output = {}
+        for name, member in members.items():
+            member_ptr = self.memory.get(ptr + member.offset)
+            if member_ptr == 0 and isinstance(member.cairo_type, TypePointer):
+                member_ptr = None
+            output[name] = member_ptr
+        return output
+
     def serialize_struct(self, name, ptr):
-        members = self.runner.program.get_identifier(name, StructDefinition).members
+        members = self.get_identifier(name, StructDefinition).members
         return {
             name: self._serialize(member.cairo_type, ptr + member.offset)
             for name, member in members.items()
         }
 
     def serialize_address(self, ptr):
-        raw = self.serialize_struct("model.Address", ptr)
+        raw = self.serialize_pointers("model.Address", ptr)
         return {
             "starknet": f'0x{raw["starknet"]:064x}',
             "evm": to_checksum_address(f'{raw["evm"]:040x}'),
         }
 
     def serialize_uint256(self, ptr):
-        raw = self.serialize_struct("Uint256", ptr)
+        raw = self.serialize_pointers("Uint256", ptr)
         return hex(raw["low"] + raw["high"] * 2**128)
 
     def serialize_account(self, ptr):
-        raw = self.serialize_struct("model.Account", ptr)
+        raw = self.serialize_pointers("model.Account", ptr)
         return {
             "address": self.serialize_address(raw["address"]),
             "code": self.serialize_list(raw["code"]),
-            "storage": self.serialize_dict(raw["storage"], "Uint256"),
+            "storage": self.serialize_dict(raw["storage_start"], "Uint256"),
             "nonce": raw["nonce"],
             "balance": self.serialize_uint256(raw["balance"]),
             "selfdestruct": raw["selfdestruct"],
         }
 
     def serialize_event(self, ptr):
-        raw = self.serialize_struct("model.Event", ptr)
-        return {
-            "topics": self.serialize_list(raw["topics"]),
-            "data": self.serialize_list(raw["data"]),
-        }
+        return self.serialize_struct("model.Event", ptr)
 
     def serialize_transfer(self, ptr):
         raw = self.serialize_struct("model.Transfer", ptr)
@@ -123,9 +126,9 @@ class Serde:
         }
 
     def serialize_state(self, ptr):
-        raw = self.serialize_struct("model.State", ptr)
+        raw = self.serialize_pointers("model.State", ptr)
         return {
-            "accounts": self.serialize_dict(raw["accounts"], "model.Account"),
+            "accounts": self.serialize_dict(raw["accounts_start"], "model.Account"),
             "events": self.serialize_list(raw["events"], "model.Event"),
             "transfers": self.serialize_list(raw["transfers"], "model.Transfer"),
         }
@@ -153,16 +156,19 @@ class Serde:
         }
 
     def serialize_stack(self, ptr):
-        raw = self.serialize_struct("model.Stack", ptr)
+        raw = self.serialize_pointers("model.Stack", ptr)
         stack_dict = self.serialize_dict(raw["dict_ptr_start"], "Uint256")
         return [stack_dict[i] for i in range(raw["size"])]
 
     def serialize_memory(self, ptr):
-        raw = self.serialize_struct("model.Memory", ptr)
+        raw = self.serialize_pointers("model.Memory", ptr)
         memory_dict = self.serialize_dict(raw["word_dict_start"])
         return "".join(
             [f"{memory_dict.get(i, 0):032x}" for i in range(2 * raw["words_len"])]
         )
+
+    def serialize_environment(self, ptr):
+        return self.serialize_struct("model.Environment", ptr)
 
     def serialize_scope(self, scope, scope_ptr):
         if scope.path[-1] == "State":
@@ -183,24 +189,27 @@ class Serde:
             return self.serialize_memory(scope_ptr)
         if scope.path[-1] == "Uint256":
             return self.serialize_uint256(scope_ptr)
+        if scope.path[-1] == "Environment":
+            return self.serialize_environment(scope_ptr)
         try:
-            return self.serialize_struct(scope, scope_ptr)
+            return self.serialize_struct(str(scope), scope_ptr)
         except MissingIdentifierError:
             return scope_ptr
 
     def _serialize(self, cairo_type, ptr):
         if isinstance(cairo_type, TypePointer):
+            # A pointer can be a pointer to one single struct or to the beginning of a list of structs.
+            # As such, every pointer is considered a list of structs, with length 1 or more.
             pointee = self.memory.get(ptr)
             # Edge case: 0 pointers are not pointer but no data
             if pointee == 0:
                 return None
-            # Edge case: a pointer to a felt is most probably a list
             if isinstance(cairo_type.pointee, TypeFelt):
                 return self.serialize_list(pointee)
-            # While a pointer to a struct is most probably a struct
-            # The case Uint256 is indistinguishable as it is used for both
-            # a list of uint256 and a single uint256
-            return self._serialize(cairo_type.pointee, pointee)
+            serialized = self.serialize_list(pointee, str(cairo_type.pointee.scope))
+            if len(serialized) == 1:
+                return serialized[0]
+            return serialized
         if isinstance(cairo_type, TypeTuple):
             return [
                 self._serialize(m.typ, ptr + i)
