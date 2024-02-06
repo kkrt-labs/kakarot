@@ -13,6 +13,7 @@ from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_update
 
+from kakarot.model import model
 from utils.bytes import uint256_to_bytes32
 
 // @title Helper Functions
@@ -208,6 +209,16 @@ namespace Helpers {
         jmp loop if len != 0;
 
         return current;
+    }
+
+    func try_parse_destination_from_bytes(bytes_len: felt, bytes: felt*) -> model.Option {
+        if (bytes_len != 20) {
+            let res = model.Option(is_some=0, value=0);
+            return res;
+        }
+        let address = bytes20_to_felt(bytes);
+        let res = model.Option(is_some=1, value=address);
+        return res;
     }
 
     // @notice This function is used to convert a sequence of 20 bytes big-endian

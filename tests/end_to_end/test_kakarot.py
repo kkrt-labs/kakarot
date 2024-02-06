@@ -169,7 +169,10 @@ class TestKakarot:
 
             result = await kakarot.functions["eth_call"].call(
                 origin=int(evm_address, 16),
-                to=int(generate_random_evm_address(seed=3), 16),
+                to={
+                    "is_some": 1,
+                    "value": int(generate_random_evm_address(seed=3), 16),
+                },
                 gas_limit=1_000_000_000,
                 gas_price=1_000,
                 value=1_000,
