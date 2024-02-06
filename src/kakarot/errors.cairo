@@ -6,6 +6,8 @@ from starkware.cairo.common.math_cmp import is_nn
 from utils.bytes import felt_to_ascii
 
 namespace Errors {
+    const REVERT = 1;
+    const EXCEPTIONAL_HALT = 2;
     func stateModificationError() -> (error_len: felt, error: felt*) {
         let (error) = get_label_location(state_modification_error_message);
         return (31, error);

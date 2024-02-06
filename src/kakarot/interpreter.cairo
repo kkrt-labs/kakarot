@@ -61,11 +61,14 @@ namespace Interpreter {
         if (is_pc_ge_code_len != FALSE) {
             let is_precompile = Precompiles.is_precompile(evm.message.code_address);
             if (is_precompile != FALSE) {
-                let (output_len, output, gas_used, reverted) = Precompiles.exec_precompile(
+                let (
+                    output_len, output, gas_used, precompile_reverted
+                ) = Precompiles.exec_precompile(
                     evm.message.code_address, evm.message.calldata_len, evm.message.calldata
                 );
                 let evm = EVM.charge_gas(evm, gas_used);
-                let success = (1 - reverted) * (1 - evm.reverted);
+                let evm_reverted = is_not_zero(evm.reverted);
+                let success = (1 - precompile_reverted) * (1 - evm_reverted);
                 let evm = EVM.stop(evm, output_len, output, 1 - success);
                 return evm;
             } else {
@@ -91,7 +94,7 @@ namespace Interpreter {
         let stack_underflow = is_le(stack.size, opcode.stack_size_min - 1);
         if (stack_underflow != 0) {
             let (revert_reason_len, revert_reason) = Errors.stackUnderflow();
-            let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
+            let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
             return evm;
         }
         let stack_overflow = is_le(
@@ -99,7 +102,7 @@ namespace Interpreter {
         );
         if (stack_overflow != 0) {
             let (revert_reason_len, revert_reason) = Errors.stackOverflow();
-            let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
+            let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
             return evm;
         }
 
@@ -839,14 +842,14 @@ namespace Interpreter {
 
         if (is_collision != 0) {
             let (revert_reason_len, revert_reason) = Errors.addressCollision();
-            tempvar evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
+            tempvar evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
         } else {
             tempvar evm = evm;
         }
 
         if (success == 0) {
             let (revert_reason_len, revert_reason) = Errors.balanceError();
-            tempvar evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
+            tempvar evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
         } else {
             tempvar evm = evm;
         }
@@ -880,7 +883,7 @@ namespace Interpreter {
         state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
         let (revert_reason_len, revert_reason) = Errors.unknownOpcode();
-        let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
+        let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
         return evm;
     }
 }
@@ -894,7 +897,8 @@ namespace Internals {
         let code_size_limit = is_le(evm.return_data_len, Constants.MAX_CODE_SIZE);
         let code_deposit_cost = Gas.CODE_DEPOSIT * evm.return_data_len;
         let enough_gas = is_nn(evm.gas_left - code_deposit_cost);
-        let success = (1 - evm.reverted) * enough_gas * code_size_limit;
+        let is_reverted = is_not_zero(evm.reverted);
+        let success = (1 - is_reverted) * enough_gas * code_size_limit;
 
         if (success == 0) {
             // Reverts and burn all gas

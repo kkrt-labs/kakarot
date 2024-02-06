@@ -17,7 +17,7 @@ class TestPlainOpcodes:
         ):
             success, error = await plain_opcodes.opcodeStaticCall2()
             assert not success
-            assert error == b"Kakarot: StateModificationError"
+            assert error == b""
 
     class TestCall:
         async def test_should_increase_counter(

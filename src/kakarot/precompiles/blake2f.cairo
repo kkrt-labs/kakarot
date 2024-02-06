@@ -48,14 +48,14 @@ namespace PrecompileBlake2f {
         // Check input length
         if (input_len != 213) {
             let (revert_reason_len, revert_reason) = Errors.precompileInputError();
-            return (revert_reason_len, revert_reason, 0, 1);
+            return (revert_reason_len, revert_reason, 0, Errors.EXCEPTIONAL_HALT);
         }
 
         // Check the flag
         tempvar f = input[f_bytes_offset];
         if (f != f * f) {
             let (revert_reason_len, revert_reason) = Errors.precompileFlagError();
-            return (revert_reason_len, revert_reason, 0, 1);
+            return (revert_reason_len, revert_reason, 0, Errors.EXCEPTIONAL_HALT);
         }
 
         let rounds = Helpers.bytes_to_felt(rounds_bytes_len, input);

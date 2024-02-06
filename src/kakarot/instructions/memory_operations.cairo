@@ -113,7 +113,7 @@ namespace MemoryOperations {
 
         if (offset.high != 0) {
             let (revert_reason_len, revert_reason) = Errors.invalidJumpDestError();
-            let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
+            let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
             return evm;
         }
 
@@ -143,7 +143,7 @@ namespace MemoryOperations {
 
         if (offset.high != 0) {
             let (revert_reason_len, revert_reason) = Errors.invalidJumpDestError();
-            let evm = EVM.stop(evm, revert_reason_len, revert_reason, TRUE);
+            let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
             return evm;
         }
 
@@ -237,7 +237,7 @@ namespace MemoryOperations {
                 stopped=TRUE,
                 gas_left=0,
                 gas_refund=evm.gas_refund,
-                reverted=TRUE,
+                reverted=Errors.EXCEPTIONAL_HALT,
             );
         }
 
@@ -300,7 +300,7 @@ namespace MemoryOperations {
                 stopped=TRUE,
                 gas_left=evm.gas_left,
                 gas_refund=evm.gas_refund + gas_refund,
-                reverted=TRUE,
+                reverted=Errors.EXCEPTIONAL_HALT,
             );
         }
 

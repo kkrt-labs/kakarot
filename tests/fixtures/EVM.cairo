@@ -8,6 +8,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.registers import get_fp_and_pc
+from starkware.cairo.common.math_cmp import is_not_zero
 from starkware.cairo.common.uint256 import Uint256
 
 // Local dependencies
@@ -126,6 +127,7 @@ func evm_call{
     let (account_addresses_len, account_addresses) = dict_keys(
         state.accounts_start, state.accounts
     );
+    let is_reverted = is_not_zero(evm.reverted);
 
     return (
         block_number=env.block_number,
@@ -145,7 +147,7 @@ func evm_call{
         return_data_len=evm.return_data_len,
         return_data=evm.return_data,
         gas_left=evm.gas_left,
-        success=1 - evm.reverted,
+        success=1 - is_reverted,
         program_counter=evm.program_counter,
     );
 }
@@ -171,7 +173,8 @@ func evm_execute{
     let (evm, stack, memory, state, _) = execute(
         env, &value, bytecode_len, bytecode, calldata_len, calldata, access_list_len, access_list
     );
-    let result = (evm.return_data_len, evm.return_data, 1 - evm.reverted);
+    let is_reverted = is_not_zero(evm.reverted);
+    let result = (evm.return_data_len, evm.return_data, 1 - is_reverted);
 
     if (evm.reverted != FALSE) {
         return result;
