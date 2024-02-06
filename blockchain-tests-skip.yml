@@ -5,27 +5,17 @@ filename:
 
 # List of specific tests names to be skipped with folder
 testname:
-  stEIP3855-push0:
-    - push0Gas_d0g0v0_Shanghai
-    - push0_d1g0v0_Shanghai
   stEIP3860-limitmeterinitcode:
     - create2InitCodeSizeLimit_d0g0v0_Shanghai
     - createInitCodeSizeLimit_d0g0v0_Shanghai
     - creationTxInitCodeSizeLimit_d1g0v0_Shanghai
   vmTests:
-    - blockInfo_d0g0v0_Shanghai
     - blockInfo_d1g0v0_Shanghai
     - blockInfo_d2g0v0_Shanghai
     - sha3_d3g0v0_Shanghai
-  stArgsZeroOneBalance:
-    - suicideNonConst_d0g0v1_Shanghai
   stBadOpcode:
     - measureGas_d0g0v0_Shanghai
     - measureGas_d1g0v0_Shanghai
-    - measureGas_d9g0v0_Shanghai
-    - operationDiffGas_d0g0v0_Shanghai
-    - operationDiffGas_d1g0v0_Shanghai
-    - operationDiffGas_d9g0v0_Shanghai
   vmArithmeticTest:
     - expPower256Of256_d0g0v0_Shanghai
     - exp_d9g0v0_Shanghai
@@ -41,17 +31,6 @@ testname:
     - performanceTester_d4g0v0_Shanghai
   stAttackTest:
     - ContractCreationSpam_d0g0v0_Shanghai
-  stCallCreateCallCodeTest:
-    - Call1024BalanceTooLow_d0g0v0_Shanghai
-    - Call1024PreCalls_d0g0v0_Shanghai
-    - Call1024PreCalls_d0g1v0_Shanghai
-    - CallRecursiveBombPreCall_d0g0v0_Shanghai
-    - Callcode1024BalanceTooLow_d0g0v0_Shanghai
-    - callOutput3Fail_d0g0v0_Shanghai
-    - callOutput3partialFail_d0g0v0_Shanghai
-    - callcodeOutput3Fail_d0g0v0_Shanghai
-    - callcodeOutput3partialFail_d0g0v0_Shanghai
-    - createInitFailUndefinedInstruction_d0g0v0_Shanghai
   stCallDelegateCodesCallCodeHomestead:
     - callcodecallcall_100_d0g0v0_Shanghai
     - callcodecallcallcode_101_d0g0v0_Shanghai
@@ -71,10 +50,6 @@ testname:
   stChainId:
     - chainId_d0g0v0_Shanghai
   stCreate2:
-    - call_outsize_then_create2_successful_then_returndatasize_d0g0v0_Shanghai
-    - call_then_create2_successful_then_returndatasize_d0g0v0_Shanghai
-    - CREATE2_ContractSuicideDuringInit_ThenStoreThenReturn_d0g0v0_Shanghai
-    - CREATE2_HighNonce_d0g0v0_Shanghai
     - CREATE2_HighNonceDelegatecall_d11g0v0_Shanghai
     - CREATE2_HighNonceDelegatecall_d17g0v0_Shanghai
     - CREATE2_HighNonceDelegatecall_d18g0v0_Shanghai
@@ -87,13 +62,14 @@ testname:
     - CREATE2_HighNonceDelegatecall_d7g0v0_Shanghai
     - CREATE2_HighNonceDelegatecall_d8g0v0_Shanghai
     - CREATE2_HighNonceDelegatecall_d9g0v0_Shanghai
-    - CREATE2_Suicide_d2g0v0_Shanghai
-    - CREATE2_Suicide_d3g0v0_Shanghai
+    - CREATE2_HighNonce_d0g0v0_Shanghai
+    - Create2OOGafterInitCodeReturndataSize_d0g0v0_Shanghai
+    - Create2OOGafterInitCodeReturndata_d0g1v0_Shanghai
+    - Create2OOGafterInitCodeRevert_d0g0v0_Shanghai
+    - RevertOpcodeCreate_d0g0v0_Shanghai
     - create2callPrecompiles_d4g0v0_Shanghai
-    - create2callPrecompiles_d5g0v0_Shanghai
     - create2callPrecompiles_d6g0v0_Shanghai
     - create2callPrecompiles_d7g0v0_Shanghai
-    - create2checkFieldsInInitcode_d7g0v0_Shanghai
     - create2collisionBalance_d0g0v0_Shanghai
     - create2collisionBalance_d1g0v0_Shanghai
     - create2collisionBalance_d2g0v0_Shanghai
@@ -101,153 +77,90 @@ testname:
     - create2collisionStorage_d0g0v0_Shanghai
     - create2collisionStorage_d1g0v0_Shanghai
     - create2collisionStorage_d2g0v0_Shanghai
-    - create2InitCodes_d6g0v0_Shanghai
-    - Create2OOGafterInitCodeReturndata_d0g1v0_Shanghai
-    - Create2OOGafterInitCodeReturndata2_d0g1v0_Shanghai
-    - Create2OOGafterInitCodeReturndataSize_d0g0v0_Shanghai
-    - Create2OOGafterInitCodeRevert_d0g0v0_Shanghai
-    - create2SmartInitCode_d0g0v0_Shanghai
     - returndatacopy_following_create_d0g0v0_Shanghai
     - returndatacopy_following_create_d1g0v0_Shanghai
     - returndatacopy_following_successful_create_d0g0v0_Shanghai
-    - returndatasize_following_successful_create_d0g0v0_Shanghai
-    - RevertOpcodeCreate_d0g0v0_Shanghai
   stCreateTest:
     - CREATE_EContract_ThenCALLToNonExistentAcc_d0g0v0_Shanghai
-    - CREATE_EmptyContract_d0g0v0_Shanghai
     - CREATE_EmptyContractAndCallIt_0wei_d0g0v0_Shanghai
     - CREATE_EmptyContractAndCallIt_1wei_d0g0v0_Shanghai
     - CREATE_EmptyContractWithBalance_d0g0v0_Shanghai
-    - CREATE_EmptyContractWithStorage_d0g0v0_Shanghai
     - CREATE_EmptyContractWithStorageAndCallIt_0wei_d0g0v0_Shanghai
     - CREATE_EmptyContractWithStorageAndCallIt_1wei_d0g0v0_Shanghai
+    - CREATE_EmptyContractWithStorage_d0g0v0_Shanghai
+    - CREATE_EmptyContract_d0g0v0_Shanghai
     - CREATE_HighNonce_d0g0v0_Shanghai
-    - CreateAddressWarmAfterFail_d0g0v0_Shanghai
-    - CreateAddressWarmAfterFail_d0g0v1_Shanghai
     - CreateAddressWarmAfterFail_d10g0v0_Shanghai
     - CreateAddressWarmAfterFail_d10g0v1_Shanghai
     - CreateAddressWarmAfterFail_d11g0v0_Shanghai
     - CreateAddressWarmAfterFail_d11g0v1_Shanghai
     - CreateAddressWarmAfterFail_d12g0v0_Shanghai
     - CreateAddressWarmAfterFail_d12g0v1_Shanghai
-    - CreateAddressWarmAfterFail_d13g0v0_Shanghai
-    - CreateAddressWarmAfterFail_d13g0v1_Shanghai
-    - CreateAddressWarmAfterFail_d14g0v0_Shanghai
-    - CreateAddressWarmAfterFail_d14g0v1_Shanghai
-    - CreateAddressWarmAfterFail_d1g0v0_Shanghai
-    - CreateAddressWarmAfterFail_d1g0v1_Shanghai
-    - CreateAddressWarmAfterFail_d2g0v0_Shanghai
     - CreateAddressWarmAfterFail_d2g0v1_Shanghai
-    - CreateAddressWarmAfterFail_d3g0v0_Shanghai
     - CreateAddressWarmAfterFail_d3g0v1_Shanghai
-    - CreateAddressWarmAfterFail_d4g0v0_Shanghai
-    - CreateAddressWarmAfterFail_d4g0v1_Shanghai
-    - CreateAddressWarmAfterFail_d5g0v0_Shanghai
-    - CreateAddressWarmAfterFail_d5g0v1_Shanghai
-    - CreateAddressWarmAfterFail_d6g0v0_Shanghai
-    - CreateAddressWarmAfterFail_d6g0v1_Shanghai
-    - CreateAddressWarmAfterFail_d7g0v0_Shanghai
-    - CreateAddressWarmAfterFail_d7g0v1_Shanghai
-    - CreateAddressWarmAfterFail_d8g0v0_Shanghai
-    - CreateAddressWarmAfterFail_d8g0v1_Shanghai
-    - CreateAddressWarmAfterFail_d9g0v0_Shanghai
-    - CreateAddressWarmAfterFail_d9g0v1_Shanghai
     - CreateCollisionToEmpty_d0g0v0_Shanghai
     - CreateCollisionToEmpty_d0g0v1_Shanghai
-    - createLargeResult_d0g0v0_Shanghai
-    - createLargeResult_d10g0v0_Shanghai
-    - createLargeResult_d11g0v0_Shanghai
-    - createLargeResult_d12g0v0_Shanghai
-    - createLargeResult_d13g0v0_Shanghai
-    - createLargeResult_d14g0v0_Shanghai
-    - createLargeResult_d15g0v0_Shanghai
-    - createLargeResult_d1g0v0_Shanghai
-    - createLargeResult_d2g0v0_Shanghai
-    - createLargeResult_d3g0v0_Shanghai
-    - createLargeResult_d4g0v0_Shanghai
-    - createLargeResult_d5g0v0_Shanghai
-    - createLargeResult_d6g0v0_Shanghai
-    - createLargeResult_d7g0v0_Shanghai
-    - createLargeResult_d8g0v0_Shanghai
-    - createLargeResult_d9g0v0_Shanghai
-    - CreateOOGafterInitCodeReturndata_d0g1v0_Shanghai
-    - CreateOOGafterInitCodeReturndata2_d0g1v0_Shanghai
     - CreateOOGafterInitCodeReturndataSize_d0g0v0_Shanghai
+    - CreateOOGafterInitCodeReturndata_d0g1v0_Shanghai
     - CreateOOGafterInitCodeRevert_d0g0v0_Shanghai
-    - CreateOOGafterInitCodeRevert2_d1g0v0_Shanghai
     - CreateOOGafterMaxCodesize_d2g0v0_Shanghai
     - CreateOOGafterMaxCodesize_d3g0v0_Shanghai
     - CreateOOGafterMaxCodesize_d5g0v0_Shanghai
-    - CreateResults_d0g0v0_Shanghai
     - CreateResults_d18g0v0_Shanghai
     - CreateResults_d19g0v0_Shanghai
-    - CreateResults_d1g0v0_Shanghai
     - CreateResults_d20g0v0_Shanghai
     - CreateResults_d21g0v0_Shanghai
     - CreateResults_d22g0v0_Shanghai
     - CreateResults_d23g0v0_Shanghai
     - CreateResults_d24g0v0_Shanghai
     - CreateResults_d25g0v0_Shanghai
-    - CreateResults_d2g0v0_Shanghai
-    - CreateResults_d3g0v0_Shanghai
-    - CreateResults_d4g0v0_Shanghai
-    - CreateResults_d5g0v0_Shanghai
-    - CreateResults_d6g0v0_Shanghai
-    - CreateResults_d7g0v0_Shanghai
     - CreateResults_d8g0v0_Shanghai
     - CreateResults_d9g0v0_Shanghai
     - CreateTransactionHighNonce_d0g0v0_Shanghai
     - CreateTransactionHighNonce_d0g0v1_Shanghai
     - TransactionCollisionToEmpty_d0g0v0_Shanghai
     - TransactionCollisionToEmpty_d0g0v1_Shanghai
+    - createLargeResult_d10g0v0_Shanghai
+    - createLargeResult_d11g0v0_Shanghai
+    - createLargeResult_d12g0v0_Shanghai
+    - createLargeResult_d14g0v0_Shanghai
+    - createLargeResult_d15g0v0_Shanghai
+    - createLargeResult_d1g0v0_Shanghai
+    - createLargeResult_d2g0v0_Shanghai
+    - createLargeResult_d3g0v0_Shanghai
+    - createLargeResult_d5g0v0_Shanghai
+    - createLargeResult_d6g0v0_Shanghai
+    - createLargeResult_d7g0v0_Shanghai
+    - createLargeResult_d8g0v0_Shanghai
+  stCallCreateCallCodeTest:
+    - Call1024BalanceTooLow_d0g0v0_Shanghai
+    - Call1024PreCalls_d0g0v0_Shanghai
+    - Call1024PreCalls_d0g1v0_Shanghai
+    - CallRecursiveBombPreCall_d0g0v0_Shanghai
+    - Callcode1024BalanceTooLow_d0g0v0_Shanghai
   stDelegatecallTestHomestead:
     - Call1024BalanceTooLow_d0g0v0_Shanghai
     - Call1024PreCalls_d0g1v0_Shanghai
     - Call1024PreCalls_d0g2v0_Shanghai
     - CallRecursiveBombPreCall_d0g0v0_Shanghai
     - Delegatecall1024_d0g0v0_Shanghai
-    - callOutput3partialFail_d0g0v0_Shanghai
     - deleagateCallAfterValueTransfer_d0g0v0_Shanghai
     - delegatecallInInitcodeToExistingContract_d0g0v0_Shanghai
     - delegatecallSenderCheck_d0g0v0_Shanghai
   stEIP150Specific:
-    - CallAskMoreGasOnDepth2ThenTransactionHas_d0g0v0_Shanghai
-    - CreateAndGasInsideCreate_d0g0v0_Shanghai
-    - DelegateCallOnEIP_d0g0v0_Shanghai
     - NewGasPriceForCodes_d0g0v0_Shanghai
-    - SuicideToNotExistingContract_d0g0v0_Shanghai
-    - Transaction64Rule_d64e0_d0g0v0_Shanghai
-    - Transaction64Rule_d64m1_d0g0v0_Shanghai
-    - Transaction64Rule_d64p1_d0g0v0_Shanghai
   stEIP150singleCodeGasPrices:
-    - RawCallCodeGasAsk_d0g0v0_Shanghai
-    - RawCallCodeGasMemoryAsk_d0g0v0_Shanghai
-    - RawCallCodeGasMemory_d0g0v0_Shanghai
-    - RawCallCodeGasValueTransferAsk_d0g0v0_Shanghai
-    - RawCallCodeGasValueTransferMemoryAsk_d0g0v0_Shanghai
-    - RawCallCodeGasValueTransferMemory_d0g0v0_Shanghai
-    - RawCallCodeGasValueTransfer_d0g0v0_Shanghai
-    - RawCallCodeGas_d0g0v0_Shanghai
-    - RawCallGasAsk_d0g0v0_Shanghai
     - RawCallGasValueTransferAsk_d0g0v0_Shanghai
     - RawCallGasValueTransferMemoryAsk_d0g0v0_Shanghai
     - RawCallGasValueTransferMemory_d0g0v0_Shanghai
     - RawCallGasValueTransfer_d0g0v0_Shanghai
-    - RawCallGas_d0g0v0_Shanghai
-    - RawCallMemoryGasAsk_d0g0v0_Shanghai
-    - RawCallMemoryGas_d0g0v0_Shanghai
     - RawCreateFailGasValueTransfer2_d0g0v0_Shanghai
     - RawCreateFailGasValueTransfer_d0g0v0_Shanghai
     - RawCreateGasMemory_d0g0v0_Shanghai
     - RawCreateGasValueTransferMemory_d0g0v0_Shanghai
     - RawCreateGasValueTransfer_d0g0v0_Shanghai
     - RawCreateGas_d0g0v0_Shanghai
-    - RawDelegateCallGasAsk_d0g0v0_Shanghai
-    - RawDelegateCallGasMemoryAsk_d0g0v0_Shanghai
-    - RawDelegateCallGasMemory_d0g0v0_Shanghai
-    - RawDelegateCallGas_d0g0v0_Shanghai
     - eip2929-ff_d0g0v0_Shanghai
-    - eip2929OOG_d0g0v0_Shanghai
     - eip2929_d10g0v0_Shanghai
     - eip2929_d11g0v0_Shanghai
     - eip2929_d12g0v0_Shanghai
@@ -285,103 +198,11 @@ testname:
     - eip2929_d7g0v0_Shanghai
     - eip2929_d8g0v0_Shanghai
     - eip2929_d9g0v0_Shanghai
-    - gasCostBerlin_d39g0v0_Shanghai
-    - gasCostBerlin_d40g0v0_Shanghai
-    - gasCostBerlin_d45g0v0_Shanghai
-    - gasCostExp_d7g0v0_Shanghai # fails because of execution resources
+    - gasCostExp_d7g0v0_Shanghai
     - gasCostJump_d0g0v0_Shanghai
     - gasCostJump_d1g0v0_Shanghai
-    - gasCostMemSeg_d0g0v0_Shanghai
-    - gasCostMemSeg_d10g0v0_Shanghai
-    - gasCostMemSeg_d11g0v0_Shanghai
-    - gasCostMemSeg_d12g0v0_Shanghai
-    - gasCostMemSeg_d13g0v0_Shanghai
-    - gasCostMemSeg_d14g0v0_Shanghai
-    - gasCostMemSeg_d15g0v0_Shanghai
-    - gasCostMemSeg_d16g0v0_Shanghai
-    - gasCostMemSeg_d17g0v0_Shanghai
-    - gasCostMemSeg_d18g0v0_Shanghai
-    - gasCostMemSeg_d19g0v0_Shanghai
-    - gasCostMemSeg_d1g0v0_Shanghai
-    - gasCostMemSeg_d20g0v0_Shanghai
-    - gasCostMemSeg_d21g0v0_Shanghai
-    - gasCostMemSeg_d22g0v0_Shanghai
-    - gasCostMemSeg_d23g0v0_Shanghai
-    - gasCostMemSeg_d24g0v0_Shanghai
-    - gasCostMemSeg_d25g0v0_Shanghai
-    - gasCostMemSeg_d26g0v0_Shanghai
-    - gasCostMemSeg_d27g0v0_Shanghai
-    - gasCostMemSeg_d28g0v0_Shanghai
-    - gasCostMemSeg_d29g0v0_Shanghai
-    - gasCostMemSeg_d2g0v0_Shanghai
-    - gasCostMemSeg_d31g0v0_Shanghai
-    - gasCostMemSeg_d32g0v0_Shanghai
-    - gasCostMemSeg_d33g0v0_Shanghai
-    - gasCostMemSeg_d34g0v0_Shanghai
-    - gasCostMemSeg_d35g0v0_Shanghai
-    - gasCostMemSeg_d36g0v0_Shanghai
-    - gasCostMemSeg_d37g0v0_Shanghai
-    - gasCostMemSeg_d38g0v0_Shanghai
-    - gasCostMemSeg_d39g0v0_Shanghai
-    - gasCostMemSeg_d3g0v0_Shanghai
-    - gasCostMemSeg_d40g0v0_Shanghai
-    - gasCostMemSeg_d41g0v0_Shanghai
-    - gasCostMemSeg_d42g0v0_Shanghai
-    - gasCostMemSeg_d43g0v0_Shanghai
-    - gasCostMemSeg_d44g0v0_Shanghai
-    - gasCostMemSeg_d45g0v0_Shanghai
-    - gasCostMemSeg_d46g0v0_Shanghai
-    - gasCostMemSeg_d47g0v0_Shanghai
-    - gasCostMemSeg_d48g0v0_Shanghai
-    - gasCostMemSeg_d49g0v0_Shanghai
-    - gasCostMemSeg_d4g0v0_Shanghai
-    - gasCostMemSeg_d50g0v0_Shanghai
-    - gasCostMemSeg_d51g0v0_Shanghai
-    - gasCostMemSeg_d52g0v0_Shanghai
-    - gasCostMemSeg_d53g0v0_Shanghai
-    - gasCostMemSeg_d54g0v0_Shanghai
-    - gasCostMemSeg_d5g0v0_Shanghai
-    - gasCostMemSeg_d6g0v0_Shanghai
-    - gasCostMemSeg_d7g0v0_Shanghai
-    - gasCostMemSeg_d8g0v0_Shanghai
-    - gasCostMemSeg_d9g0v0_Shanghai
     - gasCostReturn_d0g0v0_Shanghai
   stEIP1559:
-    - baseFeeDiffPlaces_d0g0v0_Shanghai
-    - baseFeeDiffPlaces_d10g0v0_Shanghai
-    - baseFeeDiffPlaces_d11g0v0_Shanghai
-    - baseFeeDiffPlaces_d12g0v0_Shanghai
-    - baseFeeDiffPlaces_d13g0v0_Shanghai
-    - baseFeeDiffPlaces_d14g0v0_Shanghai
-    - baseFeeDiffPlaces_d15g0v0_Shanghai
-    - baseFeeDiffPlaces_d16g0v0_Shanghai
-    - baseFeeDiffPlaces_d17g0v0_Shanghai
-    - baseFeeDiffPlaces_d18g0v0_Shanghai
-    - baseFeeDiffPlaces_d19g0v0_Shanghai
-    - baseFeeDiffPlaces_d1g0v0_Shanghai
-    - baseFeeDiffPlaces_d20g0v0_Shanghai
-    - baseFeeDiffPlaces_d21g0v0_Shanghai
-    - baseFeeDiffPlaces_d22g0v0_Shanghai
-    - baseFeeDiffPlaces_d23g0v0_Shanghai
-    - baseFeeDiffPlaces_d24g0v0_Shanghai
-    - baseFeeDiffPlaces_d25g0v0_Shanghai
-    - baseFeeDiffPlaces_d26g0v0_Shanghai
-    - baseFeeDiffPlaces_d27g0v0_Shanghai
-    - baseFeeDiffPlaces_d28g0v0_Shanghai
-    - baseFeeDiffPlaces_d29g0v0_Shanghai
-    - baseFeeDiffPlaces_d2g0v0_Shanghai
-    - baseFeeDiffPlaces_d30g0v0_Shanghai
-    - baseFeeDiffPlaces_d31g0v0_Shanghai
-    - baseFeeDiffPlaces_d32g0v0_Shanghai
-    - baseFeeDiffPlaces_d33g0v0_Shanghai
-    - baseFeeDiffPlaces_d34g0v0_Shanghai
-    - baseFeeDiffPlaces_d3g0v0_Shanghai
-    - baseFeeDiffPlaces_d4g0v0_Shanghai
-    - baseFeeDiffPlaces_d5g0v0_Shanghai
-    - baseFeeDiffPlaces_d6g0v0_Shanghai
-    - baseFeeDiffPlaces_d7g0v0_Shanghai
-    - baseFeeDiffPlaces_d8g0v0_Shanghai
-    - baseFeeDiffPlaces_d9g0v0_Shanghai
     - intrinsic_d0g29v0_Shanghai
     - intrinsic_d10g0v0_Shanghai
     - intrinsic_d10g29v0_Shanghai
@@ -1281,13 +1102,7 @@ testname:
     - valCausesOOF_d1g2v1_Shanghai
   stEIP158Specific:
     - CALL_OneVCallSuicide_d0g0v0_Shanghai
-    - EXP_Empty_d0g0v0_Shanghai
-    - EXTCODESIZE_toEpmty_d0g0v0_Shanghai
-    - EXTCODESIZE_toNonExistent_d0g0v0_Shanghai
   stEIP2930:
-    - coinbaseT01_d0g0v0_Shanghai
-    - coinbaseT01_d2g0v0_Shanghai
-    - coinbaseT2_d1g0v0_Shanghai
     - manualCreate_d2g0v0_Shanghai
     - storageCosts_d0g0v0_Shanghai
     - storageCosts_d1g0v0_Shanghai
@@ -1299,11 +1114,7 @@ testname:
     - storageCosts_d5g0v0_Shanghai
     - variedContext_d0g0v0_Shanghai
     - variedContext_d10g0v0_Shanghai
-    - variedContext_d11g0v0_Shanghai
     - variedContext_d12g0v0_Shanghai
-    - variedContext_d13g0v0_Shanghai
-    - variedContext_d14g0v0_Shanghai
-    - variedContext_d15g0v0_Shanghai
     - variedContext_d16g0v0_Shanghai
     - variedContext_d18g0v0_Shanghai
     - variedContext_d20g0v0_Shanghai
@@ -1319,7 +1130,6 @@ testname:
     - variedContext_d7g0v0_Shanghai
     - variedContext_d8g0v0_Shanghai
   stExample:
-    - eip1559_d0g0v0_Shanghai
     - invalidTr_d0g0v0_Shanghai
     - mergeTest_d0g0v0_Shanghai
   stExtCodeHash:
@@ -1337,8 +1147,6 @@ testname:
     - OutOfGasPrefundedContractCreation_d0g0v0_Shanghai
     - OutOfGasPrefundedContractCreation_d0g2v0_Shanghai
   stMemExpandingEIP150Calls:
-    - CallAskMoreGasOnDepth2ThenTransactionHasWithMemExpandingCalls_d0g0v0_Shanghai
-    - CreateAndGasInsideCreateWithMemExpandingCalls_d0g0v0_Shanghai
     - NewGasPriceForCodesWithMemExpandingCalls_d0g0v0_Shanghai
   stMemoryStressTest:
     - RETURN_Bounds_d0g1v0_Shanghai
@@ -1383,25 +1191,8 @@ testname:
     - buffer_d64g0v0_Shanghai
     - buffer_d91g0v0_Shanghai
     - buffer_d92g0v0_Shanghai
-    - stackLimitGas_1023_d0g0v0_Shanghai
-    - stackLimitGas_1024_d0g0v0_Shanghai
-    - stackLimitPush31_1023_d0g0v0_Shanghai
-    - stackLimitPush31_1024_d0g0v0_Shanghai
-    - stackLimitPush32_1023_d0g0v0_Shanghai
-    - stackLimitPush32_1024_d0g0v0_Shanghai
   stNonZeroCallsTest:
-    - NonZeroValue_CALLCODE_ToEmpty_d0g0v0_Shanghai
-    - NonZeroValue_CALLCODE_ToNonNonZeroBalance_d0g0v0_Shanghai
-    - NonZeroValue_CALLCODE_ToOneStorageKey_d0g0v0_Shanghai
-    - NonZeroValue_CALLCODE_d0g0v0_Shanghai
-    - NonZeroValue_CALL_ToEmpty_d0g0v0_Shanghai
     - NonZeroValue_CALL_ToNonNonZeroBalance_d0g0v0_Shanghai
-    - NonZeroValue_CALL_ToOneStorageKey_d0g0v0_Shanghai
-    - NonZeroValue_CALL_d0g0v0_Shanghai
-    - NonZeroValue_DELEGATECALL_ToEmpty_d0g0v0_Shanghai
-    - NonZeroValue_DELEGATECALL_ToNonNonZeroBalance_d0g0v0_Shanghai
-    - NonZeroValue_DELEGATECALL_ToOneStorageKey_d0g0v0_Shanghai
-    - NonZeroValue_DELEGATECALL_d0g0v0_Shanghai
   stPreCompiledContracts2:
     - CALLBlake2f_d9g0v0_Shanghai
     - CALLCODEBlake2f_d9g0v0_Shanghai
@@ -1420,11 +1211,9 @@ testname:
     - CallEcrecover_Overflow_d1g0v0_Shanghai
     - CallEcrecover_Overflow_d2g0v0_Shanghai
     - CallEcrecover_Overflow_d4g0v0_Shanghai
-    - CallIdentity_1_nonzeroValue_d0g0v0_Shanghai
     - CallRipemd160_0_d0g0v0_Shanghai
     - CallRipemd160_4_gas719_d0g0v0_Shanghai
     - CallRipemd160_5_d0g0v0_Shanghai
-    - CallSha256_1_nonzeroValue_d0g0v0_Shanghai
     - CallSha256_5_d0g0v0_Shanghai
     - ecrecoverShortBuff_d0g0v0_Shanghai
     - modexp_0_0_0_20500_d0g1v0_Shanghai
@@ -1737,16 +1526,11 @@ testname:
     - randomStatetest466_d0g0v0_Shanghai
     - randomStatetest476_d0g0v0_Shanghai
     - randomStatetest487_d0g0v0_Shanghai
-    - randomStatetest539_d0g0v0_Shanghai
     - randomStatetest564_d0g0v0_Shanghai
     - randomStatetest572_d0g0v0_Shanghai
     - randomStatetest577_d0g0v0_Shanghai
     - randomStatetest581_d0g0v0_Shanghai
     - randomStatetest605_d0g0v0_Shanghai
-    - randomStatetest628_d0g0v0_Shanghai
-    - randomStatetest644_d0g0v0_Shanghai
-    - randomStatetest645_d0g0v0_Shanghai
-    - randomStatetest648_d0g0v0_Shanghai
     - randomStatetest650_d0g0v0_Shanghai
   stQuadraticComplexityTest:
     - Call1MB1024Calldepth_d0g1v0_Shanghai
@@ -1756,52 +1540,30 @@ testname:
     - Return50000_2_d0g1v0_Shanghai
     - Return50000_d0g1v0_Shanghai
   stRandom:
-    - randomStatetest1_d0g0v0_Shanghai
     - randomStatetest100_d0g0v0_Shanghai
     - randomStatetest138_d0g0v0_Shanghai
     - randomStatetest139_d0g0v0_Shanghai
     - randomStatetest14_d0g0v0_Shanghai
-    - randomStatetest143_d0g0v0_Shanghai
     - randomStatetest153_d0g0v0_Shanghai
     - randomStatetest157_d0g0v0_Shanghai
     - randomStatetest159_d0g0v0_Shanghai
     - randomStatetest163_d0g0v0_Shanghai
-    - randomStatetest164_d0g0v0_Shanghai
-    - randomStatetest174_d0g0v0_Shanghai
     - randomStatetest185_d0g0v0_Shanghai
-    - randomStatetest199_d0g0v0_Shanghai
-    - randomStatetest207_d0g0v0_Shanghai
-    - randomStatetest212_d0g0v0_Shanghai
-    - randomStatetest228_d0g0v0_Shanghai
-    - randomStatetest236_d0g0v0_Shanghai
     - randomStatetest242_d0g0v0_Shanghai
-    - randomStatetest244_d0g0v0_Shanghai
     - randomStatetest246_d0g0v0_Shanghai
     - randomStatetest248_d0g0v0_Shanghai
     - randomStatetest26_d0g0v0_Shanghai
-    - randomStatetest273_d0g0v0_Shanghai
-    - randomStatetest3_d0g0v0_Shanghai
-    - randomStatetest30_d0g0v0_Shanghai
     - randomStatetest303_d0g0v0_Shanghai
-    - randomStatetest32_d0g0v0_Shanghai
     - randomStatetest326_d0g0v0_Shanghai
-    - randomStatetest343_d0g0v0_Shanghai
     - randomStatetest354_d0g0v0_Shanghai
-    - randomStatetest36_d0g0v0_Shanghai
-    - randomStatetest365_d0g0v0_Shanghai
     - randomStatetest367_d0g0v0_Shanghai
-    - randomStatetest376_d0g0v0_Shanghai
+    - randomStatetest36_d0g0v0_Shanghai
     - randomStatetest382_d0g0v0_Shanghai
     - randomStatetest384_d0g0v0_Shanghai
     - randomStatetest43_d0g0v0_Shanghai
     - randomStatetest48_d0g0v0_Shanghai
     - randomStatetest64_d0g0v0_Shanghai
     - randomStatetest85_d0g0v0_Shanghai
-    - randomStatetest98_d0g0v0_Shanghai
-  stRefundTest:
-    - refundSuicide50procentCap_d0g0v0_Shanghai
-    - refundSuicide50procentCap_d1g0v0_Shanghai
-    - refund_NoOOG_1_d0g0v0_Shanghai
   stReturnDataTest:
     - modexp_modsize0_returndatasize_d0g0v0_Shanghai
     - modexp_modsize0_returndatasize_d1g0v0_Shanghai
@@ -1832,10 +1594,6 @@ testname:
     - tooLongReturnDataCopy_d8g0v0_Shanghai
     - tooLongReturnDataCopy_d9g0v0_Shanghai
   stRevertTest:
-    - costRevert_d0g0v0_Shanghai
-    - costRevert_d14g0v0_Shanghai
-    - costRevert_d21g0v0_Shanghai
-    - costRevert_d7g0v0_Shanghai
     - RevertInCallCode_d0g0v0_Shanghai
     - RevertInDelegateCall_d0g0v0_Shanghai
     - RevertOpcodeCreate_d0g0v0_Shanghai
@@ -1856,19 +1614,15 @@ testname:
     - RevertPrecompiledTouch_storage_d1g0v0_Shanghai
     - RevertPrecompiledTouch_storage_d2g0v0_Shanghai
     - RevertPrecompiledTouch_storage_d3g0v0_Shanghai
-    - RevertPrefound_d0g0v0_Shanghai
     - RevertPrefoundEmpty_d0g0v0_Shanghai
-  stSLoadTest:
-    - sloadGasCost_d0g0v0_Shanghai
+    - RevertPrefound_d0g0v0_Shanghai
+    - costRevert_d0g0v0_Shanghai
+    - costRevert_d14g0v0_Shanghai
+    - costRevert_d21g0v0_Shanghai
+    - costRevert_d7g0v0_Shanghai
   stSStoreTest:
     - InitCollision_d1g0v0_Shanghai
     - InitCollision_d3g0v0_Shanghai
-    - sstoreGas_d0g0v0_Shanghai
-    - sstore_gasLeft_d2g0v0_Shanghai
-    - sstore_gasLeft_d5g0v0_Shanghai
-    - sstore_gasLeft_d8g0v0_Shanghai
-  stSolidityTest:
-    - TestStoreGasPrices_d0g0v0_Shanghai
   stSpecialTest:
     - JUMPDEST_Attack_d0g0v0_Shanghai
     - JUMPDEST_AttackwithJump_d0g0v0_Shanghai
@@ -1906,10 +1660,8 @@ testname:
     - static_CallEcrecover0_0input_d7g0v0_Shanghai
     - static_CallEcrecover80_d0g0v0_Shanghai
     - static_CallEcrecoverR_prefixed0_d0g0v0_Shanghai
-    - static_CallIdentity_1_nonzeroValue_d0g0v0_Shanghai
     - static_CallRipemd160_4_gas719_d0g0v0_Shanghai
     - static_CallRipemd160_5_d0g0v0_Shanghai
-    - static_CallSha256_1_nonzeroValue_d0g0v0_Shanghai
     - static_CallSha256_5_d0g0v0_Shanghai
     - static_CheckOpcodes2_d4g0v0_Shanghai
     - static_CheckOpcodes2_d4g0v1_Shanghai
@@ -1919,23 +1671,7 @@ testname:
     - static_RETURN_Bounds_d0g0v0_Shanghai
     - static_Return50000_2_d0g0v0_Shanghai
     - static_RevertOpcodeCalls_d0g1v0_Shanghai
-    - static_callOutput3Fail_d0g0v0_Shanghai
-    - static_callOutput3_d0g0v0_Shanghai
-    - static_callOutput3partialFail_d0g0v0_Shanghai
-    - static_callOutput3partial_d0g0v0_Shanghai
     - static_callToDelCallOpCodeCheck_d0g0v0_Shanghai
-  stSystemOperationsTest:
-    - ABAcalls3_d0g0v0_Shanghai
-    - ABAcallsSuicide1_d0g0v0_Shanghai
-    - ABAcallsSuicide1_d1g0v0_Shanghai
-    - CallRecursiveBombLog2_d0g0v0_Shanghai
-    - CallRecursiveBombLog_d0g0v0_Shanghai
-    - CallToNameRegistratorNotMuchMemory0_d0g0v0_Shanghai
-    - CallToNameRegistratorNotMuchMemory1_d0g0v0_Shanghai
-    - callerAccountBalance_d0g0v0_Shanghai
-    - createNameRegistratorZeroMem2_d0g0v0_Shanghai
-    - multiSelfdestruct_d0g0v0_Shanghai
-    - multiSelfdestruct_d4g0v0_Shanghai
   stStaticFlagEnabled:
     - CallWithZeroValueToPrecompileFromCalledContract_d0g0v0_Shanghai
     - CallWithZeroValueToPrecompileFromContractInitialization_d0g0v0_Shanghai
@@ -1946,6 +1682,14 @@ testname:
     - DelegatecallToPrecompileFromCalledContract_d0g0v0_Shanghai
     - DelegatecallToPrecompileFromContractInitialization_d0g0v0_Shanghai
     - DelegatecallToPrecompileFromTransaction_d0g0v0_Shanghai
+  stSystemOperationsTest:
+    - ABAcalls3_d0g0v0_Shanghai
+    - CallToNameRegistratorNotMuchMemory0_d0g0v0_Shanghai
+    - CallToNameRegistratorNotMuchMemory1_d0g0v0_Shanghai
+    - callerAccountBalance_d0g0v0_Shanghai
+    - createNameRegistratorZeroMem2_d0g0v0_Shanghai
+    - multiSelfdestruct_d0g0v0_Shanghai
+    - multiSelfdestruct_d4g0v0_Shanghai
   stTimeConsuming:
     - CALLBlake2f_MaxRounds_d0g0v0_Shanghai
     - static_Call50000_sha256_d0g0v0_Shanghai
@@ -1957,9 +1701,7 @@ testname:
     - SuicidesAndInternlCallSuicidesBonusGasAtCall_d0g0v0_Shanghai
     - SuicidesAndInternlCallSuicidesSuccess_d0g0v0_Shanghai
     - SuicidesAndInternlCallSuicidesSuccess_d1g0v0_Shanghai
-    - TransactionSendingToZero_d0g0v0_Shanghai
     - ValueOverflow_d0g0v0_Shanghai
-    - SuicidesAndInternlCallSuicidesOOG_d0g0v0_Shanghai
   stTransitionTest:
     - delegatecallAfterTransition_d0g0v0_Shanghai
     - delegatecallAtTransition_d0g0v0_Shanghai
