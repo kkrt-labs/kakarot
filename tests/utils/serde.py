@@ -169,9 +169,14 @@ class Serde:
             "max_fee_per_gas": self.memory.get(
                 tx_ptr + tx_scope.members["max_fee_per_gas"].offset
             ),
-            "destination": to_checksum_address(
-                f'0x{self.memory.get(tx_ptr + tx_scope.members["destination"].offset):040x}'
-            ),
+            "destination": {
+                "is_some": self.memory.get(
+                    tx_ptr + tx_scope.members["destination"].offset
+                ),
+                "value": to_checksum_address(
+                    f'0x{self.memory.get(tx_ptr + tx_scope.members["destination"].offset + 1):040x}'
+                ),
+            },
             "amount": self.serialize_uint256(
                 tx_ptr + tx_scope.members["amount"].offset
             ),

@@ -14,6 +14,7 @@ from starkware.cairo.common.registers import get_fp_and_pc
 // Local dependencies
 from backend.starknet import Starknet
 from kakarot.account import Account
+from kakarot.model import model
 from kakarot.library import Kakarot
 from utils.utils import Helpers
 
@@ -145,7 +146,7 @@ func eth_call{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
     origin: felt,
-    to: felt,
+    to: model.Option,
     gas_limit: felt,
     gas_price: felt,
     value: Uint256,
@@ -183,7 +184,7 @@ func eth_call{
 func eth_send_transaction{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
-    to: felt,
+    to: model.Option,
     gas_limit: felt,
     gas_price: felt,
     value: Uint256,
