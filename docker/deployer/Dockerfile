@@ -41,8 +41,8 @@ FROM python:3.9.13-slim-bullseye
 
 WORKDIR /app/kakarot
 
-# trunk-ignore(hadolint/DL3008)
 # trunk-ignore(terrascan/AC_DOCKER_0002)
+# trunk-ignore(hadolint/DL3008)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     apt-transport-https \
