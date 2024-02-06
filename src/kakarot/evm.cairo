@@ -80,7 +80,7 @@ namespace EVM {
     // @param return_data_len The length of the return_data.
     // @param return_data The pointer to the return_data array.
     // @param reverted A code indicating whether the EVM is reverted or not.
-    // 0 - not reverted, 1 - reverted, 2 - exceptional revert
+    // can be either 0 - not reverted, Errors.REVERTED or Errors.EXCEPTIONAL_HALT
     // @return EVM The pointer to the updated execution context.
     func stop(
         self: model.EVM*, return_data_len: felt, return_data: felt*, reverted: felt

@@ -122,7 +122,7 @@ namespace model {
     // @param stopped A boolean that state if the current execution is halted.
     // @param gas_left The gas consumed by the current state of the execution.
     // @param reverted A code indicating whether the EVM is reverted or not.
-    // 0 - not reverted, 1 - reverted, 2 - exceptional revert
+    // can be either 0 - not reverted, Errors.REVERTED or Errors.EXCEPTIONAL_HALT
     struct EVM {
         message: Message*,
         return_data_len: felt,

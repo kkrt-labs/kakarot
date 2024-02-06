@@ -170,6 +170,7 @@ testname:
     - createLargeResult_d7g0v0_Shanghai
     - createLargeResult_d8g0v0_Shanghai
     - createLargeResult_d9g0v0_Shanghai
+    - CreateOOGafterInitCodeReturndata_d0g1v0_Shanghai
     - CreateOOGafterInitCodeReturndata2_d0g1v0_Shanghai
     - CreateOOGafterInitCodeReturndataSize_d0g0v0_Shanghai
     - CreateOOGafterInitCodeRevert_d0g0v0_Shanghai

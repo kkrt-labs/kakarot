@@ -891,7 +891,7 @@ namespace CallHelper {
 
         // If the call has halted exceptionnaly, the return_data is empty
         // and nothing is copied to memory.
-        if (evm.reverted == 2) {
+        if (evm.reverted == Errors.EXCEPTIONAL_HALT) {
             tempvar evm = new model.EVM(
                 message=evm.message.parent.evm.message,
                 return_data_len=0,
@@ -1092,7 +1092,7 @@ namespace CreateHelper {
             // On revert, return the previous evm with an empty
             // return data if the revert is an exceptional halt (type 2),
             // otherwise return with the return data.
-            tempvar is_exceptional_revert = (is_not_zero(1 - evm.reverted));
+            tempvar is_exceptional_revert = is_not_zero(Errors.REVERT - evm.reverted);
             let return_data_len = (1 - is_exceptional_revert) * evm.return_data_len;
 
             tempvar evm = new model.EVM(
