@@ -27,7 +27,6 @@ lint:
           read_output_from: stdout
           run_linter_from: workspace
   enabled:
-    - trivy@0.49.0
     - osv-scanner@1.6.2
     - trivy@0.49.0
     - cairo@SYSTEM
