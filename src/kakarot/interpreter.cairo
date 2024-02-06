@@ -95,7 +95,7 @@ namespace Interpreter {
             return evm;
         }
         let stack_overflow = is_le(
-            Constants.STACK_MAX_DEPTH, stack.size + opcode.stack_size_diff + 1
+            Constants.STACK_MAX_DEPTH + 1, stack.size + opcode.stack_size_diff
         );
         if (stack_overflow != 0) {
             let (revert_reason_len, revert_reason) = Errors.stackOverflow();

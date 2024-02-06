@@ -24,7 +24,7 @@ from kakarot.interpreter import Interpreter
 from kakarot.instructions.system_operations import CreateHelper
 from kakarot.interfaces.interfaces import IAccount, IERC20
 from kakarot.model import model
-from utils.utils import Helpers
+from utils.utils import Helpers, Option
 
 // @title Kakarot main library file.
 // @notice This file contains the core EVM execution logic.
@@ -75,7 +75,7 @@ namespace Kakarot {
         bitwise_ptr: BitwiseBuiltin*,
     }(
         origin: felt,
-        to: felt,
+        to: Option,
         gas_limit: felt,
         gas_price: felt,
         value: Uint256*,
@@ -85,14 +85,14 @@ namespace Kakarot {
         access_list: felt*,
     ) -> (model.EVM*, model.State*, felt) {
         alloc_locals;
+        let is_regular_tx = is_not_zero(to.is_some);
+        let is_deploy_tx = 1 - is_regular_tx;
         let evm_contract_address = resolve_to(to, origin);
         let starknet_contract_address = Account.compute_starknet_address(evm_contract_address);
         tempvar address = new model.Address(
             starknet=starknet_contract_address, evm=evm_contract_address
         );
 
-        let is_regular_tx = is_not_zero(to);
-        let is_deploy_tx = 1 - is_regular_tx;
         let (bytecode_len, bytecode) = Starknet.get_bytecode(address.evm);
 
         let env = Starknet.get_env(origin, gas_price);
@@ -187,7 +187,7 @@ namespace Kakarot {
     }
 
     // @notice Get the EVM address from the transaction
-    // @dev When to=0, it's a deploy tx so we first compute the target address
+    // @dev When to=None, it's a deploy tx so we first compute the target address
     // @param to The transaction to parameter
     // @param origin The transaction origin parameter
     // @return the target evm address
@@ -196,10 +196,10 @@ namespace Kakarot {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(to: felt, origin: felt) -> felt {
+    }(to: Option, origin: felt) -> felt {
         alloc_locals;
-        if (to != 0) {
-            return to;
+        if (to.is_some != 0) {
+            return to.value;
         }
         // TODO: read the nonce from the provided origin address, otherwise in view mode this will
         // TODO: always use a 0 nonce

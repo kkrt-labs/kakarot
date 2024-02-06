@@ -15,6 +15,14 @@ from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_upd
 
 from utils.bytes import uint256_to_bytes32
 
+// @notice: Represents an optional value.
+// @param is_some A boolean indicating whether the value is present.
+// @param value The value (if applicable).
+struct Option {
+    is_some: felt,
+    value: felt,
+}
+
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
 namespace Helpers {
@@ -208,6 +216,16 @@ namespace Helpers {
         jmp loop if len != 0;
 
         return current;
+    }
+
+    func try_parse_address_from_bytes(bytes_len: felt, bytes:felt*) -> Option {
+        if (bytes_len != 20) {
+            let res = Option(is_some=0, value=0);
+            return res;
+        }
+        let address = bytes20_to_felt(bytes);
+        let res = Option(is_some=1, value=address);
+        return res;
     }
 
     // @notice This function is used to convert a sequence of 20 bytes big-endian

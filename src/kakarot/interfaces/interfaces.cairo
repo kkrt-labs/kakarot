@@ -1,6 +1,7 @@
 %lang starknet
 
 from starkware.cairo.common.uint256 import Uint256
+from utils.utils import Option
 
 @contract_interface
 namespace IERC20 {
@@ -102,7 +103,7 @@ namespace IKakarot {
 
     func eth_call(
         origin: felt,
-        to: felt,
+        to: Option,
         gas_limit: felt,
         gas_price: felt,
         value: Uint256,
@@ -112,7 +113,7 @@ namespace IKakarot {
     }
 
     func eth_send_transaction(
-        to: felt,
+        to: Option,
         gas_limit: felt,
         gas_price: felt,
         value: Uint256,

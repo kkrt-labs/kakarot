@@ -2,6 +2,8 @@
 from starkware.cairo.common.dict import DictAccess
 from starkware.cairo.common.uint256 import Uint256
 
+from utils.utils import Option
+
 namespace model {
     // @notice Info: https://www.evm.codes/about#stack
     // @notice Stack with a 1024 items maximum size. Each item is a 256 bits word. The stack is used by most
@@ -186,7 +188,7 @@ namespace model {
         gas_limit: felt,
         max_priority_fee_per_gas: felt,
         max_fee_per_gas: felt,
-        destination: felt,
+        destination: Option,
         amount: Uint256,
         payload_len: felt,
         payload: felt*,
