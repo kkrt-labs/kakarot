@@ -12,6 +12,7 @@ from starkware.starknet.common.syscalls import get_contract_address
 from starkware.cairo.common.memcpy import memcpy
 
 from kakarot.model import model
+from backend.starknet import Starknet
 from kakarot.state import State, Internals
 from kakarot.account import Account
 from kakarot.storages import native_token_address
@@ -102,7 +103,7 @@ func test__copy__should_return_new_state_with_same_attributes{
     return ();
 }
 
-func test__is_account_alive__existing_account{
+func test__is_account_alive__account_alive_in_state{
     pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr
 }() -> felt {
     alloc_locals;
@@ -132,7 +133,23 @@ func test__is_account_alive__existing_account{
     return is_alive;
 }
 
-func test__is_account_alive__not_in_state() {
+func test__is_account_alive__account_alive_not_in_state{
+    pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr
+}() {
+    // As the account is not in the local state, data is fetched from
+    // Starknet, which is mocked by pytest.
+    let state = State.init();
+    with state {
+        let is_alive = State.is_account_alive(0xabde1);
+    }
+
+    assert is_alive = 1;
+    return ();
+}
+
+func test__is_account_alive__account_not_alive_not_in_state{
+    pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr
+}() {
     let state = State.init();
     with state {
         let is_alive = State.is_account_alive(0xdead);

@@ -32,19 +32,33 @@ class TestState:
                 (0, [], 1, True),
             ),
         )
-        def test_existing_account(
+        def test_should_return_true_when_existing_account_cached(
             self, cairo_run, nonce, code, balance_low, expected_result
         ):
             is_alive = cairo_run(
-                "test__is_account_alive__existing_account",
+                "test__is_account_alive__account_alive_in_state",
                 nonce=nonce,
                 code=code,
                 balance_low=balance_low,
             )
             assert is_alive == expected_result
 
+        @SyscallHandler.patch("IAccount.bytecode", lambda addr, data: [1, [0x2]])
+        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
+        @SyscallHandler.patch(
+            "IAccount.account_type", lambda addr, data: [int.from_bytes(b"CA", "big")]
+        )
+        @SyscallHandler.patch("IContractAccount.get_nonce", lambda addr, data: [1])
+        @SyscallHandler.patch("evm_to_starknet_address", 0xABDE1, 0x1234)
+        def test_should_return_true_when_existing_account_not_cached(self, cairo_run):
+            cairo_run(
+                "test__is_account_alive__account_alive_not_in_state",
+            )
+
+        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 0])
+        @SyscallHandler.patch("evm_to_starknet_address", 0xABDE1, 0)
         def test_not_in_state(self, cairo_run):
-            cairo_run("test__is_account_alive__not_in_state")
+            cairo_run("test__is_account_alive__account_not_alive_not_in_state")
 
     class TestIsAccountWarm:
         def test_should_return_true_when_account_in_state(self, cairo_run):

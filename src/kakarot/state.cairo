@@ -362,25 +362,13 @@ namespace State {
     // @notice Check whether an account is both in the state and non empty.
     // @param address EVM Address of the account that needs to be checked.
     // @return is_alive TRUE if the account is alive.
-    func is_account_alive{state: model.State*}(address: felt) -> felt {
+    func is_account_alive{
+        pedersen_ptr: HashBuiltin*, syscall_ptr: felt*, range_check_ptr, state: model.State*
+    }(address: felt) -> felt {
         alloc_locals;
-        let accounts = state.accounts;
-        let (pointer) = dict_read{dict_ptr=accounts}(key=address);
-        tempvar state = new model.State(
-            accounts_start=state.accounts_start,
-            accounts=accounts,
-            events_len=state.events_len,
-            events=state.events,
-            transfers_len=state.transfers_len,
-            transfers=state.transfers,
-        );
-
-        // If not found in local storage, the account is not alive
-        if (pointer == 0) {
-            return FALSE;
-        }
-
-        let account = cast(pointer, model.Account*);
+        // We can get from the state without disturbing the warm/cold status
+        // as this is always called after already checking the warm status.
+        let account = get_account(address);
 
         let nonce = account.nonce;
         let code_len = account.code_len;
