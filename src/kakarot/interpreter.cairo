@@ -7,8 +7,9 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
+from starkware.cairo.common.math import split_felt
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, uint256_le
 from starkware.cairo.common.math import unsigned_div_rem
 
 // Internal dependencies
@@ -755,6 +756,7 @@ namespace Interpreter {
         let count = count_not_zero(calldata_len, calldata);
         let zeroes = calldata_len - count;
         let calldata_gas = zeroes * 4 + count * 16;
+        // TODO no overflow check on calldata operation
         let intrinsic_gas = Gas.TX_BASE_COST + calldata_gas;
 
         // If is_deploy_tx is TRUE, then
@@ -812,22 +814,36 @@ namespace Interpreter {
             State.get_account(env.coinbase);
             State.cache_precompiles();
             State.get_account(address.evm);
-            State.get_account(env.origin);
+            let sender = State.get_account(env.origin);
             let access_list_cost = State.cache_access_list(access_list_len, access_list);
-            let intrinsic_gas = intrinsic_gas + access_list_cost;
 
-            let evm = EVM.init(message, gas_limit);
-            let evm = EVM.charge_gas(evm, intrinsic_gas);
-            if (evm.reverted != FALSE) {
+            // TODO: missing overflow checks on gas operations and values
+            let intrinsic_gas = intrinsic_gas + access_list_cost;
+            let evm = EVM.init(message, gas_limit - intrinsic_gas);
+
+            let is_gas_limit_enough = is_le(intrinsic_gas, gas_limit);
+            if (is_gas_limit_enough == FALSE) {
+                let evm = EVM.halt_validation_failed(evm);
                 return (evm, stack, memory, state, gas_limit);
             }
 
-            // Handle value
-            let origin_starknet_address = Account.compute_starknet_address(env.origin);
-            tempvar origin_address = new model.Address(
-                starknet=origin_starknet_address, evm=env.origin
+            let (is_value_le_balance) = uint256_le([value], [sender.balance]);
+            if (is_value_le_balance == FALSE) {
+                let evm = EVM.halt_validation_failed(evm);
+                return (evm, stack, memory, state, gas_limit);
+            }
+
+            let effective_gas_fee = gas_limit * env.gas_price;
+            let (fee_high, fee_low) = split_felt(effective_gas_fee);
+            let (can_pay_gasfee) = uint256_le(
+                Uint256(low=fee_low, high=fee_high), [sender.balance]
             );
-            let transfer = model.Transfer(origin_address, address, [value]);
+            if (can_pay_gasfee == FALSE) {
+                let evm = EVM.halt_validation_failed(evm);
+                return (evm, stack, memory, state, gas_limit);
+            }
+
+            let transfer = model.Transfer(sender.address, address, [value]);
             let success = State.add_transfer(transfer);
 
             // Check collision
