@@ -24,13 +24,9 @@ from starknet_py.hash.address import compute_address
 from starknet_py.hash.casm_class_hash import compute_casm_class_hash
 from starknet_py.hash.class_hash import compute_class_hash
 from starknet_py.hash.sierra_class_hash import compute_sierra_class_hash
-from starknet_py.hash.transaction import (
-    TransactionHashPrefix,
-    compute_declare_transaction_hash,
-    compute_transaction_hash,
-)
+from starknet_py.hash.transaction import TransactionHashPrefix, compute_transaction_hash
 from starknet_py.hash.utils import message_signature
-from starknet_py.net.account.account import Account, _add_signature_to_transaction
+from starknet_py.net.account.account import Account
 from starknet_py.net.client_models import (
     Call,
     DeclareTransactionResponse,
@@ -465,34 +461,32 @@ async def declare(contract):
             DeclareTransactionResponse,
             DeclareTransactionResponseSchema().load(res, unknown=EXCLUDE),
         )
+        deployed_class_hash = resp.class_hash
 
     status = await wait_for_transaction(resp.transaction_hash)
     logger.info(
         f"{status} {contract['contract_name']} class hash: {hex(resp.class_hash)}"
     )
-    return resp.class_hash
+    return deployed_class_hash
 
 
 async def deploy(contract_name, *args):
     logger.info(f"ℹ️  Deploying {contract_name}")
     artifact, cairo_version = get_artifact(contract_name)
+    declarations = get_declarations()
     if cairo_version == ArtifactType.cairo0:
         compiled_contract = Path(artifact).read_text()
         abi = json.loads(compiled_contract)["abi"]
-        contract_class = create_compiled_contract(compiled_contract=compiled_contract)
-        class_hash = compute_class_hash(contract_class=deepcopy(contract_class))
     else:
         sierra_compiled_contract = artifact.with_suffix(
             ".contract_class.json"
         ).read_text()
         abi = json.loads(sierra_compiled_contract)["abi"]
-        compiled_contract = create_sierra_compiled_contract(sierra_compiled_contract)
-        class_hash = compute_sierra_class_hash(compiled_contract)
 
     account = await get_starknet_account()
     deploy_result = await Contract.deploy_contract(
         account=account,
-        class_hash=class_hash,
+        class_hash=declarations[contract_name],
         abi=abi,
         constructor_args=list(args),
         max_fee=_max_fee,
