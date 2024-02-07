@@ -141,11 +141,6 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
-      - name: Setup Rust Toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          override: true
       - name: Retrieve cached dependencies
         uses: Swatinem/rust-cache@v2
       - name: Install Katana
