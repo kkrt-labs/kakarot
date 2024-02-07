@@ -54,6 +54,11 @@ lint:
       paths: [tests, docker]
     - linters: [codespell]
       paths: [poetry.lock]
+    - linters: [ALL]
+      paths:
+        - logs*
+        - lib*
+        - resources*
 actions:
   disabled:
     - trunk-announce
