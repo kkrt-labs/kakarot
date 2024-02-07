@@ -169,6 +169,20 @@ namespace EVM {
         );
     }
 
+    func halt_validation_failed{range_check_ptr}(self: model.EVM*) -> model.EVM* {
+        let (revert_reason_len, revert_reason) = Errors.eth_validation_failed();
+        return new model.EVM(
+            message=self.message,
+            return_data_len=revert_reason_len,
+            return_data=revert_reason,
+            program_counter=self.program_counter,
+            stopped=TRUE,
+            gas_left=0,
+            gas_refund=self.gas_refund,
+            reverted=Errors.EXCEPTIONAL_HALT,
+        );
+    }
+
     // @notice Update the array of events to emit in the case of a execution context successfully running to completion (see `EVM.finalize`).
     // @param self The pointer to the execution context.
     // @param topics_len The length of the topics
