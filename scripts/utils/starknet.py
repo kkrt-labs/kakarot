@@ -18,12 +18,17 @@ from starknet_py.common import (
     create_compiled_contract,
     create_sierra_compiled_contract,
 )
+from starknet_py.constants import DEFAULT_ENTRY_POINT_SELECTOR
 from starknet_py.contract import Contract
 from starknet_py.hash.address import compute_address
 from starknet_py.hash.casm_class_hash import compute_casm_class_hash
 from starknet_py.hash.class_hash import compute_class_hash
 from starknet_py.hash.sierra_class_hash import compute_sierra_class_hash
-from starknet_py.hash.transaction import compute_declare_transaction_hash
+from starknet_py.hash.transaction import (
+    TransactionHashPrefix,
+    compute_declare_transaction_hash,
+    compute_transaction_hash,
+)
 from starknet_py.hash.utils import message_signature
 from starknet_py.net.account.account import Account, _add_signature_to_transaction
 from starknet_py.net.client_models import (
@@ -299,9 +304,11 @@ def compile_contract(contract):
     output = subprocess.run(
         [
             "starknet-compile-deprecated",
-            CONTRACTS[contract["contract_name"]]
-            if not is_fixture
-            else CONTRACTS_FIXTURES[contract["contract_name"]],
+            (
+                CONTRACTS[contract["contract_name"]]
+                if not is_fixture
+                else CONTRACTS_FIXTURES[contract["contract_name"]]
+            ),
             "--output",
             artifact,
             "--cairo_path",
@@ -427,26 +434,27 @@ async def declare(contract):
         except Exception:
             pass
 
-        transaction = Declare(
-            contract_class=contract_class,
-            sender_address=account.address,
-            max_fee=_max_fee,
-            signature=[],
-            nonce=await account.get_nonce(),
+        tx_hash = compute_transaction_hash(
+            tx_hash_prefix=TransactionHashPrefix.DECLARE,
             version=1,
-        )
-        tx_hash = compute_declare_transaction_hash(
-            contract_class=deepcopy(transaction.contract_class),
+            contract_address=account.address,
+            entry_point_selector=DEFAULT_ENTRY_POINT_SELECTOR,
+            calldata=[class_hash],
+            max_fee=_max_fee,
             chain_id=account.signer.chain_id.value,
-            sender_address=account.address,
-            max_fee=transaction.max_fee,
-            version=transaction.version,
-            nonce=transaction.nonce,
+            additional_data=[await account.get_nonce()],
         )
         signature = message_signature(
             msg_hash=tx_hash, priv_key=account.signer.private_key
         )
-        transaction = _add_signature_to_transaction(transaction, signature)
+        transaction = Declare(
+            contract_class=contract_class,
+            sender_address=account.address,
+            max_fee=_max_fee,
+            signature=signature,
+            nonce=await account.get_nonce(),
+            version=1,
+        )
         params = _create_broadcasted_txn(transaction=transaction)
 
         res = await RPC_CLIENT._client.call(
