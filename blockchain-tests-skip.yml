@@ -1193,6 +1193,7 @@ testname:
     - buffer_d92g0v0_Shanghai
   stNonZeroCallsTest:
     - NonZeroValue_CALL_ToNonNonZeroBalance_d0g0v0_Shanghai
+    - NonZeroValue_CALL_ToEmpty_d0g0v0_Shanghai
   stPreCompiledContracts2:
     - CALLBlake2f_d9g0v0_Shanghai
     - CALLCODEBlake2f_d9g0v0_Shanghai
@@ -1701,6 +1702,7 @@ testname:
     - SuicidesAndInternlCallSuicidesBonusGasAtCall_d0g0v0_Shanghai
     - SuicidesAndInternlCallSuicidesSuccess_d0g0v0_Shanghai
     - SuicidesAndInternlCallSuicidesSuccess_d1g0v0_Shanghai
+    - SuicidesAndInternlCallSuicidesOOG_d0g0v0_Shanghai
     - ValueOverflow_d0g0v0_Shanghai
   stTransitionTest:
     - delegatecallAfterTransition_d0g0v0_Shanghai
