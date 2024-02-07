@@ -57,7 +57,7 @@ class TestState:
 
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 0])
         @SyscallHandler.patch("evm_to_starknet_address", 0xABDE1, 0)
-        def test_not_in_state(self, cairo_run):
+        def test_should_return_false_when_not_in_state_nor_starknet(self, cairo_run):
             cairo_run("test__is_account_alive__account_not_alive_not_in_state")
 
     class TestIsAccountWarm:
