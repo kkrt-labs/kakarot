@@ -27,3 +27,4 @@ resources/*
 .hypothesis
 *.pb.gz
 profile*.png
+logs
