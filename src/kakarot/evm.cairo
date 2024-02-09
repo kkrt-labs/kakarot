@@ -262,11 +262,13 @@ namespace EVM {
             return evm;
         }
 
+        // Since the program counter is incremented by 1 after each instruction,
+        // we need to subtract 1 in order to jump to the correct location.
         return new model.EVM(
             message=message,
             return_data_len=self.return_data_len,
             return_data=self.return_data,
-            program_counter=new_pc_offset,
+            program_counter=new_pc_offset - 1,
             stopped=self.stopped,
             gas_left=self.gas_left,
             gas_refund=self.gas_refund,
