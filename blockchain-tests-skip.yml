@@ -8,7 +8,6 @@ testname:
   stEIP3860-limitmeterinitcode:
     - create2InitCodeSizeLimit_d0g0v0_Shanghai
     - createInitCodeSizeLimit_d0g0v0_Shanghai
-    - creationTxInitCodeSizeLimit_d1g0v0_Shanghai
   vmTests:
     - blockInfo_d1g0v0_Shanghai
     - blockInfo_d2g0v0_Shanghai

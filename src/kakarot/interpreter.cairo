@@ -843,6 +843,14 @@ namespace Interpreter {
                 return (evm, stack, memory, state, gas_limit);
             }
 
+            tempvar is_initcode_invalid = is_deploy_tx * is_le(
+                2 * Constants.MAX_CODE_SIZE + 1, bytecode_len
+            );
+            if (is_initcode_invalid != FALSE) {
+                let evm = EVM.halt_validation_failed(evm);
+                return (evm, stack, memory, state, gas_limit);
+            }
+
             let transfer = model.Transfer(sender.address, address, [value]);
             let success = State.add_transfer(transfer);
 
