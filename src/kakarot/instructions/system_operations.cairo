@@ -1086,7 +1086,8 @@ namespace CreateHelper {
         }
 
         let is_reverted = is_not_zero(evm.reverted);
-        let success = enough_gas * code_size_limit * is_prefix_not_0xef;
+        let checks_success = enough_gas * code_size_limit * is_prefix_not_0xef;
+        let success = (1 - is_reverted) * checks_success;
 
         // Stack output: the address of the deployed contract, 0 if the deployment failed.
         let (address_high, address_low) = split_felt(evm.message.address.evm * success);
@@ -1094,18 +1095,16 @@ namespace CreateHelper {
 
         Stack.push(address);
 
-        let should_revert = (1 - success) + is_reverted;
-        if (should_revert != FALSE) {
-            // On revert, return the previous evm with an empty return data if the revert is an exceptional halt,
-            // otherwise return with the return data.
+        if (success == FALSE) {
+            // The only case where a create opcode has returndata is if it reverted with the REVERT opcode.
             tempvar is_exceptional_revert = is_not_zero(Errors.REVERT - evm.reverted) + (
-                1 - success
+                1 - checks_success
             );
             let return_data_len = (1 - is_exceptional_revert) * evm.return_data_len;
 
             tempvar evm = new model.EVM(
                 message=evm.message.parent.evm.message,
-                return_data_len=evm.return_data_len,
+                return_data_len=return_data_len,
                 return_data=evm.return_data,
                 program_counter=evm.message.parent.evm.program_counter + 1,
                 stopped=evm.message.parent.evm.stopped,
