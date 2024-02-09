@@ -917,12 +917,22 @@ namespace Internals {
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
+        let is_reverted = is_not_zero(evm.reverted);
+        if (is_reverted != 0) {
+            return evm;
+        }
+
         // Charge final deposit gas
         let code_size_limit = is_le(evm.return_data_len, Constants.MAX_CODE_SIZE);
         let code_deposit_cost = Gas.CODE_DEPOSIT * evm.return_data_len;
         let enough_gas = is_nn(evm.gas_left - code_deposit_cost);
-        let is_reverted = is_not_zero(evm.reverted);
-        let success = (1 - is_reverted) * enough_gas * code_size_limit;
+        if (evm.return_data_len == 0) {
+            tempvar is_prefix_not_0xef = TRUE;
+        } else {
+            tempvar is_prefix_not_0xef = is_not_zero(0xef - [evm.return_data]);
+        }
+
+        let success = enough_gas * code_size_limit * is_prefix_not_0xef;
 
         if (success == 0) {
             // Reverts and burn all gas
