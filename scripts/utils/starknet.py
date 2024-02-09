@@ -79,7 +79,7 @@ async def get_starknet_account(
         raise ValueError(
             "address was not given in arg nor in env variable, see README.md#Deploy"
         )
-    address = int(address, 16)
+    address = int(address, 16) if isinstance(address, str) else address
     private_key = private_key or NETWORK["private_key"]
     if private_key is None:
         raise ValueError(
@@ -348,7 +348,7 @@ def compile_contract(contract):
     )
 
 
-async def deploy_starknet_account(class_hash, private_key=None, amount=1):
+async def deploy_starknet_account(class_hash=None, private_key=None, amount=1):
     salt = random.randint(0, 2**251)
     private_key = private_key or NETWORK["private_key"]
     if private_key is None:
@@ -357,6 +357,7 @@ async def deploy_starknet_account(class_hash, private_key=None, amount=1):
         )
     key_pair = KeyPair.from_private_key(int(private_key, 16))
     constructor_calldata = [key_pair.public_key]
+    class_hash = class_hash or get_declarations()["OpenzeppelinAccount"]
     address = compute_address(
         salt=salt,
         class_hash=class_hash,

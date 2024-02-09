@@ -32,6 +32,27 @@ def evm(get_contract):
     return get_contract("EVM")
 
 
+@pytest.fixture(scope="session")
+async def other():
+    """
+    Just another Starknet contract.
+    """
+    from scripts.utils.starknet import deploy_starknet_account, get_starknet_account
+
+    account_info = await deploy_starknet_account()
+    return await get_starknet_account(account_info["address"])
+
+
+@pytest.fixture(scope="session")
+async def class_hashes():
+    """
+    All declared class hashes.
+    """
+    from scripts.utils.starknet import get_declarations
+
+    return get_declarations()
+
+
 @pytest_asyncio.fixture(scope="session")
 async def origin(evm: Contract, addresses):
     """
@@ -184,3 +205,30 @@ class TestKakarot:
             assert result.success == 1
             assert result.return_data == []
             assert result.gas_used == 21_000
+
+    class TestUpgrade:
+
+        async def test_should_raise_when_caller_is_not_owner(
+            self, starknet, kakarot, invoke, other, class_hashes
+        ):
+            prev_class_hash = await starknet.get_class_hash_at(kakarot.address)
+            await invoke("kakarot", "upgrade", class_hashes["EVM"], account=other)
+            new_class_hash = await starknet.get_class_hash_at(kakarot.address)
+            assert prev_class_hash == new_class_hash
+
+        async def test_should_raise_when_class_hash_is_not_declared(
+            self, starknet, kakarot, invoke
+        ):
+            prev_class_hash = await starknet.get_class_hash_at(kakarot.address)
+            await invoke("kakarot", "upgrade", 0xDEAD)
+            new_class_hash = await starknet.get_class_hash_at(kakarot.address)
+            assert prev_class_hash == new_class_hash
+
+        async def test_should_upgrade_class_hash(
+            self, starknet, kakarot, invoke, class_hashes
+        ):
+            prev_class_hash = await starknet.get_class_hash_at(kakarot.address)
+            await invoke("kakarot", "upgrade", class_hashes["EVM"])
+            new_class_hash = await starknet.get_class_hash_at(kakarot.address)
+            assert prev_class_hash != new_class_hash
+            assert new_class_hash == class_hashes["EVM"]
