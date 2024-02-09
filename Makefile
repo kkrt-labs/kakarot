@@ -79,7 +79,7 @@ build-sol:
 	forge build --names --force
 
 install-katana:
-	cargo install --git https://github.com/dojoengine/dojo --locked --rev e0054e7 katana
+	cargo install --git https://github.com/dojoengine/dojo --locked --rev fe8f233 katana
 
 run-katana: install-katana
-	katana --validate-max-steps 16777216 --invoke-max-steps 16777216
+	katana --validate-max-steps 16777216 --invoke-max-steps 16777216 --gas-price 0 --disable-fee
