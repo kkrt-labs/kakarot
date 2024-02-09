@@ -1097,13 +1097,11 @@ namespace CreateHelper {
         let should_revert = (1 - success) + is_reverted;
         if (should_revert != FALSE) {
             // On revert, return the previous evm with an empty return data if the revert is an exceptional halt,
-            // otherwise return with the return data and the remaining gas left.
+            // otherwise return with the return data.
             tempvar is_exceptional_revert = is_not_zero(Errors.REVERT - evm.reverted) + (
                 1 - success
             );
             let return_data_len = (1 - is_exceptional_revert) * evm.return_data_len;
-            tempvar gas_left = evm.message.parent.evm.gas_left + (1 - is_exceptional_revert) *
-                evm.gas_left;
 
             tempvar evm = new model.EVM(
                 message=evm.message.parent.evm.message,
@@ -1111,7 +1109,7 @@ namespace CreateHelper {
                 return_data=evm.return_data,
                 program_counter=evm.message.parent.evm.program_counter + 1,
                 stopped=evm.message.parent.evm.stopped,
-                gas_left=gas_left,
+                gas_left=evm.message.parent.evm.gas_left,
                 gas_refund=evm.message.parent.evm.gas_refund,
                 reverted=evm.message.parent.evm.reverted,
             );
