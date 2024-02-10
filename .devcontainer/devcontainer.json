@@ -39,5 +39,8 @@
   "remoteUser": "vscode",
   "features": {
     "ghcr.io/devcontainers-contrib/features/poetry:2": {},
+    "ghcr.io/devcontainers-contrib/features/apt-get-packages:1": {
+      "packages": "clang"
+    },
   },
 }
