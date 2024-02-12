@@ -653,7 +653,7 @@ namespace Interpreter {
         let state = cast([ap - 2], model.State*);
         let evm = cast([ap - 1], model.EVM*);
         let evm_prev = cast([fp - 3], model.EVM*);
-        let opcode_number = [fp - 2];
+        let opcode_number = [fp];
 
         tempvar is_jump = Helpers.is_zero(opcode_number - 0x56) + Helpers.is_zero(
             opcode_number - 0x57
