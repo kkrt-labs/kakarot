@@ -36,6 +36,7 @@ from kakarot.gas import Gas
 from utils.utils import Helpers
 from utils.array import count_not_zero
 
+from tests.utils.debug import Debug
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.
 namespace Interpreter {
@@ -652,7 +653,7 @@ namespace Interpreter {
         let state = cast([ap - 2], model.State*);
         let evm = cast([ap - 1], model.EVM*);
         let evm_prev = cast([fp - 3], model.EVM*);
-        let opcode_number = [fp];
+        let opcode_number = [fp - 2];
 
         tempvar is_jump = Helpers.is_zero(opcode_number - 0x56) + Helpers.is_zero(
             opcode_number - 0x57
