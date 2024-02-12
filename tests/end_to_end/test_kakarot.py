@@ -228,7 +228,8 @@ class TestKakarot:
             self, starknet, kakarot, invoke, class_hashes
         ):
             prev_class_hash = await starknet.get_class_hash_at(kakarot.address)
-            await invoke("kakarot", "upgrade", class_hashes["EVM"])
+            await invoke("kakarot", "upgrade", class_hashes["replace_class"])
             new_class_hash = await starknet.get_class_hash_at(kakarot.address)
             assert prev_class_hash != new_class_hash
-            assert new_class_hash == class_hashes["EVM"]
+            assert new_class_hash == class_hashes["replace_class"]
+            await invoke("kakarot", "upgrade", prev_class_hash)
