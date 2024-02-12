@@ -652,8 +652,14 @@ namespace Interpreter {
         let state = cast([ap - 2], model.State*);
         let evm = cast([ap - 1], model.EVM*);
         let evm_prev = cast([fp - 3], model.EVM*);
+        let opcode_number = [fp];
 
-        if (evm_prev.message.depth == evm.message.depth) {
+        tempvar is_jump = Helpers.is_zero(opcode_number - 0x56) + Helpers.is_zero(
+            opcode_number - 0x57
+        );
+        tempvar should_increment_pc = Helpers.is_zero(evm_prev.message.depth - evm.message.depth) *
+            (1 - is_jump);
+        if (should_increment_pc != FALSE) {
             let evm = EVM.increment_program_counter(evm, 1);
             return evm;
         } else {

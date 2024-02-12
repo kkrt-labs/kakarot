@@ -268,7 +268,7 @@ namespace EVM {
             message=message,
             return_data_len=self.return_data_len,
             return_data=self.return_data,
-            program_counter=new_pc_offset - 1,
+            program_counter=new_pc_offset,
             stopped=self.stopped,
             gas_left=self.gas_left,
             gas_refund=self.gas_refund,

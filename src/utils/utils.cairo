@@ -19,6 +19,16 @@ from utils.bytes import uint256_to_bytes32
 // @title Helper Functions
 // @notice This file contains a selection of helper function that simplify tasks such as type conversion and bit manipulation
 namespace Helpers {
+    // Returns 1 if value == 0. Returns 0 otherwise.
+    @known_ap_change
+    func is_zero(value) -> felt {
+        if (value == 0) {
+            return 1;
+        }
+
+        return 0;
+    }
+
     func to_uint256{range_check_ptr}(val: felt) -> Uint256* {
         let (high, low) = split_felt(val);
         tempvar res = new Uint256(low, high);
