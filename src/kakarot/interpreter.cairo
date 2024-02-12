@@ -36,7 +36,6 @@ from kakarot.gas import Gas
 from utils.utils import Helpers
 from utils.array import count_not_zero
 
-from tests.utils.debug import Debug
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.
 namespace Interpreter {
