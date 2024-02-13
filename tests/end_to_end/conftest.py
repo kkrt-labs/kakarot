@@ -336,3 +336,23 @@ def eth_get_code():
     from scripts.utils.kakarot import eth_get_code
 
     return eth_get_code
+
+
+@pytest.fixture
+def call():
+    """
+    Send a Starknet call.
+    """
+    from scripts.utils.starknet import call
+
+    return call
+
+
+@pytest.fixture
+def invoke():
+    """
+    Send a Starknet transaction.
+    """
+    from scripts.utils.starknet import invoke
+
+    return invoke
