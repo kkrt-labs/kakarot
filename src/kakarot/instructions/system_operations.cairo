@@ -367,7 +367,7 @@ namespace SystemOperations {
 
         let sender = State.get_account(evm.message.address.evm);
         let (sender_balance_lt_value) = uint256_lt([sender.balance], [value]);
-        tempvar is_max_depth_reached = 1 - is_not_zero(
+        tempvar is_max_depth_reached = Helpers.is_zero(
             (Constants.STACK_MAX_DEPTH + 1) - evm.message.depth
         );
         tempvar is_call_invalid = sender_balance_lt_value + is_max_depth_reached;

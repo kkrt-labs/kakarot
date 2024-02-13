@@ -9,7 +9,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
-from starkware.cairo.common.uint256 import Uint256, uint256_le
+from starkware.cairo.common.uint256 import Uint256, uint256_le, uint256_sub
 from starkware.cairo.common.math import unsigned_div_rem
 
 // Internal dependencies
@@ -762,6 +762,8 @@ namespace Interpreter {
         access_list: felt*,
     ) -> (model.EVM*, model.Stack*, model.Memory*, model.State*, felt) {
         alloc_locals;
+        let fp_and_pc = get_fp_and_pc();
+        local __fp__: felt* = fp_and_pc.fp_val;
 
         // Compute intrinsic gas usage
         // See https://www.evm.codes/about#gascosts
@@ -847,9 +849,8 @@ namespace Interpreter {
 
             let effective_gas_fee = gas_limit * env.gas_price;
             let (fee_high, fee_low) = split_felt(effective_gas_fee);
-            let (can_pay_gasfee) = uint256_le(
-                Uint256(low=fee_low, high=fee_high), [sender.balance]
-            );
+            let fee_u256 = Uint256(low=fee_low, high=fee_high);
+            let (can_pay_gasfee) = uint256_le(fee_u256, [sender.balance]);
             if (can_pay_gasfee == FALSE) {
                 let evm = EVM.halt_validation_failed(evm);
                 return (evm, stack, memory, state, gas_limit);
@@ -862,6 +863,12 @@ namespace Interpreter {
                 let evm = EVM.halt_validation_failed(evm);
                 return (evm, stack, memory, state, gas_limit);
             }
+
+            // Charge the gas fee to the user without setting up a transfer.
+            // Transfers with the exact amounts will be performed post-execution.
+            let (local new_balance) = uint256_sub([sender.balance], fee_u256);
+            let sender = Account.set_balance(sender, &new_balance);
+            State.update_account(sender);
 
             let transfer = model.Transfer(sender.address, address, [value]);
             let success = State.add_transfer(transfer);
