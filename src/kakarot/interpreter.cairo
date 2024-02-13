@@ -302,9 +302,9 @@ namespace Interpreter {
         call MemoryOperations.exec_sstore;  // 0x55
         jmp end;
         call MemoryOperations.exec_jump;  // 0x56
-        jmp end;
+        jmp end_no_pc_increment;
         call MemoryOperations.exec_jumpi;  // 0x57
-        jmp end;
+        jmp end_no_pc_increment;
         call MemoryOperations.exec_pc;  // 0x58
         jmp end;
         call MemoryOperations.exec_msize;  // 0x59
@@ -659,6 +659,18 @@ namespace Interpreter {
         } else {
             return evm;
         }
+
+        end_no_pc_increment:
+        let syscall_ptr = cast([ap - 8], felt*);
+        let pedersen_ptr = cast([ap - 7], HashBuiltin*);
+        let range_check_ptr = [ap - 6];
+        let bitwise_ptr = cast([ap - 5], BitwiseBuiltin*);
+        let stack = cast([ap - 4], model.Stack*);
+        let memory = cast([ap - 3], model.Memory*);
+        let state = cast([ap - 2], model.State*);
+        let evm = cast([ap - 1], model.EVM*);
+
+        return evm;
     }
 
     // @notice Iteratively decode and execute the bytecode of an EVM
@@ -917,12 +929,23 @@ namespace Internals {
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
+        let is_reverted = is_not_zero(evm.reverted);
+        if (is_reverted != 0) {
+            return evm;
+        }
+
         // Charge final deposit gas
         let code_size_limit = is_le(evm.return_data_len, Constants.MAX_CODE_SIZE);
         let code_deposit_cost = Gas.CODE_DEPOSIT * evm.return_data_len;
         let enough_gas = is_nn(evm.gas_left - code_deposit_cost);
-        let is_reverted = is_not_zero(evm.reverted);
-        let success = (1 - is_reverted) * enough_gas * code_size_limit;
+        // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-3540.md
+        if (evm.return_data_len == 0) {
+            tempvar is_prefix_not_0xef = TRUE;
+        } else {
+            tempvar is_prefix_not_0xef = is_not_zero(0xef - [evm.return_data]);
+        }
+
+        let success = enough_gas * code_size_limit * is_prefix_not_0xef;
 
         if (success == 0) {
             // Reverts and burn all gas
