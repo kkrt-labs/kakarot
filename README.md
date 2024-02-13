@@ -7,10 +7,10 @@
   </h3>
 </div>
 
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/kkrt-labs/kakarot/ci.yml?branch=main)](https://github.com/kkrt-labs/kakarot/actions)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/kkrt-labs/kakarot/ci.yml?branch=main)](https://github.com/kkrt-labs/kakarot/actions/workflows/ci.yml)
 [![GitHub](https://img.shields.io/github/license/kkrt-labs/kakarot?style=flat-square&logo=github)](https://github.com/kkrt-labs/kakarot/blob/main/LICENSE)
 [![GitHub contributors](https://img.shields.io/github/contributors/kkrt-labs/kakarot?logo=github&style=flat-square)](https://github.com/kkrt-labs/kakarot/graphs/contributors)
-![GitHub top language](https://img.shields.io/github/languages/top/kkrt-labs/kakarot?style=flat-square)
+[![GitHub top language](https://img.shields.io/github/languages/top/kkrt-labs/kakarot?style=flat-square)](https://github.com/starkware-libs/cairo)
 [![Telegram](https://img.shields.io/badge/telegram-Kakarot-yellow.svg?logo=telegram)](https://t.me/KakarotZkEvm)
 [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)](https://github.com/kkrt-labs/kakarot/blob/main/docs/CONTRIBUTING.md)
 ![GitHub Repo stars](https://img.shields.io/github/stars/kkrt-labs/kakarot?style=social)
