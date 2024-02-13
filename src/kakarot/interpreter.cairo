@@ -302,9 +302,9 @@ namespace Interpreter {
         call MemoryOperations.exec_sstore;  // 0x55
         jmp end;
         call MemoryOperations.exec_jump;  // 0x56
-        jmp end;
+        jmp end_no_pc_increment;
         call MemoryOperations.exec_jumpi;  // 0x57
-        jmp end;
+        jmp end_no_pc_increment;
         call MemoryOperations.exec_pc;  // 0x58
         jmp end;
         call MemoryOperations.exec_msize;  // 0x59
@@ -652,19 +652,25 @@ namespace Interpreter {
         let state = cast([ap - 2], model.State*);
         let evm = cast([ap - 1], model.EVM*);
         let evm_prev = cast([fp - 3], model.EVM*);
-        let opcode_number = [fp];
 
-        tempvar is_jump = Helpers.is_zero(opcode_number - 0x56) + Helpers.is_zero(
-            opcode_number - 0x57
-        );
-        tempvar should_increment_pc = Helpers.is_zero(evm_prev.message.depth - evm.message.depth) *
-            (1 - is_jump);
-        if (should_increment_pc != FALSE) {
+        if (evm_prev.message.depth == evm.message.depth) {
             let evm = EVM.increment_program_counter(evm, 1);
             return evm;
         } else {
             return evm;
         }
+
+        end_no_pc_increment:
+        let syscall_ptr = cast([ap - 8], felt*);
+        let pedersen_ptr = cast([ap - 7], HashBuiltin*);
+        let range_check_ptr = [ap - 6];
+        let bitwise_ptr = cast([ap - 5], BitwiseBuiltin*);
+        let stack = cast([ap - 4], model.Stack*);
+        let memory = cast([ap - 3], model.Memory*);
+        let state = cast([ap - 2], model.State*);
+        let evm = cast([ap - 1], model.EVM*);
+
+        return evm;
     }
 
     // @notice Iteratively decode and execute the bytecode of an EVM
@@ -932,6 +938,7 @@ namespace Internals {
         let code_size_limit = is_le(evm.return_data_len, Constants.MAX_CODE_SIZE);
         let code_deposit_cost = Gas.CODE_DEPOSIT * evm.return_data_len;
         let enough_gas = is_nn(evm.gas_left - code_deposit_cost);
+        // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-3540.md
         if (evm.return_data_len == 0) {
             tempvar is_prefix_not_0xef = TRUE;
         } else {

@@ -1079,6 +1079,7 @@ namespace CreateHelper {
         let code_deposit_cost = Gas.CODE_DEPOSIT * evm.return_data_len;
         let remaining_gas = evm.gas_left - code_deposit_cost;
         let enough_gas = is_nn(remaining_gas);
+        // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-3540.md
         if (evm.return_data_len == 0) {
             tempvar is_prefix_not_0xef = TRUE;
         } else {
