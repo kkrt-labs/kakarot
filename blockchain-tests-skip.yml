@@ -46,19 +46,6 @@ testname:
   stChainId:
     - chainId_d0g0v0_Shanghai
   stCreate2:
-    - CREATE2_HighNonceDelegatecall_d11g0v0_Shanghai
-    - CREATE2_HighNonceDelegatecall_d17g0v0_Shanghai
-    - CREATE2_HighNonceDelegatecall_d18g0v0_Shanghai
-    - CREATE2_HighNonceDelegatecall_d19g0v0_Shanghai
-    - CREATE2_HighNonceDelegatecall_d20g0v0_Shanghai
-    - CREATE2_HighNonceDelegatecall_d21g0v0_Shanghai
-    - CREATE2_HighNonceDelegatecall_d23g0v0_Shanghai
-    - CREATE2_HighNonceDelegatecall_d5g0v0_Shanghai
-    - CREATE2_HighNonceDelegatecall_d6g0v0_Shanghai
-    - CREATE2_HighNonceDelegatecall_d7g0v0_Shanghai
-    - CREATE2_HighNonceDelegatecall_d8g0v0_Shanghai
-    - CREATE2_HighNonceDelegatecall_d9g0v0_Shanghai
-    - CREATE2_HighNonce_d0g0v0_Shanghai
     - Create2OOGafterInitCodeReturndataSize_d0g0v0_Shanghai
     - Create2OOGafterInitCodeReturndata_d0g1v0_Shanghai
     - Create2OOGafterInitCodeRevert_d0g0v0_Shanghai
@@ -85,7 +72,6 @@ testname:
     - CREATE_EmptyContractWithStorageAndCallIt_1wei_d0g0v0_Shanghai
     - CREATE_EmptyContractWithStorage_d0g0v0_Shanghai
     - CREATE_EmptyContract_d0g0v0_Shanghai
-    - CREATE_HighNonce_d0g0v0_Shanghai
     - CreateAddressWarmAfterFail_d10g0v0_Shanghai
     - CreateAddressWarmAfterFail_d10g0v1_Shanghai
     - CreateAddressWarmAfterFail_d11g0v0_Shanghai
@@ -447,20 +433,6 @@ testname:
     - returndatacopy_initial_d0g0v0_Shanghai
     - returndatacopy_overrun_d0g0v0_Shanghai
     - subcallReturnMoreThenExpected_d0g0v0_Shanghai
-    - tooLongReturnDataCopy_d10g0v0_Shanghai
-    - tooLongReturnDataCopy_d11g0v0_Shanghai
-    - tooLongReturnDataCopy_d13g0v0_Shanghai
-    - tooLongReturnDataCopy_d16g0v0_Shanghai
-    - tooLongReturnDataCopy_d18g0v0_Shanghai
-    - tooLongReturnDataCopy_d1g0v0_Shanghai
-    - tooLongReturnDataCopy_d20g0v0_Shanghai
-    - tooLongReturnDataCopy_d21g0v0_Shanghai
-    - tooLongReturnDataCopy_d22g0v0_Shanghai
-    - tooLongReturnDataCopy_d23g0v0_Shanghai
-    - tooLongReturnDataCopy_d4g0v0_Shanghai
-    - tooLongReturnDataCopy_d6g0v0_Shanghai
-    - tooLongReturnDataCopy_d8g0v0_Shanghai
-    - tooLongReturnDataCopy_d9g0v0_Shanghai
   stRevertTest:
     - RevertInCallCode_d0g0v0_Shanghai
     - RevertInDelegateCall_d0g0v0_Shanghai

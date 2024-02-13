@@ -102,7 +102,7 @@ namespace SystemOperations {
 
         // Check sender balance and nonce
         let sender = State.get_account(evm.message.address.evm);
-        let is_nonce_overflow = is_le(Constants.MAX_NONCE + 1, sender.nonce);
+        let is_nonce_overflow = Helpers.is_zero(Constants.MAX_NONCE - sender.nonce);
         let (is_balance_overflow) = uint256_lt([sender.balance], [value]);
         let stack_depth_limit = is_le(1024, evm.message.depth);
         if (is_nonce_overflow + is_balance_overflow + stack_depth_limit != 0) {
