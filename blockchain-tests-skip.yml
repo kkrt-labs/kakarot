@@ -43,9 +43,6 @@ testname:
   stChainId:
     - chainId_d0g0v0_Shanghai
   stCreate2:
-    - Create2OOGafterInitCodeReturndataSize_d0g0v0_Shanghai
-    - Create2OOGafterInitCodeRevert_d0g0v0_Shanghai
-    - RevertOpcodeCreate_d0g0v0_Shanghai
     - create2callPrecompiles_d6g0v0_Shanghai
     - create2callPrecompiles_d7g0v0_Shanghai
     - create2collisionBalance_d0g0v0_Shanghai
@@ -62,25 +59,13 @@ testname:
     - CreateAddressWarmAfterFail_d3g0v1_Shanghai
     - CreateCollisionToEmpty_d0g0v0_Shanghai
     - CreateCollisionToEmpty_d0g0v1_Shanghai
-    - CreateOOGafterInitCodeReturndataSize_d0g0v0_Shanghai
-    - CreateOOGafterInitCodeRevert_d0g0v0_Shanghai
     - CreateOOGafterMaxCodesize_d2g0v0_Shanghai
     - CreateOOGafterMaxCodesize_d3g0v0_Shanghai
     - CreateOOGafterMaxCodesize_d5g0v0_Shanghai
-    - CreateResults_d8g0v0_Shanghai
-    - CreateResults_d9g0v0_Shanghai
     - CreateTransactionHighNonce_d0g0v0_Shanghai
     - CreateTransactionHighNonce_d0g0v1_Shanghai
     - TransactionCollisionToEmpty_d0g0v0_Shanghai
     - TransactionCollisionToEmpty_d0g0v1_Shanghai
-    - createLargeResult_d10g0v0_Shanghai
-    - createLargeResult_d11g0v0_Shanghai
-    - createLargeResult_d14g0v0_Shanghai
-    - createLargeResult_d15g0v0_Shanghai
-    - createLargeResult_d2g0v0_Shanghai
-    - createLargeResult_d3g0v0_Shanghai
-    - createLargeResult_d6g0v0_Shanghai
-    - createLargeResult_d7g0v0_Shanghai
   stCallCreateCallCodeTest:
     - Call1024BalanceTooLow_d0g0v0_Shanghai
     - Call1024PreCalls_d0g0v0_Shanghai
