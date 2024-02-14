@@ -828,8 +828,8 @@ namespace Interpreter {
             State.get_account(env.coinbase);
             State.cache_precompiles();
             State.get_account(address.evm);
-            let sender = State.get_account(env.origin);
             let access_list_cost = State.cache_access_list(access_list_len, access_list);
+            let sender = State.get_account(env.origin);
 
             // TODO: missing overflow checks on gas operations and values
             let intrinsic_gas = intrinsic_gas + access_list_cost;
