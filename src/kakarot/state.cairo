@@ -317,7 +317,7 @@ namespace State {
         let fp_and_pc = get_fp_and_pc();
         local __fp__: felt* = fp_and_pc.fp_val;
 
-        if (transfer.sender == transfer.recipient) {
+        if (transfer.sender.evm == transfer.recipient.evm) {
             return 1;
         }
 
