@@ -148,9 +148,6 @@ testname:
     - OutOfGasPrefundedContractCreation_d0g2v0_Shanghai
   stMemExpandingEIP150Calls:
     - NewGasPriceForCodesWithMemExpandingCalls_d0g0v0_Shanghai
-  stMemoryStressTest:
-    - RETURN_Bounds_d0g1v0_Shanghai
-    - RETURN_Bounds_d0g2v0_Shanghai
   stMemoryTest:
     - bufferSrcOffset_d108g0v0_Shanghai
     - bufferSrcOffset_d109g0v0_Shanghai
@@ -259,6 +256,7 @@ testname:
     - randomStatetest605_d0g0v0_Shanghai
     - randomStatetest650_d0g0v0_Shanghai
   stRandom:
+    - randomStatetest189_d0g0v0_Shanghai
     - randomStatetest100_d0g0v0_Shanghai
     - randomStatetest138_d0g0v0_Shanghai
     - randomStatetest139_d0g0v0_Shanghai
@@ -362,8 +360,6 @@ testname:
     - static_CheckOpcodes2_d4g0v1_Shanghai
     - static_LoopCallsThenRevert_d0g0v0_Shanghai
     - static_LoopCallsThenRevert_d0g1v0_Shanghai
-    - static_RETURN_BoundsOOG_d1g0v0_Shanghai
-    - static_RETURN_Bounds_d0g0v0_Shanghai
     - static_Return50000_2_d0g0v0_Shanghai
     - static_RevertOpcodeCalls_d0g1v0_Shanghai
     - static_callToDelCallOpCodeCheck_d0g0v0_Shanghai
