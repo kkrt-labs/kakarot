@@ -256,6 +256,7 @@ testname:
     - randomStatetest605_d0g0v0_Shanghai
     - randomStatetest650_d0g0v0_Shanghai
   stRandom:
+    - randomStatetest189_d0g0v0_Shanghai
     - randomStatetest100_d0g0v0_Shanghai
     - randomStatetest138_d0g0v0_Shanghai
     - randomStatetest139_d0g0v0_Shanghai
