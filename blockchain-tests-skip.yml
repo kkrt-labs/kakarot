@@ -148,13 +148,6 @@ testname:
     - OutOfGasPrefundedContractCreation_d0g2v0_Shanghai
   stMemExpandingEIP150Calls:
     - NewGasPriceForCodesWithMemExpandingCalls_d0g0v0_Shanghai
-  stMemoryTest:
-    - bufferSrcOffset_d108g0v0_Shanghai
-    - bufferSrcOffset_d109g0v0_Shanghai
-    - bufferSrcOffset_d110g0v0_Shanghai
-    - bufferSrcOffset_d84g0v0_Shanghai
-    - bufferSrcOffset_d85g0v0_Shanghai
-    - bufferSrcOffset_d86g0v0_Shanghai
   stNonZeroCallsTest:
     - NonZeroValue_CALL_ToEmpty_d0g0v0_Shanghai
   stPreCompiledContracts2:

@@ -7,8 +7,9 @@ from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.cairo.common.memset import memset
-from starkware.cairo.common.math import unsigned_div_rem
+from starkware.cairo.common.math import unsigned_div_rem, split_felt
 from starkware.cairo.common.math_cmp import is_not_zero, is_le
+from starkware.cairo.common.uint256 import Uint256, uint256_le, uint256_add
 
 from kakarot.account import Account
 from kakarot.evm import EVM
@@ -190,9 +191,25 @@ namespace EnvironmentalInformation {
             return evm;
         }
 
+        let opcode_number = [evm.message.bytecode + evm.program_counter];
+
         // Offset.high != 0 means that the sliced data is surely 0x00...00
-        // And storing 0 in Memory is just doing nothing
+        // And storing 0 in Memory is just doing nothing.
         if (offset.high != 0) {
+            if (opcode_number != 0x3e) {
+                return evm;
+            }
+
+            // We still check for OOB returndatacopy
+            let (max_index, carry) = uint256_add(offset, size);
+            let (high, low) = split_felt(evm.return_data_len);
+            let (is_in_bounds) = uint256_le(max_index, Uint256(low=low, high=high));
+            let is_in_bounds = is_in_bounds * (1 - carry);
+            if (is_in_bounds == FALSE) {
+                let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
+                let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
+                return evm;
+            }
             return evm;
         }
 
@@ -202,7 +219,6 @@ namespace EnvironmentalInformation {
         let (sliced_data: felt*) = alloc();
         local data_len;
         local data: felt*;
-        let opcode_number = [evm.message.bytecode + evm.program_counter];
         if (opcode_number == 0x37) {
             assert data_len = evm.message.calldata_len;
             assert data = evm.message.calldata;
