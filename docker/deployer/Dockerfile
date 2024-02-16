@@ -7,6 +7,8 @@
 ###########################################
 FROM python:3.9.13-slim-bullseye as base
 
+HEALTHCHECK NONE
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
