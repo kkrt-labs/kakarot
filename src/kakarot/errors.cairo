@@ -326,6 +326,37 @@ namespace Errors {
         dw 119;  // w
     }
 
+    func outOfBoundsRead() -> (error_len: felt, error: felt*) {
+        let (error) = get_label_location(out_of_bounds_read_error_message);
+        return (24, error);
+
+        out_of_bounds_read_error_message:
+        dw 'K';
+        dw 'a';
+        dw 'k';
+        dw 'a';
+        dw 'r';
+        dw 'o';
+        dw 't';
+        dw ':';
+        dw ' ';
+        dw 'O';
+        dw 'u';
+        dw 't';
+        dw 'O';
+        dw 'f';
+        dw 'B';
+        dw 'o';
+        dw 'u';
+        dw 'n';
+        dw 'd';
+        dw 's';
+        dw 'R';
+        dw 'e';
+        dw 'a';
+        dw 'd';
+    }
+
     func unknownPrecompile(address: felt) -> (error_len: felt, error: felt*) {
         alloc_locals;
         let (error) = alloc();

@@ -138,6 +138,9 @@ namespace MemoryOperations {
         // If skip_condition is 0, then don't jump
         let (skip_condition_is_zero) = uint256_eq(Uint256(0, 0), skip_condition);
         if (skip_condition_is_zero != FALSE) {
+            // Return with a PC incremented by one - as JUMP and JUMPi increments
+            // are skipped in the main `execute_opcode` loop
+            let evm = EVM.increment_program_counter(evm, 1);
             return evm;
         }
 
