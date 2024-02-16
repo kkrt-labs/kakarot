@@ -710,11 +710,6 @@ namespace Interpreter {
 
         let stack = evm.message.parent.stack;
         let memory = evm.message.parent.memory;
-        if (evm.reverted == FALSE) {
-            tempvar state = state;
-        } else {
-            tempvar state = evm.message.parent.state;
-        }
 
         if (evm.message.is_create != FALSE) {
             let evm = CreateHelper.finalize_parent(evm);
