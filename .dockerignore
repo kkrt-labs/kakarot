@@ -4,3 +4,4 @@ coverage/
 .venv/
 blockchain-tests-skip.yml
 .github/
+docker/
