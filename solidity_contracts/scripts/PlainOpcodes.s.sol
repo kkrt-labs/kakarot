@@ -6,17 +6,9 @@ import {Counter} from "../src/PlainOpcodes/Counter.sol";
 import {PlainOpcodes} from "../src/PlainOpcodes/PlainOpcodes.sol";
 
 contract CounterScript is Script {
-    Counter public counter;
-    PlainOpcodes public plainOpcodes;
-
     function run() external {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        vm.startBroadcast(deployerPrivateKey);
-
-        counter = new Counter();
-        plainOpcodes = new PlainOpcodes(address(counter));
+        Counter counter = new Counter();
+        PlainOpcodes plainOpcodes = new PlainOpcodes(address(counter));
         plainOpcodes.create(type(Counter).creationCode, 1);
-
-        vm.stopBroadcast();
     }
 }
