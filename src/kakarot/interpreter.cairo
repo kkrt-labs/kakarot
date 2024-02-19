@@ -7,8 +7,9 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
+from starkware.cairo.common.math import split_felt
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
-from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.uint256 import Uint256, uint256_le, uint256_sub
 from starkware.cairo.common.math import unsigned_div_rem
 
 // Internal dependencies
@@ -98,7 +99,7 @@ namespace Interpreter {
             return evm;
         }
         let stack_overflow = is_le(
-            Constants.STACK_MAX_DEPTH, stack.size + opcode.stack_size_diff + 1
+            Constants.STACK_MAX_DEPTH + 1, stack.size + opcode.stack_size_diff
         );
         if (stack_overflow != 0) {
             let (revert_reason_len, revert_reason) = Errors.stackOverflow();
@@ -301,9 +302,9 @@ namespace Interpreter {
         call MemoryOperations.exec_sstore;  // 0x55
         jmp end;
         call MemoryOperations.exec_jump;  // 0x56
-        jmp end;
+        jmp end_no_pc_increment;
         call MemoryOperations.exec_jumpi;  // 0x57
-        jmp end;
+        jmp end_no_pc_increment;
         call MemoryOperations.exec_pc;  // 0x58
         jmp end;
         call MemoryOperations.exec_msize;  // 0x59
@@ -658,6 +659,18 @@ namespace Interpreter {
         } else {
             return evm;
         }
+
+        end_no_pc_increment:
+        let syscall_ptr = cast([ap - 8], felt*);
+        let pedersen_ptr = cast([ap - 7], HashBuiltin*);
+        let range_check_ptr = [ap - 6];
+        let bitwise_ptr = cast([ap - 5], BitwiseBuiltin*);
+        let stack = cast([ap - 4], model.Stack*);
+        let memory = cast([ap - 3], model.Memory*);
+        let state = cast([ap - 2], model.State*);
+        let evm = cast([ap - 1], model.EVM*);
+
+        return evm;
     }
 
     // @notice Iteratively decode and execute the bytecode of an EVM
@@ -749,12 +762,15 @@ namespace Interpreter {
         access_list: felt*,
     ) -> (model.EVM*, model.Stack*, model.Memory*, model.State*, felt) {
         alloc_locals;
+        let fp_and_pc = get_fp_and_pc();
+        local __fp__: felt* = fp_and_pc.fp_val;
 
         // Compute intrinsic gas usage
         // See https://www.evm.codes/about#gascosts
         let count = count_not_zero(calldata_len, calldata);
         let zeroes = calldata_len - count;
         let calldata_gas = zeroes * 4 + count * 16;
+        // TODO no overflow check on calldata operation
         let intrinsic_gas = Gas.TX_BASE_COST + calldata_gas;
 
         // If is_deploy_tx is TRUE, then
@@ -812,22 +828,49 @@ namespace Interpreter {
             State.get_account(env.coinbase);
             State.cache_precompiles();
             State.get_account(address.evm);
-            State.get_account(env.origin);
             let access_list_cost = State.cache_access_list(access_list_len, access_list);
-            let intrinsic_gas = intrinsic_gas + access_list_cost;
+            let sender = State.get_account(env.origin);
 
-            let evm = EVM.init(message, gas_limit);
-            let evm = EVM.charge_gas(evm, intrinsic_gas);
-            if (evm.reverted != FALSE) {
+            // TODO: missing overflow checks on gas operations and values
+            let intrinsic_gas = intrinsic_gas + access_list_cost;
+            let evm = EVM.init(message, gas_limit - intrinsic_gas);
+
+            let is_gas_limit_enough = is_le(intrinsic_gas, gas_limit);
+            if (is_gas_limit_enough == FALSE) {
+                let evm = EVM.halt_validation_failed(evm);
                 return (evm, stack, memory, state, gas_limit);
             }
 
-            // Handle value
-            let origin_starknet_address = Account.compute_starknet_address(env.origin);
-            tempvar origin_address = new model.Address(
-                starknet=origin_starknet_address, evm=env.origin
+            let (is_value_le_balance) = uint256_le([value], [sender.balance]);
+            if (is_value_le_balance == FALSE) {
+                let evm = EVM.halt_validation_failed(evm);
+                return (evm, stack, memory, state, gas_limit);
+            }
+
+            let effective_gas_fee = gas_limit * env.gas_price;
+            let (fee_high, fee_low) = split_felt(effective_gas_fee);
+            let fee_u256 = Uint256(low=fee_low, high=fee_high);
+            let (can_pay_gasfee) = uint256_le(fee_u256, [sender.balance]);
+            if (can_pay_gasfee == FALSE) {
+                let evm = EVM.halt_validation_failed(evm);
+                return (evm, stack, memory, state, gas_limit);
+            }
+
+            tempvar is_initcode_invalid = is_deploy_tx * is_le(
+                2 * Constants.MAX_CODE_SIZE + 1, bytecode_len
             );
-            let transfer = model.Transfer(origin_address, address, [value]);
+            if (is_initcode_invalid != FALSE) {
+                let evm = EVM.halt_validation_failed(evm);
+                return (evm, stack, memory, state, gas_limit);
+            }
+
+            // Charge the gas fee to the user without setting up a transfer.
+            // Transfers with the exact amounts will be performed post-execution.
+            let (local new_balance) = uint256_sub([sender.balance], fee_u256);
+            let sender = Account.set_balance(sender, &new_balance);
+            State.update_account(sender);
+
+            let transfer = model.Transfer(sender.address, address, [value]);
             let success = State.add_transfer(transfer);
 
             // Check collision
@@ -893,12 +936,23 @@ namespace Internals {
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
+        let is_reverted = is_not_zero(evm.reverted);
+        if (is_reverted != 0) {
+            return evm;
+        }
+
         // Charge final deposit gas
         let code_size_limit = is_le(evm.return_data_len, Constants.MAX_CODE_SIZE);
         let code_deposit_cost = Gas.CODE_DEPOSIT * evm.return_data_len;
         let enough_gas = is_nn(evm.gas_left - code_deposit_cost);
-        let is_reverted = is_not_zero(evm.reverted);
-        let success = (1 - is_reverted) * enough_gas * code_size_limit;
+        // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-3540.md
+        if (evm.return_data_len == 0) {
+            tempvar is_prefix_not_0xef = TRUE;
+        } else {
+            tempvar is_prefix_not_0xef = is_not_zero(0xef - [evm.return_data]);
+        }
+
+        let success = enough_gas * code_size_limit * is_prefix_not_0xef;
 
         if (success == 0) {
             // Reverts and burn all gas

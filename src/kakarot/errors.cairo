@@ -8,6 +8,44 @@ from utils.bytes import felt_to_ascii
 namespace Errors {
     const REVERT = 1;
     const EXCEPTIONAL_HALT = 2;
+
+    func eth_validation_failed() -> (error_len: felt, error: felt*) {
+        let (error) = get_label_location(eth_validation_failed_message);
+        return (30, error);
+
+        eth_validation_failed_message:
+        dw 0x4b;  // K
+        dw 0x61;  // a
+        dw 0x6b;  // k
+        dw 0x61;  // a
+        dw 0x72;  // r
+        dw 0x6f;  // o
+        dw 0x74;  // t
+        dw 0x3a;  // :
+        dw 0x20;  //
+        dw 0x65;  // e
+        dw 0x74;  // t
+        dw 0x68;  // h
+        dw 0x20;  //
+        dw 0x76;  // v
+        dw 0x61;  // a
+        dw 0x6c;  // l
+        dw 0x69;  // i
+        dw 0x64;  // d
+        dw 0x61;  // a
+        dw 0x74;  // t
+        dw 0x69;  // i
+        dw 0x6f;  // o
+        dw 0x6e;  // n
+        dw 0x20;  //
+        dw 0x66;  // f
+        dw 0x61;  // a
+        dw 0x69;  // i
+        dw 0x6c;  // l
+        dw 0x65;  // e
+        dw 0x64;  // d
+    }
+
     func stateModificationError() -> (error_len: felt, error: felt*) {
         let (error) = get_label_location(state_modification_error_message);
         return (31, error);
@@ -286,6 +324,37 @@ namespace Errors {
         dw 108;  // l
         dw 111;  // o
         dw 119;  // w
+    }
+
+    func outOfBoundsRead() -> (error_len: felt, error: felt*) {
+        let (error) = get_label_location(out_of_bounds_read_error_message);
+        return (24, error);
+
+        out_of_bounds_read_error_message:
+        dw 'K';
+        dw 'a';
+        dw 'k';
+        dw 'a';
+        dw 'r';
+        dw 'o';
+        dw 't';
+        dw ':';
+        dw ' ';
+        dw 'O';
+        dw 'u';
+        dw 't';
+        dw 'O';
+        dw 'f';
+        dw 'B';
+        dw 'o';
+        dw 'u';
+        dw 'n';
+        dw 'd';
+        dw 's';
+        dw 'R';
+        dw 'e';
+        dw 'a';
+        dw 'd';
     }
 
     func unknownPrecompile(address: felt) -> (error_len: felt, error: felt*) {

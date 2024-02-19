@@ -8,13 +8,16 @@ from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_not_zero
 from starkware.cairo.common.uint256 import Uint256
-from starkware.starknet.common.syscalls import get_caller_address
+from starkware.starknet.common.syscalls import get_caller_address, replace_class
 from starkware.cairo.common.registers import get_fp_and_pc
+from openzeppelin.access.ownable.library import Ownable
 
 // Local dependencies
 from backend.starknet import Starknet
 from kakarot.account import Account
+from kakarot.events import kakarot_upgraded
 from kakarot.library import Kakarot
+from kakarot.model import model
 from utils.utils import Helpers
 
 // Constructor
@@ -35,6 +38,19 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
         account_proxy_class_hash,
         precompiles_class_hash,
     );
+}
+
+// @notive Upgrade the contract
+// @dev Use the replace_hash syscall to upgrade the contract
+// @param new_class_hash The new class hash
+@external
+func upgrade{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    new_class_hash: felt
+) {
+    Ownable.assert_only_owner();
+    replace_class(new_class_hash);
+    kakarot_upgraded.emit(new_class_hash);
+    return ();
 }
 
 // @notice Set the native token used by kakarot
@@ -145,7 +161,7 @@ func eth_call{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
     origin: felt,
-    to: felt,
+    to: model.Option,
     gas_limit: felt,
     gas_price: felt,
     value: Uint256,
@@ -183,7 +199,7 @@ func eth_call{
 func eth_send_transaction{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(
-    to: felt,
+    to: model.Option,
     gas_limit: felt,
     gas_price: felt,
     value: Uint256,

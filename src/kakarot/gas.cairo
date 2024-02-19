@@ -97,6 +97,10 @@ namespace Gas {
     func memory_expansion_cost_saturated{range_check_ptr}(
         words_len: felt, offset: Uint256, size: Uint256
     ) -> felt {
+        if (size.low == 0) {
+            return 0;
+        }
+
         if (offset.high + size.high != 0) {
             // Hardcoded value of cost(2^128)
             return MEMORY_COST_U128;

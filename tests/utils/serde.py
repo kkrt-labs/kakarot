@@ -1,25 +1,12 @@
-from functools import cache
-
 from eth_utils.address import to_checksum_address
 from starkware.cairo.lang.compiler.ast.cairo_types import (
     TypeFelt,
     TypePointer,
+    TypeStruct,
     TypeTuple,
 )
-
-
-@cache
-def get_struct_scope(runner, struct_name):
-    scoped_names = [
-        name
-        for name in runner.program.identifiers.as_dict()
-        if f"model.{struct_name}" in str(name)
-    ]
-    if len(scoped_names) != 1:
-        raise ValueError(
-            f"Expected one struct named {struct_name}, found {scoped_names}"
-        )
-    return runner.program.identifiers.get_by_full_name(scoped_names[0])
+from starkware.cairo.lang.compiler.identifier_definition import StructDefinition
+from starkware.cairo.lang.compiler.identifier_manager import MissingIdentifierError
 
 
 class Serde:
@@ -27,160 +14,147 @@ class Serde:
         self.runner = runner
         self.memory = runner.segments.memory
 
-    def read_segment(self, segment_ptr):
-        segment_size = self.runner.segments.get_segment_size(segment_ptr.segment_index)
-        return [self.memory.get(segment_ptr + i) for i in range(segment_size)]
-
-    def serialize_address(self, address_ptr):
-        address_scope = get_struct_scope(self.runner, "Address")
-        return {
-            "starknet": f'0x{self.memory.get(address_ptr + address_scope.members["starknet"].offset):064x}',
-            "evm": to_checksum_address(
-                f'0x{self.memory.get(address_ptr + address_scope.members["evm"].offset):040x}'
-            ),
-        }
-
-    def serialize_storage(self, storage_ptr):
-        storage_ptr = storage_ptr - storage_ptr.offset
-        storage_size = self.runner.segments.get_segment_size(storage_ptr.segment_index)
-        storage = {}
-        for storage_index in range(0, storage_size, 3):
-            key = self.memory.get(storage_ptr + storage_index)
-            value_ptr = self.memory.get(storage_ptr + storage_index + 2)
-            storage[key] = self.serialize_uint256(value_ptr) if value_ptr != 0 else ""
-        return storage
-
-    def serialize_uint256(self, uint256_ptr):
-        return hex(
-            self.memory.get(uint256_ptr) + self.memory.get(uint256_ptr + 1) * 2**128
-        )
-
-    def serialize_account(self, account_ptr):
-        account_scope = get_struct_scope(self.runner, "Account")
-        address_ptr = self.memory.get(
-            account_ptr + account_scope.members["address"].offset
-        )
-        code_ptr = self.memory.get(account_ptr + account_scope.members["code"].offset)
-        storage_ptr = self.memory.get(
-            account_ptr + account_scope.members["storage_start"].offset
-        )
-        balance_ptr = self.memory.get(
-            account_ptr + account_scope.members["balance"].offset
-        )
-        return {
-            "address": self.serialize_address(address_ptr),
-            "code": self.read_segment(code_ptr),
-            "storage": self.serialize_storage(storage_ptr),
-            "nonce": self.memory.get(
-                account_ptr + account_scope.members["nonce"].offset
-            ),
-            "balance": self.serialize_uint256(balance_ptr),
-            "selfdestruct": self.memory.get(
-                account_ptr + account_scope.members["selfdestruct"].offset
-            ),
-        }
-
-    def serialize_accounts(self, accounts_ptr):
-        accounts_ptr = accounts_ptr - accounts_ptr.offset
-        accounts_size = self.runner.segments.get_segment_size(
-            accounts_ptr.segment_index
-        )
-        accounts = {}
-        for account_index in range(0, accounts_size, 3):
-            key = self.memory.get(accounts_ptr + account_index)
-            account_ptr = self.memory.get(accounts_ptr + account_index + 2)
-            accounts[key] = (
-                self.serialize_account(account_ptr) if account_ptr != 0 else {}
+    def get_identifier(self, struct_name, expected_type):
+        identifiers = [
+            value
+            for key, value in self.runner.program.identifiers.as_dict().items()
+            if struct_name in str(key) and isinstance(value, expected_type)
+        ]
+        if len(identifiers) != 1:
+            raise ValueError(
+                f"Expected one struct named {struct_name}, found {identifiers}"
             )
-        return accounts
+        return identifiers[0]
 
-    def serialize_event(self, event_ptr):
-        event_scope = get_struct_scope(self.runner, "Event")
-        return {
-            "topics": self.read_segment(
-                event_ptr + event_scope.members["topics"].offset
-            ),
-            "data": self.read_segment(event_ptr + event_scope.members["data"].offset),
-        }
-
-    def serialize_transfer(self, transfer_ptr):
-        transfer_scope = get_struct_scope(self.runner, "transfer")
-        return {
-            "sender": self.serialize_address(
-                transfer_ptr + transfer_scope.members["sender"].offset
-            ),
-            "recipient": self.serialize_address(
-                transfer_ptr + transfer_scope.members["recipient"].offset
-            ),
-            "amount": self.serialize_uint256(
-                transfer_ptr + transfer_scope.members["amount"].offset
-            ),
-        }
-
-    def serialize_list(self, segment_ptr, item_size, item_serialize):
-        segment_ptr = segment_ptr - segment_ptr.offset
-        segment_size = self.runner.segments.get_segment_size(segment_ptr.segment_index)
+    def serialize_list(self, segment_ptr, item_scope=None, list_len=None):
+        list_len = (
+            list_len
+            if list_len is not None
+            else self.runner.segments.get_segment_size(segment_ptr.segment_index)
+        )
+        item_identifier = (
+            self.get_identifier(item_scope, StructDefinition)
+            if item_scope is not None
+            else None
+        )
+        item_type = (
+            TypeStruct(item_identifier.full_name)
+            if item_scope is not None
+            else TypeFelt()
+        )
+        item_size = item_identifier.size if item_identifier is not None else 1
         output = []
-        for i in range(0, segment_size, item_size):
-            item_ptr = self.memory.get(segment_ptr + i)
-            output.append(item_serialize(item_ptr))
+        for i in range(0, list_len, item_size):
+            try:
+                output.append(self._serialize(item_type, segment_ptr + i))
+            # Because there is no way to know for sure the length of the list, we stop when we
+            # encounter an error.
+            # trunk-ignore(ruff/E722)
+            except:
+                break
         return output
 
-    def serialize_state(self, state_ptr):
-        state_scope = get_struct_scope(self.runner, "State")
-        event_scope = get_struct_scope(self.runner, "Event")
-        transfer_scope = get_struct_scope(self.runner, "Transfer")
+    def serialize_dict(self, dict_ptr, value_scope=None):
+        dict_size = self.runner.segments.get_segment_size(dict_ptr.segment_index)
+        output = {}
+        value_scope = (
+            self.get_identifier(value_scope, StructDefinition).full_name
+            if value_scope is not None
+            else None
+        )
+        for dict_index in range(0, dict_size, 3):
+            key = self.memory.get(dict_ptr + dict_index)
+            value_ptr = self.memory.get(dict_ptr + dict_index + 2)
+            if value_scope is None:
+                output[key] = value_ptr
+            else:
+                output[key] = (
+                    self.serialize_scope(value_scope, value_ptr)
+                    if value_ptr != 0
+                    else ""
+                )
+        return output
 
-        accounts_ptr = self.memory.get(
-            state_ptr + state_scope.members["accounts_start"].offset
-        )
-        events_ptr = self.memory.get(state_ptr + state_scope.members["events"].offset)
-        transfers_ptr = self.memory.get(
-            state_ptr + state_scope.members["transfers"].offset
-        )
+    def serialize_pointers(self, name, ptr):
+        members = self.get_identifier(name, StructDefinition).members
+        output = {}
+        for name, member in members.items():
+            member_ptr = self.memory.get(ptr + member.offset)
+            if member_ptr == 0 and isinstance(member.cairo_type, TypePointer):
+                member_ptr = None
+            output[name] = member_ptr
+        return output
+
+    def serialize_struct(self, name, ptr):
+        members = self.get_identifier(name, StructDefinition).members
         return {
-            "accounts": self.serialize_accounts(accounts_ptr),
-            "events": self.serialize_list(
-                events_ptr, event_scope.size, self.serialize_event
-            ),
-            "transfers": self.serialize_list(
-                transfers_ptr, transfer_scope.size, self.serialize_transfer
-            ),
+            name: self._serialize(member.cairo_type, ptr + member.offset)
+            for name, member in members.items()
         }
 
-    def serialize_eth_transaction(self, tx_ptr):
-        tx_scope = get_struct_scope(self.runner, "EthTransaction")
-        payload_ptr = self.memory.get(tx_ptr + tx_scope.members["payload"].offset)
-        payload_len = self.memory.get(tx_ptr + tx_scope.members["payload_len"].offset)
-        access_list_ptr = self.memory.get(
-            tx_ptr + tx_scope.members["access_list"].offset
-        )
-        access_list_len = self.memory.get(
-            tx_ptr + tx_scope.members["access_list_len"].offset
-        )
+    def serialize_address(self, ptr):
+        raw = self.serialize_pointers("model.Address", ptr)
         return {
-            "signer_nonce": self.memory.get(
-                tx_ptr + tx_scope.members["signer_nonce"].offset
-            ),
-            "gas_limit": self.memory.get(tx_ptr + tx_scope.members["gas_limit"].offset),
-            "max_priority_fee_per_gas": self.memory.get(
-                tx_ptr + tx_scope.members["max_priority_fee_per_gas"].offset
-            ),
-            "max_fee_per_gas": self.memory.get(
-                tx_ptr + tx_scope.members["max_fee_per_gas"].offset
-            ),
-            "destination": to_checksum_address(
-                f'0x{self.memory.get(tx_ptr + tx_scope.members["destination"].offset):040x}'
-            ),
-            "amount": self.serialize_uint256(
-                tx_ptr + tx_scope.members["amount"].offset
-            ),
-            "payload": "0x" + bytes(self.read_segment(payload_ptr)[:payload_len]).hex(),
-            "access_list": self.read_segment(access_list_ptr)[:access_list_len]
-            if access_list_len > 0
-            else [],
-            "chain_id": self.memory.get(tx_ptr + tx_scope.members["chain_id"].offset),
+            "starknet": f'0x{raw["starknet"]:064x}',
+            "evm": to_checksum_address(f'{raw["evm"]:040x}'),
         }
+
+    def serialize_uint256(self, ptr):
+        raw = self.serialize_pointers("Uint256", ptr)
+        return hex(raw["low"] + raw["high"] * 2**128)
+
+    def serialize_account(self, ptr):
+        raw = self.serialize_pointers("model.Account", ptr)
+        return {
+            "address": self.serialize_address(raw["address"]),
+            "code": self.serialize_list(raw["code"]),
+            "storage": self.serialize_dict(raw["storage_start"], "Uint256"),
+            "nonce": raw["nonce"],
+            "balance": self.serialize_uint256(raw["balance"]),
+            "selfdestruct": raw["selfdestruct"],
+        }
+
+    def serialize_state(self, ptr):
+        raw = self.serialize_pointers("model.State", ptr)
+        return {
+            "accounts": self.serialize_dict(raw["accounts_start"], "model.Account"),
+            "events": self.serialize_list(raw["events"], "model.Event"),
+            "transfers": self.serialize_list(raw["transfers"], "model.Transfer"),
+        }
+
+    def serialize_eth_transaction(self, ptr):
+        raw = self.serialize_struct("model.EthTransaction", ptr)
+        return {
+            "signer_nonce": raw["signer_nonce"],
+            "gas_limit": raw["gas_limit"],
+            "max_priority_fee_per_gas": raw["max_priority_fee_per_gas"],
+            "max_fee_per_gas": raw["max_fee_per_gas"],
+            "destination": (
+                to_checksum_address(f'0x{raw["destination"]["value"]:040x}')
+                if raw["destination"]["is_some"] == 1
+                else None
+            ),
+            "amount": raw["amount"],
+            "payload": ("0x" + bytes(raw["payload"][: raw["payload_len"]]).hex()),
+            "access_list": (
+                raw["access_list"][: raw["access_list_len"]]
+                if raw["access_list"] is not None
+                else []
+            ),
+            "chain_id": raw["chain_id"],
+        }
+
+    def serialize_stack(self, ptr):
+        raw = self.serialize_pointers("model.Stack", ptr)
+        stack_dict = self.serialize_dict(raw["dict_ptr_start"], "Uint256")
+        return [stack_dict[i] for i in range(raw["size"])]
+
+    def serialize_memory(self, ptr):
+        raw = self.serialize_pointers("model.Memory", ptr)
+        memory_dict = self.serialize_dict(raw["word_dict_start"])
+        return "".join(
+            [f"{memory_dict.get(i, 0):032x}" for i in range(2 * raw["words_len"])]
+        )
 
     def serialize_scope(self, scope, scope_ptr):
         if scope.path[-1] == "State":
@@ -189,25 +163,44 @@ class Serde:
             return self.serialize_account(scope_ptr)
         if scope.path[-1] == "Address":
             return self.serialize_address(scope_ptr)
-        if scope.path[-1] == "Event":
-            return self.serialize_event(scope_ptr)
-        if scope.path[-1] == "Transfer":
-            return self.serialize_transfer(scope_ptr)
         if scope.path[-1] == "EthTransaction":
             return self.serialize_eth_transaction(scope_ptr)
-        raise ValueError(f"Unknown scope {scope}")
+        if scope.path[-1] == "Stack":
+            return self.serialize_stack(scope_ptr)
+        if scope.path[-1] == "Memory":
+            return self.serialize_memory(scope_ptr)
+        if scope.path[-1] == "Uint256":
+            return self.serialize_uint256(scope_ptr)
+        try:
+            return self.serialize_struct(str(scope), scope_ptr)
+        except MissingIdentifierError:
+            return scope_ptr
 
-    def serialize(self, cairo_type, i=1):
+    def _serialize(self, cairo_type, ptr):
         if isinstance(cairo_type, TypePointer):
-            return self.serialize_scope(
-                cairo_type.pointee.scope,
-                self.memory.get(self.runner.vm.run_context.ap - i),
-            )
+            # A pointer can be a pointer to one single struct or to the beginning of a list of structs.
+            # As such, every pointer is considered a list of structs, with length 1 or more.
+            pointee = self.memory.get(ptr)
+            # Edge case: 0 pointers are not pointer but no data
+            if pointee == 0:
+                return None
+            if isinstance(cairo_type.pointee, TypeFelt):
+                return self.serialize_list(pointee)
+            serialized = self.serialize_list(pointee, str(cairo_type.pointee.scope))
+            if len(serialized) == 1:
+                return serialized[0]
+            return serialized
         if isinstance(cairo_type, TypeTuple):
             return [
-                self.serialize(m.typ, len(cairo_type.members) - i)
+                self._serialize(m.typ, ptr + i)
                 for i, m in enumerate(cairo_type.members)
             ]
         if isinstance(cairo_type, TypeFelt):
-            return self.memory.get(self.runner.vm.run_context.ap - i)
+            return self.memory.get(ptr)
+        if isinstance(cairo_type, TypeStruct):
+            return self.serialize_scope(cairo_type.scope, ptr)
         raise ValueError(f"Unknown type {cairo_type}")
+
+    def serialize(self, cairo_type):
+        shift = hasattr(cairo_type, "members") and len(cairo_type.members) or 1
+        return self._serialize(cairo_type, self.runner.vm.run_context.ap - shift)

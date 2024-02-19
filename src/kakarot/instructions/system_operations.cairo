@@ -64,7 +64,7 @@ namespace SystemOperations {
         let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
             memory.words_len, offset, size
         );
-        let (calldata_words, _) = unsigned_div_rem(size.low + 31, 31);
+        let (calldata_words, _) = unsigned_div_rem(size.low + 31, 32);
         let init_code_gas_low = Gas.INIT_CODE_WORD_COST * calldata_words;
         tempvar init_code_gas_high = is_not_zero(size.high) * 2 ** 128;
         let calldata_word_gas = is_create2 * Gas.KECCAK256_WORD * calldata_words;
@@ -102,7 +102,7 @@ namespace SystemOperations {
 
         // Check sender balance and nonce
         let sender = State.get_account(evm.message.address.evm);
-        let is_nonce_overflow = is_le(Constants.MAX_NONCE + 1, sender.nonce);
+        let is_nonce_overflow = Helpers.is_zero(Constants.MAX_NONCE - sender.nonce);
         let (is_balance_overflow) = uint256_lt([sender.balance], [value]);
         let stack_depth_limit = is_le(1024, evm.message.depth);
         if (is_nonce_overflow + is_balance_overflow + stack_depth_limit != 0) {
@@ -367,7 +367,7 @@ namespace SystemOperations {
 
         let sender = State.get_account(evm.message.address.evm);
         let (sender_balance_lt_value) = uint256_lt([sender.balance], [value]);
-        tempvar is_max_depth_reached = 1 - is_not_zero(
+        tempvar is_max_depth_reached = Helpers.is_zero(
             (Constants.STACK_MAX_DEPTH + 1) - evm.message.depth
         );
         tempvar is_call_invalid = sender_balance_lt_value + is_max_depth_reached;
@@ -878,28 +878,17 @@ namespace CallHelper {
         let is_reverted = is_not_zero(evm.reverted);
         Stack.push_uint128(1 - is_reverted);
 
-        // Gas not used is returned when evm is not reverted
-        local gas_left;
-        local gas_refund;
-        if (evm.reverted == FALSE) {
-            assert gas_left = evm.message.parent.evm.gas_left + evm.gas_left;
-            assert gas_refund = evm.message.parent.evm.gas_refund + evm.gas_refund;
-        } else {
-            assert gas_left = evm.message.parent.evm.gas_left;
-            assert gas_refund = evm.message.parent.evm.gas_refund;
-        }
-
-        // If the call has halted exceptionnaly, the return_data is empty
-        // and nothing is copied to memory.
         if (evm.reverted == Errors.EXCEPTIONAL_HALT) {
+            // If the call has halted exceptionnaly, the return_data is empty
+            // and nothing is copied to memory, and the gas is not returned;
             tempvar evm = new model.EVM(
                 message=evm.message.parent.evm.message,
                 return_data_len=0,
                 return_data=evm.return_data,
                 program_counter=evm.message.parent.evm.program_counter + 1,
                 stopped=evm.message.parent.evm.stopped,
-                gas_left=gas_left,
-                gas_refund=gas_refund,
+                gas_left=evm.message.parent.evm.gas_left,
+                gas_refund=evm.message.parent.evm.gas_refund,
                 reverted=evm.message.parent.evm.reverted,
             );
             return evm;
@@ -917,8 +906,8 @@ namespace CallHelper {
             return_data=evm.return_data,
             program_counter=evm.message.parent.evm.program_counter + 1,
             stopped=evm.message.parent.evm.stopped,
-            gas_left=gas_left,
-            gas_refund=gas_refund,
+            gas_left=evm.message.parent.evm.gas_left + evm.gas_left,
+            gas_refund=evm.message.parent.evm.gas_refund + evm.gas_refund,
             reverted=evm.message.parent.evm.reverted,
         );
 
@@ -1074,30 +1063,53 @@ namespace CreateHelper {
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
+        // Reverted during execution - either REVERT or exceptional
+        if (evm.reverted != FALSE) {
+            let is_exceptional_revert = is_not_zero(Errors.REVERT - evm.reverted);
+            let return_data_len = (1 - is_exceptional_revert) * evm.return_data_len;
+            let gas_left = evm.message.parent.evm.gas_left + (1 - is_exceptional_revert) *
+                evm.gas_left;
+            let gas_refund = evm.message.parent.evm.gas_refund + (1 - is_exceptional_revert) *
+                evm.gas_refund;
+
+            tempvar stack_code = new Uint256(low=0, high=0);
+            Stack.push(stack_code);
+            tempvar evm = new model.EVM(
+                message=evm.message.parent.evm.message,
+                return_data_len=return_data_len,
+                return_data=evm.return_data,
+                program_counter=evm.message.parent.evm.program_counter + 1,
+                stopped=evm.message.parent.evm.stopped,
+                gas_left=gas_left,
+                gas_refund=gas_refund,
+                reverted=evm.message.parent.evm.reverted,
+            );
+            return evm;
+        }
+
         // Charge final deposit gas
         let code_size_limit = is_le(evm.return_data_len, Constants.MAX_CODE_SIZE);
         let code_deposit_cost = Gas.CODE_DEPOSIT * evm.return_data_len;
         let remaining_gas = evm.gas_left - code_deposit_cost;
         let enough_gas = is_nn(remaining_gas);
-        let is_reverted = is_not_zero(evm.reverted);
-        let success = (1 - is_reverted) * enough_gas * code_size_limit;
+        // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-3540.md
+        if (evm.return_data_len == 0) {
+            tempvar is_prefix_not_0xef = TRUE;
+        } else {
+            tempvar is_prefix_not_0xef = is_not_zero(0xef - [evm.return_data]);
+        }
+
+        let success = enough_gas * code_size_limit * is_prefix_not_0xef;
 
         // Stack output: the address of the deployed contract, 0 if the deployment failed.
         let (address_high, address_low) = split_felt(evm.message.address.evm * success);
         tempvar address = new Uint256(low=address_low, high=address_high);
-
         Stack.push(address);
 
         if (success == FALSE) {
-            // On revert, return the previous evm with an empty
-            // return data if the revert is an exceptional halt (type 2),
-            // otherwise return with the return data.
-            tempvar is_exceptional_revert = is_not_zero(Errors.REVERT - evm.reverted);
-            let return_data_len = (1 - is_exceptional_revert) * evm.return_data_len;
-
             tempvar evm = new model.EVM(
                 message=evm.message.parent.evm.message,
-                return_data_len=evm.return_data_len,
+                return_data_len=0,
                 return_data=evm.return_data,
                 program_counter=evm.message.parent.evm.program_counter + 1,
                 stopped=evm.message.parent.evm.stopped,

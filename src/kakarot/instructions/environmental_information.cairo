@@ -8,10 +8,11 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.cairo.common.memset import memset
 from starkware.cairo.common.math import unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_not_zero
+from starkware.cairo.common.math_cmp import is_not_zero, is_le
 
 from kakarot.account import Account
 from kakarot.evm import EVM
+from kakarot.errors import Errors
 from kakarot.gas import Gas
 from kakarot.memory import Memory
 from kakarot.model import model
@@ -205,15 +206,27 @@ namespace EnvironmentalInformation {
         if (opcode_number == 0x37) {
             assert data_len = evm.message.calldata_len;
             assert data = evm.message.calldata;
+            tempvar range_check_ptr = range_check_ptr;
         } else {
             if (opcode_number == 0x39) {
                 assert data_len = evm.message.bytecode_len;
                 assert data = evm.message.bytecode;
+                tempvar range_check_ptr = range_check_ptr;
             } else {
+                tempvar is_in_bounds = is_le(offset.low + size.low, evm.return_data_len);
+                if (is_in_bounds == FALSE) {
+                    let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
+                    let evm = EVM.stop(
+                        evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT
+                    );
+                    return evm;
+                }
                 assert data_len = evm.return_data_len;
                 assert data = evm.return_data;
+                tempvar range_check_ptr = range_check_ptr;
             }
         }
+        let range_check_ptr = [ap - 1];
         slice(sliced_data, data_len, data, offset.low, size.low);
 
         Memory.store_n(size.low, sliced_data, dest_offset.low);

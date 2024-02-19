@@ -129,7 +129,7 @@ async def deploy(
     value = kwargs.pop("value", 0)
     receipt, response, success, gas_used = await eth_send_transaction(
         to=0,
-        gas=int(1e18),
+        gas=int(3e6),
         data=contract.constructor(*args, **kwargs).data_in_transaction,
         caller_eoa=caller_eoa,
         max_fee=max_fee,
@@ -219,7 +219,10 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
             )
             result = await kakarot_contract.functions["eth_call"].call(
                 origin=origin,
-                to=int(self.address, 16),
+                to={
+                    "is_some": 1,
+                    "value": int(self.address, 16),
+                },
                 gas_limit=gas_limit,
                 gas_price=gas_price,
                 value=value,
@@ -294,8 +297,8 @@ async def eth_send_transaction(
         "chainId": NETWORK["chain_id"],
         "nonce": nonce,
         "gas": gas,
-        "maxPriorityFeePerGas": int(1e19),
-        "maxFeePerGas": int(1e19),
+        "maxPriorityFeePerGas": 1,
+        "maxFeePerGas": 1,
         "to": to_checksum_address(to) if to else None,
         "value": value,
         "data": data,

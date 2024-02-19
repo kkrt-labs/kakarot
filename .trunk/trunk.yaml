@@ -27,31 +27,38 @@ lint:
           read_output_from: stdout
           run_linter_from: workspace
   enabled:
+    - osv-scanner@1.6.2
+    - trivy@0.49.0
     - cairo@SYSTEM
     - actionlint@1.6.26
-    - black@23.12.1
-    - checkov@3.1.63
+    - black@24.1.1
+    - checkov@3.2.5
     - codespell@2.2.6
     - git-diff-check
     - hadolint@2.12.0
     - isort@5.13.2
-    - markdownlint@0.38.0
+    - markdownlint@0.39.0
     - oxipng@9.0.0
-    - prettier@3.2.3
-    - ruff@0.1.13
+    - prettier@3.2.5
+    - ruff@0.2.1
     - shellcheck@0.9.0
     - shfmt@3.6.0
     - taplo@0.8.1
-    - terrascan@1.18.11
     - yamllint@1.33.0
   disabled:
     - trufflehog
     - bandit
+    - terrascan
   ignore:
     - linters: [bandit]
       paths: [tests, docker]
     - linters: [codespell]
       paths: [poetry.lock]
+    - linters: [ALL]
+      paths:
+        - logs*
+        - lib*
+        - resources*
 actions:
   disabled:
     - trunk-announce
