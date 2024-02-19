@@ -16,7 +16,6 @@ jobs:
       matrix:
         network: [testnet]
     env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ACCOUNT_ADDRESS: ${{ secrets.ACCOUNT_ADDRESS }}
       PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
       INFURA_KEY: ${{ secrets.INFURA_KEY }}

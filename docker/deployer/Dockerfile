@@ -17,9 +17,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     jq \
     && rm -rf /var/lib/apt/lists/*
 
-ARG GITHUB_TOKEN
-ENV GITHUB_TOKEN=${GITHUB_TOKEN}
-
 # install poetry
 RUN curl -sSL https://install.python-poetry.org | python3 -
 ENV PATH="$PATH:/root/.local/bin"

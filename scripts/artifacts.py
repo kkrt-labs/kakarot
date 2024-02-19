@@ -19,8 +19,9 @@ def get_artifacts(
     name: Union[str, Path] = Path("resources"), base_branch_name: str = "main"
 ):
     # Pull latest main artifacts
+    # https://api.github.com/repos/kkrt-labs/kakarot-ssj/releases/latest | jq -r '.assets[0].browser_download_url'
     response = requests.get(
-        f"https://api.github.com/repos/kkrt-labs/kakarot/actions/artifacts?name={name}&per_page=50"
+        f"https://api.github.com/repos/krt-labs/kakarot/actions/artifacts?name={name}&per_page=50"
     )
     artifacts = (
         pd.DataFrame(
@@ -52,7 +53,7 @@ def get_artifacts(
 
 def fetch_deployments(path: str = "deployments"):
     response = requests.get(
-        "https://api.github.com/repos/kkrt-labs/kakarot/actions/artifacts"
+        "https://api.github.com/repos/krt-labs/kakarot/actions/artifacts"
     )
     artifacts = (
         pd.DataFrame(
