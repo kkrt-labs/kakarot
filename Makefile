@@ -79,9 +79,8 @@ build-sol:
 	forge build --names --force
 
 install-katana:
-	curl -L https://install.dojoengine.org | DOJO_DIR=~/.dojo bash
-	cat /home/runner/.bashrc
-	~/.dojo/bin/dojoup -v 0.5.1
+	curl -L https://install.dojoengine.org | bash
+	~/.config/dojo/bin/dojoup -v 0.5.1
 
 run-katana: install-katana
 	katana --validate-max-steps 16777216 --invoke-max-steps 16777216 --gas-price 0 --disable-fee
