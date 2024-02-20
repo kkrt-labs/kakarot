@@ -268,6 +268,14 @@ Furthermore, if you want to run the
 of your local changes in the EF tests against main and other branches, you need
 to fill the following
 
+```text
+GITHUB_TOKEN=your_github_token
+```
+
+You can learn how to create this token from
+[here](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token),
+we would suggest using a fine-grained token with only read access.
+
 By default, everything will run on a local katana (started with
 `make run-katana`). If you want to deploy to a given target, set the
 `STARKNET_NETWORK` env variable, for example:
