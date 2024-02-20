@@ -80,8 +80,7 @@ build-sol:
 
 install-katana:
 	curl -L https://install.dojoengine.org | DOJO_DIR=~/.dojo bash
-	ls -la .
-	ls -la .dojo
+	cat /home/runner/.bashrc
 	~/.dojo/bin/dojoup -v 0.5.1
 
 run-katana: install-katana
