@@ -84,4 +84,5 @@ install-katana:
 	echo $(PATH)
 
 run-katana: install-katana
+    which katana
 	katana --validate-max-steps 16777216 --invoke-max-steps 16777216 --gas-price 0 --disable-fee
