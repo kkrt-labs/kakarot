@@ -81,8 +81,7 @@ build-sol:
 install-katana:
 	curl -L https://install.dojoengine.org | bash
 	~/.config/.dojo/bin/dojoup -v 0.6.0-alpha.0
-	echo $(PATH)
 
 run-katana: install-katana
-	which katana
+	echo $(PATH)
 	katana --validate-max-steps 16777216 --invoke-max-steps 16777216 --gas-price 0 --disable-fee
