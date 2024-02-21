@@ -143,8 +143,6 @@ jobs:
           version: nightly
       - name: Retrieve cached dependencies
         uses: Swatinem/rust-cache@v2
-      - name: Install Katana
-        run: make install-katana
       - name: Run tests
         run: |
           cp .env.example .env
