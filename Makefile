@@ -78,14 +78,8 @@ build-sol:
 	git submodule update --init --recursive
 	forge build --names --force
 
-DOJO_BASE_PATH:=$(XDG_CONFIG_HOME)
-ifndef DOJO_BASE_PATH
-DOJO_BASE_PATH:=$(HOME)
-endif
-
 install-katana:
-	curl -L https://install.dojoengine.org | bash
-	$(DOJO_BASE_PATH)/.dojo/bin/dojoup -v 0.6.0-alpha.0
+	cargo install --git https://github.com/dojoengine/dojo --locked --rev fe8f233 katana
 
 run-katana: install-katana
-	$(DOJO_BASE_PATH)/.dojo/bin/katana --validate-max-steps 16777216 --invoke-max-steps 16777216 --gas-price 0 --disable-fee
+	katana --validate-max-steps 16777216 --invoke-max-steps 16777216 --gas-price 0 --disable-fee
