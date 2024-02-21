@@ -2,7 +2,6 @@ import functools
 import json
 import logging
 import random
-import subprocess
 import time
 from copy import deepcopy
 from datetime import datetime
@@ -29,14 +28,30 @@ from starknet_py.hash.utils import message_signature
 from starknet_py.net.account.account import Account
 from starknet_py.net.client_models import (
     Call,
+    ContractClass,
     DeclareTransactionResponse,
+    EntryPointsByType,
     TransactionStatus,
 )
 from starknet_py.net.full_node_client import _create_broadcasted_txn
 from starknet_py.net.models.transaction import Declare
 from starknet_py.net.schemas.rpc import DeclareTransactionResponseSchema
 from starknet_py.net.signer.stark_curve_signer import KeyPair
+from starkware.cairo.lang.cairo_constants import DEFAULT_PRIME
+from starkware.cairo.lang.compiler.assembler import assemble
+from starkware.cairo.lang.compiler.cairo_compile import get_codes, get_module_reader
+from starkware.cairo.lang.compiler.constants import MAIN_SCOPE
+from starkware.cairo.lang.compiler.filter_unused_identifiers import (
+    filter_unused_identifiers,
+)
+from starkware.cairo.lang.compiler.preprocessor.preprocess_codes import preprocess_codes
+from starkware.starknet.compiler.compile import get_abi, get_entry_points_by_type
+from starkware.starknet.compiler.starknet_pass_manager import starknet_pass_manager
 from starkware.starknet.public.abi import get_selector_from_name
+from starkware.starknet.services.api.contract_class.contract_class import (
+    DeprecatedCompiledClass,
+    EntryPointType,
+)
 
 from scripts.constants import (
     BUILD_DIR,
@@ -146,7 +161,7 @@ def get_contract(
 ) -> Contract:
     return Contract(
         address or get_deployments()[contract_name]["address"],
-        get_abi(contract_name, cairo_version),
+        load_abi(contract_name, cairo_version),
         provider or RPC_CLIENT,
         cairo_version=get_artifact_version(contract_name).value,
     )
@@ -258,7 +273,7 @@ def get_artifact(contract_name, cairo_version=None):
 
 
 @cache
-def get_abi(contract_name, cairo_version=None):
+def load_abi(contract_name, cairo_version=None):
     artifact, cairo_version = get_artifact(contract_name, cairo_version)
     if cairo_version == ArtifactType.cairo1:
         artifact = artifact.with_suffix(".contract_class.json")
@@ -297,43 +312,49 @@ def compile_contract(contract):
     if cairo_version == ArtifactType.cairo1:
         raise NotImplementedError("SSJ compilation not implemented yet")
 
-    output = subprocess.run(
-        [
-            "starknet-compile-deprecated",
-            (
-                CONTRACTS[contract["contract_name"]]
-                if not is_fixture
-                else CONTRACTS_FIXTURES[contract["contract_name"]]
-            ),
-            "--output",
-            artifact,
-            "--cairo_path",
-            str(SOURCE_DIR),
-            *(["--no_debug_info"] if not NETWORK["devnet"] else []),
-            *(["--account_contract"] if contract["is_account_contract"] else []),
-            *(["--disable_hint_validation"] if NETWORK["devnet"] else []),
-        ],
-        capture_output=True,
+    codes = get_codes(
+        [str(CONTRACTS[contract["contract_name"]])]
+        if not is_fixture
+        else [str(CONTRACTS_FIXTURES[contract["contract_name"]])]
     )
-    if output.returncode != 0:
-        raise RuntimeError(output.stderr)
+    module_reader = get_module_reader(cairo_path=[str(SOURCE_DIR)])
+    pass_manager = starknet_pass_manager(
+        prime=DEFAULT_PRIME,
+        read_module=module_reader.read,
+        disable_hint_validation=True,
+    )
+    preprocessed = preprocess_codes(
+        codes=codes,
+        pass_manager=pass_manager,
+        main_scope=MAIN_SCOPE,
+        start_codes=[],
+    )
+    program = assemble(
+        preprocessed,
+        main_scope=MAIN_SCOPE,
+        add_debug_info=NETWORK["devnet"],
+        file_contents_for_debug_info={},
+    )
+    entry_points_by_type = get_entry_points_by_type(program)
+    program = filter_unused_identifiers(program)
+    program = DeprecatedCompiledClass(
+        program=program,
+        entry_points_by_type=entry_points_by_type,
+        abi=get_abi(preprocessed),
+    )
+    compiled = program.Schema().dump(program)
+    class_hash = compute_class_hash(
+        ContractClass(
+            program=compiled["program"],
+            entry_points_by_type=EntryPointsByType(
+                constructor=entry_points_by_type[EntryPointType.CONSTRUCTOR],
+                external=entry_points_by_type[EntryPointType.EXTERNAL],
+                l1_handler=entry_points_by_type[EntryPointType.L1_HANDLER],
+            ),
+        )
+    )
+    logger.info(f"{class_hash=}")
 
-    def _convert_offset_to_hex(obj):
-        if isinstance(obj, list):
-            return [_convert_offset_to_hex(i) for i in obj]
-        if isinstance(obj, dict):
-            return {key: _convert_offset_to_hex(obj[key]) for key, value in obj.items()}
-        if isinstance(obj, int) and obj >= 0:
-            return hex(obj)
-        return obj
-
-    compiled = json.loads(artifact.read_text())
-    compiled = {
-        **compiled,
-        "entry_points_by_type": _convert_offset_to_hex(
-            compiled["entry_points_by_type"]
-        ),
-    }
     json.dump(
         compiled,
         open(
