@@ -45,10 +45,6 @@ testname:
   stCreate2:
     - create2callPrecompiles_d6g0v0_Shanghai
     - create2callPrecompiles_d7g0v0_Shanghai
-    - create2collisionBalance_d0g0v0_Shanghai
-    - create2collisionBalance_d1g0v0_Shanghai
-    - create2collisionBalance_d2g0v0_Shanghai
-    - create2collisionBalance_d3g0v0_Shanghai
     - create2collisionStorage_d0g0v0_Shanghai
     - create2collisionStorage_d1g0v0_Shanghai
     - create2collisionStorage_d2g0v0_Shanghai
@@ -57,15 +53,11 @@ testname:
     - CreateAddressWarmAfterFail_d12g0v1_Shanghai
     - CreateAddressWarmAfterFail_d2g0v1_Shanghai
     - CreateAddressWarmAfterFail_d3g0v1_Shanghai
-    - CreateCollisionToEmpty_d0g0v0_Shanghai
-    - CreateCollisionToEmpty_d0g0v1_Shanghai
     - CreateOOGafterMaxCodesize_d2g0v0_Shanghai
     - CreateOOGafterMaxCodesize_d3g0v0_Shanghai
     - CreateOOGafterMaxCodesize_d5g0v0_Shanghai
     - CreateTransactionHighNonce_d0g0v0_Shanghai
     - CreateTransactionHighNonce_d0g0v1_Shanghai
-    - TransactionCollisionToEmpty_d0g0v0_Shanghai
-    - TransactionCollisionToEmpty_d0g0v1_Shanghai
   stCallCreateCallCodeTest:
     - Call1024BalanceTooLow_d0g0v0_Shanghai
     - Call1024PreCalls_d0g0v0_Shanghai
@@ -135,14 +127,6 @@ testname:
   stExtCodeHash:
     - dynamicAccountOverwriteEmpty_d0g0v0_Shanghai
     - extCodeHashDynamicArgument_d0g0v0_Shanghai
-    - extCodeHashPrecompiles_d1g0v0_Shanghai
-    - extCodeHashPrecompiles_d2g0v0_Shanghai
-    - extCodeHashPrecompiles_d3g0v0_Shanghai
-    - extCodeHashPrecompiles_d4g0v0_Shanghai
-    - extCodeHashPrecompiles_d5g0v0_Shanghai
-    - extCodeHashPrecompiles_d6g0v0_Shanghai
-    - extCodeHashPrecompiles_d7g0v0_Shanghai
-    - extCodeHashPrecompiles_d8g0v0_Shanghai
   stInitCodeTest:
     - OutOfGasPrefundedContractCreation_d0g0v0_Shanghai
     - OutOfGasPrefundedContractCreation_d0g2v0_Shanghai
@@ -306,10 +290,6 @@ testname:
     - RevertOpcodeMultipleSubCalls_d3g2v0_Shanghai
     - RevertOpcodeMultipleSubCalls_d3g2v1_Shanghai
     - RevertOpcodeReturn_d0g1v0_Shanghai
-    - RevertPrecompiledTouch_storage_d0g0v0_Shanghai
-    - RevertPrecompiledTouch_storage_d1g0v0_Shanghai
-    - RevertPrecompiledTouch_storage_d2g0v0_Shanghai
-    - RevertPrecompiledTouch_storage_d3g0v0_Shanghai
     - RevertPrefoundEmpty_d0g0v0_Shanghai
     - RevertPrefound_d0g0v0_Shanghai
     - costRevert_d0g0v0_Shanghai

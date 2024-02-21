@@ -160,6 +160,11 @@ namespace Internals {
     ) {
         alloc_locals;
 
+        let is_precompile = Precompiles.is_precompile(self.address.evm);
+        if (is_precompile != FALSE) {
+            return ();
+        }
+
         let starknet_account_exists = Account.is_registered(self.address.evm);
         let starknet_address = self.address.starknet;
         // Case new Account
@@ -169,9 +174,8 @@ namespace Internals {
             // There is no reason to have has_code_or_nonce available in the public API
             // for model.Account, but safe to use here
             let code_or_nonce = Account.has_code_or_nonce(self);
-            let is_precompile = Precompiles.is_precompile(self.address.evm);
 
-            if (code_or_nonce * (1 - is_precompile) != FALSE) {
+            if (code_or_nonce != FALSE) {
                 // Deploy accounts
                 let (class_hash) = contract_account_class_hash.read();
                 Starknet.deploy(class_hash, self.address.evm);
