@@ -318,30 +318,6 @@ def compile_contract(contract):
     if output.returncode != 0:
         raise RuntimeError(output.stderr)
 
-    def _convert_offset_to_hex(obj):
-        if isinstance(obj, list):
-            return [_convert_offset_to_hex(i) for i in obj]
-        if isinstance(obj, dict):
-            return {key: _convert_offset_to_hex(obj[key]) for key, value in obj.items()}
-        if isinstance(obj, int) and obj >= 0:
-            return hex(obj)
-        return obj
-
-    compiled = json.loads(artifact.read_text())
-    compiled = {
-        **compiled,
-        "entry_points_by_type": _convert_offset_to_hex(
-            compiled["entry_points_by_type"]
-        ),
-    }
-    json.dump(
-        compiled,
-        open(
-            artifact,
-            "w",
-        ),
-        indent=2,
-    )
     elapsed = datetime.now() - start
     logger.info(
         f"✅ {contract['contract_name']} compiled in {elapsed.total_seconds():.2f}s"
