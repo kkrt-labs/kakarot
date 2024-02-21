@@ -141,9 +141,14 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
-      - name: Retrieve cached dependencies
-        uses: Swatinem/rust-cache@v2
+      - name: Load cached katana
+        id: cached-katana
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/bin
+          key: katana-fe8f233
       - name: Install Katana
+        if: steps.cached-katana.outputs.cache-hit != 'true'
         run: make install-katana
       - name: Run tests
         run: |
