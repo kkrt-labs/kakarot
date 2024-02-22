@@ -49,8 +49,7 @@ class TestEnvironmentalInformation:
             ):
                 output = cairo_run("test__exec_extcodesize", address=address)
 
-            assert output[0] == (len(bytecode) if address == EXISTING_ACCOUNT else 0)
-            assert output[1] == 0
+            assert output == hex(len(bytecode) if address == EXISTING_ACCOUNT else 0)
 
     class TestExtCodeCopy:
         @pytest.mark.parametrize(
@@ -92,7 +91,7 @@ class TestEnvironmentalInformation:
             with SyscallHandler.patch(
                 "IAccount.bytecode", lambda addr, data: [len(bytecode), *bytecode]
             ):
-                output = cairo_run(
+                memory = cairo_run(
                     "test__exec_extcodecopy",
                     size=size,
                     offset=offset,
@@ -100,13 +99,15 @@ class TestEnvironmentalInformation:
                     address=address,
                 )
 
-            expected = (
-                (bytecode + [0] * (offset + size))[offset : (offset + size)]
-                if address == EXISTING_ACCOUNT
-                else [0] * size
+            deployed_bytecode = bytecode if address == EXISTING_ACCOUNT else []
+            copied_bytecode = bytes(
+                # bytecode is padded with surely enough 0 and then sliced
+                (deployed_bytecode + [0] * (offset + size))[offset : offset + size]
             )
-
-            assert output == expected
+            assert (
+                bytes.fromhex(memory)[dest_offset : dest_offset + size]
+                == copied_bytecode
+            )
 
     class TestGasPrice:
         def test_gasprice(self, cairo_run):
@@ -128,7 +129,5 @@ class TestEnvironmentalInformation:
                 output = cairo_run("test__exec_extcodehash", address=address)
 
             assert output == (
-                [bytecode_hash % (2**128), bytecode_hash >> 128]
-                if address == EXISTING_ACCOUNT
-                else [0, 0]
+                hex(bytecode_hash) if address == EXISTING_ACCOUNT else "0x0"
             )

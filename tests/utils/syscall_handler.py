@@ -87,7 +87,8 @@ class SyscallHandler:
         """
         segments.write_arg(syscall_ptr + 1, [self.caller_address])
 
-    def get_block_number(self, segments, syscall_ptr):
+    @classmethod
+    def get_block_number(cls, segments, syscall_ptr):
         """
         Return a constant value for the get block number system call.
 
@@ -106,9 +107,10 @@ class SyscallHandler:
                 response: GetBlockNumberResponse,
             }
         """
-        segments.write_arg(syscall_ptr + 1, [self.block_number])
+        segments.write_arg(syscall_ptr + 1, [cls.block_number])
 
-    def get_block_timestamp(self, segments, syscall_ptr):
+    @classmethod
+    def get_block_timestamp(cls, segments, syscall_ptr):
         """
         Return a constant value for the get block timestamp system call.
 
@@ -127,7 +129,7 @@ class SyscallHandler:
                 response: GetBlockTimestampResponse,
             }
         """
-        segments.write_arg(syscall_ptr + 1, [self.block_timestamp])
+        segments.write_arg(syscall_ptr + 1, [cls.block_timestamp])
 
     def get_tx_info(self, segments, syscall_ptr):
         """

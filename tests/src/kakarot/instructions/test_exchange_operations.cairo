@@ -10,12 +10,13 @@ from starkware.cairo.common.memcpy import memcpy
 from kakarot.stack import Stack
 from kakarot.memory import Memory
 from kakarot.state import State
+from kakarot.model import model
 from kakarot.instructions.exchange_operations import ExchangeOperations
 from tests.utils.helpers import TestHelpers
 
 func test__exec_swap{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(output_ptr: felt*) {
+}() -> model.Stack* {
     alloc_locals;
 
     local i: felt;
@@ -43,7 +44,5 @@ func test__exec_swap{
         let (swapped) = Stack.peek(i);
     }
 
-    memcpy(output_ptr, cast(top, felt*), 2);
-    memcpy(output_ptr + 2, cast(swapped, felt*), 2);
-    return ();
+    return stack;
 }

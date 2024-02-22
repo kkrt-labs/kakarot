@@ -86,6 +86,8 @@ class Serde:
         return output
 
     def serialize_struct(self, name, ptr):
+        if ptr is None:
+            return None
         members = self.get_identifier(name, StructDefinition).members
         return {
             name: self._serialize(member.cairo_type, ptr + member.offset)
@@ -144,6 +146,40 @@ class Serde:
             "chain_id": raw["chain_id"],
         }
 
+    def serialize_message(self, ptr):
+        raw = self.serialize_pointers("model.Message", ptr)
+        return {
+            "bytecode": self.serialize_list(
+                raw["bytecode"], list_len=raw["bytecode_len"]
+            ),
+            "valid_jumpdest": list(
+                self.serialize_dict(raw["valid_jumpdests_start"]).keys()
+            ),
+            "calldata": self.serialize_list(
+                raw["calldata"], list_len=raw["calldata_len"]
+            ),
+            "value": self.serialize_uint256(raw["value"]),
+            "parent": self.serialize_struct("model.Parent", raw["parent"]),
+            "address": self.serialize_address(raw["address"]),
+            "code_address": raw["code_address"],
+            "read_only": bool(raw["read_only"]),
+            "is_create": bool(raw["is_create"]),
+            "depth": raw["depth"],
+            "env": self.serialize_struct("model.Environment", raw["env"]),
+        }
+
+    def serialize_evm(self, ptr):
+        evm = self.serialize_struct("model.EVM", ptr)
+        return {
+            "message": evm["message"],
+            "return_data": evm["return_data"][: evm["return_data_len"]],
+            "program_counter": evm["program_counter"],
+            "stopped": bool(evm["stopped"]),
+            "gas_left": evm["gas_left"],
+            "gas_refund": evm["gas_refund"],
+            "reverted": evm["reverted"],
+        }
+
     def serialize_stack(self, ptr):
         raw = self.serialize_pointers("model.Stack", ptr)
         stack_dict = self.serialize_dict(raw["dict_ptr_start"], "Uint256")
@@ -171,12 +207,16 @@ class Serde:
             return self.serialize_memory(scope_ptr)
         if scope.path[-1] == "Uint256":
             return self.serialize_uint256(scope_ptr)
+        if scope.path[-1] == "Message":
+            return self.serialize_message(scope_ptr)
+        if scope.path[-1] == "EVM":
+            return self.serialize_evm(scope_ptr)
         try:
             return self.serialize_struct(str(scope), scope_ptr)
         except MissingIdentifierError:
             return scope_ptr
 
-    def _serialize(self, cairo_type, ptr):
+    def _serialize(self, cairo_type, ptr, length=1):
         if isinstance(cairo_type, TypePointer):
             # A pointer can be a pointer to one single struct or to the beginning of a list of structs.
             # As such, every pointer is considered a list of structs, with length 1 or more.
@@ -186,7 +226,9 @@ class Serde:
                 return None
             if isinstance(cairo_type.pointee, TypeFelt):
                 return self.serialize_list(pointee)
-            serialized = self.serialize_list(pointee, str(cairo_type.pointee.scope))
+            serialized = self.serialize_list(
+                pointee, str(cairo_type.pointee.scope), list_len=length
+            )
             if len(serialized) == 1:
                 return serialized[0]
             return serialized
@@ -202,5 +244,14 @@ class Serde:
         raise ValueError(f"Unknown type {cairo_type}")
 
     def serialize(self, cairo_type):
-        shift = hasattr(cairo_type, "members") and len(cairo_type.members) or 1
-        return self._serialize(cairo_type, self.runner.vm.run_context.ap - shift)
+        if hasattr(cairo_type, "members"):
+            shift = len(cairo_type.members)
+        else:
+            try:
+                identifier = self.get_identifier(
+                    str(cairo_type.scope), StructDefinition
+                )
+                shift = len(identifier.members)
+            except (ValueError, AttributeError):
+                shift = 1
+        return self._serialize(cairo_type, self.runner.vm.run_context.ap - shift, shift)

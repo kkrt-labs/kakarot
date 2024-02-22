@@ -139,7 +139,7 @@ func test__write_storage__should_store_value_at_key{
 
 func test__fetch_original_storage__state_modified{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-}(output_ptr: felt*) {
+}() -> Uint256 {
     alloc_locals;
     // Given
     let (key_ptr) = alloc();
@@ -166,14 +166,11 @@ func test__fetch_original_storage__state_modified{
 
     // Then
     let original_storage = Account.fetch_original_storage(account, key);
-    assert [output_ptr] = original_storage.low;
-    assert [output_ptr + 1] = original_storage.high;
-    return ();
+    return original_storage;
 }
 
 func test__has_code_or_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    output_ptr: felt*
-) {
+    ) -> felt {
     alloc_locals;
     // Given
     local code_len: felt;
@@ -194,6 +191,5 @@ func test__has_code_or_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
     let result = Account.has_code_or_nonce(account);
 
     // Then
-    assert [output_ptr] = result;
-    return ();
+    return result;
 }

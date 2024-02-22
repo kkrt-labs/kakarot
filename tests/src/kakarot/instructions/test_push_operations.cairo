@@ -16,7 +16,7 @@ from tests.utils.helpers import TestHelpers
 
 func test__exec_push{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(output_ptr: felt*) {
+}() -> model.Stack* {
     alloc_locals;
     local i: felt;
     %{ ids.i = program_input["i"] %}
@@ -31,9 +31,7 @@ func test__exec_push{
 
     with stack, memory, state {
         let evm = PushOperations.exec_push(evm);
-        let (result) = Stack.peek(0);
     }
 
-    memcpy(output_ptr, cast(result, felt*), 2);
-    return ();
+    return stack;
 }

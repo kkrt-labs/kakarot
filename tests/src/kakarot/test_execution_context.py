@@ -18,8 +18,6 @@ class TestExecutionContext:
         ],
     )
     def test_jump(self, cairo_run, bytecode, jumpdest, new_pc, expected_return_data):
-        pc, _, *return_data = cairo_run(
-            "test__jump", bytecode=bytecode, jumpdest=jumpdest
-        )
-        assert pc == new_pc
-        assert return_data == expected_return_data
+        evm = cairo_run("test__jump", bytecode=bytecode, jumpdest=jumpdest)
+        assert evm["program_counter"] == new_pc
+        assert evm["return_data"] == expected_return_data
