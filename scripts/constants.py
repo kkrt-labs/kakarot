@@ -64,8 +64,8 @@ NETWORKS = {
         "check_interval": 6,
         "max_wait": 30,
     },
-    "kakarot": {
-        "name": "kakarot",
+    "kakarot-sepolia": {
+        "name": "kakarot-sepolia",
         "explorer_url": "",
         "rpc_url": os.getenv("KAKAROT_RPC_URL"),
         "devnet": False,
