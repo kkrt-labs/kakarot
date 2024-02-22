@@ -23,8 +23,7 @@ endif
 .PHONY: build test coverage
 
 # Kakarot SSJ artifacts for precompiles
-KKRT_SSJ_ARTIFACTS_URL = $(shell curl -sL -H "Authorization: token $(GITHUB_TOKEN)" "https://api.github.com/repos/kkrt-labs/kakarot-ssj/actions/workflows/artifacts.yml/runs?per_page=1&branch=main&event=push&status=success" | jq -r '.workflow_runs[0].artifacts_url')
-KKRT_SSJ_BUILD_ARTIFACT_URL = $(shell curl -sL -H "Authorization: token $(GITHUB_TOKEN)" "$(KKRT_SSJ_ARTIFACTS_URL)" | jq -r '.artifacts[] | select(.name=="dev-artifacts").url')/zip
+KKRT_SSJ_BUILD_ARTIFACT_URL = $(shell curl -L https://api.github.com/repos/kkrt-labs/kakarot-ssj/releases/latest | jq -r '.assets[0].browser_download_url')
 
 build: check
 	$(MAKE) clean
@@ -40,7 +39,7 @@ check:
 fetch-ssj-artifacts:
 	rm -rf build/ssj
 	mkdir -p build/ssj
-	@curl -sL -o dev-artifacts.zip -H "Authorization: token $(GITHUB_TOKEN)" "$(KKRT_SSJ_BUILD_ARTIFACT_URL)"
+	@curl -sL -o dev-artifacts.zip "$(KKRT_SSJ_BUILD_ARTIFACT_URL)"
 	unzip -o dev-artifacts.zip -d build/ssj
 	rm -f dev-artifacts.zip
 

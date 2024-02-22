@@ -33,7 +33,6 @@ jobs:
           context: .
           file: ./docker/deployer/Dockerfile
           platforms: linux/amd64,linux/arm64
-          build-args: GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
 
   build_and_push_artifacts:
     runs-on: ubuntu-latest
