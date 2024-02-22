@@ -391,7 +391,7 @@ async def declare(contract):
         declare_v2_transaction = await account.sign_declare_v2_transaction(
             compiled_contract=sierra_compiled_contract,
             compiled_class_hash=class_hash,
-            max_fee=0,
+            max_fee=_max_fee,
         )
 
         resp = await account.client.declare(transaction=declare_v2_transaction)
@@ -413,7 +413,7 @@ async def declare(contract):
             contract_address=account.address,
             entry_point_selector=DEFAULT_ENTRY_POINT_SELECTOR,
             calldata=[class_hash],
-            max_fee=0,
+            max_fee=_max_fee,
             chain_id=account.signer.chain_id.value,
             additional_data=[await account.get_nonce()],
         )
@@ -423,7 +423,7 @@ async def declare(contract):
         transaction = Declare(
             contract_class=contract_class,
             sender_address=account.address,
-            max_fee=0,
+            max_fee=_max_fee,
             signature=signature,
             nonce=await account.get_nonce(),
             version=1,
