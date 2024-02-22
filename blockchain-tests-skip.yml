@@ -49,10 +49,6 @@ testname:
     - create2collisionStorage_d1g0v0_Shanghai
     - create2collisionStorage_d2g0v0_Shanghai
   stCreateTest:
-    - CreateAddressWarmAfterFail_d11g0v1_Shanghai
-    - CreateAddressWarmAfterFail_d12g0v1_Shanghai
-    - CreateAddressWarmAfterFail_d2g0v1_Shanghai
-    - CreateAddressWarmAfterFail_d3g0v1_Shanghai
     - CreateOOGafterMaxCodesize_d2g0v0_Shanghai
     - CreateOOGafterMaxCodesize_d3g0v0_Shanghai
     - CreateOOGafterMaxCodesize_d5g0v0_Shanghai

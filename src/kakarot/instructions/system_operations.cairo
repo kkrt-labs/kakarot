@@ -79,10 +79,13 @@ namespace SystemOperations {
         let (bytecode: felt*) = alloc();
         Memory.load_n(size.low, bytecode, offset.low);
 
-        // Get target address
         let target_address = CreateHelper.get_evm_address(
             evm.message.address.evm, popped_len, popped, size.low, bytecode
         );
+
+        // @dev: performed before eventual subsequent early-returns of this function
+        // to mark the account as warm EIP-2929
+        let target_account = State.get_account(target_address);
 
         // Get message call gas
         let (gas_limit, _) = unsigned_div_rem(evm.gas_left, 64);
@@ -94,11 +97,6 @@ namespace SystemOperations {
             let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
             return evm;
         }
-
-        // TODO: Clear return data
-        // @dev: performed before eventual early-returns of this function
-        // to mark the account as warm
-        let target_account = State.get_account(target_address);
 
         // Check sender balance and nonce
         let sender = State.get_account(evm.message.address.evm);
@@ -878,6 +876,14 @@ namespace CallHelper {
         let is_reverted = is_not_zero(evm.reverted);
         Stack.push_uint128(1 - is_reverted);
 
+        // Restore parent state if the call has reverted
+        if (evm.reverted != FALSE) {
+            tempvar state = evm.message.parent.state;
+        } else {
+            tempvar state = state;
+        }
+        let state = cast([ap - 1], model.State*);
+
         if (evm.reverted == Errors.EXCEPTIONAL_HALT) {
             // If the call has halted exceptionnaly, the return_data is empty
             // and nothing is copied to memory, and the gas is not returned;
@@ -1050,6 +1056,7 @@ namespace CreateHelper {
     }
 
     // @notice At the end of a sub-context initiated with CREATE or CREATE2, the calling context's stack is updated.
+    // @dev Restores the parent state if the sub-context has reverted.
     // @param evm The pointer to the calling context.
     // @return EVM The pointer to the updated calling context.
     func finalize_parent{
@@ -1074,6 +1081,9 @@ namespace CreateHelper {
 
             tempvar stack_code = new Uint256(low=0, high=0);
             Stack.push(stack_code);
+
+            tempvar state = evm.message.parent.state;
+
             tempvar evm = new model.EVM(
                 message=evm.message.parent.evm.message,
                 return_data_len=return_data_len,
@@ -1107,6 +1117,8 @@ namespace CreateHelper {
         Stack.push(address);
 
         if (success == FALSE) {
+            tempvar state = evm.message.parent.state;
+
             tempvar evm = new model.EVM(
                 message=evm.message.parent.evm.message,
                 return_data_len=0,
