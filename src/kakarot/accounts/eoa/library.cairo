@@ -25,6 +25,11 @@ func kakarot_address() -> (kakarot_address: felt) {
 func is_initialized_() -> (res: felt) {
 }
 
+// Should always be zero. If not, the account has code and will fail validation.
+@storage_var
+func bytecode_len_() -> (res: felt) {
+}
+
 @event
 func transaction_executed(response_len: felt, response: felt*, success: felt, gas_used: felt) {
 }
@@ -93,6 +98,12 @@ namespace ExternallyOwnedAccount {
     }(call_array_len: felt, call_array: CallArray*, calldata_len: felt, calldata: felt*) -> () {
         alloc_locals;
         if (call_array_len == 0) {
+            // Validates that this account doesn't have code.
+            let (bytecode_len) = bytecode_len_.read();
+            with_attr error_message("EOAs cannot have code") {
+                assert bytecode_len = 0;
+            }
+
             return ();
         }
 

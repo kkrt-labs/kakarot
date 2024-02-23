@@ -318,30 +318,6 @@ def compile_contract(contract):
     if output.returncode != 0:
         raise RuntimeError(output.stderr)
 
-    def _convert_offset_to_hex(obj):
-        if isinstance(obj, list):
-            return [_convert_offset_to_hex(i) for i in obj]
-        if isinstance(obj, dict):
-            return {key: _convert_offset_to_hex(obj[key]) for key, value in obj.items()}
-        if isinstance(obj, int) and obj >= 0:
-            return hex(obj)
-        return obj
-
-    compiled = json.loads(artifact.read_text())
-    compiled = {
-        **compiled,
-        "entry_points_by_type": _convert_offset_to_hex(
-            compiled["entry_points_by_type"]
-        ),
-    }
-    json.dump(
-        compiled,
-        open(
-            artifact,
-            "w",
-        ),
-        indent=2,
-    )
     elapsed = datetime.now() - start
     logger.info(
         f"✅ {contract['contract_name']} compiled in {elapsed.total_seconds():.2f}s"
@@ -415,7 +391,7 @@ async def declare(contract):
         declare_v2_transaction = await account.sign_declare_v2_transaction(
             compiled_contract=sierra_compiled_contract,
             compiled_class_hash=class_hash,
-            max_fee=0,
+            max_fee=_max_fee,
         )
 
         resp = await account.client.declare(transaction=declare_v2_transaction)
@@ -437,7 +413,7 @@ async def declare(contract):
             contract_address=account.address,
             entry_point_selector=DEFAULT_ENTRY_POINT_SELECTOR,
             calldata=[class_hash],
-            max_fee=0,
+            max_fee=_max_fee,
             chain_id=account.signer.chain_id.value,
             additional_data=[await account.get_nonce()],
         )
@@ -447,7 +423,7 @@ async def declare(contract):
         transaction = Declare(
             contract_class=contract_class,
             sender_address=account.address,
-            max_fee=0,
+            max_fee=_max_fee,
             signature=signature,
             nonce=await account.get_nonce(),
             version=1,
