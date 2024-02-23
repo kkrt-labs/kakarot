@@ -1,19 +1,3 @@
-# The release tag of https://github.com/ethereum/tests to use for EF tests
-EF_TESTS_TAG := v12.4
-EF_TESTS_URL := https://github.com/ethereum/tests/archive/refs/tags/$(EF_TESTS_TAG).tar.gz
-EF_TESTS_DIR := ./tests/ef_tests/test_data
-
-# Downloads and unpacks Ethereum Foundation tests in the `$(EF_TESTS_DIR)` directory.
-# Requires `wget` and `tar`
-$(EF_TESTS_DIR):
-	mkdir -p $(EF_TESTS_DIR)
-	wget $(EF_TESTS_URL) -O ethereum-tests.tar.gz
-	tar -xzf ethereum-tests.tar.gz --strip-components=1 -C $(EF_TESTS_DIR)
-	rm ethereum-tests.tar.gz
-
-
-.PHONY: build test coverage $(EF_TESTS_DIR)
-
 # Include .env file to get GITHUB_TOKEN
 ifneq ("$(wildcard .env)","")
     include .env
@@ -31,6 +15,9 @@ build: check
 
 check:
 	poetry check --lock
+
+fetch-ef-tests:
+	poetry run python ./scripts/ef-tests/fetch.py
 
 # This action fetches the latest Kakarot SSJ (Cairo compiler version >=2) artifacts
 # from the main branch and unzips them into the build/ssj directory.

@@ -119,7 +119,12 @@ class Serde:
     def serialize_state(self, ptr):
         raw = self.serialize_pointers("model.State", ptr)
         return {
-            "accounts": self.serialize_dict(raw["accounts_start"], "model.Account"),
+            "accounts": {
+                to_checksum_address(f"{key:040x}"): value
+                for key, value in self.serialize_dict(
+                    raw["accounts_start"], "model.Account"
+                ).items()
+            },
             "events": self.serialize_list(raw["events"], "model.Event"),
             "transfers": self.serialize_list(raw["transfers"], "model.Transfer"),
         }

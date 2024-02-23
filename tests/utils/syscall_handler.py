@@ -11,6 +11,7 @@ from starkware.starknet.public.abi import (
 )
 
 from tests.utils.constants import CHAIN_ID
+from tests.utils.uint256 import int_to_uint256
 
 
 @dataclass
@@ -304,3 +305,95 @@ class SyscallHandler:
         del cls.patches[selector_if_call]
         if "selector_if_storage" in globals():
             del cls.patches[selector_if_storage]
+
+    @classmethod
+    @contextmanager
+    def patch_state(cls, state: dict):
+        """
+        Patch sycalls to match a given EVM state.
+
+        Actual corresponding Starknet address are unknown but it doesn't matter since the
+        evm_to_starknet_address storage is also patched.
+
+        :param state: the state to patch with, a dictionary like:
+        {
+            '0x1000000000000000000000000000000000000000': {
+                'balance': '0x00',
+                'code': '0x6000600060006000346000355af1600055600160015500',
+                'nonce': '0x00',
+                'storage': {}
+            },
+            '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b': {
+                'balance': '0xffffffffffffffffffffffffffffffff',
+                'code': '0x',
+                'nonce': '0x00',
+                'storage': {},
+            }
+        }
+        """
+        patched_before = set(cls.patches.keys())
+
+        def _balance_of(erc20_address, calldata):
+            return int_to_uint256(state.get(calldata[0], {}).get("balance", 0))
+
+        balance_selector = get_selector_from_name("balanceOf")
+        cls.patches[balance_selector] = _balance_of
+
+        def _bytecode(contract_address, calldata):
+            code = state.get(contract_address, {}).get("code", [])
+            return [len(code), *code]
+
+        bytecode_selector = get_selector_from_name("bytecode")
+        cls.patches[bytecode_selector] = _bytecode
+
+        def _bytecode_len(contract_address, calldata):
+            code = state.get(contract_address, {}).get("code", [])
+            return [len(code)]
+
+        bytecode_len_selector = get_selector_from_name("bytecode_len")
+        cls.patches[bytecode_len_selector] = _bytecode_len
+
+        def _get_nonce(contract_address, calldata):
+            return [state.get(contract_address, {}).get("nonce", 0)]
+
+        nonce_selector = get_selector_from_name("get_nonce")
+        cls.patches[nonce_selector] = _get_nonce
+
+        def _storage(contract_address, calldata):
+            return int_to_uint256(
+                state.get(contract_address, {}).get("storage").get(calldata[0], 0)
+            )
+
+        storage_selector = get_selector_from_name("storage")
+        cls.patches[storage_selector] = _storage
+
+        # Set account types
+        account_types = {
+            address: [
+                (
+                    int.from_bytes(b"CA", "big")
+                    if (len(account["code"]) > 0 or any(account["storage"].values()))
+                    else int.from_bytes(b"EOA", "big")
+                )
+            ]
+            for address, account in state.items()
+        }
+
+        def _account_type(contract_address, calldata):
+            return [account_types.get(contract_address, 0)]
+
+        account_type_selector = get_selector_from_name("account_type")
+        cls.patches[account_type_selector] = _account_type
+
+        # Register accounts
+        for address in state.keys():
+            address_selector = get_storage_var_address(
+                "evm_to_starknet_address", address
+            )
+            cls.patches[address_selector] = address
+
+        yield
+
+        patched = set(cls.patches.keys())
+        for selector in patched - patched_before:
+            del cls.patches[selector]
