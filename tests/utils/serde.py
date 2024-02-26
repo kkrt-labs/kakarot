@@ -27,11 +27,6 @@ class Serde:
         return identifiers[0]
 
     def serialize_list(self, segment_ptr, item_scope=None, list_len=None):
-        list_len = (
-            list_len
-            if list_len is not None
-            else self.runner.segments.get_segment_size(segment_ptr.segment_index)
-        )
         item_identifier = (
             self.get_identifier(item_scope, StructDefinition)
             if item_scope is not None
@@ -43,6 +38,11 @@ class Serde:
             else TypeFelt()
         )
         item_size = item_identifier.size if item_identifier is not None else 1
+        list_len = (
+            list_len * item_size
+            if list_len is not None
+            else self.runner.segments.get_segment_size(segment_ptr.segment_index)
+        )
         output = []
         for i in range(0, list_len, item_size):
             try:
@@ -109,7 +109,7 @@ class Serde:
         raw = self.serialize_pointers("model.Account", ptr)
         return {
             "address": self.serialize_address(raw["address"]),
-            "code": self.serialize_list(raw["code"]),
+            "code": self.serialize_list(raw["code"], list_len=raw["code_len"]),
             "storage": self.serialize_dict(raw["storage_start"], "Uint256"),
             "nonce": raw["nonce"],
             "balance": self.serialize_uint256(raw["balance"]),
@@ -125,8 +125,12 @@ class Serde:
                     raw["accounts_start"], "model.Account"
                 ).items()
             },
-            "events": self.serialize_list(raw["events"], "model.Event"),
-            "transfers": self.serialize_list(raw["transfers"], "model.Transfer"),
+            "events": self.serialize_list(
+                raw["events"], "model.Event", list_len=raw["events_len"]
+            ),
+            "transfers": self.serialize_list(
+                raw["transfers"], "model.Transfer", list_len=raw["transfers_len"]
+            ),
         }
 
     def serialize_eth_transaction(self, ptr):

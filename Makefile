@@ -17,7 +17,7 @@ check:
 	poetry check --lock
 
 fetch-ef-tests:
-	poetry run python ./scripts/ef-tests/fetch.py
+	poetry run python ./scripts/ef_tests/fetch.py
 
 # This action fetches the latest Kakarot SSJ (Cairo compiler version >=2) artifacts
 # from the main branch and unzips them into the build/ssj directory.

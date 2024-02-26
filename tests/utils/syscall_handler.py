@@ -14,6 +14,57 @@ from tests.utils.constants import CHAIN_ID
 from tests.utils.uint256 import int_to_uint256
 
 
+def parse_state(state):
+    """
+    Parse a serialized state as a dict of string, mainly converting hex strings to
+    integers and computing the corresponding kakarot storage key from the EVM one.
+
+    Input state be like:
+        {
+            '0x1000000000000000000000000000000000000000': {
+                'balance': '0x00',
+                'code': '0x6000600060006000346000355af1600055600160015500',
+                'nonce': '0x00',
+                'storage': {}
+            },
+            '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b': {
+                'balance': '0xffffffffffffffffffffffffffffffff',
+                'code': '0x',
+                'nonce': '0x00',
+                'storage': {},
+            }
+        }
+    """
+    return {
+        (int(address, 16) if not isinstance(address, int) else address): {
+            "balance": (
+                int(account["balance"], 16)
+                if not isinstance(account["balance"], int)
+                else account["balance"]
+            ),
+            "code": (
+                list(bytes.fromhex(account["code"].replace("0x", "")))
+                if isinstance(account["code"], str)
+                else account["code"]
+            ),
+            "nonce": (
+                int(account["nonce"], 16)
+                if not isinstance(account["nonce"], int)
+                else account["nonce"]
+            ),
+            "storage": {
+                (
+                    get_storage_var_address("storage_", *int_to_uint256(int(key, 16)))
+                    if not isinstance(key, int)
+                    else key
+                ): (int(value, 16) if not isinstance(value, int) else value)
+                for key, value in account["storage"].items()
+            },
+        }
+        for address, account in state.items()
+    }
+
+
 @dataclass
 class SyscallHandler:
     """
@@ -315,21 +366,7 @@ class SyscallHandler:
         Actual corresponding Starknet address are unknown but it doesn't matter since the
         evm_to_starknet_address storage is also patched.
 
-        :param state: the state to patch with, a dictionary like:
-        {
-            '0x1000000000000000000000000000000000000000': {
-                'balance': '0x00',
-                'code': '0x6000600060006000346000355af1600055600160015500',
-                'nonce': '0x00',
-                'storage': {}
-            },
-            '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b': {
-                'balance': '0xffffffffffffffffffffffffffffffff',
-                'code': '0x',
-                'nonce': '0x00',
-                'storage': {},
-            }
-        }
+        :param state: the state to patch with, an output dictionary of parse_state
         """
         patched_before = set(cls.patches.keys())
 
@@ -361,7 +398,7 @@ class SyscallHandler:
 
         def _storage(contract_address, calldata):
             return int_to_uint256(
-                state.get(contract_address, {}).get("storage").get(calldata[0], 0)
+                state.get(contract_address, {}).get("storage", {}).get(calldata[0], 0)
             )
 
         storage_selector = get_selector_from_name("storage")
@@ -369,13 +406,11 @@ class SyscallHandler:
 
         # Set account types
         account_types = {
-            address: [
-                (
-                    int.from_bytes(b"CA", "big")
-                    if (len(account["code"]) > 0 or any(account["storage"].values()))
-                    else int.from_bytes(b"EOA", "big")
-                )
-            ]
+            address: (
+                int.from_bytes(b"CA", "big")
+                if (len(account["code"]) > 0 or any(account["storage"].values()))
+                else int.from_bytes(b"EOA", "big")
+            )
             for address, account in state.items()
         }
 
