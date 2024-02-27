@@ -98,14 +98,14 @@ async def get_starknet_account(
             )[0]
             break
         except Exception as err:
+            message = str(err)
             if (
-                err.message == "Client failed with code 40: Contract error."
-                or err.message
-                == "Client failed with code 40: Requested entry point was not found."
-                or err.message
-                == "Client failed with code 21: Invalid message selector."
-                or "StarknetErrorCode.ENTRY_POINT_NOT_FOUND_IN_CONTRACT" in err.message
-                or ("code 40" and "not found in contract") in err.message
+                "Client failed with code 40: Contract error." in message
+                or "Client failed with code 40: Requested entry point was not found."
+                in message
+                or "Client failed with code 21: Invalid message selector." in message
+                or "StarknetErrorCode.ENTRY_POINT_NOT_FOUND_IN_CONTRACT" in message
+                or ("code 40" and "not found in contract") in message
             ):
                 continue
             else:
