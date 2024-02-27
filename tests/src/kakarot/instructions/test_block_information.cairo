@@ -2,6 +2,7 @@
 
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
+from starkware.cairo.common.uint256 import Uint256
 
 from kakarot.model import model
 from kakarot.stack import Stack
@@ -12,7 +13,7 @@ from tests.utils.helpers import TestHelpers
 
 func test__exec_block_information{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(output_ptr: felt*) {
+}() -> Uint256* {
     // Given
     alloc_locals;
     tempvar opcode: felt;
@@ -32,7 +33,5 @@ func test__exec_block_information{
     }
 
     // Then
-    assert [output_ptr] = result.low;
-    assert [output_ptr + 1] = result.high;
-    return ();
+    return result;
 }

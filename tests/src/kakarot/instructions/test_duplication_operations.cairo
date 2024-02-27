@@ -14,7 +14,7 @@ from tests.utils.helpers import TestHelpers
 
 func test__exec_dup{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(output_ptr: felt*) {
+}() -> model.Stack* {
     alloc_locals;
     local i: felt;
     local initial_stack_len: felt;
@@ -39,7 +39,5 @@ func test__exec_dup{
         let (top) = Stack.peek(0);
     }
 
-    assert [output_ptr] = top.low;
-    assert [output_ptr + 1] = top.high;
-    return ();
+    return stack;
 }

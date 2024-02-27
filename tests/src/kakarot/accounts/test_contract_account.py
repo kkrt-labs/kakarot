@@ -74,7 +74,7 @@ class TestContractAccount:
         @SyscallHandler.patch("evm_address", 0xABDE1)
         def test_should_return_stored_address(self, cairo_run):
             output = cairo_run("test__get_evm_address__should_return_stored_address")
-            assert output == [0xABDE1]
+            assert output == 0xABDE1
 
     class TestWriteBytecode:
         @SyscallHandler.patch("Ownable_owner", 0xDEAD)
@@ -112,9 +112,9 @@ class TestContractAccount:
             with patch.object(
                 SyscallHandler, "mock_storage", side_effect=storage
             ) as mock_storage:
-                output = cairo_run("test__read_bytecode")
+                output_len, output = cairo_run("test__read_bytecode")
             chunk_counts, remainder = divmod(len(bytecode), 31)
             addresses = list(range(chunk_counts + (remainder > 0)))
             calls = [call(address=address) for address in addresses]
             mock_storage.assert_has_calls(calls)
-            assert output == list(bytecode)
+            assert output[:output_len] == list(bytecode)

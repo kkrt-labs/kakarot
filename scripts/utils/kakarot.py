@@ -109,6 +109,9 @@ def get_contract(
             bytecode=target_compilation_output["bytecode"]["object"],
         ),
     )
+    contract.bytecode_runtime = HexBytes(
+        target_compilation_output["deployedBytecode"]["object"]
+    )
 
     try:
         for fun in contract.functions:
@@ -218,6 +221,7 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
                 else int(EVM_ADDRESS, 16)
             )
             result = await kakarot_contract.functions["eth_call"].call(
+                nonce=0,
                 origin=origin,
                 to={
                     "is_some": 1,

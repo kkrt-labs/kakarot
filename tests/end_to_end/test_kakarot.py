@@ -189,6 +189,7 @@ class TestKakarot:
             assert status == "✅"
 
             result = await kakarot.functions["eth_call"].call(
+                nonce=0,
                 origin=int(evm_address, 16),
                 to={
                     "is_some": 1,

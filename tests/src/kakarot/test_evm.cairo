@@ -7,11 +7,12 @@ from kakarot.stack import Stack
 from kakarot.interpreter import Interpreter
 from kakarot.memory import Memory
 from kakarot.state import State
+from kakarot.model import model
 from tests.utils.helpers import TestHelpers
 
 func test__unknown_opcode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(output_ptr: felt*) {
+}() -> model.EVM* {
     alloc_locals;
     let evm = TestHelpers.init_evm();
     let stack = Stack.init();
@@ -22,7 +23,5 @@ func test__unknown_opcode{
         let evm = Interpreter.unknown_opcode(evm);
     }
 
-    memcpy(output_ptr, evm.return_data, evm.return_data_len);
-
-    return ();
+    return evm;
 }

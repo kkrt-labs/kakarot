@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 from eth.vm.forks.shanghai.blocks import ShanghaiBlock
 from web3 import Web3
 
+from scripts.ef_tests.fetch import EF_TESTS_PARSED_DIR
+
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -22,7 +24,7 @@ TESTS_PATH = Path("tests/ef_tests/test_data/BlockchainTests/GeneralStateTests")
 TEST_NAME = os.getenv("TEST_NAME")
 if TEST_NAME is None:
     raise ValueError("Please set TEST_NAME")
-TEST_PARENT_FOLDER = os.getenv("TEST_PARENT_FOLDER")
+TEST_PARENT_FOLDER = os.getenv("TEST_PARENT_FOLDER", "")
 RPC_ENDPOINT = "http://127.0.0.1:8545"
 
 
@@ -59,29 +61,23 @@ class AnvilHandler:
 
 def get_test_file():
     tests = [
-        (content, str(file_path))
-        for file_path in TESTS_PATH.glob("**/*.json")
-        for name, content in json.load(open(file_path)).items()
-        if TEST_NAME in name and content["network"] == "Shanghai"
+        file_name
+        for file_name in os.listdir(EF_TESTS_PARSED_DIR)
+        if TEST_NAME in file_name and TEST_PARENT_FOLDER in file_name
     ]
 
     if len(tests) == 0:
         raise ValueError(f"Test {TEST_NAME} not found")
 
     if len(tests) > 1:
-        if TEST_PARENT_FOLDER is None:
+        if TEST_PARENT_FOLDER == "":
             raise ValueError(
                 f"Test {TEST_NAME} is ambiguous, please set TEST_PARENT_FOLDER to test file folder"
             )
 
-        test = [content for (content, path) in tests if TEST_PARENT_FOLDER in path]
-        if len(test) == 0:
-            raise ValueError(f"Test {TEST_NAME} not found")
+        raise ValueError(f"Test {TEST_NAME} not found")
 
-        return test[0]
-
-    else:
-        return tests[0][0]
+    return json.loads((EF_TESTS_PARSED_DIR / tests[0]).read_text())
 
 
 def connect_anvil():

@@ -17,7 +17,7 @@ class TestGas:
         )
         def test_should_return_same_as_execution_specs(self, cairo_run, max_offset):
             output = cairo_run("test__memory_cost", words_len=((max_offset + 31) // 32))
-            assert calculate_memory_gas_cost(max_offset) == output[0]
+            assert calculate_memory_gas_cost(max_offset) == output
 
         @pytest.mark.parametrize(
             "bytes_len", [random.randint(0, 0xFFFFFF) for _ in range(5)]
@@ -39,7 +39,7 @@ class TestGas:
                 words_len=words_len,
                 max_offset=max_offset,
             )
-            assert diff == output[0]
+            assert diff == output
 
         @pytest.mark.parametrize(
             "offset_1", [random.randint(0, 0xFFFFF) for _ in range(3)]
@@ -65,7 +65,7 @@ class TestGas:
                 size_2=size_2,
             )
             assert (
-                output[0]
+                output
                 == calculate_gas_extend_memory(
                     b"",
                     [
@@ -91,4 +91,4 @@ class TestGas:
             output = cairo_run(
                 "test__compute_message_call_gas", gas_param=gas_param, gas_left=gas_left
             )
-            assert output[0] == expected
+            assert output == expected
