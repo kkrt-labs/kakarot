@@ -146,7 +146,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cargo/bin
-          key: katana-fe8f233
+          key: katana-v0.6.0-alpha.2
       - name: Install Katana
         if: steps.cached-katana.outputs.cache-hit != 'true'
         run: make install-katana
