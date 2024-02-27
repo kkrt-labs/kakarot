@@ -221,6 +221,7 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
                 else int(EVM_ADDRESS, 16)
             )
             result = await kakarot_contract.functions["eth_call"].call(
+                nonce=0,
                 origin=origin,
                 to={
                     "is_some": 1,

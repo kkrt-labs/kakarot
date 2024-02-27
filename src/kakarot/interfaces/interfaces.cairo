@@ -102,6 +102,7 @@ namespace IKakarot {
     }
 
     func eth_call(
+        nonce: felt,
         origin: felt,
         to: model.Option,
         gas_limit: felt,
