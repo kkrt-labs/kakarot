@@ -99,6 +99,7 @@ def use_kakarot_backend(contract: Contract, kakarot: StarknetContract):
             }
 
             call_kwargs = {
+                "nonce": 0,
                 "origin": caller_evm_address,
                 **invoke_kwargs,
             }

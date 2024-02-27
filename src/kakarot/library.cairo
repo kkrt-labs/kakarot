@@ -73,6 +73,7 @@ namespace Kakarot {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(
+        nonce: felt,
         origin: felt,
         to: model.Option,
         gas_limit: felt,
@@ -86,7 +87,7 @@ namespace Kakarot {
         alloc_locals;
         let is_regular_tx = is_not_zero(to.is_some);
         let is_deploy_tx = 1 - is_regular_tx;
-        let evm_contract_address = resolve_to(to, origin);
+        let evm_contract_address = resolve_to(to, origin, nonce);
         let starknet_contract_address = Account.compute_starknet_address(evm_contract_address);
         tempvar address = new model.Address(
             starknet=starknet_contract_address, evm=evm_contract_address
@@ -189,21 +190,19 @@ namespace Kakarot {
     // @dev When to=None, it's a deploy tx so we first compute the target address
     // @param to The transaction to parameter
     // @param origin The transaction origin parameter
+    // @param nonce The transaction nonce parameter, used to compute the target address if it's a deploy tx
     // @return the target evm address
     func resolve_to{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(to: model.Option, origin: felt) -> felt {
+    }(to: model.Option, origin: felt, nonce: felt) -> felt {
         alloc_locals;
         if (to.is_some != 0) {
             return to.value;
         }
-        // TODO: read the nonce from the provided origin address, otherwise in view mode this will
-        // TODO: always use a 0 nonce
-        let (tx_info) = get_tx_info();
-        let (local evm_contract_address) = CreateHelper.get_create_address(origin, tx_info.nonce);
+        let (local evm_contract_address) = CreateHelper.get_create_address(origin, nonce);
         return evm_contract_address;
     }
 
