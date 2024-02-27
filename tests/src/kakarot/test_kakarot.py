@@ -65,7 +65,7 @@ def get_contract(cairo_run):
     return _factory
 
 
-@pytest.mark.SolmateERC20
+@pytest.mark.NoCI
 class TestKakarot:
     class TestEthCall:
         @pytest.mark.SolmateERC20

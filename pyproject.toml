@@ -144,6 +144,7 @@ markers = [
   "EFTests",
   "SSTORE",
   "SLOAD",
+  "NoCI",
 ]
 env = [
   "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION = python",
