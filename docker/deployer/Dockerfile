@@ -15,12 +15,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 ENV POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=1 \
-    POETRY_VIRTUALENVS_CREATE=1
+    POETRY_VIRTUALENVS_CREATE=1 \
+    VIRTUAL_ENV=/app/kakarot/.venv \
+    PATH="/app/kakarot/.venv/bin:/root/.local/bin:$PATH"
 
 RUN --mount=type=cache,target=/root/.cache \
     curl -sSL https://install.python-poetry.org | python3 -
-
-ENV PATH="$PATH:/root/.local/bin"
 
 WORKDIR /app/kakarot
 
@@ -58,21 +58,12 @@ RUN --mount=type=cache,target=/root/.cache \
 # split install in two steps to leverage docker cache
 COPY . .
 RUN --mount=type=cache,target=/root/.cache \
-    make setup && make build
+    make fetch-ssj-artifacts && make build
 
 ############################################
 # Kakarot deployer
 ############################################
 FROM base as deployer
-
-ENV VIRTUAL_ENV=/app/kakarot/.venv \
-    PATH="/app/kakarot/.venv/bin:$PATH"
-
-# Copy only necessary artifacts from the builder stage
-COPY --from=builder /app/kakarot/.venv/bin ./.venv/bin
-COPY --from=builder /app/kakarot/.venv/lib ./.venv/lib
-COPY --from=builder /app/kakarot/.venv/share ./.venv/share
-COPY --from=builder /app/kakarot/.venv/pyvenv.cfg ./.venv/
 
 COPY --from=builder /app/kakarot/build ./build/
 COPY --from=builder /app/kakarot/scripts/ ./scripts/
@@ -89,7 +80,7 @@ COPY --from=builder /app/kakarot/foundry.toml .
 COPY --from=builder /app/kakarot/README.md .
 
 RUN --mount=type=cache,target=/root/.cache \
-    poetry install
+    poetry install --without dev
 
 # Deploy kakarot
 CMD ["python", "scripts/deploy_kakarot.py"]
