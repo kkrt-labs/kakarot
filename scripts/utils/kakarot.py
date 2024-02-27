@@ -109,6 +109,9 @@ def get_contract(
             bytecode=target_compilation_output["bytecode"]["object"],
         ),
     )
+    contract.bytecode_runtime = HexBytes(
+        target_compilation_output["deployedBytecode"]["object"]
+    )
 
     try:
         for fun in contract.functions:
