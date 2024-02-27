@@ -42,7 +42,7 @@ func test__exec_address__should_push_address_to_stack{
 
 func test__exec_extcodesize{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(output_ptr: felt*) {
+}() -> Uint256* {
     // Given
     alloc_locals;
     local address: felt;
@@ -60,15 +60,12 @@ func test__exec_extcodesize{
     }
 
     // Then
-    assert [output_ptr] = extcodesize.low;
-    assert [output_ptr + 1] = extcodesize.high;
-
-    return ();
+    return extcodesize;
 }
 
 func test__exec_extcodecopy{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(output_ptr: felt*) {
+}() -> model.Memory* {
     // Given
     alloc_locals;
     local address: felt;
@@ -97,12 +94,11 @@ func test__exec_extcodecopy{
         Stack.push(item_1);  // dest_offset
         Stack.push(item_0);  // address
         let evm = EnvironmentalInformation.exec_extcodecopy(evm);
-        Memory.load_n(size, output_ptr, dest_offset);
     }
 
     // Then
     assert stack.size = 0;
-    return ();
+    return memory;
 }
 
 func test__exec_gasprice{
@@ -130,7 +126,7 @@ func test__exec_gasprice{
 
 func test__exec_extcodehash{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(output_ptr: felt*) {
+}() -> Uint256* {
     // Given
     alloc_locals;
     local address: felt;
@@ -148,8 +144,5 @@ func test__exec_extcodehash{
     }
 
     // Then
-    assert [output_ptr] = extcodehash.low;
-    assert [output_ptr + 1] = extcodehash.high;
-
-    return ();
+    return extcodehash;
 }

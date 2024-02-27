@@ -191,8 +191,8 @@ def cairo_run(request) -> list:
             ).members.keys()
         )
         if add_output:
-            output = runner.segments.add()
-            stack.append(output)
+            output_ptr = runner.segments.add()
+            stack.append(output_ptr)
 
         return_fp = runner.segments.add()
         end = runner.segments.add()
@@ -245,18 +245,18 @@ def cairo_run(request) -> list:
         )
         final_output = None
         if add_output:
-            final_output = serde.serialize_list(output)
-        if returned_data is not None:
-            function_output = serde.serialize(returned_data.cairo_type)
-            if final_output is not None:
-                function_output = (
-                    function_output
-                    if isinstance(function_output, list)
-                    else [function_output]
-                )
-                final_output += function_output
-            else:
-                final_output = function_output
+            final_output = serde.serialize_list(output_ptr)
+        function_output = serde.serialize(returned_data.cairo_type)
+        if final_output is not None:
+            function_output = (
+                function_output
+                if isinstance(function_output, list)
+                else [function_output]
+            )
+            if len(function_output) > 0:
+                final_output = (final_output, *function_output)
+        else:
+            final_output = function_output
 
         return final_output
 

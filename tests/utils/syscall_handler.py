@@ -11,6 +11,58 @@ from starkware.starknet.public.abi import (
 )
 
 from tests.utils.constants import CHAIN_ID
+from tests.utils.uint256 import int_to_uint256
+
+
+def parse_state(state):
+    """
+    Parse a serialized state as a dict of string, mainly converting hex strings to
+    integers and computing the corresponding kakarot storage key from the EVM one.
+
+    Input state be like:
+        {
+            '0x1000000000000000000000000000000000000000': {
+                'balance': '0x00',
+                'code': '0x6000600060006000346000355af1600055600160015500',
+                'nonce': '0x00',
+                'storage': {}
+            },
+            '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b': {
+                'balance': '0xffffffffffffffffffffffffffffffff',
+                'code': '0x',
+                'nonce': '0x00',
+                'storage': {},
+            }
+        }
+    """
+    return {
+        (int(address, 16) if not isinstance(address, int) else address): {
+            "balance": (
+                int(account["balance"], 16)
+                if not isinstance(account["balance"], int)
+                else account["balance"]
+            ),
+            "code": (
+                list(bytes.fromhex(account["code"].replace("0x", "")))
+                if isinstance(account["code"], str)
+                else account["code"]
+            ),
+            "nonce": (
+                int(account["nonce"], 16)
+                if not isinstance(account["nonce"], int)
+                else account["nonce"]
+            ),
+            "storage": {
+                (
+                    get_storage_var_address("storage_", *int_to_uint256(int(key, 16)))
+                    if not isinstance(key, int)
+                    else key
+                ): (int(value, 16) if not isinstance(value, int) else value)
+                for key, value in account["storage"].items()
+            },
+        }
+        for address, account in state.items()
+    }
 
 
 @dataclass
@@ -87,7 +139,8 @@ class SyscallHandler:
         """
         segments.write_arg(syscall_ptr + 1, [self.caller_address])
 
-    def get_block_number(self, segments, syscall_ptr):
+    @classmethod
+    def get_block_number(cls, segments, syscall_ptr):
         """
         Return a constant value for the get block number system call.
 
@@ -106,9 +159,10 @@ class SyscallHandler:
                 response: GetBlockNumberResponse,
             }
         """
-        segments.write_arg(syscall_ptr + 1, [self.block_number])
+        segments.write_arg(syscall_ptr + 1, [cls.block_number])
 
-    def get_block_timestamp(self, segments, syscall_ptr):
+    @classmethod
+    def get_block_timestamp(cls, segments, syscall_ptr):
         """
         Return a constant value for the get block timestamp system call.
 
@@ -127,7 +181,7 @@ class SyscallHandler:
                 response: GetBlockTimestampResponse,
             }
         """
-        segments.write_arg(syscall_ptr + 1, [self.block_timestamp])
+        segments.write_arg(syscall_ptr + 1, [cls.block_timestamp])
 
     def get_tx_info(self, segments, syscall_ptr):
         """
@@ -302,3 +356,73 @@ class SyscallHandler:
         del cls.patches[selector_if_call]
         if "selector_if_storage" in globals():
             del cls.patches[selector_if_storage]
+
+    @classmethod
+    @contextmanager
+    def patch_state(cls, state: dict):
+        """
+        Patch sycalls to match a given EVM state.
+
+        Actual corresponding Starknet address are unknown but it doesn't matter since the
+        evm_to_starknet_address storage is also patched.
+
+        :param state: the state to patch with, an output dictionary of parse_state
+        """
+        patched_before = set(cls.patches.keys())
+
+        def _balance_of(erc20_address, calldata):
+            return int_to_uint256(state.get(calldata[0], {}).get("balance", 0))
+
+        balance_selector = get_selector_from_name("balanceOf")
+        cls.patches[balance_selector] = _balance_of
+
+        def _bytecode(contract_address, calldata):
+            code = state.get(contract_address, {}).get("code", [])
+            return [len(code), *code]
+
+        bytecode_selector = get_selector_from_name("bytecode")
+        cls.patches[bytecode_selector] = _bytecode
+
+        def _bytecode_len(contract_address, calldata):
+            code = state.get(contract_address, {}).get("code", [])
+            return [len(code)]
+
+        bytecode_len_selector = get_selector_from_name("bytecode_len")
+        cls.patches[bytecode_len_selector] = _bytecode_len
+
+        def _get_nonce(contract_address, calldata):
+            return [state.get(contract_address, {}).get("nonce", 0)]
+
+        nonce_selector = get_selector_from_name("get_nonce")
+        cls.patches[nonce_selector] = _get_nonce
+
+        def _storage(contract_address, calldata):
+            return int_to_uint256(
+                state.get(contract_address, {}).get("storage", {}).get(calldata[0], 0)
+            )
+
+        storage_selector = get_selector_from_name("storage")
+        cls.patches[storage_selector] = _storage
+
+        # Set account types
+        # We set all account types to be CA (contract account) as the only difference is that
+        # with EOA it doesn't try to fetch the nonce from the syscall, while here we actually
+        # want to have the EOA with the patched nonce.
+        def _account_type(contract_address, calldata):
+            return [int.from_bytes(b"CA", "big")]
+
+        account_type_selector = get_selector_from_name("account_type")
+        cls.patches[account_type_selector] = _account_type
+
+        # Register accounts
+        for address in state.keys():
+            address_selector = get_storage_var_address(
+                "evm_to_starknet_address", address
+            )
+            cls.patches[address_selector] = address
+
+        yield
+
+        patched = set(cls.patches.keys())
+        for selector in patched - patched_before:
+            del cls.patches[selector]

@@ -59,6 +59,7 @@ lint:
         - logs*
         - lib*
         - resources*
+        - tests/ef_tests/test_data
 actions:
   disabled:
     - trunk-announce

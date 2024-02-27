@@ -50,7 +50,7 @@ namespace TestHelpers {
             valid_jumpdests_start=valid_jumpdests_start,
             valid_jumpdests=valid_jumpdests,
             calldata=calldata,
-            calldata_len=1,
+            calldata_len=0,
             value=zero,
             parent=cast(0, model.Parent*),
             address=address,

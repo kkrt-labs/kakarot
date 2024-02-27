@@ -27,12 +27,10 @@ func test__initialize__should_store_given_evm_address{
 
 func test__get_evm_address__should_return_stored_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(output_ptr: felt*) {
+}() -> felt {
     let (evm_address) = ContractAccount.get_evm_address();
 
-    assert [output_ptr] = evm_address;
-
-    return ();
+    return evm_address;
 }
 
 func test__write_bytecode{
@@ -55,9 +53,8 @@ func test__write_bytecode{
 
 func test__read_bytecode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(output_ptr: felt*) {
+}() -> (bytecode_len: felt, bytecode: felt*) {
     alloc_locals;
     let (bytecode_len, bytecode) = ContractAccount.bytecode();
-    memcpy(output_ptr, bytecode, bytecode_len);
-    return ();
+    return (bytecode_len, bytecode);
 }

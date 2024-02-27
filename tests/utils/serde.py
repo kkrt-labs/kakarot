@@ -27,11 +27,6 @@ class Serde:
         return identifiers[0]
 
     def serialize_list(self, segment_ptr, item_scope=None, list_len=None):
-        list_len = (
-            list_len
-            if list_len is not None
-            else self.runner.segments.get_segment_size(segment_ptr.segment_index)
-        )
         item_identifier = (
             self.get_identifier(item_scope, StructDefinition)
             if item_scope is not None
@@ -43,6 +38,11 @@ class Serde:
             else TypeFelt()
         )
         item_size = item_identifier.size if item_identifier is not None else 1
+        list_len = (
+            list_len * item_size
+            if list_len is not None
+            else self.runner.segments.get_segment_size(segment_ptr.segment_index)
+        )
         output = []
         for i in range(0, list_len, item_size):
             try:
@@ -86,6 +86,8 @@ class Serde:
         return output
 
     def serialize_struct(self, name, ptr):
+        if ptr is None:
+            return None
         members = self.get_identifier(name, StructDefinition).members
         return {
             name: self._serialize(member.cairo_type, ptr + member.offset)
@@ -107,7 +109,7 @@ class Serde:
         raw = self.serialize_pointers("model.Account", ptr)
         return {
             "address": self.serialize_address(raw["address"]),
-            "code": self.serialize_list(raw["code"]),
+            "code": self.serialize_list(raw["code"], list_len=raw["code_len"]),
             "storage": self.serialize_dict(raw["storage_start"], "Uint256"),
             "nonce": raw["nonce"],
             "balance": self.serialize_uint256(raw["balance"]),
@@ -117,9 +119,18 @@ class Serde:
     def serialize_state(self, ptr):
         raw = self.serialize_pointers("model.State", ptr)
         return {
-            "accounts": self.serialize_dict(raw["accounts_start"], "model.Account"),
-            "events": self.serialize_list(raw["events"], "model.Event"),
-            "transfers": self.serialize_list(raw["transfers"], "model.Transfer"),
+            "accounts": {
+                to_checksum_address(f"{key:040x}"): value
+                for key, value in self.serialize_dict(
+                    raw["accounts_start"], "model.Account"
+                ).items()
+            },
+            "events": self.serialize_list(
+                raw["events"], "model.Event", list_len=raw["events_len"]
+            ),
+            "transfers": self.serialize_list(
+                raw["transfers"], "model.Transfer", list_len=raw["transfers_len"]
+            ),
         }
 
     def serialize_eth_transaction(self, ptr):
@@ -142,6 +153,40 @@ class Serde:
                 else []
             ),
             "chain_id": raw["chain_id"],
+        }
+
+    def serialize_message(self, ptr):
+        raw = self.serialize_pointers("model.Message", ptr)
+        return {
+            "bytecode": self.serialize_list(
+                raw["bytecode"], list_len=raw["bytecode_len"]
+            ),
+            "valid_jumpdest": list(
+                self.serialize_dict(raw["valid_jumpdests_start"]).keys()
+            ),
+            "calldata": self.serialize_list(
+                raw["calldata"], list_len=raw["calldata_len"]
+            ),
+            "value": self.serialize_uint256(raw["value"]),
+            "parent": self.serialize_struct("model.Parent", raw["parent"]),
+            "address": self.serialize_address(raw["address"]),
+            "code_address": raw["code_address"],
+            "read_only": bool(raw["read_only"]),
+            "is_create": bool(raw["is_create"]),
+            "depth": raw["depth"],
+            "env": self.serialize_struct("model.Environment", raw["env"]),
+        }
+
+    def serialize_evm(self, ptr):
+        evm = self.serialize_struct("model.EVM", ptr)
+        return {
+            "message": evm["message"],
+            "return_data": evm["return_data"][: evm["return_data_len"]],
+            "program_counter": evm["program_counter"],
+            "stopped": bool(evm["stopped"]),
+            "gas_left": evm["gas_left"],
+            "gas_refund": evm["gas_refund"],
+            "reverted": evm["reverted"],
         }
 
     def serialize_stack(self, ptr):
@@ -171,12 +216,16 @@ class Serde:
             return self.serialize_memory(scope_ptr)
         if scope.path[-1] == "Uint256":
             return self.serialize_uint256(scope_ptr)
+        if scope.path[-1] == "Message":
+            return self.serialize_message(scope_ptr)
+        if scope.path[-1] == "EVM":
+            return self.serialize_evm(scope_ptr)
         try:
             return self.serialize_struct(str(scope), scope_ptr)
         except MissingIdentifierError:
             return scope_ptr
 
-    def _serialize(self, cairo_type, ptr):
+    def _serialize(self, cairo_type, ptr, length=1):
         if isinstance(cairo_type, TypePointer):
             # A pointer can be a pointer to one single struct or to the beginning of a list of structs.
             # As such, every pointer is considered a list of structs, with length 1 or more.
@@ -186,7 +235,9 @@ class Serde:
                 return None
             if isinstance(cairo_type.pointee, TypeFelt):
                 return self.serialize_list(pointee)
-            serialized = self.serialize_list(pointee, str(cairo_type.pointee.scope))
+            serialized = self.serialize_list(
+                pointee, str(cairo_type.pointee.scope), list_len=length
+            )
             if len(serialized) == 1:
                 return serialized[0]
             return serialized
@@ -202,5 +253,14 @@ class Serde:
         raise ValueError(f"Unknown type {cairo_type}")
 
     def serialize(self, cairo_type):
-        shift = hasattr(cairo_type, "members") and len(cairo_type.members) or 1
-        return self._serialize(cairo_type, self.runner.vm.run_context.ap - shift)
+        if hasattr(cairo_type, "members"):
+            shift = len(cairo_type.members)
+        else:
+            try:
+                identifier = self.get_identifier(
+                    str(cairo_type.scope), StructDefinition
+                )
+                shift = len(identifier.members)
+            except (ValueError, AttributeError):
+                shift = 1
+        return self._serialize(cairo_type, self.runner.vm.run_context.ap - shift, shift)

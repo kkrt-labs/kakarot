@@ -62,7 +62,7 @@ class TestAccount:
                 key=int_to_uint256(key),
                 value=int_to_uint256(value),
             )
-            assert output == [0x1337, 0]
+            assert output == "0x1337"
 
         @SyscallHandler.patch(
             "evm_to_starknet_address",
@@ -78,7 +78,7 @@ class TestAccount:
                 key=int_to_uint256(key),
                 value=int_to_uint256(value),
             )
-            assert output == [0, 0]
+            assert output == "0x0"
 
     class TestHasCodeOrNonce:
         @pytest.mark.parametrize(
@@ -94,4 +94,4 @@ class TestAccount:
             self, cairo_run, nonce, code, expected_result
         ):
             output = cairo_run("test__has_code_or_nonce", nonce=nonce, code=code)
-            assert output[0] == expected_result
+            assert output == expected_result

@@ -221,9 +221,7 @@ def merge_access_list(access_list):
     """
     merged_list = defaultdict(set)
     for access in access_list:
-        merged_list[int(access["address"], 16)] = merged_list[
-            int(access["address"], 16)
-        ].union(
+        merged_list[access["address"]] = merged_list[access["address"]].union(
             {
                 get_storage_var_address("storage_", *int_to_uint256(int(key, 16)))
                 for key in access["storageKeys"]
