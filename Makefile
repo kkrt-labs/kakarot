@@ -65,7 +65,7 @@ build-sol:
 	forge build --names --force
 
 install-katana:
-	cargo install --git https://github.com/dojoengine/dojo --locked --rev fe8f233 katana
+	cargo install --git https://github.com/dojoengine/dojo --locked --tag v0.6.0-alpha.2 katana
 
 run-katana:
-	katana --validate-max-steps 16777216 --invoke-max-steps 16777216 --gas-price 0 --disable-fee
+	katana --validate-max-steps 16777216 --invoke-max-steps 16777216 --eth-gas-price 0 --strk-gas-price 0 --disable-fee

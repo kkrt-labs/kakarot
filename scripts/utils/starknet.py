@@ -3,7 +3,6 @@ import json
 import logging
 import random
 import subprocess
-import time
 from copy import deepcopy
 from datetime import datetime
 from functools import cache
@@ -27,13 +26,9 @@ from starknet_py.hash.sierra_class_hash import compute_sierra_class_hash
 from starknet_py.hash.transaction import TransactionHashPrefix, compute_transaction_hash
 from starknet_py.hash.utils import message_signature
 from starknet_py.net.account.account import Account
-from starknet_py.net.client_models import (
-    Call,
-    DeclareTransactionResponse,
-    TransactionStatus,
-)
+from starknet_py.net.client_models import Call, DeclareTransactionResponse
 from starknet_py.net.full_node_client import _create_broadcasted_txn
-from starknet_py.net.models.transaction import Declare
+from starknet_py.net.models.transaction import DeclareV1
 from starknet_py.net.schemas.rpc import DeclareTransactionResponseSchema
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starkware.starknet.public.abi import get_selector_from_name
@@ -100,13 +95,14 @@ async def get_starknet_account(
             )[0]
             break
         except Exception as err:
+            message = str(err)
             if (
-                err.message == "Client failed with code 40: Contract error."
-                or err.message
-                == "Client failed with code 40: Requested entry point was not found."
-                or err.message
-                == "Client failed with code 21: Invalid message selector."
-                or "StarknetErrorCode.ENTRY_POINT_NOT_FOUND_IN_CONTRACT" in err.message
+                "Client failed with code 40: Contract error." in message
+                or "Client failed with code 40: Requested entry point was not found."
+                in message
+                or "Client failed with code 21: Invalid message selector." in message
+                or "StarknetErrorCode.ENTRY_POINT_NOT_FOUND_IN_CONTRACT" in message
+                or ("code 40" in message and "not found in contract" in message)
             ):
                 continue
             else:
@@ -177,7 +173,7 @@ async def fund_address(
             raise ValueError(
                 f"Cannot send {amount / 1e18} ETH from default account with current balance {balance / 1e18} ETH"
             )
-        prepared = eth_contract.functions["transfer"].prepare(
+        prepared = eth_contract.functions["transfer"].prepare_invoke_v1(
             address, int_to_uint256(amount)
         )
         tx = await prepared.invoke(max_fee=_max_fee)
@@ -343,7 +339,7 @@ async def deploy_starknet_account(class_hash=None, private_key=None, amount=1):
     logger.info(f"ℹ️  Funding account {hex(address)} with {amount} ETH")
     await fund_address(address, amount=amount)
     logger.info("ℹ️  Deploying account")
-    res = await Account.deploy_account(
+    res = await Account.deploy_account_v1(
         address=address,
         class_hash=class_hash,
         salt=salt,
@@ -388,7 +384,7 @@ async def declare(contract):
         except Exception:
             pass
 
-        declare_v2_transaction = await account.sign_declare_v2_transaction(
+        declare_v2_transaction = await account.sign_declare_v2(
             compiled_contract=sierra_compiled_contract,
             compiled_class_hash=class_hash,
             max_fee=_max_fee,
@@ -420,7 +416,7 @@ async def declare(contract):
         signature = message_signature(
             msg_hash=tx_hash, priv_key=account.signer.private_key
         )
-        transaction = Declare(
+        transaction = DeclareV1(
             contract_class=contract_class,
             sender_address=account.address,
             max_fee=_max_fee,
@@ -441,6 +437,7 @@ async def declare(contract):
         deployed_class_hash = resp.class_hash
 
     status = await wait_for_transaction(resp.transaction_hash)
+
     logger.info(
         f"{status} {contract['contract_name']} class hash: {hex(resp.class_hash)}"
     )
@@ -461,7 +458,7 @@ async def deploy(contract_name, *args):
         abi = json.loads(sierra_compiled_contract)["abi"]
 
     account = await get_starknet_account()
-    deploy_result = await Contract.deploy_contract(
+    deploy_result = await Contract.deploy_contract_v1(
         account=account,
         class_hash=declarations[contract_name],
         abi=abi,
@@ -486,7 +483,7 @@ async def invoke_address(contract_address, function_name, *calldata, account=Non
         f"ℹ️  Invoking {function_name}({json.dumps(calldata) if calldata else ''}) "
         f"at address {hex(contract_address)[:10]}"
     )
-    return await account.execute(
+    return await account.execute_v1(
         Call(
             to_addr=contract_address,
             selector=get_selector_from_name(function_name),
@@ -501,11 +498,11 @@ async def invoke_contract(
 ):
     account = account or (await get_starknet_account())
     contract = get_contract(contract_name, address=address, provider=account)
-    call = contract.functions[function_name].prepare(*inputs, max_fee=_max_fee)
+    call = contract.functions[function_name].prepare_invoke_v1(*inputs)
     logger.info(
         f"ℹ️  Invoking {contract_name}.{function_name}({json.dumps(inputs) if inputs else ''})"
     )
-    return await account.execute(call, max_fee=_max_fee)
+    return await account.execute_v1(call, max_fee=_max_fee)
 
 
 async def invoke(contract: Union[str, int], *args, **kwargs):
@@ -561,56 +558,14 @@ async def call(contract: Union[str, int], *args, **kwargs):
 
 
 @functools.wraps(RPC_CLIENT.wait_for_tx)
-async def wait_for_transaction(*args, **kwargs):
-    """
-    We need to write this custom hacky wait_for_transaction instead of using the one from starknet-py
-    because the RPCs don't know RECEIVED, PENDING and REJECTED states currently.
-    """
-    start = datetime.now()
-    elapsed = 0
-    check_interval = kwargs.get("check_interval", NETWORK.get("check_interval", 5))
-    max_wait = kwargs.get("max_wait", NETWORK.get("max_wait", 20))
-    transaction_hash = args[0] if args else kwargs["tx_hash"]
-    finality_status = None
-    logger.info(f"⏳ Waiting for tx {get_tx_url(transaction_hash)}")
-    while (
-        finality_status
-        not in [TransactionStatus.ACCEPTED_ON_L2, TransactionStatus.REJECTED]
-        and elapsed < max_wait
-    ):
-        if elapsed > 0:
-            # don't log at the first iteration
-            logger.info(f"ℹ️  Current status: {finality_status}")
-        logger.info(f"ℹ️  Sleeping for {check_interval}s")
-        time.sleep(check_interval)
-        response = requests.post(
-            RPC_CLIENT.url,
-            json={
-                "jsonrpc": "2.0",
-                "method": "starknet_getTransactionReceipt",
-                "params": {"transaction_hash": hex(transaction_hash)},
-                "id": 0,
-            },
+async def wait_for_transaction(tx_hash):
+    try:
+        await RPC_CLIENT.wait_for_tx(
+            tx_hash,
+            check_interval=NETWORK["check_interval"],
+            retries=int(NETWORK["max_wait"] / NETWORK["check_interval"]),
         )
-        payload = json.loads(response.text)
-        if payload.get("error"):
-            if payload["error"]["message"] != "Transaction hash not found":
-                logger.warn(
-                    f"tx {transaction_hash:x} error: {json.dumps(payload['error'])}"
-                )
-                break
-        finality_status = payload.get("result", {}).get("finality_status")
-        execution_status = payload.get("result", {}).get("execution_status")
-        if finality_status is not None:
-            finality_status = TransactionStatus(finality_status)
-        if execution_status is not None:
-            execution_status = TransactionStatus(execution_status)
-        elapsed = (datetime.now() - start).total_seconds()
-    return (
-        "✅"
-        if (
-            finality_status == TransactionStatus.ACCEPTED_ON_L2
-            and execution_status == TransactionStatus.SUCCEEDED
-        )
-        else "❌"
-    )
+        return "✅"
+    except Exception as e:
+        logger.error(f"Error while waiting for transaction {tx_hash}: {e}")
+        return "❌"

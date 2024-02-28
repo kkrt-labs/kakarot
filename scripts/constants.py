@@ -30,7 +30,7 @@ NETWORKS = {
         "explorer_url": "https://testnet.starkscan.co",
         "rpc_url": f"https://starknet-goerli.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "devnet": False,
-        "chain_id": StarknetChainId.TESTNET,
+        "chain_id": StarknetChainId.GOERLI,
     },
     "starknet-devnet": {
         "name": "starknet-devnet",
