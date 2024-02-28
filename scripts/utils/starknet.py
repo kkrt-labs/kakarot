@@ -105,7 +105,7 @@ async def get_starknet_account(
                 in message
                 or "Client failed with code 21: Invalid message selector." in message
                 or "StarknetErrorCode.ENTRY_POINT_NOT_FOUND_IN_CONTRACT" in message
-                or ("code 40" and "not found in contract") in message
+                or ("code 40" in message and "not found in contract" in message)
             ):
                 continue
             else:
@@ -179,11 +179,13 @@ async def fund_address(
         prepared = eth_contract.functions["transfer"].prepare_invoke_v1(
             address, int_to_uint256(amount)
         )
-        tx = await prepared.invoke(
-            max_fee=_max_fee,
-        )
+        tx = await prepared.invoke(max_fee=_max_fee)
 
-        receipt = await RPC_CLIENT.wait_for_tx(tx.hash, check_interval=0.1, retries=50)
+        receipt = await RPC_CLIENT.wait_for_tx(
+            tx.hash,
+            check_interval=NETWORK["check_interval"],
+            retries=int(NETWORK["max_wait"] / NETWORK["check_interval"]),
+        )
         status = "✅" if receipt.revert_reason is None else "❌"
         logger.info(
             f"{status} {amount / 1e18} ETH sent from {hex(account.address)} to {hex(address)}"
@@ -355,7 +357,11 @@ async def deploy_starknet_account(class_hash=None, private_key=None, amount=1):
         constructor_calldata=constructor_calldata,
         max_fee=_max_fee,
     )
-    receipt = await RPC_CLIENT.wait_for_tx(res.hash, check_interval=0.1, retries=50)
+    receipt = await RPC_CLIENT.wait_for_tx(
+        res.hash,
+        check_interval=NETWORK["check_interval"],
+        retries=int(NETWORK["max_wait"] / NETWORK["check_interval"]),
+    )
     status = (
         "✅"
         if (
@@ -451,7 +457,9 @@ async def declare(contract):
         deployed_class_hash = resp.class_hash
 
     receipt = await RPC_CLIENT.wait_for_tx(
-        resp.transaction_hash, check_interval=0.1, retries=50
+        resp.transaction_hash,
+        check_interval=NETWORK["check_interval"],
+        retries=int(NETWORK["max_wait"] / NETWORK["check_interval"]),
     )
     if receipt.revert_reason is not None:
         logger.error(f"❌ Declaration failed: {receipt.revert_reason}")
@@ -485,7 +493,9 @@ async def deploy(contract_name, *args):
         cairo_version=cairo_version.value,
     )
     receipt = await RPC_CLIENT.wait_for_tx(
-        deploy_result.hash, check_interval=0.1, retries=50
+        deploy_result.hash,
+        check_interval=NETWORK["check_interval"],
+        retries=int(NETWORK["max_wait"] / NETWORK["check_interval"]),
     )
     status = "✅" if receipt.revert_reason is None else "❌"
     logger.info(
@@ -540,7 +550,9 @@ async def invoke(contract: Union[str, int], *args, **kwargs):
         else invoke_contract(contract, *args, **kwargs)
     )
     receipt = await RPC_CLIENT.wait_for_tx(
-        response.transaction_hash, check_interval=0.1, retries=50
+        response.transaction_hash,
+        check_interval=NETWORK["check_interval"],
+        retries=int(NETWORK["max_wait"] / NETWORK["check_interval"]),
     )
     status = "✅" if receipt.revert_reason is None else "❌"
     logger.info(

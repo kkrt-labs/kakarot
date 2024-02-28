@@ -9,6 +9,7 @@ from eth_utils.address import to_checksum_address
 from starknet_py.contract import Contract
 from starknet_py.net.account.account import Account
 
+from scripts.constants import NETWORK
 from tests.utils.helpers import generate_random_private_key
 
 logging.basicConfig()
@@ -179,7 +180,11 @@ def deploy_externally_owned_account(kakarot: Contract, max_fee: int):
         tx = await kakarot.functions["deploy_externally_owned_account"].invoke_v1(
             evm_address, max_fee=max_fee
         )
-        await RPC_CLIENT.wait_for_tx(tx.hash, check_interval=0.1, retries=50)
+        await RPC_CLIENT.wait_for_tx(
+            tx.hash,
+            check_interval=NETWORK["check_interval"],
+            retries=int(NETWORK["max_wait"] / NETWORK["check_interval"]),
+        )
         return tx
 
     return _factory

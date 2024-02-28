@@ -340,7 +340,9 @@ async def eth_send_transaction(
     response = await evm_account.client.send_transaction(prepared_invoke)
 
     await RPC_CLIENT.wait_for_tx(
-        tx_hash=response.transaction_hash, check_interval=0.1, retries=50
+        tx_hash=response.transaction_hash,
+        check_interval=NETWORK["check_interval"],
+        retries=int(NETWORK["max_wait"] / NETWORK["check_interval"]),
     )
     receipt = await RPC_CLIENT.get_transaction_receipt(response.transaction_hash)
     transaction_events = [
