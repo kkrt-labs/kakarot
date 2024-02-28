@@ -15,7 +15,7 @@ from hexbytes import HexBytes
 from starknet_py.net.account.account import Account
 from starknet_py.net.client_errors import ClientError
 from starknet_py.net.client_models import Call, Event
-from starknet_py.net.models.transaction import Invoke
+from starknet_py.net.models.transaction import InvokeV1
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starkware.starknet.public.abi import starknet_keccak
 from web3 import Web3
@@ -329,7 +329,7 @@ async def eth_send_transaction(
     )
     # We need to reconstruct the prepared_invoke with the new signature
     # And Invoke.signature is Frozen
-    prepared_invoke = Invoke(
+    prepared_invoke = InvokeV1(
         version=prepared_invoke.version,
         max_fee=prepared_invoke.max_fee,
         signature=[*int_to_uint256(evm_tx.r), *int_to_uint256(evm_tx.s), evm_tx.v],

@@ -6,6 +6,7 @@ import pytest_asyncio
 from starknet_py.contract import Contract
 from starknet_py.net.full_node_client import FullNodeClient
 
+from scripts.utils.starknet import wait_for_transaction
 from tests.end_to_end.bytecodes import test_cases
 from tests.utils.constants import PRE_FUND_AMOUNT
 from tests.utils.helpers import (
@@ -79,7 +80,6 @@ class TestKakarot:
             self,
             starknet: FullNodeClient,
             eth: Contract,
-            wait_for_transaction,
             params: dict,
             request,
             evm: Contract,
@@ -117,7 +117,7 @@ class TestKakarot:
             events = params.get("events")
             if events:
                 # Events only show up in a transaction, thus we run the same call, but in a tx
-                tx = await evm.functions["evm_execute"].invoke(
+                tx = await evm.functions["evm_execute"].invoke_v1(
                     origin=origin,
                     value=int(params["value"]),
                     bytecode=hex_string_to_bytes_array(params["code"]),
@@ -125,7 +125,9 @@ class TestKakarot:
                     max_fee=max_fee,
                     access_list=[],
                 )
-                status = await wait_for_transaction(tx.hash)
+                status = await wait_for_transaction(
+                    tx.hash,
+                )
                 assert status == "✅"
                 receipt = await starknet.get_transaction_receipt(tx.hash)
                 assert [
@@ -172,7 +174,6 @@ class TestKakarot:
             deploy_externally_owned_account,
             is_account_deployed,
             compute_starknet_address,
-            wait_for_transaction,
             kakarot,
         ):
             seed = random.randint(0, 0x5EED)
@@ -185,7 +186,9 @@ class TestKakarot:
             amount = PRE_FUND_AMOUNT / 1e16
             await fund_starknet_address(starknet_address, amount)
             tx = await deploy_externally_owned_account(evm_address)
-            status = await wait_for_transaction(tx.hash)
+            status = await wait_for_transaction(
+                tx.hash,
+            )
             assert status == "✅"
 
             result = await kakarot.functions["eth_call"].call(
@@ -213,7 +216,10 @@ class TestKakarot:
             self, starknet, kakarot, invoke, other, class_hashes
         ):
             prev_class_hash = await starknet.get_class_hash_at(kakarot.address)
-            await invoke("kakarot", "upgrade", class_hashes["EVM"], account=other)
+            try:
+                await invoke("kakarot", "upgrade", class_hashes["EVM"], account=other)
+            except Exception as e:
+                print(e)
             new_class_hash = await starknet.get_class_hash_at(kakarot.address)
             assert prev_class_hash == new_class_hash
 

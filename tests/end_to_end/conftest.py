@@ -9,6 +9,7 @@ from eth_utils.address import to_checksum_address
 from starknet_py.contract import Contract
 from starknet_py.net.account.account import Account
 
+from scripts.utils.starknet import wait_for_transaction
 from tests.utils.helpers import generate_random_private_key
 
 logging.basicConfig()
@@ -167,19 +168,7 @@ def compute_starknet_address(kakarot: Contract):
 
 
 @pytest.fixture(scope="session")
-def wait_for_transaction():
-    from scripts.utils.starknet import wait_for_transaction
-
-    async def _factory(*args, **kwargs):
-        return await wait_for_transaction(*args, **kwargs)
-
-    return _factory
-
-
-@pytest.fixture(scope="session")
-def deploy_externally_owned_account(
-    kakarot: Contract, max_fee: int, wait_for_transaction
-):
+def deploy_externally_owned_account(kakarot: Contract, max_fee: int):
     """
     Isolate the starknet-py logic and make the test agnostic of the backend.
     """
@@ -187,10 +176,12 @@ def deploy_externally_owned_account(
     async def _factory(evm_address: Union[int, str]):
         if isinstance(evm_address, str):
             evm_address = int(evm_address, 16)
-        tx = await kakarot.functions["deploy_externally_owned_account"].invoke(
+        tx = await kakarot.functions["deploy_externally_owned_account"].invoke_v1(
             evm_address, max_fee=max_fee
         )
-        await wait_for_transaction(tx.hash)
+        await wait_for_transaction(
+            tx.hash,
+        )
         return tx
 
     return _factory
