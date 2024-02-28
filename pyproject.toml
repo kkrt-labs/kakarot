@@ -8,7 +8,7 @@ packages = [{ include = "scripts" }, { include = "tests" }]
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.10"
-starknet-py = "^0.18.3"
+starknet-py = "^0.20.0"
 cairo-lang = "0.13.0"
 python-dotenv = "^0.21.0"
 async-lru = "^2.0.4"
