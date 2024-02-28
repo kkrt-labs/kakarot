@@ -34,6 +34,7 @@ from scripts.utils.starknet import fund_address as _fund_starknet_address
 from scripts.utils.starknet import get_contract as _get_starknet_contract
 from scripts.utils.starknet import get_deployments
 from scripts.utils.starknet import invoke as _invoke_starknet
+from scripts.utils.starknet import wait_for_transaction
 from tests.utils.helpers import rlp_encode_signed_data
 from tests.utils.uint256 import int_to_uint256
 
@@ -339,10 +340,8 @@ async def eth_send_transaction(
 
     response = await evm_account.client.send_transaction(prepared_invoke)
 
-    await RPC_CLIENT.wait_for_tx(
+    await wait_for_transaction(
         tx_hash=response.transaction_hash,
-        check_interval=NETWORK["check_interval"],
-        retries=int(NETWORK["max_wait"] / NETWORK["check_interval"]),
     )
     receipt = await RPC_CLIENT.get_transaction_receipt(response.transaction_hash)
     transaction_events = [

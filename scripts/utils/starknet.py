@@ -1,3 +1,4 @@
+import functools
 import json
 import logging
 import random
@@ -25,11 +26,7 @@ from starknet_py.hash.sierra_class_hash import compute_sierra_class_hash
 from starknet_py.hash.transaction import TransactionHashPrefix, compute_transaction_hash
 from starknet_py.hash.utils import message_signature
 from starknet_py.net.account.account import Account
-from starknet_py.net.client_models import (
-    Call,
-    DeclareTransactionResponse,
-    TransactionFinalityStatus,
-)
+from starknet_py.net.client_models import Call, DeclareTransactionResponse
 from starknet_py.net.full_node_client import _create_broadcasted_txn
 from starknet_py.net.models.transaction import DeclareV1
 from starknet_py.net.schemas.rpc import DeclareTransactionResponseSchema
@@ -181,12 +178,9 @@ async def fund_address(
         )
         tx = await prepared.invoke(max_fee=_max_fee)
 
-        receipt = await RPC_CLIENT.wait_for_tx(
+        status = await wait_for_transaction(
             tx.hash,
-            check_interval=NETWORK["check_interval"],
-            retries=int(NETWORK["max_wait"] / NETWORK["check_interval"]),
         )
-        status = "✅" if receipt.revert_reason is None else "❌"
         logger.info(
             f"{status} {amount / 1e18} ETH sent from {hex(account.address)} to {hex(address)}"
         )
@@ -357,18 +351,8 @@ async def deploy_starknet_account(class_hash=None, private_key=None, amount=1):
         constructor_calldata=constructor_calldata,
         max_fee=_max_fee,
     )
-    receipt = await RPC_CLIENT.wait_for_tx(
+    status = await wait_for_transaction(
         res.hash,
-        check_interval=NETWORK["check_interval"],
-        retries=int(NETWORK["max_wait"] / NETWORK["check_interval"]),
-    )
-    status = (
-        "✅"
-        if (
-            receipt.revert_reason is None
-            and receipt.finality_status == TransactionFinalityStatus.ACCEPTED_ON_L2
-        )
-        else "❌"
     )
     logger.info(f"{status} Account deployed at address {hex(res.account.address)}")
 
@@ -456,17 +440,13 @@ async def declare(contract):
         )
         deployed_class_hash = resp.class_hash
 
-    receipt = await RPC_CLIENT.wait_for_tx(
+    status = await wait_for_transaction(
         resp.transaction_hash,
-        check_interval=NETWORK["check_interval"],
-        retries=int(NETWORK["max_wait"] / NETWORK["check_interval"]),
     )
-    if receipt.revert_reason is not None:
-        logger.error(f"❌ Declaration failed: {receipt.revert_reason}")
-    else:
-        logger.info(
-            f"✅ {contract['contract_name']} class hash: {hex(resp.class_hash)}"
-        )
+
+    logger.info(
+        f"{status} {contract['contract_name']} class hash: {hex(resp.class_hash)}"
+    )
     return deployed_class_hash
 
 
@@ -492,12 +472,9 @@ async def deploy(contract_name, *args):
         max_fee=_max_fee,
         cairo_version=cairo_version.value,
     )
-    receipt = await RPC_CLIENT.wait_for_tx(
+    status = await wait_for_transaction(
         deploy_result.hash,
-        check_interval=NETWORK["check_interval"],
-        retries=int(NETWORK["max_wait"] / NETWORK["check_interval"]),
     )
-    status = "✅" if receipt.revert_reason is None else "❌"
     logger.info(
         f"{status} {contract_name} deployed at: {hex(deploy_result.deployed_contract.address)}"
     )
@@ -549,12 +526,9 @@ async def invoke(contract: Union[str, int], *args, **kwargs):
         if isinstance(contract, int)
         else invoke_contract(contract, *args, **kwargs)
     )
-    receipt = await RPC_CLIENT.wait_for_tx(
+    status = await wait_for_transaction(
         response.transaction_hash,
-        check_interval=NETWORK["check_interval"],
-        retries=int(NETWORK["max_wait"] / NETWORK["check_interval"]),
     )
-    status = "✅" if receipt.revert_reason is None else "❌"
     logger.info(
         f"{status} {contract}.{args[0]} invoked at tx: %s",
         hex(response.transaction_hash),
@@ -591,3 +565,17 @@ async def call(contract: Union[str, int], *args, **kwargs):
         if isinstance(contract, int)
         else call_contract(contract, *args, **kwargs)
     )
+
+
+@functools.wraps(RPC_CLIENT.wait_for_tx)
+async def wait_for_transaction(tx_hash):
+    try:
+        await RPC_CLIENT.wait_for_tx(
+            tx_hash,
+            check_interval=NETWORK["check_interval"],
+            retries=int(NETWORK["max_wait"] / NETWORK["check_interval"]),
+        )
+        return "✅"
+    except Exception as e:
+        logger.error(f"Error while waiting for transaction {tx_hash}: {e}")
+        return "❌"

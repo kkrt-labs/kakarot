@@ -7,7 +7,7 @@ from starknet_py.contract import Contract
 from starknet_py.net.full_node_client import FullNodeClient
 from starknet_py.transaction_errors import TransactionRevertedError
 
-from scripts.constants import NETWORK, RPC_CLIENT
+from scripts.utils.starknet import wait_for_transaction
 from tests.end_to_end.bytecodes import test_cases
 from tests.utils.constants import PRE_FUND_AMOUNT
 from tests.utils.helpers import (
@@ -126,12 +126,10 @@ class TestKakarot:
                     max_fee=max_fee,
                     access_list=[],
                 )
-                receipt = await RPC_CLIENT.wait_for_tx(
+                status = await wait_for_transaction(
                     tx.hash,
-                    check_interval=NETWORK["check_interval"],
-                    retries=int(NETWORK["max_wait"] / NETWORK["check_interval"]),
                 )
-                assert receipt.revert_reason is None
+                assert status == "✅"
                 receipt = await starknet.get_transaction_receipt(tx.hash)
                 assert [
                     [
@@ -189,12 +187,10 @@ class TestKakarot:
             amount = PRE_FUND_AMOUNT / 1e16
             await fund_starknet_address(starknet_address, amount)
             tx = await deploy_externally_owned_account(evm_address)
-            receipt = await RPC_CLIENT.wait_for_tx(
+            status = await wait_for_transaction(
                 tx.hash,
-                check_interval=NETWORK["check_interval"],
-                retries=int(NETWORK["max_wait"] / NETWORK["check_interval"]),
             )
-            assert receipt.revert_reason is None
+            assert status == "✅"
 
             result = await kakarot.functions["eth_call"].call(
                 nonce=0,
