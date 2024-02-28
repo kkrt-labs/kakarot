@@ -5,7 +5,6 @@ import pytest
 import pytest_asyncio
 from starknet_py.contract import Contract
 from starknet_py.net.full_node_client import FullNodeClient
-from starknet_py.transaction_errors import TransactionRevertedError
 
 from scripts.utils.starknet import wait_for_transaction
 from tests.end_to_end.bytecodes import test_cases
@@ -228,10 +227,7 @@ class TestKakarot:
             self, starknet, kakarot, invoke
         ):
             prev_class_hash = await starknet.get_class_hash_at(kakarot.address)
-            try:
-                await invoke("kakarot", "upgrade", 0xDEAD)
-            except TransactionRevertedError:
-                pass
+            await invoke("kakarot", "upgrade", 0xDEAD)
             new_class_hash = await starknet.get_class_hash_at(kakarot.address)
             assert prev_class_hash == new_class_hash
 
