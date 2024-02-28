@@ -178,9 +178,7 @@ async def fund_address(
         )
         tx = await prepared.invoke(max_fee=_max_fee)
 
-        status = await wait_for_transaction(
-            tx.hash,
-        )
+        status = await wait_for_transaction(tx.hash)
         logger.info(
             f"{status} {amount / 1e18} ETH sent from {hex(account.address)} to {hex(address)}"
         )
@@ -351,9 +349,7 @@ async def deploy_starknet_account(class_hash=None, private_key=None, amount=1):
         constructor_calldata=constructor_calldata,
         max_fee=_max_fee,
     )
-    status = await wait_for_transaction(
-        res.hash,
-    )
+    status = await wait_for_transaction(res.hash)
     logger.info(f"{status} Account deployed at address {hex(res.account.address)}")
 
     return {
@@ -440,9 +436,7 @@ async def declare(contract):
         )
         deployed_class_hash = resp.class_hash
 
-    status = await wait_for_transaction(
-        resp.transaction_hash,
-    )
+    status = await wait_for_transaction(resp.transaction_hash)
 
     logger.info(
         f"{status} {contract['contract_name']} class hash: {hex(resp.class_hash)}"
@@ -472,9 +466,7 @@ async def deploy(contract_name, *args):
         max_fee=_max_fee,
         cairo_version=cairo_version.value,
     )
-    status = await wait_for_transaction(
-        deploy_result.hash,
-    )
+    status = await wait_for_transaction(deploy_result.hash)
     logger.info(
         f"{status} {contract_name} deployed at: {hex(deploy_result.deployed_contract.address)}"
     )
@@ -526,9 +518,7 @@ async def invoke(contract: Union[str, int], *args, **kwargs):
         if isinstance(contract, int)
         else invoke_contract(contract, *args, **kwargs)
     )
-    status = await wait_for_transaction(
-        response.transaction_hash,
-    )
+    status = await wait_for_transaction(response.transaction_hash)
     logger.info(
         f"{status} {contract}.{args[0]} invoked at tx: %s",
         hex(response.transaction_hash),

@@ -340,9 +340,7 @@ async def eth_send_transaction(
 
     response = await evm_account.client.send_transaction(prepared_invoke)
 
-    await wait_for_transaction(
-        tx_hash=response.transaction_hash,
-    )
+    await wait_for_transaction(tx_hash=response.transaction_hash)
     receipt = await RPC_CLIENT.get_transaction_receipt(response.transaction_hash)
     transaction_events = [
         event
