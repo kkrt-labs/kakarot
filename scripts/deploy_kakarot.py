@@ -1,23 +1,23 @@
 # %% Imports
 import logging
-import os
 from asyncio import run
 
 from scripts.constants import (
     DECLARED_CONTRACTS,
-    DEPLOYER_ACCOUNT_PRIVATE_KEY,
     ETH_TOKEN_ADDRESS,
     EVM_ADDRESS,
     NETWORK,
+    RPC_CLIENT,
 )
 from scripts.utils.starknet import (
     declare,
     deploy,
-    deploy_starknet_account,
     dump_declarations,
     dump_deployments,
     get_declarations,
+    get_deployments,
     get_starknet_account,
+    invoke,
 )
 
 logging.basicConfig()
@@ -40,27 +40,36 @@ async def main():
     # %% Deployments
     class_hash = get_declarations()
 
-    deployments = {}
-    deployments["kakarot"] = await deploy(
-        "kakarot",
-        account.address,  # owner
-        ETH_TOKEN_ADDRESS,  # native_token_address_
-        class_hash["contract_account"],  # contract_account_class_hash_
-        class_hash["externally_owned_account"],  # externally_owned_account_class_hash
-        class_hash["proxy"],  # account_proxy_class_hash
-        class_hash["Precompiles"],
-    )
+    deployments = get_deployments()
+    if deployments.get("kakarot") and not NETWORK["devnet"]:
+        logger.info("ℹ️  Kakarot already deployed, checking version.")
+        deployed_class_hash = await RPC_CLIENT.get_class_hash_at(
+            deployments["kakarot"]["address"]
+        )
+        if deployed_class_hash != class_hash["kakarot"]:
+            await invoke("kakarot", "upgrade", class_hash["kakarot"])
+        else:
+            logger.info("✅ Kakarot already up to date.")
+    else:
+        deployments["kakarot"] = await deploy(
+            "kakarot",
+            account.address,  # owner
+            ETH_TOKEN_ADDRESS,  # native_token_address_
+            class_hash["contract_account"],  # contract_account_class_hash_
+            class_hash[
+                "externally_owned_account"
+            ],  # externally_owned_account_class_hash
+            class_hash["proxy"],  # account_proxy_class_hash
+            class_hash["Precompiles"],
+        )
 
-    if NETWORK["name"] in ["madara", "katana", os.getenv("RPC_NAME", "custom-rpc")]:
+    if NETWORK["devnet"]:
         deployments["EVM"] = await deploy(
             "EVM",
             ETH_TOKEN_ADDRESS,  # native_token_address_
             class_hash["contract_account"],  # contract_account_class_hash_
             class_hash["proxy"],  # account_proxy_class_hash
             class_hash["Precompiles"],
-        )
-        deployments["deployer_account"] = await deploy_starknet_account(
-            class_hash["OpenzeppelinAccount"], private_key=DEPLOYER_ACCOUNT_PRIVATE_KEY
         )
 
     dump_deployments(deployments)

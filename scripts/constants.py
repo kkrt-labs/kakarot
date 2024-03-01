@@ -67,7 +67,7 @@ NETWORKS = {
     "kakarot-sepolia": {
         "name": "kakarot-sepolia",
         "explorer_url": "",
-        "rpc_url": os.getenv("KAKAROT_RPC_URL"),
+        "rpc_url": os.getenv("KAKAROT_SEPOLIA_RPC_URL"),
         "devnet": False,
         "check_interval": 6,
         "max_wait": 30,
@@ -182,9 +182,3 @@ if NETWORK.get("chain_id"):
     logger.info(
         f"ℹ️  Connected to CHAIN_ID {NETWORK['chain_id'].value.to_bytes(ceil(log(NETWORK['chain_id'].value, 256)), 'big')}"
     )
-
-# private key for the deployer account for Madara and Katana, generated via starkli
-# the account will be used at RPC for deploying EOA and will be deployed and funded via ./scripts/deploy_kakarot.py
-DEPLOYER_ACCOUNT_PRIVATE_KEY = (
-    "0x0288a51c164874bb6a1ca7bd1cb71823c234a86d0f7b150d70fa8f06de645396"
-)

@@ -8,6 +8,7 @@ venv
 
 # starknet
 deployments
+!deployments/kakarot-sepolia/
 artifacts
 build
 

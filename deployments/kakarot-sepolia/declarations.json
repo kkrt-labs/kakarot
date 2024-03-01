@@ -1,0 +1,10 @@
+{
+  "kakarot": "0x5c62f3510c8090a8468d8d3b4c3add7f8e605ecc054cc706686dfa3b382e1cc",
+  "contract_account": "0x34e8e05a28a6ac98118860ae0cca56487e2f0a3589a4b713a0f19ccda3386d9",
+  "externally_owned_account": "0x2ab68b7f5cea86752714b499f602cdb8c36e8cdf270f04b6a275b609baf7aea",
+  "proxy": "0x5bcd4d02cfe3aeb836f2ef4bd21b2020793e52a8269dbef9cd883fbddd2963c",
+  "EVM": "0x7efd13e916e989f0bd6fcb7be607ca095099b5bbcaa0cd7b8c20e81ac1a2028",
+  "OpenzeppelinAccount": "0x452189b6cd1ef66a7daef29cbffb77ce809cac95449687aabb169117c04e2f9",
+  "Precompiles": "0x4afd993d1327dcae9a307a91447b62537ca1f683ed78757f25cecc19e05b4de",
+  "replace_class": "0x5cd1a33bc766f50965fe2343e6aec12a12c562b3bb653085b88dc6751b71682"
+}

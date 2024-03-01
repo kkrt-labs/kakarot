@@ -46,9 +46,10 @@ if not NETWORK["devnet"]:
     try:
         fetch_deployments()
     except Exception as e:
-        logger.warn(
-            f"Using network {NETWORK['name']}, couldn't fetch deployment, error:\n{e}"
-        )
+        if not get_deployments():
+            logger.warn(
+                f"Using network {NETWORK['name']}, couldn't fetch deployment, error:\n{e}"
+            )
 
 try:
     FOUNDRY_FILE = toml.loads((Path(__file__).parents[2] / "foundry.toml").read_text())
