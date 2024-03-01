@@ -41,7 +41,7 @@ async def main():
     class_hash = get_declarations()
 
     deployments = get_deployments()
-    if deployments.get("kakarot"):
+    if deployments.get("kakarot") and not NETWORK["devnet"]:
         logger.info("ℹ️  Kakarot already deployed, checking version.")
         deployed_class_hash = await RPC_CLIENT.get_class_hash_at(
             deployments["kakarot"]["address"]
@@ -72,13 +72,13 @@ async def main():
             class_hash["Precompiles"],
         )
 
-        if EVM_ADDRESS:
-            logger.info(f"ℹ️  Found default EVM address {EVM_ADDRESS}")
-            from scripts.utils.kakarot import get_eoa
-
-            await get_eoa(amount=100)
-
     dump_deployments(deployments)
+
+    if EVM_ADDRESS:
+        logger.info(f"ℹ️  Found default EVM address {EVM_ADDRESS}")
+        from scripts.utils.kakarot import get_eoa
+
+        await get_eoa(amount=100)
 
 
 # %% Run
