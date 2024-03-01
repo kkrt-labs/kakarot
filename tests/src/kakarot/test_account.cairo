@@ -5,9 +5,11 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.dict import dict_read
 from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from starkware.cairo.common.dict_access import DictAccess
+from starkware.cairo.common.memcpy import memcpy
 
 from kakarot.model import model
 from kakarot.account import Account
+from utils.dict import dict_keys
 
 func test__init__should_return_account_with_default_dict_as_storage{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -192,4 +194,22 @@ func test__has_code_or_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
 
     // Then
     return result;
+}
+
+func test__get_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(output_ptr: felt*) {
+    alloc_locals;
+
+    tempvar bytecode_len;
+    let (bytecode) = alloc();
+
+    %{
+        ids.bytecode_len = len(program_input["bytecode"])
+        segments.write_arg(ids.bytecode, program_input["bytecode"])
+    %}
+
+    let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(bytecode_len, bytecode);
+    let (keys_len, keys) = dict_keys(valid_jumpdests_start, valid_jumpdests);
+    memcpy(output_ptr, keys, keys_len);
+
+    return ();
 }
