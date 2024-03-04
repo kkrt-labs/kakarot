@@ -126,8 +126,6 @@ testname:
   stInitCodeTest:
     - OutOfGasPrefundedContractCreation_d0g0v0_Shanghai
     - OutOfGasPrefundedContractCreation_d0g2v0_Shanghai
-  stMemExpandingEIP150Calls:
-    - NewGasPriceForCodesWithMemExpandingCalls_d0g0v0_Shanghai
   stNonZeroCallsTest:
     - NonZeroValue_CALL_ToEmpty_d0g0v0_Shanghai
   stPreCompiledContracts2:

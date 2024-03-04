@@ -173,7 +173,7 @@ namespace EnvironmentalInformation {
         let offset = popped[1];
         let size = popped[2];
 
-        let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
+        let memory_expansion = Gas.memory_expansion_cost_saturated(
             memory.words_len, dest_offset, size
         );
 
@@ -185,7 +185,7 @@ namespace EnvironmentalInformation {
 
         // static cost handled in jump table
         let evm = EVM.charge_gas(
-            evm, memory_expansion_cost + copy_gas_cost_low + copy_gas_cost_high
+            evm, memory_expansion.cost + copy_gas_cost_low + copy_gas_cost_high
         );
         if (evm.reverted != FALSE) {
             return evm;
@@ -340,12 +340,12 @@ namespace EnvironmentalInformation {
         let copy_gas_cost_low = words * Gas.COPY;
         tempvar copy_gas_cost_high = is_not_zero(size.high) * 2 ** 128;
 
-        let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
+        let memory_expansion = Gas.memory_expansion_cost_saturated(
             memory.words_len, dest_offset, size
         );
 
         let evm = EVM.charge_gas(
-            evm, access_gas_cost + copy_gas_cost_low + copy_gas_cost_high + memory_expansion_cost
+            evm, access_gas_cost + copy_gas_cost_low + copy_gas_cost_high + memory_expansion.cost
         );
         if (evm.reverted != FALSE) {
             return evm;

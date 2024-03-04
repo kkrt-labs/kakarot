@@ -32,10 +32,10 @@ namespace MemoryOperations {
 
         let (offset) = Stack.pop();
 
-        let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
+        let memory_expansion = Gas.memory_expansion_cost_saturated(
             memory.words_len, [offset], Uint256(32, 0)
         );
-        let evm = EVM.charge_gas(evm, memory_expansion_cost);
+        let evm = EVM.charge_gas(evm, memory_expansion.cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
@@ -61,10 +61,10 @@ namespace MemoryOperations {
         let offset = popped[0];
         let value = popped[1];
 
-        let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
+        let memory_expansion = Gas.memory_expansion_cost_saturated(
             memory.words_len, offset, Uint256(32, 0)
         );
-        let evm = EVM.charge_gas(evm, memory_expansion_cost);
+        let evm = EVM.charge_gas(evm, memory_expansion.cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
@@ -196,10 +196,10 @@ namespace MemoryOperations {
         let offset = popped[0];
         let value = popped[1];
 
-        let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
+        let memory_expansion = Gas.memory_expansion_cost_saturated(
             memory.words_len, offset, Uint256(1, 0)
         );
-        let evm = EVM.charge_gas(evm, memory_expansion_cost);
+        let evm = EVM.charge_gas(evm, memory_expansion.cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
