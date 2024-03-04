@@ -18,7 +18,9 @@ class Serde:
         identifiers = [
             value
             for key, value in self.runner.program.identifiers.as_dict().items()
-            if struct_name in str(key) and isinstance(value, expected_type)
+            if struct_name in str(key)
+            and isinstance(value, expected_type)
+            and struct_name.split(".")[-1] == str(key).split(".")[-1]
         ]
         if len(identifiers) != 1:
             raise ValueError(
