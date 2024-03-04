@@ -291,10 +291,6 @@ testname:
   stSpecialTest:
     - JUMPDEST_Attack_d0g0v0_Shanghai
     - JUMPDEST_AttackwithJump_d0g0v0_Shanghai
-    - eoaEmpty_d0g0v1_Shanghai
-    - eoaEmpty_d0g1v0_Shanghai
-    - eoaEmpty_d1g0v1_Shanghai
-    - eoaEmpty_d1g1v0_Shanghai
     - sha3_deja_d0g0v0_Shanghai
   stStaticCall:
     - StaticcallToPrecompileFromCalledContract_d0g0v0_Shanghai

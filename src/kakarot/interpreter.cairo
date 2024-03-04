@@ -841,11 +841,12 @@ namespace Interpreter {
                 let evm = EVM.halt_validation_failed(evm);
                 return (evm, stack, memory, state, gas_limit);
             }
+            let (balance_post_value_transfer) = uint256_sub([sender.balance], [value]);
 
             let effective_gas_fee = gas_limit * env.gas_price;
             let (fee_high, fee_low) = split_felt(effective_gas_fee);
             let fee_u256 = Uint256(low=fee_low, high=fee_high);
-            let (can_pay_gasfee) = uint256_le(fee_u256, [sender.balance]);
+            let (can_pay_gasfee) = uint256_le(fee_u256, balance_post_value_transfer);
             if (can_pay_gasfee == FALSE) {
                 let evm = EVM.halt_validation_failed(evm);
                 return (evm, stack, memory, state, gas_limit);
