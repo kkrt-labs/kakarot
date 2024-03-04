@@ -37,7 +37,7 @@ test: build-sol deploy
 	poetry run pytest tests/src -m "not NoCI" --log-cli-level=INFO -n logical
 	poetry run pytest tests/end_to_end
 
-test-unit:
+test-unit: build-sol
 	poetry run pytest tests/src -m "not NoCI" -n logical
 
 test-end-to-end: build-sol deploy

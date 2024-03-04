@@ -7,7 +7,6 @@ from kakarot.evm import EVM
 from kakarot.model import model
 from tests.utils.helpers import TestHelpers
 
-
 func test__jump{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> model.EVM* {
     alloc_locals;
     local bytecode_len: felt;

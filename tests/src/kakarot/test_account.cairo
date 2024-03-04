@@ -196,7 +196,9 @@ func test__has_code_or_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, ran
     return result;
 }
 
-func test__get_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(output_ptr: felt*) {
+func test__get_jumpdests{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    output_ptr: felt*
+) {
     alloc_locals;
 
     tempvar bytecode_len;
