@@ -3,6 +3,14 @@ from starkware.cairo.common.dict import DictAccess
 from starkware.cairo.common.uint256 import Uint256
 
 namespace model {
+    // @notice Represents the cost and size of a memory expansion operation.
+    // @param cost The cost of the memory expansion operation.
+    // @param new_words_len The number of words in the memory post-expansion.
+    struct MemoryExpansion {
+        cost: felt,
+        new_words_len: felt,
+    }
+
     // @notice: Represents an optional value.
     // @param is_some A boolean indicating whether the value is present.
     // @param value The value (if applicable).

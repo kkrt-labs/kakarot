@@ -73,19 +73,24 @@ namespace Gas {
     // @notice Compute the expansion cost of max_offset for the the memory
     // @param words_len The current length of the memory.
     // @param max_offset The target max_offset to be applied to the given memory.
-    // @return cost The current expansion gas cost. 0 if no expansion is triggered.
-    func calculate_gas_extend_memory{range_check_ptr}(words_len: felt, max_offset: felt) -> felt {
+    // @return cost The expansion gas cost: 0 if no expansion is triggered, and the new size of the memory
+    func calculate_gas_extend_memory{range_check_ptr}(
+        words_len: felt, max_offset: felt
+    ) -> model.MemoryExpansion {
         alloc_locals;
         let memory_expansion = is_le(words_len * 32 - 1, max_offset);
         if (memory_expansion == FALSE) {
-            return 0;
+            let expansion = model.MemoryExpansion(cost=0, new_words_len=words_len);
+            return expansion;
         }
 
         let prev_cost = memory_cost(words_len);
         let (new_words_len, _) = unsigned_div_rem(max_offset + 31, 32);
         let new_cost = memory_cost(new_words_len);
 
-        return new_cost - prev_cost;
+        let expansion_cost = new_cost - prev_cost;
+        let expansion = model.MemoryExpansion(cost=expansion_cost, new_words_len=new_words_len);
+        return expansion;
     }
 
     // @notive A saturated version of the memory_expansion_cost function
@@ -93,17 +98,21 @@ namespace Gas {
     // @param words_len The current length of the memory as Uint256.
     // @param offset An offset to be applied to the given memory as Uint256.
     // @param size The size of the memory chunk.
-    // @return cost The current expansion gas cost.
+    // @return cost The expansion gas cost: 0 if no expansion is triggered, and the new size of the memory
     func memory_expansion_cost_saturated{range_check_ptr}(
         words_len: felt, offset: Uint256, size: Uint256
-    ) -> felt {
+    ) -> model.MemoryExpansion {
         if (size.low == 0) {
-            return 0;
+            let expansion = model.MemoryExpansion(cost=0, new_words_len=words_len);
+            return expansion;
         }
 
         if (offset.high + size.high != 0) {
-            // Hardcoded value of cost(2^128)
-            return MEMORY_COST_U128;
+            // Hardcoded value of cost(2^128) and size of 2**128 bytes (will produce OOG in any case)
+            let expansion = model.MemoryExpansion(
+                cost=MEMORY_COST_U128, new_words_len=0x8000000000000000000000000000000
+            );
+            return expansion;
         }
 
         return calculate_gas_extend_memory(words_len, offset.low + size.low);
@@ -120,22 +129,25 @@ namespace Gas {
     // @param size_1 The size of the first memory chunk as Uint256.
     // @param offset_2 The offset of the second memory chunk as Uint256.
     // @param size_2 The size of the second memory chunk as Uint256.
-    // @return cost The expansion gas cost for chunk who's ending offset is the largest.
+    // @return cost The expansion gas cost for chunk who's ending offset is the largest and the new size of the memory
     func max_memory_expansion_cost{range_check_ptr}(
         words_len: felt, offset_1: Uint256*, size_1: Uint256*, offset_2: Uint256*, size_2: Uint256*
-    ) -> felt {
+    ) -> model.MemoryExpansion {
         alloc_locals;
         let max_expansion_is_2 = is_le(offset_1.low + size_1.low, offset_2.low + size_2.low);
         let max_expansion = max_expansion_is_2 * (offset_2.low + size_2.low) + (
             1 - max_expansion_is_2
         ) * (offset_1.low + size_1.low);
 
-        let memory_expansion_cost = calculate_gas_extend_memory(words_len, max_expansion);
-        let memory_expansion_cost = memory_expansion_cost + (
+        let low_expansion = calculate_gas_extend_memory(words_len, max_expansion);
+        let expansion_cost = low_expansion.cost + (
             offset_1.high + size_1.high + offset_2.high + size_2.high
         ) * Gas.MEMORY_COST_U128;
 
-        return memory_expansion_cost;
+        let expansion = model.MemoryExpansion(
+            cost=expansion_cost, new_words_len=low_expansion.new_words_len
+        );
+        return expansion;
     }
 
     // @notice Computes the base gas of a message call.

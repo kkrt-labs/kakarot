@@ -33,14 +33,12 @@ namespace Sha3 {
         let offset = popped[0];
         let size = popped[1];
 
-        let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
-            memory.words_len, offset, size
-        );
+        let memory_expansion = Gas.memory_expansion_cost_saturated(memory.words_len, offset, size);
         let (words, _) = unsigned_div_rem(size.low + 31, 32);
         let words_gas_cost_low = Gas.KECCAK256_WORD * words;
         tempvar words_gas_cost_high = is_not_zero(size.high) * 2 ** 128;
         let evm = EVM.charge_gas(
-            evm, memory_expansion_cost + words_gas_cost_low + words_gas_cost_high
+            evm, memory_expansion.cost + words_gas_cost_low + words_gas_cost_high
         );
         if (evm.reverted != FALSE) {
             return evm;

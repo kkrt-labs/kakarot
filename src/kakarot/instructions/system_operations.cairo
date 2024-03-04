@@ -61,15 +61,13 @@ namespace SystemOperations {
         // + extend_memory.cost
         // + init_code_gas
         // + is_create2 * GAS_KECCAK256_WORD * call_data_words
-        let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
-            memory.words_len, offset, size
-        );
+        let memory_expansion = Gas.memory_expansion_cost_saturated(memory.words_len, offset, size);
         let (calldata_words, _) = unsigned_div_rem(size.low + 31, 32);
         let init_code_gas_low = Gas.INIT_CODE_WORD_COST * calldata_words;
         tempvar init_code_gas_high = is_not_zero(size.high) * 2 ** 128;
         let calldata_word_gas = is_create2 * Gas.KECCAK256_WORD * calldata_words;
         let evm = EVM.charge_gas(
-            evm, memory_expansion_cost + init_code_gas_low + init_code_gas_high + calldata_word_gas
+            evm, memory_expansion.cost + init_code_gas_low + init_code_gas_high + calldata_word_gas
         );
         if (evm.reverted != FALSE) {
             return evm;
@@ -110,7 +108,12 @@ namespace SystemOperations {
 
         let evm = EVM.charge_gas(evm, gas_limit);
 
-        // Check target account availabitliy
+        // Operation
+        tempvar memory = new model.Memory(
+            memory.word_dict_start, memory.word_dict, memory_expansion.new_words_len
+        );
+
+        // Check target account availability
         let is_collision = Account.has_code_or_nonce(target_account);
         if (is_collision != 0) {
             let sender = Account.set_nonce(sender, sender.nonce + 1);
@@ -230,10 +233,8 @@ namespace SystemOperations {
         let offset = popped[0];
         let size = popped[1];
 
-        let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
-            memory.words_len, offset, size
-        );
-        let evm = EVM.charge_gas(evm, memory_expansion_cost);
+        let memory_expansion = Gas.memory_expansion_cost_saturated(memory.words_len, offset, size);
+        let evm = EVM.charge_gas(evm, memory_expansion.cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
@@ -269,10 +270,8 @@ namespace SystemOperations {
         let offset = popped[0];
         let size = popped[1];
 
-        let memory_expansion_cost = Gas.memory_expansion_cost_saturated(
-            memory.words_len, offset, size
-        );
-        let evm = EVM.charge_gas(evm, memory_expansion_cost);
+        let memory_expansion = Gas.memory_expansion_cost_saturated(memory.words_len, offset, size);
+        let evm = EVM.charge_gas(evm, memory_expansion.cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
@@ -320,7 +319,7 @@ namespace SystemOperations {
 
         // 2. Gas
         // Memory expansion cost
-        let memory_expansion_cost = Gas.max_memory_expansion_cost(
+        let memory_expansion = Gas.max_memory_expansion_cost(
             memory.words_len, args_offset, args_size, ret_offset, ret_size
         );
 
@@ -341,7 +340,7 @@ namespace SystemOperations {
 
         // Charge the fixed cost of the extra_gas + memory expansion
         tempvar extra_gas = access_gas_cost + create_gas_cost + transfer_gas_cost;
-        let evm = EVM.charge_gas(evm, extra_gas + memory_expansion_cost);
+        let evm = EVM.charge_gas(evm, extra_gas + memory_expansion.cost);
 
         let gas = Gas.compute_message_call_gas(gas_param, evm.gas_left);
 
@@ -354,6 +353,9 @@ namespace SystemOperations {
         }
 
         // Operation
+        tempvar memory = new model.Memory(
+            memory.word_dict_start, memory.word_dict, memory_expansion.new_words_len
+        );
         if (evm.message.read_only * is_value_non_zero != FALSE) {
             // No need to pop
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
@@ -443,7 +445,7 @@ namespace SystemOperations {
 
         // Gas
         // Memory expansion cost
-        let memory_expansion_cost = Gas.max_memory_expansion_cost(
+        let memory_expansion = Gas.max_memory_expansion_cost(
             memory.words_len, args_offset, args_size, ret_offset, ret_size
         );
 
@@ -454,7 +456,7 @@ namespace SystemOperations {
             Gas.COLD_ACCOUNT_ACCESS;
 
         // Charge the fixed cost of the extra_gas + memory expansion
-        let evm = EVM.charge_gas(evm, access_gas_cost + memory_expansion_cost);
+        let evm = EVM.charge_gas(evm, access_gas_cost + memory_expansion.cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
@@ -465,6 +467,10 @@ namespace SystemOperations {
             return evm;
         }
 
+        // Operation
+        tempvar memory = new model.Memory(
+            memory.word_dict_start, memory.word_dict, memory_expansion.new_words_len
+        );
         tempvar is_max_depth_reached = 1 - is_not_zero(
             (Constants.STACK_MAX_DEPTH + 1) - evm.message.depth
         );
@@ -534,7 +540,7 @@ namespace SystemOperations {
         let (ret_size) = Stack.peek(1);
 
         // Gas
-        let memory_expansion_cost = Gas.max_memory_expansion_cost(
+        let memory_expansion = Gas.max_memory_expansion_cost(
             memory.words_len, args_offset, args_size, ret_offset, ret_size
         );
 
@@ -549,7 +555,7 @@ namespace SystemOperations {
         let transfer_gas_cost = is_value_non_zero * Gas.CALL_VALUE;
 
         let extra_gas = access_gas_cost + transfer_gas_cost;
-        let evm = EVM.charge_gas(evm, extra_gas + memory_expansion_cost);
+        let evm = EVM.charge_gas(evm, extra_gas + memory_expansion.cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
@@ -559,9 +565,12 @@ namespace SystemOperations {
         if (evm.reverted != FALSE) {
             return evm;
         }
-
         tempvar gas_stipend = gas + is_value_non_zero * Gas.CALL_STIPEND;
 
+        // Operation
+        tempvar memory = new model.Memory(
+            memory.word_dict_start, memory.word_dict, memory_expansion.new_words_len
+        );
         let sender = State.get_account(evm.message.address.evm);
         let (sender_balance_lt_value) = uint256_lt([sender.balance], [value]);
         tempvar is_max_depth_reached = 1 - is_not_zero(
@@ -632,7 +641,7 @@ namespace SystemOperations {
 
         // Gas
         // Memory expansion cost
-        let memory_expansion_cost = Gas.max_memory_expansion_cost(
+        let memory_expansion = Gas.max_memory_expansion_cost(
             memory.words_len, args_offset, args_size, ret_offset, ret_size
         );
 
@@ -644,7 +653,7 @@ namespace SystemOperations {
 
         // Charge the fixed cost of the extra_gas + memory expansion
         let extra_gas = access_gas_cost;
-        let evm = EVM.charge_gas(evm, extra_gas + memory_expansion_cost);
+        let evm = EVM.charge_gas(evm, extra_gas + memory_expansion.cost);
         if (evm.reverted != FALSE) {
             return evm;
         }
@@ -677,6 +686,9 @@ namespace SystemOperations {
         }
 
         // Operation
+        tempvar memory = new model.Memory(
+            memory.word_dict_start, memory.word_dict, memory_expansion.new_words_len
+        );
         let child_evm = CallHelper.generic_call(
             evm,
             gas,
