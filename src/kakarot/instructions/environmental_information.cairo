@@ -94,12 +94,7 @@ namespace EnvironmentalInformation {
         memory: model.Memory*,
         state: model.State*,
     }(evm: model.EVM*) -> model.EVM* {
-        if (evm.message.depth == 0) {
-            tempvar caller = evm.message.env.origin;
-        } else {
-            tempvar caller = evm.message.parent.evm.message.address.evm;
-        }
-        let address = Helpers.to_uint256(caller);
+        let address = Helpers.to_uint256(evm.message.caller);
         Stack.push(address);
         return evm;
     }

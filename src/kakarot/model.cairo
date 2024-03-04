@@ -113,6 +113,7 @@ namespace model {
         calldata: felt*,
         calldata_len: felt,
         value: Uint256*,
+        caller: felt,
         parent: Parent*,
         address: Address*,
         code_address: felt,
