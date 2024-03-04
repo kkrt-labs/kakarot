@@ -19,6 +19,8 @@ from kakarot.storages import (
     native_token_address,
     precompiles_class_hash,
     coinbase,
+    prev_randao,
+    block_gas_limit,
 )
 from kakarot.interpreter import Interpreter
 from kakarot.instructions.system_operations import CreateHelper
@@ -170,6 +172,44 @@ namespace Kakarot {
     ) {
         let (coinbase_) = coinbase.read();
         return (coinbase_,);
+    }
+
+    // @notice Set the prevrandao.
+    // @param prevrandao_ The new prevrandao.
+    func set_prevrandao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        prevrandao_: felt
+    ) {
+        Ownable.assert_only_owner();
+        prevrandao.write(prevrandao_);
+        return ();
+    }
+
+    // @notice Get the prevrandao.
+    // @return prevrandao The current prevrandao.
+    func get_prevrandao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        prevrandao: felt
+    ) {
+        let (prevrandao_) = prevrandao.read();
+        return (prevrandao_,);
+    }
+
+    // @notice Set the block gas limit.
+    // @param block_gas_limit_ The new block gas limit.
+    func set_block_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        block_gas_limit_: felt
+    ) {
+        Ownable.assert_only_owner();
+        block_gas_limit.write(block_gas_limit_);
+        return ();
+    }
+
+    // @notice Get the block gas limit.
+    // @return block_gas_limit The current block gas limit.
+    func get_block_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        block_gas_limit: felt
+    ) {
+        let (block_gas_limit_) = block_gas_limit.read();
+        return (block_gas_limit_,);
     }
 
     // @notice Deploy a new externally owned account.

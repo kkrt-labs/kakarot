@@ -3,12 +3,14 @@ import logging
 from asyncio import run
 
 from scripts.constants import (
+    BLOCK_GAS_LIMIT,
     DECLARED_CONTRACTS,
     ETH_TOKEN_ADDRESS,
     EVM_ADDRESS,
     NETWORK,
     RPC_CLIENT,
 )
+from scripts.utils.kakarot import set_block_gas_limit
 from scripts.utils.starknet import (
     declare,
     deploy,
@@ -73,6 +75,8 @@ async def main():
         )
 
     dump_deployments(deployments)
+
+    set_block_gas_limit(BLOCK_GAS_LIMIT)
 
     if EVM_ADDRESS:
         logger.info(f"ℹ️  Found default EVM address {EVM_ADDRESS}")

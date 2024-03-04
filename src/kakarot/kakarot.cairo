@@ -109,6 +109,42 @@ func get_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     return Kakarot.get_coinbase();
 }
 
+// @notice Sets the prev randao
+// @param prev_randao_ The new prev randao.
+@external
+func set_prevrandao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    prev_randao_: felt
+) {
+    return Kakarot.set_prevrandao(prev_randao_);
+}
+
+// @notice Get the prev randao.
+// @return prev_randao The current prev randao.
+@view
+func get_prev_randao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    prev_randao: felt
+) {
+    return Kakarot.get_prevrandao();
+}
+
+// @notice Sets the block gas limit.
+// @param gas_limit_ The new block gas limit.
+@external
+func set__block_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    gas_limit_: felt
+) {
+    return Kakarot.set_block_gas_limit(gas_limit_);
+}
+
+// @notice Get the block gas limit.
+// @return gas_limit The current block gas limit.
+@view
+func get_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    gas_limit: felt
+) {
+    return Kakarot.get_block_gas_limit();
+}
+
 // @notice Compute the starknet address of a contract given its EVM address
 // @param evm_address The EVM address of the contract
 // @return contract_address The starknet address of the contract
