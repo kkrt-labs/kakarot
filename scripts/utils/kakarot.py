@@ -140,7 +140,7 @@ async def deploy(
         value=value,
     )
     if success == 0:
-        raise EvmTransactionError(response)
+        raise EvmTransactionError(bytes(response))
 
     starknet_address, evm_address = response
     contract.address = Web3.to_checksum_address(f"0x{evm_address:040x}")
@@ -235,7 +235,7 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
                 access_list=[],
             )
             if result.success == 0:
-                raise EvmTransactionError(result.return_data)
+                raise EvmTransactionError(bytes(result.return_data))
             codec = Web3().codec
             types = [o["type"] for o in abi["outputs"]]
             decoded = codec.decode(types, bytes(result.return_data))
@@ -253,7 +253,7 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
         )
         if success == 0:
             logger.error(f"❌ {self.address}.{fun} failed")
-            raise EvmTransactionError(response)
+            raise EvmTransactionError(bytes(response))
         logger.info(f"✅ {self.address}.{fun}")
         return receipt
 
