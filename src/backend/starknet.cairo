@@ -31,6 +31,8 @@ from kakarot.storages import (
     evm_to_starknet_address,
     coinbase,
     base_fee,
+    block_gas_limit,
+    prev_randao,
 )
 
 namespace Starknet {
@@ -108,18 +110,22 @@ namespace Starknet {
         let (tx_info) = get_tx_info();
         let (coinbase_) = coinbase.read();
         let (base_fee_) = base_fee.read();
+        let (block_gas_limit_) = block_gas_limit.read();
+        let (prev_randao_) = prev_randao.read();
         let (block_hashes) = alloc();
         // TODO: fix how blockhashes are retrieved
         memset(block_hashes, 0, 256 * 2);
 
-        // TODO: fix hardcoded coinbase evm address
+        // No idea why this is required - but trying to pass prev_randao_ directly causes bugs.
+        let prev_randao_ = Uint256(low=prev_randao_.low, high=prev_randao_.high);
+
         return new model.Environment(
             origin=origin,
             gas_price=gas_price,
             chain_id=tx_info.chain_id,
-            prev_randao=Uint256(0, 0),
+            prev_randao=prev_randao_,
             block_number=block_number,
-            block_gas_limit=Constants.BLOCK_GAS_LIMIT,
+            block_gas_limit=block_gas_limit_,
             block_timestamp=block_timestamp,
             block_hashes=cast(block_hashes, Uint256*),
             coinbase=coinbase_,

@@ -6,8 +6,6 @@ filename:
 # List of specific tests names to be skipped with folder
 testname:
   vmTests:
-    - blockInfo_d1g0v0_Shanghai
-    - blockInfo_d2g0v0_Shanghai
     - sha3_d3g0v0_Shanghai
   vmArithmeticTest:
     - expPower256Of256_d0g0v0_Shanghai
