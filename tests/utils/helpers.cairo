@@ -52,6 +52,7 @@ namespace TestHelpers {
             calldata=calldata,
             calldata_len=0,
             value=zero,
+            caller=env.origin,
             parent=cast(0, model.Parent*),
             address=address,
             code_address=evm_contract_address,

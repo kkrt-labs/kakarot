@@ -805,6 +805,7 @@ namespace Interpreter {
             calldata=calldata,
             calldata_len=calldata_len,
             value=value,
+            caller=env.origin,
             parent=cast(0, model.Parent*),
             address=address,
             code_address=code_address,

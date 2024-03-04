@@ -66,9 +66,6 @@ testname:
     - Call1024PreCalls_d0g2v0_Shanghai
     - CallRecursiveBombPreCall_d0g0v0_Shanghai
     - Delegatecall1024_d0g0v0_Shanghai
-    - deleagateCallAfterValueTransfer_d0g0v0_Shanghai
-    - delegatecallInInitcodeToExistingContract_d0g0v0_Shanghai
-    - delegatecallSenderCheck_d0g0v0_Shanghai
   stEIP150Specific:
     - NewGasPriceForCodes_d0g0v0_Shanghai
   stEIP150singleCodeGasPrices:
@@ -319,8 +316,6 @@ testname:
     - static_CallRipemd160_4_gas719_d0g0v0_Shanghai
     - static_CallRipemd160_5_d0g0v0_Shanghai
     - static_CallSha256_5_d0g0v0_Shanghai
-    - static_CheckOpcodes2_d4g0v0_Shanghai
-    - static_CheckOpcodes2_d4g0v1_Shanghai
     - static_LoopCallsThenRevert_d0g0v0_Shanghai
     - static_LoopCallsThenRevert_d0g1v0_Shanghai
     - static_Return50000_2_d0g0v0_Shanghai
@@ -353,10 +348,6 @@ testname:
     - SuicidesAndInternlCallSuicidesSuccess_d0g0v0_Shanghai
     - SuicidesAndInternlCallSuicidesSuccess_d1g0v0_Shanghai
     - ValueOverflow_d0g0v0_Shanghai
-  stTransitionTest:
-    - delegatecallAfterTransition_d0g0v0_Shanghai
-    - delegatecallAtTransition_d0g0v0_Shanghai
-    - delegatecallBeforeTransition_d0g0v0_Shanghai
   stZeroKnowledge:
     - ecpairing_empty_data_d0g0v0_Shanghai
     - ecpairing_empty_data_d0g3v0_Shanghai
