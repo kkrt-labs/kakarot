@@ -167,7 +167,7 @@ class Serde:
             "calldata": self.serialize_list(
                 raw["calldata"], list_len=raw["calldata_len"]
             ),
-            "caller": self.serialize_address(raw["caller"]),
+            "caller": to_checksum_address(f'{raw["caller"]:040x}'),
             "value": self.serialize_uint256(raw["value"]),
             "parent": self.serialize_struct("model.Parent", raw["parent"]),
             "address": self.serialize_address(raw["address"]),
