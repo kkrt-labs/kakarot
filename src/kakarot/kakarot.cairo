@@ -29,6 +29,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     externally_owned_account_class_hash: felt,
     account_proxy_class_hash: felt,
     precompiles_class_hash: felt,
+    block_gas_limit: felt,
 ) {
     return Kakarot.constructor(
         owner,
@@ -37,6 +38,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
         externally_owned_account_class_hash,
         account_proxy_class_hash,
         precompiles_class_hash,
+        block_gas_limit,
     );
 }
 
@@ -107,6 +109,42 @@ func get_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     coinbase: felt
 ) {
     return Kakarot.get_coinbase();
+}
+
+// @notice Sets the prev randao
+// @param prev_randao_ The new prev randao.
+@external
+func set_prev_randao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    prev_randao_: Uint256
+) {
+    return Kakarot.set_prev_randao(prev_randao_);
+}
+
+// @notice Get the prev randao.
+// @return prev_randao The current prev randao.
+@view
+func get_prev_randao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    prev_randao: Uint256
+) {
+    return Kakarot.get_prev_randao();
+}
+
+// @notice Sets the block gas limit.
+// @param gas_limit_ The new block gas limit.
+@external
+func set_block_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    gas_limit_: felt
+) {
+    return Kakarot.set_block_gas_limit(gas_limit_);
+}
+
+// @notice Get the block gas limit.
+// @return gas_limit The current block gas limit.
+@view
+func get_block_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    block_gas_limit: felt
+) {
+    return Kakarot.get_block_gas_limit();
 }
 
 // @notice Compute the starknet address of a contract given its EVM address

@@ -3,6 +3,7 @@ import logging
 from asyncio import run
 
 from scripts.constants import (
+    BLOCK_GAS_LIMIT,
     DECLARED_CONTRACTS,
     ETH_TOKEN_ADDRESS,
     EVM_ADDRESS,
@@ -61,6 +62,7 @@ async def main():
             ],  # externally_owned_account_class_hash
             class_hash["proxy"],  # account_proxy_class_hash
             class_hash["Precompiles"],
+            BLOCK_GAS_LIMIT,
         )
 
     if NETWORK["devnet"]:
@@ -70,6 +72,7 @@ async def main():
             class_hash["contract_account"],  # contract_account_class_hash_
             class_hash["proxy"],  # account_proxy_class_hash
             class_hash["Precompiles"],
+            BLOCK_GAS_LIMIT,
         )
 
     dump_deployments(deployments)

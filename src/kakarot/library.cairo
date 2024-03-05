@@ -19,6 +19,8 @@ from kakarot.storages import (
     native_token_address,
     precompiles_class_hash,
     coinbase,
+    prev_randao,
+    block_gas_limit,
 )
 from kakarot.interpreter import Interpreter
 from kakarot.instructions.system_operations import CreateHelper
@@ -43,6 +45,7 @@ namespace Kakarot {
         externally_owned_account_class_hash_,
         account_proxy_class_hash_,
         precompiles_class_hash_,
+        block_gas_limit_,
     ) {
         Ownable.initializer(owner);
         native_token_address.write(native_token_address_);
@@ -51,6 +54,7 @@ namespace Kakarot {
         account_proxy_class_hash.write(account_proxy_class_hash_);
         precompiles_class_hash.write(precompiles_class_hash_);
         coinbase.write(0xCA40796aFB5472abaeD28907D5ED6FC74c04954a);
+        block_gas_limit.write(block_gas_limit_);
         return ();
     }
 
@@ -170,6 +174,44 @@ namespace Kakarot {
     ) {
         let (coinbase_) = coinbase.read();
         return (coinbase_,);
+    }
+
+    // @notice Set the prev_randao.
+    // @param prev_randao_ The new prev_randao.
+    func set_prev_randao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        prev_randao_: Uint256
+    ) {
+        Ownable.assert_only_owner();
+        prev_randao.write(prev_randao_);
+        return ();
+    }
+
+    // @notice Get the prev_randao.
+    // @return prev_randao The current prev_randao.
+    func get_prev_randao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        prev_randao: Uint256
+    ) {
+        let (prev_randao_) = prev_randao.read();
+        return (prev_randao_,);
+    }
+
+    // @notice Set the block gas limit.
+    // @param block_gas_limit_ The new block gas limit.
+    func set_block_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        block_gas_limit_: felt
+    ) {
+        Ownable.assert_only_owner();
+        block_gas_limit.write(block_gas_limit_);
+        return ();
+    }
+
+    // @notice Get the block gas limit.
+    // @return block_gas_limit The current block gas limit.
+    func get_block_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        block_gas_limit: felt
+    ) {
+        let (block_gas_limit_) = block_gas_limit.read();
+        return (block_gas_limit_,);
     }
 
     // @notice Deploy a new externally owned account.

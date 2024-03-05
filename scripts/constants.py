@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 load_dotenv()
 
+# Hardcode block gas limit to 20M
+BLOCK_GAS_LIMIT = 20_000_000
 
 NETWORKS = {
     "mainnet": {

@@ -5,10 +5,6 @@ from kakarot.gas import Gas
 // @title Constants file.
 // @notice This file contains global constants.
 namespace Constants {
-    // BLOCK
-    // Hardcode block gas limit to 20M
-    const BLOCK_GAS_LIMIT = 20000000;
-
     // STACK
     const STACK_MAX_DEPTH = 1024;
 

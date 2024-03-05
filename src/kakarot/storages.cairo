@@ -2,6 +2,8 @@
 
 %lang starknet
 
+from starkware.cairo.common.uint256 import Uint256
+
 @storage_var
 func precompiles_class_hash() -> (res: felt) {
 }
@@ -32,4 +34,12 @@ func coinbase() -> (res: felt) {
 
 @storage_var
 func base_fee() -> (res: felt) {
+}
+
+@storage_var
+func prev_randao() -> (res: Uint256) {
+}
+
+@storage_var
+func block_gas_limit() -> (res: felt) {
 }
