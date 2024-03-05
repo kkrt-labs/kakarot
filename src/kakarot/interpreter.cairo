@@ -837,6 +837,7 @@ namespace Interpreter {
                 return (evm, stack, memory, state, gas_limit);
             }
 
+            // TODO: same as below
             let (is_value_le_balance) = uint256_le([value], [sender.balance]);
             if (is_value_le_balance == FALSE) {
                 let evm = EVM.halt_validation_failed(evm);
@@ -844,6 +845,8 @@ namespace Interpreter {
             }
             let (balance_post_value_transfer) = uint256_sub([sender.balance], [value]);
 
+            // TODO: since we check in EOA execute whether tx.amount + maxFeePerGas *tx.gas_limit <=
+            // tx.sender.balance this might be superfluous
             let effective_gas_fee = gas_limit * env.gas_price;
             let (fee_high, fee_low) = split_felt(effective_gas_fee);
             let fee_u256 = Uint256(low=fee_low, high=fee_high);

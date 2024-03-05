@@ -69,23 +69,6 @@ testname:
   stEIP150singleCodeGasPrices:
     - gasCostExp_d7g0v0_Shanghai
     - gasCostReturn_d0g0v0_Shanghai
-  stEIP1559:
-    - lowFeeCap_d0g0v0_Shanghai
-    - lowGasLimit_d0g0v0_Shanghai
-    - lowGasPriceOldTypes_d0g0v0_Shanghai
-    - lowGasPriceOldTypes_d1g0v0_Shanghai
-    - outOfFundsOldTypes_d0g1v1_Shanghai
-    - outOfFundsOldTypes_d1g1v1_Shanghai
-    - outOfFunds_d0g1v1_Shanghai
-    - senderBalance_d0g0v0_Shanghai
-    - tipTooHigh_d0g0v0_Shanghai
-    - transactionIntinsicBug_d0g0v0_Shanghai
-    - valCausesOOF_d0g0v1_Shanghai
-    - valCausesOOF_d0g2v0_Shanghai
-    - valCausesOOF_d0g2v1_Shanghai
-    - valCausesOOF_d1g0v1_Shanghai
-    - valCausesOOF_d1g2v0_Shanghai
-    - valCausesOOF_d1g2v1_Shanghai
   stEIP2930:
     - manualCreate_d2g0v0_Shanghai
     - storageCosts_d0g0v0_Shanghai

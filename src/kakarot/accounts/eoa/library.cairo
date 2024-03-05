@@ -1,14 +1,16 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.starknet.common.syscalls import CallContract, get_tx_info
-from starkware.cairo.common.uint256 import Uint256, uint256_not
+from starkware.starknet.common.syscalls import CallContract, get_tx_info, get_contract_address
+from starkware.cairo.common.uint256 import Uint256, uint256_not, uint256_add, uint256_le
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math import split_felt
 
 from kakarot.account import Account
+from kakarot.errors import Errors
 from kakarot.interfaces.interfaces import IERC20, IKakarot
 from utils.eth_transaction import EthTransaction
 from utils.utils import Helpers
@@ -164,17 +166,29 @@ namespace ExternallyOwnedAccount {
         let tx = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
 
         let (_kakarot_address) = kakarot_address.read();
+        let (block_gas_limit) = IKakarot.get_block_gas_limit(_kakarot_address);
+        let is_block_gas_lt_tx_gas = is_le(block_gas_limit, tx.gas_limit + 1);
+
         let (base_fee) = IKakarot.get_base_fee(_kakarot_address);
+        let (native_token_address) = IKakarot.get_native_token(_kakarot_address);
+        let (contract_address) = get_contract_address();
+        let (balance) = IERC20.balanceOf(native_token_address, contract_address);
 
         // ensure that the user was willing to at least pay the base fee
         let enough_fee = is_le(base_fee, tx.max_fee_per_gas);
         let max_fee_greater_priority_fee = is_le(tx.max_priority_fee_per_gas, tx.max_fee_per_gas);
-        if (enough_fee * max_fee_greater_priority_fee == 0) {
-            let (return_data: felt*) = alloc();
+        let max_gas_fee = tx.gas_limit * tx.max_fee_per_gas;
+        let (max_fee_high, max_fee_low) = split_felt(max_gas_fee);
+        let (tx_cost, carry) = uint256_add(tx.amount, Uint256(low=max_fee_low, high=max_fee_high));
+        assert carry = 0;
+        let (is_balance_enough) = uint256_le(tx_cost, balance);
+
+        if (enough_fee * max_fee_greater_priority_fee * is_balance_enough * is_block_gas_lt_tx_gas == 0) {
+            let (return_data_len, return_data) = Errors.eth_validation_failed();
             tempvar range_check_ptr = range_check_ptr;
             tempvar syscall_ptr = syscall_ptr;
             tempvar pedersen_ptr = pedersen_ptr;
-            tempvar return_data_len = 0;
+            tempvar return_data_len = return_data_len;
             tempvar return_data = return_data;
             tempvar success = FALSE;
             tempvar gas_used = 0;

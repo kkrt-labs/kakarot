@@ -92,6 +92,18 @@ namespace IKakarot {
     func get_coinbase() -> (coinbase: felt) {
     }
 
+    func set_block_gas_limit(gas_limit_: felt) {
+    }
+
+    func get_block_gas_limit() -> (block_gas_limit: felt) {
+    }
+
+    func set_prev_randao(prev_randao_: Uint256) {
+    }
+
+    func get_prev_randao() -> (prev_randao: Uint256) {
+    }
+
     func deploy_externally_owned_account(evm_address: felt) {
     }
 
