@@ -130,7 +130,7 @@ func get_prev_randao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 // @notice Sets the block gas limit.
 // @param gas_limit_ The new block gas limit.
 @external
-func set__block_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+func set_block_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     gas_limit_: felt
 ) {
     return Kakarot.set_block_gas_limit(gas_limit_);
