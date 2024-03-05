@@ -12,6 +12,7 @@ from web3.exceptions import NoABIFunctionsFound
 
 from scripts.ef_tests.fetch import EF_TESTS_PARSED_DIR
 from tests.utils.syscall_handler import SyscallHandler, parse_state
+from tests.utils.constants import TRANSACTION_GAS_LIMIT
 
 CONTRACT_ADDRESS = 1234
 OWNER = to_checksum_address(f"0x{0xABDE1:040x}")
@@ -26,7 +27,7 @@ def get_contract(cairo_run):
         def _wrap_cairo_run(fun):
             def _wrapper(self, *args, **kwargs):
                 origin = kwargs.pop("origin", 0)
-                gas_limit = kwargs.pop("gas_limit", int(1e9))
+                gas_limit = kwargs.pop("gas_limit", int(TRANSACTION_GAS_LIMIT))
                 gas_price = kwargs.pop("gas_price", 0)
                 value = kwargs.pop("value", 0)
                 data = self.get_function_by_name(fun)(

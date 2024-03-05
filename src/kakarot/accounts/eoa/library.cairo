@@ -167,7 +167,7 @@ namespace ExternallyOwnedAccount {
 
         let (_kakarot_address) = kakarot_address.read();
         let (block_gas_limit) = IKakarot.get_block_gas_limit(_kakarot_address);
-        let is_block_gas_lt_tx_gas = is_le(block_gas_limit, tx.gas_limit + 1);
+        let tx_gas_fits_in_block = is_le(tx.gas_limit, block_gas_limit);
 
         let (base_fee) = IKakarot.get_base_fee(_kakarot_address);
         let (native_token_address) = IKakarot.get_native_token(_kakarot_address);
@@ -183,7 +183,7 @@ namespace ExternallyOwnedAccount {
         assert carry = 0;
         let (is_balance_enough) = uint256_le(tx_cost, balance);
 
-        if (enough_fee * max_fee_greater_priority_fee * is_balance_enough * is_block_gas_lt_tx_gas == 0) {
+        if (enough_fee * max_fee_greater_priority_fee * is_balance_enough * tx_gas_fits_in_block == 0) {
             let (return_data_len, return_data) = Errors.eth_validation_failed();
             tempvar range_check_ptr = range_check_ptr;
             tempvar syscall_ptr = syscall_ptr;

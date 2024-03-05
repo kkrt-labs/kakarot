@@ -15,6 +15,7 @@ from tests.utils.helpers import (
     hex_string_to_bytes_array,
 )
 from tests.utils.reporting import traceit
+from tests.utils.constants import TRANSACTION_GAS_LIMIT
 
 params_execute = [pytest.param(case.pop("params"), **case) for case in test_cases]
 
@@ -197,7 +198,7 @@ class TestKakarot:
                     "is_some": 1,
                     "value": int(generate_random_evm_address(seed=3), 16),
                 },
-                gas_limit=1_000_000_000,
+                gas_limit=TRANSACTION_GAS_LIMIT,
                 gas_price=1_000,
                 value=1_000,
                 data=bytes(),
