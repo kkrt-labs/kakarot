@@ -112,19 +112,19 @@ func get_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 // @notice Sets the prev randao
 // @param prev_randao_ The new prev randao.
 @external
-func set_prevrandao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    prev_randao_: felt
+func set_prev_randao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    prev_randao_: Uint256
 ) {
-    return Kakarot.set_prevrandao(prev_randao_);
+    return Kakarot.set_prev_randao(prev_randao_);
 }
 
 // @notice Get the prev randao.
 // @return prev_randao The current prev randao.
 @view
 func get_prev_randao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
-    prev_randao: felt
+    prev_randao: Uint256
 ) {
-    return Kakarot.get_prevrandao();
+    return Kakarot.get_prev_randao();
 }
 
 // @notice Sets the block gas limit.
@@ -139,8 +139,8 @@ func set__block_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_
 // @notice Get the block gas limit.
 // @return gas_limit The current block gas limit.
 @view
-func get_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
-    gas_limit: felt
+func get_block_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    block_gas_limit: felt
 ) {
     return Kakarot.get_block_gas_limit();
 }

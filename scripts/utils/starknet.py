@@ -505,7 +505,7 @@ async def invoke_contract(
     return await account.execute_v1(call, max_fee=_max_fee)
 
 
-def set_block_gas_limit(kakarot, gas_limit: int):
+async def set_block_gas_limit(kakarot, gas_limit: int):
     """
     Set the block gas limit.
     """

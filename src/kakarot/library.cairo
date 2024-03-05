@@ -174,23 +174,23 @@ namespace Kakarot {
         return (coinbase_,);
     }
 
-    // @notice Set the prevrandao.
-    // @param prevrandao_ The new prevrandao.
-    func set_prevrandao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        prevrandao_: felt
+    // @notice Set the prev_randao.
+    // @param prev_randao_ The new prev_randao.
+    func set_prev_randao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        prev_randao_: Uint256
     ) {
         Ownable.assert_only_owner();
-        prevrandao.write(prevrandao_);
+        prev_randao.write(prev_randao_);
         return ();
     }
 
-    // @notice Get the prevrandao.
-    // @return prevrandao The current prevrandao.
-    func get_prevrandao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
-        prevrandao: felt
+    // @notice Get the prev_randao.
+    // @return prev_randao The current prev_randao.
+    func get_prev_randao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        prev_randao: Uint256
     ) {
-        let (prevrandao_) = prevrandao.read();
-        return (prevrandao_,);
+        let (prev_randao_) = prev_randao.read();
+        return (prev_randao_,);
     }
 
     // @notice Set the block gas limit.
