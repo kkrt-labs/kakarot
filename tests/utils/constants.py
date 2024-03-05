@@ -1,6 +1,10 @@
 from enum import IntEnum
 from time import time
 
+from scripts.constants import BLOCK_GAS_LIMIT
+
+BLOCK_GAS_LIMIT = BLOCK_GAS_LIMIT
+
 CHAIN_ID = int.from_bytes(b"KKRT", "big")  # KKRT (0x4b4b5254) in ASCII
 
 # Amount of funds to pre-fund the account with
@@ -13,8 +17,6 @@ ACCOUNT_BALANCE = PRE_FUND_AMOUNT
 MOCK_COINBASE_ADDRESS = (
     0x388CA486B82E20CC81965D056B4CDCAACDFFE0CF08E20ED8BA10EA97A487004
 )
-# Hardcode block gas limit to 20M
-BLOCK_GAS_LIMIT = 20_000_000
 
 # STACK
 STACK_MAX_DEPTH = 1024

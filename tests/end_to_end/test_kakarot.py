@@ -95,7 +95,6 @@ class TestKakarot:
                     calldata=hex_string_to_bytes_array(params["calldata"]),
                     access_list=[],
                 )
-
             assert result.success == params["success"]
             assert result.stack_values[: result.stack_size] == (
                 [

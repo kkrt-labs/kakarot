@@ -45,6 +45,7 @@ namespace Kakarot {
         externally_owned_account_class_hash_,
         account_proxy_class_hash_,
         precompiles_class_hash_,
+        block_gas_limit_,
     ) {
         Ownable.initializer(owner);
         native_token_address.write(native_token_address_);
@@ -53,6 +54,7 @@ namespace Kakarot {
         account_proxy_class_hash.write(account_proxy_class_hash_);
         precompiles_class_hash.write(precompiles_class_hash_);
         coinbase.write(0xCA40796aFB5472abaeD28907D5ED6FC74c04954a);
+        block_gas_limit.write(block_gas_limit_);
         return ();
     }
 

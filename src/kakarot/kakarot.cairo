@@ -29,6 +29,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     externally_owned_account_class_hash: felt,
     account_proxy_class_hash: felt,
     precompiles_class_hash: felt,
+    block_gas_limit: felt,
 ) {
     return Kakarot.constructor(
         owner,
@@ -37,6 +38,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
         externally_owned_account_class_hash,
         account_proxy_class_hash,
         precompiles_class_hash,
+        block_gas_limit,
     );
 }
 

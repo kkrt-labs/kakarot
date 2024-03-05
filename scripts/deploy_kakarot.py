@@ -3,6 +3,7 @@ import logging
 from asyncio import run
 
 from scripts.constants import (
+    BLOCK_GAS_LIMIT,
     DECLARED_CONTRACTS,
     ETH_TOKEN_ADDRESS,
     EVM_ADDRESS,
@@ -19,7 +20,6 @@ from scripts.utils.starknet import (
     get_starknet_account,
     invoke,
 )
-from tests.utils.constants import BLOCK_GAS_LIMIT
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -62,6 +62,7 @@ async def main():
             ],  # externally_owned_account_class_hash
             class_hash["proxy"],  # account_proxy_class_hash
             class_hash["Precompiles"],
+            BLOCK_GAS_LIMIT,
         )
 
     if NETWORK["devnet"]:
@@ -74,8 +75,6 @@ async def main():
         )
 
     dump_deployments(deployments)
-
-    await invoke("kakarot", "set_block_gas_limit", BLOCK_GAS_LIMIT)
 
     if EVM_ADDRESS:
         logger.info(f"ℹ️  Found default EVM address {EVM_ADDRESS}")
