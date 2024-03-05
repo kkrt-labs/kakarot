@@ -72,6 +72,7 @@ async def main():
             class_hash["contract_account"],  # contract_account_class_hash_
             class_hash["proxy"],  # account_proxy_class_hash
             class_hash["Precompiles"],
+            BLOCK_GAS_LIMIT,
         )
 
     dump_deployments(deployments)
