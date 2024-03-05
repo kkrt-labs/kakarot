@@ -35,9 +35,9 @@ from scripts.utils.starknet import get_contract as _get_starknet_contract
 from scripts.utils.starknet import get_deployments
 from scripts.utils.starknet import invoke as _invoke_starknet
 from scripts.utils.starknet import wait_for_transaction
+from tests.utils.constants import TRANSACTION_GAS_LIMIT
 from tests.utils.helpers import rlp_encode_signed_data
 from tests.utils.uint256 import int_to_uint256
-from tests.utils.constants import TRANSACTION_GAS_LIMIT
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)

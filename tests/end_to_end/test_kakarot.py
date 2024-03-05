@@ -8,14 +8,13 @@ from starknet_py.net.full_node_client import FullNodeClient
 
 from scripts.utils.starknet import wait_for_transaction
 from tests.end_to_end.bytecodes import test_cases
-from tests.utils.constants import PRE_FUND_AMOUNT
+from tests.utils.constants import PRE_FUND_AMOUNT, TRANSACTION_GAS_LIMIT
 from tests.utils.helpers import (
     extract_memory_from_execute,
     generate_random_evm_address,
     hex_string_to_bytes_array,
 )
 from tests.utils.reporting import traceit
-from tests.utils.constants import TRANSACTION_GAS_LIMIT
 
 params_execute = [pytest.param(case.pop("params"), **case) for case in test_cases]
 

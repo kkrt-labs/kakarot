@@ -11,8 +11,8 @@ from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.exceptions import NoABIFunctionsFound
 
 from scripts.ef_tests.fetch import EF_TESTS_PARSED_DIR
-from tests.utils.syscall_handler import SyscallHandler, parse_state
 from tests.utils.constants import TRANSACTION_GAS_LIMIT
+from tests.utils.syscall_handler import SyscallHandler, parse_state
 
 CONTRACT_ADDRESS = 1234
 OWNER = to_checksum_address(f"0x{0xABDE1:040x}")
