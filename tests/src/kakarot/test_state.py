@@ -109,6 +109,10 @@ class TestState:
             for address, storage_keys in expected_result.items():
                 assert state["accounts"].get(address) is not None
                 assert set(state["accounts"][address]["storage"].keys()) == storage_keys
+                assert all(
+                    state["accounts"][address]["storage"][key] is not None
+                    for key in storage_keys
+                )
 
     class TestCopyAccounts:
         def test_should_handle_null_pointers(self, cairo_run):

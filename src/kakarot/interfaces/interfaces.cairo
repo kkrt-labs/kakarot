@@ -47,6 +47,9 @@ namespace IAccount {
     func bytecode() -> (bytecode_len: felt, bytecode: felt*) {
     }
 
+    func storage(storage_addr: felt) -> (value: Uint256) {
+    }
+
     func account_type() -> (type: felt) {
     }
 }

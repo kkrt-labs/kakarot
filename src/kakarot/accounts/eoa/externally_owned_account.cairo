@@ -6,6 +6,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, SignatureBuiltin,
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import get_tx_info, get_caller_address
 from starkware.cairo.common.math import assert_le
+from starkware.cairo.common.uint256 import Uint256
 
 from kakarot.accounts.eoa.library import ExternallyOwnedAccount
 from kakarot.account import Account
@@ -135,6 +136,17 @@ func bytecode_len{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> (len: felt) {
     return (len=0);
+}
+
+// @notice Read a given storage key
+// @dev
+// @param key The storage address, with storage_var being storage_(key: Uint256)
+// @return 0 as EOAs don't have storage
+@view
+func storage{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(storage_addr: felt) -> (value: Uint256) {
+    return (value=Uint256(0, 0));
 }
 
 // @notice Returns the account type

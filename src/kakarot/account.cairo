@@ -482,13 +482,13 @@ namespace Account {
     // @dev This is used for access list transactions that provide a list of preaccessed keys
     // @param storage_keys_len The number of storage keys to cache.
     // @param storage_keys The pointer to the first storage key.
-    func cache_storage_keys{pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    func cache_storage_keys{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.Account*, storage_keys_len: felt, storage_keys: Uint256*
     ) -> model.Account* {
         alloc_locals;
         let storage_ptr = self.storage;
         with storage_ptr {
-            Internals._cache_storage_keys(storage_keys_len, storage_keys);
+            Internals._cache_storage_keys(self.address.evm, storage_keys_len, storage_keys);
         }
         tempvar self = new model.Account(
             address=self.address,
@@ -516,17 +516,36 @@ namespace Internals {
         return (res=res);
     }
 
-    func _cache_storage_keys{pedersen_ptr: HashBuiltin*, range_check_ptr, storage_ptr: DictAccess*}(
-        storage_keys_len: felt, storage_keys: Uint256*
-    ) {
+    func _cache_storage_keys{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, storage_ptr: DictAccess*
+    }(evm_address: felt, storage_keys_len: felt, storage_keys: Uint256*) {
+        alloc_locals;
         if (storage_keys_len == 0) {
             return ();
         }
 
         let key = storage_keys;
-        let (storage_addr) = Internals._storage_addr(key);
-        dict_read{dict_ptr=storage_ptr}(key=storage_addr);
+        let (local storage_addr) = Internals._storage_addr(key);
+        // Cache value read from Starknet storage
 
-        return _cache_storage_keys(storage_keys_len - 1, storage_keys + Uint256.SIZE);
+        let starknet_address = Account.get_registered_starknet_address(evm_address);
+        if (starknet_address != 0) {
+            let (value) = IContractAccount.storage(
+                contract_address=starknet_address, storage_addr=storage_addr
+            );
+            tempvar value_ptr = new Uint256(value.low, value.high);
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+            // Otherwise returns 0
+        } else {
+            tempvar value_ptr = new Uint256(0, 0);
+            tempvar syscall_ptr = syscall_ptr;
+            tempvar pedersen_ptr = pedersen_ptr;
+            tempvar range_check_ptr = range_check_ptr;
+        }
+        dict_write{dict_ptr=storage_ptr}(key=storage_addr, new_value=cast(value_ptr, felt));
+
+        return _cache_storage_keys(evm_address, storage_keys_len - 1, storage_keys + Uint256.SIZE);
     }
 }
