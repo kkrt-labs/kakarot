@@ -73,7 +73,7 @@ class Serde:
                 output[key] = (
                     self.serialize_scope(value_scope, value_ptr)
                     if value_ptr != 0
-                    else ""
+                    else None
                 )
         return output
 
