@@ -369,7 +369,7 @@ namespace SystemOperations {
         let sender = State.get_account(evm.message.address.evm);
         let (sender_balance_lt_value) = uint256_lt([sender.balance], [value]);
         tempvar is_max_depth_reached = Helpers.is_zero(
-            (Constants.STACK_MAX_DEPTH + 1) - evm.message.depth
+            (Constants.STACK_MAX_DEPTH) - evm.message.depth
         );
         tempvar is_call_invalid = sender_balance_lt_value + is_max_depth_reached;
         if (is_call_invalid != FALSE) {
@@ -473,8 +473,8 @@ namespace SystemOperations {
         tempvar memory = new model.Memory(
             memory.word_dict_start, memory.word_dict, memory_expansion.new_words_len
         );
-        tempvar is_max_depth_reached = 1 - is_not_zero(
-            (Constants.STACK_MAX_DEPTH + 1) - evm.message.depth
+        tempvar is_max_depth_reached = Helpers.is_zero(
+            (Constants.STACK_MAX_DEPTH) - evm.message.depth
         );
 
         if (is_max_depth_reached != FALSE) {
@@ -576,8 +576,8 @@ namespace SystemOperations {
         );
         let sender = State.get_account(evm.message.address.evm);
         let (sender_balance_lt_value) = uint256_lt([sender.balance], [value]);
-        tempvar is_max_depth_reached = 1 - is_not_zero(
-            (Constants.STACK_MAX_DEPTH + 1) - evm.message.depth
+        tempvar is_max_depth_reached = Helpers.is_zero(
+            (Constants.STACK_MAX_DEPTH) - evm.message.depth
         );
         tempvar is_call_invalid = sender_balance_lt_value + is_max_depth_reached;
         if (is_call_invalid != FALSE) {
@@ -668,8 +668,8 @@ namespace SystemOperations {
             return evm;
         }
 
-        tempvar is_max_depth_reached = 1 - is_not_zero(
-            (Constants.STACK_MAX_DEPTH + 1) - evm.message.depth
+        tempvar is_max_depth_reached = Helpers.is_zero(
+            (Constants.STACK_MAX_DEPTH) - evm.message.depth
         );
         if (is_max_depth_reached != FALSE) {
             // Requires popping the returndata offset and size before pushing 0

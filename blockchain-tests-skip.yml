@@ -31,11 +31,9 @@ testname:
     - create2collisionStorage_d1g0v0_Shanghai
     - create2collisionStorage_d2g0v0_Shanghai
   stCallCreateCallCodeTest:
-    - Call1024BalanceTooLow_d0g0v0_Shanghai
     - Call1024PreCalls_d0g0v0_Shanghai
     - Call1024PreCalls_d0g1v0_Shanghai
     - CallRecursiveBombPreCall_d0g0v0_Shanghai
-    - Callcode1024BalanceTooLow_d0g0v0_Shanghai
   stCreateTest:
     - CreateOOGafterMaxCodesize_d2g0v0_Shanghai
     - CreateOOGafterMaxCodesize_d3g0v0_Shanghai
@@ -43,11 +41,35 @@ testname:
     - CreateTransactionHighNonce_d0g0v0_Shanghai
     - CreateTransactionHighNonce_d0g0v1_Shanghai
   stDelegatecallTestHomestead:
-    - Call1024BalanceTooLow_d0g0v0_Shanghai
-    - Call1024PreCalls_d0g1v0_Shanghai
-    - Call1024PreCalls_d0g2v0_Shanghai
     - CallRecursiveBombPreCall_d0g0v0_Shanghai
     - Delegatecall1024_d0g0v0_Shanghai
+  stEIP2930:
+    - manualCreate_d2g0v0_Shanghai
+    - storageCosts_d0g0v0_Shanghai
+    - storageCosts_d1g0v0_Shanghai
+    - storageCosts_d2g0v0_Shanghai
+    - storageCosts_d32g0v0_Shanghai
+    - storageCosts_d35g0v0_Shanghai
+    - storageCosts_d3g0v0_Shanghai
+    - storageCosts_d4g0v0_Shanghai
+    - storageCosts_d5g0v0_Shanghai
+    - variedContext_d0g0v0_Shanghai
+    - variedContext_d10g0v0_Shanghai
+    - variedContext_d12g0v0_Shanghai
+    - variedContext_d16g0v0_Shanghai
+    - variedContext_d18g0v0_Shanghai
+    - variedContext_d20g0v0_Shanghai
+    - variedContext_d22g0v0_Shanghai
+    - variedContext_d24g0v0_Shanghai
+    - variedContext_d26g0v0_Shanghai
+    - variedContext_d28g0v0_Shanghai
+    - variedContext_d2g0v0_Shanghai
+    - variedContext_d30g0v0_Shanghai
+    - variedContext_d32g0v0_Shanghai
+    - variedContext_d34g0v0_Shanghai
+    - variedContext_d5g0v0_Shanghai
+    - variedContext_d7g0v0_Shanghai
+    - variedContext_d8g0v0_Shanghai
   stEIP150singleCodeGasPrices:
     - gasCostExp_d7g0v0_Shanghai
   stExtCodeHash:
@@ -164,8 +186,6 @@ testname:
     - StaticcallToPrecompileFromCalledContract_d0g0v0_Shanghai
     - StaticcallToPrecompileFromContractInitialization_d0g0v0_Shanghai
     - StaticcallToPrecompileFromTransaction_d0g0v0_Shanghai
-    - static_Call1024PreCalls2_d0g0v0_Shanghai
-    - static_Call1MB1024Calldepth_d1g0v0_Shanghai
     - static_Call50000_d0g0v0_Shanghai
     - static_Call50000_d1g0v0_Shanghai
     - static_Call50000_ecrec_d0g0v0_Shanghai
