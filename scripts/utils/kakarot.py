@@ -35,6 +35,7 @@ from scripts.utils.starknet import get_contract as _get_starknet_contract
 from scripts.utils.starknet import get_deployments
 from scripts.utils.starknet import invoke as _invoke_starknet
 from scripts.utils.starknet import wait_for_transaction
+from tests.utils.constants import TRANSACTION_GAS_LIMIT
 from tests.utils.helpers import rlp_encode_signed_data
 from tests.utils.uint256 import int_to_uint256
 
@@ -133,7 +134,7 @@ async def deploy(
     value = kwargs.pop("value", 0)
     receipt, response, success, gas_used = await eth_send_transaction(
         to=0,
-        gas=int(3e6),
+        gas=int(TRANSACTION_GAS_LIMIT),
         data=contract.constructor(*args, **kwargs).data_in_transaction,
         caller_eoa=caller_eoa,
         max_fee=max_fee,
@@ -206,7 +207,7 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
     async def _wrapper(self, *args, **kwargs):
         abi = self.get_function_by_name(fun).abi
         gas_price = kwargs.pop("gas_price", 1_000)
-        gas_limit = kwargs.pop("gas_limit", 1_000_000_000)
+        gas_limit = kwargs.pop("gas_limit", TRANSACTION_GAS_LIMIT)
         value = kwargs.pop("value", 0)
         caller_eoa_ = kwargs.pop("caller_eoa", caller_eoa)
         max_fee = kwargs.pop("max_fee", None)

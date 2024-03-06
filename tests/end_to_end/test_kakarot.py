@@ -8,7 +8,7 @@ from starknet_py.net.full_node_client import FullNodeClient
 
 from scripts.utils.starknet import wait_for_transaction
 from tests.end_to_end.bytecodes import test_cases
-from tests.utils.constants import PRE_FUND_AMOUNT
+from tests.utils.constants import PRE_FUND_AMOUNT, TRANSACTION_GAS_LIMIT
 from tests.utils.helpers import (
     extract_memory_from_execute,
     generate_random_evm_address,
@@ -197,7 +197,7 @@ class TestKakarot:
                     "is_some": 1,
                     "value": int(generate_random_evm_address(seed=3), 16),
                 },
-                gas_limit=1_000_000_000,
+                gas_limit=TRANSACTION_GAS_LIMIT,
                 gas_price=1_000,
                 value=1_000,
                 data=bytes(),

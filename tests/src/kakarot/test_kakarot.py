@@ -11,6 +11,7 @@ from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.exceptions import NoABIFunctionsFound
 
 from scripts.ef_tests.fetch import EF_TESTS_PARSED_DIR
+from tests.utils.constants import TRANSACTION_GAS_LIMIT
 from tests.utils.syscall_handler import SyscallHandler, parse_state
 
 CONTRACT_ADDRESS = 1234
@@ -26,7 +27,7 @@ def get_contract(cairo_run):
         def _wrap_cairo_run(fun):
             def _wrapper(self, *args, **kwargs):
                 origin = kwargs.pop("origin", 0)
-                gas_limit = kwargs.pop("gas_limit", int(1e9))
+                gas_limit = kwargs.pop("gas_limit", int(TRANSACTION_GAS_LIMIT))
                 gas_price = kwargs.pop("gas_price", 0)
                 value = kwargs.pop("value", 0)
                 data = self.get_function_by_name(fun)(
