@@ -100,7 +100,7 @@ namespace SystemOperations {
         let sender = State.get_account(evm.message.address.evm);
         let is_nonce_overflow = Helpers.is_zero(Constants.MAX_NONCE - sender.nonce);
         let (is_balance_overflow) = uint256_lt([sender.balance], [value]);
-        let stack_depth_limit = is_le(1024, evm.message.depth);
+        let stack_depth_limit = Helpers.is_zero(Constants.STACK_MAX_DEPTH - evm.message.depth);
         if (is_nonce_overflow + is_balance_overflow + stack_depth_limit != 0) {
             Stack.push_uint128(0);
             return evm;
@@ -369,7 +369,7 @@ namespace SystemOperations {
         let sender = State.get_account(evm.message.address.evm);
         let (sender_balance_lt_value) = uint256_lt([sender.balance], [value]);
         tempvar is_max_depth_reached = Helpers.is_zero(
-            (Constants.STACK_MAX_DEPTH) - evm.message.depth
+            Constants.STACK_MAX_DEPTH - evm.message.depth
         );
         tempvar is_call_invalid = sender_balance_lt_value + is_max_depth_reached;
         if (is_call_invalid != FALSE) {
@@ -474,7 +474,7 @@ namespace SystemOperations {
             memory.word_dict_start, memory.word_dict, memory_expansion.new_words_len
         );
         tempvar is_max_depth_reached = Helpers.is_zero(
-            (Constants.STACK_MAX_DEPTH) - evm.message.depth
+            Constants.STACK_MAX_DEPTH - evm.message.depth
         );
 
         if (is_max_depth_reached != FALSE) {
@@ -577,7 +577,7 @@ namespace SystemOperations {
         let sender = State.get_account(evm.message.address.evm);
         let (sender_balance_lt_value) = uint256_lt([sender.balance], [value]);
         tempvar is_max_depth_reached = Helpers.is_zero(
-            (Constants.STACK_MAX_DEPTH) - evm.message.depth
+            Constants.STACK_MAX_DEPTH - evm.message.depth
         );
         tempvar is_call_invalid = sender_balance_lt_value + is_max_depth_reached;
         if (is_call_invalid != FALSE) {
@@ -669,7 +669,7 @@ namespace SystemOperations {
         }
 
         tempvar is_max_depth_reached = Helpers.is_zero(
-            (Constants.STACK_MAX_DEPTH) - evm.message.depth
+            Constants.STACK_MAX_DEPTH - evm.message.depth
         );
         if (is_max_depth_reached != FALSE) {
             // Requires popping the returndata offset and size before pushing 0
