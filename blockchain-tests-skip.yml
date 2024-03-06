@@ -41,6 +41,8 @@ testname:
     - CreateTransactionHighNonce_d0g0v0_Shanghai
     - CreateTransactionHighNonce_d0g0v1_Shanghai
   stDelegatecallTestHomestead:
+    - Call1024PreCalls_d0g1v0_Shanghai
+    - Call1024PreCalls_d0g2v0_Shanghai
     - CallRecursiveBombPreCall_d0g0v0_Shanghai
     - Delegatecall1024_d0g0v0_Shanghai
   stEIP150singleCodeGasPrices:
