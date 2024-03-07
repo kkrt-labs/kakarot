@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 def pull_and_plot_ef_tests(name: Union[str, Path] = Path("logs")):
+
     # Pull latest main artifacts
     response = requests.get(
         "https://api.github.com/repos/kkrt-labs/kakarot/actions/workflows/ci.yml/runs?branch=cw/run-all&per_page=100"
@@ -97,35 +98,3 @@ def get_artifacts(
         z.extractall(Path(name) / artifact["head_branch"])
 
     return artifacts
-
-
-def fetch_deployments(path: str = "deployments"):
-    response = requests.get(
-        "https://api.github.com/repos/kkrt-labs/kakarot/actions/artifacts"
-    )
-    artifacts = (
-        pd.DataFrame(
-            [
-                {**artifact["workflow_run"], **artifact}
-                for artifact in response.json()["artifacts"]
-            ]
-        )
-        .loc[lambda df: df["head_branch"] == "main"]
-        .loc[lambda df: df["name"] == "deployments"]
-        .sort_values(["updated_at"], ascending=False)
-        .archive_download_url
-    )
-
-    if artifacts.empty:
-        raise ValueError("No deployment artifacts found for base branch main")
-
-    github_token = os.getenv("GITHUB_TOKEN")
-    if not github_token:
-        raise ValueError("github token not found in environment variables")
-
-    response = requests.get(
-        artifacts.tolist()[0],
-        headers={"Authorization": f"Bearer {github_token}"},
-    )
-    z = zipfile.ZipFile(io.BytesIO(response.content))
-    z.extractall(path)
