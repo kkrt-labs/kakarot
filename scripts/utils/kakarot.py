@@ -5,7 +5,6 @@ from pathlib import Path
 from types import MethodType
 from typing import List, Optional, Union, cast
 
-import toml
 from eth_abi.exceptions import InsufficientDataBytes
 from eth_account import Account as EvmAccount
 from eth_account._utils.typed_transactions import TypedTransaction
@@ -52,11 +51,6 @@ if not NETWORK["devnet"]:
                 f"Using network {NETWORK['name']}, couldn't fetch deployment, error:\n{e}"
             )
 
-try:
-    FOUNDRY_FILE = toml.loads((Path(__file__).parents[2] / "foundry.toml").read_text())
-except (NameError, FileNotFoundError):
-    FOUNDRY_FILE = toml.loads(Path("foundry.toml").read_text())
-
 
 class EvmTransactionError(Exception):
     pass
@@ -69,9 +63,18 @@ def get_contract(
     address=None,
     caller_eoa: Optional[Account] = None,
 ) -> Web3Contract:
+    import toml
+
+    try:
+        foundry_file = toml.loads(
+            (Path(__file__).parents[2] / "foundry.toml").read_text()
+        )
+    except (NameError, FileNotFoundError):
+        foundry_file = toml.loads(Path("foundry.toml").read_text())
+
     all_compilation_outputs = [
         json.load(open(file))
-        for file in Path(FOUNDRY_FILE["profile"]["default"]["out"]).glob(
+        for file in Path(foundry_file["profile"]["default"]["out"]).glob(
             f"**/{contract_name}.json"
         )
     ]
@@ -79,7 +82,7 @@ def get_contract(
         target_compilation_output = all_compilation_outputs[0]
     else:
         target_solidity_file_path = list(
-            (Path(FOUNDRY_FILE["profile"]["default"]["src"]) / contract_app).glob(
+            (Path(foundry_file["profile"]["default"]["src"]) / contract_app).glob(
                 f"**/{contract_name}.sol"
             )
         )
