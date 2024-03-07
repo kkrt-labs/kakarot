@@ -26,7 +26,6 @@ from web3.contract.contract import ContractEvents
 from web3.exceptions import LogTopicError, MismatchedABI, NoABIFunctionsFound
 from web3.types import LogReceipt
 
-from scripts.artifacts import fetch_deployments
 from scripts.constants import EVM_ADDRESS, EVM_PRIVATE_KEY, NETWORK, RPC_CLIENT
 from scripts.utils.starknet import call as _call_starknet
 from scripts.utils.starknet import fund_address as _fund_starknet_address
@@ -41,15 +40,6 @@ from tests.utils.uint256 import int_to_uint256
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
-if not NETWORK["devnet"]:
-    try:
-        fetch_deployments()
-    except Exception as e:
-        if not get_deployments():
-            logger.warn(
-                f"Using network {NETWORK['name']}, couldn't fetch deployment, error:\n{e}"
-            )
 
 
 class EvmTransactionError(Exception):
