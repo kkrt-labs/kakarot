@@ -34,4 +34,4 @@ class TestMemory:
             )
 
         def test_should_expand_memory_and_return_element(self, cairo_run):
-            cairo_run("test__load__should_expand_memory_and_return_element")
+            cairo_run("test__load__should_return_element")
