@@ -62,6 +62,11 @@ namespace LoggingOperations {
         if (evm.reverted != FALSE) {
             return evm;
         }
+        tempvar memory = new model.Memory(
+            word_dict_start=memory.word_dict_start,
+            word_dict=memory.word_dict,
+            words_len=memory_expansion.new_words_len,
+        );
         let (data: felt*) = alloc();
         Memory.load_n(size.low, data, offset.low);
         EVM.push_event(evm, topics_len, popped + 4, size.low, data);

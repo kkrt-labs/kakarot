@@ -163,11 +163,13 @@ namespace EnvironmentalInformation {
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
 
+        // STACK
         let (popped) = Stack.pop_n(3);
         let dest_offset = popped[0];
         let offset = popped[1];
         let size = popped[2];
 
+        // GAS
         let memory_expansion = Gas.memory_expansion_cost_saturated(
             memory.words_len, dest_offset, size
         );
@@ -185,6 +187,13 @@ namespace EnvironmentalInformation {
         if (evm.reverted != FALSE) {
             return evm;
         }
+
+        // OPERATION
+        tempvar memory = new model.Memory(
+            word_dict_start=memory.word_dict_start,
+            word_dict=memory.word_dict,
+            words_len=memory_expansion.new_words_len,
+        );
 
         let opcode_number = [evm.message.bytecode + evm.program_counter];
 
@@ -351,6 +360,12 @@ namespace EnvironmentalInformation {
         if (offset.high != 0) {
             return evm;
         }
+
+        tempvar memory = new model.Memory(
+            word_dict_start=memory.word_dict_start,
+            word_dict=memory.word_dict,
+            words_len=memory_expansion.new_words_len,
+        );
 
         let (sliced_data: felt*) = alloc();
         let account = State.get_account(evm_address);

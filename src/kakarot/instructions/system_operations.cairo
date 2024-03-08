@@ -74,6 +74,11 @@ namespace SystemOperations {
         }
 
         // Load bytecode
+        tempvar memory = new model.Memory(
+            word_dict_start=memory.word_dict_start,
+            word_dict=memory.word_dict,
+            memory_expansion.new_words_len,
+        );
         let (bytecode: felt*) = alloc();
         Memory.load_n(size.low, bytecode, offset.low);
 
@@ -109,10 +114,6 @@ namespace SystemOperations {
         let evm = EVM.charge_gas(evm, gas_limit);
 
         // Operation
-        tempvar memory = new model.Memory(
-            memory.word_dict_start, memory.word_dict, memory_expansion.new_words_len
-        );
-
         // Check target account availability
         let is_collision = Account.has_code_or_nonce(target_account);
         if (is_collision != 0) {
@@ -240,6 +241,11 @@ namespace SystemOperations {
             return evm;
         }
 
+        tempvar memory = new model.Memory(
+            word_dict_start=memory.word_dict_start,
+            word_dict=memory.word_dict,
+            memory_expansion.new_words_len,
+        );
         let (local return_data: felt*) = alloc();
         Memory.load_n(size.low, return_data, offset.low);
 
@@ -279,6 +285,11 @@ namespace SystemOperations {
 
         // Load revert reason from offset
         let (return_data: felt*) = alloc();
+        tempvar memory = new model.Memory(
+            word_dict_start=memory.word_dict_start,
+            word_dict=memory.word_dict,
+            memory_expansion.new_words_len,
+        );
         Memory.load_n(size.low, return_data, offset.low);
 
         let evm = EVM.stop(evm, size.low, return_data, Errors.REVERT);
