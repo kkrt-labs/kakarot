@@ -9,7 +9,7 @@ from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, fina
 from starkware.cairo.common.memset import memset
 from starkware.cairo.common.math import unsigned_div_rem, split_felt
 from starkware.cairo.common.math_cmp import is_not_zero, is_le
-from starkware.cairo.common.uint256 import Uint256, uint256_le, uint256_add
+from starkware.cairo.common.uint256 import Uint256, uint256_le, uint256_add, uint256_eq
 
 from kakarot.account import Account
 from kakarot.evm import EVM
@@ -168,6 +168,13 @@ namespace EnvironmentalInformation {
         let dest_offset = popped[0];
         let offset = popped[1];
         let size = popped[2];
+
+        // if size == 0, we can optimize by returning early
+        // fixed opcode cost has already been charged
+        let (is_zero) = uint256_eq(size, Uint256(low=0, high=0));
+        if (is_zero != FALSE) {
+            return evm;
+        }
 
         // GAS
         let memory_expansion = Gas.memory_expansion_cost_saturated(

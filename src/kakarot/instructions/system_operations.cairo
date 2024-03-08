@@ -82,6 +82,19 @@ namespace SystemOperations {
         let (bytecode: felt*) = alloc();
         Memory.load_n(size.low, bytecode, offset.low);
 
+        let (return_data) = alloc();
+
+        tempvar evm = new model.EVM(
+            message=evm.message,
+            return_data_len=0,
+            return_data=return_data,
+            program_counter=evm.program_counter,
+            stopped=evm.stopped,
+            gas_left=evm.gas_left,
+            gas_refund=evm.gas_refund,
+            reverted=evm.reverted,
+        );
+
         let target_address = CreateHelper.get_evm_address(
             evm.message.address.evm, popped_len, popped, size.low, bytecode
         );

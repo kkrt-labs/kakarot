@@ -103,7 +103,8 @@ namespace Gas {
     func memory_expansion_cost_saturated{range_check_ptr}(
         words_len: felt, offset: Uint256, size: Uint256
     ) -> model.MemoryExpansion {
-        if (size.low == 0) {
+        let (is_zero) = uint256_eq(size, Uint256(low=0, high=0));
+        if (is_zero != FALSE) {
             let expansion = model.MemoryExpansion(cost=0, new_words_len=words_len);
             return expansion;
         }
