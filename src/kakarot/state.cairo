@@ -181,13 +181,33 @@ namespace State {
         return gas_cost;
     }
 
-    // @dev Checks if an address is warm (has been accessed before or in access list).
+    // @notice Checks if an address is warm (has been accessed before or in access list).
+    // @dev This also warms up the account if it's not already warm.
     // @param address The address to check.
     // @return A boolean indicating whether the address is warm.
-    func is_account_warm{state: model.State*}(address: felt) -> felt {
+    func is_account_warm{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
+    }(address: felt) -> felt {
         alloc_locals;
         let accounts = state.accounts;
         let (pointer) = dict_read{dict_ptr=accounts}(key=address);
+
+        // If found in state, the account is warm
+        if (pointer != 0) {
+            tempvar state = new model.State(
+                accounts_start=state.accounts_start,
+                accounts=accounts,
+                events_len=state.events_len,
+                events=state.events,
+                transfers_len=state.transfers_len,
+                transfers=state.transfers,
+            );
+            return TRUE;
+        }
+
+        // Warms up the account
+        let account = Account.fetch_or_create(address);
+        dict_write{dict_ptr=accounts}(key=address, new_value=cast(account, felt));
         tempvar state = new model.State(
             accounts_start=state.accounts_start,
             accounts=accounts,
@@ -197,15 +217,12 @@ namespace State {
             transfers=state.transfers,
         );
 
-        // If not found in state, the account is not warm
-        if (pointer != 0) {
-            return TRUE;
-        }
         return FALSE;
     }
 
     // @notice Checks if a storage slot is warm (has been accessed before) in an account.
-    // @dev Since it reads the storage of the account, it will warm up both the account and the storage.
+    // @dev Since this is only called in SSTORE/SLOAD opcodes,
+    //     we consider that account and storage will be warmed up during the execution of the opcode.
     // @param self The account to check.
     // @param key The key of the storage slot to check.
     // @return A boolean indicating whether the storage slot is warm.

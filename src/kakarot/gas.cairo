@@ -1,9 +1,10 @@
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.bool import FALSE
-from starkware.cairo.common.uint256 import Uint256, uint256_lt
+from starkware.cairo.common.uint256 import Uint256, uint256_lt, uint256_eq
 
 from kakarot.model import model
+from utils.utils import Helpers
 
 namespace Gas {
     const JUMPDEST = 1;
@@ -102,7 +103,8 @@ namespace Gas {
     func memory_expansion_cost_saturated{range_check_ptr}(
         words_len: felt, offset: Uint256, size: Uint256
     ) -> model.MemoryExpansion {
-        if (size.low == 0) {
+        let (is_zero) = uint256_eq(size, Uint256(low=0, high=0));
+        if (is_zero != FALSE) {
             let expansion = model.MemoryExpansion(cost=0, new_words_len=words_len);
             return expansion;
         }
@@ -134,6 +136,13 @@ namespace Gas {
         words_len: felt, offset_1: Uint256*, size_1: Uint256*, offset_2: Uint256*, size_2: Uint256*
     ) -> model.MemoryExpansion {
         alloc_locals;
+        let (is_zero_1) = uint256_eq([size_1], Uint256(0, 0));
+        let (is_zero_2) = uint256_eq([size_2], Uint256(0, 0));
+        let is_zero = is_zero_1 * is_zero_2;
+        if (is_zero != FALSE) {
+            let expansion = model.MemoryExpansion(cost=0, new_words_len=words_len);
+            return expansion;
+        }
         let max_expansion_is_2 = is_le(offset_1.low + size_1.low, offset_2.low + size_2.low);
         let max_expansion = max_expansion_is_2 * (offset_2.low + size_2.low) + (
             1 - max_expansion_is_2

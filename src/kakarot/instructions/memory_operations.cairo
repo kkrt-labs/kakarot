@@ -40,6 +40,12 @@ namespace MemoryOperations {
             return evm;
         }
 
+        tempvar memory = new model.Memory(
+            word_dict_start=memory.word_dict_start,
+            word_dict=memory.word_dict,
+            words_len=memory_expansion.new_words_len,
+        );
+
         let value = Memory.load(offset.low);
         Stack.push_uint256(value);
 
@@ -68,6 +74,11 @@ namespace MemoryOperations {
         if (evm.reverted != FALSE) {
             return evm;
         }
+        tempvar memory = new model.Memory(
+            word_dict_start=memory.word_dict_start,
+            word_dict=memory.word_dict,
+            words_len=memory_expansion.new_words_len,
+        );
         Memory.store(value, offset.low);
 
         return evm;
@@ -208,6 +219,11 @@ namespace MemoryOperations {
         let (value_pointer: felt*) = alloc();
         assert [value_pointer] = remainder.low;
 
+        tempvar memory = new model.Memory(
+            word_dict_start=memory.word_dict_start,
+            word_dict=memory.word_dict,
+            words_len=memory_expansion.new_words_len,
+        );
         Memory.store_n(1, value_pointer, offset.low);
 
         return evm;

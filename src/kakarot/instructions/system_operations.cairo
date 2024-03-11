@@ -74,8 +74,26 @@ namespace SystemOperations {
         }
 
         // Load bytecode
+        tempvar memory = new model.Memory(
+            word_dict_start=memory.word_dict_start,
+            word_dict=memory.word_dict,
+            memory_expansion.new_words_len,
+        );
         let (bytecode: felt*) = alloc();
         Memory.load_n(size.low, bytecode, offset.low);
+
+        let (return_data) = alloc();
+
+        tempvar evm = new model.EVM(
+            message=evm.message,
+            return_data_len=0,
+            return_data=return_data,
+            program_counter=evm.program_counter,
+            stopped=evm.stopped,
+            gas_left=evm.gas_left,
+            gas_refund=evm.gas_refund,
+            reverted=evm.reverted,
+        );
 
         let target_address = CreateHelper.get_evm_address(
             evm.message.address.evm, popped_len, popped, size.low, bytecode
@@ -109,10 +127,6 @@ namespace SystemOperations {
         let evm = EVM.charge_gas(evm, gas_limit);
 
         // Operation
-        tempvar memory = new model.Memory(
-            memory.word_dict_start, memory.word_dict, memory_expansion.new_words_len
-        );
-
         // Check target account availability
         let is_collision = Account.has_code_or_nonce(target_account);
         if (is_collision != 0) {
@@ -240,6 +254,11 @@ namespace SystemOperations {
             return evm;
         }
 
+        tempvar memory = new model.Memory(
+            word_dict_start=memory.word_dict_start,
+            word_dict=memory.word_dict,
+            memory_expansion.new_words_len,
+        );
         let (local return_data: felt*) = alloc();
         Memory.load_n(size.low, return_data, offset.low);
 
@@ -279,6 +298,11 @@ namespace SystemOperations {
 
         // Load revert reason from offset
         let (return_data: felt*) = alloc();
+        tempvar memory = new model.Memory(
+            word_dict_start=memory.word_dict_start,
+            word_dict=memory.word_dict,
+            memory_expansion.new_words_len,
+        );
         Memory.load_n(size.low, return_data, offset.low);
 
         let evm = EVM.stop(evm, size.low, return_data, Errors.REVERT);

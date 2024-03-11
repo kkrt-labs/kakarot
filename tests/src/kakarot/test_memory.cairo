@@ -58,7 +58,7 @@ func test__load__should_load_an_element_from_the_memory_with_offset{range_check_
     return ();
 }
 
-func test__load__should_expand_memory_and_return_element{range_check_ptr}() {
+func test__load__should_return_element{range_check_ptr}() {
     // Given
     alloc_locals;
     let memory = Memory.init();
@@ -70,11 +70,9 @@ func test__load__should_expand_memory_and_return_element{range_check_ptr}() {
         let value = Memory.load(0);
         // Then
         assert value = Uint256(1, 0);
-        assert memory.words_len = 1;
 
         let value = Memory.load(32);
     }
     assert value = Uint256(0, 0);
-    assert memory.words_len = 2;
     return ();
 }

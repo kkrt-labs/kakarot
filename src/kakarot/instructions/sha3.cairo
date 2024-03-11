@@ -33,6 +33,7 @@ namespace Sha3 {
         let offset = popped[0];
         let size = popped[1];
 
+        // GAS
         let memory_expansion = Gas.memory_expansion_cost_saturated(memory.words_len, offset, size);
         let (words, _) = unsigned_div_rem(size.low + 31, 32);
         let words_gas_cost_low = Gas.KECCAK256_WORD * words;
@@ -43,6 +44,13 @@ namespace Sha3 {
         if (evm.reverted != FALSE) {
             return evm;
         }
+
+        // OPERATION
+        tempvar memory = new model.Memory(
+            word_dict_start=memory.word_dict_start,
+            word_dict=memory.word_dict,
+            words_len=memory_expansion.new_words_len,
+        );
 
         let (bigendian_data: felt*) = alloc();
         Memory.load_n(size.low, bigendian_data, offset.low);

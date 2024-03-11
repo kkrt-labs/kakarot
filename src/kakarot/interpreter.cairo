@@ -253,7 +253,7 @@ namespace Interpreter {
         jmp end;
         call EnvironmentalInformation.exec_returndatasize;  // 0x3d
         jmp end;
-        call EnvironmentalInformation.exec_copy;  // 0x3e
+        call EnvironmentalInformation.exec_returndatacopy;  // 0x3e
         jmp end;
         call EnvironmentalInformation.exec_extcodehash;  // 0x3f
         jmp end;
@@ -700,6 +700,23 @@ namespace Interpreter {
         }
 
         if (evm.message.depth == 0) {
+            if (evm.reverted != 0) {
+                // All REVERTS in a root ctx set the gas_refund to 0.
+                // Only if the execution has halted exceptionnaly, consume all gas
+                let is_not_exceptional_revert = Helpers.is_zero(evm.reverted - 1);
+                let gas_left = is_not_exceptional_revert * evm.gas_left;
+                tempvar evm = new model.EVM(
+                    message=evm.message,
+                    return_data_len=evm.return_data_len,
+                    return_data=evm.return_data,
+                    program_counter=evm.program_counter,
+                    stopped=evm.stopped,
+                    gas_left=gas_left,
+                    gas_refund=0,
+                    reverted=evm.reverted,
+                );
+                return evm;
+            }
             if (evm.message.is_create != FALSE) {
                 let evm = Internals._finalize_create_tx(evm);
                 return evm;
@@ -783,15 +800,19 @@ namespace Interpreter {
         local code_address: felt;
         if (is_deploy_tx != FALSE) {
             let (empty: felt*) = alloc();
+            let (init_code_words, _) = unsigned_div_rem(bytecode_len + 31, 32);
+            let init_code_gas = Gas.INIT_CODE_WORD_COST * init_code_words;
             assert bytecode = tmp_calldata;
             assert calldata = empty;
-            assert intrinsic_gas = tmp_intrinsic_gas + Gas.CREATE;
+            assert intrinsic_gas = tmp_intrinsic_gas + Gas.CREATE + init_code_gas;
             assert code_address = 0;
+            tempvar range_check_ptr = range_check_ptr;
         } else {
             assert bytecode = tmp_bytecode;
             assert calldata = tmp_calldata;
             assert intrinsic_gas = tmp_intrinsic_gas;
             assert code_address = address.evm;
+            tempvar range_check_ptr = range_check_ptr;
         }
 
         let (valid_jumpdests_start, valid_jumpdests) = Account.get_jumpdests(
@@ -834,14 +855,14 @@ namespace Interpreter {
             let is_gas_limit_enough = is_le(intrinsic_gas, gas_limit);
             if (is_gas_limit_enough == FALSE) {
                 let evm = EVM.halt_validation_failed(evm);
-                return (evm, stack, memory, state, gas_limit);
+                return (evm, stack, memory, state, 0);
             }
 
             // TODO: same as below
             let (is_value_le_balance) = uint256_le([value], [sender.balance]);
             if (is_value_le_balance == FALSE) {
                 let evm = EVM.halt_validation_failed(evm);
-                return (evm, stack, memory, state, gas_limit);
+                return (evm, stack, memory, state, 0);
             }
             let (balance_post_value_transfer) = uint256_sub([sender.balance], [value]);
 
@@ -853,7 +874,7 @@ namespace Interpreter {
             let (can_pay_gasfee) = uint256_le(fee_u256, balance_post_value_transfer);
             if (can_pay_gasfee == FALSE) {
                 let evm = EVM.halt_validation_failed(evm);
-                return (evm, stack, memory, state, gas_limit);
+                return (evm, stack, memory, state, 0);
             }
 
             tempvar is_initcode_invalid = is_deploy_tx * is_le(
@@ -861,7 +882,7 @@ namespace Interpreter {
             );
             if (is_initcode_invalid != FALSE) {
                 let evm = EVM.halt_validation_failed(evm);
-                return (evm, stack, memory, state, gas_limit);
+                return (evm, stack, memory, state, 0);
             }
 
             // Charge the gas fee to the user without setting up a transfer.
@@ -956,18 +977,38 @@ namespace Internals {
 
         if (success == 0) {
             // Reverts and burn all gas
-            let evm = EVM.charge_gas(evm, evm.gas_left + 1);
+            let (revert_reason_len, revert_reason) = Errors.outOfGas(
+                evm.gas_left, code_deposit_cost
+            );
+            tempvar evm = new model.EVM(
+                message=evm.message,
+                return_data_len=revert_reason_len,
+                return_data=revert_reason,
+                program_counter=evm.program_counter,
+                stopped=TRUE,
+                gas_left=0,
+                gas_refund=0,
+                reverted=Errors.EXCEPTIONAL_HALT,
+            );
             return evm;
         }
-
-        let evm = EVM.charge_gas(evm, code_deposit_cost);
 
         let account = State.get_account(evm.message.address.evm);
         let account = Account.set_code(account, evm.return_data_len, evm.return_data);
         State.update_account(account);
         State.finalize();
 
-        let evm = EVM.update_return_data(evm, 2, cast(evm.message.address, felt*));
+        // Update gas and return data - we know gas_left > code_deposit_cost
+        tempvar evm = new model.EVM(
+            message=evm.message,
+            return_data_len=2,
+            return_data=cast(evm.message.address, felt*),
+            program_counter=evm.program_counter,
+            stopped=evm.stopped,
+            gas_left=evm.gas_left - code_deposit_cost,
+            gas_refund=evm.gas_refund,
+            reverted=evm.reverted,
+        );
 
         return evm;
     }
