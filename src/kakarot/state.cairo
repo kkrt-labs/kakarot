@@ -226,9 +226,9 @@ namespace State {
     // @param self The account to check.
     // @param key The key of the storage slot to check.
     // @return A boolean indicating whether the storage slot is warm.
-    func is_storage_warm{
-        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
-    }(address: felt, key: Uint256*) -> felt {
+    func is_storage_warm{pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*}(
+        address: felt, key: Uint256*
+    ) -> felt {
         alloc_locals;
 
         // Get the account
