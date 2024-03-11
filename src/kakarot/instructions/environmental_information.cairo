@@ -407,17 +407,17 @@ namespace EnvironmentalInformation {
             return evm;
         }
 
-        // Offset.high != 0 means that the sliced data is surely 0x00...00
-        // And storing 0 in Memory is just doing nothing
-        if (offset.high != 0) {
-            return evm;
-        }
-
         tempvar memory = new model.Memory(
             word_dict_start=memory.word_dict_start,
             word_dict=memory.word_dict,
             words_len=memory_expansion.new_words_len,
         );
+
+        // Offset.high != 0 means that the sliced data is surely 0x00...00
+        // And storing 0 in Memory is just doing nothing
+        if (offset.high != 0) {
+            return evm;
+        }
 
         let (sliced_data: felt*) = alloc();
         let account = State.get_account(evm_address);

@@ -213,6 +213,22 @@ func test__is_account_warm__account_not_in_state() {
     return ();
 }
 
+func test__is_account_warm__warms_up_account() {
+    let state = State.init();
+    let evm_address = 'alive';
+    with state {
+        let is_warm = State.is_account_warm(evm_address);
+    }
+    assert is_warm = 0;
+
+    with state {
+        let is_warm = State.is_account_warm(evm_address);
+    }
+
+    assert is_warm = 1;
+    return ();
+}
+
 func test__cache_precompiles{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     ) -> model.State* {
     alloc_locals;

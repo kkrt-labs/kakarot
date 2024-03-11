@@ -453,7 +453,7 @@ namespace Account {
         return (valid_jumpdests_start, valid_jumpdests);
     }
 
-    func is_storage_warm{pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    func is_storage_warm{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.Account*, key: Uint256*
     ) -> (model.Account*, felt) {
         alloc_locals;

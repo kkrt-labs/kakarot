@@ -179,7 +179,7 @@ namespace EVM {
             program_counter=self.program_counter,
             stopped=TRUE,
             gas_left=0,
-            gas_refund=self.gas_refund,
+            gas_refund=0,
             reverted=Errors.EXCEPTIONAL_HALT,
         );
     }

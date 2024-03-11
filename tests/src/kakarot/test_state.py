@@ -66,6 +66,9 @@ class TestState:
 
         def test_should_return_false_when_account_not_state(self, cairo_run):
             cairo_run("test__is_account_warm__account_not_in_state")
+        
+        def test_should_warm_up_account(self, cairo_run):
+            cairo_run("test__is_account_warm__warms_up_account")
 
     class TestIsStorageWarm:
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
