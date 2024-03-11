@@ -136,6 +136,7 @@ namespace Starknet {
 
 namespace Internals {
     // @notice Iterate through the accounts dict and commit them
+    // @dev The dicts must've been squashed before calling this function
     // @dev Account is deployed here if it doesn't exist already
     // @param accounts_start The dict start pointer
     // @param accounts_end The dict end pointer
