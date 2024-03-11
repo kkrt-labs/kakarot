@@ -253,7 +253,7 @@ namespace Interpreter {
         jmp end;
         call EnvironmentalInformation.exec_returndatasize;  // 0x3d
         jmp end;
-        call EnvironmentalInformation.exec_copy;  // 0x3e
+        call EnvironmentalInformation.exec_returndatacopy;  // 0x3e
         jmp end;
         call EnvironmentalInformation.exec_extcodehash;  // 0x3f
         jmp end;

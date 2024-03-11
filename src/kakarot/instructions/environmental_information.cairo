@@ -152,6 +152,79 @@ namespace EnvironmentalInformation {
         return evm;
     }
 
+    func exec_returndatacopy{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*) -> model.EVM* {
+        alloc_locals;
+
+        // STACK
+        let (popped) = Stack.pop_n(3);
+        let memory_offset = popped[0];
+        let returndata_offset = popped[1];
+        let size = popped[2];
+
+        // GAS
+        let memory_expansion = Gas.memory_expansion_cost_saturated(
+            memory.words_len, memory_offset, size
+        );
+
+        // Any size upper than 2**128 will cause an OOG error, considering the maximum gas for a transaction.
+        let upper_bytes_bound = size.low + 31;
+        let (words, _) = unsigned_div_rem(upper_bytes_bound, 32);
+        let copy_gas_cost_low = words * Gas.COPY;
+        tempvar copy_gas_cost_high = is_not_zero(size.high) * 2 ** 128;
+
+        // static cost handled in jump table
+        let evm = EVM.charge_gas(
+            evm, memory_expansion.cost + copy_gas_cost_low + copy_gas_cost_high
+        );
+        if (evm.reverted != FALSE) {
+            return evm;
+        }
+
+        // OPERATION
+        tempvar memory = new model.Memory(
+            word_dict_start=memory.word_dict_start,
+            word_dict=memory.word_dict,
+            words_len=memory_expansion.new_words_len,
+        );
+
+        // Offset.high != 0 means that the sliced data is surely 0x00...00
+        // And storing 0 in Memory is just doing nothing.
+        if (returndata_offset.high != 0) {
+            // We still check for OOB returndatacopy
+            let (max_index, carry) = uint256_add(returndata_offset, size);
+            let (high, low) = split_felt(evm.return_data_len);
+            let (is_in_bounds) = uint256_le(max_index, Uint256(low=low, high=high));
+            let is_in_bounds = is_in_bounds * (1 - carry);
+            if (is_in_bounds == FALSE) {
+                let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
+                let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
+                return evm;
+            }
+            return evm;
+        }
+
+        let (sliced_data: felt*) = alloc();
+        tempvar is_in_bounds = is_le(returndata_offset.low + size.low, evm.return_data_len);
+        if (is_in_bounds == FALSE) {
+            let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
+            let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
+            return evm;
+        }
+        slice(sliced_data, evm.return_data_len, evm.return_data, returndata_offset.low, size.low);
+
+        Memory.store_n(size.low, sliced_data, memory_offset.low);
+
+        return evm;
+    }
+
     func exec_copy{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -170,7 +243,8 @@ namespace EnvironmentalInformation {
         let size = popped[2];
 
         // if size == 0, we can optimize by returning early
-        // fixed opcode cost has already been charged
+        // fixed opcode cost has already been charged as both
+        // calldatacopy and codecopy don't have additional checks
         let (is_zero) = uint256_eq(size, Uint256(low=0, high=0));
         if (is_zero != FALSE) {
             return evm;
@@ -207,26 +281,11 @@ namespace EnvironmentalInformation {
         // Offset.high != 0 means that the sliced data is surely 0x00...00
         // And storing 0 in Memory is just doing nothing.
         if (offset.high != 0) {
-            if (opcode_number != 0x3e) {
-                return evm;
-            }
-
-            // We still check for OOB returndatacopy
-            let (max_index, carry) = uint256_add(offset, size);
-            let (high, low) = split_felt(evm.return_data_len);
-            let (is_in_bounds) = uint256_le(max_index, Uint256(low=low, high=high));
-            let is_in_bounds = is_in_bounds * (1 - carry);
-            if (is_in_bounds == FALSE) {
-                let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
-                let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
-                return evm;
-            }
             return evm;
         }
 
         // 0x37: calldatacopy
         // 0x39: codecopy
-        // 0x3e: returndatacopy
         let (sliced_data: felt*) = alloc();
         local data_len;
         local data: felt*;
@@ -235,23 +294,9 @@ namespace EnvironmentalInformation {
             assert data = evm.message.calldata;
             tempvar range_check_ptr = range_check_ptr;
         } else {
-            if (opcode_number == 0x39) {
-                assert data_len = evm.message.bytecode_len;
-                assert data = evm.message.bytecode;
-                tempvar range_check_ptr = range_check_ptr;
-            } else {
-                tempvar is_in_bounds = is_le(offset.low + size.low, evm.return_data_len);
-                if (is_in_bounds == FALSE) {
-                    let (revert_reason_len, revert_reason) = Errors.outOfBoundsRead();
-                    let evm = EVM.stop(
-                        evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT
-                    );
-                    return evm;
-                }
-                assert data_len = evm.return_data_len;
-                assert data = evm.return_data;
-                tempvar range_check_ptr = range_check_ptr;
-            }
+            assert data_len = evm.message.bytecode_len;
+            assert data = evm.message.bytecode;
+            tempvar range_check_ptr = range_check_ptr;
         }
         let range_check_ptr = [ap - 1];
         slice(sliced_data, data_len, data, offset.low, size.low);
