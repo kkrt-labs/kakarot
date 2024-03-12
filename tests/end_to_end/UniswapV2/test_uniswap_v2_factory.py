@@ -24,9 +24,11 @@ class TestUniswapV2Factory:
             get_solidity_contract,
             owner,
         ):
-            receipt = await factory.createPair(
-                *TEST_ADDRESSES, caller_eoa=owner.starknet_contract, max_fee=0
-            )
+            receipt = (
+                await factory.createPair(
+                    *TEST_ADDRESSES, caller_eoa=owner.starknet_contract, max_fee=0
+                )
+            )["receipt"]
             token_0, token_1 = sorted(TEST_ADDRESSES)
             pair_evm_address = await factory.getPair(*TEST_ADDRESSES)
             assert factory.events.parse_starknet_events(receipt.events)[

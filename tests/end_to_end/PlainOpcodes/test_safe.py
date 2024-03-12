@@ -32,11 +32,13 @@ class TestSafe:
             safe_balance = await safe.balance()
             owner_balance_before = await eth_balance_of(owner.address)
 
-            await safe.withdrawTransfer(caller_eoa=owner.starknet_contract)
+            gas_used = (
+                await safe.withdrawTransfer(caller_eoa=owner.starknet_contract)
+            )["gas_used"]
 
             owner_balance_after = await eth_balance_of(owner.address)
             assert await safe.balance() == 0
-            assert owner_balance_after - owner_balance_before == safe_balance
+            assert owner_balance_after - owner_balance_before + gas_used == safe_balance
 
     class TestWithdrawCall:
         async def test_should_withdraw_call_eth(self, safe, owner, eth_balance_of):
@@ -47,11 +49,13 @@ class TestSafe:
             safe_balance = await safe.balance()
             owner_balance_before = await eth_balance_of(owner.address)
 
-            await safe.withdrawCall(caller_eoa=owner.starknet_contract)
+            gas_used = (await safe.withdrawCall(caller_eoa=owner.starknet_contract))[
+                "gas_used"
+            ]
 
             owner_balance_after = await eth_balance_of(owner.address)
             assert await safe.balance() == 0
-            assert owner_balance_after - owner_balance_before == safe_balance
+            assert owner_balance_after - owner_balance_before + gas_used == safe_balance
 
     class TestDeploySafeWithValue:
         async def test_deploy_safe_with_value(
