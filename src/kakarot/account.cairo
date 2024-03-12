@@ -47,12 +47,15 @@ namespace Account {
         address: model.Address*, code_len: felt, code: felt*, nonce: felt, balance: Uint256*
     ) -> model.Account* {
         let (storage_start) = default_dict_new(0);
+        let (transient_storage_start) = default_dict_new(0);
         return new model.Account(
             address=address,
             code_len=code_len,
             code=code,
             storage_start=storage_start,
             storage=storage_start,
+            transient_storage_start=transient_storage_start,
+            transient_storage=transient_storage_start,
             nonce=nonce,
             balance=balance,
             selfdestruct=0,
@@ -63,13 +66,19 @@ namespace Account {
     // @dev Squash dicts used internally
     // @param self The pointer to the Account
     func copy{range_check_ptr}(self: model.Account*) -> model.Account* {
+        alloc_locals;
         let (storage_start, storage) = default_dict_copy(self.storage_start, self.storage);
+        let (transient_storage_start, transient_storage) = default_dict_copy(
+            self.transient_storage_start, self.transient_storage
+        );
         return new model.Account(
             address=self.address,
             code_len=self.code_len,
             code=self.code,
             storage_start=storage_start,
             storage=storage,
+            transient_storage_start=transient_storage_start,
+            transient_storage=transient_storage,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
@@ -152,6 +161,8 @@ namespace Account {
                 code=self.code,
                 storage_start=self.storage_start,
                 storage=storage,
+                transient_storage_start=self.transient_storage_start,
+                transient_storage=self.transient_storage,
                 nonce=self.nonce,
                 balance=self.balance,
                 selfdestruct=self.selfdestruct,
@@ -186,6 +197,8 @@ namespace Account {
             code=self.code,
             storage_start=self.storage_start,
             storage=storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
@@ -210,6 +223,8 @@ namespace Account {
             code=self.code,
             storage_start=self.storage_start,
             storage=storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
@@ -231,6 +246,8 @@ namespace Account {
             code=code,
             storage_start=self.storage_start,
             storage=self.storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
@@ -247,6 +264,8 @@ namespace Account {
             code=self.code,
             storage_start=self.storage_start,
             storage=self.storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
             nonce=nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
@@ -296,6 +315,8 @@ namespace Account {
             code=self.code,
             storage_start=self.storage_start,
             storage=self.storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
             nonce=self.nonce,
             balance=balance,
             selfdestruct=self.selfdestruct,
@@ -312,6 +333,8 @@ namespace Account {
             code=self.code,
             storage_start=self.storage_start,
             storage=self.storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=1,
@@ -467,6 +490,8 @@ namespace Account {
             code=self.code,
             storage_start=self.storage_start,
             storage=storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
@@ -496,6 +521,8 @@ namespace Account {
             code=self.code,
             storage_start=self.storage_start,
             storage=storage_ptr,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,

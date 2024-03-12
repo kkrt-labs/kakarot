@@ -71,6 +71,8 @@ namespace model {
         code: felt*,
         storage_start: DictAccess*,
         storage: DictAccess*,
+        transient_storage_start: DictAccess*,
+        transient_storage: DictAccess*,
         nonce: felt,
         balance: Uint256*,
         selfdestruct: felt,
