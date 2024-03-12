@@ -584,18 +584,18 @@ dw Gas.JUMPDEST;
 dw 0;
 dw 0;
 dw 0;
-// INVALID
+// TLOAD
 dw 0x5c;
+dw 0;  // gas cost is dynamic
+dw 1;
+dw 1;
 dw 0;
-dw 0;
-dw 0;
-dw 0;
-// INVALID
+// TSTORE
 dw 0x5d;
-dw 0;
-dw 0;
-dw 0;
-dw 0;
+dw 0;  // gas cost is dynamic
+dw 2;
+dw 2;
+dw -2;
 // MCOPY
 dw 0x5e;
 dw Gas.VERY_LOW;  // + Dynamic gas
