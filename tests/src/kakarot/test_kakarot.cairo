@@ -39,6 +39,7 @@ func eth_call{
     %}
 
     let (evm, state, gas_used) = Kakarot.eth_call(
+        nonce=0,
         origin=origin,
         to=to,
         gas_limit=gas_limit,
