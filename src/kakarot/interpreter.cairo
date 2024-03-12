@@ -313,9 +313,9 @@ namespace Interpreter {
         jmp end;
         call MemoryOperations.exec_jumpdest;  // 0x5b
         jmp end;
-        call unknown_opcode;  // 0x5c
+        call MemoryOperations.exec_tload;  // 0x5c
         jmp end;
-        call unknown_opcode;  // 0x5d
+        call MemoryOperations.exec_tstore;  // 0x5d
         jmp end;
         call unknown_opcode;  // 0x5e
         jmp end;

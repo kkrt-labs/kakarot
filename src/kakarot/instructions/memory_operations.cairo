@@ -365,6 +365,77 @@ namespace MemoryOperations {
         return evm;
     }
 
+    func exec_tstore{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*) -> model.EVM* {
+        alloc_locals;
+        let (popped) = Stack.pop_n(2);
+        let key = popped;  // Uint256*
+        let new_value = popped + Uint256.SIZE;  // Uint256*
+
+        // GAS
+        let evm = EVM.charge_gas(evm, Gas.WARM_ACCESS);
+        if (evm.reverted != FALSE) {
+            return evm;
+        }
+
+        // Operation
+        if (evm.message.read_only != FALSE) {
+            let (revert_reason_len, revert_reason) = Errors.stateModificationError();
+            return new model.EVM(
+                message=evm.message,
+                return_data_len=revert_reason_len,
+                return_data=revert_reason,
+                program_counter=evm.program_counter,
+                stopped=TRUE,
+                gas_left=evm.gas_left,
+                gas_refund=evm.gas_refund,
+                reverted=Errors.EXCEPTIONAL_HALT,
+            );
+        }
+
+        State.write_transient_storage(evm.message.address.evm, key, new_value);
+        return new model.EVM(
+            message=evm.message,
+            return_data_len=evm.return_data_len,
+            return_data=evm.return_data,
+            program_counter=evm.program_counter,
+            stopped=evm.stopped,
+            gas_left=evm.gas_left,
+            gas_refund=evm.gas_refund,
+            reverted=evm.reverted,
+        );
+    }
+
+    func exec_tload{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*) -> model.EVM* {
+        alloc_locals;
+
+        let (key) = Stack.pop();
+
+        // Gas
+        let evm = EVM.charge_gas(evm, Gas.WARM_ACCESS);
+        if (evm.reverted != FALSE) {
+            return evm;
+        }
+
+        // Operation
+        let value = State.read_transient_storage(evm.message.address.evm, key);
+        Stack.push(value);
+        return evm;
+    }
+
     func exec_gas{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,

@@ -210,7 +210,7 @@ namespace Account {
     // @param self The pointer to the Account.
     // @param key The pointer to the Uint256 storage key
     // @param value The pointer to the Uint256 value
-    func write_storage{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    func write_storage{pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.Account*, key: Uint256*, value: Uint256*
     ) -> model.Account* {
         alloc_locals;
@@ -230,6 +230,67 @@ namespace Account {
             selfdestruct=self.selfdestruct,
         );
         return self;
+    }
+
+    // @notice Updates a transient storage key with the given value
+    // @param self The pointer to the Account.
+    // @param key The pointer to the Uint256 storage key
+    // @param value The pointer to the Uint256 value
+    func write_transient_storage{pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.Account*, key: Uint256*, value: Uint256*
+    ) -> model.Account* {
+        alloc_locals;
+        local transient_storage: DictAccess* = self.transient_storage;
+        let (storage_addr) = Internals._storage_addr(key);
+        dict_write{dict_ptr=transient_storage}(key=storage_addr, new_value=cast(value, felt));
+        tempvar self = new model.Account(
+            address=self.address,
+            code_len=self.code_len,
+            code=self.code,
+            storage_start=self.storage_start,
+            storage=self.storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=transient_storage,
+            nonce=self.nonce,
+            balance=self.balance,
+            selfdestruct=self.selfdestruct,
+        );
+        return self;
+    }
+
+    // @notice Read a given key in the transient storage
+    // @param self The pointer to the execution Account.
+    // @param key The pointer to the storage key
+    // @return The updated Account
+    // @return The read value
+    func read_transient_storage{pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        self: model.Account*, key: Uint256*
+    ) -> (model.Account*, Uint256*) {
+        alloc_locals;
+        let transient_storage = self.transient_storage;
+        let (local storage_addr) = Internals._storage_addr(key);
+        let (pointer) = dict_read{dict_ptr=transient_storage}(key=storage_addr);
+        local value_ptr: Uint256*;
+
+        // Case reading from local storage
+        if (pointer != 0) {
+            assert value_ptr = cast(pointer, Uint256*);
+        } else {
+            assert value_ptr = new Uint256(0, 0);
+        }
+        tempvar self = new model.Account(
+            address=self.address,
+            code_len=self.code_len,
+            code=self.code,
+            storage_start=self.storage_start,
+            storage=self.storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=transient_storage,
+            nonce=self.nonce,
+            balance=self.balance,
+            selfdestruct=self.selfdestruct,
+        );
+        return (self, value_ptr);
     }
 
     // @notice Set the code of the Account

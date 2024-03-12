@@ -304,6 +304,34 @@ namespace State {
         return ();
     }
 
+    // @notice Reads the transient storage of an account at the given key.
+    // @param evm_address The EVM address of the account to read.
+    // @param key The key of the storage slot to read.
+    // @return The value of the storage slot.
+    func read_transient_storage{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
+    }(evm_address: felt, key: Uint256*) -> Uint256* {
+        alloc_locals;
+        let account = get_account(evm_address);
+        let (account, value) = Account.read_transient_storage(account, key);
+        update_account(account);
+        return value;
+    }
+
+    // @notice Updates the transient storage of an account at the given key with the given value.
+    // @param evm_address The EVM address of the account to update.
+    // @param key The key of the storage slot to update.
+    // @param value The new value of the storage slot.
+    func write_transient_storage{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
+    }(evm_address: felt, key: Uint256*, value: Uint256*) {
+        alloc_locals;
+        let account = get_account(evm_address);
+        let account = Account.write_transient_storage(account, key, value);
+        update_account(account);
+        return ();
+    }
+
     // @notice Add an event to the Event* array
     // @param event The pointer to the Event
     // @return The updated State
