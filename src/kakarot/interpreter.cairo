@@ -857,6 +857,7 @@ namespace Interpreter {
             let is_gas_limit_enough = is_le(intrinsic_gas, gas_limit);
             if (is_gas_limit_enough == FALSE) {
                 let evm = EVM.halt_validation_failed(evm);
+                State.finalize();
                 return (evm, stack, memory, state, 0);
             }
 
@@ -864,6 +865,7 @@ namespace Interpreter {
             let (is_value_le_balance) = uint256_le([value], [sender.balance]);
             if (is_value_le_balance == FALSE) {
                 let evm = EVM.halt_validation_failed(evm);
+                State.finalize();
                 return (evm, stack, memory, state, 0);
             }
             let (balance_post_value_transfer) = uint256_sub([sender.balance], [value]);
@@ -876,6 +878,7 @@ namespace Interpreter {
             let (can_pay_gasfee) = uint256_le(max_fee_u256, balance_post_value_transfer);
             if (can_pay_gasfee == FALSE) {
                 let evm = EVM.halt_validation_failed(evm);
+                State.finalize();
                 return (evm, stack, memory, state, 0);
             }
 
@@ -884,6 +887,7 @@ namespace Interpreter {
             );
             if (is_initcode_invalid != FALSE) {
                 let evm = EVM.halt_validation_failed(evm);
+                State.finalize();
                 return (evm, stack, memory, state, 0);
             }
 
