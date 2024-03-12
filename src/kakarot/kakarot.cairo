@@ -276,14 +276,16 @@ func eth_send_transaction{
         access_list_len,
         access_list,
     );
+
+    // Reverted or not - commit the state change. If reverted, the state was cleared to only contain gas-related changes.
+    Starknet.commit(state);
+
     let is_reverted = is_not_zero(evm.reverted);
     let result = (evm.return_data_len, evm.return_data, 1 - is_reverted, gas_used);
 
     if (evm.reverted != FALSE) {
         return result;
     }
-
-    Starknet.commit(state);
 
     return result;
 }

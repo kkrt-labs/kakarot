@@ -94,7 +94,7 @@ namespace State {
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
     }(evm_address: felt) -> model.Account* {
         alloc_locals;
-        let accounts = state.accounts;
+        local accounts: DictAccess* = state.accounts;
         let (pointer) = dict_read{dict_ptr=accounts}(key=evm_address);
 
         // Return from local storage if found
@@ -109,21 +109,20 @@ namespace State {
                 transfers=state.transfers,
             );
             return account;
-        } else {
-            // Otherwise read values from contract storage
-            local accounts: DictAccess* = accounts;
-            let account = Account.fetch_or_create(evm_address);
-            dict_write{dict_ptr=accounts}(key=evm_address, new_value=cast(account, felt));
-            tempvar state = new model.State(
-                accounts_start=state.accounts_start,
-                accounts=accounts,
-                events_len=state.events_len,
-                events=state.events,
-                transfers_len=state.transfers_len,
-                transfers=state.transfers,
-            );
-            return account;
         }
+
+        // Otherwise read values from contract storage
+        let account = Account.fetch_or_create(evm_address);
+        dict_write{dict_ptr=accounts}(key=evm_address, new_value=cast(account, felt));
+        tempvar state = new model.State(
+            accounts_start=state.accounts_start,
+            accounts=accounts,
+            events_len=state.events_len,
+            events=state.events,
+            transfers_len=state.transfers_len,
+            transfers=state.transfers,
+        );
+        return account;
     }
 
     // @notice Cache precompiles accounts in the state, making them warm.

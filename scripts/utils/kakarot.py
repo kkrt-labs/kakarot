@@ -249,7 +249,12 @@ def _wrap_kakarot(fun: str, caller_eoa: Optional[Account] = None):
             logger.error(f"❌ {self.address}.{fun} failed")
             raise EvmTransactionError(bytes(response))
         logger.info(f"✅ {self.address}.{fun}")
-        return receipt
+        return {
+            "receipt": receipt,
+            "response": response,
+            "success": success,
+            "gas_used": gas_used,
+        }
 
     return _wrapper
 

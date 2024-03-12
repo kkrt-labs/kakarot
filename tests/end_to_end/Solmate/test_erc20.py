@@ -203,16 +203,18 @@ class TestERC20:
                 deadline,
             )
             v, r, s = ec_sign(digest, owner.private_key)
-            receipt = await erc_20.permit(
-                owner.address,
-                other.address,
-                TEST_SUPPLY,
-                deadline,
-                v,
-                r,
-                s,
-                caller_eoa=owner.starknet_contract,
-            )
+            receipt = (
+                await erc_20.permit(
+                    owner.address,
+                    other.address,
+                    TEST_SUPPLY,
+                    deadline,
+                    v,
+                    r,
+                    s,
+                    caller_eoa=owner.starknet_contract,
+                )
+            )["receipt"]
             events = erc_20.events.parse_starknet_events(receipt.events)
 
             assert events["Approval"] == [

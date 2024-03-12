@@ -31,9 +31,11 @@ class TestUniswapV2ERC20:
 
     class TestApprove:
         async def test_should_set_allowance(self, token_a, owner, other):
-            receipt = await token_a.approve(
-                other.address, TEST_AMOUNT, caller_eoa=owner.starknet_contract
-            )
+            receipt = (
+                await token_a.approve(
+                    other.address, TEST_AMOUNT, caller_eoa=owner.starknet_contract
+                )
+            )["receipt"]
             events = token_a.events.parse_starknet_events(receipt.events)
             assert events["Approval"] == [
                 {
@@ -49,9 +51,11 @@ class TestUniswapV2ERC20:
         async def test_should_transfer_token_when_signer_is_owner(
             self, token_a, owner, other
         ):
-            receipt = await token_a.transfer(
-                other.address, TEST_AMOUNT, caller_eoa=owner.starknet_contract
-            )
+            receipt = (
+                await token_a.transfer(
+                    other.address, TEST_AMOUNT, caller_eoa=owner.starknet_contract
+                )
+            )["receipt"]
             events = token_a.events.parse_starknet_events(receipt.events)
             assert events["Transfer"] == [
                 {
@@ -86,12 +90,14 @@ class TestUniswapV2ERC20:
             await token_a.approve(
                 other.address, TEST_AMOUNT, caller_eoa=owner.starknet_contract
             )
-            receipt = await token_a.transferFrom(
-                owner.address,
-                other.address,
-                TEST_AMOUNT,
-                caller_eoa=other.starknet_contract,
-            )
+            receipt = (
+                await token_a.transferFrom(
+                    owner.address,
+                    other.address,
+                    TEST_AMOUNT,
+                    caller_eoa=other.starknet_contract,
+                )
+            )["receipt"]
             events = token_a.events.parse_starknet_events(receipt.events)
             assert events["Transfer"] == [
                 {"from": owner.address, "to": other.address, "value": TEST_AMOUNT}
@@ -107,12 +113,14 @@ class TestUniswapV2ERC20:
             await token_a.approve(
                 other.address, MAX_INT, caller_eoa=owner.starknet_contract
             )
-            receipt = await token_a.transferFrom(
-                owner.address,
-                other.address,
-                TEST_AMOUNT,
-                caller_eoa=other.starknet_contract,
-            )
+            receipt = (
+                await token_a.transferFrom(
+                    owner.address,
+                    other.address,
+                    TEST_AMOUNT,
+                    caller_eoa=other.starknet_contract,
+                )
+            )["receipt"]
             events = token_a.events.parse_starknet_events(receipt.events)
             assert events["Transfer"] == [
                 {"from": owner.address, "to": other.address, "value": TEST_AMOUNT}
@@ -138,16 +146,18 @@ class TestUniswapV2ERC20:
                 deadline,
             )
             v, r, s = ec_sign(digest, owner.private_key)
-            receipt = await token_a.permit(
-                owner.address,
-                other.address,
-                TEST_AMOUNT,
-                deadline,
-                v,
-                r,
-                s,
-                caller_eoa=owner.starknet_contract,
-            )
+            receipt = (
+                await token_a.permit(
+                    owner.address,
+                    other.address,
+                    TEST_AMOUNT,
+                    deadline,
+                    v,
+                    r,
+                    s,
+                    caller_eoa=owner.starknet_contract,
+                )
+            )["receipt"]
             events = token_a.events.parse_starknet_events(receipt.events)
             assert events["Approval"] == [
                 {"owner": owner.address, "spender": other.address, "value": TEST_AMOUNT}
