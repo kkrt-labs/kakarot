@@ -108,6 +108,8 @@ This document describes the opcodes supported by Kakarot.
 | 0x59   | MSIZE    | Get the size of active memory in bytes                                                             | ✅          |
 | 0x5a   | GAS      | Get the amount of available gas, including the corresponding reduction the amount of available gas | ✅          |
 | 0x5b   | JUMPDEST | Mark a valid destination for jumps                                                                 | ✅          |
+| 0x5c   | TLOAD    | Load word from transient storage                                                                   | ✅          |
+| 0x5d   | TSTORE   | Store word in transient storage                                                                    | ✅          |
 
 <!-- markdownlint-enable MD013 -->
 
