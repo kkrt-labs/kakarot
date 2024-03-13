@@ -9,7 +9,7 @@ from pathlib import Path
 import pyperclip
 import rlp
 from dotenv import load_dotenv
-from eth.vm.forks.shanghai.blocks import ShanghaiBlock
+from eth.vm.forks.cancun.blocks import CancunBlock
 from web3 import Web3
 
 from scripts.ef_tests.fetch import EF_TESTS_PARSED_DIR
@@ -34,7 +34,7 @@ class AnvilHandler:
             block = get_block(data)
             ts = block.header.timestamp
             anvil = subprocess.Popen(
-                f"anvil --timestamp {ts} --hardfork shanghai",
+                f"anvil --timestamp {ts} --hardfork cancun",
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
@@ -102,7 +102,7 @@ def set_pre_state(w3, data):
 def get_block(data):
     try:
         block_rlp = data["blocks"][0]["rlp"]
-        block = rlp.decode(bytes.fromhex(block_rlp[2:]), ShanghaiBlock)
+        block = rlp.decode(bytes.fromhex(block_rlp[2:]), CancunBlock)
     except Exception as e:
         raise Exception("Could not find block in test data") from e
     return block

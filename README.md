@@ -238,7 +238,7 @@ by running (in the ef test directory):
 
 ```bash
 cargo test <test_name> --features v0 -- --nocapture
-# e.g. cargo test test_sha3_d7g0v0_Shanghai --features v0 -- --nocapture
+# e.g. cargo test test_sha3_d7g0v0_Cancun --features v0 -- --nocapture
 ```
 
 See [this doc](./docs/general/decode_a_cairo_trace.md) to learn how to debug a
