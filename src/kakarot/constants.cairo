@@ -596,12 +596,12 @@ dw 0;
 dw 0;
 dw 0;
 dw 0;
-// INVALID
+// MCOPY
 dw 0x5e;
-dw 0;
-dw 0;
-dw 0;
-dw 0;
+dw Gas.VERY_LOW;  // + Dynamic gas
+dw 3;
+dw 3;
+dw -3;
 // PUSH0
 dw 0x5f;
 dw Gas.BASE;
