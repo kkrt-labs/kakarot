@@ -45,7 +45,7 @@ NETWORKS = {
     "katana": {
         "name": "katana",
         "explorer_url": "",
-        "rpc_url": "http://127.0.0.1:5050",
+        "rpc_url": os.getenv("KATANA_RPC_URL", "http://127.0.0.1:5050"),
         "devnet": True,
         "check_interval": 0.01,
         "max_wait": 1,
@@ -53,7 +53,7 @@ NETWORKS = {
     "madara": {
         "name": "madara",
         "explorer_url": "",
-        "rpc_url": "http://127.0.0.1:9944",
+        "rpc_url": os.getenv("MADARA_RPC_URL", "http://127.0.0.1:9944"),
         "devnet": False,
         "check_interval": 6,
         "max_wait": 30,
