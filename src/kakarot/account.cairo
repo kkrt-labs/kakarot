@@ -423,8 +423,8 @@ namespace Account {
         let i = [ap - 1];
 
         tempvar opcode = [bytecode + i];
-        let is_opcode_ge_0x5f = is_le(0x5f, opcode);
-        let is_opcode_le_0x7f = is_le(opcode, 0x7f);
+        let is_opcode_ge_0x5f = Helpers.is_le_unchecked(0x5f, opcode);
+        let is_opcode_le_0x7f = Helpers.is_le_unchecked(opcode, 0x7f);
         let is_push_opcode = is_opcode_ge_0x5f * is_opcode_le_0x7f;
         let next_i = i + 1 + is_push_opcode * (opcode - 0x5f);  // 0x5f is the first PUSHN opcode, opcode - 0x5f is the number of arguments.
 
@@ -439,7 +439,17 @@ namespace Account {
             tempvar range_check_ptr = range_check_ptr;
         }
 
-        tempvar is_not_done = is_le(next_i + 1, bytecode_len);
+        // Checks if i+1 > bytecode_len. In this case, ap is filled with 0.
+        tempvar a = bytecode_len - (next_i + 1);
+        %{ memory[ap] = 0 if 0 <= (ids.a % PRIME) < range_check_builtin.bound else 1 %}
+        ap += 1;
+        // is_not_done == 1 <=> i+1 <= bytecode_len.
+        if ([ap - 1] == 0) {
+            tempvar is_not_done = 1;
+        } else {
+            tempvar is_not_done = 0;
+        }
+
         tempvar range_check_ptr = range_check_ptr;
         tempvar valid_jumpdests = valid_jumpdests;
         tempvar i = next_i;
@@ -449,7 +459,11 @@ namespace Account {
         jmp body if is_not_done != 0;
 
         end:
-        tempvar range_check_ptr = [ap - 3];
+        let range_check_ptr = [ap - 3];
+        let i = [ap - 1];
+        // Verify that i+1 > bytecode_len to ensure loop terminated correctly.
+        let check = Helpers.is_le_unchecked(i + 1, bytecode_len);
+        assert check = 0;
         return (valid_jumpdests_start, valid_jumpdests);
     }
 
