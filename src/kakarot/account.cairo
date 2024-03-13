@@ -423,8 +423,8 @@ namespace Account {
         let i = [ap - 1];
 
         tempvar opcode = [bytecode + i];
-        let is_opcode_ge_0x5f = is_le(0x5f, opcode);
-        let is_opcode_le_0x7f = is_le(opcode, 0x7f);
+        let is_opcode_ge_0x5f = Helpers.is_le_unchecked(0x5f, opcode);
+        let is_opcode_le_0x7f = Helpers.is_le_unchecked(opcode, 0x7f);
         let is_push_opcode = is_opcode_ge_0x5f * is_opcode_le_0x7f;
         let next_i = i + 1 + is_push_opcode * (opcode - 0x5f);  // 0x5f is the first PUSHN opcode, opcode - 0x5f is the number of arguments.
 
@@ -439,7 +439,7 @@ namespace Account {
             tempvar range_check_ptr = range_check_ptr;
         }
 
-        tempvar is_not_done = is_le(next_i + 1, bytecode_len);
+        tempvar is_not_done = bytecode_len - next_i;  // if is_not_done == 0, end is reached.
         tempvar range_check_ptr = range_check_ptr;
         tempvar valid_jumpdests = valid_jumpdests;
         tempvar i = next_i;
