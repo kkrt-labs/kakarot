@@ -74,6 +74,7 @@ namespace model {
         nonce: felt,
         balance: Uint256*,
         selfdestruct: felt,
+        created: felt,
     }
 
     // @notice The struct representing an EVM event.

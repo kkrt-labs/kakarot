@@ -70,15 +70,6 @@ func write_storage{
     return ContractAccount.write_storage(storage_addr, value);
 }
 
-// @notice Selfdestruct whatever can be
-// @dev It's not possible to remove a contract in Starknet
-@external
-func selfdestruct{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}() {
-    return ContractAccount.selfdestruct();
-}
-
 // @notice Read a given storage key
 // @param key The storage address, with storage_var being storage_(key: Uint256)
 // @return value The stored value if the key exists, 0 otherwise.

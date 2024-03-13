@@ -4044,6 +4044,29 @@ docs = ["towncrier (>=21,<22)"]
 test = ["hypothesis (>=6.56.4,<7)", "pycryptodome", "pytest (>=7.0.0)", "pytest-xdist (>=2.4.0)"]
 
 [[package]]
+name = "trie"
+version = "3.0.0"
+description = "Python implementation of the Ethereum Trie structure"
+optional = false
+python-versions = ">=3.8, <4"
+files = [
+    {file = "trie-3.0.0-py3-none-any.whl", hash = "sha256:a061507aa3a0076c61a65c0d70de528508a66d948f09054de51f6560fd59c454"},
+    {file = "trie-3.0.0.tar.gz", hash = "sha256:180205883dc614cade519b38b3e4ffecb8184e53d594556b38f43446c5cda840"},
+]
+
+[package.dependencies]
+eth-hash = ">=0.1.0"
+eth-utils = ">=2.0.0"
+hexbytes = ">=0.2.0,<0.4.0"
+rlp = ">=3"
+sortedcontainers = ">=2.1.0"
+
+[package.extras]
+dev = ["build (>=0.9.0)", "bumpversion (>=0.5.3)", "eth-hash (>=0.1.0,<1.0.0)", "hypothesis (>=6.56.4,<7)", "ipython", "pre-commit (>=3.4.0)", "pycryptodome", "pytest (>=7.0.0)", "pytest-xdist (>=2.4.0)", "towncrier (>=21,<22)", "tox (>=4.0.0)", "twine", "wheel"]
+docs = ["towncrier (>=21,<22)"]
+test = ["hypothesis (>=6.56.4,<7)", "pycryptodome", "pytest (>=7.0.0)", "pytest-xdist (>=2.4.0)"]
+
+[[package]]
 name = "typeguard"
 version = "2.13.3"
 description = "Run-time type checker for Python"
@@ -4349,4 +4372,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.11"
-content-hash = "8de6cd02177559ca1ffa8dadb6ae5c82c234c7926d24a25d570a2a4ea2e79511"
+content-hash = "37fad3ba649b3fa786b67ba507c439041424649c24d8d02f648caa48c9854134"

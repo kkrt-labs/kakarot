@@ -147,35 +147,6 @@ namespace ContractAccount {
         return ();
     }
 
-    // @notice Selfdestruct whatever can be
-    // @dev It's not possible to remove a contract in Starknet
-    func selfdestruct{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }() {
-        alloc_locals;
-        // Access control check.
-        Ownable.assert_only_owner();
-        nonce.write(0);
-        is_initialized_.write(0);
-        evm_address.write(0);
-
-        // Bytecode could we erased more efficiently, there is no read to
-        // initialize a new memory segment.
-        let (bytecode_len) = bytecode_len_.read();
-        let (local bytecode: felt*) = alloc();
-        memset(bytecode, 0, bytecode_len);
-        write_bytecode(bytecode_len, bytecode);
-
-        bytecode_len_.write(0);
-
-        // TODO: clean also the storage
-
-        return ();
-    }
-
     // @notice This function checks if the account was initialized.
     // @return is_initialized 1 if the account has been initialized 0 otherwise.
     func is_initialized{
