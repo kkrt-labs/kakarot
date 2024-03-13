@@ -904,9 +904,10 @@ namespace Interpreter {
             let account = State.get_account(address.evm);
             let code_or_nonce = Account.has_code_or_nonce(account);
             let is_collision = code_or_nonce * is_deploy_tx;
-            // Nonce is set to 1 in case of deploy_tx
+            // Nonce is set to 1 in case of deploy_tx and account is marked as created
             let nonce = account.nonce * (1 - is_deploy_tx) + is_deploy_tx;
             let account = Account.set_nonce(account, nonce);
+            let account = Account.set_created(account, is_deploy_tx);
             State.update_account(account);
         }
 
