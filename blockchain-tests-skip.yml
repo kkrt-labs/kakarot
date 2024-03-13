@@ -1,3 +1,7 @@
+# List of test directories to completely skip
+directories:
+  - Pyspecs
+
 # List of file names to be skipped
 # The first level corresponds to the directory, the second to the list of file names to ignore.
 # trunk-ignore(yamllint/empty-values)
