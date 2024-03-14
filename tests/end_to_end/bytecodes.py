@@ -1138,6 +1138,22 @@ test_cases = [
     {
         "params": {
             "value": 0,
+            "code": "7f12345678909876543210000000000000000000000000000000000009876543216000526020600060205e",
+            "calldata": "",
+            "stack": "",
+            "memory": "12345678909876543210000000000000000000000000000000000009876543211234567890987654321000000000000000000000000000000000000987654321",
+            "return_data": "",
+            "success": 1,
+        },
+        "id": "Copy memory word",
+        "marks": [
+            pytest.mark.MCOPY,
+            pytest.mark.StackMemoryStorageFlowOperations,
+        ],
+    },
+    {
+        "params": {
+            "value": 0,
             "code": "5860015b6001600158",
             "calldata": "",
             "stack": "0,1,1,1,8",

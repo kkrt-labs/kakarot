@@ -113,6 +113,7 @@ markers = [
   "PC:             Opcode Value 0x58 - Get the value of the program counter prior to the increment",
   "MSIZE:          Opcode Value 0x59 - Get the size of active memory in bytes",
   "JUMPDEST:       Opcode Value 0x5b - Mark a valid destination for jumps",
+  "MCOPY:          Opcode Value 0x5E - Copy memory from one location to another",
   "PushOperations",
   "PUSH            Opcodes 0x60 ~ 7f - Place n-byte item on stack",
   "DuplicationOperations",
