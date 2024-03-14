@@ -317,7 +317,7 @@ namespace Interpreter {
         jmp end;
         call unknown_opcode;  // 0x5d
         jmp end;
-        call unknown_opcode;  // 0x5e
+        call MemoryOperations.exec_mcopy;  // 0x5e
         jmp end;
         call PushOperations.exec_push;  // 0x5f
         jmp end;
