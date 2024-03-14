@@ -71,7 +71,7 @@ namespace Gas {
         return memory_cost;
     }
 
-    // @notice Compute the expansion cost of max_offset for the the memory
+    // @notice Compute the expansion cost of max_offset for the memory
     // @param words_len The current length of the memory.
     // @param max_offset The target max_offset to be applied to the given memory.
     // @return cost The expansion gas cost: 0 if no expansion is triggered, and the new size of the memory
