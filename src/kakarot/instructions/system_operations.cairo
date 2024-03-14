@@ -35,7 +35,6 @@ from utils.uint256 import uint256_to_uint160
 
 using bool = felt;
 
-from tests.utils.debug import Debug
 // @title System operations opcodes.
 // @notice This file contains the functions to execute for system operations opcodes.
 namespace SystemOperations {
@@ -810,7 +809,6 @@ namespace SystemOperations {
             amount=[self_account.balance],
         );
         let success = State.add_transfer(transfer);
-        Debug.print_felt(evm.message.address.evm);
 
         // Marked as SELFDESTRUCT for commitment
         // @dev: get_account again because add_transfer updated it

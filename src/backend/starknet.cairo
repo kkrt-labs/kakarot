@@ -35,7 +35,6 @@ from kakarot.storages import (
     prev_randao,
 )
 
-from tests.utils.debug import Debug
 namespace Starknet {
     // @notice Commit the current state to the underlying data backend (here, Starknet)
     // @param self The pointer to the State
@@ -212,7 +211,6 @@ namespace Internals {
         }
 
         // @dev: EIP-6780 - If selfdestruct on an existing account, we commit any changes brought
-        Debug.print_felt(self.address.evm);
 
         // Set nonce
         IContractAccount.set_nonce(starknet_address, self.nonce);
