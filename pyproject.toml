@@ -106,6 +106,7 @@ markers = [
   "CHAINID:        Opcode Value 0x46 - Get the chain ID",
   "SELFBALANCE:    Opcode Value 0x47 - Get the balance of the current contract",
   "BASEFEE:        Opcode Value 0x48 - Get the base fee of the current block",
+  "BLOBBASEFEE:    Opcode Value 0x4a - Get the blob base-fee of the current block",
   "StackMemoryStorageFlowOperations",
   "MLOAD:          Opcode Value 0x51 - Load word from memory",
   "MSTORE:         Opcode Value 0x52 - Save word to memory",
