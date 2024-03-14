@@ -1,7 +1,7 @@
 import pytest_asyncio
 
 
-@pytest_asyncio.fixture(scope="package")
+@pytest_asyncio.fixture
 async def counter(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
         "PlainOpcodes",
@@ -10,7 +10,7 @@ async def counter(deploy_solidity_contract, owner):
     )
 
 
-@pytest_asyncio.fixture(scope="package")
+@pytest_asyncio.fixture
 async def caller(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
         "PlainOpcodes",
@@ -19,7 +19,7 @@ async def caller(deploy_solidity_contract, owner):
     )
 
 
-@pytest_asyncio.fixture(scope="package")
+@pytest_asyncio.fixture
 async def plain_opcodes(deploy_solidity_contract, counter, owner):
     return await deploy_solidity_contract(
         "PlainOpcodes",
@@ -29,7 +29,7 @@ async def plain_opcodes(deploy_solidity_contract, counter, owner):
     )
 
 
-@pytest_asyncio.fixture(scope="package")
+@pytest_asyncio.fixture
 async def revert_on_fallbacks(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
         "PlainOpcodes",

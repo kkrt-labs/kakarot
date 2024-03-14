@@ -4,7 +4,7 @@ import pytest_asyncio
 from tests.utils.constants import ACCOUNT_BALANCE
 
 
-@pytest_asyncio.fixture(scope="package")
+@pytest_asyncio.fixture
 async def safe(deploy_solidity_contract, owner):
     return await deploy_solidity_contract(
         "PlainOpcodes", "Safe", caller_eoa=owner.starknet_contract
