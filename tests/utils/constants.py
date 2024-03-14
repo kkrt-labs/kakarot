@@ -1,7 +1,7 @@
 from enum import IntEnum
 from time import time
 
-from scripts.constants import BLOCK_GAS_LIMIT
+from kakarot_scripts.constants import BLOCK_GAS_LIMIT
 
 BLOCK_GAS_LIMIT = BLOCK_GAS_LIMIT
 

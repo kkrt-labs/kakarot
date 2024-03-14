@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from scripts.artifacts import get_artifacts
+from kakarot_scripts.artifacts import get_artifacts
 
 pd.set_option("display.max_rows", 500)
 pd.set_option("display.max_columns", 10)
