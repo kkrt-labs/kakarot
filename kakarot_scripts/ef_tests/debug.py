@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 from eth.vm.forks.cancun.blocks import CancunBlock
 from web3 import Web3
 
-from scripts.ef_tests.fetch import EF_TESTS_PARSED_DIR
+from kakarot_scripts.ef_tests.fetch import EF_TESTS_PARSED_DIR
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)

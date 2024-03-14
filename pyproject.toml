@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "EVM implementation written in Cairo, a sort of ZK-EVM emulator, leveraging STARK proof system."
 authors = []
 readme = "README.md"
-packages = [{ include = "scripts" }, { include = "tests" }]
+packages = [{ include = "kakarot_scripts" }, { include = "tests" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"

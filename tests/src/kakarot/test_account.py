@@ -1,7 +1,7 @@
 import pytest
 from ethereum.shanghai.vm.runtime import get_valid_jump_destinations
 
-from scripts.utils.kakarot import get_contract
+from kakarot_scripts.utils.kakarot import get_contract
 from tests.utils.syscall_handler import SyscallHandler
 from tests.utils.uint256 import int_to_uint256
 

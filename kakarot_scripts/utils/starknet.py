@@ -33,7 +33,7 @@ from starknet_py.net.schemas.rpc import DeclareTransactionResponseSchema
 from starknet_py.net.signer.stark_curve_signer import KeyPair
 from starkware.starknet.public.abi import get_selector_from_name
 
-from scripts.constants import (
+from kakarot_scripts.constants import (
     BUILD_DIR,
     BUILD_DIR_FIXTURES,
     BUILD_DIR_SSJ,
@@ -131,7 +131,9 @@ async def get_starknet_account(
 async def get_eth_contract(provider=None) -> Contract:
     return Contract(
         ETH_TOKEN_ADDRESS,
-        json.loads((Path("scripts") / "utils" / "erc20.json").read_text())["abi"],
+        json.loads((Path("kakarot_scripts") / "utils" / "erc20.json").read_text())[
+            "abi"
+        ],
         provider or await get_starknet_account(),
     )
 

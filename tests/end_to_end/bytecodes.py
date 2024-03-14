@@ -1,6 +1,6 @@
 import pytest
 
-from scripts.constants import NETWORK
+from kakarot_scripts.constants import NETWORK
 
 test_cases = [
     {
