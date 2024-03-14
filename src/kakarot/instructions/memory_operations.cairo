@@ -6,7 +6,8 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le, is_le_felt
+from starkware.cairo.common.math_cmp import is_le, is_le_felt, is_not_zero
+from starkware.cairo.common.math import unsigned_div_rem
 
 from kakarot.errors import Errors
 from kakarot.account import Account
@@ -80,6 +81,54 @@ namespace MemoryOperations {
             words_len=memory_expansion.new_words_len,
         );
         Memory.store(value, offset.low);
+
+        return evm;
+    }
+
+    func exec_mcopy{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr,
+        bitwise_ptr: BitwiseBuiltin*,
+        stack: model.Stack*,
+        memory: model.Memory*,
+        state: model.State*,
+    }(evm: model.EVM*) -> model.EVM* {
+        alloc_locals;
+
+        let (popped) = Stack.pop_n(3);
+        let dst = popped;
+        let src = popped + Uint256.SIZE;
+        let size = popped + 2 * Uint256.SIZE;
+
+        // GAS
+        let memory_expansion = Gas.max_memory_expansion_cost(
+            memory.words_len, src, size, dst, size
+        );
+
+        // Any size upper than 2**128 will cause an OOG error, considering the maximum gas for a transaction.
+        let upper_bytes_bound = size.low + 31;
+        let (words, _) = unsigned_div_rem(upper_bytes_bound, 32);
+        let copy_gas_cost_low = words * Gas.COPY;
+        tempvar copy_gas_cost_high = is_not_zero(size.high) * 2 ** 128;
+
+        let evm = EVM.charge_gas(
+            evm, memory_expansion.cost + copy_gas_cost_low + copy_gas_cost_high
+        );
+        if (evm.reverted != FALSE) {
+            return evm;
+        }
+
+        // Operation
+        tempvar memory = new model.Memory(
+            word_dict_start=memory.word_dict_start,
+            word_dict=memory.word_dict,
+            words_len=memory_expansion.new_words_len,
+        );
+
+        let (data: felt*) = alloc();
+        Memory.load_n(size.low, data, src.low);
+        Memory.store_n(size.low, data, dst.low);
 
         return evm;
     }
