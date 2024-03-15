@@ -186,7 +186,8 @@ namespace Internals {
                 // Deploy accounts
                 let (class_hash) = contract_account_class_hash.read();
                 Starknet.deploy(class_hash, self.address.evm);
-                // If SELFDESTRUCT, stops here to leave the account empty
+
+                // If SELFDESTRUCT, leave the account empty after deploying it
                 if (self.selfdestruct != 0) {
                     return ();
                 }
@@ -204,16 +205,12 @@ namespace Internals {
             }
         }
 
-        // Case existing Account and SELFDESTRUCT
-        if (self.selfdestruct != 0) {
-            IContractAccount.selfdestruct(contract_address=starknet_address);
-            return ();
-        }
-
         let (account_type) = IAccount.account_type(contract_address=starknet_address);
         if (account_type == 'EOA') {
             return ();
         }
+
+        // @dev: EIP-6780 - If selfdestruct on an existing account, we commit any changes brought
 
         // Set nonce
         IContractAccount.set_nonce(starknet_address, self.nonce);
