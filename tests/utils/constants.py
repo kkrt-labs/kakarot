@@ -244,6 +244,8 @@ class Opcodes(IntEnum):
     MSIZE = 0x59
     GAS = 0x5A
     JUMPDEST = 0x5B
+    TLOAD = 0x5C
+    TSTORE = 0x5D
     PUSH0 = 0x5F
     PUSH1 = 0x60
     PUSH2 = 0x61
