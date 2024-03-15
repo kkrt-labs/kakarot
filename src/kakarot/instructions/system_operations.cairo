@@ -14,6 +14,7 @@ from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.dict_access import DictAccess
 
 from kakarot.account import Account
+from kakarot.interfaces.interfaces import IContractAccount
 from kakarot.constants import Constants
 from kakarot.errors import Errors
 from kakarot.evm import EVM
@@ -752,15 +753,15 @@ namespace SystemOperations {
     }(evm: model.EVM*) -> model.EVM* {
         alloc_locals;
         let (popped) = Stack.pop();
-        let recipient_evm_address = uint256_to_uint160([popped]);
+        let recipient = uint256_to_uint160([popped]);
 
         // Gas
         // Access gas cost. The account is marked as warm in the `is_account_alive` instruction,
         // which performs a `get_account` and thus must be performed after the warm check.
-        let is_recipient_warm = State.is_account_warm(recipient_evm_address);
+        let is_recipient_warm = State.is_account_warm(recipient);
         tempvar access_gas_cost = (1 - is_recipient_warm) * Gas.COLD_ACCOUNT_ACCESS;
 
-        let is_recipient_alive = State.is_account_alive(recipient_evm_address);
+        let is_recipient_alive = State.is_account_alive(recipient);
         let self_account = State.get_account(evm.message.address.evm);
         tempvar is_self_balance_not_zero = is_not_zero(self_account.balance.low) + is_not_zero(
             self_account.balance.high
@@ -773,21 +774,17 @@ namespace SystemOperations {
             return evm;
         }
 
+        // Operation
         if (evm.message.read_only != FALSE) {
             let (revert_reason_len, revert_reason) = Errors.stateModificationError();
             let evm = EVM.stop(evm, revert_reason_len, revert_reason, Errors.EXCEPTIONAL_HALT);
             return evm;
         }
 
-        // Remove this when https://eips.ethereum.org/EIPS/eip-6780 is validated
-        if (recipient_evm_address == evm.message.address.evm) {
-            tempvar is_recipient_self = TRUE;
-        } else {
-            tempvar is_recipient_self = FALSE;
-        }
-        let recipient_evm_address = (1 - is_recipient_self) * recipient_evm_address;
+        // If the account was created in the same transaction, the native token is burnt
+        tempvar recipient = (1 - self_account.created) * recipient;
 
-        let recipient_account = State.get_account(recipient_evm_address);
+        let recipient_account = State.get_account(recipient);
         let transfer = model.Transfer(
             sender=self_account.address,
             recipient=recipient_account.address,
@@ -795,7 +792,7 @@ namespace SystemOperations {
         );
         let success = State.add_transfer(transfer);
 
-        // Register for SELFDESTRUCT
+        // Marked as SELFDESTRUCT for commitment
         // @dev: get_account again because add_transfer updated it
         let account = State.get_account(evm.message.address.evm);
         let account = Account.selfdestruct(account);
@@ -1178,6 +1175,7 @@ namespace CreateHelper {
         // Write bytecode to Account
         let account = State.get_account(evm.message.address.evm);
         let account = Account.set_code(account, evm.return_data_len, evm.return_data);
+        let account = Account.set_created(account, TRUE);
         State.update_account(account);
 
         tempvar evm = new model.EVM(

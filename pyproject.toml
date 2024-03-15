@@ -43,6 +43,10 @@ amarna = "^0.1.5"
 py-evm = { git = "https://github.com/ethereum/py-evm", branch = "cancun-network-upgrade" }
 openzeppelin-cairo-contracts = "^0.6.1"
 ethereum = { git = "https://github.com/ethereum/execution-specs.git" }
+eth-bloom = "^3.0.0"
+trie = "^3.0.0"
+cached-property = "^1.5.2"
+py-ecc = "^7.0.0"
 
 [tool.pytest.ini_options]
 norecursedirs = "tests/ef_tests/test_data"

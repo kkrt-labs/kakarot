@@ -59,6 +59,7 @@ namespace Account {
             nonce=nonce,
             balance=balance,
             selfdestruct=0,
+            created=0,
         );
     }
 
@@ -82,6 +83,7 @@ namespace Account {
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
+            created=self.created,
         );
     }
 
@@ -166,6 +168,7 @@ namespace Account {
                 nonce=self.nonce,
                 balance=self.balance,
                 selfdestruct=self.selfdestruct,
+                created=self.created,
             );
             return (self, value_ptr);
         }
@@ -202,6 +205,7 @@ namespace Account {
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
+            created=self.created,
         );
         return (self, value_ptr);
     }
@@ -228,6 +232,7 @@ namespace Account {
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
+            created=self.created,
         );
         return self;
     }
@@ -312,6 +317,7 @@ namespace Account {
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
+            created=self.created,
         );
     }
 
@@ -330,6 +336,22 @@ namespace Account {
             nonce=nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
+            created=self.created,
+        );
+    }
+
+    // @notice Sets an account as created
+    func set_created(self: model.Account*, is_created: felt) -> model.Account* {
+        return new model.Account(
+            address=self.address,
+            code_len=self.code_len,
+            code=self.code,
+            storage_start=self.storage_start,
+            storage=self.storage,
+            nonce=self.nonce,
+            balance=self.balance,
+            selfdestruct=self.selfdestruct,
+            created=is_created,
         );
     }
 
@@ -381,6 +403,7 @@ namespace Account {
             nonce=self.nonce,
             balance=balance,
             selfdestruct=self.selfdestruct,
+            created=self.created,
         );
     }
 
@@ -399,6 +422,7 @@ namespace Account {
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=1,
+            created=self.created,
         );
     }
 
@@ -556,6 +580,7 @@ namespace Account {
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
+            created=self.created,
         );
 
         if (pointer != 0) {
@@ -587,6 +612,7 @@ namespace Account {
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
+            created=self.created,
         );
         return self;
     }
