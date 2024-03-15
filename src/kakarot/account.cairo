@@ -259,6 +259,7 @@ namespace Account {
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
+            created=self.created,
         );
         return self;
     }
@@ -294,6 +295,7 @@ namespace Account {
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
+            created=self.created,
         );
         return (self, value_ptr);
     }
@@ -348,6 +350,8 @@ namespace Account {
             code=self.code,
             storage_start=self.storage_start,
             storage=self.storage,
+            transient_storage_start=self.transient_storage_start,
+            transient_storage=self.transient_storage,
             nonce=self.nonce,
             balance=self.balance,
             selfdestruct=self.selfdestruct,
