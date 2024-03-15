@@ -983,6 +983,22 @@ test_cases = [
     },
     {
         "params": {
+            "value": 0,
+            "code": "60004900",
+            "calldata": "",
+            "stack": "0",
+            "memory": "",
+            "return_data": "",
+            "success": 1,
+        },
+        "id": "Get blob versioned hash",
+        "marks": [
+            pytest.mark.BLOBHASH,
+            pytest.mark.BlockInformation,
+        ],
+    },
+    {
+        "params": {
             "code": "34",
             "calldata": "",
             "value": 90,
