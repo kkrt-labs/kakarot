@@ -230,7 +230,7 @@ class TestPlainOpcodes:
             assert await counter.count() == 1
 
     class TestCreate2:
-        async def test_create2_should_collision_after_selfdestruct_different_tx(
+        async def test_should_collision_after_selfdestruct_different_tx(
             self,
             plain_opcodes,
             get_solidity_contract,

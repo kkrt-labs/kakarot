@@ -12,10 +12,6 @@ starknet-py = "^0.20.0"
 cairo-lang = "0.13.0"
 python-dotenv = "^0.21.0"
 async-lru = "^2.0.4"
-eth-bloom = "^3.0.0"
-trie = "^3.0.0"
-cached-property = "^1.5.2"
-py-ecc = "^7.0.0"
 
 [tool.poetry.group.dev.dependencies]
 toml = "^0.10.2"
@@ -47,6 +43,10 @@ amarna = "^0.1.5"
 py-evm = { git = "https://github.com/ethereum/py-evm", branch = "cancun-network-upgrade" }
 openzeppelin-cairo-contracts = "^0.6.1"
 ethereum = { git = "https://github.com/ethereum/execution-specs.git" }
+eth-bloom = "^3.0.0"
+trie = "^3.0.0"
+cached-property = "^1.5.2"
+py-ecc = "^7.0.0"
 
 [tool.pytest.ini_options]
 norecursedirs = "tests/ef_tests/test_data"

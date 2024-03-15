@@ -781,25 +781,7 @@ namespace SystemOperations {
             return evm;
         }
 
-        // If the account is doesn't have a registered starknet address, it was created in the same tx
-        // If it does, it could've been registered as part of a previous selfdestruct but left empty. Querying
-        // the nonce clears this case.
-
-        // let is_registered = Account.get_registered_starknet_address(self_account.address.evm);
-        // if (is_registered == FALSE) {
-        //     tempvar range_check_ptr = range_check_ptr;
-        //     tempvar syscall_ptr = syscall_ptr;
-        //     tempvar recipient = 0;  // Tokens will be burnt
-        // } else {
-        //     let (original_nonce) = IContractAccount.get_nonce(self_account.address.starknet);
-        //     let is_not_new = is_not_zero(original_nonce);
-        //     tempvar range_check_ptr = range_check_ptr;
-        //     tempvar syscall_ptr = syscall_ptr;
-        //     tempvar recipient = recipient * is_not_new;
-        // }
-
-        // TODO: this causes problems with ef-tests where a CA is deployed with code but nonce zero.
-        // the workaround is as follows: a `created` field in the account struct that tracks created accounts.
+        // If the account was created in the same transaction, the native token is burnt
         tempvar recipient = (1 - self_account.created) * recipient;
 
         let recipient_account = State.get_account(recipient);
