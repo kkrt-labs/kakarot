@@ -41,7 +41,7 @@ namespace BlockInformation {
         jmp chainid;
         jmp selfbalance;
         jmp basefee;
-        jmp invalid_opcode_0x49;
+        jmp blobhash;
         jmp blobbasefee;
 
         blockhash:
@@ -124,7 +124,10 @@ namespace BlockInformation {
         Stack.push_uint128(evm.message.env.base_fee);
         jmp end;
 
-        invalid_opcode_0x49:
+        blobhash:
+        let stack = cast([fp - 6], model.Stack*);
+        Stack.pop();
+        Stack.push_uint128(0);
         jmp end;
 
         blobbasefee:

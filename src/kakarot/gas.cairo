@@ -52,6 +52,7 @@ namespace Gas {
     const TX_BASE_COST = 21000;
     const TX_ACCESS_LIST_ADDRESS_COST = 2400;
     const TX_ACCESS_LIST_STORAGE_KEY_COST = 1900;
+    const BLOBHASH = 3;
 
     // @notice Compute the cost of the memory for a given words length.
     // @dev To avoid range_check overflow, we compute words_len / 512
