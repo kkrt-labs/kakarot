@@ -476,12 +476,12 @@ dw 0;
 dw 0;
 dw 0;
 dw 0;
-// INVALID
+// BLOBBASEFEE
 dw 0x4a;
+dw Gas.BASE;
 dw 0;
 dw 0;
-dw 0;
-dw 0;
+dw 1;
 // INVALID
 dw 0x4b;
 dw 0;
