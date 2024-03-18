@@ -277,7 +277,7 @@ namespace Interpreter {
         jmp end;
         call unknown_opcode;  // 0x49
         jmp end;
-        call unknown_opcode;  // 0x4a
+        call BlockInformation.exec_block_information;  // 0x4a
         jmp end;
         call unknown_opcode;  // 0x4b
         jmp end;

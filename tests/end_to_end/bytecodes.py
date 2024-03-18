@@ -983,6 +983,22 @@ test_cases = [
     },
     {
         "params": {
+            "value": 0,
+            "code": "4a00",
+            "calldata": "",
+            "stack": "0",
+            "memory": "",
+            "return_data": "",
+            "success": 1,
+        },
+        "id": "Get BlobBaseFee",
+        "marks": [
+            pytest.mark.BLOBBASEFEE,
+            pytest.mark.BlockInformation,
+        ],
+    },
+    {
+        "params": {
             "code": "34",
             "calldata": "",
             "value": 90,

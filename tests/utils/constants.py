@@ -232,6 +232,7 @@ class Opcodes(IntEnum):
     CHAINID = 0x46
     SELFBALANCE = 0x47
     BASEFEE = 0x48
+    BLOBBASEFEE = 0x4A
     POP = 0x50
     MLOAD = 0x51
     MSTORE = 0x52
