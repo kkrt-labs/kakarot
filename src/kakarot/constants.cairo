@@ -470,11 +470,11 @@ dw Gas.BASE;
 dw 0;
 dw 0;
 dw 1;
-// INVALID
+// BLOBHASH
 dw 0x49;
-dw 0;
-dw 0;
-dw 0;
+dw Gas.BLOBHASH;
+dw 1;
+dw 1;
 dw 0;
 // BLOBBASEFEE
 dw 0x4a;
