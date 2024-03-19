@@ -210,7 +210,11 @@ namespace Internals {
             return ();
         }
 
-        // @dev: EIP-6780 - If selfdestruct on an existing account, we commit any changes brought
+        // @dev: EIP-6780 - If selfdestruct on an account created, dont commit data
+        let is_created_selfdestructed = self.created * self.selfdestruct;
+        if (is_created_selfdestructed != 0) {
+            return ();
+        }
 
         // Set nonce
         IContractAccount.set_nonce(starknet_address, self.nonce);

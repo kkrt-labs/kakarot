@@ -1,6 +1,6 @@
 # List of test directories to completely skip
+# trunk-ignore(yamllint/empty-values)
 directories:
-  - Pyspecs
 
 # List of file names to be skipped
 # The first level corresponds to the directory, the second to the list of file names to ignore.
@@ -487,8 +487,6 @@ regex:
   eip4844_blobs:
     - .*
   eip4788_beacon_root:
-    - .*
-  eip6780_selfdestruct:
     - .*
   eip7516_blobgasfee:
     - .*

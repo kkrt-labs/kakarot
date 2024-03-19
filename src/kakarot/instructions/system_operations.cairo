@@ -781,8 +781,14 @@ namespace SystemOperations {
             return evm;
         }
 
-        // If the account was created in the same transaction, the native token is burnt
-        tempvar recipient = (1 - self_account.created) * recipient;
+        // If the account was created in the same transaction and recipient is self, the native token is burnt
+        tempvar is_recipient_not_self = is_not_zero(recipient - evm.message.address.evm);
+
+        if (self_account.created != FALSE) {
+            tempvar recipient = is_recipient_not_self * recipient;
+        } else {
+            tempvar recipient = recipient;
+        }
 
         let recipient_account = State.get_account(recipient);
         let transfer = model.Transfer(
