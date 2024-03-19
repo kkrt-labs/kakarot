@@ -763,11 +763,12 @@ namespace SystemOperations {
 
         let is_recipient_alive = State.is_account_alive(recipient);
         let self_account = State.get_account(evm.message.address.evm);
-        tempvar is_self_balance_not_zero = is_not_zero(self_account.balance.low) + is_not_zero(
+        tempvar is_self_balance_zero = Helpers.is_zero(self_account.balance.low) * Helpers.is_zero(
             self_account.balance.high
         );
-        tempvar gas_selfdestruct_new_account = (1 - is_recipient_alive) * is_self_balance_not_zero *
-            Gas.SELF_DESTRUCT_NEW_ACCOUNT;
+        tempvar gas_selfdestruct_new_account = (1 - is_recipient_alive) * (
+            1 - is_self_balance_zero
+        ) * Gas.SELF_DESTRUCT_NEW_ACCOUNT;
 
         let evm = EVM.charge_gas(evm, access_gas_cost + gas_selfdestruct_new_account);
         if (evm.reverted != FALSE) {

@@ -8,7 +8,7 @@ from pathlib import Path
 
 import requests
 
-EF_TESTS_TAG = "v13.1"
+EF_TESTS_TAG = "v13.2"
 EF_TESTS_URL = (
     f"https://github.com/ethereum/tests/archive/refs/tags/{EF_TESTS_TAG}.tar.gz"
 )
@@ -39,15 +39,31 @@ def generate_tests():
         if content.get("network") == DEFAULT_NETWORK
     }
 
+    # Add tests from BlockchainTests/GeneralStateTests/Pyspecs/cancun
+    test_cases.update(
+        {
+            f"{name.split('::')[-1]}": content
+            for (root, _, files) in os.walk(EF_TESTS_DIR)
+            for file in files
+            if file.endswith(".json")
+            and f"BlockchainTests/GeneralStateTests/Pyspecs/{DEFAULT_NETWORK.lower()}"
+            in root
+            for name, content in json.loads((Path(root) / file).read_text()).items()
+        }
+    )
+
     shutil.rmtree(EF_TESTS_PARSED_DIR, ignore_errors=True)
     EF_TESTS_PARSED_DIR.mkdir(parents=True, exist_ok=True)
 
     for test_name, test_case in test_cases.items():
-        json.dump(
-            test_case,
-            open(EF_TESTS_PARSED_DIR / f"{test_name}.json", "w"),
-            indent=4,
-        )
+        try:
+            json.dump(
+                test_case,
+                open(EF_TESTS_PARSED_DIR / f"{test_name}.json", "w"),
+                indent=4,
+            )
+        except Exception as e:
+            print(e)
 
 
 if __name__ == "__main__":

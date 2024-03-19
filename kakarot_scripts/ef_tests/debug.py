@@ -28,6 +28,9 @@ TEST_PARENT_FOLDER = os.getenv("TEST_PARENT_FOLDER", "")
 RPC_ENDPOINT = "http://127.0.0.1:8545"
 
 
+BEACON_ROOT_ADDRESS = "0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02"
+
+
 class AnvilHandler:
     def __init__(self, data):
         try:
@@ -119,17 +122,18 @@ def set_block(w3, data):
     w3.provider.make_request("evm_setBlockGasLimit", [block.header.gas_limit])
 
 
-def send_transaction(w3, data):
-    block = get_block(data)
-    if len(block.transactions) == 0:
-        raise ValueError("Could not find transaction in test data")
-    tx_hash = w3.eth.send_raw_transaction(block.transactions[0].encode()).hex()
+def send_transaction(w3, transaction):
+    tx_hash = w3.eth.send_raw_transaction(transaction.encode()).hex()
     return tx_hash
 
 
 def check_post_state(w3, data):
     for address, account in data["postState"].items():
         address = Web3.to_checksum_address(address)
+        if address == Web3.to_checksum_address(
+            BEACON_ROOT_ADDRESS
+        ):  # Skip beacon root address validation
+            continue
         try:
             assert w3.eth.get_balance(address) == int(
                 account["balance"], 16
@@ -151,31 +155,41 @@ def check_post_state(w3, data):
 
 def main():
     test = get_test_file()
-
     # Launch anvil
     handler = AnvilHandler(test)
     try:
         provider = connect_anvil()
-
         # Set test state
         set_pre_state(provider, test)
         set_block(provider, test)
 
-        # Send transaction
-        tx_hash = send_transaction(provider, test)
+        # Send transactions
+        block = get_block(test)
+        tx_hashes = []
+        if len(block.transactions) == 0:
+            raise ValueError("Could not find transaction in test data")
+        for tx in block["transactions"]:
+            tx_hash = send_transaction(provider, tx)
+            provider.eth.wait_for_transaction_receipt(tx_hash)
+            tx_hashes.append(tx_hash)
 
         # Check post state
         check_post_state(provider, test)
+
+        logger.info("Running transactions:")
+        for i, tx_hash in enumerate(tx_hashes, start=1):
+            command = f"cast run {tx_hash}"
+            _ = subprocess.run(command, shell=True)
+            debug_command = f"cast run {tx_hash} --debug"
+            logger.info(f"Run `{debug_command}` to debug transaction {i} \n")
+
+        first_command = f"cast run {tx_hashes[0]} --debug"
+        pyperclip.copy(first_command)
+        logger.info(f"First command `{first_command}` copied to clipboard")
+
     except Exception as e:
         handler.anvil.terminate()
         raise e
-
-    logger.info("Running transaction:")
-    _ = subprocess.run(f"cast run {tx_hash}", shell=True)
-
-    command = f"cast run {tx_hash} --debug"
-    pyperclip.copy(command)
-    logger.info(f"Run `{command}` to debug transaction (copied in clipboard)")
 
     # Wait for sig term to stop anvil
     handler.wait()
