@@ -72,7 +72,7 @@ async def origin(evm: Contract, addresses):
     return evm_address
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="session")
 class TestKakarot:
     class TestEVM:
         @pytest.mark.parametrize(

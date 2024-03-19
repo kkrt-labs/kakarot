@@ -4,7 +4,7 @@ from web3 import Web3
 from tests.utils.errors import evm_error
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="package")
 @pytest.mark.PlainOpcodes
 class TestPlainOpcodes:
     class TestStaticCall:
