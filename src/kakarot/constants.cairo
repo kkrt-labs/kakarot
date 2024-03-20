@@ -23,6 +23,8 @@ namespace Constants {
     const BYTES_PER_FELT = 16;
     const MAX_NONCE = 2 ** 64 - 1;
     const MAX_CODE_SIZE = 0x6000;
+
+    const BURN_ADDRESS = 0xdead;
 }
 
 // See model.Opcode:

@@ -46,8 +46,7 @@ def generate_tests():
             for (root, _, files) in os.walk(EF_TESTS_DIR)
             for file in files
             if file.endswith(".json")
-            and f"BlockchainTests/GeneralStateTests/Pyspecs"
-            in root
+            and "BlockchainTests/GeneralStateTests/Pyspecs" in root
             for name, content in json.loads((Path(root) / file).read_text()).items()
         }
     )

@@ -482,8 +482,6 @@ testname:
 regex:
   eip4895_withdrawals:
     - .*
-  security:
-    - .*
   eip4844_blobs:
     - .*
   eip4788_beacon_root:
