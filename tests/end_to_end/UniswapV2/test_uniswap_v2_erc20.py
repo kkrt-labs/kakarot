@@ -13,7 +13,7 @@ TOTAL_SUPPLY = 10000 * 10**18
 TEST_AMOUNT = 10 * 10**18
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="session")
 @pytest.mark.UniswapV2ERC20
 class TestUniswapV2ERC20:
     class TestDeploy:

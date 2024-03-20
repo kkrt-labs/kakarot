@@ -61,7 +61,7 @@ def token_id(request):
     return abs(hash(request.function.__name__))
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="session")
 @pytest.mark.SolmateERC721
 class TestERC721:
     class TestMetadata:

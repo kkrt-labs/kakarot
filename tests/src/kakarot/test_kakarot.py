@@ -10,7 +10,7 @@ from web3._utils.abi import map_abi_data
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
 from web3.exceptions import NoABIFunctionsFound
 
-from scripts.ef_tests.fetch import EF_TESTS_PARSED_DIR
+from kakarot_scripts.ef_tests.fetch import EF_TESTS_PARSED_DIR
 from tests.utils.constants import TRANSACTION_GAS_LIMIT
 from tests.utils.syscall_handler import SyscallHandler, parse_state
 
@@ -21,7 +21,7 @@ OTHER = to_checksum_address(f"0x{0xE1A5:040x}")
 
 @pytest.fixture(scope="module")
 def get_contract(cairo_run):
-    from scripts.utils.kakarot import get_contract as get_solidity_contract
+    from kakarot_scripts.utils.kakarot import get_contract as get_solidity_contract
 
     def _factory(contract_app, contract_name):
         def _wrap_cairo_run(fun):

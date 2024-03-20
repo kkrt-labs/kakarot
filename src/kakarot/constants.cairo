@@ -23,6 +23,8 @@ namespace Constants {
     const BYTES_PER_FELT = 16;
     const MAX_NONCE = 2 ** 64 - 1;
     const MAX_CODE_SIZE = 0x6000;
+
+    const BURN_ADDRESS = 0xdead;
 }
 
 // See model.Opcode:
@@ -470,18 +472,18 @@ dw Gas.BASE;
 dw 0;
 dw 0;
 dw 1;
-// INVALID
+// BLOBHASH
 dw 0x49;
+dw Gas.BLOBHASH;
+dw 1;
+dw 1;
 dw 0;
-dw 0;
-dw 0;
-dw 0;
-// INVALID
+// BLOBBASEFEE
 dw 0x4a;
+dw Gas.BASE;
 dw 0;
 dw 0;
-dw 0;
-dw 0;
+dw 1;
 // INVALID
 dw 0x4b;
 dw 0;
@@ -584,24 +586,24 @@ dw Gas.JUMPDEST;
 dw 0;
 dw 0;
 dw 0;
-// INVALID
+// TLOAD
 dw 0x5c;
+dw 0;  // gas cost is dynamic
+dw 1;
+dw 1;
 dw 0;
-dw 0;
-dw 0;
-dw 0;
-// INVALID
+// TSTORE
 dw 0x5d;
-dw 0;
-dw 0;
-dw 0;
-dw 0;
-// INVALID
+dw 0;  // gas cost is dynamic
+dw 2;
+dw 2;
+dw -2;
+// MCOPY
 dw 0x5e;
-dw 0;
-dw 0;
-dw 0;
-dw 0;
+dw Gas.VERY_LOW;  // + Dynamic gas
+dw 3;
+dw 3;
+dw -3;
 // PUSH0
 dw 0x5f;
 dw Gas.BASE;

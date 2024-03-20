@@ -8,7 +8,7 @@ TEST_ADDRESSES = [
 ]
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="session")
 @pytest.mark.UniswapV2Factory
 class TestUniswapV2Factory:
     class TestDeploy:

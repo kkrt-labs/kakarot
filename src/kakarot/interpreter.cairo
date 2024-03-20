@@ -275,9 +275,9 @@ namespace Interpreter {
         jmp end;
         call BlockInformation.exec_block_information;  // 0x48
         jmp end;
-        call unknown_opcode;  // 0x49
+        call BlockInformation.exec_block_information;  // 0x49
         jmp end;
-        call unknown_opcode;  // 0x4a
+        call BlockInformation.exec_block_information;  // 0x4a
         jmp end;
         call unknown_opcode;  // 0x4b
         jmp end;
@@ -313,11 +313,11 @@ namespace Interpreter {
         jmp end;
         call MemoryOperations.exec_jumpdest;  // 0x5b
         jmp end;
-        call unknown_opcode;  // 0x5c
+        call MemoryOperations.exec_tload;  // 0x5c
         jmp end;
-        call unknown_opcode;  // 0x5d
+        call MemoryOperations.exec_tstore;  // 0x5d
         jmp end;
-        call unknown_opcode;  // 0x5e
+        call MemoryOperations.exec_mcopy;  // 0x5e
         jmp end;
         call PushOperations.exec_push;  // 0x5f
         jmp end;
@@ -904,9 +904,10 @@ namespace Interpreter {
             let account = State.get_account(address.evm);
             let code_or_nonce = Account.has_code_or_nonce(account);
             let is_collision = code_or_nonce * is_deploy_tx;
-            // Nonce is set to 1 in case of deploy_tx
+            // Nonce is set to 1 in case of deploy_tx and account is marked as created
             let nonce = account.nonce * (1 - is_deploy_tx) + is_deploy_tx;
             let account = Account.set_nonce(account, nonce);
+            let account = Account.set_created(account, is_deploy_tx);
             State.update_account(account);
         }
 

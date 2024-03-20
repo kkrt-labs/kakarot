@@ -4,16 +4,18 @@ version = "0.1.0"
 description = "EVM implementation written in Cairo, a sort of ZK-EVM emulator, leveraging STARK proof system."
 authors = []
 readme = "README.md"
-packages = [{ include = "scripts" }, { include = "tests" }]
+packages = [{ include = "kakarot_scripts" }, { include = "tests" }]
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.10"
+python = ">=3.10,<3.11"
 starknet-py = "^0.20.0"
 cairo-lang = "0.13.0"
 python-dotenv = "^0.21.0"
 async-lru = "^2.0.4"
 
 [tool.poetry.group.dev.dependencies]
+pytest = "^8.1.1"
+pytest-asyncio = "~0.21.0"
 toml = "^0.10.2"
 pandas = "^1.5.1"
 matplotlib = "^3.8.2"
@@ -40,9 +42,13 @@ pyperclip = "^1.8.2"
 tabulate = "^0.9.0"
 pytest-env = "^1.1.3"
 amarna = "^0.1.5"
-py-evm = "^0.7.0a1"
+py-evm = { git = "https://github.com/ethereum/py-evm", branch = "cancun-network-upgrade" }
 openzeppelin-cairo-contracts = "^0.6.1"
 ethereum = { git = "https://github.com/ethereum/execution-specs.git" }
+eth-bloom = "^3.0.0"
+trie = "^3.0.0"
+cached-property = "^1.5.2"
+py-ecc = "^7.0.0"
 
 [tool.pytest.ini_options]
 norecursedirs = "tests/ef_tests/test_data"
@@ -102,6 +108,8 @@ markers = [
   "CHAINID:        Opcode Value 0x46 - Get the chain ID",
   "SELFBALANCE:    Opcode Value 0x47 - Get the balance of the current contract",
   "BASEFEE:        Opcode Value 0x48 - Get the base fee of the current block",
+  "BLOBHASH:       Opcode Value 0x49 - Get the versioned hash at the requested index",
+  "BLOBBASEFEE:    Opcode Value 0x4a - Get the blob base-fee of the current block",
   "StackMemoryStorageFlowOperations",
   "MLOAD:          Opcode Value 0x51 - Load word from memory",
   "MSTORE:         Opcode Value 0x52 - Save word to memory",
@@ -113,6 +121,9 @@ markers = [
   "PC:             Opcode Value 0x58 - Get the value of the program counter prior to the increment",
   "MSIZE:          Opcode Value 0x59 - Get the size of active memory in bytes",
   "JUMPDEST:       Opcode Value 0x5b - Mark a valid destination for jumps",
+  "TLOAD:          Opcode Value 0x5c - Load word from transient storage",
+  "TSTORE:         Opcode Value 0x5d - Save word to transient storage",
+  "MCOPY:          Opcode Value 0x5e - Copy memory from one location to another",
   "PushOperations",
   "PUSH            Opcodes 0x60 ~ 7f - Place n-byte item on stack",
   "DuplicationOperations",

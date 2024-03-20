@@ -41,6 +41,8 @@ namespace BlockInformation {
         jmp chainid;
         jmp selfbalance;
         jmp basefee;
+        jmp blobhash;
+        jmp blobbasefee;
 
         blockhash:
         let range_check_ptr = [fp - 8];
@@ -120,6 +122,17 @@ namespace BlockInformation {
         let evm = cast([fp - 3], model.EVM*);
         let stack = cast([fp - 6], model.Stack*);
         Stack.push_uint128(evm.message.env.base_fee);
+        jmp end;
+
+        blobhash:
+        let stack = cast([fp - 6], model.Stack*);
+        Stack.pop();
+        Stack.push_uint128(0);
+        jmp end;
+
+        blobbasefee:
+        let stack = cast([fp - 6], model.Stack*);
+        Stack.push_uint128(0);
         jmp end;
 
         end:

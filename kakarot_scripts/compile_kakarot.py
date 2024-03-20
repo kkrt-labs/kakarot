@@ -3,8 +3,8 @@ import logging
 import multiprocessing as mp
 from datetime import datetime
 
-from scripts.constants import COMPILED_CONTRACTS, NETWORK
-from scripts.utils.starknet import compile_contract
+from kakarot_scripts.constants import COMPILED_CONTRACTS, NETWORK
+from kakarot_scripts.utils.starknet import compile_contract
 
 mp.set_start_method("fork")
 

@@ -1,6 +1,6 @@
 import pytest
 
-from scripts.constants import NETWORK
+from kakarot_scripts.constants import NETWORK
 
 test_cases = [
     {
@@ -983,6 +983,38 @@ test_cases = [
     },
     {
         "params": {
+            "value": 0,
+            "code": "60004900",
+            "calldata": "",
+            "stack": "0",
+            "memory": "",
+            "return_data": "",
+            "success": 1,
+        },
+        "id": "Get blob versioned hash",
+        "marks": [
+            pytest.mark.BLOBHASH,
+            pytest.mark.BlockInformation,
+        ],
+    },
+    {
+        "params": {
+            "value": 0,
+            "code": "4a00",
+            "calldata": "",
+            "stack": "0",
+            "memory": "",
+            "return_data": "",
+            "success": 1,
+        },
+        "id": "Get BlobBaseFee",
+        "marks": [
+            pytest.mark.BLOBBASEFEE,
+            pytest.mark.BlockInformation,
+        ],
+    },
+    {
+        "params": {
             "code": "34",
             "calldata": "",
             "value": 90,
@@ -1132,6 +1164,22 @@ test_cases = [
         "marks": [
             pytest.mark.MSTORE,
             pytest.mark.MLOAD,
+            pytest.mark.StackMemoryStorageFlowOperations,
+        ],
+    },
+    {
+        "params": {
+            "value": 0,
+            "code": "7f12345678909876543210000000000000000000000000000000000009876543216000526020600060205e",
+            "calldata": "",
+            "stack": "",
+            "memory": "12345678909876543210000000000000000000000000000000000009876543211234567890987654321000000000000000000000000000000000000987654321",
+            "return_data": "",
+            "success": 1,
+        },
+        "id": "Copy memory word",
+        "marks": [
+            pytest.mark.MCOPY,
             pytest.mark.StackMemoryStorageFlowOperations,
         ],
     },
@@ -1930,5 +1978,31 @@ test_cases = [
         },
         "id": "SSTORE 0xff at key 0xaa, then SLOAD 0xaa",
         "marks": [pytest.mark.SSTORE, pytest.mark.SLOAD],
+    },
+    {
+        "params": {
+            "value": 0,
+            "code": "60ff60aa55",
+            "calldata": "",
+            "stack": "",
+            "memory": "",
+            "return_data": "",
+            "success": 1,
+        },
+        "id": "TSTORE 0xff at key 0xaa",
+        "marks": [pytest.mark.TSTORE],
+    },
+    {
+        "params": {
+            "value": 0,
+            "code": "60ff60aa5560aa54",
+            "calldata": "",
+            "stack": f"{0xff}",
+            "memory": "",
+            "return_data": "",
+            "success": 1,
+        },
+        "id": "SSTORE 0xff at key 0xaa, then SLOAD 0xaa",
+        "marks": [pytest.mark.TSTORE, pytest.mark.TLOAD],
     },
 ]

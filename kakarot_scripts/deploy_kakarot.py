@@ -2,7 +2,7 @@
 import logging
 from asyncio import run
 
-from scripts.constants import (
+from kakarot_scripts.constants import (
     BLOCK_GAS_LIMIT,
     DECLARED_CONTRACTS,
     ETH_TOKEN_ADDRESS,
@@ -10,7 +10,7 @@ from scripts.constants import (
     NETWORK,
     RPC_CLIENT,
 )
-from scripts.utils.starknet import (
+from kakarot_scripts.utils.starknet import (
     declare,
     deploy,
     dump_declarations,
@@ -79,7 +79,7 @@ async def main():
 
     if EVM_ADDRESS:
         logger.info(f"ℹ️  Found default EVM address {EVM_ADDRESS}")
-        from scripts.utils.kakarot import get_eoa
+        from kakarot_scripts.utils.kakarot import get_eoa
 
         await get_eoa(amount=100)
 

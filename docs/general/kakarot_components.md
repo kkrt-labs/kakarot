@@ -101,4 +101,5 @@ configured on Starknet with the following steps:
    - _Externally Owned Account_ class hash.
    - _Account Proxy_ class hash.
 
-This flow can be seen in the [deploy script](../../scripts/deploy_kakarot.py).
+This flow can be seen in the
+[deploy script](../../kakarot_scripts/deploy_kakarot.py).
