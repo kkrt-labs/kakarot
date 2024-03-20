@@ -58,7 +58,6 @@ namespace ContractAccount {
         is_initialized_.write(1);
         Ownable.initializer(kakarot_address);
         evm_address.write(_evm_address);
-        nonce.write(1);
         // Give infinite ETH transfer allowance to Kakarot
         let (native_token_address) = IKakarot.get_native_token(kakarot_address);
         let (infinite) = uint256_not(Uint256(0, 0));

@@ -39,14 +39,14 @@ def generate_tests():
         if content.get("network") == DEFAULT_NETWORK
     }
 
-    # Add tests from BlockchainTests/GeneralStateTests/Pyspecs/cancun
+    # Add tests from BlockchainTests/GeneralStateTests/Pyspecs
     test_cases.update(
         {
             f"{name.split('::')[-1]}": content
             for (root, _, files) in os.walk(EF_TESTS_DIR)
             for file in files
             if file.endswith(".json")
-            and f"BlockchainTests/GeneralStateTests/Pyspecs/{DEFAULT_NETWORK.lower()}"
+            and f"BlockchainTests/GeneralStateTests/Pyspecs"
             in root
             for name, content in json.loads((Path(root) / file).read_text()).items()
         }
