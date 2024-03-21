@@ -7,8 +7,24 @@ directories:
 # trunk-ignore(yamllint/empty-values)
 filename:
 
-# List of specific tests names to be skipped with folder
 testname:
+  eip198_modexp_precompile:
+    - modexp__fork_Cancun_minus_blockchain_test_minus_EIP_minus_198_minus_case3_minus_raw_minus_input_minus_out_minus_of_minus_gas
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base_00_minus_exponent_00_minus_modulus_02_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x01
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base_01_minus_exponent_01_minus_modulus_02_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x01
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base_02_minus_exponent_01_minus_modulus_03_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x02
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base_02_minus_exponent_02_minus_modulus_05_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x04
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base
+  eip1344_chainid:
+    - chainid__fork_Cancun_minus_blockchain_test
+  stEIP1153-transientStorage:
+    - 15_tstoreCannotBeDosd_d0g0v0_Cancun #RunResources error
+    - 21_tstoreCannotBeDosdOOO_d0g0v0_Cancun #RunResources error
+  eip1153_tstore:
+    - run_until_out_of_gas__fork_Cancun_minus_blockchain_test_minus_tstore #RunResources error
+    - run_until_out_of_gas__fork_Cancun_minus_blockchain_test_minus_tstore_tload #RunResources error
+    - run_until_out_of_gas__fork_Cancun_minus_blockchain_test_minus_tstore_wide_address_space #RunResources error
   vmArithmeticTest:
     - expPower256Of256_d0g0v0_Cancun #RunResources error
     - exp_d9g0v0_Cancun #RunResources error
@@ -32,28 +48,26 @@ testname:
   stChainId:
     - chainId_d0g0v0_Cancun
   stCreate2:
-    - RevertInCreateInInitCreate2_d0g0v0_Cancun
+    - RevertInCreateInInitCreate2Paris_d0g0v0_Cancun
     - create2callPrecompiles_d6g0v0_Cancun
     - create2callPrecompiles_d7g0v0_Cancun
-    - create2collisionStorage_d0g0v0_Cancun
-    - create2collisionStorage_d1g0v0_Cancun
-    - create2collisionStorage_d2g0v0_Cancun
+    - create2collisionStorageParis_d0g0v0_Cancun
+    - create2collisionStorageParis_d1g0v0_Cancun
+    - create2collisionStorageParis_d2g0v0_Cancun
+  stCallCreateCallCodeTest:
+    - Call1024PreCalls_d0g0v0_Cancun #RunResources error
+    - Call1024PreCalls_d0g1v0_Cancun #RunResources error
   stCreateTest:
     - CreateOOGafterMaxCodesize_d2g0v0_Cancun #RunResources error
     - CreateOOGafterMaxCodesize_d3g0v0_Cancun #RunResources error
     - CreateOOGafterMaxCodesize_d5g0v0_Cancun #RunResources error
-    - CreateTransactionHighNonce_d0g0v0_Cancun
-    - CreateTransactionHighNonce_d0g0v1_Cancun
-  stCallCreateCallCodeTest:
-    - Call1024PreCalls_d0g0v0_Cancun #RunResources error
-    - Call1024PreCalls_d0g1v0_Cancun #RunResources error
+  stExtCodeHash:
+    - dynamicAccountOverwriteEmpty_Paris_d0g0v0_Cancun
   stDelegatecallTestHomestead:
     - Call1024PreCalls_d0g1v0_Cancun #RunResources error
     - Call1024PreCalls_d0g2v0_Cancun #RunResources error
   stEIP150singleCodeGasPrices:
     - gasCostExp_d7g0v0_Cancun #RunResources error
-  stExtCodeHash:
-    - dynamicAccountOverwriteEmpty_d0g0v0_Cancun
   stPreCompiledContracts2:
     - CALLBlake2f_d9g0v0_Cancun #RunResources error
     - CALLBlake2f_d9g1v0_Cancun #RunResources error
@@ -70,7 +84,7 @@ testname:
     - CALLCODERipemd160_0_d0g0v0_Cancun
     - CALLCODERipemd160_4_gas719_d0g0v0_Cancun
     - CALLCODERipemd160_5_d0g0v0_Cancun #RunResources error
-    - CALLCODESha256_5_d0g0v0_Cancun
+    - CALLCODESha256_5_d0g0v0_Cancun #RunResources error
     - CallEcrecover0_Gas2999_d0g0v0_Cancun
     - CallEcrecover0_NoGas_d0g0v0_Cancun
     - CallEcrecover80_d0g0v0_Cancun
@@ -84,14 +98,15 @@ testname:
     - CallRipemd160_0_d0g0v0_Cancun
     - CallRipemd160_4_gas719_d0g0v0_Cancun
     - CallRipemd160_5_d0g0v0_Cancun #RunResources error
-    - CallSha256_5_d0g0v0_Cancun
+    - CallSha256_5_d0g0v0_Cancun #RunResources error
     - ecrecoverShortBuff_d0g0v0_Cancun
     - modexpRandomInput_d1g0v0_Cancun
     - modexpRandomInput_d1g1v0_Cancun
-    - modexpRandomInput_d2g0v0_Cancun
-    - modexpRandomInput_d2g1v0_Cancun
+    - modexpRandomInput_d2g0v0_Cancun #RunResources error
+    - modexpRandomInput_d2g1v0_Cancun #RunResources error
   stPreCompiledContracts:
     - idPrecomps_d4g0v0_Cancun
+    - idPrecomps_d9g0v0_Cancun
     - modexp_d11g0v0_Cancun
     - modexp_d11g1v0_Cancun
     - modexp_d11g2v0_Cancun
@@ -148,60 +163,81 @@ testname:
     - modexp_d37g1v0_Cancun
     - modexp_d37g2v0_Cancun
     - modexp_d37g3v0_Cancun
-    - precompsEIP2929_d10g0v0_Cancun
-    - precompsEIP2929_d113g0v0_Cancun
-    - precompsEIP2929_d114g0v0_Cancun
-    - precompsEIP2929_d115g0v0_Cancun
-    - precompsEIP2929_d131g0v0_Cancun
-    - precompsEIP2929_d132g0v0_Cancun
-    - precompsEIP2929_d133g0v0_Cancun
-    - precompsEIP2929_d149g0v0_Cancun
-    - precompsEIP2929_d150g0v0_Cancun
-    - precompsEIP2929_d167g0v0_Cancun
-    - precompsEIP2929_d168g0v0_Cancun
-    - precompsEIP2929_d185g0v0_Cancun
-    - precompsEIP2929_d186g0v0_Cancun
-    - precompsEIP2929_d187g0v0_Cancun
-    - precompsEIP2929_d203g0v0_Cancun
-    - precompsEIP2929_d204g0v0_Cancun
-    - precompsEIP2929_d205g0v0_Cancun
-    - precompsEIP2929_d221g0v0_Cancun
-    - precompsEIP2929_d222g0v0_Cancun
-    - precompsEIP2929_d223g0v0_Cancun
-    - precompsEIP2929_d239g0v0_Cancun
-    - precompsEIP2929_d23g0v0_Cancun
-    - precompsEIP2929_d240g0v0_Cancun
-    - precompsEIP2929_d24g0v0_Cancun
-    - precompsEIP2929_d257g0v0_Cancun
-    - precompsEIP2929_d258g0v0_Cancun
-    - precompsEIP2929_d259g0v0_Cancun
-    - precompsEIP2929_d25g0v0_Cancun
-    - precompsEIP2929_d275g0v0_Cancun
-    - precompsEIP2929_d276g0v0_Cancun
-    - precompsEIP2929_d277g0v0_Cancun
-    - precompsEIP2929_d293g0v0_Cancun
-    - precompsEIP2929_d294g0v0_Cancun
-    - precompsEIP2929_d311g0v0_Cancun
-    - precompsEIP2929_d312g0v0_Cancun
-    - precompsEIP2929_d313g0v0_Cancun
-    - precompsEIP2929_d41g0v0_Cancun
-    - precompsEIP2929_d42g0v0_Cancun
-    - precompsEIP2929_d59g0v0_Cancun
-    - precompsEIP2929_d60g0v0_Cancun
-    - precompsEIP2929_d77g0v0_Cancun
-    - precompsEIP2929_d78g0v0_Cancun
-    - precompsEIP2929_d79g0v0_Cancun
-    - precompsEIP2929_d8g0v0_Cancun
-    - precompsEIP2929_d95g0v0_Cancun
-    - precompsEIP2929_d96g0v0_Cancun
-    - precompsEIP2929_d97g0v0_Cancun
-    - precompsEIP2929_d9g0v0_Cancun
+    - precompsEIP2929Cancun_d10g0v0_Cancun
+    - precompsEIP2929Cancun_d113g0v0_Cancun
+    - precompsEIP2929Cancun_d114g0v0_Cancun
+    - precompsEIP2929Cancun_d115g0v0_Cancun
+    - precompsEIP2929Cancun_d117g0v0_Cancun
+    - precompsEIP2929Cancun_d12g0v0_Cancun
+    - precompsEIP2929Cancun_d131g0v0_Cancun
+    - precompsEIP2929Cancun_d132g0v0_Cancun
+    - precompsEIP2929Cancun_d133g0v0_Cancun
+    - precompsEIP2929Cancun_d135g0v0_Cancun
+    - precompsEIP2929Cancun_d149g0v0_Cancun
+    - precompsEIP2929Cancun_d150g0v0_Cancun
+    - precompsEIP2929Cancun_d153g0v0_Cancun
+    - precompsEIP2929Cancun_d167g0v0_Cancun
+    - precompsEIP2929Cancun_d168g0v0_Cancun
+    - precompsEIP2929Cancun_d171g0v0_Cancun
+    - precompsEIP2929Cancun_d185g0v0_Cancun
+    - precompsEIP2929Cancun_d186g0v0_Cancun
+    - precompsEIP2929Cancun_d187g0v0_Cancun
+    - precompsEIP2929Cancun_d189g0v0_Cancun
+    - precompsEIP2929Cancun_d203g0v0_Cancun
+    - precompsEIP2929Cancun_d204g0v0_Cancun
+    - precompsEIP2929Cancun_d205g0v0_Cancun
+    - precompsEIP2929Cancun_d207g0v0_Cancun
+    - precompsEIP2929Cancun_d221g0v0_Cancun
+    - precompsEIP2929Cancun_d222g0v0_Cancun
+    - precompsEIP2929Cancun_d223g0v0_Cancun
+    - precompsEIP2929Cancun_d225g0v0_Cancun
+    - precompsEIP2929Cancun_d239g0v0_Cancun
+    - precompsEIP2929Cancun_d23g0v0_Cancun
+    - precompsEIP2929Cancun_d240g0v0_Cancun
+    - precompsEIP2929Cancun_d243g0v0_Cancun
+    - precompsEIP2929Cancun_d24g0v0_Cancun
+    - precompsEIP2929Cancun_d257g0v0_Cancun
+    - precompsEIP2929Cancun_d258g0v0_Cancun
+    - precompsEIP2929Cancun_d259g0v0_Cancun
+    - precompsEIP2929Cancun_d25g0v0_Cancun
+    - precompsEIP2929Cancun_d261g0v0_Cancun
+    - precompsEIP2929Cancun_d275g0v0_Cancun
+    - precompsEIP2929Cancun_d276g0v0_Cancun
+    - precompsEIP2929Cancun_d277g0v0_Cancun
+    - precompsEIP2929Cancun_d279g0v0_Cancun
+    - precompsEIP2929Cancun_d27g0v0_Cancun
+    - precompsEIP2929Cancun_d293g0v0_Cancun
+    - precompsEIP2929Cancun_d294g0v0_Cancun
+    - precompsEIP2929Cancun_d297g0v0_Cancun
+    - precompsEIP2929Cancun_d311g0v0_Cancun
+    - precompsEIP2929Cancun_d312g0v0_Cancun
+    - precompsEIP2929Cancun_d313g0v0_Cancun
+    - precompsEIP2929Cancun_d315g0v0_Cancun
+    - precompsEIP2929Cancun_d333g0v0_Cancun
+    - precompsEIP2929Cancun_d351g0v0_Cancun
+    - precompsEIP2929Cancun_d369g0v0_Cancun
+    - precompsEIP2929Cancun_d387g0v0_Cancun
+    - precompsEIP2929Cancun_d41g0v0_Cancun
+    - precompsEIP2929Cancun_d42g0v0_Cancun
+    - precompsEIP2929Cancun_d45g0v0_Cancun
+    - precompsEIP2929Cancun_d59g0v0_Cancun
+    - precompsEIP2929Cancun_d60g0v0_Cancun
+    - precompsEIP2929Cancun_d63g0v0_Cancun
+    - precompsEIP2929Cancun_d77g0v0_Cancun
+    - precompsEIP2929Cancun_d78g0v0_Cancun
+    - precompsEIP2929Cancun_d79g0v0_Cancun
+    - precompsEIP2929Cancun_d81g0v0_Cancun
+    - precompsEIP2929Cancun_d8g0v0_Cancun
+    - precompsEIP2929Cancun_d95g0v0_Cancun
+    - precompsEIP2929Cancun_d96g0v0_Cancun
+    - precompsEIP2929Cancun_d97g0v0_Cancun
+    - precompsEIP2929Cancun_d99g0v0_Cancun
+    - precompsEIP2929Cancun_d9g0v0_Cancun
   stRandom2:
     - randomStatetest458_d0g0v0_Cancun #RunResources error
     - randomStatetest476_d0g0v0_Cancun #RunResources error
     - randomStatetest487_d0g0v0_Cancun
     - randomStatetest564_d0g0v0_Cancun
-    - randomStatetest571_d0g0v0_Cancun
     - randomStatetest605_d0g0v0_Cancun
     - randomStatetest650_d0g0v0_Cancun
   stQuadraticComplexityTest:
@@ -216,8 +252,8 @@ testname:
     - Call50000_identity_d0g1v0_Cancun #RunResources error
     - Call50000_rip160_d0g0v0_Cancun #RunResources error
     - Call50000_rip160_d0g1v0_Cancun #RunResources error
-    - Call50000_sha256_d0g0v0_Cancun
-    - Call50000_sha256_d0g1v0_Cancun
+    - Call50000_sha256_d0g0v0_Cancun #RunResources error
+    - Call50000_sha256_d0g1v0_Cancun #RunResources error
     - Callcode50000_d0g1v0_Cancun #RunResources error
     - Return50000_2_d0g0v0_Cancun #RunResources error
     - Return50000_2_d0g1v0_Cancun #RunResources error
@@ -242,38 +278,39 @@ testname:
     - randomStatetest64_d0g0v0_Cancun
     - randomStatetest85_d0g0v0_Cancun
   stRevertTest:
-    - RevertInCreateInInit_d0g0v0_Cancun
-    - RevertPrecompiledTouchExactOOG_d13g1v0_Cancun
-    - RevertPrecompiledTouchExactOOG_d13g2v0_Cancun
-    - RevertPrecompiledTouchExactOOG_d14g1v0_Cancun
-    - RevertPrecompiledTouchExactOOG_d14g2v0_Cancun
-    - RevertPrecompiledTouchExactOOG_d15g1v0_Cancun
-    - RevertPrecompiledTouchExactOOG_d21g1v0_Cancun
-    - RevertPrecompiledTouchExactOOG_d21g2v0_Cancun
-    - RevertPrecompiledTouchExactOOG_d22g1v0_Cancun
-    - RevertPrecompiledTouchExactOOG_d22g2v0_Cancun
-    - RevertPrecompiledTouchExactOOG_d23g1v0_Cancun
-    - RevertPrecompiledTouchExactOOG_d29g1v0_Cancun
-    - RevertPrecompiledTouchExactOOG_d29g2v0_Cancun
-    - RevertPrecompiledTouchExactOOG_d30g1v0_Cancun
-    - RevertPrecompiledTouchExactOOG_d30g2v0_Cancun
-    - RevertPrecompiledTouchExactOOG_d31g1v0_Cancun
-    - RevertPrecompiledTouchExactOOG_d5g1v0_Cancun
-    - RevertPrecompiledTouchExactOOG_d5g2v0_Cancun
-    - RevertPrecompiledTouchExactOOG_d6g1v0_Cancun
-    - RevertPrecompiledTouchExactOOG_d6g2v0_Cancun
-    - RevertPrecompiledTouchExactOOG_d7g1v0_Cancun
+    - RevertInCreateInInit_Paris_d0g0v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d13g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d13g2v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d14g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d14g2v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d15g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d21g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d21g2v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d22g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d22g2v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d23g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d29g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d29g2v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d30g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d30g2v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d31g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d5g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d5g2v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d6g1v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d6g2v0_Cancun
+    - RevertPrecompiledTouchExactOOG_Paris_d7g1v0_Cancun
   stSStoreTest:
-    - InitCollision_d0g0v0_Cancun
-    - InitCollision_d1g0v0_Cancun
-    - InitCollision_d2g0v0_Cancun
-    - InitCollision_d3g0v0_Cancun
+    - InitCollisionParis_d0g0v0_Cancun
+    - InitCollisionParis_d1g0v0_Cancun
+    - InitCollisionParis_d2g0v0_Cancun
+    - InitCollisionParis_d3g0v0_Cancun
   stReturnDataTest:
-    - modexp_modsize0_returndatasize_d4g0v0_Cancun
+    - modexp_modsize0_returndatasize_d4g0v0_Cancun #RunResources error
   stStaticCall:
     - StaticcallToPrecompileFromCalledContract_d0g0v0_Cancun
     - StaticcallToPrecompileFromContractInitialization_d0g0v0_Cancun
     - StaticcallToPrecompileFromTransaction_d0g0v0_Cancun
+    - static_Call1024PreCalls2_d0g0v0_Cancun #RunResources error
     - static_Call1MB1024Calldepth_d1g0v0_Cancun #RunResources error
     - static_Call50000_d0g0v0_Cancun #RunResources error
     - static_Call50000_d1g0v0_Cancun #RunResources error
@@ -299,7 +336,7 @@ testname:
     - static_CallEcrecoverR_prefixed0_d0g0v0_Cancun
     - static_CallRipemd160_4_gas719_d0g0v0_Cancun
     - static_CallRipemd160_5_d0g0v0_Cancun #RunResources error
-    - static_CallSha256_5_d0g0v0_Cancun
+    - static_CallSha256_5_d0g0v0_Cancun #RunResources error
     - static_LoopCallsThenRevert_d0g0v0_Cancun #RunResources error
     - static_LoopCallsThenRevert_d0g1v0_Cancun #RunResources error
     - static_Return50000_2_d0g0v0_Cancun #RunResources error
@@ -307,11 +344,9 @@ testname:
     - JUMPDEST_Attack_d0g0v0_Cancun #RunResources error
     - JUMPDEST_AttackwithJump_d0g0v0_Cancun #RunResources error
     - block504980_d0g0v0_Cancun #RunResources error
-    - failed_tx_xcf416c53_d0g0v0_Cancun #RunResources error
+    - failed_tx_xcf416c53_Paris_d0g0v0_Cancun #RunResources error
   stSystemOperationsTest:
     - CallToNameRegistratorNotMuchMemory0_d0g0v0_Cancun
-    - multiSelfdestruct_d0g0v0_Cancun
-    - multiSelfdestruct_d4g0v0_Cancun
   stStaticFlagEnabled:
     - CallWithZeroValueToPrecompileFromCalledContract_d0g0v0_Cancun
     - CallWithZeroValueToPrecompileFromContractInitialization_d0g0v0_Cancun
@@ -324,12 +359,8 @@ testname:
     - DelegatecallToPrecompileFromTransaction_d0g0v0_Cancun
   stTimeConsuming:
     - CALLBlake2f_MaxRounds_d0g0v0_Cancun #RunResources error
-    - static_Call50000_sha256_d0g0v0_Cancun
-    - static_Call50000_sha256_d1g0v0_Cancun
-  stTransactionTest:
-    - HighGasPrice_d0g0v0_Cancun
-    - SuicidesAndInternlCallSuicidesSuccess_d1g0v0_Cancun
-    - ValueOverflow_d0g0v0_Cancun
+    - static_Call50000_sha256_d0g0v0_Cancun #RunResources error
+    - static_Call50000_sha256_d1g0v0_Cancun #RunResources error
   stZeroKnowledge:
     - ecpairing_empty_data_d0g0v0_Cancun
     - ecpairing_empty_data_d0g3v0_Cancun
@@ -477,8 +508,8 @@ testname:
     - pointMulAdd_d8g0v0_Cancun
     - pointMulAdd_d8g3v0_Cancun
 
-# List of file names regex to be skipped
-# The first level corresponds to the directory, the second to the list of file names regex to ignore.
+# Keeping some skipped tests because of a probable memory leak somewhere
+# causing cargo test to just crash at some point
 regex:
   eip4895_withdrawals:
     - .*
@@ -487,6 +518,8 @@ regex:
   eip4788_beacon_root:
     - .*
   eip7516_blobgasfee:
+    - .*
+  stEIP4844-blobtransactions:
     - .*
   stMemoryStressTest:
     - mload32bitBound_return.* # ef-tests #565
