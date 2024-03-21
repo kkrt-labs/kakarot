@@ -141,6 +141,7 @@ namespace State {
             Internals._cache_precompile(7);
             Internals._cache_precompile(8);
             Internals._cache_precompile(9);
+            Internals._cache_precompile(10);
         }
         tempvar state = new model.State(
             accounts_start=state.accounts_start,
