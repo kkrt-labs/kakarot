@@ -12,7 +12,7 @@ class TestPrecompiles:
                 (0x6, "Kakarot: NotImplementedPrecompile 6"),
                 (0x7, "Kakarot: NotImplementedPrecompile 7"),
                 (0x8, "Kakarot: NotImplementedPrecompile 8"),
-                (0x0A, "Kakarot: NotImplementedPrecompile :"),
+                (0x0A, "Kakarot: NotImplementedPrecompile 10"),
             ],
         )
         def test__precompiles_run(self, cairo_run, address, error_message):

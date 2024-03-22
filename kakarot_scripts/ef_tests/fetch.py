@@ -48,6 +48,7 @@ def generate_tests():
             if file.endswith(".json")
             and "BlockchainTests/GeneralStateTests/Pyspecs" in root
             for name, content in json.loads((Path(root) / file).read_text()).items()
+            if f"fork_{DEFAULT_NETWORK}" in name
         }
     )
 

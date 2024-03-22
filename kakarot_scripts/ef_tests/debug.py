@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from eth.vm.forks.cancun.blocks import CancunBlock
 from web3 import Web3
 
+from kakarot_scripts.constants import BEACON_ROOT_ADDRESS
 from kakarot_scripts.ef_tests.fetch import EF_TESTS_PARSED_DIR
 
 logging.basicConfig()
@@ -26,9 +27,6 @@ if TEST_NAME is None:
     raise ValueError("Please set TEST_NAME")
 TEST_PARENT_FOLDER = os.getenv("TEST_PARENT_FOLDER", "")
 RPC_ENDPOINT = "http://127.0.0.1:8545"
-
-
-BEACON_ROOT_ADDRESS = "0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02"
 
 
 class AnvilHandler:

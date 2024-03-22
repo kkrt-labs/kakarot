@@ -144,6 +144,7 @@ namespace Internals {
     // @dev Account is deployed here if it doesn't exist already
     // @param accounts_start The dict start pointer
     // @param accounts_end The dict end pointer
+    // @param native_token_address The address of the native token
     func _commit_accounts{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
     }(accounts_start: DictAccess*, accounts_end: DictAccess*, native_token_address: felt) {
@@ -163,8 +164,10 @@ namespace Internals {
     // @notice Commit the account to the storage backend at given address
     // @dev Account is deployed here if it doesn't exist already
     // @dev Works on model.Account to make sure only finalized accounts are committed.
+    // @dev If the contract received funds after a selfdestruct in its creation, the funds are burnt.
     // @param self The pointer to the Account
     // @param starknet_address A starknet address to commit to
+    // @param native_token_address The address of the native token
     // @notice Iterate through the storage dict and update the Starknet storage
     func _commit_account{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
