@@ -89,7 +89,7 @@ class TestState:
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
         def test_should_cache_precompiles(self, cairo_run):
             state = cairo_run("test__cache_precompiles")
-            assert list(state["accounts"].keys()) == [
+            assert list(map(str.lower, state["accounts"].keys())) == [
                 f"0x{i:040x}" for i in range(1, 11)
             ]
 
