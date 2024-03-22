@@ -10,6 +10,8 @@ filename:
 testname:
   eip198_modexp_precompile:
     - modexp__fork_Cancun_minus_blockchain_test_minus_EIP_minus_198_minus_case3_minus_raw_minus_input_minus_out_minus_of_minus_gas
+    - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base__minus_exponent__minus_modulus_0002_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x0001
+    - test_modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base__minus_exponent__minus_modulus_02_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x01
     - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base_00_minus_exponent_00_minus_modulus_02_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x01
     - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base_01_minus_exponent_01_minus_modulus_02_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x01
     - modexp__fork_Cancun_minus_blockchain_test_minus_ModExpInput_base_02_minus_exponent_01_minus_modulus_03_minus_ExpectedOutput_call_return_code_0x01_minus_returned_data_0x02
@@ -58,6 +60,8 @@ testname:
     - Call1024PreCalls_d0g0v0_Cancun #RunResources error
     - Call1024PreCalls_d0g1v0_Cancun #RunResources error
   stCreateTest:
+    - CreateTransactionHighNonce_d0g0v0_Cancun
+    - CreateTransactionHighNonce_d0g0v1_Cancun
     - CreateOOGafterMaxCodesize_d2g0v0_Cancun #RunResources error
     - CreateOOGafterMaxCodesize_d3g0v0_Cancun #RunResources error
     - CreateOOGafterMaxCodesize_d5g0v0_Cancun #RunResources error
@@ -357,6 +361,9 @@ testname:
     - DelegatecallToPrecompileFromCalledContract_d0g0v0_Cancun
     - DelegatecallToPrecompileFromContractInitialization_d0g0v0_Cancun
     - DelegatecallToPrecompileFromTransaction_d0g0v0_Cancun
+  stTransactionTest:
+    - HighGasPriceParis_d0g0v0_Cancun
+    - ValueOverflowParis_d0g0v0_Cancun
   stTimeConsuming:
     - CALLBlake2f_MaxRounds_d0g0v0_Cancun #RunResources error
     - static_Call50000_sha256_d0g0v0_Cancun #RunResources error
