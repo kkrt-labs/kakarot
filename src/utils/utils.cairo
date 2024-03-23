@@ -159,12 +159,12 @@ namespace Helpers {
         return (res=quotient);
     }
 
-    func compute_half_uint256{range_check_ptr}(val: felt*, i: felt, res: felt) -> (res: felt) {
-        if (i == 1) {
-            return (res=res + [val]);
+    func compute_half_uint256{range_check_ptr}(bytes: felt*, bytes_len: felt, res: felt) -> (res: felt) {
+        if (bytes_len == 1) {
+            return (res=res + [bytes]);
         }
-        let (temp_pow) = pow(256, i - 1);
-        let (res) = compute_half_uint256(val + 1, i - 1, res + [val] * temp_pow);
+        let (temp_pow) = pow(256, bytes_len - 1);
+        let (res) = compute_half_uint256(bytes + 1, bytes_len - 1, res + [bytes] * temp_pow);
         return (res=res);
     }
 
