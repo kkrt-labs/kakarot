@@ -50,7 +50,7 @@ from hypothesis import strategies as st
                 0x726C6400,
             ],
         ),
-        ("test__bytes_i_to_uint256", [], []),
+        ("test__bytes_big_endian_to_uint256", [], []),
     ],
 )
 def test_utils(cairo_run, test_case, data, expected):

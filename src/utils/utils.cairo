@@ -96,7 +96,7 @@ namespace Helpers {
     // @param val: pointer to the first byte.
     // @param i: sequence size.
     // @return res: Uint256 representation of the given input in bytes.
-    func bytes_i_to_uint256{range_check_ptr}(val: felt*, i: felt) -> Uint256 {
+    func bytes_big_endian_to_uint256{range_check_ptr}(val: felt*, i: felt) -> Uint256 {
         alloc_locals;
 
         if (i == 0) {

@@ -47,7 +47,7 @@ namespace EthTransaction {
         let destination = Helpers.try_parse_destination_from_bytes(
             sub_items[3].data_len, sub_items[3].data
         );
-        let amount = Helpers.bytes_i_to_uint256(sub_items[4].data, sub_items[4].data_len);
+        let amount = Helpers.bytes_big_endian_to_uint256(sub_items[4].data, sub_items[4].data_len);
         let payload_len = sub_items[5].data_len;
         let payload = sub_items[5].data;
         let chain_id = Helpers.bytes_to_felt(sub_items[6].data_len, sub_items[6].data);
@@ -89,7 +89,7 @@ namespace EthTransaction {
         let destination = Helpers.try_parse_destination_from_bytes(
             sub_items[4].data_len, sub_items[4].data
         );
-        let amount = Helpers.bytes_i_to_uint256(sub_items[5].data, sub_items[5].data_len);
+        let amount = Helpers.bytes_big_endian_to_uint256(sub_items[5].data, sub_items[5].data_len);
         let payload_len = sub_items[6].data_len;
         let payload = sub_items[6].data;
 
@@ -140,7 +140,7 @@ namespace EthTransaction {
         let destination = Helpers.try_parse_destination_from_bytes(
             sub_items[5].data_len, sub_items[5].data
         );
-        let amount = Helpers.bytes_i_to_uint256(sub_items[6].data, sub_items[6].data_len);
+        let amount = Helpers.bytes_big_endian_to_uint256(sub_items[6].data, sub_items[6].data_len);
         let payload_len = sub_items[7].data_len;
         let payload = sub_items[7].data;
         let (access_list: felt*) = alloc();

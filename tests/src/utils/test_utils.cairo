@@ -6,30 +6,30 @@ from starkware.cairo.common.memset import memset
 
 from utils.utils import Helpers
 
-func test__bytes_i_to_uint256{range_check_ptr}() {
+func test__bytes_big_endian_to_uint256{range_check_ptr}() {
     alloc_locals;
 
     let (bytecode) = alloc();
     assert bytecode[0] = 0x01;
     assert bytecode[1] = 0x02;
 
-    let uint256 = Helpers.bytes_i_to_uint256(bytecode, 1);
+    let uint256 = Helpers.bytes_big_endian_to_uint256(bytecode, 1);
 
     assert_uint256_eq(uint256, Uint256(0x01, 0));
 
-    let uint256 = Helpers.bytes_i_to_uint256(bytecode, 2);
+    let uint256 = Helpers.bytes_big_endian_to_uint256(bytecode, 2);
 
     assert_uint256_eq(uint256, Uint256(0x0102, 0));
 
     let (bytecode) = alloc();
     memset(bytecode, 0xFF, 20);
-    let uint256 = Helpers.bytes_i_to_uint256(bytecode, 20);
+    let uint256 = Helpers.bytes_big_endian_to_uint256(bytecode, 20);
 
     assert_uint256_eq(uint256, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFF));
 
     let (bytecode) = alloc();
     memset(bytecode, 0xFF, 16);
-    let uint256 = Helpers.bytes_i_to_uint256(bytecode, 16);
+    let uint256 = Helpers.bytes_big_endian_to_uint256(bytecode, 16);
 
     assert_uint256_eq(uint256, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0));
 
