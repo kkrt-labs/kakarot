@@ -9,7 +9,7 @@ from starkware.cairo.common.pow import pow
 from starkware.cairo.common.uint256 import Uint256, uint256_check
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
-from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.bool import TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_update
 
@@ -112,7 +112,7 @@ namespace Helpers {
         let is_bytes_len_16_bytes_or_less = is_le(bytes_len, 16);
 
         // 1 - 16 bytes
-        if (is_bytes_len_16_bytes_or_less != FALSE) {
+        if (is_bytes_len_16_bytes_or_less == TRUE) {
             let (low) = compute_half_uint256(val=bytes, i=bytes_len, res=0);
             let res = Uint256(low=low, high=0);
 
