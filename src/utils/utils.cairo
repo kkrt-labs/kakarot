@@ -92,36 +92,36 @@ namespace Helpers {
         let res = Uint256(low=low, high=high);
         return res;
     }
-    // @notice This function is used to convert a sequence of i bytes to Uint256.
-    // @param val: pointer to the first byte.
-    // @param i: sequence size.
+    // @notice This function is used to convert bytes array to Uint256.
+    // @param bytes: pointer to the first byte of the bytes array.
+    // @param bytes_len: bytes array length.
     // @return res: Uint256 representation of the given input in bytes.
-    func bytes_big_endian_to_uint256{range_check_ptr}(val: felt*, i: felt) -> Uint256 {
+    func bytes_big_endian_to_uint256{range_check_ptr}(bytes_len: felt, bytes: felt*) -> Uint256 {
         alloc_locals;
 
-        if (i == 0) {
+        if (bytes_len == 0) {
             let res = Uint256(0, 0);
             return res;
         }
 
-        let is_sequence_32_bytes_or_less = is_le(i, 32);
+        let is_bytes_len_32_bytes_or_less = is_le(bytes_len, 32);
         with_attr error_message("number must be shorter than 32 bytes") {
-            assert is_sequence_32_bytes_or_less = 1;
+            assert is_bytes_len_32_bytes_or_less = 1;
         }
 
-        let is_sequence_16_bytes_or_less = is_le(i, 16);
+        let is_bytes_len_16_bytes_or_less = is_le(bytes_len, 16);
 
         // 1 - 16 bytes
-        if (is_sequence_16_bytes_or_less != FALSE) {
-            let (low) = compute_half_uint256(val=val, i=i, res=0);
+        if (is_bytes_len_16_bytes_or_less != FALSE) {
+            let (low) = compute_half_uint256(val=bytes, i=bytes_len, res=0);
             let res = Uint256(low=low, high=0);
 
             return res;
         }
 
         // 17 - 32 bytes
-        let (low) = compute_half_uint256(val=val + i - 16, i=16, res=0);
-        let (high) = compute_half_uint256(val=val, i=i - 16, res=0);
+        let (low) = compute_half_uint256(val=bytes + bytes_len - 16, i=16, res=0);
+        let (high) = compute_half_uint256(val=bytes, i=bytes_len - 16, res=0);
         let res = Uint256(low=low, high=high);
 
         return res;

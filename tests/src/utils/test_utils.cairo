@@ -13,23 +13,23 @@ func test__bytes_big_endian_to_uint256{range_check_ptr}() {
     assert bytecode[0] = 0x01;
     assert bytecode[1] = 0x02;
 
-    let uint256 = Helpers.bytes_big_endian_to_uint256(bytecode, 1);
+    let uint256 = Helpers.bytes_big_endian_to_uint256(1, bytecode);
 
     assert_uint256_eq(uint256, Uint256(0x01, 0));
 
-    let uint256 = Helpers.bytes_big_endian_to_uint256(bytecode, 2);
+    let uint256 = Helpers.bytes_big_endian_to_uint256(2, bytecode);
 
     assert_uint256_eq(uint256, Uint256(0x0102, 0));
 
     let (bytecode) = alloc();
     memset(bytecode, 0xFF, 20);
-    let uint256 = Helpers.bytes_big_endian_to_uint256(bytecode, 20);
+    let uint256 = Helpers.bytes_big_endian_to_uint256(20, bytecode);
 
     assert_uint256_eq(uint256, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFF));
 
     let (bytecode) = alloc();
     memset(bytecode, 0xFF, 16);
-    let uint256 = Helpers.bytes_big_endian_to_uint256(bytecode, 16);
+    let uint256 = Helpers.bytes_big_endian_to_uint256(16, bytecode);
 
     assert_uint256_eq(uint256, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0));
 
