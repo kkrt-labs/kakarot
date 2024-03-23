@@ -158,7 +158,9 @@ namespace Helpers {
         return (res=quotient);
     }
 
-    func compute_uint256_from_bytes{range_check_ptr}(bytes: felt*, bytes_len: felt, res: felt) -> (res: felt) {
+    func compute_uint256_from_bytes{range_check_ptr}(bytes: felt*, bytes_len: felt, res: felt) -> (
+        res: felt
+    ) {
         if (bytes_len == 1) {
             return (res=res + [bytes]);
         }
