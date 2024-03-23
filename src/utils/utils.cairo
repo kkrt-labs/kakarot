@@ -5,7 +5,6 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import assert_le, split_felt, assert_nn_le, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.memcpy import memcpy
-from starkware.cairo.common.pow import pow
 from starkware.cairo.common.uint256 import Uint256, uint256_check
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
@@ -163,7 +162,7 @@ namespace Helpers {
         if (bytes_len == 1) {
             return (res=res + [bytes]);
         }
-        let (temp_pow) = pow(256, bytes_len - 1);
+        let temp_pow = pow256_rev(16 - (bytes_len - 1));
         let (res) = compute_uint256_from_bytes(bytes + 1, bytes_len - 1, res + [bytes] * temp_pow);
         return (res=res);
     }
