@@ -91,9 +91,9 @@ namespace Helpers {
         let res = Uint256(low=low, high=high);
         return res;
     }
-    // @notice This function is used to convert bytes array to Uint256.
-    // @param bytes: pointer to the first byte of the bytes array.
+    // @notice This function is used to convert bytes array in big-endian to Uint256.
     // @param bytes_len: bytes array length.
+    // @param bytes: pointer to the first byte of the bytes array.
     // @return res: Uint256 representation of the given input in bytes.
     func bytes_big_endian_to_uint256{range_check_ptr}(bytes_len: felt, bytes: felt*) -> Uint256 {
         alloc_locals;
