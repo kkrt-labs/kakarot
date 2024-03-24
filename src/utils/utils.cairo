@@ -112,15 +112,15 @@ namespace Helpers {
 
         // 1 - 16 bytes
         if (is_bytes_len_16_bytes_or_less == TRUE) {
-            let (low) = compute_uint256_from_bytes(bytes, bytes_len, 0);
+            let (low) = compute_half_uint256_from_bytes(bytes, bytes_len, 0);
             let res = Uint256(low=low, high=0);
 
             return res;
         }
 
         // 17 - 32 bytes
-        let (low) = compute_uint256_from_bytes(bytes + bytes_len - 16, 16, 0);
-        let (high) = compute_uint256_from_bytes(bytes, bytes_len - 16, 0);
+        let (low) = compute_half_uint256_from_bytes(bytes + bytes_len - 16, 16, 0);
+        let (high) = compute_half_uint256_from_bytes(bytes, bytes_len - 16, 0);
         let res = Uint256(low=low, high=high);
 
         return res;
@@ -158,14 +158,14 @@ namespace Helpers {
         return (res=quotient);
     }
 
-    func compute_uint256_from_bytes{range_check_ptr}(bytes: felt*, bytes_len: felt, res: felt) -> (
+    func compute_half_uint256_from_bytes{range_check_ptr}(bytes: felt*, bytes_len: felt, res: felt) -> (
         res: felt
     ) {
         if (bytes_len == 1) {
             return (res=res + [bytes]);
         }
         let temp_pow = pow256_rev(16 - (bytes_len - 1));
-        let (res) = compute_uint256_from_bytes(bytes + 1, bytes_len - 1, res + [bytes] * temp_pow);
+        let (res) = compute_half_uint256_from_bytes(bytes + 1, bytes_len - 1, res + [bytes] * temp_pow);
         return (res=res);
     }
 
