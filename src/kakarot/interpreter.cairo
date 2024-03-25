@@ -11,6 +11,7 @@ from starkware.cairo.common.math import split_felt
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256, uint256_le, uint256_sub, uint256_add
 from starkware.cairo.common.math import unsigned_div_rem
+from starkware.starknet.common.syscalls import get_tx_info
 
 // Internal dependencies
 from kakarot.account import Account
@@ -976,6 +977,11 @@ namespace Interpreter {
             let success = State.add_transfer(transfer);
 
             // State must be finalized as we added entries with the latest transfer
+            // In all cases, the sender's nonce is set to the protocol's so that the commited nonce is the same
+            let sender = State.get_account(env.origin);
+            let (tx_info) = get_tx_info();
+            let sender = Account.set_nonce(sender, tx_info.nonce);
+            State.update_account(sender);
             State.finalize();
         }
 

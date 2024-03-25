@@ -14,14 +14,14 @@ class TestExternallyOwnedAccount:
                 evm_address=0xABDE1,
             )
             SyscallHandler.mock_storage.assert_any_call(
-                address=get_storage_var_address("kakarot_address"), value=0x1234
+                address=get_storage_var_address("kakarot_address_"), value=0x1234
             )
             SyscallHandler.mock_storage.assert_any_call(
-                address=get_storage_var_address("evm_address"), value=0xABDE1
+                address=get_storage_var_address("evm_address_"), value=0xABDE1
             )
 
     class TestGetEvmAddress:
-        @SyscallHandler.patch("evm_address", 0xABDE1)
+        @SyscallHandler.patch("evm_address_", 0xABDE1)
         def test_should_return_stored_address(self, cairo_run):
             output = cairo_run("test__get_evm_address__should_return_stored_address")
             assert output == [0xABDE1]

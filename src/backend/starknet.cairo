@@ -21,7 +21,8 @@ from kakarot.account import Account
 from kakarot.precompiles.precompiles import Precompiles
 from kakarot.constants import Constants
 from kakarot.events import evm_contract_deployed
-from kakarot.interfaces.interfaces import IERC20, IContractAccount, IAccount
+from kakarot.interfaces.interfaces import IERC20, IAccount
+
 from kakarot.model import model
 from kakarot.state import State
 from kakarot.storages import (
@@ -207,9 +208,9 @@ namespace Internals {
                 }
 
                 // Write bytecode
-                IContractAccount.write_bytecode(starknet_address, self.code_len, self.code);
+                IAccount.write_bytecode(starknet_address, self.code_len, self.code);
                 // Set nonce
-                IContractAccount.set_nonce(starknet_address, self.nonce);
+                IAccount.set_nonce(starknet_address, self.nonce);
                 // Save storages
                 _save_storage(starknet_address, self.storage_start, self.storage);
                 return ();
@@ -219,11 +220,6 @@ namespace Internals {
             }
         }
 
-        let (account_type) = IAccount.account_type(contract_address=starknet_address);
-        if (account_type == 'EOA') {
-            return ();
-        }
-
         // @dev: EIP-6780 - If selfdestruct on an account created, dont commit data
         let is_created_selfdestructed = self.created * self.selfdestruct;
         if (is_created_selfdestructed != 0) {
@@ -231,14 +227,14 @@ namespace Internals {
         }
 
         // Set nonce
-        IContractAccount.set_nonce(starknet_address, self.nonce);
+        IAccount.set_nonce(starknet_address, self.nonce);
         // Save storages
         Internals._save_storage(starknet_address, self.storage_start, self.storage);
 
         // Update bytecode if required (SELFDESTRUCTed contract, redeployed)
         let (bytecode_len) = IAccount.bytecode_len(starknet_address);
         if (bytecode_len != self.code_len) {
-            IContractAccount.write_bytecode(starknet_address, self.code_len, self.code);
+            IAccount.write_bytecode(starknet_address, self.code_len, self.code);
             return ();
         }
 
@@ -302,7 +298,7 @@ namespace Internals {
             return _save_storage(starknet_address, storage_start + DictAccess.SIZE, storage_end);
         }
 
-        IContractAccount.write_storage(
+        IAccount.write_storage(
             contract_address=starknet_address, storage_addr=storage_start.key, value=[value]
         );
 

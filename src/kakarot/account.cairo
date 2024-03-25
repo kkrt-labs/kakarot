@@ -28,7 +28,7 @@ from kakarot.storages import (
     native_token_address,
     contract_account_class_hash,
 )
-from kakarot.interfaces.interfaces import IAccount, IContractAccount, IERC20
+from kakarot.interfaces.interfaces import IAccount, IERC20
 from kakarot.model import model
 from kakarot.storages import evm_to_starknet_address
 from utils.dict import default_dict_copy
@@ -116,24 +116,17 @@ namespace Account {
             assert balance_ptr = new Uint256(balance.low, balance.high);
         }
 
-        let (account_type) = IAccount.account_type(contract_address=starknet_address);
-
-        if (account_type == 'EOA') {
-            let (bytecode: felt*) = alloc();
-            // There is no way to access the nonce of an EOA currently
-            // But putting 1 shouldn't have any impact and is safer than 0
-            // since has_code_or_nonce is used in some places to trigger collision
-            let account = Account.init(
-                address=address, code_len=0, code=bytecode, nonce=1, balance=balance_ptr
-            );
-            return account;
-        }
-
-        // Case CA
         let (bytecode_len, bytecode) = IAccount.bytecode(contract_address=starknet_address);
-        let (nonce) = IContractAccount.get_nonce(contract_address=starknet_address);
+        let (nonce) = IAccount.get_nonce(contract_address=starknet_address);
+
+        // Special case: empty accounts, deployed but with no data, from create-SD transactions
+        // must
+
+        // CAs are instanciated with their actual nonce - EOAs are instanciated with the nonce=1
+        // that is set when they're deployed.
+        // If an account was created-selfdestructed in the same tx, it is empty here.
         let account = Account.init(
-            address, code_len=bytecode_len, code=bytecode, nonce=nonce, balance=balance_ptr
+            address=address, code_len=bytecode_len, code=bytecode, nonce=nonce, balance=balance_ptr
         );
         return account;
     }
@@ -176,7 +169,7 @@ namespace Account {
         // Case reading from Starknet storage
         let starknet_account_exists = is_registered(self.address.evm);
         if (starknet_account_exists != 0) {
-            let (value) = IContractAccount.storage(
+            let (value) = IAccount.storage(
                 contract_address=self.address.starknet, storage_addr=storage_addr
             );
             tempvar value_ptr = new Uint256(value.low, value.high);
@@ -386,7 +379,7 @@ namespace Account {
             return value;
         }
         let (storage_addr) = Internals._storage_addr(key);
-        let (value) = IContractAccount.storage(
+        let (value) = IAccount.storage(
             contract_address=account.address.starknet, storage_addr=storage_addr
         );
         return value;
@@ -648,7 +641,7 @@ namespace Internals {
 
         let starknet_address = Account.get_registered_starknet_address(evm_address);
         if (starknet_address != 0) {
-            let (value) = IContractAccount.storage(
+            let (value) = IAccount.storage(
                 contract_address=starknet_address, storage_addr=storage_addr
             );
             tempvar value_ptr = new Uint256(value.low, value.high);

@@ -15,7 +15,6 @@ from kakarot.storages import (
     account_proxy_class_hash,
     contract_account_class_hash,
     base_fee,
-    externally_owned_account_class_hash,
     native_token_address,
     precompiles_class_hash,
     coinbase,
@@ -42,7 +41,6 @@ namespace Kakarot {
         owner: felt,
         native_token_address_,
         contract_account_class_hash_,
-        externally_owned_account_class_hash_,
         account_proxy_class_hash_,
         precompiles_class_hash_,
         block_gas_limit_,
@@ -50,7 +48,6 @@ namespace Kakarot {
         Ownable.initializer(owner);
         native_token_address.write(native_token_address_);
         contract_account_class_hash.write(contract_account_class_hash_);
-        externally_owned_account_class_hash.write(externally_owned_account_class_hash_);
         account_proxy_class_hash.write(account_proxy_class_hash_);
         precompiles_class_hash.write(precompiles_class_hash_);
         coinbase.write(0xCA40796aFB5472abaeD28907D5ED6FC74c04954a);
@@ -222,7 +219,7 @@ namespace Kakarot {
     }(evm_contract_address: felt) -> (starknet_contract_address: felt) {
         alloc_locals;
 
-        let (class_hash) = externally_owned_account_class_hash.read();
+        let (class_hash) = contract_account_class_hash.read();
         let (starknet_contract_address) = Starknet.deploy(class_hash, evm_contract_address);
 
         return (starknet_contract_address=starknet_contract_address);
