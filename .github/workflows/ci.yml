@@ -203,7 +203,7 @@ jobs:
           make ef-test-v0 | tee test_v0.out
           set +o pipefail
       - name: Retrieve ef-tests execution resources
-        run: python kakarot_scripts/check_resources.py
+        run: python scripts/compute_resources.py
         env:
           KAKAROT_VERSION: v0
       - name: upload resources
