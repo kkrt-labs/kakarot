@@ -35,10 +35,10 @@ namespace IERC20 {
 
 @contract_interface
 namespace IAccount {
-    func get_evm_address() -> (evm_address: felt) {
+    func initialize(implementation: felt, calldata_len: felt, calldata: felt*) {
     }
 
-    func initialize(implementation: felt, calldata_len: felt, calldata: felt*) {
+    func get_evm_address() -> (evm_address: felt) {
     }
 
     func bytecode_len() -> (len: felt) {
@@ -47,15 +47,6 @@ namespace IAccount {
     func bytecode() -> (bytecode_len: felt, bytecode: felt*) {
     }
 
-    func storage(storage_addr: felt) -> (value: Uint256) {
-    }
-
-    func account_type() -> (type: felt) {
-    }
-}
-
-@contract_interface
-namespace IContractAccount {
     func write_bytecode(bytecode_len: felt, bytecode: felt*) {
     }
 
@@ -69,6 +60,9 @@ namespace IContractAccount {
     }
 
     func set_nonce(nonce: felt) {
+    }
+
+    func is_empty() -> (is_empty: felt) {
     }
 }
 

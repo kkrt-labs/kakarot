@@ -14,7 +14,7 @@ from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.dict_access import DictAccess
 
 from kakarot.account import Account
-from kakarot.interfaces.interfaces import IContractAccount
+from kakarot.interfaces.interfaces import IAccount
 from kakarot.constants import Constants
 from kakarot.errors import Errors
 from kakarot.evm import EVM
