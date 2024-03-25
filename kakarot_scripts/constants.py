@@ -155,8 +155,7 @@ DEPLOYMENTS_DIR.mkdir(exist_ok=True, parents=True)
 
 COMPILED_CONTRACTS = [
     {"contract_name": "kakarot", "is_account_contract": False},
-    {"contract_name": "contract_account", "is_account_contract": False},
-    {"contract_name": "externally_owned_account", "is_account_contract": True},
+    {"contract_name": "contract_account", "is_account_contract": True},
     {"contract_name": "proxy", "is_account_contract": False},
     {"contract_name": "EVM", "is_account_contract": False},
     {"contract_name": "OpenzeppelinAccount", "is_account_contract": True},
@@ -166,7 +165,6 @@ COMPILED_CONTRACTS = [
 DECLARED_CONTRACTS = [
     {"contract_name": "kakarot", "cairo_version": ArtifactType.cairo0},
     {"contract_name": "contract_account", "cairo_version": ArtifactType.cairo0},
-    {"contract_name": "externally_owned_account", "cairo_version": ArtifactType.cairo0},
     {"contract_name": "proxy", "cairo_version": ArtifactType.cairo0},
     {"contract_name": "EVM", "cairo_version": ArtifactType.cairo0},
     {"contract_name": "OpenzeppelinAccount", "cairo_version": ArtifactType.cairo0},

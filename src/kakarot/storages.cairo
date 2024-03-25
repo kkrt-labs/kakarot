@@ -17,10 +17,6 @@ func contract_account_class_hash() -> (value: felt) {
 }
 
 @storage_var
-func externally_owned_account_class_hash() -> (res: felt) {
-}
-
-@storage_var
 func account_proxy_class_hash() -> (res: felt) {
 }
 

@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
-from kakarot.accounts.eoa.library import ExternallyOwnedAccount
+from kakarot.accounts.library import GenericAccount
 
 func test__initialize__should_store_given_evm_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -18,7 +18,7 @@ func test__initialize__should_store_given_evm_address{
     %}
 
     // When
-    ExternallyOwnedAccount.initialize(kakarot_address, evm_address);
+    GenericAccount.initialize(kakarot_address, evm_address);
 
     return ();
 }
@@ -28,7 +28,7 @@ func test__get_evm_address__should_return_stored_address{
 }(output_ptr: felt*) {
     alloc_locals;
 
-    let (evm_address) = ExternallyOwnedAccount.get_evm_address();
+    let (evm_address) = GenericAccount.get_evm_address();
 
     assert [output_ptr] = evm_address;
 

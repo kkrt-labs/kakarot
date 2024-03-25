@@ -23,7 +23,7 @@ _resources_report: List[dict] = []
 # A mapping to fix the mismatch between the debug_info and the identifiers.
 _label_scope = {
     "kakarot.constants.opcodes_label": "kakarot.constants",
-    "kakarot.accounts.contract.library.internal.pow_": "kakarot.accounts.contract.library.internal",
+    "kakarot.accounts.library.internal.pow_": "kakarot.accounts.library.internal",
 }
 T = TypeVar("T", bound=Callable[..., Any])
 

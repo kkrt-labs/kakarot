@@ -20,7 +20,6 @@ namespace Constants {
     // CA_V0.0.1 => [67, 65, 95, 86, 48, 46, 48, 46, 49] => 0x43415f56302e302e31 => pedersen hashed
     const CA_VERSION = 0x7be1c12f918a11456a63db29ebfd5e477c967ae994e1bf751a7d04fa8429095;
     // ACCOUNTS
-    const BYTES_PER_FELT = 16;
     const MAX_NONCE = 2 ** 64 - 1;
     const MAX_CODE_SIZE = 0x6000;
 
