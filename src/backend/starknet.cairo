@@ -41,14 +41,18 @@ namespace Starknet {
     func commit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         self: model.State*
     ) {
+        alloc_locals;
+        let (native_token_address_) = native_token_address.read();
+
         // Accounts
-        Internals._commit_accounts(self.accounts_start, self.accounts);
+        Internals._commit_accounts{state=self}(
+            self.accounts_start, self.accounts, native_token_address_
+        );
 
         // Events
         Internals._emit_events(self.events_len, self.events);
 
         // Transfers
-        let (native_token_address_) = native_token_address.read();
         Internals._transfer_eth(native_token_address_, self.transfers_len, self.transfers);
 
         return ();
@@ -140,18 +144,19 @@ namespace Internals {
     // @dev Account is deployed here if it doesn't exist already
     // @param accounts_start The dict start pointer
     // @param accounts_end The dict end pointer
-    func _commit_accounts{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        accounts_start: DictAccess*, accounts_end: DictAccess*
-    ) {
+    // @param native_token_address The address of the native token
+    func _commit_accounts{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
+    }(accounts_start: DictAccess*, accounts_end: DictAccess*, native_token_address: felt) {
         alloc_locals;
         if (accounts_start == accounts_end) {
             return ();
         }
 
         let account = cast(accounts_start.new_value, model.Account*);
-        _commit_account(account);
+        _commit_account(account, native_token_address);
 
-        _commit_accounts(accounts_start + DictAccess.SIZE, accounts_end);
+        _commit_accounts(accounts_start + DictAccess.SIZE, accounts_end, native_token_address);
 
         return ();
     }
@@ -159,12 +164,14 @@ namespace Internals {
     // @notice Commit the account to the storage backend at given address
     // @dev Account is deployed here if it doesn't exist already
     // @dev Works on model.Account to make sure only finalized accounts are committed.
+    // @dev If the contract received funds after a selfdestruct in its creation, the funds are burnt.
     // @param self The pointer to the Account
     // @param starknet_address A starknet address to commit to
+    // @param native_token_address The address of the native token
     // @notice Iterate through the storage dict and update the Starknet storage
-    func _commit_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        self: model.Account*
-    ) {
+    func _commit_account{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
+    }(self: model.Account*, native_token_address) {
         alloc_locals;
 
         let is_precompile = Precompiles.is_precompile(self.address.evm);
@@ -186,8 +193,16 @@ namespace Internals {
                 // Deploy accounts
                 let (class_hash) = contract_account_class_hash.read();
                 Starknet.deploy(class_hash, self.address.evm);
-                // If SELFDESTRUCT, stops here to leave the account empty
+
+                // If SELFDESTRUCT, leave the account empty after deploying it - including
+                // burning any leftover balance.
                 if (self.selfdestruct != 0) {
+                    let starknet_address = Account.compute_starknet_address(Constants.BURN_ADDRESS);
+                    tempvar burn_address = new model.Address(
+                        starknet=starknet_address, evm=Constants.BURN_ADDRESS
+                    );
+                    let transfer = model.Transfer(self.address, burn_address, [self.balance]);
+                    State.add_transfer(transfer);
                     return ();
                 }
 
@@ -204,14 +219,14 @@ namespace Internals {
             }
         }
 
-        // Case existing Account and SELFDESTRUCT
-        if (self.selfdestruct != 0) {
-            IContractAccount.selfdestruct(contract_address=starknet_address);
+        let (account_type) = IAccount.account_type(contract_address=starknet_address);
+        if (account_type == 'EOA') {
             return ();
         }
 
-        let (account_type) = IAccount.account_type(contract_address=starknet_address);
-        if (account_type == 'EOA') {
+        // @dev: EIP-6780 - If selfdestruct on an account created, dont commit data
+        let is_created_selfdestructed = self.created * self.selfdestruct;
+        if (is_created_selfdestructed != 0) {
             return ();
         }
 

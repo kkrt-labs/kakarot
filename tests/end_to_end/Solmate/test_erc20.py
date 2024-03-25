@@ -21,7 +21,7 @@ async def erc_20(deploy_solidity_contract, owner):
     )
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="session")
 @pytest.mark.SolmateERC20
 class TestERC20:
     class TestDeploy:

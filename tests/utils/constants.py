@@ -1,7 +1,7 @@
 from enum import IntEnum
 from time import time
 
-from scripts.constants import BLOCK_GAS_LIMIT
+from kakarot_scripts.constants import BLOCK_GAS_LIMIT
 
 BLOCK_GAS_LIMIT = BLOCK_GAS_LIMIT
 
@@ -30,7 +30,7 @@ TRANSACTION_INTRINSIC_GAS_COST = 21_000
 TRANSACTION_GAS_LIMIT = BLOCK_GAS_LIMIT
 
 # PRECOMPILES
-LAST_PRECOMPILE_ADDRESS = 0x09
+LAST_PRECOMPILE_ADDRESS = 0x0A
 
 MAX_INT = 2**256 - 1
 
@@ -232,6 +232,8 @@ class Opcodes(IntEnum):
     CHAINID = 0x46
     SELFBALANCE = 0x47
     BASEFEE = 0x48
+    BLOBHASH = 0x49
+    BLOBBASEFEE = 0x4A
     POP = 0x50
     MLOAD = 0x51
     MSTORE = 0x52
@@ -244,6 +246,8 @@ class Opcodes(IntEnum):
     MSIZE = 0x59
     GAS = 0x5A
     JUMPDEST = 0x5B
+    TLOAD = 0x5C
+    TSTORE = 0x5D
     PUSH0 = 0x5F
     PUSH1 = 0x60
     PUSH2 = 0x61

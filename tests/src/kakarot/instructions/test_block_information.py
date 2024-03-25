@@ -20,6 +20,8 @@ class TestBlockInformation:
             (Opcodes.GASLIMIT, BLOCK_GAS_LIMIT),
             (Opcodes.CHAINID, CHAIN_ID),
             (Opcodes.BASEFEE, 0),
+            (Opcodes.BLOBHASH, 0),
+            (Opcodes.BLOBBASEFEE, 0),
         ],
     )
     @SyscallHandler.patch("coinbase", 0xCA40796AFB5472ABAED28907D5ED6FC74C04954A)

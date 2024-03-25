@@ -1,5 +1,7 @@
 import pytest
 
+from tests.utils.constants import LAST_PRECOMPILE_ADDRESS
+
 
 class TestPrecompiles:
     class TestRun:
@@ -10,6 +12,7 @@ class TestPrecompiles:
                 (0x6, "Kakarot: NotImplementedPrecompile 6"),
                 (0x7, "Kakarot: NotImplementedPrecompile 7"),
                 (0x8, "Kakarot: NotImplementedPrecompile 8"),
+                (0x0A, "Kakarot: NotImplementedPrecompile 10"),
             ],
         )
         def test__precompiles_run(self, cairo_run, address, error_message):
@@ -18,7 +21,7 @@ class TestPrecompiles:
             assert reverted
 
     class TestIsPrecompile:
-        @pytest.mark.parametrize("address", range(1, 11))
-        def test__is_precompile_should_return_true_up_to_9(self, cairo_run, address):
+        @pytest.mark.parametrize("address", range(1, 12))
+        def test__is_precompile_should_return_true_up_to_10(self, cairo_run, address):
             output = cairo_run("test__is_precompile", address=address)
-            assert output[0] == (address <= 0x9)
+            assert output[0] == (address <= LAST_PRECOMPILE_ADDRESS)

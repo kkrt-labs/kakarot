@@ -15,7 +15,7 @@ from kakarot.precompiles.ec_recover import PrecompileEcRecover
 from kakarot.precompiles.ripemd160 import PrecompileRIPEMD160
 from kakarot.precompiles.sha256 import PrecompileSHA256
 
-const LAST_PRECOMPILE_ADDRESS = 0x09;
+const LAST_PRECOMPILE_ADDRESS = 0x0a;
 const EXEC_PRECOMPILE_SELECTOR = 0x01e3e7ac032066525c37d0791c3c0f5fbb1c17f1cb6fe00afc206faa3fbd18e1;
 
 // @title Precompile related functions.
@@ -75,6 +75,8 @@ namespace Precompiles {
         call not_implemented_precompile;  // 0x8
         ret;
         call PrecompileBlake2f.run;  // 0x9
+        ret;
+        call not_implemented_precompile;  // 0x0a: POINT_EVALUATION_PRECOMPILE
         ret;
     }
 

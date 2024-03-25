@@ -58,7 +58,6 @@ namespace ContractAccount {
         is_initialized_.write(1);
         Ownable.initializer(kakarot_address);
         evm_address.write(_evm_address);
-        nonce.write(1);
         // Give infinite ETH transfer allowance to Kakarot
         let (native_token_address) = IKakarot.get_native_token(kakarot_address);
         let (infinite) = uint256_not(Uint256(0, 0));
@@ -144,35 +143,6 @@ namespace ContractAccount {
         // Write State
         storage_write(address=storage_addr + 0, value=value.low);
         storage_write(address=storage_addr + 1, value=value.high);
-        return ();
-    }
-
-    // @notice Selfdestruct whatever can be
-    // @dev It's not possible to remove a contract in Starknet
-    func selfdestruct{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr,
-        bitwise_ptr: BitwiseBuiltin*,
-    }() {
-        alloc_locals;
-        // Access control check.
-        Ownable.assert_only_owner();
-        nonce.write(0);
-        is_initialized_.write(0);
-        evm_address.write(0);
-
-        // Bytecode could we erased more efficiently, there is no read to
-        // initialize a new memory segment.
-        let (bytecode_len) = bytecode_len_.read();
-        let (local bytecode: felt*) = alloc();
-        memset(bytecode, 0, bytecode_len);
-        write_bytecode(bytecode_len, bytecode);
-
-        bytecode_len_.write(0);
-
-        // TODO: clean also the storage
-
         return ();
     }
 

@@ -4,7 +4,7 @@ from web3 import Web3
 from tests.utils.errors import evm_error
 
 
-@pytest.mark.asyncio
+@pytest.mark.asyncio(scope="package")
 @pytest.mark.PlainOpcodes
 class TestPlainOpcodes:
     class TestStaticCall:
@@ -230,7 +230,7 @@ class TestPlainOpcodes:
             assert await counter.count() == 1
 
     class TestCreate2:
-        async def test_should_redeploy_after_selfdestruct(
+        async def test_should_collision_after_selfdestruct_different_tx(
             self,
             plain_opcodes,
             get_solidity_contract,
@@ -255,16 +255,28 @@ class TestPlainOpcodes:
                 "ContractWithSelfdestructMethod",
                 address=events["Create2Address"][0]["_address"],
             )
-            assert await eth_get_code(contract_with_selfdestruct.address)
+            pre_code = await eth_get_code(contract_with_selfdestruct.address)
+            assert pre_code
             await contract_with_selfdestruct.kill()
-            assert not await eth_get_code(contract_with_selfdestruct.address)
+            post_code = await eth_get_code(contract_with_selfdestruct.address)
+            assert pre_code == post_code
 
-            await plain_opcodes.create2(
-                bytecode=contract_with_selfdestruct.constructor().data_in_transaction,
-                salt=salt,
-                caller_eoa=owner.starknet_contract,
-            )
-            assert await eth_get_code(contract_with_selfdestruct.address)
+            receipt = (
+                await plain_opcodes.create2(
+                    bytecode=contract_with_selfdestruct.constructor().data_in_transaction,
+                    salt=salt,
+                    caller_eoa=owner.starknet_contract,
+                )
+            )["receipt"]
+
+            events = plain_opcodes.events.parse_starknet_events(receipt.events)
+
+            # There should be a create2 collision which returns zero
+            assert events["Create2Address"] == [
+                {
+                    "_address": "0x0000000000000000000000000000000000000000",
+                }
+            ]
 
         async def test_should_deploy_bytecode_at_address(
             self,
