@@ -68,8 +68,13 @@ def get_test_file():
     ]
 
     if len(tests) == 0:
-        raise ValueError(f"Test {TEST_NAME} not found")
-
+        if len(TEST_NAME) > 255:
+            raise ValueError(
+                f"Test name '{TEST_NAME}' could not be parsed because it exceeds the maximum length of 255 characters."
+            )
+        raise ValueError(
+            f"Test '{TEST_NAME}' not found. Please ensure that you are using the valid EF-Test name, not the sanitized identifier used in the runner. If the test name is longer than 255 characters, it might be invalid."
+        )
     if len(tests) > 1:
         if TEST_PARENT_FOLDER == "":
             raise ValueError(

@@ -68,12 +68,12 @@ this cryptic message to map location in the original cairo program.
 And tada! You should now be able to understand the reason your cairo program
 failed with more clarity.
 
-## Extended kakarot_scripts
+## Extended scripts
 
 As it's not always obvious which contract triggered the error (Kakarot, account,
 EVM for the bytecode tests), this extended snippets proved to be more robust as
-a general purpose debug kakarot_scripts, to be run both from the ef-test and the
-kakarot repo.
+a general purpose debug script, to be run both from the ef-test and the kakarot
+repo.
 
 It basically loads by default all the possible contract sources, looking for
 them in appropriate directories, and then run the debug tool for each of them.
