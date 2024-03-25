@@ -57,7 +57,7 @@ async def main():
             account.address,  # owner
             ETH_TOKEN_ADDRESS,  # native_token_address_
             class_hash["contract_account"],  # contract_account_class_hash_
-            class_hash["proxy"],  # account_proxy_class_hash
+            class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
             class_hash["Precompiles"],
             BLOCK_GAS_LIMIT,
         )
@@ -67,7 +67,7 @@ async def main():
             "EVM",
             ETH_TOKEN_ADDRESS,  # native_token_address_
             class_hash["contract_account"],  # contract_account_class_hash_
-            class_hash["proxy"],  # account_proxy_class_hash
+            class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
             class_hash["Precompiles"],
             BLOCK_GAS_LIMIT,
         )

@@ -17,7 +17,7 @@ func contract_account_class_hash() -> (value: felt) {
 }
 
 @storage_var
-func account_proxy_class_hash() -> (res: felt) {
+func uninitialized_account_class_hash() -> (res: felt) {
 }
 
 @storage_var
