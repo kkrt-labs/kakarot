@@ -34,6 +34,12 @@ namespace IERC20 {
 }
 
 @contract_interface
+namespace IUninitializedAccount {
+    func initialize(new_class: felt) {
+    }
+}
+
+@contract_interface
 namespace IAccount {
     func initialize(implementation: felt, calldata_len: felt, calldata: felt*) {
     }

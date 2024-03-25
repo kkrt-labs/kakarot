@@ -21,14 +21,14 @@ from kakarot.account import Account
 from kakarot.precompiles.precompiles import Precompiles
 from kakarot.constants import Constants
 from kakarot.events import evm_contract_deployed
-from kakarot.interfaces.interfaces import IERC20, IAccount
+from kakarot.interfaces.interfaces import IERC20, IAccount, IUninitializedAccount
 
 from kakarot.model import model
 from kakarot.state import State
 from kakarot.storages import (
     native_token_address,
     contract_account_class_hash,
-    account_proxy_class_hash,
+    uninitialized_account_class_hash,
     evm_to_starknet_address,
     coinbase,
     base_fee,
@@ -59,28 +59,34 @@ namespace Starknet {
         return ();
     }
 
-    // @notice Deploy a new account proxy
+    // @notice Deploy a new account
     // @dev Deploy an instance of an account
     // @param evm_address The Ethereum address which will be controlling the account
     // @param class_hash The hash of the implemented account (eoa/contract)
-    // @return account_address The Starknet Account Proxy address
+    // @return account_address The Starknet Account address
     func deploy{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         class_hash: felt, evm_address: felt
     ) -> (account_address: felt) {
         alloc_locals;
+
+        // Deploy generic uninitialized account used to get a deterministic starknet address
         let (kakarot_address: felt) = get_contract_address();
-        let (_account_proxy_class_hash: felt) = account_proxy_class_hash.read();
+        let (uninitialized_account_class_hash_: felt) = uninitialized_account_class_hash.read();
         let (constructor_calldata: felt*) = alloc();
+        assert constructor_calldata[0] = kakarot_address;
+        assert constructor_calldata[1] = evm_address;
         let (starknet_address) = deploy_syscall(
-            _account_proxy_class_hash,
+            uninitialized_account_class_hash_,
             contract_address_salt=evm_address,
-            constructor_calldata_size=0,
+            constructor_calldata_size=2,
             constructor_calldata=constructor_calldata,
             deploy_from_zero=0,
         );
-        assert constructor_calldata[0] = kakarot_address;
-        assert constructor_calldata[1] = evm_address;
-        IAccount.initialize(starknet_address, class_hash, 2, constructor_calldata);
+
+        // Properly initialize the account once created
+        let (account_class_hash) = contract_account_class_hash.read();
+        IUninitializedAccount.initialize(starknet_address, account_class_hash);
+
         evm_contract_deployed.emit(evm_address, starknet_address);
         evm_to_starknet_address.write(evm_address, starknet_address);
         return (account_address=starknet_address);

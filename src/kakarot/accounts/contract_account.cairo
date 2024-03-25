@@ -31,7 +31,7 @@ func initialize{
 func upgrade{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(new_class: felt) {
-    return GenericAccount.set_class(new_class);
+    return GenericAccount.upgrade(new_class);
 }
 
 // @notice Gets the evm address associated with the account.

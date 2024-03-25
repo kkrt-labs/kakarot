@@ -12,7 +12,7 @@ from starkware.cairo.common.uint256 import Uint256
 from backend.starknet import Starknet
 from kakarot.account import Account
 from kakarot.storages import (
-    account_proxy_class_hash,
+    uninitialized_account_class_hash,
     contract_account_class_hash,
     base_fee,
     native_token_address,
@@ -34,21 +34,20 @@ namespace Kakarot {
     // @param owner The address of the owner of the contract.
     // @param native_token_address_ The ERC20 contract used to emulate ETH.
     // @param contract_account_class_hash_ The clash hash of the contract account.
-    // @param externally_owned_account_class_hash_ The externally owned account class hash.
-    // @param account_proxy_class_hash_ The account proxy class hash.
+    // @param uninitialized_account_class_hash The class hash of the uninitialized account used for deterministic address calculation.
     // @param precompiles_class_hash_ The precompiles class hash for precompiles not implemented in Kakarot.
     func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         owner: felt,
         native_token_address_,
         contract_account_class_hash_,
-        account_proxy_class_hash_,
+        uninitialized_account_class_hash_,
         precompiles_class_hash_,
         block_gas_limit_,
     ) {
         Ownable.initializer(owner);
         native_token_address.write(native_token_address_);
         contract_account_class_hash.write(contract_account_class_hash_);
-        account_proxy_class_hash.write(account_proxy_class_hash_);
+        uninitialized_account_class_hash.write(uninitialized_account_class_hash_);
         precompiles_class_hash.write(precompiles_class_hash_);
         coinbase.write(0xCA40796aFB5472abaeD28907D5ED6FC74c04954a);
         block_gas_limit.write(block_gas_limit_);
@@ -219,7 +218,7 @@ namespace Kakarot {
     }(evm_contract_address: felt) -> (starknet_contract_address: felt) {
         alloc_locals;
 
-        let (class_hash) = contract_account_class_hash.read();
+        let (class_hash) = uninitialized_account_class_hash.read();
         let (starknet_contract_address) = Starknet.deploy(class_hash, evm_contract_address);
 
         return (starknet_contract_address=starknet_contract_address);

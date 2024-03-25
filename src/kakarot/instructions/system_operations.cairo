@@ -987,9 +987,9 @@ namespace CreateHelper {
         local message_len;
         // rlp([address, nonce]) inlined to save unnecessary expensive general RLP encoding
         // final bytes is either
-        // (0xc0 + bytes_lenght) + (0x80 + 20) + address + nonce
+        // (0xc0 + bytes_length) + (0x80 + 20) + address + nonce
         // or
-        // (0xc0 + bytes_lenght) + (0x80 + 20) + address + (0x80 + nonce_len) + nonce
+        // (0xc0 + bytes_length) + (0x80 + 20) + address + (0x80 + nonce_len) + nonce
         let (message: felt*) = alloc();
         assert [message + 1] = 0x80 + 20;
         felt_to_bytes20(message + 2, sender_address);

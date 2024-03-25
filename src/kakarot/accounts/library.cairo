@@ -9,6 +9,7 @@ from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256, uint256_not, uint256_add, uint256_le
 from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math import assert_not_zero
 from starkware.starknet.common.syscalls import (
     StorageRead,
     StorageWrite,
@@ -54,6 +55,10 @@ func nonce_() -> (nonce: felt) {
 func kakarot_address_() -> (kakarot_address: felt) {
 }
 
+@storage_var
+func implementation_() -> (address: felt) {
+}
+
 @event
 func transaction_executed(response_len: felt, response: felt*, success: felt, gas_used: felt) {
 }
@@ -94,11 +99,21 @@ namespace GenericAccount {
         bitwise_ptr: BitwiseBuiltin*,
     }(new_class: felt) {
         // Access control check. Only the EOA owner should be able to upgrade its contract.
-        // TODO: only valid classes should be allowed to be upgraded. Add a validation
         // with `supports_interface`
         internal.assert_only_self();
+        // TODO: only valid classes should be allowed to be upgraded. Add a validation on the new class interface.
+        assert_not_zero(new_class);
         replace_class(new_class);
+        implementation_.write(new_class);
         return ();
+    }
+
+    @view
+    func get_implementation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        implementation: felt
+    ) {
+        let (implementation) = implementation_.read();
+        return (implementation=implementation);
     }
 
     // @return address The EVM address of the account

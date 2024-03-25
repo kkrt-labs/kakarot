@@ -21,7 +21,7 @@ from kakarot.constants import Constants
 from kakarot.storages import (
     native_token_address,
     contract_account_class_hash,
-    account_proxy_class_hash,
+    uninitialized_account_class_hash,
     precompiles_class_hash,
     coinbase,
     block_gas_limit,
@@ -34,13 +34,13 @@ from utils.dict import dict_keys, dict_values
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     native_token_address_: felt,
     contract_account_class_hash_: felt,
-    account_proxy_class_hash_: felt,
+    uninitialized_account_class_hash_: felt,
     precompiles_class_hash_: felt,
     block_gas_limit_: felt,
 ) {
     native_token_address.write(native_token_address_);
     contract_account_class_hash.write(contract_account_class_hash_);
-    account_proxy_class_hash.write(account_proxy_class_hash_);
+    uninitialized_account_class_hash.write(uninitialized_account_class_hash_);
     precompiles_class_hash.write(precompiles_class_hash_);
     coinbase.write(0xCA40796aFB5472abaeD28907D5ED6FC74c04954a);
     block_gas_limit.write(block_gas_limit_);
