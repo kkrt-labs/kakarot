@@ -13,12 +13,7 @@ namespace Constants {
     const TRANSACTION_GAS_LIMIT = 1000000;
 
     // PROXY
-    const INITIALIZE_SELECTOR = 0x79dc0da7c54b95f10aa182ad0a46400db63156920adb65eca2654c0945a463;
     const CONTRACT_ADDRESS_PREFIX = 'STARKNET_CONTRACT_ADDRESS';
-    // EOA_V0.0.1 => [69, 79, 65, 95, 86, 48, 46, 48, 46, 49] => 0x454f415f56302e302e31 => pedersen hashed
-    const EOA_VERSION = 0x6f5f51231e876bd085664a890c148a20ea806c5211a8ffd1a61747cf71c71d9;
-    // CA_V0.0.1 => [67, 65, 95, 86, 48, 46, 48, 46, 49] => 0x43415f56302e302e31 => pedersen hashed
-    const CA_VERSION = 0x7be1c12f918a11456a63db29ebfd5e477c967ae994e1bf751a7d04fa8429095;
     // ACCOUNTS
     const MAX_NONCE = 2 ** 64 - 1;
     const MAX_CODE_SIZE = 0x6000;

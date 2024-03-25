@@ -24,7 +24,7 @@ from starkware.starknet.common.syscalls import get_contract_address
 
 from kakarot.constants import Constants
 from kakarot.storages import (
-    account_proxy_class_hash,
+    uninitialized_account_class_hash,
     native_token_address,
     contract_account_class_hash,
 )
@@ -122,7 +122,7 @@ namespace Account {
         // Special case: empty accounts, deployed but with no data, from create-SD transactions
         // must
 
-        // CAs are instanciated with their actual nonce - EOAs are instanciated with the nonce=1
+        // CAs are instantiated with their actual nonce - EOAs are instantiated with the nonce=1
         // that is set when they're deployed.
         // If an account was created-selfdestructed in the same tx, it is empty here.
         let account = Account.init(
@@ -443,8 +443,10 @@ namespace Account {
     ) -> felt {
         alloc_locals;
         let (_deployer_address: felt) = get_contract_address();
-        let (_account_proxy_class_hash: felt) = account_proxy_class_hash.read();
+        let (_uninitialized_account_class_hash: felt) = uninitialized_account_class_hash.read();
         let (constructor_calldata: felt*) = alloc();
+        assert constructor_calldata[0] = _deployer_address;
+        assert constructor_calldata[1] = evm_address;
         let (hash_state_ptr) = hash_init();
         let (hash_state_ptr) = hash_update_single{hash_ptr=pedersen_ptr}(
             hash_state_ptr=hash_state_ptr, item=Constants.CONTRACT_ADDRESS_PREFIX
@@ -459,10 +461,11 @@ namespace Account {
         );
         // hash class hash
         let (hash_state_ptr) = hash_update_single{hash_ptr=pedersen_ptr}(
-            hash_state_ptr=hash_state_ptr, item=_account_proxy_class_hash
+            hash_state_ptr=hash_state_ptr, item=_uninitialized_account_class_hash
         );
+        // hash constructor arguments
         let (hash_state_ptr) = hash_update_with_hashchain{hash_ptr=pedersen_ptr}(
-            hash_state_ptr=hash_state_ptr, data_ptr=constructor_calldata, data_length=0
+            hash_state_ptr=hash_state_ptr, data_ptr=constructor_calldata, data_length=2
         );
         let (contract_address_before_modulo) = hash_finalize{hash_ptr=pedersen_ptr}(
             hash_state_ptr=hash_state_ptr

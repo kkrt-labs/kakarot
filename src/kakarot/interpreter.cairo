@@ -977,7 +977,7 @@ namespace Interpreter {
             let success = State.add_transfer(transfer);
 
             // State must be finalized as we added entries with the latest transfer
-            // In all cases, the sender's nonce is set to the protocol's so that the commited nonce is the same
+            // In all cases, the sender's nonce is set to the protocol's so that the committed nonce is the same
             let sender = State.get_account(env.origin);
             let (tx_info) = get_tx_info();
             let sender = Account.set_nonce(sender, tx_info.nonce);
