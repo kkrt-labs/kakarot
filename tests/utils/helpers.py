@@ -223,7 +223,9 @@ def merge_access_list(access_list):
     for access in access_list:
         merged_list[access["address"]] = merged_list[access["address"]].union(
             {
-                get_storage_var_address("storage_", *int_to_uint256(int(key, 16)))
+                get_storage_var_address(
+                    "Account_storage", *int_to_uint256(int(key, 16))
+                )
                 for key in access["storageKeys"]
             }
         )

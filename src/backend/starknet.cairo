@@ -26,14 +26,14 @@ from kakarot.interfaces.interfaces import IERC20, IAccount, IUninitializedAccoun
 from kakarot.model import model
 from kakarot.state import State
 from kakarot.storages import (
-    native_token_address,
-    contract_account_class_hash,
-    uninitialized_account_class_hash,
-    evm_to_starknet_address,
-    coinbase,
-    base_fee,
-    block_gas_limit,
-    prev_randao,
+    Kakarot_native_token_address,
+    Kakarot_contract_account_class_hash,
+    Kakarot_uninitialized_account_class_hash,
+    Kakarot_evm_to_starknet_address,
+    Kakarot_coinbase,
+    Kakarot_base_fee,
+    Kakarot_block_gas_limit,
+    Kakarot_prev_randao,
 )
 
 namespace Starknet {
@@ -43,18 +43,18 @@ namespace Starknet {
         self: model.State*
     ) {
         alloc_locals;
-        let (native_token_address_) = native_token_address.read();
+        let (native_token_address) = Kakarot_native_token_address.read();
 
         // Accounts
         Internals._commit_accounts{state=self}(
-            self.accounts_start, self.accounts, native_token_address_
+            self.accounts_start, self.accounts, native_token_address
         );
 
         // Events
         Internals._emit_events(self.events_len, self.events);
 
         // Transfers
-        Internals._transfer_eth(native_token_address_, self.transfers_len, self.transfers);
+        Internals._transfer_eth(native_token_address, self.transfers_len, self.transfers);
 
         return ();
     }
@@ -71,12 +71,14 @@ namespace Starknet {
 
         // Deploy generic uninitialized account used to get a deterministic starknet address
         let (kakarot_address: felt) = get_contract_address();
-        let (uninitialized_account_class_hash_: felt) = uninitialized_account_class_hash.read();
+        let (
+            uninitialized_account_class_hash: felt
+        ) = Kakarot_uninitialized_account_class_hash.read();
         let (constructor_calldata: felt*) = alloc();
         assert constructor_calldata[0] = kakarot_address;
         assert constructor_calldata[1] = evm_address;
         let (starknet_address) = deploy_syscall(
-            uninitialized_account_class_hash_,
+            uninitialized_account_class_hash,
             contract_address_salt=evm_address,
             constructor_calldata_size=2,
             constructor_calldata=constructor_calldata,
@@ -84,11 +86,11 @@ namespace Starknet {
         );
 
         // Properly initialize the account once created
-        let (account_class_hash) = contract_account_class_hash.read();
+        let (account_class_hash) = Kakarot_contract_account_class_hash.read();
         IUninitializedAccount.initialize(starknet_address, account_class_hash);
 
         evm_contract_deployed.emit(evm_address, starknet_address);
-        evm_to_starknet_address.write(evm_address, starknet_address);
+        Kakarot_evm_to_starknet_address.write(evm_address, starknet_address);
         return (account_address=starknet_address);
     }
 
@@ -100,7 +102,7 @@ namespace Starknet {
     func get_bytecode{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         evm_address: felt
     ) -> (bytecode_len: felt, bytecode: felt*) {
-        let (starknet_address) = evm_to_starknet_address.read(evm_address);
+        let (starknet_address) = Kakarot_evm_to_starknet_address.read(evm_address);
 
         if (starknet_address == 0) {
             let (bytecode: felt*) = alloc();
@@ -119,28 +121,28 @@ namespace Starknet {
         let (block_number) = get_block_number();
         let (block_timestamp) = get_block_timestamp();
         let (tx_info) = get_tx_info();
-        let (coinbase_) = coinbase.read();
-        let (base_fee_) = base_fee.read();
-        let (block_gas_limit_) = block_gas_limit.read();
-        let (prev_randao_) = prev_randao.read();
+        let (coinbase) = Kakarot_coinbase.read();
+        let (base_fee) = Kakarot_base_fee.read();
+        let (block_gas_limit) = Kakarot_block_gas_limit.read();
+        let (prev_randao) = Kakarot_prev_randao.read();
         let (block_hashes) = alloc();
         // TODO: fix how blockhashes are retrieved
         memset(block_hashes, 0, 256 * 2);
 
-        // No idea why this is required - but trying to pass prev_randao_ directly causes bugs.
-        let prev_randao_ = Uint256(low=prev_randao_.low, high=prev_randao_.high);
+        // No idea why this is required - but trying to pass prev_randao directly causes bugs.
+        let prev_randao = Uint256(low=prev_randao.low, high=prev_randao.high);
 
         return new model.Environment(
             origin=origin,
             gas_price=gas_price,
             chain_id=tx_info.chain_id,
-            prev_randao=prev_randao_,
+            prev_randao=prev_randao,
             block_number=block_number,
-            block_gas_limit=block_gas_limit_,
+            block_gas_limit=block_gas_limit,
             block_timestamp=block_timestamp,
             block_hashes=cast(block_hashes, Uint256*),
-            coinbase=coinbase_,
-            base_fee=base_fee_,
+            coinbase=coinbase,
+            base_fee=base_fee,
         );
     }
 }
@@ -198,7 +200,7 @@ namespace Internals {
 
             if (code_or_nonce != FALSE) {
                 // Deploy accounts
-                let (class_hash) = contract_account_class_hash.read();
+                let (class_hash) = Kakarot_contract_account_class_hash.read();
                 Starknet.deploy(class_hash, self.address.evm);
 
                 // If SELFDESTRUCT, leave the account empty after deploying it - including

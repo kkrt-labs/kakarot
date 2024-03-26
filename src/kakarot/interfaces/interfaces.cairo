@@ -74,19 +74,19 @@ namespace IAccount {
 
 @contract_interface
 namespace IKakarot {
-    func set_native_token(native_token_address_: felt) {
+    func set_native_token(native_token_address: felt) {
     }
 
     func get_native_token() -> (native_token_address: felt) {
     }
 
-    func set_base_fee(base_fee_: felt) {
+    func set_base_fee(base_fee: felt) {
     }
 
     func get_base_fee() -> (base_fee: felt) {
     }
 
-    func set_coinbase(coinbase_: felt) {
+    func set_coinbase(coinbase: felt) {
     }
 
     func get_coinbase() -> (coinbase: felt) {
@@ -98,7 +98,7 @@ namespace IKakarot {
     func get_block_gas_limit() -> (block_gas_limit: felt) {
     }
 
-    func set_prev_randao(prev_randao_: Uint256) {
+    func set_prev_randao(prev_randao: Uint256) {
     }
 
     func get_prev_randao() -> (prev_randao: Uint256) {

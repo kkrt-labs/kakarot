@@ -15,7 +15,7 @@ from kakarot.model import model
 from backend.starknet import Starknet
 from kakarot.state import State, Internals
 from kakarot.account import Account
-from kakarot.storages import native_token_address
+from kakarot.storages import Kakarot_native_token_address
 from utils.dict import dict_keys
 
 func test__init__should_return_state_with_default_dicts() {
