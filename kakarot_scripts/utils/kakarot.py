@@ -451,7 +451,7 @@ async def eth_get_code(address: Union[int, str]):
     return bytes(
         (
             await _call_starknet(
-                "contract_account", "bytecode", address=starknet_address
+                "generic_account", "bytecode", address=starknet_address
             )
         ).bytecode
     )

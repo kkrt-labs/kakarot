@@ -26,7 +26,7 @@ from kakarot.constants import Constants
 from kakarot.storages import (
     Kakarot_uninitialized_account_class_hash,
     Kakarot_native_token_address,
-    Kakarot_contract_account_class_hash,
+    Kakarot_generic_account_class_hash,
 )
 from kakarot.interfaces.interfaces import IAccount, IERC20
 from kakarot.model import model
@@ -623,7 +623,7 @@ namespace Account {
 namespace Internals {
     // @notice Compute the storage address of the given key when the storage var interface is
     //         Account_storage(key: Uint256)
-    // @dev    Just the generated addr method when compiling the contract_account
+    // @dev    Just the generated addr method when compiling the generic_account
     func _storage_addr{pedersen_ptr: HashBuiltin*, range_check_ptr}(key: Uint256*) -> (res: felt) {
         let res = 0x0127c52d6fa812547d8a5b435341b8c12e82048913e7193c0e318e8a6642876d;
         let (res) = hash2{hash_ptr=pedersen_ptr}(res, cast(key, felt*)[0]);

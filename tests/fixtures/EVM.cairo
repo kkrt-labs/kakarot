@@ -20,7 +20,7 @@ from kakarot.stack import Stack
 from kakarot.constants import Constants
 from kakarot.storages import (
     Kakarot_native_token_address,
-    Kakarot_contract_account_class_hash,
+    Kakarot_generic_account_class_hash,
     Kakarot_uninitialized_account_class_hash,
     Kakarot_precompiles_class_hash,
     Kakarot_coinbase,
@@ -33,13 +33,13 @@ from utils.dict import dict_keys, dict_values
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     native_token_address: felt,
-    contract_account_class_hash: felt,
+    generic_account_class_hash: felt,
     uninitialized_account_class_hash: felt,
     precompiles_class_hash: felt,
     block_gas_limit: felt,
 ) {
     Kakarot_native_token_address.write(native_token_address);
-    Kakarot_contract_account_class_hash.write(contract_account_class_hash);
+    Kakarot_generic_account_class_hash.write(generic_account_class_hash);
     Kakarot_uninitialized_account_class_hash.write(uninitialized_account_class_hash);
     Kakarot_precompiles_class_hash.write(precompiles_class_hash);
     Kakarot_coinbase.write(0xCA40796aFB5472abaeD28907D5ED6FC74c04954a);

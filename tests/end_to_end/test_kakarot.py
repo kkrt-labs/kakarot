@@ -163,7 +163,7 @@ class TestKakarot:
             await fund_starknet_address(starknet_address, PRE_FUND_AMOUNT / 1e18)
 
             await deploy_externally_owned_account(evm_address)
-            eoa = get_contract("contract_account", address=starknet_address)
+            eoa = get_contract("generic_account", address=starknet_address)
             actual_evm_address = (await eoa.functions["get_evm_address"].call()).address
             assert actual_evm_address == int(evm_address, 16)
 
