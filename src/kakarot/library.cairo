@@ -13,7 +13,7 @@ from backend.starknet import Starknet
 from kakarot.account import Account
 from kakarot.storages import (
     Kakarot_uninitialized_account_class_hash,
-    Kakarot_contract_account_class_hash,
+    Kakarot_generic_account_class_hash,
     Kakarot_base_fee,
     Kakarot_native_token_address,
     Kakarot_precompiles_class_hash,
@@ -33,20 +33,20 @@ namespace Kakarot {
     // @dev Set up the initial owner, accounts class hash and native token.
     // @param owner The address of the owner of the contract.
     // @param native_token_address The ERC20 contract used to emulate ETH.
-    // @param contract_account_class_hash The clash hash of the contract account.
+    // @param generic_account_class_hash The clash hash of the contract account.
     // @param uninitialized_account_class_hash The class hash of the uninitialized account used for deterministic address calculation.
     // @param precompiles_class_hash The precompiles class hash for precompiles not implemented in Kakarot.
     func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         owner: felt,
         native_token_address,
-        contract_account_class_hash,
+        generic_account_class_hash,
         uninitialized_account_class_hash,
         precompiles_class_hash,
         block_gas_limit,
     ) {
         Ownable.initializer(owner);
         Kakarot_native_token_address.write(native_token_address);
-        Kakarot_contract_account_class_hash.write(contract_account_class_hash);
+        Kakarot_generic_account_class_hash.write(generic_account_class_hash);
         Kakarot_uninitialized_account_class_hash.write(uninitialized_account_class_hash);
         Kakarot_precompiles_class_hash.write(precompiles_class_hash);
         Kakarot_coinbase.write(0xCA40796aFB5472abaeD28907D5ED6FC74c04954a);

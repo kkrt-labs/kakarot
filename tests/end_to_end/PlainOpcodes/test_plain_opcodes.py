@@ -154,7 +154,7 @@ class TestPlainOpcodes:
             get_contract,
         ):
             plain_opcodes_contract_account = get_contract(
-                "contract_account", address=plain_opcodes.starknet_address
+                "generic_account", address=plain_opcodes.starknet_address
             )
             nonce_initial = (
                 await plain_opcodes_contract_account.functions["get_nonce"].call()
@@ -202,9 +202,7 @@ class TestPlainOpcodes:
             starknet_address = await compute_starknet_address(
                 events["CreateAddress"][0]["_address"]
             )
-            contract_account = get_contract(
-                "contract_account", address=starknet_address
-            )
+            contract_account = get_contract("generic_account", address=starknet_address)
             assert [] == (await contract_account.functions["bytecode"].call()).bytecode
 
         async def test_should_create_counter_and_call_in_the_same_tx(
@@ -288,7 +286,7 @@ class TestPlainOpcodes:
             compute_starknet_address,
         ):
             plain_opcodes_contract_account = get_contract(
-                "contract_account", address=plain_opcodes.starknet_address
+                "generic_account", address=plain_opcodes.starknet_address
             )
             nonce_initial = (
                 await plain_opcodes_contract_account.functions["get_nonce"].call()
@@ -313,7 +311,7 @@ class TestPlainOpcodes:
             assert await deployed_counter.count() == 0
 
             deployed_counter_contract_account = get_contract(
-                "contract_account",
+                "generic_account",
                 address=await compute_starknet_address(deployed_counter.address),
             )
 

@@ -15,6 +15,16 @@ from starkware.cairo.common.alloc import alloc
 
 // @title EVM smart contract account representation.
 
+@constructor
+func constructor{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    with_attr error_message("Accounts cannot be created directly.") {
+        assert 1 = 0;
+    }
+    return ();
+}
+
 // @notice Initializes the account with the given Kakarot and EVM addresses.
 // @param kakarot_address The address of the main Kakarot contract.
 // @param evm_address The EVM address of the account.

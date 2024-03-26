@@ -28,7 +28,7 @@ from kakarot.model import model
 from kakarot.state import State
 from kakarot.storages import (
     Kakarot_native_token_address,
-    Kakarot_contract_account_class_hash,
+    Kakarot_generic_account_class_hash,
     Kakarot_uninitialized_account_class_hash,
     Kakarot_evm_to_starknet_address,
     Kakarot_coinbase,
@@ -87,7 +87,7 @@ namespace Starknet {
         );
 
         // Properly initialize the account once created
-        let (account_class_hash) = Kakarot_contract_account_class_hash.read();
+        let (account_class_hash) = Kakarot_generic_account_class_hash.read();
         IUninitializedAccount.initialize(starknet_address, account_class_hash);
 
         evm_contract_deployed.emit(evm_address, starknet_address);
@@ -202,7 +202,7 @@ namespace Internals {
 
             if (code_or_nonce != FALSE) {
                 // Deploy accounts
-                let (class_hash) = Kakarot_contract_account_class_hash.read();
+                let (class_hash) = Kakarot_generic_account_class_hash.read();
                 Starknet.deploy(class_hash, self.address.evm);
 
                 // If SELFDESTRUCT, leave the account empty after deploying it - including
