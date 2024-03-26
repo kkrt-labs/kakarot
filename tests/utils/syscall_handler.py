@@ -54,7 +54,9 @@ def parse_state(state):
             ),
             "storage": {
                 (
-                    get_storage_var_address("storage_", *int_to_uint256(int(key, 16)))
+                    get_storage_var_address(
+                        "Account_storage", *int_to_uint256(int(key, 16))
+                    )
                     if not isinstance(key, int)
                     else key
                 ): (int(value, 16) if not isinstance(value, int) else value)
@@ -334,7 +336,7 @@ class SyscallHandler:
         """
         Patch the target with the value.
 
-        :param target: The target to patch, e.g. "IERC20.balanceOf" or "evm_to_starknet_address".
+        :param target: The target to patch, e.g. "IERC20.balanceOf" or "Kakarot_evm_to_starknet_address".
             Note that when patching a contract call, only the last part of the target is used.
         :param args: Additional arguments to pass to the target (when patching a storage var, see get_storage_var_address signature).
         :param value: The value to patch with, a callable that will be called with the contract
@@ -364,7 +366,7 @@ class SyscallHandler:
         Patch sycalls to match a given EVM state.
 
         Actual corresponding Starknet address are unknown but it doesn't matter since the
-        evm_to_starknet_address storage is also patched.
+        Kakarot_evm_to_starknet_address storage is also patched.
 
         :param state: the state to patch with, an output dictionary of parse_state
         """
@@ -417,7 +419,7 @@ class SyscallHandler:
         # Register accounts
         for address in state.keys():
             address_selector = get_storage_var_address(
-                "evm_to_starknet_address", address
+                "Kakarot_evm_to_starknet_address", address
             )
             cls.patches[address_selector] = address
 

@@ -50,14 +50,14 @@ class TestState:
             "IAccount.account_type", lambda addr, data: [int.from_bytes(b"CA", "big")]
         )
         @SyscallHandler.patch("IContractAccount.get_nonce", lambda addr, data: [1])
-        @SyscallHandler.patch("evm_to_starknet_address", 0xABDE1, 0x1234)
+        @SyscallHandler.patch("Kakarot_evm_to_starknet_address", 0xABDE1, 0x1234)
         def test_should_return_true_when_existing_account_not_cached(self, cairo_run):
             cairo_run(
                 "test__is_account_alive__account_alive_not_in_state",
             )
 
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 0])
-        @SyscallHandler.patch("evm_to_starknet_address", 0xABDE1, 0)
+        @SyscallHandler.patch("Kakarot_evm_to_starknet_address", 0xABDE1, 0)
         def test_should_return_false_when_not_in_state_nor_starknet(self, cairo_run):
             cairo_run("test__is_account_alive__account_not_alive_not_in_state")
 

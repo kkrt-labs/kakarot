@@ -42,7 +42,9 @@ class TestEnvironmentalInformation:
             "IAccount.account_type", lambda addr, data: [int.from_bytes(b"CA", "big")]
         )
         @SyscallHandler.patch("IContractAccount.get_nonce", lambda addr, data: [1])
-        @SyscallHandler.patch("evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234)
+        @SyscallHandler.patch(
+            "Kakarot_evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234
+        )
         def test_extcodesize_should_push_code_size(self, cairo_run, bytecode, address):
             with SyscallHandler.patch(
                 "IAccount.bytecode", lambda addr, data: [len(bytecode), *bytecode]
@@ -82,7 +84,9 @@ class TestEnvironmentalInformation:
             "IAccount.account_type", lambda addr, data: [int.from_bytes(b"CA", "big")]
         )
         @SyscallHandler.patch("IContractAccount.get_nonce", lambda addr, data: [1])
-        @SyscallHandler.patch("evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234)
+        @SyscallHandler.patch(
+            "Kakarot_evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234
+        )
         def test_extcodecopy_should_copy_code(self, cairo_run, case, bytecode, address):
             size = case["size"]
             offset = case["offset"]
@@ -119,7 +123,9 @@ class TestEnvironmentalInformation:
             "IAccount.account_type", lambda addr, data: [int.from_bytes(b"CA", "big")]
         )
         @SyscallHandler.patch("IContractAccount.get_nonce", lambda addr, data: [1])
-        @SyscallHandler.patch("evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234)
+        @SyscallHandler.patch(
+            "Kakarot_evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234
+        )
         def test_extcodehash__should_push_hash(
             self, cairo_run, bytecode, bytecode_hash, address
         ):

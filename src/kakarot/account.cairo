@@ -24,13 +24,13 @@ from starkware.starknet.common.syscalls import get_contract_address
 
 from kakarot.constants import Constants
 from kakarot.storages import (
-    uninitialized_account_class_hash,
-    native_token_address,
-    contract_account_class_hash,
+    Kakarot_uninitialized_account_class_hash,
+    Kakarot_native_token_address,
+    Kakarot_contract_account_class_hash,
 )
 from kakarot.interfaces.interfaces import IAccount, IERC20
 from kakarot.model import model
-from kakarot.storages import evm_to_starknet_address
+from kakarot.storages import Kakarot_evm_to_starknet_address
 from utils.dict import default_dict_copy
 from utils.utils import Helpers
 
@@ -358,8 +358,8 @@ namespace Account {
     func fetch_balance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         address: model.Address*
     ) -> Uint256 {
-        let (native_token_address_) = native_token_address.read();
-        let (balance) = IERC20.balanceOf(native_token_address_, address.starknet);
+        let (native_token_address) = Kakarot_native_token_address.read();
+        let (balance) = IERC20.balanceOf(native_token_address, address.starknet);
         return balance;
     }
 
@@ -430,7 +430,7 @@ namespace Account {
     func get_registered_starknet_address{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     }(evm_address: felt) -> felt {
-        let (starknet_address) = evm_to_starknet_address.read(evm_address);
+        let (starknet_address) = Kakarot_evm_to_starknet_address.read(evm_address);
         return starknet_address;
     }
 
@@ -443,7 +443,9 @@ namespace Account {
     ) -> felt {
         alloc_locals;
         let (_deployer_address: felt) = get_contract_address();
-        let (_uninitialized_account_class_hash: felt) = uninitialized_account_class_hash.read();
+        let (
+            _uninitialized_account_class_hash: felt
+        ) = Kakarot_uninitialized_account_class_hash.read();
         let (constructor_calldata: felt*) = alloc();
         assert constructor_calldata[0] = _deployer_address;
         assert constructor_calldata[1] = evm_address;
@@ -628,10 +630,10 @@ namespace Account {
 
 namespace Internals {
     // @notice Compute the storage address of the given key when the storage var interface is
-    //         storage_(key: Uint256)
+    //         Account_storage(key: Uint256)
     // @dev    Just the generated addr method when compiling the contract_account
     func _storage_addr{pedersen_ptr: HashBuiltin*, range_check_ptr}(key: Uint256*) -> (res: felt) {
-        let res = 1510236440068827666686527023008568026372765124888307403567795291192307314167;
+        let res = 0x0127c52d6fa812547d8a5b435341b8c12e82048913e7193c0e318e8a6642876d;
         let (res) = hash2{hash_ptr=pedersen_ptr}(res, cast(key, felt*)[0]);
         let (res) = hash2{hash_ptr=pedersen_ptr}(res, cast(key, felt*)[1]);
         let (res) = normalize_address(addr=res);

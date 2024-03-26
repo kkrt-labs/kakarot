@@ -5,37 +5,37 @@
 from starkware.cairo.common.uint256 import Uint256
 
 @storage_var
-func precompiles_class_hash() -> (res: felt) {
+func Kakarot_precompiles_class_hash() -> (res: felt) {
 }
 
 @storage_var
-func native_token_address() -> (res: felt) {
+func Kakarot_native_token_address() -> (res: felt) {
 }
 
 @storage_var
-func contract_account_class_hash() -> (value: felt) {
+func Kakarot_contract_account_class_hash() -> (value: felt) {
 }
 
 @storage_var
-func uninitialized_account_class_hash() -> (res: felt) {
+func Kakarot_uninitialized_account_class_hash() -> (res: felt) {
 }
 
 @storage_var
-func evm_to_starknet_address(evm_address: felt) -> (starknet_address: felt) {
+func Kakarot_evm_to_starknet_address(evm_address: felt) -> (starknet_address: felt) {
 }
 
 @storage_var
-func coinbase() -> (res: felt) {
+func Kakarot_coinbase() -> (res: felt) {
 }
 
 @storage_var
-func base_fee() -> (res: felt) {
+func Kakarot_base_fee() -> (res: felt) {
 }
 
 @storage_var
-func prev_randao() -> (res: Uint256) {
+func Kakarot_prev_randao() -> (res: Uint256) {
 }
 
 @storage_var
-func block_gas_limit() -> (res: felt) {
+func Kakarot_block_gas_limit() -> (res: felt) {
 }

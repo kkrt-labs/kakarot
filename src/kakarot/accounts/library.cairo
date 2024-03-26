@@ -32,31 +32,31 @@ from kakarot.errors import Errors
 
 // @dev: should always be zero for EOAs
 @storage_var
-func bytecode_len_() -> (res: felt) {
+func Account_bytecode_len() -> (res: felt) {
 }
 
 @storage_var
-func storage_(key: Uint256) -> (value: Uint256) {
+func Account_storage(key: Uint256) -> (value: Uint256) {
 }
 
 @storage_var
-func is_initialized_() -> (res: felt) {
+func Account_is_initialized() -> (res: felt) {
 }
 
 @storage_var
-func evm_address_() -> (evm_address: felt) {
+func Account_evm_address() -> (evm_address: felt) {
 }
 
 @storage_var
-func nonce_() -> (nonce: felt) {
+func Account_nonce() -> (nonce: felt) {
 }
 
 @storage_var
-func kakarot_address_() -> (kakarot_address: felt) {
+func Account_kakarot_address() -> (kakarot_address: felt) {
 }
 
 @storage_var
-func implementation_() -> (address: felt) {
+func Account_implementation() -> (address: felt) {
 }
 
 @event
@@ -76,12 +76,12 @@ namespace GenericAccount {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(kakarot_address: felt, _evm_address) {
-        let (is_initialized) = is_initialized_.read();
+        let (is_initialized) = Account_is_initialized.read();
         assert is_initialized = 0;
-        is_initialized_.write(1);
+        Account_is_initialized.write(1);
         Ownable.initializer(kakarot_address);
-        evm_address_.write(_evm_address);
-        kakarot_address_.write(kakarot_address);
+        Account_evm_address.write(_evm_address);
+        Account_kakarot_address.write(kakarot_address);
 
         // Give infinite ETH transfer allowance to Kakarot
         let (native_token_address) = IKakarot.get_native_token(kakarot_address);
@@ -104,7 +104,7 @@ namespace GenericAccount {
         // TODO: only valid classes should be allowed to be upgraded. Add a validation on the new class interface.
         assert_not_zero(new_class);
         replace_class(new_class);
-        implementation_.write(new_class);
+        Account_implementation.write(new_class);
         return ();
     }
 
@@ -112,7 +112,7 @@ namespace GenericAccount {
     func get_implementation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         implementation: felt
     ) {
-        let (implementation) = implementation_.read();
+        let (implementation) = Account_implementation.read();
         return (implementation=implementation);
     }
 
@@ -120,7 +120,7 @@ namespace GenericAccount {
     func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         address: felt
     ) {
-        let (address) = evm_address_.read();
+        let (address) = Account_evm_address.read();
         return (address=address);
     }
 
@@ -132,7 +132,7 @@ namespace GenericAccount {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }() -> (is_initialized: felt) {
-        let is_initialized: felt = is_initialized_.read();
+        let is_initialized: felt = Account_is_initialized.read();
         return (is_initialized=is_initialized);
     }
 
@@ -172,7 +172,7 @@ namespace GenericAccount {
         alloc_locals;
         if (call_array_len == 0) {
             // Validates that this account doesn't have code.
-            let (bytecode_len) = bytecode_len_.read();
+            let (bytecode_len) = Account_bytecode_len.read();
             with_attr error_message("EOAs cannot have code") {
                 assert bytecode_len = 0;
             }
@@ -180,7 +180,7 @@ namespace GenericAccount {
             return ();
         }
 
-        let (address) = evm_address_.read();
+        let (address) = Account_evm_address.read();
         let (tx_info) = get_tx_info();
 
         // Assert signature field is of length 5: r_low, r_high, s_low, s_high, v
@@ -237,7 +237,7 @@ namespace GenericAccount {
 
         let tx = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
 
-        let (kakarot_address) = kakarot_address_.read();
+        let (kakarot_address) = Account_kakarot_address.read();
         let (block_gas_limit) = IKakarot.get_block_gas_limit(kakarot_address);
         let tx_gas_fits_in_block = is_le(tx.gas_limit, block_gas_limit);
 
@@ -337,7 +337,7 @@ namespace GenericAccount {
         // Access control check.
         Ownable.assert_only_owner();
         // Recursively store the bytecode.
-        bytecode_len_.write(bytecode_len);
+        Account_bytecode_len.write(bytecode_len);
         internal.write_bytecode(bytecode_len=bytecode_len, bytecode=bytecode);
         return ();
     }
@@ -347,7 +347,7 @@ namespace GenericAccount {
     func bytecode_len{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         res: felt
     ) {
-        return bytecode_len_.read();
+        return Account_bytecode_len.read();
     }
 
     // @notice This function is used to get the bytecode of the smart contract.
@@ -360,7 +360,7 @@ namespace GenericAccount {
         bitwise_ptr: BitwiseBuiltin*,
     }() -> (bytecode_len: felt, bytecode: felt*) {
         alloc_locals;
-        let (bytecode_len) = bytecode_len_.read();
+        let (bytecode_len) = Account_bytecode_len.read();
         let (bytecode_) = internal.load_bytecode(bytecode_len);
         return (bytecode_len, bytecode_);
     }
@@ -402,7 +402,7 @@ namespace GenericAccount {
     func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         nonce: felt
     ) {
-        return nonce_.read();
+        return Account_nonce.read();
     }
 
     // @notice This function set the account nonce
@@ -411,7 +411,7 @@ namespace GenericAccount {
     ) {
         // Access control check.
         Ownable.assert_only_owner();
-        nonce_.write(new_nonce);
+        Account_nonce.write(new_nonce);
         return ();
     }
 }
