@@ -32,7 +32,7 @@ class TestContractAccount:
                 address=get_storage_var_address("Ownable_owner"), value=0x1234
             )
             SyscallHandler.mock_storage.assert_any_call(
-                address=get_storage_var_address("evm_address_"), value=0xABDE1
+                address=get_storage_var_address("Account_evm_address"), value=0xABDE1
             )
 
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
@@ -47,7 +47,7 @@ class TestContractAccount:
                 keys=[get_selector_from_name("OwnershipTransferred")], data=[0, 0x1234]
             )
 
-        @SyscallHandler.patch("is_initialized_", 1)
+        @SyscallHandler.patch("Account_is_initialized", 1)
         def test_should_run_only_once(self, cairo_run):
             with cairo_error():
                 cairo_run(
@@ -71,7 +71,7 @@ class TestContractAccount:
             )
 
     class TestGetEvmAddress:
-        @SyscallHandler.patch("evm_address_", 0xABDE1)
+        @SyscallHandler.patch("Account_evm_address", 0xABDE1)
         def test_should_return_stored_address(self, cairo_run):
             output = cairo_run("test__get_evm_address__should_return_stored_address")
             assert output == 0xABDE1
@@ -86,7 +86,8 @@ class TestContractAccount:
         def test_should_write_bytecode(self, cairo_run, bytecode):
             cairo_run("test__write_bytecode", bytecode=list(bytecode))
             SyscallHandler.mock_storage.assert_any_call(
-                address=get_storage_var_address("bytecode_len_"), value=len(bytecode)
+                address=get_storage_var_address("Account_bytecode_len"),
+                value=len(bytecode),
             )
             calls = [
                 call(address=i, value=int(value, 16))
@@ -102,7 +103,7 @@ class TestContractAccount:
             def _storage(address):
                 return (
                     int(chunks[address], 16)
-                    if address != get_storage_var_address("bytecode_len_")
+                    if address != get_storage_var_address("Account_bytecode_len")
                     else len(bytecode)
                 )
 

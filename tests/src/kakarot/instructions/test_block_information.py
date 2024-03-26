@@ -25,8 +25,10 @@ class TestBlockInformation:
             (Opcodes.BLOBBASEFEE, 0),
         ],
     )
-    @SyscallHandler.patch("coinbase", 0xCA40796AFB5472ABAED28907D5ED6FC74C04954A)
-    @SyscallHandler.patch("block_gas_limit", BLOCK_GAS_LIMIT)
+    @SyscallHandler.patch(
+        "Kakarot_coinbase", 0xCA40796AFB5472ABAED28907D5ED6FC74C04954A
+    )
+    @SyscallHandler.patch("Kakarot_block_gas_limit", BLOCK_GAS_LIMIT)
     @patch.object(SyscallHandler, "block_timestamp", 0x1234)
     def test__exec_block_information(self, cairo_run, opcode, expected_result):
         output = cairo_run("test__exec_block_information", opcode=opcode)
