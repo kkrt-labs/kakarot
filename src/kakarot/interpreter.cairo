@@ -907,7 +907,7 @@ namespace Interpreter {
             let is_collision = code_or_nonce * is_deploy_tx;
             // Nonce is set to 1 in case of deploy_tx and account is marked as created
             let nonce = account.nonce * (1 - is_deploy_tx) + is_deploy_tx;
-            let account = Account.set_nonce(account, nonce);
+            let account = Account.set_nonce(account, nonce);  // Increase the nonce of the sender of the tx
             let account = Account.set_created(account, is_deploy_tx);
             State.update_account(account);
         }
@@ -977,10 +977,11 @@ namespace Interpreter {
             let success = State.add_transfer(transfer);
 
             // State must be finalized as we added entries with the latest transfer
-            // In all cases, the sender's nonce is set to the protocol's so that the committed nonce is the same
+            // In all cases, the sender's stored nonce is set to the (protocol's +1) to ensure
+            // they always match
             let sender = State.get_account(env.origin);
             let (tx_info) = get_tx_info();
-            let sender = Account.set_nonce(sender, tx_info.nonce);
+            let sender = Account.set_nonce(sender, tx_info.nonce + 1);
             State.update_account(sender);
             State.finalize();
         }
