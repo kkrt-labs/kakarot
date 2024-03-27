@@ -303,6 +303,14 @@ namespace GenericAccount {
             response_len=return_data_len, response=return_data, success=success, gas_used=gas_used
         );
 
+        // No matter the status of the execution (success - failure - rejected), the nonce of the
+        // transaction sender must be incremented.  While we use the protocol nonce for the
+        // transaction validation, we don't make the distinction between CAs and EOAs in their
+        // Starknet contract representation. As such, the stored nonce of an EOA account must be
+        // increased by one after each execution.
+        let (current_nonce) = Account_nonce.read();
+        Account_nonce.write(current_nonce + 1);
+
         let (response_len) = execute(
             call_array_len - 1,
             call_array + CallArray.SIZE,
