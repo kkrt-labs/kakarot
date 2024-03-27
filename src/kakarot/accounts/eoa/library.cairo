@@ -7,7 +7,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.math_cmp import is_le
-from starkware.cairo.common.math import split_felt
+from starkware.cairo.common.math import split_felt, unsigned_div_rem
 
 from kakarot.account import Account
 from kakarot.errors import Errors
@@ -118,10 +118,12 @@ namespace ExternallyOwnedAccount {
         let s = Uint256(tx_info.signature[2], tx_info.signature[3]);
         let v = tx_info.signature[4];
 
+        let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 64);
+
         EthTransaction.validate(
             address,
             tx_info.nonce,
-            tx_info.chain_id,
+            chain_id,
             r,
             s,
             v,
