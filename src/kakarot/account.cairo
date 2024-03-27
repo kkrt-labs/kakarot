@@ -439,31 +439,25 @@ namespace Account {
             tempvar range_check_ptr = range_check_ptr;
         }
 
-        // Checks if i+1 > bytecode_len. In this case, ap is filled with 0.
-        tempvar a = bytecode_len - (next_i + 1);
+        // continue_loop != 0 => next_i - bytecode_len < 0 <=> next_i < bytecode_len
+        tempvar a = next_i - bytecode_len;
         %{ memory[ap] = 0 if 0 <= (ids.a % PRIME) < range_check_builtin.bound else 1 %}
         ap += 1;
-        // is_not_done == 1 <=> i+1 <= bytecode_len.
-        if ([ap - 1] == 0) {
-            tempvar is_not_done = 1;
-        } else {
-            tempvar is_not_done = 0;
-        }
-
+        let continue_loop = [ap - 1];
         tempvar range_check_ptr = range_check_ptr;
         tempvar valid_jumpdests = valid_jumpdests;
         tempvar i = next_i;
         static_assert range_check_ptr == [ap - 3];
         static_assert valid_jumpdests == [ap - 2];
         static_assert i == [ap - 1];
-        jmp body if is_not_done != 0;
+        jmp body if continue_loop != 0;
 
         end:
         let range_check_ptr = [ap - 3];
         let i = [ap - 1];
-        // Verify that i+1 > bytecode_len to ensure loop terminated correctly.
-        let check = Helpers.is_le_unchecked(i + 1, bytecode_len);
-        assert check = 0;
+        // Verify that i >= bytecode_len to ensure loop terminated correctly.
+        let check = Helpers.is_le_unchecked(bytecode_len, i);
+        assert check = 1;
         return (valid_jumpdests_start, valid_jumpdests);
     }
 
