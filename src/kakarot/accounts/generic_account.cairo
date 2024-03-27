@@ -31,8 +31,8 @@ func constructor{
 @external
 func initialize{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(kakarot_address: felt, evm_address: felt) {
-    return GenericAccount.initialize(kakarot_address, evm_address);
+}(kakarot_address: felt, evm_address: felt, implementation_class: felt) {
+    return GenericAccount.initialize(kakarot_address, evm_address, implementation_class);
 }
 
 // @notice replaces the class of the account.

@@ -94,6 +94,7 @@ class SyscallHandler:
     caller_address: int = 0xABDE1
     patches = {}
     mock_call = mock.MagicMock()
+    mock_library_call = mock.MagicMock()
     mock_storage = mock.MagicMock()
     mock_event = mock.MagicMock()
 
@@ -330,6 +331,47 @@ class SyscallHandler:
         segments.write_arg(retdata_segment, retdata)
         segments.write_arg(syscall_ptr + 5, [len(retdata), retdata_segment])
 
+    def library_call(self, segments, syscall_ptr):
+        """
+        Call the registered mock function for the given selector.
+        Raise ValueError if the selector is not found in the patches dict.
+
+        Syscall structure is:
+            struct LibraryCallRequest {
+                selector: felt,
+                class_hash: felt,
+                function_selector: felt,
+                calldata_size: felt,
+                calldata: felt*,
+            }
+
+            struct LibraryCall {
+                request: LibraryCallRequest,
+                response: CallContractResponse,
+            }
+        """
+        function_selector = segments.memory[syscall_ptr + 2]
+        if function_selector not in self.patches:
+            raise ValueError(
+                f"Function selector 0x{function_selector:x} not found in patches."
+            )
+
+        class_hash = segments.memory[syscall_ptr + 1]
+        calldata_ptr = segments.memory[syscall_ptr + 4]
+        calldata = [
+            segments.memory[calldata_ptr + i]
+            for i in range(segments.memory[syscall_ptr + 3])
+        ]
+        self.mock_library_call(
+            class_hash=class_hash,
+            function_selector=function_selector,
+            calldata=calldata,
+        )
+        retdata = self.patches.get(function_selector)(class_hash, calldata)
+        retdata_segment = segments.add()
+        segments.write_arg(retdata_segment, retdata)
+        segments.write_arg(syscall_ptr + 5, [len(retdata), retdata_segment])
+
     @classmethod
     @contextmanager
     def patch(cls, target: str, *args, value: Optional[Union[callable, int]] = None):
@@ -342,7 +384,9 @@ class SyscallHandler:
         :param value: The value to patch with, a callable that will be called with the contract
             address and the calldata, and should return the retdata as a List[int].
         """
-        selector_if_call = get_selector_from_name(target.split(".")[-1])
+        selector_if_call = get_selector_from_name(
+            target.split(".")[-1].replace("library_call_", "")
+        )
         if value is None:
             args = list(args)
             value = args.pop()
