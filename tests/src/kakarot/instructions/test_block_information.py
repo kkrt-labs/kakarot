@@ -1,8 +1,9 @@
+from collections import OrderedDict
 from unittest.mock import patch
 
 import pytest
 
-from tests.utils.constants import BLOCK_GAS_LIMIT, CHAIN_ID, Opcodes
+from tests.utils.constants import BIG_CHAIN_ID, BLOCK_GAS_LIMIT, CHAIN_ID, Opcodes
 from tests.utils.syscall_handler import SyscallHandler
 
 
@@ -30,3 +31,24 @@ class TestBlockInformation:
     def test__exec_block_information(self, cairo_run, opcode, expected_result):
         output = cairo_run("test__exec_block_information", opcode=opcode)
         assert output == hex(expected_result)
+
+    @patch.object(
+        SyscallHandler,
+        "tx_info",
+        OrderedDict(
+            {
+                "version": 1,
+                "account_contract_address": 0xABDE1,
+                "max_fee": int(1e17),
+                # Signature len will be set later based on the signature.
+                "signature_len": None,
+                "signature": [],
+                "transaction_hash": 0xABDE1,
+                "chain_id": BIG_CHAIN_ID,
+                "nonce": 1,
+            }
+        ),
+    )
+    def test__exec_chain_id__should_return_mod_64(self, cairo_run):
+        output = cairo_run("test__exec_block_information", opcode=Opcodes.CHAINID)
+        assert output == hex(BIG_CHAIN_ID % 2**64)

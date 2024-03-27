@@ -7,6 +7,7 @@ from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.uint256 import Uint256
+from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.memset import memset
 from starkware.starknet.common.syscalls import (
     emit_event,
@@ -122,11 +123,12 @@ namespace Starknet {
 
         // No idea why this is required - but trying to pass prev_randao_ directly causes bugs.
         let prev_randao_ = Uint256(low=prev_randao_.low, high=prev_randao_.high);
+        let (_, chain_id) = unsigned_div_rem(tx_info.chain_id, 2 ** 64);
 
         return new model.Environment(
             origin=origin,
             gas_price=gas_price,
-            chain_id=tx_info.chain_id,
+            chain_id=chain_id,
             prev_randao=prev_randao_,
             block_number=block_number,
             block_gas_limit=block_gas_limit_,
