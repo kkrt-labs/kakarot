@@ -63,10 +63,9 @@ namespace Starknet {
     // @notice Deploy a new account
     // @dev Deploy an instance of an account
     // @param evm_address The Ethereum address which will be controlling the account
-    // @param class_hash The hash of the implemented account (eoa/contract)
     // @return account_address The Starknet Account address
     func deploy{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        class_hash: felt, evm_address: felt
+        evm_address: felt
     ) -> (account_address: felt) {
         alloc_locals;
 
@@ -202,8 +201,7 @@ namespace Internals {
 
             if (code_or_nonce != FALSE) {
                 // Deploy accounts
-                let (class_hash) = Kakarot_generic_account_class_hash.read();
-                Starknet.deploy(class_hash, self.address.evm);
+                Starknet.deploy(self.address.evm);
 
                 // If SELFDESTRUCT, leave the account empty after deploying it - including
                 // burning any leftover balance.

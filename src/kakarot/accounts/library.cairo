@@ -71,12 +71,13 @@ namespace GenericAccount {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(kakarot_address: felt, evm_address) {
+    }(kakarot_address: felt, evm_address: felt, implementation_class: felt) {
         let (is_initialized) = Account_is_initialized.read();
         assert is_initialized = 0;
         Account_is_initialized.write(1);
         Ownable.initializer(kakarot_address);
         Account_evm_address.write(evm_address);
+        Account_implementation.write(implementation_class);
 
         // Give infinite ETH transfer allowance to Kakarot
         let (native_token_address) = IKakarot.get_native_token(kakarot_address);

@@ -44,10 +44,11 @@ func initialize{
     let (calldata) = alloc();
     assert [calldata] = kakarot_address;
     assert [calldata + 1] = evm_address;
+    assert [calldata + 2] = implementation_class;
     library_call(
         class_hash=implementation_class,
         function_selector=INITIALIZE_SELECTOR,
-        calldata_size=2,
+        calldata_size=3,
         calldata=calldata,
     );
     return ();
