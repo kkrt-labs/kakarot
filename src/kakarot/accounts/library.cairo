@@ -1,12 +1,11 @@
 %lang starknet
 
-from openzeppelin.access.ownable.library import Ownable
+from openzeppelin.access.ownable.library import Ownable, Ownable_owner
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import unsigned_div_rem, split_int, split_felt
 from starkware.cairo.common.memcpy import memcpy
-from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.uint256 import Uint256, uint256_not, uint256_add, uint256_le
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.math import assert_not_zero
@@ -25,10 +24,11 @@ from starkware.starknet.common.syscalls import (
     replace_class,
 )
 from starkware.cairo.common.memset import memset
-from utils.eth_transaction import EthTransaction
 
 from kakarot.interfaces.interfaces import IERC20, IKakarot
 from kakarot.errors import Errors
+from kakarot.constants import Constants
+from utils.eth_transaction import EthTransaction
 
 // @dev: should always be zero for EOAs
 @storage_var
@@ -52,10 +52,6 @@ func Account_nonce() -> (nonce: felt) {
 }
 
 @storage_var
-func Account_kakarot_address() -> (kakarot_address: felt) {
-}
-
-@storage_var
 func Account_implementation() -> (address: felt) {
 }
 
@@ -75,17 +71,16 @@ namespace GenericAccount {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(kakarot_address: felt, _evm_address) {
+    }(kakarot_address: felt, evm_address) {
         let (is_initialized) = Account_is_initialized.read();
         assert is_initialized = 0;
         Account_is_initialized.write(1);
         Ownable.initializer(kakarot_address);
-        Account_evm_address.write(_evm_address);
-        Account_kakarot_address.write(kakarot_address);
+        Account_evm_address.write(evm_address);
 
         // Give infinite ETH transfer allowance to Kakarot
         let (native_token_address) = IKakarot.get_native_token(kakarot_address);
-        let (infinite) = uint256_not(Uint256(0, 0));
+        let infinite = Uint256(Constants.UINT128_MAX, Constants.UINT128_MAX);
         IERC20.approve(native_token_address, kakarot_address, infinite);
         return ();
     }
@@ -138,10 +133,6 @@ namespace GenericAccount {
 
     // EOA functions
 
-    // Constants
-    // @dev see utils/interface_id.py
-    const INTERFACE_ID = 0x68bca1a;
-
     struct Call {
         to: felt,
         selector: felt,
@@ -149,7 +140,7 @@ namespace GenericAccount {
         calldata: felt*,
     }
 
-    // Tmp struct introduced while we wait for Cairo to support passing `[Call]` to __execute__
+    // Struct introduced to pass `[Call]` to __execute__
     struct CallArray {
         to: felt,
         selector: felt,
@@ -171,7 +162,7 @@ namespace GenericAccount {
     }(call_array_len: felt, call_array: CallArray*, calldata_len: felt, calldata: felt*) -> () {
         alloc_locals;
         if (call_array_len == 0) {
-            // Validates that this account doesn't have code.
+            // Validates that this account doesn't have code. Check only once at the end of the recursion.
             let (bytecode_len) = Account_bytecode_len.read();
             with_attr error_message("EOAs cannot have code") {
                 assert bytecode_len = 0;
@@ -237,7 +228,7 @@ namespace GenericAccount {
 
         let tx = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
 
-        let (kakarot_address) = Account_kakarot_address.read();
+        let (kakarot_address) = Ownable_owner.read();
         let (block_gas_limit) = IKakarot.get_block_gas_limit(kakarot_address);
         let tx_gas_fits_in_block = is_le(tx.gas_limit, block_gas_limit);
 

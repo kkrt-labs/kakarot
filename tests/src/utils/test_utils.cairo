@@ -5,6 +5,7 @@ from starkware.cairo.common.uint256 import Uint256, assert_uint256_eq
 from starkware.cairo.common.memset import memset
 
 from utils.utils import Helpers
+from kakarot.constants import Constants
 
 func test__bytes_i_to_uint256{range_check_ptr}() {
     alloc_locals;
@@ -25,13 +26,13 @@ func test__bytes_i_to_uint256{range_check_ptr}() {
     memset(bytecode, 0xFF, 20);
     let uint256 = Helpers.bytes_i_to_uint256(bytecode, 20);
 
-    assert_uint256_eq(uint256, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0xFFFFFFFF));
+    assert_uint256_eq(uint256, Uint256(Constants.UINT128_MAX, 0xFFFFFFFF));
 
     let (bytecode) = alloc();
     memset(bytecode, 0xFF, 16);
     let uint256 = Helpers.bytes_i_to_uint256(bytecode, 16);
 
-    assert_uint256_eq(uint256, Uint256(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF, 0));
+    assert_uint256_eq(uint256, Uint256(Constants.UINT128_MAX, 0));
 
     return ();
 }

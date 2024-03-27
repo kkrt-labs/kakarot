@@ -17,7 +17,6 @@ from kakarot.interpreter import Interpreter
 from kakarot.account import Account
 from kakarot.model import model
 from kakarot.stack import Stack
-from kakarot.constants import Constants
 from kakarot.storages import (
     Kakarot_native_token_address,
     Kakarot_generic_account_class_hash,
@@ -72,7 +71,7 @@ func execute{
         calldata_len=calldata_len,
         calldata=calldata,
         value=value,
-        gas_limit=Constants.TRANSACTION_GAS_LIMIT,
+        gas_limit=1000000,
         access_list_len=access_list_len,
         access_list=access_list,
     );

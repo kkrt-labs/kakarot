@@ -5,15 +5,14 @@ from kakarot.gas import Gas
 // @title Constants file.
 // @notice This file contains global constants.
 namespace Constants {
+    const UINT128_MAX = 0xffffffffffffffffffffffffffffffff;
+
     // STACK
     const STACK_MAX_DEPTH = 1024;
 
-    // TRANSACTION
-    // Used in tests only
-    const TRANSACTION_GAS_LIMIT = 1000000;
-
     // PROXY
     const CONTRACT_ADDRESS_PREFIX = 'STARKNET_CONTRACT_ADDRESS';
+
     // ACCOUNTS
     const MAX_NONCE = 2 ** 64 - 1;
     const MAX_CODE_SIZE = 0x6000;
