@@ -40,7 +40,6 @@ class TestBlockInformation:
                 "version": 1,
                 "account_contract_address": 0xABDE1,
                 "max_fee": int(1e17),
-                # Signature len will be set later based on the signature.
                 "signature_len": None,
                 "signature": [],
                 "transaction_hash": 0xABDE1,
