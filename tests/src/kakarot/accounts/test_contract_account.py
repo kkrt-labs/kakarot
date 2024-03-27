@@ -27,6 +27,7 @@ class TestContractAccount:
                 "test__initialize__should_store_given_evm_address",
                 kakarot_address=0x1234,
                 evm_address=0xABDE1,
+                implementation_class=0xC1A55,
             )
             SyscallHandler.mock_storage.assert_any_call(
                 address=get_storage_var_address("Ownable_owner"), value=0x1234
@@ -42,6 +43,7 @@ class TestContractAccount:
                 "test__initialize__should_store_given_evm_address",
                 kakarot_address=0x1234,
                 evm_address=0xABDE1,
+                implementation_class=0xC1A55,
             )
             SyscallHandler.mock_event.assert_any_call(
                 keys=[get_selector_from_name("OwnershipTransferred")], data=[0, 0x1234]
@@ -63,6 +65,7 @@ class TestContractAccount:
                 "test__initialize__should_store_given_evm_address",
                 kakarot_address=0x1234,
                 evm_address=0xABDE1,
+                implementation_class=0xC1A55,
             )
             SyscallHandler.mock_call.assert_any_call(
                 contract_address=0xDEAD,

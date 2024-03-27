@@ -193,39 +193,34 @@ namespace Internals {
         let starknet_address = self.address.starknet;
         // Case new Account
         if (starknet_account_exists == 0) {
-            // Just casting the Summary into an Account to apply has_code_or_nonce
-            // cf Summary note: like an Account, but frozen after squashing all dicts
-            // There is no reason to have has_code_or_nonce available in the public API
-            // for model.Account, but safe to use here
-            let code_or_nonce = Account.has_code_or_nonce(self);
+            // Deploy account
+            Starknet.deploy(self.address.evm);
 
-            if (code_or_nonce != FALSE) {
-                // Deploy accounts
-                Starknet.deploy(self.address.evm);
-
-                // If SELFDESTRUCT, leave the account empty after deploying it - including
-                // burning any leftover balance.
-                if (self.selfdestruct != 0) {
-                    let starknet_address = Account.compute_starknet_address(Constants.BURN_ADDRESS);
-                    tempvar burn_address = new model.Address(
-                        starknet=starknet_address, evm=Constants.BURN_ADDRESS
-                    );
-                    let transfer = model.Transfer(self.address, burn_address, [self.balance]);
-                    State.add_transfer(transfer);
-                    return ();
-                }
-
-                // Write bytecode
-                IAccount.write_bytecode(starknet_address, self.code_len, self.code);
-                // Set nonce
-                IAccount.set_nonce(starknet_address, self.nonce);
-                // Save storages
-                _save_storage(starknet_address, self.storage_start, self.storage);
-                return ();
-            } else {
-                // Touched an undeployed address in a CALL, do nothing
+            let has_code_or_nonce = Account.has_code_or_nonce(self);
+            if (has_code_or_nonce == FALSE) {
+                // Nothing to commit
                 return ();
             }
+
+            // If SELFDESTRUCT, leave the account empty after deploying it - including
+            // burning any leftover balance.
+            if (self.selfdestruct != 0) {
+                let starknet_address = Account.compute_starknet_address(Constants.BURN_ADDRESS);
+                tempvar burn_address = new model.Address(
+                    starknet=starknet_address, evm=Constants.BURN_ADDRESS
+                );
+                let transfer = model.Transfer(self.address, burn_address, [self.balance]);
+                State.add_transfer(transfer);
+                return ();
+            }
+
+            // Write bytecode
+            IAccount.write_bytecode(starknet_address, self.code_len, self.code);
+            // Set nonce
+            IAccount.set_nonce(starknet_address, self.nonce);
+            // Save storages
+            _save_storage(starknet_address, self.storage_start, self.storage);
+            return ();
         }
 
         // @dev: EIP-6780 - If selfdestruct on an account created, dont commit data
