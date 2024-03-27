@@ -61,7 +61,7 @@ namespace TestHelpers {
             depth=0,
             env=env,
         );
-        let evm: model.EVM* = EVM.init(message, Constants.TRANSACTION_GAS_LIMIT);
+        let evm: model.EVM* = EVM.init(message, 1000000);
         return evm;
     }
 

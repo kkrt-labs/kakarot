@@ -139,19 +139,6 @@ func __execute__{
     return (response_len, response);
 }
 
-// @dev Return true if the interface_id is supported
-// @dev TODO: check what interfaces the contract should support and maybe create one for a kakarot account
-// @param interface_id The interface Id to verify if supported
-@view
-func supports_interface{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    interface_id: felt
-) -> (success: felt) {
-    if (interface_id == GenericAccount.INTERFACE_ID) {
-        return (success=1);
-    }
-    return (success=0);
-}
-
 // @notice Store the bytecode of the contract.
 // @param bytecode The bytecode of the contract.
 // @param bytecode_len The length of the bytecode.
@@ -184,7 +171,7 @@ func bytecode_len{
 }
 
 // @notice Store a key-value pair.
-// @param key The storage address, with storage_var being storage_(key: Uint256)
+// @param key The storage address, with storage_var being Account_storage(key: Uint256)
 // @param value The bytes32 stored value.
 @external
 func write_storage{
@@ -194,7 +181,7 @@ func write_storage{
 }
 
 // @notice Read a given storage key
-// @param key The storage address, with storage_var being storage_(key: Uint256)
+// @param key The storage address, with storage_var being Account_storage(key: Uint256)
 // @return value The stored value if the key exists, 0 otherwise.
 @view
 func storage{

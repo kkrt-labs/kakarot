@@ -119,12 +119,11 @@ namespace Account {
         let (bytecode_len, bytecode) = IAccount.bytecode(contract_address=starknet_address);
         let (nonce) = IAccount.get_nonce(contract_address=starknet_address);
 
-        // Special case: empty accounts, deployed but with no data, from create-SD transactions
-        // must
-
         // CAs are instantiated with their actual nonce - EOAs are instantiated with the nonce=1
         // that is set when they're deployed.
-        // If an account was created-selfdestructed in the same tx, it is empty here.
+
+        // If an account was created-selfdestructed in the same tx, its nonce is 0, thus
+        // it is considered as a new account as per the `has_code_or_nonce` rule.
         let account = Account.init(
             address=address, code_len=bytecode_len, code=bytecode, nonce=nonce, balance=balance_ptr
         );

@@ -2,42 +2,53 @@
 
 %lang starknet
 
-// Starkware dependencies
-from openzeppelin.access.ownable.library import Ownable
-from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin, SignatureBuiltin
-from starkware.cairo.common.uint256 import Uint256
-
-// Local dependencies
-from kakarot.accounts.library import GenericAccount, Account_kakarot_address, Account_evm_address
-from starkware.starknet.common.syscalls import get_tx_info, get_caller_address, replace_class
-from starkware.cairo.common.math import assert_le, unsigned_div_rem
+from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
+from starkware.starknet.common.syscalls import get_caller_address, replace_class, library_call
+
+const INITIALIZE_SELECTOR = 0x79dc0da7c54b95f10aa182ad0a46400db63156920adb65eca2654c0945a463;  // sn_keccak('initialize')
+
+@storage_var
+func Account_evm_address() -> (evm_address: felt) {
+}
+
+@storage_var
+func Account_kakarot_address() -> (kakarot_address: felt) {
+}
 
 @constructor
-func constructor{
-    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(kakarot_address: felt, evm_address: felt) {
+func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    kakarot_address: felt, evm_address: felt
+) {
     Account_kakarot_address.write(kakarot_address);
     Account_evm_address.write(evm_address);
     return ();
 }
 
-// @title EVM smart contract account representation.
+// @title Uninitialized Contract Account. Used to get a deterministic address for an account, no
+// matter the actual implementation class used.
 
-// @notice Initializes the account with the given Kakarot and EVM addresses.
-// @param kakarot_address The address of the main Kakarot contract.
-// @param evm_address The EVM address of the account.
+// @notice Initializes the account with the Kakarot and EVM addresses it was deployed with.
+// @param implementation_class The address of the main Kakarot contract.
 @external
 func initialize{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(new_class: felt) {
+}(implementation_class: felt) {
     let (caller) = get_caller_address();
     let (kakarot_address) = Account_kakarot_address.read();
     with_attr error_message("Only Kakarot") {
         assert kakarot_address = caller;
     }
-    replace_class(new_class);
+    replace_class(implementation_class);
     let (evm_address) = Account_evm_address.read();
-    GenericAccount.initialize(kakarot_address, evm_address);
+    let (calldata) = alloc();
+    assert [calldata] = kakarot_address;
+    assert [calldata + 1] = evm_address;
+    library_call(
+        class_hash=implementation_class,
+        function_selector=INITIALIZE_SELECTOR,
+        calldata_size=2,
+        calldata=calldata,
+    );
     return ();
 }

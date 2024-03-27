@@ -406,16 +406,6 @@ class SyscallHandler:
         storage_selector = get_selector_from_name("storage")
         cls.patches[storage_selector] = _storage
 
-        # Set account types
-        # We set all account types to be CA (contract account) as the only difference is that
-        # with EOA it doesn't try to fetch the nonce from the syscall, while here we actually
-        # want to have the EOA with the patched nonce.
-        def _account_type(contract_address, calldata):
-            return [int.from_bytes(b"CA", "big")]
-
-        account_type_selector = get_selector_from_name("account_type")
-        cls.patches[account_type_selector] = _account_type
-
         # Register accounts
         for address in state.keys():
             address_selector = get_storage_var_address(
