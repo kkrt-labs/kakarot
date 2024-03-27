@@ -217,9 +217,7 @@ namespace Kakarot {
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     }(evm_contract_address: felt) -> (starknet_contract_address: felt) {
         alloc_locals;
-
-        let (class_hash) = Kakarot_uninitialized_account_class_hash.read();
-        let (starknet_contract_address) = Starknet.deploy(class_hash, evm_contract_address);
+        let (starknet_contract_address) = Starknet.deploy(evm_contract_address);
 
         return (starknet_contract_address=starknet_contract_address);
     }
