@@ -232,8 +232,8 @@ def cairo_run(request) -> list:
             output_path = (
                 str(
                     request.node.path.parent
-                    / f"{request.node.path.stem}.{entrypoint}({(json.dumps(kwargs) if kwargs else '')})"
-                )[:220]
+                    / f"{request.node.path.stem}.{entrypoint}_{(json.dumps(kwargs) if kwargs else '')}"
+                )[:180]
                 + ".pb.gz"
             )
             with open(output_path, "wb") as fp:
