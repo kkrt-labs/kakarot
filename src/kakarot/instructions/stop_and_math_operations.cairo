@@ -78,7 +78,7 @@ func uint256_add{range_check_ptr}(a: Uint256, b: Uint256) -> (res: Uint256, carr
     }
 }
 
-// Substracts two integers. Returns the result as a 256-bit integer.
+// Subtracts two integers. Returns the result as a 256-bit integer.
 // Strictly equivalent and faster version of common.uint256.uint256_sub using uint256_add's whitelisted hint.
 func uint256_sub{range_check_ptr}(a: Uint256, b: Uint256) -> (res: Uint256) {
     alloc_locals;
