@@ -28,7 +28,7 @@ from kakarot.model import model
 from kakarot.state import State
 from kakarot.storages import (
     Kakarot_native_token_address,
-    Kakarot_generic_account_class_hash,
+    Kakarot_account_contract_class_hash,
     Kakarot_uninitialized_account_class_hash,
     Kakarot_evm_to_starknet_address,
     Kakarot_coinbase,
@@ -86,7 +86,7 @@ namespace Starknet {
         );
 
         // Properly initialize the account once created
-        let (account_class_hash) = Kakarot_generic_account_class_hash.read();
+        let (account_class_hash) = Kakarot_account_contract_class_hash.read();
         IUninitializedAccount.initialize(starknet_address, account_class_hash);
 
         evm_contract_deployed.emit(evm_address, starknet_address);

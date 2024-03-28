@@ -56,7 +56,7 @@ async def main():
             "kakarot",
             account.address,  # owner
             ETH_TOKEN_ADDRESS,  # native_token_address_
-            class_hash["generic_account"],  # generic_account_class_hash_
+            class_hash["account_contract"],  # account_contract_class_hash_
             class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
             class_hash["Precompiles"],
             BLOCK_GAS_LIMIT,
@@ -66,7 +66,7 @@ async def main():
         deployments["EVM"] = await deploy(
             "EVM",
             ETH_TOKEN_ADDRESS,  # native_token_address_
-            class_hash["generic_account"],  # generic_account_class_hash_
+            class_hash["account_contract"],  # account_contract_class_hash_
             class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
             class_hash["Precompiles"],
             BLOCK_GAS_LIMIT,

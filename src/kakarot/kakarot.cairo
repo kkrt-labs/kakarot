@@ -25,7 +25,7 @@ from utils.utils import Helpers
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     owner: felt,
     native_token_address: felt,
-    generic_account_class_hash: felt,
+    account_contract_class_hash: felt,
     uninitialized_account_class_hash: felt,
     precompiles_class_hash: felt,
     block_gas_limit: felt,
@@ -33,7 +33,7 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     return Kakarot.constructor(
         owner,
         native_token_address,
-        generic_account_class_hash,
+        account_contract_class_hash,
         uninitialized_account_class_hash,
         precompiles_class_hash,
         block_gas_limit,

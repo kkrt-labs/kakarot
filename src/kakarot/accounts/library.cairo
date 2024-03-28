@@ -25,6 +25,7 @@ from starkware.starknet.common.syscalls import (
 )
 from starkware.cairo.common.memset import memset
 
+from kakarot.accounts.shared_storage import Account_evm_address, Account_kakarot_address
 from kakarot.interfaces.interfaces import IERC20, IKakarot
 from kakarot.errors import Errors
 from kakarot.constants import Constants
@@ -44,10 +45,6 @@ func Account_is_initialized() -> (res: felt) {
 }
 
 @storage_var
-func Account_evm_address() -> (evm_address: felt) {
-}
-
-@storage_var
 func Account_nonce() -> (nonce: felt) {
 }
 
@@ -64,16 +61,21 @@ const BYTES_PER_FELT = 31;
 // @title Account main library file.
 // @notice This file contains the EVM account representation logic.
 // @dev: Both EOAs and Contract Accounts are represented by this contract.
-namespace GenericAccount {
+namespace AccountContract {
     // @notice This function is used to initialize the smart contract account.
+    // @dev The `evm_address` and `kakarot_address` were set during the uninitialized_account creation.
+    // Reading them from state ensures that they always match the ones the account was created for.
     func initialize{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(kakarot_address: felt, evm_address: felt, implementation_class: felt) {
+    }(implementation_class: felt) {
+        alloc_locals;
         let (is_initialized) = Account_is_initialized.read();
         assert is_initialized = 0;
+        let (kakarot_address) = Account_kakarot_address.read();
+        let (evm_address) = Account_evm_address.read();
         Account_is_initialized.write(1);
         Ownable.initializer(kakarot_address);
         Account_evm_address.write(evm_address);
@@ -229,6 +231,22 @@ namespace GenericAccount {
 
         let tx = EthTransaction.decode([call_array].data_len, calldata + [call_array].data_offset);
 
+        // No matter the status of the execution in EVM terms (success - failure - rejected), the nonce of the
+        // transaction sender must be incremented, as the protocol nonce is.  While we use the protocol nonce for the
+        // transaction validation, we don't make the distinction between CAs and EOAs in their
+        // Starknet contract representation. As such, the stored nonce of an EOA account must always match the
+        // protocol nonce, increased by one right before each transaction execution.
+        //
+        // In the official specification, this nonce increment is done right after the tx validation checks.
+        // Since we can only perform these checks in __execute__, which increments the protocol nonce by one,
+        // we need to increment the stored nonce here as well.
+        //
+        // The protocol nonce is updated once per __execute__ call, while the EVM nonce is updated once per
+        // transaction. If we were to execute more than one transaction in a single __execute__ call, we would
+        // need to change the nonce incrementation logic.
+        let (current_nonce) = Account_nonce.read();
+        Account_nonce.write(current_nonce + 1);
+
         let (kakarot_address) = Ownable_owner.read();
         let (block_gas_limit) = IKakarot.get_block_gas_limit(kakarot_address);
         let tx_gas_fits_in_block = is_le(tx.gas_limit, block_gas_limit);
@@ -302,14 +320,6 @@ namespace GenericAccount {
         transaction_executed.emit(
             response_len=return_data_len, response=return_data, success=success, gas_used=gas_used
         );
-
-        // No matter the status of the execution (success - failure - rejected), the nonce of the
-        // transaction sender must be incremented.  While we use the protocol nonce for the
-        // transaction validation, we don't make the distinction between CAs and EOAs in their
-        // Starknet contract representation. As such, the stored nonce of an EOA account must be
-        // increased by one after each execution.
-        let (current_nonce) = Account_nonce.read();
-        Account_nonce.write(current_nonce + 1);
 
         let (response_len) = execute(
             call_array_len - 1,

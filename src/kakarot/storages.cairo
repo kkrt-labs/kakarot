@@ -13,7 +13,7 @@ func Kakarot_native_token_address() -> (res: felt) {
 }
 
 @storage_var
-func Kakarot_generic_account_class_hash() -> (value: felt) {
+func Kakarot_account_contract_class_hash() -> (value: felt) {
 }
 
 @storage_var

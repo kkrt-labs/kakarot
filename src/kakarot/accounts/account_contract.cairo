@@ -8,13 +8,12 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin, S
 from starkware.cairo.common.uint256 import Uint256
 
 // Local dependencies
-from kakarot.accounts.library import GenericAccount
+from kakarot.accounts.library import AccountContract
 from starkware.starknet.common.syscalls import get_tx_info, get_caller_address
 from starkware.cairo.common.math import assert_le, unsigned_div_rem
 from starkware.cairo.common.alloc import alloc
 
 // @title EVM smart contract account representation.
-
 @constructor
 func constructor{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
@@ -31,8 +30,8 @@ func constructor{
 @external
 func initialize{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(kakarot_address: felt, evm_address: felt, implementation_class: felt) {
-    return GenericAccount.initialize(kakarot_address, evm_address, implementation_class);
+}(implementation_class: felt) {
+    return AccountContract.initialize(implementation_class);
 }
 
 // @notice replaces the class of the account.
@@ -41,7 +40,7 @@ func initialize{
 func upgrade{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(new_class: felt) {
-    return GenericAccount.upgrade(new_class);
+    return AccountContract.upgrade(new_class);
 }
 
 // @notice Gets the evm address associated with the account.
@@ -50,7 +49,7 @@ func upgrade{
 func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     address: felt
 ) {
-    return GenericAccount.get_evm_address();
+    return AccountContract.get_evm_address();
 }
 
 // @notice Checks if the account was initialized.
@@ -59,7 +58,7 @@ func get_evm_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
 func is_initialized{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> (is_initialized: felt) {
-    return GenericAccount.is_initialized();
+    return AccountContract.is_initialized();
 }
 
 // EOA specific entrypoints
@@ -74,9 +73,12 @@ func is_initialized{
 func __validate__{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, bitwise_ptr: BitwiseBuiltin*, range_check_ptr
 }(
-    call_array_len: felt, call_array: GenericAccount.CallArray*, calldata_len: felt, calldata: felt*
+    call_array_len: felt,
+    call_array: AccountContract.CallArray*,
+    calldata_len: felt,
+    calldata: felt*,
 ) {
-    GenericAccount.validate(
+    AccountContract.validate(
         call_array_len=call_array_len,
         call_array=call_array,
         calldata_len=calldata_len,
@@ -114,7 +116,10 @@ func __execute__{
     bitwise_ptr: BitwiseBuiltin*,
     range_check_ptr,
 }(
-    call_array_len: felt, call_array: GenericAccount.CallArray*, calldata_len: felt, calldata: felt*
+    call_array_len: felt,
+    call_array: AccountContract.CallArray*,
+    calldata_len: felt,
+    calldata: felt*,
 ) -> (response_len: felt, response: felt*) {
     alloc_locals;
     let (tx_info) = get_tx_info();
@@ -128,8 +133,12 @@ func __execute__{
         assert caller = 0;
     }
 
+    with_attr error_message("EOA: multicall not supported") {
+        assert call_array_len = 1;
+    }
+
     let (local response: felt*) = alloc();
-    let (response_len) = GenericAccount.execute(
+    let (response_len) = AccountContract.execute(
         call_array_len=call_array_len,
         call_array=call_array,
         calldata_len=calldata_len,
@@ -146,7 +155,7 @@ func __execute__{
 func write_bytecode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(bytecode_len: felt, bytecode: felt*) {
-    return GenericAccount.write_bytecode(bytecode_len, bytecode);
+    return AccountContract.write_bytecode(bytecode_len, bytecode);
 }
 
 // @notice This function is used to get the bytecode of the smart contract.
@@ -156,7 +165,7 @@ func write_bytecode{
 func bytecode{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> (bytecode_len: felt, bytecode: felt*) {
-    return GenericAccount.bytecode();
+    return AccountContract.bytecode();
 }
 
 // @notice This function is used to get only the bytecode_len of the smart contract.
@@ -166,7 +175,7 @@ func bytecode{
 func bytecode_len{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> (len: felt) {
-    let (len) = GenericAccount.bytecode_len();
+    let (len) = AccountContract.bytecode_len();
     return (len=len);
 }
 
@@ -177,7 +186,7 @@ func bytecode_len{
 func write_storage{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(storage_addr: felt, value: Uint256) {
-    return GenericAccount.write_storage(storage_addr, value);
+    return AccountContract.write_storage(storage_addr, value);
 }
 
 // @notice Read a given storage key
@@ -187,18 +196,18 @@ func write_storage{
 func storage{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }(storage_addr: felt) -> (value: Uint256) {
-    return GenericAccount.storage(storage_addr);
+    return AccountContract.storage(storage_addr);
 }
 
 // @notice This function is used to read the nonce from storage
 // @return nonce The current nonce of the contract account
 @view
 func get_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (nonce: felt) {
-    return GenericAccount.get_nonce();
+    return AccountContract.get_nonce();
 }
 
 // @notice This function set the contract account nonce
 @external
 func set_nonce{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(nonce: felt) {
-    return GenericAccount.set_nonce(nonce);
+    return AccountContract.set_nonce(nonce);
 }
