@@ -12,15 +12,14 @@ from starkware.cairo.common.uint256 import Uint256
 from backend.starknet import Starknet
 from kakarot.account import Account
 from kakarot.storages import (
-    account_proxy_class_hash,
-    contract_account_class_hash,
-    base_fee,
-    externally_owned_account_class_hash,
-    native_token_address,
-    precompiles_class_hash,
-    coinbase,
-    prev_randao,
-    block_gas_limit,
+    Kakarot_uninitialized_account_class_hash,
+    Kakarot_account_contract_class_hash,
+    Kakarot_base_fee,
+    Kakarot_native_token_address,
+    Kakarot_precompiles_class_hash,
+    Kakarot_coinbase,
+    Kakarot_prev_randao,
+    Kakarot_block_gas_limit,
 )
 from kakarot.interpreter import Interpreter
 from kakarot.instructions.system_operations import CreateHelper
@@ -33,28 +32,25 @@ namespace Kakarot {
     // @notice The constructor of the contract.
     // @dev Set up the initial owner, accounts class hash and native token.
     // @param owner The address of the owner of the contract.
-    // @param native_token_address_ The ERC20 contract used to emulate ETH.
-    // @param contract_account_class_hash_ The clash hash of the contract account.
-    // @param externally_owned_account_class_hash_ The externally owned account class hash.
-    // @param account_proxy_class_hash_ The account proxy class hash.
-    // @param precompiles_class_hash_ The precompiles class hash for precompiles not implemented in Kakarot.
+    // @param native_token_address The ERC20 contract used to emulate ETH.
+    // @param account_contract_class_hash The clash hash of the contract account.
+    // @param uninitialized_account_class_hash The class hash of the uninitialized account used for deterministic address calculation.
+    // @param precompiles_class_hash The precompiles class hash for precompiles not implemented in Kakarot.
     func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         owner: felt,
-        native_token_address_,
-        contract_account_class_hash_,
-        externally_owned_account_class_hash_,
-        account_proxy_class_hash_,
-        precompiles_class_hash_,
-        block_gas_limit_,
+        native_token_address,
+        account_contract_class_hash,
+        uninitialized_account_class_hash,
+        precompiles_class_hash,
+        block_gas_limit,
     ) {
         Ownable.initializer(owner);
-        native_token_address.write(native_token_address_);
-        contract_account_class_hash.write(contract_account_class_hash_);
-        externally_owned_account_class_hash.write(externally_owned_account_class_hash_);
-        account_proxy_class_hash.write(account_proxy_class_hash_);
-        precompiles_class_hash.write(precompiles_class_hash_);
-        coinbase.write(0xCA40796aFB5472abaeD28907D5ED6FC74c04954a);
-        block_gas_limit.write(block_gas_limit_);
+        Kakarot_native_token_address.write(native_token_address);
+        Kakarot_account_contract_class_hash.write(account_contract_class_hash);
+        Kakarot_uninitialized_account_class_hash.write(uninitialized_account_class_hash);
+        Kakarot_precompiles_class_hash.write(precompiles_class_hash);
+        Kakarot_coinbase.write(0xCA40796aFB5472abaeD28907D5ED6FC74c04954a);
+        Kakarot_block_gas_limit.write(block_gas_limit);
         return ();
     }
 
@@ -119,12 +115,12 @@ namespace Kakarot {
 
     // @notice Set the native Starknet ERC20 token used by kakarot.
     // @dev Set the native token which will emulate the role of ETH on Ethereum.
-    // @param native_token_address_ The address of the native token.
+    // @param native_token_address The address of the native token.
     func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        native_token_address_: felt
+        native_token_address: felt
     ) {
         Ownable.assert_only_owner();
-        native_token_address.write(native_token_address_);
+        Kakarot_native_token_address.write(native_token_address);
         return ();
     }
 
@@ -134,17 +130,17 @@ namespace Kakarot {
     func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         native_token_address: felt
     ) {
-        let (native_token_address_) = native_token_address.read();
-        return (native_token_address_,);
+        let (native_token_address) = Kakarot_native_token_address.read();
+        return (native_token_address,);
     }
 
     // @notice Set the block base fee.
-    // @param base_fee_ The new base fee.
+    // @param base_fee The new base fee.
     func set_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        base_fee_: felt
+        base_fee: felt
     ) {
         Ownable.assert_only_owner();
-        base_fee.write(base_fee_);
+        Kakarot_base_fee.write(base_fee);
         return ();
     }
 
@@ -153,36 +149,36 @@ namespace Kakarot {
     func get_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         base_fee: felt
     ) {
-        let (base_fee_) = base_fee.read();
-        return (base_fee_,);
+        let (base_fee) = Kakarot_base_fee.read();
+        return (base_fee,);
     }
 
     // @notice Set the coinbase address.
-    // @param coinbase_ The new coinbase address.
+    // @param coinbase The new coinbase address.
     func set_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        coinbase_: felt
+        coinbase: felt
     ) {
         Ownable.assert_only_owner();
-        coinbase.write(coinbase_);
+        Kakarot_coinbase.write(coinbase);
         return ();
     }
 
     // @notice Get the coinbase address.
-    // @return coinbase The current coinbase.
+    // @return coinbase The current Kakarot_coinbase.
     func get_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         coinbase: felt
     ) {
-        let (coinbase_) = coinbase.read();
-        return (coinbase_,);
+        let (coinbase) = Kakarot_coinbase.read();
+        return (coinbase,);
     }
 
     // @notice Set the prev_randao.
-    // @param prev_randao_ The new prev_randao.
+    // @param prev_randao The new prev_randao.
     func set_prev_randao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        prev_randao_: Uint256
+        prev_randao: Uint256
     ) {
         Ownable.assert_only_owner();
-        prev_randao.write(prev_randao_);
+        Kakarot_prev_randao.write(prev_randao);
         return ();
     }
 
@@ -191,17 +187,17 @@ namespace Kakarot {
     func get_prev_randao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         prev_randao: Uint256
     ) {
-        let (prev_randao_) = prev_randao.read();
-        return (prev_randao_,);
+        let (prev_randao) = Kakarot_prev_randao.read();
+        return (prev_randao,);
     }
 
     // @notice Set the block gas limit.
-    // @param block_gas_limit_ The new block gas limit.
+    // @param block_gas_limit The new block gas limit.
     func set_block_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-        block_gas_limit_: felt
+        block_gas_limit: felt
     ) {
         Ownable.assert_only_owner();
-        block_gas_limit.write(block_gas_limit_);
+        Kakarot_block_gas_limit.write(block_gas_limit);
         return ();
     }
 
@@ -210,8 +206,8 @@ namespace Kakarot {
     func get_block_gas_limit{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         block_gas_limit: felt
     ) {
-        let (block_gas_limit_) = block_gas_limit.read();
-        return (block_gas_limit_,);
+        let (block_gas_limit) = Kakarot_block_gas_limit.read();
+        return (block_gas_limit,);
     }
 
     // @notice Deploy a new externally owned account.
@@ -221,9 +217,7 @@ namespace Kakarot {
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     }(evm_contract_address: felt) -> (starknet_contract_address: felt) {
         alloc_locals;
-
-        let (class_hash) = externally_owned_account_class_hash.read();
-        let (starknet_contract_address) = Starknet.deploy(class_hash, evm_contract_address);
+        let (starknet_contract_address) = Starknet.deploy(evm_contract_address);
 
         return (starknet_contract_address=starknet_contract_address);
     }

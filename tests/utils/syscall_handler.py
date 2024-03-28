@@ -54,7 +54,9 @@ def parse_state(state):
             ),
             "storage": {
                 (
-                    get_storage_var_address("storage_", *int_to_uint256(int(key, 16)))
+                    get_storage_var_address(
+                        "Account_storage", *int_to_uint256(int(key, 16))
+                    )
                     if not isinstance(key, int)
                     else key
                 ): (int(value, 16) if not isinstance(value, int) else value)
@@ -92,6 +94,7 @@ class SyscallHandler:
     caller_address: int = 0xABDE1
     patches = {}
     mock_call = mock.MagicMock()
+    mock_library_call = mock.MagicMock()
     mock_storage = mock.MagicMock()
     mock_event = mock.MagicMock()
 
@@ -328,19 +331,62 @@ class SyscallHandler:
         segments.write_arg(retdata_segment, retdata)
         segments.write_arg(syscall_ptr + 5, [len(retdata), retdata_segment])
 
+    def library_call(self, segments, syscall_ptr):
+        """
+        Call the registered mock function for the given selector.
+        Raise ValueError if the selector is not found in the patches dict.
+
+        Syscall structure is:
+            struct LibraryCallRequest {
+                selector: felt,
+                class_hash: felt,
+                function_selector: felt,
+                calldata_size: felt,
+                calldata: felt*,
+            }
+
+            struct LibraryCall {
+                request: LibraryCallRequest,
+                response: CallContractResponse,
+            }
+        """
+        function_selector = segments.memory[syscall_ptr + 2]
+        if function_selector not in self.patches:
+            raise ValueError(
+                f"Function selector 0x{function_selector:x} not found in patches."
+            )
+
+        class_hash = segments.memory[syscall_ptr + 1]
+        calldata_ptr = segments.memory[syscall_ptr + 4]
+        calldata = [
+            segments.memory[calldata_ptr + i]
+            for i in range(segments.memory[syscall_ptr + 3])
+        ]
+        self.mock_library_call(
+            class_hash=class_hash,
+            function_selector=function_selector,
+            calldata=calldata,
+        )
+        retdata = self.patches.get(function_selector)(class_hash, calldata)
+        retdata_segment = segments.add()
+        segments.write_arg(retdata_segment, retdata)
+        segments.write_arg(syscall_ptr + 5, [len(retdata), retdata_segment])
+
     @classmethod
     @contextmanager
     def patch(cls, target: str, *args, value: Optional[Union[callable, int]] = None):
         """
         Patch the target with the value.
 
-        :param target: The target to patch, e.g. "IERC20.balanceOf" or "evm_to_starknet_address".
+        :param target: The target to patch, e.g. "IERC20.balanceOf" or "Kakarot_evm_to_starknet_address".
             Note that when patching a contract call, only the last part of the target is used.
         :param args: Additional arguments to pass to the target (when patching a storage var, see get_storage_var_address signature).
         :param value: The value to patch with, a callable that will be called with the contract
             address and the calldata, and should return the retdata as a List[int].
         """
-        selector_if_call = get_selector_from_name(target.split(".")[-1])
+        selector_if_call = get_selector_from_name(
+            target.split(".")[-1].replace("library_call_", "")
+        )
         if value is None:
             args = list(args)
             value = args.pop()
@@ -364,7 +410,7 @@ class SyscallHandler:
         Patch sycalls to match a given EVM state.
 
         Actual corresponding Starknet address are unknown but it doesn't matter since the
-        evm_to_starknet_address storage is also patched.
+        Kakarot_evm_to_starknet_address storage is also patched.
 
         :param state: the state to patch with, an output dictionary of parse_state
         """
@@ -404,20 +450,10 @@ class SyscallHandler:
         storage_selector = get_selector_from_name("storage")
         cls.patches[storage_selector] = _storage
 
-        # Set account types
-        # We set all account types to be CA (contract account) as the only difference is that
-        # with EOA it doesn't try to fetch the nonce from the syscall, while here we actually
-        # want to have the EOA with the patched nonce.
-        def _account_type(contract_address, calldata):
-            return [int.from_bytes(b"CA", "big")]
-
-        account_type_selector = get_selector_from_name("account_type")
-        cls.patches[account_type_selector] = _account_type
-
         # Register accounts
         for address in state.keys():
             address_selector = get_storage_var_address(
-                "evm_to_starknet_address", address
+                "Kakarot_evm_to_starknet_address", address
             )
             cls.patches[address_selector] = address
 

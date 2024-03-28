@@ -11,6 +11,7 @@ from starkware.cairo.common.math import split_felt
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
 from starkware.cairo.common.uint256 import Uint256, uint256_le, uint256_sub, uint256_add
 from starkware.cairo.common.math import unsigned_div_rem
+from starkware.starknet.common.syscalls import get_tx_info
 
 // Internal dependencies
 from kakarot.account import Account
@@ -906,7 +907,7 @@ namespace Interpreter {
             let is_collision = code_or_nonce * is_deploy_tx;
             // Nonce is set to 1 in case of deploy_tx and account is marked as created
             let nonce = account.nonce * (1 - is_deploy_tx) + is_deploy_tx;
-            let account = Account.set_nonce(account, nonce);
+            let account = Account.set_nonce(account, nonce);  // Increase the nonce of the sender of the tx
             let account = Account.set_created(account, is_deploy_tx);
             State.update_account(account);
         }

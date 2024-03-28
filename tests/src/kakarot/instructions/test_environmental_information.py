@@ -6,6 +6,7 @@ from Crypto.Hash import keccak
 from tests.utils.syscall_handler import SyscallHandler
 
 EXISTING_ACCOUNT = 0xABDE1
+EXISTING_ACCOUNT_SN_ADDR = 0x1234
 NON_EXISTING_ACCOUNT = 0xDEAD
 
 
@@ -38,11 +39,10 @@ class TestEnvironmentalInformation:
 
     class TestExtCodeSize:
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
+        @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [1])
         @SyscallHandler.patch(
-            "IAccount.account_type", lambda addr, data: [int.from_bytes(b"CA", "big")]
+            "Kakarot_evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234
         )
-        @SyscallHandler.patch("IContractAccount.get_nonce", lambda addr, data: [1])
-        @SyscallHandler.patch("evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234)
         def test_extcodesize_should_push_code_size(self, cairo_run, bytecode, address):
             with SyscallHandler.patch(
                 "IAccount.bytecode", lambda addr, data: [len(bytecode), *bytecode]
@@ -78,11 +78,10 @@ class TestEnvironmentalInformation:
             ],
         )
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
+        @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [1])
         @SyscallHandler.patch(
-            "IAccount.account_type", lambda addr, data: [int.from_bytes(b"CA", "big")]
+            "Kakarot_evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234
         )
-        @SyscallHandler.patch("IContractAccount.get_nonce", lambda addr, data: [1])
-        @SyscallHandler.patch("evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234)
         def test_extcodecopy_should_copy_code(self, cairo_run, case, bytecode, address):
             size = case["size"]
             offset = case["offset"]
@@ -114,20 +113,28 @@ class TestEnvironmentalInformation:
             cairo_run("test__exec_gasprice")
 
     class TestExtCodeHash:
-        @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
         @SyscallHandler.patch(
-            "IAccount.account_type", lambda addr, data: [int.from_bytes(b"CA", "big")]
+            "IERC20.balanceOf",
+            lambda sn_addr, data: (
+                [0, 1] if sn_addr == EXISTING_ACCOUNT_SN_ADDR else [0, 0]
+            ),
         )
-        @SyscallHandler.patch("IContractAccount.get_nonce", lambda addr, data: [1])
-        @SyscallHandler.patch("evm_to_starknet_address", EXISTING_ACCOUNT, 0x1234)
+        @SyscallHandler.patch(
+            "IAccount.get_nonce",
+            lambda sn_addr, data: [1] if sn_addr == EXISTING_ACCOUNT_SN_ADDR else [0],
+        )
+        @SyscallHandler.patch(
+            "Kakarot_evm_to_starknet_address",
+            EXISTING_ACCOUNT,
+            EXISTING_ACCOUNT_SN_ADDR,
+        )
         def test_extcodehash__should_push_hash(
             self, cairo_run, bytecode, bytecode_hash, address
         ):
             with SyscallHandler.patch(
-                "IAccount.bytecode", lambda addr, data: [len(bytecode), *bytecode]
+                "IAccount.bytecode", lambda sn_addr, data: [len(bytecode), *bytecode]
             ):
                 output = cairo_run("test__exec_extcodehash", address=address)
-
             assert output == (
                 hex(bytecode_hash) if address == EXISTING_ACCOUNT else "0x0"
             )

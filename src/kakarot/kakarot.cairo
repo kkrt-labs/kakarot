@@ -24,19 +24,17 @@ from utils.utils import Helpers
 @constructor
 func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     owner: felt,
-    native_token_address_: felt,
-    contract_account_class_hash_: felt,
-    externally_owned_account_class_hash: felt,
-    account_proxy_class_hash: felt,
+    native_token_address: felt,
+    account_contract_class_hash: felt,
+    uninitialized_account_class_hash: felt,
     precompiles_class_hash: felt,
     block_gas_limit: felt,
 ) {
     return Kakarot.constructor(
         owner,
-        native_token_address_,
-        contract_account_class_hash_,
-        externally_owned_account_class_hash,
-        account_proxy_class_hash,
+        native_token_address,
+        account_contract_class_hash,
+        uninitialized_account_class_hash,
         precompiles_class_hash,
         block_gas_limit,
     );
@@ -57,12 +55,12 @@ func upgrade{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
 // @notice Set the native token used by kakarot
 // @dev Set the native token which will emulate the role of ETH on Ethereum
-// @param native_token_address_ The address of the native token
+// @param native_token_address The address of the native token
 @external
 func set_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    native_token_address_: felt
+    native_token_address: felt
 ) {
-    return Kakarot.set_native_token(native_token_address_);
+    return Kakarot.set_native_token(native_token_address);
 }
 
 // @notice Get the native token address
@@ -76,12 +74,10 @@ func get_native_token{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_chec
 }
 
 // @notice Set the block base fee.
-// @param base_fee_ The new base fee.
+// @param base_fee The new base fee.
 @external
-func set_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    base_fee_: felt
-) {
-    return Kakarot.set_base_fee(base_fee_);
+func set_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(base_fee: felt) {
+    return Kakarot.set_base_fee(base_fee);
 }
 
 // @notice Get the block base fee.
@@ -93,13 +89,11 @@ func get_base_fee{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     return Kakarot.get_base_fee();
 }
 
-// @notice Set the coinbase.
-// @param coinbase_ The new coinbase address.
+// @notice Set the Kakarot_coinbase.
+// @param coinbase The new coinbase address.
 @external
-func set_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    coinbase_: felt
-) {
-    return Kakarot.set_coinbase(coinbase_);
+func set_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(coinbase: felt) {
+    return Kakarot.set_coinbase(coinbase);
 }
 
 // @notice Get the coinbase address.
@@ -112,12 +106,12 @@ func get_coinbase{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 }
 
 // @notice Sets the prev randao
-// @param prev_randao_ The new prev randao.
+// @param prev_randao The new prev randao.
 @external
 func set_prev_randao{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    prev_randao_: Uint256
+    prev_randao: Uint256
 ) {
-    return Kakarot.set_prev_randao(prev_randao_);
+    return Kakarot.set_prev_randao(prev_randao);
 }
 
 // @notice Get the prev randao.

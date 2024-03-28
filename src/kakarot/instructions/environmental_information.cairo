@@ -467,10 +467,10 @@ namespace EnvironmentalInformation {
 
         let account = State.get_account(evm_address);
         let has_code_or_nonce = Account.has_code_or_nonce(account);
-        let account_exists = has_code_or_nonce + account.balance.low;
+        let account_exists = has_code_or_nonce + account.balance.low + account.balance.high;
         // Relevant cases:
         // https://github.com/ethereum/go-ethereum/blob/master/core/vm/instructions.go#L392
-        if (account_exists == 0) {
+        if (account_exists == FALSE) {
             Stack.push_uint128(0);
             return evm;
         }

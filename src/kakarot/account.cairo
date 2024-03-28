@@ -24,13 +24,13 @@ from starkware.starknet.common.syscalls import get_contract_address
 
 from kakarot.constants import Constants
 from kakarot.storages import (
-    account_proxy_class_hash,
-    native_token_address,
-    contract_account_class_hash,
+    Kakarot_uninitialized_account_class_hash,
+    Kakarot_native_token_address,
+    Kakarot_account_contract_class_hash,
 )
-from kakarot.interfaces.interfaces import IAccount, IContractAccount, IERC20
+from kakarot.interfaces.interfaces import IAccount, IERC20
 from kakarot.model import model
-from kakarot.storages import evm_to_starknet_address
+from kakarot.storages import Kakarot_evm_to_starknet_address
 from utils.dict import default_dict_copy
 from utils.utils import Helpers
 
@@ -116,24 +116,16 @@ namespace Account {
             assert balance_ptr = new Uint256(balance.low, balance.high);
         }
 
-        let (account_type) = IAccount.account_type(contract_address=starknet_address);
-
-        if (account_type == 'EOA') {
-            let (bytecode: felt*) = alloc();
-            // There is no way to access the nonce of an EOA currently
-            // But putting 1 shouldn't have any impact and is safer than 0
-            // since has_code_or_nonce is used in some places to trigger collision
-            let account = Account.init(
-                address=address, code_len=0, code=bytecode, nonce=1, balance=balance_ptr
-            );
-            return account;
-        }
-
-        // Case CA
         let (bytecode_len, bytecode) = IAccount.bytecode(contract_address=starknet_address);
-        let (nonce) = IContractAccount.get_nonce(contract_address=starknet_address);
+        let (nonce) = IAccount.get_nonce(contract_address=starknet_address);
+
+        // CAs are instantiated with their actual nonce - EOAs are instantiated with the nonce=1
+        // that is set when they're deployed.
+
+        // If an account was created-selfdestructed in the same tx, its nonce is 0, thus
+        // it is considered as a new account as per the `has_code_or_nonce` rule.
         let account = Account.init(
-            address, code_len=bytecode_len, code=bytecode, nonce=nonce, balance=balance_ptr
+            address=address, code_len=bytecode_len, code=bytecode, nonce=nonce, balance=balance_ptr
         );
         return account;
     }
@@ -176,7 +168,7 @@ namespace Account {
         // Case reading from Starknet storage
         let starknet_account_exists = is_registered(self.address.evm);
         if (starknet_account_exists != 0) {
-            let (value) = IContractAccount.storage(
+            let (value) = IAccount.storage(
                 contract_address=self.address.starknet, storage_addr=storage_addr
             );
             tempvar value_ptr = new Uint256(value.low, value.high);
@@ -365,8 +357,8 @@ namespace Account {
     func fetch_balance{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         address: model.Address*
     ) -> Uint256 {
-        let (native_token_address_) = native_token_address.read();
-        let (balance) = IERC20.balanceOf(native_token_address_, address.starknet);
+        let (native_token_address) = Kakarot_native_token_address.read();
+        let (balance) = IERC20.balanceOf(native_token_address, address.starknet);
         return balance;
     }
 
@@ -386,7 +378,7 @@ namespace Account {
             return value;
         }
         let (storage_addr) = Internals._storage_addr(key);
-        let (value) = IContractAccount.storage(
+        let (value) = IAccount.storage(
             contract_address=account.address.starknet, storage_addr=storage_addr
         );
         return value;
@@ -437,7 +429,7 @@ namespace Account {
     func get_registered_starknet_address{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     }(evm_address: felt) -> felt {
-        let (starknet_address) = evm_to_starknet_address.read(evm_address);
+        let (starknet_address) = Kakarot_evm_to_starknet_address.read(evm_address);
         return starknet_address;
     }
 
@@ -450,8 +442,12 @@ namespace Account {
     ) -> felt {
         alloc_locals;
         let (_deployer_address: felt) = get_contract_address();
-        let (_account_proxy_class_hash: felt) = account_proxy_class_hash.read();
+        let (
+            _uninitialized_account_class_hash: felt
+        ) = Kakarot_uninitialized_account_class_hash.read();
         let (constructor_calldata: felt*) = alloc();
+        assert constructor_calldata[0] = _deployer_address;
+        assert constructor_calldata[1] = evm_address;
         let (hash_state_ptr) = hash_init();
         let (hash_state_ptr) = hash_update_single{hash_ptr=pedersen_ptr}(
             hash_state_ptr=hash_state_ptr, item=Constants.CONTRACT_ADDRESS_PREFIX
@@ -466,10 +462,11 @@ namespace Account {
         );
         // hash class hash
         let (hash_state_ptr) = hash_update_single{hash_ptr=pedersen_ptr}(
-            hash_state_ptr=hash_state_ptr, item=_account_proxy_class_hash
+            hash_state_ptr=hash_state_ptr, item=_uninitialized_account_class_hash
         );
+        // hash constructor arguments
         let (hash_state_ptr) = hash_update_with_hashchain{hash_ptr=pedersen_ptr}(
-            hash_state_ptr=hash_state_ptr, data_ptr=constructor_calldata, data_length=0
+            hash_state_ptr=hash_state_ptr, data_ptr=constructor_calldata, data_length=2
         );
         let (contract_address_before_modulo) = hash_finalize{hash_ptr=pedersen_ptr}(
             hash_state_ptr=hash_state_ptr
@@ -632,10 +629,10 @@ namespace Account {
 
 namespace Internals {
     // @notice Compute the storage address of the given key when the storage var interface is
-    //         storage_(key: Uint256)
-    // @dev    Just the generated addr method when compiling the contract_account
+    //         Account_storage(key: Uint256)
+    // @dev    Just the generated addr method when compiling the account_contract
     func _storage_addr{pedersen_ptr: HashBuiltin*, range_check_ptr}(key: Uint256*) -> (res: felt) {
-        let res = 1510236440068827666686527023008568026372765124888307403567795291192307314167;
+        let res = 0x0127c52d6fa812547d8a5b435341b8c12e82048913e7193c0e318e8a6642876d;
         let (res) = hash2{hash_ptr=pedersen_ptr}(res, cast(key, felt*)[0]);
         let (res) = hash2{hash_ptr=pedersen_ptr}(res, cast(key, felt*)[1]);
         let (res) = normalize_address(addr=res);
@@ -656,7 +653,7 @@ namespace Internals {
 
         let starknet_address = Account.get_registered_starknet_address(evm_address);
         if (starknet_address != 0) {
-            let (value) = IContractAccount.storage(
+            let (value) = IAccount.storage(
                 contract_address=starknet_address, storage_addr=storage_addr
             );
             tempvar value_ptr = new Uint256(value.low, value.high);

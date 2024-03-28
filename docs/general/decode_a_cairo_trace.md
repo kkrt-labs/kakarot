@@ -89,7 +89,7 @@ from starkware.cairo.lang.vm.reconstruct_traceback import reconstruct_traceback
 
 build_dir = Path("build")
 programs = {}
-for contract_name in ["externally_owned_account", "kakarot", "contract_account", "EVM"]:
+for contract_name in ["uninitialized_account", "kakarot", "account_contract", "EVM"]:
     artifact = build_dir / f"{contract_name}.json"
     if not artifact.is_file():
         artifact = build_dir / "fixtures" / f"{contract_name}.json"
