@@ -29,12 +29,21 @@ NETWORKS = {
         "devnet": False,
         "chain_id": StarknetChainId.MAINNET,
     },
-    "testnet": {
-        "name": "testnet",
+    "goerli": {
+        "name": "starknet-goerli",
         "explorer_url": "https://testnet.starkscan.co",
         "rpc_url": f"https://starknet-goerli.infura.io/v3/{os.getenv('INFURA_KEY')}",
         "devnet": False,
         "chain_id": StarknetChainId.GOERLI,
+    },
+    "sepolia": {
+        "name": "starknet-sepolia",
+        "explorer_url": "https://sepolia.starkscan.co/",
+        "rpc_url": f"https://starknet-sepolia.infura.io/v3/{os.getenv('INFURA_KEY')}",
+        "devnet": False,
+        "chain_id": StarknetChainId.SEPOLIA_TESTNET,
+        "check_interval": 5,
+        "max_wait": 30,
     },
     "starknet-devnet": {
         "name": "starknet-devnet",
