@@ -5,11 +5,10 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import assert_le, split_felt, assert_nn_le, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.memcpy import memcpy
-from starkware.cairo.common.pow import pow
 from starkware.cairo.common.uint256 import Uint256, uint256_check
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
-from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.bool import TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_update
 
@@ -92,36 +91,36 @@ namespace Helpers {
         let res = Uint256(low=low, high=high);
         return res;
     }
-    // @notice This function is used to convert a sequence of i bytes to Uint256.
-    // @param val: pointer to the first byte.
-    // @param i: sequence size.
+    // @notice This function is used to convert bytes array in big-endian to Uint256.
+    // @param bytes_len: bytes array length.
+    // @param bytes: pointer to the first byte of the bytes array.
     // @return res: Uint256 representation of the given input in bytes.
-    func bytes_i_to_uint256{range_check_ptr}(val: felt*, i: felt) -> Uint256 {
+    func bytes_big_endian_to_uint256{range_check_ptr}(bytes_len: felt, bytes: felt*) -> Uint256 {
         alloc_locals;
 
-        if (i == 0) {
+        if (bytes_len == 0) {
             let res = Uint256(0, 0);
             return res;
         }
 
-        let is_sequence_32_bytes_or_less = is_le(i, 32);
+        let is_bytes_len_32_bytes_or_less = is_le(bytes_len, 32);
         with_attr error_message("number must be shorter than 32 bytes") {
-            assert is_sequence_32_bytes_or_less = 1;
+            assert is_bytes_len_32_bytes_or_less = 1;
         }
 
-        let is_sequence_16_bytes_or_less = is_le(i, 16);
+        let is_bytes_len_16_bytes_or_less = is_le(bytes_len, 16);
 
         // 1 - 16 bytes
-        if (is_sequence_16_bytes_or_less != FALSE) {
-            let (low) = compute_half_uint256(val=val, i=i, res=0);
+        if (is_bytes_len_16_bytes_or_less == TRUE) {
+            let (low) = compute_half_uint256_from_bytes(bytes_len, bytes, 0);
             let res = Uint256(low=low, high=0);
 
             return res;
         }
 
         // 17 - 32 bytes
-        let (low) = compute_half_uint256(val=val + i - 16, i=16, res=0);
-        let (high) = compute_half_uint256(val=val, i=i - 16, res=0);
+        let (low) = compute_half_uint256_from_bytes(16, bytes + bytes_len - 16, 0);
+        let (high) = compute_half_uint256_from_bytes(bytes_len - 16, bytes, 0);
         let res = Uint256(low=low, high=high);
 
         return res;
@@ -159,12 +158,16 @@ namespace Helpers {
         return (res=quotient);
     }
 
-    func compute_half_uint256{range_check_ptr}(val: felt*, i: felt, res: felt) -> (res: felt) {
-        if (i == 1) {
-            return (res=res + [val]);
+    func compute_half_uint256_from_bytes{range_check_ptr}(
+        bytes_len: felt, bytes: felt*, res: felt
+    ) -> (res: felt) {
+        if (bytes_len == 1) {
+            return (res=res + [bytes]);
         }
-        let (temp_pow) = pow(256, i - 1);
-        let (res) = compute_half_uint256(val + 1, i - 1, res + [val] * temp_pow);
+        let temp_pow = pow256_rev(16 - (bytes_len - 1));
+        let (res) = compute_half_uint256_from_bytes(
+            bytes_len - 1, bytes + 1, res + [bytes] * temp_pow
+        );
         return (res=res);
     }
 
@@ -306,23 +309,23 @@ namespace Helpers {
         return pow256_rev_address[i];
 
         pow256_rev_table:
-        dw 340282366920938463463374607431768211456;
-        dw 1329227995784915872903807060280344576;
-        dw 5192296858534827628530496329220096;
-        dw 20282409603651670423947251286016;
-        dw 79228162514264337593543950336;
-        dw 309485009821345068724781056;
-        dw 1208925819614629174706176;
-        dw 4722366482869645213696;
-        dw 18446744073709551616;
-        dw 72057594037927936;
-        dw 281474976710656;
-        dw 1099511627776;
-        dw 4294967296;
-        dw 16777216;
-        dw 65536;
-        dw 256;
-        dw 1;
+        dw 256 ** 16;
+        dw 256 ** 15;
+        dw 256 ** 14;
+        dw 256 ** 13;
+        dw 256 ** 12;
+        dw 256 ** 11;
+        dw 256 ** 10;
+        dw 256 ** 9;
+        dw 256 ** 8;
+        dw 256 ** 7;
+        dw 256 ** 6;
+        dw 256 ** 5;
+        dw 256 ** 4;
+        dw 256 ** 3;
+        dw 256 ** 2;
+        dw 256 ** 1;
+        dw 256 ** 0;
     }
 
     // @notice Splits a felt into `len` bytes, big-endian, and outputs to `dst`.
