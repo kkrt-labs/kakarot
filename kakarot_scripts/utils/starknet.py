@@ -103,6 +103,7 @@ async def get_starknet_account(
                 or "Client failed with code 21: Invalid message selector." in message
                 or "StarknetErrorCode.ENTRY_POINT_NOT_FOUND_IN_CONTRACT" in message
                 or ("code 40" in message and "not found in contract" in message)
+                or "Invalid message selector"
             ):
                 continue
             else:
