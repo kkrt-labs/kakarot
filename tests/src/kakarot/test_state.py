@@ -16,9 +16,6 @@ class TestState:
             cairo_run("test__init__should_return_state_with_default_dicts")
 
     class TestCopy:
-        @SyscallHandler.patch(
-            "IAccount.account_type", lambda addr, data: [int.from_bytes(b"EOA", "big")]
-        )
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
         def test_should_return_new_state_with_same_attributes(self, cairo_run):
             cairo_run("test__copy__should_return_new_state_with_same_attributes")
@@ -46,10 +43,7 @@ class TestState:
 
         @SyscallHandler.patch("IAccount.bytecode", lambda addr, data: [1, [0x2]])
         @SyscallHandler.patch("IERC20.balanceOf", lambda addr, data: [0, 1])
-        @SyscallHandler.patch(
-            "IAccount.account_type", lambda addr, data: [int.from_bytes(b"CA", "big")]
-        )
-        @SyscallHandler.patch("IContractAccount.get_nonce", lambda addr, data: [1])
+        @SyscallHandler.patch("IAccount.get_nonce", lambda addr, data: [1])
         @SyscallHandler.patch("Kakarot_evm_to_starknet_address", 0xABDE1, 0x1234)
         def test_should_return_true_when_existing_account_not_cached(self, cairo_run):
             cairo_run(
