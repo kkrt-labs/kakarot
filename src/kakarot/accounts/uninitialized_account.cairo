@@ -6,7 +6,17 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import get_caller_address, replace_class, library_call
 
-from kakarot.accounts.shared_storage import Account_evm_address, Account_kakarot_address
+// We are intentionally causing a storage_slot collision here,
+// by defining these variables in both `uninitialized_account` and `account_contract`.
+// We are defining them here instead of in the account library, so as to not depend
+// on content of the account library in uninitialized_account and ensure a fixed class hash.
+@storage_var
+func Account_evm_address() -> (evm_address: felt) {
+}
+
+@storage_var
+func Account_kakarot_address() -> (kakarot_address: felt) {
+}
 
 const INITIALIZE_SELECTOR = 0x79dc0da7c54b95f10aa182ad0a46400db63156920adb65eca2654c0945a463;  // sn_keccak('initialize')
 

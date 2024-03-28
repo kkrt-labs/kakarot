@@ -25,7 +25,6 @@ from starkware.starknet.common.syscalls import (
 )
 from starkware.cairo.common.memset import memset
 
-from kakarot.accounts.shared_storage import Account_evm_address, Account_kakarot_address
 from kakarot.interfaces.interfaces import IERC20, IKakarot
 from kakarot.errors import Errors
 from kakarot.constants import Constants
@@ -51,6 +50,18 @@ func Account_nonce() -> (nonce: felt) {
 @storage_var
 func Account_implementation() -> (address: felt) {
 }
+
+// //////////////// DO NOT MODIFY //////////////////
+// We are intentionally causing a storage_slot collision here,
+// by defining these variables in both `uninitialized_account` and `account_contract`.
+@storage_var
+func Account_evm_address() -> (evm_address: felt) {
+}
+
+@storage_var
+func Account_kakarot_address() -> (kakarot_address: felt) {
+}
+// /////////////////////////////////////////////////
 
 @event
 func transaction_executed(response_len: felt, response: felt*, success: felt, gas_used: felt) {
