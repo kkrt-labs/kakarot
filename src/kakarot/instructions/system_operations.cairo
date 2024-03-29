@@ -1007,7 +1007,8 @@ namespace CreateHelper {
         assert message[0] = message_len + 0xc0 - 1;
 
         let (message_bytes8: felt*) = alloc();
-        bytes_to_bytes8_little_endian(message_bytes8, message_len, message);
+        let (message_bytes8_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(message_bytes8, message_len, message);
+        assert [message_bytes8 + message_bytes8_len] = last_word;
 
         let (keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
@@ -1044,7 +1045,8 @@ namespace CreateHelper {
         local keccak_ptr_start: felt* = keccak_ptr;
 
         let (local bytecode_bytes8: felt*) = alloc();
-        bytes_to_bytes8_little_endian(bytecode_bytes8, bytecode_len, bytecode);
+        let (bytecode_bytes8_len, last_word, last_word_num_bytes)= bytes_to_bytes8_little_endian(bytecode_bytes8, bytecode_len, bytecode);
+        assert [bytecode_bytes8 + bytecode_bytes8_len] = last_word;
         with keccak_ptr {
             let (bytecode_hash) = cairo_keccak_bigend(bytecode_bytes8, bytecode_len);
         }
@@ -1061,7 +1063,8 @@ namespace CreateHelper {
         let packed_bytes_len = 1 + 20 + 32 + 32;
 
         let (local packed_bytes8: felt*) = alloc();
-        bytes_to_bytes8_little_endian(packed_bytes8, packed_bytes_len, packed_bytes);
+        let (packed_bytes8_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(packed_bytes8, packed_bytes_len, packed_bytes);
+        assert [packed_bytes8 + packed_bytes8_len] = last_word;
 
         with keccak_ptr {
             let (create2_hash) = cairo_keccak_bigend(packed_bytes8, packed_bytes_len);
