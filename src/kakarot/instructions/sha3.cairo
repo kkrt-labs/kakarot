@@ -56,7 +56,7 @@ namespace Sha3 {
         Memory.load_n(size.low, bigendian_data, offset.low);
 
         let (local dst: felt*) = alloc();
-        bytes_to_bytes8_little_endian(dst, size.low, bigendian_data);
+        let (dst_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(dst, size.low, bigendian_data);
 
         let (keccak_ptr: felt*) = alloc();
         local keccak_ptr_start: felt* = keccak_ptr;
