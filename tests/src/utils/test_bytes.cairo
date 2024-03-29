@@ -95,7 +95,9 @@ func test__bytes_to_bytes8_little_endian{range_check_ptr}(output_ptr: felt*) {
         segments.write_arg(ids.bytes, program_input["bytes"])
     %}
 
-    let (full_words_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(output_ptr, bytes_len, bytes);
+    let (full_words_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
+        output_ptr, bytes_len, bytes
+    );
 
     assert output_ptr[full_words_len] = last_word;
     assert output_ptr[full_words_len + 1] = last_word_num_bytes;

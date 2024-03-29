@@ -234,9 +234,11 @@ namespace EthTransaction {
         }
 
         let (local words: felt*) = alloc();
-        let (words_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(words, tx_data_len, tx_data);
+        let (words_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
+            words, tx_data_len, tx_data
+        );
         assert [words + words_len] = last_word;
-        let words_len = words_len+1;
+        let words_len = words_len + 1;
 
         let (keccak_ptr: felt*) = alloc();
         let keccak_ptr_start = keccak_ptr;

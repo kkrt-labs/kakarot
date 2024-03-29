@@ -132,7 +132,6 @@ func uint256_to_bytes32{range_check_ptr}(dst: felt*, n: Uint256) {
     return ();
 }
 
-
 // @notice Converts an array of bytes to an array of bytes8, little endian
 // @dev The individual bytes are packed into 8-byte words, little endian.
 //     The last word is returned separately, along with the number of used bytes
@@ -143,11 +142,13 @@ func uint256_to_bytes32{range_check_ptr}(dst: felt*, n: Uint256) {
 // @return The number of bytes written to the destination array.
 // @return The last word.
 // @return The number of bytes used in the last word
-func bytes_to_bytes8_little_endian{range_check_ptr}(dst: felt*, bytes_len: felt, bytes: felt*) -> (felt, felt, felt) {
+func bytes_to_bytes8_little_endian{range_check_ptr}(dst: felt*, bytes_len: felt, bytes: felt*) -> (
+    felt, felt, felt
+) {
     alloc_locals;
 
     if (bytes_len == 0) {
-        return (0,0,0);
+        return (0, 0, 0);
     }
 
     let (local pow256) = get_label_location(pow256_table);
@@ -174,11 +175,11 @@ func bytes_to_bytes8_little_endian{range_check_ptr}(dst: felt*, bytes_len: felt,
     tempvar bytes8 = bytes8 + current_byte * current_pow;
 
     jmp next if bytes_index != 0;
-    jmp end_word_not_full if bytes8_index !=0;
+    jmp end_word_not_full if bytes8_index != 0;
 
     let last_input_num_bytes = [fp + 1];
     assert [dst + dst_index] = bytes8;
-    let range_check_ptr = [fp+2];
+    let range_check_ptr = [fp + 2];
     return (dst_index + 1, 0, 0);
 
     next:
@@ -210,9 +211,9 @@ func bytes_to_bytes8_little_endian{range_check_ptr}(dst: felt*, bytes_len: felt,
     end_word_not_full:
     tempvar dst_index = dst_index;
     tempvar bytes8 = bytes8;
-    
-    jmp end_non_zero_last_word if bytes8 !=0;
-    let range_check_ptr = [fp+2];
+
+    jmp end_non_zero_last_word if bytes8 != 0;
+    let range_check_ptr = [fp + 2];
     return (dst_index, bytes8, 0);
 
     end_non_zero_last_word:
@@ -220,9 +221,8 @@ func bytes_to_bytes8_little_endian{range_check_ptr}(dst: felt*, bytes_len: felt,
     let bytes8 = [ap - 1];
     let last_input_num_bytes = [fp + 1];
 
-    let range_check_ptr = [fp+2];
+    let range_check_ptr = [fp + 2];
     return (dst_index, bytes8, last_input_num_bytes);
-
 
     pow256_table:
     dw 256 ** 7;
