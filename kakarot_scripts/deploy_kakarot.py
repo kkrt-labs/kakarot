@@ -6,6 +6,7 @@ from kakarot_scripts.constants import (
     BLOCK_GAS_LIMIT,
     DECLARED_CONTRACTS,
     ETH_TOKEN_ADDRESS,
+    COINBASE,
     EVM_ADDRESS,
     NETWORK,
     RPC_CLIENT,
@@ -59,6 +60,7 @@ async def main():
             class_hash["account_contract"],  # account_contract_class_hash_
             class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
             class_hash["Precompiles"],
+            COINBASE,
             BLOCK_GAS_LIMIT,
         )
 
@@ -69,6 +71,7 @@ async def main():
             class_hash["account_contract"],  # account_contract_class_hash_
             class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
             class_hash["Precompiles"],
+            COINBASE,
             BLOCK_GAS_LIMIT,
         )
 
