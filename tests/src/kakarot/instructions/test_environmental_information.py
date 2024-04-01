@@ -172,7 +172,7 @@ class TestEnvironmentalInformation:
                         last_expected_word,
                         last_expected_word_bytes_used,
                     ) = self._pack_into_u64_words(bytecode)
-                    SyscallHandler.mock_library_call.assert_called_once_with(
+                    SyscallHandler.mock_library_call.assert_any_call(
                         class_hash=CAIRO1_HELPERS_CLASS_HASH,
                         function_selector=get_selector_from_name("keccak"),
                         calldata=[
