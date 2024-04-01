@@ -177,7 +177,7 @@ DECLARED_CONTRACTS = [
     {"contract_name": "uninitialized_account", "cairo_version": ArtifactType.cairo0},
     {"contract_name": "EVM", "cairo_version": ArtifactType.cairo0},
     {"contract_name": "OpenzeppelinAccount", "cairo_version": ArtifactType.cairo0},
-    {"contract_name": "Precompiles", "cairo_version": ArtifactType.cairo1},
+    {"contract_name": "Cairo1Helpers", "cairo_version": ArtifactType.cairo1},
     {"contract_name": "replace_class", "cairo_version": ArtifactType.cairo0},
 ]
 
