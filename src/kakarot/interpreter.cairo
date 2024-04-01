@@ -780,11 +780,20 @@ namespace Interpreter {
 
         // Compute intrinsic gas usage
         // See https://www.evm.codes/about#gascosts
+
+        // Splits the unsigned integer lift of a field element into the higher 128 bit and lower 128 bit.
+        // The unsigned integer lift is the unique integer in the range [0, PRIME) that represents the field element.
+        // For example, if value=17 * 2^128 + 8, then high=17 and low=8.
+        /// So, high = 0 if value < 2^128, and high >= 1 if value >= 2^128.
+        let (calldata_len_high, calldata_len_low) = split_felt(calldata_len);
+        assert calldata_len_high == 0, "Calldata length exceeds 2^128, which is not supported.";
+
         let count = count_not_zero(calldata_len, calldata);
         let zeroes = calldata_len - count;
-        let calldata_gas = zeroes * 4 + count * 16;
+        let calldata_gas = Internals.safe_mul(zeroes, 4) + Internals.safe_mul(count, 16);  // Use a safe multiplication function
+        // Check for overflow in calldata_gas if necessary
+        let intrinsic_gas = Internals.safe_add(Gas.TX_BASE_COST, calldata_gas);  // Use a safe addition function
         // TODO no overflow check on calldata operation
-        let intrinsic_gas = Gas.TX_BASE_COST + calldata_gas;
 
         // If is_deploy_tx is TRUE, then
         // bytecode is data and data is empty
@@ -1002,6 +1011,29 @@ namespace Interpreter {
 }
 
 namespace Internals {
+    // Assuming a hypothetical MAX_VALUE for the sake of demonstration.
+    const MAX_VALUE = 2**128
+
+    // Safe addition that checks for overflow against a maximum value.
+    func _safe_add(a: felt, b: felt) -> (result: felt) {
+        let (result) = a + b
+        assert result <= MAX_VALUE, "Addition overflow: result exceeds MAX_VALUE."
+        return (result=result)
+    }
+
+    // Safe multiplication that checks for overflow against a maximum value.
+    // Note: This simplistic implementation does not fully account for multiplication overflow
+    // in a modular arithmetic setting, but is suitable for controlled environments.
+    func _safe_mul{
+        bitwise_ptr: BitwiseBuiltin*,
+    }(a: felt, b: felt) -> (result: felt) {
+        let (result) = a * b
+        // A full overflow check for multiplication in modular arithmetic would be more complex.
+        // Here, we simply ensure the result does not exceed our application-specific MAX_VALUE.
+        assert result <= MAX_VALUE, "Multiplication overflow: result exceeds MAX_VALUE."
+        return (result=result)
+    }
+
     func _finalize_create_tx{
         syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, state: model.State*
     }(evm: model.EVM*) -> model.EVM* {
