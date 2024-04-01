@@ -4,6 +4,7 @@ from asyncio import run
 
 from kakarot_scripts.constants import (
     BLOCK_GAS_LIMIT,
+    COINBASE,
     DECLARED_CONTRACTS,
     ETH_TOKEN_ADDRESS,
     EVM_ADDRESS,
@@ -59,6 +60,7 @@ async def main():
             class_hash["account_contract"],  # account_contract_class_hash_
             class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
             class_hash["Cairo1Helpers"],
+            COINBASE,
             BLOCK_GAS_LIMIT,
         )
 
@@ -69,6 +71,7 @@ async def main():
             class_hash["account_contract"],  # account_contract_class_hash_
             class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
             class_hash["Cairo1Helpers"],
+            COINBASE,
             BLOCK_GAS_LIMIT,
         )
 
