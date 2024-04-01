@@ -212,15 +212,6 @@ func bytes_to_bytes8_little_endian{range_check_ptr}(dst: felt*, bytes_len: felt,
     tempvar dst_index = dst_index;
     tempvar bytes8 = bytes8;
 
-    jmp end_non_zero_last_word if bytes8 != 0;
-    let range_check_ptr = [fp + 2];
-    return (dst_index, bytes8, 0);
-
-    end_non_zero_last_word:
-    let dst_index = [ap - 2];
-    let bytes8 = [ap - 1];
-    let last_input_num_bytes = [fp + 1];
-
     let range_check_ptr = [fp + 2];
     return (dst_index, bytes8, last_input_num_bytes);
 
