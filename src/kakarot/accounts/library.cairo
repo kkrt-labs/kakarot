@@ -8,7 +8,7 @@ from starkware.cairo.common.math import unsigned_div_rem, split_int, split_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256, uint256_not, uint256_add, uint256_le
 from starkware.cairo.common.math_cmp import is_le
-from starkware.cairo.common.math import assert_not_zero
+from starkware.cairo.common.math import assert_not_zero, assert_le
 from starkware.starknet.common.syscalls import (
     StorageRead,
     StorageWrite,
@@ -25,7 +25,7 @@ from starkware.starknet.common.syscalls import (
 )
 from starkware.cairo.common.memset import memset
 
-from kakarot.interfaces.interfaces import IERC20, IKakarot
+from kakarot.interfaces.interfaces import IERC20, IKakarot, IAccount
 from kakarot.errors import Errors
 from kakarot.constants import Constants
 from utils.eth_transaction import EthTransaction
@@ -73,6 +73,9 @@ const BYTES_PER_FELT = 31;
 // @notice This file contains the EVM account representation logic.
 // @dev: Both EOAs and Contract Accounts are represented by this contract.
 namespace AccountContract {
+    // 000.001.000
+    const VERSION = 000001000;
+
     // @notice This function is used to initialize the smart contract account.
     // @dev The `evm_address` and `kakarot_address` were set during the uninitialized_account creation.
     // Reading them from state ensures that they always match the ones the account was created for.
@@ -99,7 +102,7 @@ namespace AccountContract {
         return ();
     }
 
-    // @notice This function is used to upgrade the smart contract account.
+    // @notice Upgrades the implementation of the account.
     // @param new_class The new class of the account.
     func upgrade{
         syscall_ptr: felt*,
@@ -107,17 +110,20 @@ namespace AccountContract {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(new_class: felt) {
+        alloc_locals;
         // Access control check. Only the EOA owner should be able to upgrade its contract.
         // with `supports_interface`
         internal.assert_only_self();
-        // TODO: only valid classes should be allowed to be upgraded. Add a validation on the new class interface.
         assert_not_zero(new_class);
+        // TODO: only valid classes should be allowed to be upgraded. Add a validation on the new class interface.
+
+        let (new_version) = IAccount.library_call_version(new_class);
+        internal.assert_version_upgrade(new_version);
         replace_class(new_class);
         Account_implementation.write(new_class);
         return ();
     }
 
-    @view
     func get_implementation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         implementation: felt
     ) {
@@ -445,6 +451,22 @@ namespace internal {
         with_attr error_message("Only the account itself can call this function") {
             assert caller = this;
         }
+        return ();
+    }
+
+    // @notice asserts that the new version is greater than the current one
+    // @param new_version The new version of the class.
+    // @param old_version The previous version of the class.
+    func assert_version_upgrade{range_check_ptr}(new_version: felt) {
+        let (major_new, rem_new) = unsigned_div_rem(new_version, 1000000);
+        let (minor_new, patch_new) = unsigned_div_rem(rem_new, 1000);
+
+        let (major_old, rem_old) = unsigned_div_rem(AccountContract.VERSION, 1000000);
+        let (minor_old, patch_old) = unsigned_div_rem(rem_old, 1000);
+
+        assert_le(major_old, major_new);
+        assert_le(minor_old, minor_new);
+        assert_le(patch_old, patch_new);
         return ();
     }
 

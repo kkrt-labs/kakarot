@@ -92,11 +92,13 @@ class SyscallHandler:
     )
     contract_address: int = 0xABDE1
     caller_address: int = 0xABDE1
+    class_hash: int = 0xC1A55
     patches = {}
     mock_call = mock.MagicMock()
     mock_library_call = mock.MagicMock()
     mock_storage = mock.MagicMock()
     mock_event = mock.MagicMock()
+    mock_replace_class = mock.MagicMock()
 
     def get_contract_address(self, segments, syscall_ptr):
         """
@@ -261,6 +263,25 @@ class SyscallHandler:
             address=segments.memory[syscall_ptr + 1],
             value=segments.memory[syscall_ptr + 2],
         )
+
+    def replace_class(self, segments, syscall_ptr):
+        """
+        Record the replaced class hash in the internal mock object and update the class_hash attribute.
+
+        Syscall structure is:
+
+            struct ReplaceClass {
+                selector: felt,
+                class_hash: felt,
+            }
+        """
+        class_hash = segments.memory[syscall_ptr + 1]
+        address = self.contract_address
+        self.mock_replace_class(
+            address=address,
+            class_hash=class_hash,
+        )
+        self.class_hash = class_hash
 
     def emit_event(self, segments, syscall_ptr):
         """

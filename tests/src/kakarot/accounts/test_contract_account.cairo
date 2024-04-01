@@ -21,6 +21,21 @@ func test__initialize__should_store_given_evm_address{
     return ();
 }
 
+func test__upgrade{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}() {
+    alloc_locals;
+
+    // Given
+    local new_class: felt;
+    %{ ids.new_class = program_input["new_class"] %}
+
+    // When
+    AccountContract.upgrade(new_class);
+
+    return ();
+}
+
 func test__get_evm_address__should_return_stored_address{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() -> felt {
