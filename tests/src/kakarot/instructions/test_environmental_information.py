@@ -124,15 +124,14 @@ class TestEnvironmentalInformation:
             last_word_bytes_used = len(bytecode) % 8
             last_word = (
                 bytes8_little_endian[-1]
-                if (bytes8_little_endian and last_word_bytes_used != 0)
+                if bytes8_little_endian and last_word_bytes_used
                 else 0
             )
-
-            full_words = []
-            if len(bytecode) % 8 == 0:
-                full_words = bytes8_little_endian
-            else:
-                full_words = bytes8_little_endian[:-1]
+            full_words = (
+                bytes8_little_endian[:-1]
+                if last_word_bytes_used
+                else bytes8_little_endian
+            )
             return len(full_words), full_words, last_word, last_word_bytes_used
 
         @SyscallHandler.patch(
@@ -165,23 +164,23 @@ class TestEnvironmentalInformation:
             ):
                 output = cairo_run("test__exec_extcodehash", address=address)
 
-                if address == EXISTING_ACCOUNT:
-                    (
+            if address == EXISTING_ACCOUNT:
+                (
+                    len_full_words,
+                    full_words,
+                    last_expected_word,
+                    last_expected_word_bytes_used,
+                ) = self._pack_into_u64_words(bytecode)
+                SyscallHandler.mock_library_call.assert_any_call(
+                    class_hash=CAIRO1_HELPERS_CLASS_HASH,
+                    function_selector=get_selector_from_name("keccak"),
+                    calldata=[
                         len_full_words,
-                        full_words,
+                        *full_words,
                         last_expected_word,
                         last_expected_word_bytes_used,
-                    ) = self._pack_into_u64_words(bytecode)
-                    SyscallHandler.mock_library_call.assert_any_call(
-                        class_hash=CAIRO1_HELPERS_CLASS_HASH,
-                        function_selector=get_selector_from_name("keccak"),
-                        calldata=[
-                            len_full_words,
-                            *full_words,
-                            last_expected_word,
-                            last_expected_word_bytes_used,
-                        ],
-                    )
-                    assert output == hex(bytecode_hash)
-                else:
-                    assert output == "0x0"
+                    ],
+                )
+                assert output == hex(bytecode_hash)
+            else:
+                assert output == "0x0"
