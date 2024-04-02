@@ -1,5 +1,6 @@
 import random
 from textwrap import wrap
+from unittest import mock
 from unittest.mock import call, patch
 
 import pytest
@@ -128,6 +129,7 @@ class TestContractAccount:
         @SyscallHandler.patch(
             "IAccount.library_call_version", lambda class_hash, data: [2000]
         )
+        @patch.object(SyscallHandler, "mock_replace_class", mock.MagicMock())
         def test_should_upgrade_account(self, cairo_run):
             cairo_run("test__upgrade", new_class=0xBEEF)
 
@@ -143,20 +145,19 @@ class TestContractAccount:
                 address=get_storage_var_address("Account_implementation"), value=0xBEEF
             )
 
-        # TODO: Does not work
-        # assert SyscallHandler.class_hash == 0xbeef
-
         @SyscallHandler.patch(
-            "ICairo1Helpers.library_call_version", lambda class_hash, data: [1]
+            "IAccount.library_call_version", lambda class_hash, data: [1]
         )
+        @patch.object(SyscallHandler, "mock_replace_class", mock.MagicMock())
         def test_should_fail_downgrade_account(self, cairo_run):
             with cairo_error():
                 cairo_run("test__upgrade", new_class=0xBEEF)
-            assert SyscallHandler.class_hash == 0xC1A55
+            SyscallHandler.mock_replace_class.assert_not_called()
 
         @patch.object(SyscallHandler, "caller_address", 0x9876)
         @patch.object(SyscallHandler, "contract_address", 0x1234)
+        @patch.object(SyscallHandler, "mock_replace_class", mock.MagicMock())
         def test_should_fail_caller_not_self(self, cairo_run):
             with cairo_error():
                 cairo_run("test__upgrade", new_class=0xBEEF)
-            assert SyscallHandler.class_hash == 0xC1A55
+            SyscallHandler.mock_replace_class.assert_not_called()

@@ -102,7 +102,7 @@ namespace AccountContract {
         return ();
     }
 
-    // @notice Upgrades the implementation of the account.
+    // @notice Upgrade the implementation of the account.
     // @param new_class The new class of the account.
     func upgrade{
         syscall_ptr: felt*,
@@ -112,11 +112,8 @@ namespace AccountContract {
     }(new_class: felt) {
         alloc_locals;
         // Access control check. Only the EOA owner should be able to upgrade its contract.
-        // with `supports_interface`
         internal.assert_only_self();
         assert_not_zero(new_class);
-        // TODO: only valid classes should be allowed to be upgraded. Add a validation on the new class interface.
-
         let (new_version) = IAccount.library_call_version(new_class);
         internal.assert_version_upgrade(new_version);
         replace_class(new_class);

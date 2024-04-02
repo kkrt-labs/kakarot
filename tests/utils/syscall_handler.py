@@ -281,7 +281,6 @@ class SyscallHandler:
             address=address,
             class_hash=class_hash,
         )
-        self.class_hash = class_hash
 
     def emit_event(self, segments, syscall_ptr):
         """
