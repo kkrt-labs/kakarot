@@ -267,22 +267,10 @@ def block_with_tx_hashes(starknet):
     https://github.com/software-mansion/starknet.py/issues/1174.
     """
 
-    import json
+    async def _factory(block_number: Optional[int] = None):
+        return await starknet.get_block_with_tx_hashes(block_number=block_number)
 
-    import requests
-
-    def _factory(block_number: Optional[int] = None):
-        response = requests.post(
-            starknet.url,
-            json={
-                "jsonrpc": "2.0",
-                "method": "starknet_getBlockWithTxHashes",
-                "params": [block_number or "latest"],
-                "id": 0,
-            },
-            timeout=60,
-        )
-        return json.loads(response.text)["result"]
+    return _factory
 
     return _factory
 

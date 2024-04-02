@@ -165,7 +165,6 @@ namespace model {
     // @param block_number The block number of the current block.
     // @param block_gas_limit The gas limit for the current block.
     // @param block_timestamp The timestamp of the current block.
-    // @param block_hashes The last 256 accessible block hashes
     // @param coinbase The address of the miner of the current block.
     // @param base_fee The basefee of the current block.
     struct Environment {
@@ -176,7 +175,6 @@ namespace model {
         block_number: felt,
         block_gas_limit: felt,
         block_timestamp: felt,
-        block_hashes: Uint256*,
         coinbase: felt,
         base_fee: felt,
     }
