@@ -5,13 +5,13 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.cairo.common.memset import memset
 from starkware.cairo.common.math import unsigned_div_rem, split_felt
 from starkware.cairo.common.math_cmp import is_not_zero, is_le
 from starkware.cairo.common.uint256 import Uint256, uint256_le, uint256_add, uint256_eq
 
 from kakarot.account import Account
+from kakarot.interfaces.interfaces import ICairo1Helpers
 from kakarot.evm import EVM
 from kakarot.errors import Errors
 from kakarot.gas import Gas
@@ -19,6 +19,7 @@ from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
 from kakarot.state import State
+from kakarot.storages import Kakarot_precompiles_class_hash
 from utils.array import slice
 from utils.bytes import bytes_to_bytes8_little_endian
 from utils.uint256 import uint256_to_uint160
@@ -476,16 +477,20 @@ namespace EnvironmentalInformation {
         }
 
         let (local dst: felt*) = alloc();
-        bytes_to_bytes8_little_endian(dst, account.code_len, account.code);
+        let (dst_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
+            dst, account.code_len, account.code
+        );
 
-        let (keccak_ptr: felt*) = alloc();
-        local keccak_ptr_start: felt* = keccak_ptr;
-        with keccak_ptr {
-            let (result) = cairo_keccak_bigend(dst, account.code_len);
-        }
-        finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr);
+        let (implementation) = Kakarot_precompiles_class_hash.read();
+        let (code_hash) = ICairo1Helpers.library_call_keccak(
+            class_hash=implementation,
+            words_len=dst_len,
+            words=dst,
+            last_input_word=last_word,
+            last_input_num_bytes=last_word_num_bytes,
+        );
 
-        Stack.push_uint256(result);
+        Stack.push_uint256(code_hash);
 
         return evm;
     }

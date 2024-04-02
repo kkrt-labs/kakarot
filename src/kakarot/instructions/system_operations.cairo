@@ -5,7 +5,6 @@
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.bool import TRUE, FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.cairo.common.cairo_keccak.keccak import cairo_keccak_bigend, finalize_keccak
 from starkware.cairo.common.math import split_felt, unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le, is_nn, is_not_zero
 from starkware.cairo.common.registers import get_fp_and_pc
@@ -14,7 +13,7 @@ from starkware.cairo.common.default_dict import default_dict_new
 from starkware.cairo.common.dict_access import DictAccess
 
 from kakarot.account import Account
-from kakarot.interfaces.interfaces import IAccount
+from kakarot.interfaces.interfaces import IAccount, ICairo1Helpers
 from kakarot.constants import Constants
 from kakarot.errors import Errors
 from kakarot.evm import EVM
@@ -22,6 +21,7 @@ from kakarot.gas import Gas
 from kakarot.memory import Memory
 from kakarot.model import model
 from kakarot.stack import Stack
+from kakarot.storages import Kakarot_precompiles_class_hash
 from kakarot.state import State
 from utils.utils import Helpers
 from utils.array import slice
@@ -1007,15 +1007,18 @@ namespace CreateHelper {
         assert message[0] = message_len + 0xc0 - 1;
 
         let (message_bytes8: felt*) = alloc();
-        bytes_to_bytes8_little_endian(message_bytes8, message_len, message);
+        let (message_bytes8_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
+            message_bytes8, message_len, message
+        );
 
-        let (keccak_ptr: felt*) = alloc();
-        local keccak_ptr_start: felt* = keccak_ptr;
-        with keccak_ptr {
-            let (message_hash) = cairo_keccak_bigend(message_bytes8, message_len);
-        }
-
-        finalize_keccak(keccak_ptr_start, keccak_ptr);
+        let (implementation) = Kakarot_precompiles_class_hash.read();
+        let (message_hash) = ICairo1Helpers.library_call_keccak(
+            class_hash=implementation,
+            words_len=message_bytes8_len,
+            words=message_bytes8,
+            last_input_word=last_word,
+            last_input_num_bytes=last_word_num_bytes,
+        );
 
         let address = uint256_to_uint160(message_hash);
         return (address,);
@@ -1036,18 +1039,22 @@ namespace CreateHelper {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(sender_address: felt, bytecode_len: felt, bytecode: felt*, salt: Uint256) -> (
-        evm_contract_address: felt
-    ) {
+    }(sender_address: felt, bytecode_len: felt, bytecode: felt*, salt: Uint256) -> felt {
         alloc_locals;
-        let (keccak_ptr: felt*) = alloc();
-        local keccak_ptr_start: felt* = keccak_ptr;
 
         let (local bytecode_bytes8: felt*) = alloc();
-        bytes_to_bytes8_little_endian(bytecode_bytes8, bytecode_len, bytecode);
-        with keccak_ptr {
-            let (bytecode_hash) = cairo_keccak_bigend(bytecode_bytes8, bytecode_len);
-        }
+        let (bytecode_bytes8_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
+            bytecode_bytes8, bytecode_len, bytecode
+        );
+
+        let (implementation) = Kakarot_precompiles_class_hash.read();
+        let (bytecode_hash) = ICairo1Helpers.library_call_keccak(
+            class_hash=implementation,
+            words_len=bytecode_bytes8_len,
+            words=bytecode_bytes8,
+            last_input_word=last_word,
+            last_input_num_bytes=last_word_num_bytes,
+        );
 
         // get keccak hash of
         // marker + caller_address + salt + bytecode_hash
@@ -1061,16 +1068,20 @@ namespace CreateHelper {
         let packed_bytes_len = 1 + 20 + 32 + 32;
 
         let (local packed_bytes8: felt*) = alloc();
-        bytes_to_bytes8_little_endian(packed_bytes8, packed_bytes_len, packed_bytes);
+        let (packed_bytes8_len, last_word, last_word_num_bytes) = bytes_to_bytes8_little_endian(
+            packed_bytes8, packed_bytes_len, packed_bytes
+        );
 
-        with keccak_ptr {
-            let (create2_hash) = cairo_keccak_bigend(packed_bytes8, packed_bytes_len);
-        }
-
-        finalize_keccak(keccak_ptr_start, keccak_ptr);
-
+        let (create2_hash) = ICairo1Helpers.library_call_keccak(
+            class_hash=implementation,
+            words_len=packed_bytes8_len,
+            words=packed_bytes8,
+            last_input_word=last_word,
+            last_input_num_bytes=last_word_num_bytes,
+        );
         let create2_address = uint256_to_uint160(create2_hash);
-        return (create2_address,);
+
+        return create2_address;
     }
 
     // @notice Pre-compute the evm address of a contract account before deploying it.
@@ -1095,7 +1106,7 @@ namespace CreateHelper {
             return evm_contract_address;
         } else {
             let salt = popped[3];
-            let (evm_contract_address) = CreateHelper.get_create2_address(
+            let evm_contract_address = CreateHelper.get_create2_address(
                 sender_address=evm_address, bytecode_len=bytecode_len, bytecode=bytecode, salt=salt
             );
             return evm_contract_address;
