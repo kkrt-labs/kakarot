@@ -5,7 +5,7 @@
 ###########################################
 # Base image used by builder and deployer
 ###########################################
-FROM python:3.9.18-slim-bookworm as base
+FROM python:3.10.14-slim-bookworm as base
 
 HEALTHCHECK NONE
 
