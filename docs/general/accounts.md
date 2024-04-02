@@ -17,9 +17,9 @@ address.
 
 Although our backend makes no distinction between EOA and CA, the validation
 logic will reject any transaction that originates from a contract that has EVM
-code. In the (extremely unlikely) event that a user sends a transaction from a
-contract account after mining the private key corresponding to an EOA, the
-transaction will be rejected.
+code, as per the EVM specification. In the (extremely unlikely) event that a
+user sends a transaction from a contract account after mining the private key
+corresponding to an EOA, the transaction will be rejected.
 
 ## Account storage
 
@@ -27,15 +27,15 @@ Account contracts store the following information:
 
 - `storage`: A mapping from 32-byte keys to 32-byte values. This is used to
   store the values stored in the EVM account storage.
-- `nonce`: A 32-byte value representing the number of transactions sent from the
+- `nonce`: A 64-bits value representing the number of transactions sent from the
   account. Even though EOAs do not use the stored nonce for validation, it is
   still stored in the account contract to ensure the stored nonce always matches
   the protocol nonce, which is incremented by one by the sequencer for each
   transaction.
-- `bytecode`: The EVM bytecode of the account. This is only used for CA
-  accounts, as EOAs do not have bytecode.
-- `version`: A 9-digit integer representing the version of the account contract
-  class.
+- `bytecode`: The EVM bytecode of the account. This is only used for CAs, as
+  EOAs do not have bytecode.
+- `version`: A 9-digit integer representing the version of the account contract,
+  in the format `major.minor.patch` (3 digits each). class.
 - `implementation`: The class hash of the current account contract class.
 - `is_initialized`: A boolean indicating whether the account has been
   initialized, used to prevent reinitializing an already initialized account.
@@ -56,9 +56,11 @@ class, and the Ethereum address associated with the account. These entrypoints
 are used to verify the account state and to upgrade the account contract class.
 
 The account contract class also has `__validate__` and `__execute__`
-entrypoints, which are used to process transactions originating from EOAs. These
-entrypoints are called by the sequencer when a transaction is submitted to the
-sequencer. The `__validate__` entrypoint first checks if the transaction is
+entrypoints, as per the
+[https://docs.starknet.io/documentation/architecture_and_concepts/Accounts/account_functions/](Starknet
+specification), which are used to process transactions originating from EOAs.
+These entrypoints are called by the sequencer when a transaction is submitted to
+the sequencer. The `__validate__` entrypoint first checks if the transaction is
 valid, and the `__execute__` entrypoint processes the transaction if it is
 valid. While it is technically feasible to submit multiple EVM transactions in a
 single multicall, the current implementation only supports submitting one EVM
@@ -102,7 +104,7 @@ of accounts. The upgrade process works as follows:
 3. Accounts have a `version` field that stores the version of the account
    contract class. This field is used to check if the account contract class can
    be upgraded. It is not possible to downgrade the account contract class.
-4. The `version` field should be a 9-bit integer, where the first 3 bits
+4. The `version` field should be a 9-digit integer, where the first 3 digits
    represent the major version, the next 3 digits represent the minor version,
    and the last 3 digits represent the patch version.
 5. Once the account is upgraded, the `execute_after_upgrade` function is invoked
