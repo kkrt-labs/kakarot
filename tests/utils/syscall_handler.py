@@ -276,9 +276,7 @@ class SyscallHandler:
             }
         """
         class_hash = segments.memory[syscall_ptr + 1]
-        address = self.contract_address
         self.mock_replace_class(
-            address=address,
             class_hash=class_hash,
         )
 

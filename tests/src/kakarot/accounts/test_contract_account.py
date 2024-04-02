@@ -139,9 +139,7 @@ class TestContractAccount:
                 function_selector=get_selector_from_name("version"),
                 calldata=[],
             )
-            SyscallHandler.mock_replace_class.assert_called_once_with(
-                address=0xABDE1, class_hash=0xBEEF
-            )
+            SyscallHandler.mock_replace_class.assert_called_once_with(class_hash=0xBEEF)
             SyscallHandler.mock_storage.assert_called_once_with(
                 address=get_storage_var_address("Account_implementation"), value=0xBEEF
             )

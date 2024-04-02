@@ -112,10 +112,10 @@ namespace AccountContract {
     }(new_class: felt) {
         alloc_locals;
         // Access control check. Only the EOA owner should be able to upgrade its contract.
-        internal.assert_only_self();
+        Internals.assert_only_self();
         assert_not_zero(new_class);
         let (new_version) = IAccount.library_call_version(new_class);
-        internal.assert_version_upgrade(new_version);
+        Internals.assert_version_upgrade(new_version);
         replace_class(new_class);
         Account_implementation.write(new_class);
         return ();
@@ -362,7 +362,7 @@ namespace AccountContract {
         Ownable.assert_only_owner();
         // Recursively store the bytecode.
         Account_bytecode_len.write(bytecode_len);
-        internal.write_bytecode(bytecode_len=bytecode_len, bytecode=bytecode);
+        Internals.write_bytecode(bytecode_len=bytecode_len, bytecode=bytecode);
         return ();
     }
 
@@ -385,7 +385,7 @@ namespace AccountContract {
     }() -> (bytecode_len: felt, bytecode: felt*) {
         alloc_locals;
         let (bytecode_len) = Account_bytecode_len.read();
-        let (bytecode_) = internal.load_bytecode(bytecode_len);
+        let (bytecode_) = Internals.load_bytecode(bytecode_len);
         return (bytecode_len, bytecode_);
     }
 
@@ -440,7 +440,7 @@ namespace AccountContract {
     }
 }
 
-namespace internal {
+namespace Internals {
     // @notice asserts that the caller is the account itself
     func assert_only_self{syscall_ptr: felt*}() {
         let (this) = get_contract_address();
