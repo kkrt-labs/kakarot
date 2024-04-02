@@ -130,6 +130,7 @@ class TestContractAccount:
             "IAccount.library_call_version", lambda class_hash, data: [2000]
         )
         @patch.object(SyscallHandler, "mock_replace_class", mock.MagicMock())
+        @patch.object(SyscallHandler, "mock_storage", mock.MagicMock())
         def test_should_upgrade_account(self, cairo_run):
             cairo_run("test__upgrade", new_class=0xBEEF)
 
