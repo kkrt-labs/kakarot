@@ -58,7 +58,7 @@ async def main():
             ETH_TOKEN_ADDRESS,  # native_token_address_
             class_hash["account_contract"],  # account_contract_class_hash_
             class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
-            class_hash["Precompiles"],
+            class_hash["Cairo1Helpers"],
             BLOCK_GAS_LIMIT,
         )
 
@@ -68,7 +68,7 @@ async def main():
             ETH_TOKEN_ADDRESS,  # native_token_address_
             class_hash["account_contract"],  # account_contract_class_hash_
             class_hash["uninitialized_account"],  # uninitialized_account_class_hash_
-            class_hash["Precompiles"],
+            class_hash["Cairo1Helpers"],
             BLOCK_GAS_LIMIT,
         )
 

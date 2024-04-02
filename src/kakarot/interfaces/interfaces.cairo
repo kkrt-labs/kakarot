@@ -139,9 +139,14 @@ namespace IKakarot {
 }
 
 @contract_interface
-namespace IPrecompiles {
+namespace ICairo1Helpers {
     func exec_precompile(address: felt, data_len: felt, data: felt*) -> (
         success: felt, gas: felt, return_data_len: felt, return_data: felt*
     ) {
+    }
+
+    func keccak(
+        words_len: felt, words: felt*, last_input_word: felt, last_input_num_bytes: felt
+    ) -> (hash: Uint256) {
     }
 }

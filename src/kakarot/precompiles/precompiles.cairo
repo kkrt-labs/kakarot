@@ -6,7 +6,7 @@ from starkware.starknet.common.syscalls import library_call
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
 
-from kakarot.interfaces.interfaces import IPrecompiles
+from kakarot.interfaces.interfaces import ICairo1Helpers
 from kakarot.storages import Kakarot_precompiles_class_hash
 from kakarot.errors import Errors
 from kakarot.precompiles.blake2f import PrecompileBlake2f
@@ -130,7 +130,7 @@ namespace Precompiles {
         memcpy(calldata + 2, input, input_len);
         let (
             success, gas, return_data_len, return_data
-        ) = IPrecompiles.library_call_exec_precompile(
+        ) = ICairo1Helpers.library_call_exec_precompile(
             class_hash=implementation, address=evm_address, data_len=input_len, data=input
         );
 
