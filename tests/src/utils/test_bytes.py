@@ -71,7 +71,7 @@ class TestBytes:
             if bytes8_little_endian and not len(bytes_array) % 8 == 0:
                 last_expected_word = bytes8_little_endian[-1]
                 last_expected_word_bytes_used = (
-                    divmod(last_expected_word.bit_length(), 8)[0] + 1
+                    last_expected_word.bit_length() // 8 + 1
                     if last_expected_word
                     else 1
                 )
