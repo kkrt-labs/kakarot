@@ -7,8 +7,9 @@ __pycache__
 venv
 
 # starknet
-deployments
+deployments/*
 !deployments/kakarot-sepolia/
+!deployments/starknet-sepolia/
 artifacts
 build
 

@@ -39,7 +39,7 @@ NETWORKS = {
     "sepolia": {
         "name": "starknet-sepolia",
         "explorer_url": "https://sepolia.starkscan.co/",
-        "rpc_url": f"https://starknet-sepolia.infura.io/v3/{os.getenv('INFURA_KEY')}",
+        "rpc_url": "https://starknet-sepolia.public.blastapi.io/rpc/v0_6",
         "devnet": False,
         "chain_id": StarknetChainId.SEPOLIA_TESTNET,
         "check_interval": 5,
