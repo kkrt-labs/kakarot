@@ -1,6 +1,5 @@
 import random
 from textwrap import wrap
-from unittest import mock
 from unittest.mock import call, patch
 
 import pytest
@@ -126,20 +125,22 @@ class TestContractAccount:
             assert output[:output_len] == list(bytecode)
 
     class TestUpgrade:
-        @patch.object(SyscallHandler, "mock_replace_class", mock.MagicMock())
-        @patch.object(SyscallHandler, "mock_storage", mock.MagicMock())
-        def test_should_upgrade_account(self, cairo_run):
+        @patch.object(SyscallHandler, "mock_replace_class")
+        @patch.object(SyscallHandler, "mock_storage")
+        def test_should_upgrade_account(
+            self, mock_storage, mock_replace_class, cairo_run
+        ):
             cairo_run("test__upgrade", new_class=0xBEEF)
 
-            SyscallHandler.mock_replace_class.assert_called_once_with(class_hash=0xBEEF)
-            SyscallHandler.mock_storage.assert_called_once_with(
+            mock_replace_class.assert_called_once_with(class_hash=0xBEEF)
+            mock_storage.assert_called_once_with(
                 address=get_storage_var_address("Account_implementation"), value=0xBEEF
             )
 
         @patch.object(SyscallHandler, "caller_address", 0x9876)
         @patch.object(SyscallHandler, "contract_address", 0x1234)
-        @patch.object(SyscallHandler, "mock_replace_class", mock.MagicMock())
-        def test_should_fail_caller_not_self(self, cairo_run):
+        @patch.object(SyscallHandler, "mock_replace_class")
+        def test_should_fail_caller_not_self(self, mock_replace_class, cairo_run):
             with cairo_error():
                 cairo_run("test__upgrade", new_class=0xBEEF)
-            SyscallHandler.mock_replace_class.assert_not_called()
+            mock_replace_class.assert_not_called()
