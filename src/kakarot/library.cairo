@@ -247,10 +247,8 @@ namespace Kakarot {
         }
 
         let (existing_address) = Kakarot_evm_to_starknet_address.read(evm_address);
-        if (existing_address != 0) {
-            with_attr error_message("Kakarot: account already registered") {
-                assert starknet_address = caller_address;
-            }
+        with_attr error_message("Kakarot: account already registered") {
+            assert existing_address = 0;
         }
 
         evm_contract_deployed.emit(evm_address, starknet_address);
