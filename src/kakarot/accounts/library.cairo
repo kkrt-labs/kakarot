@@ -73,6 +73,9 @@ const BYTES_PER_FELT = 31;
 // @notice This file contains the EVM account representation logic.
 // @dev: Both EOAs and Contract Accounts are represented by this contract.
 namespace AccountContract {
+    // 000.001.000
+    const VERSION = 000001000;
+
     // @notice This function is used to initialize the smart contract account.
     // @dev The `evm_address` and `kakarot_address` were set during the uninitialized_account creation.
     // Reading them from state ensures that they always match the ones the account was created for.
@@ -99,7 +102,7 @@ namespace AccountContract {
         return ();
     }
 
-    // @notice This function is used to upgrade the smart contract account.
+    // @notice Upgrade the implementation of the account.
     // @param new_class The new class of the account.
     func upgrade{
         syscall_ptr: felt*,
@@ -107,17 +110,15 @@ namespace AccountContract {
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
     }(new_class: felt) {
+        alloc_locals;
         // Access control check. Only the EOA owner should be able to upgrade its contract.
-        // with `supports_interface`
-        internal.assert_only_self();
-        // TODO: only valid classes should be allowed to be upgraded. Add a validation on the new class interface.
+        Internals.assert_only_self();
         assert_not_zero(new_class);
         replace_class(new_class);
         Account_implementation.write(new_class);
         return ();
     }
 
-    @view
     func get_implementation{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
         implementation: felt
     ) {
@@ -359,7 +360,7 @@ namespace AccountContract {
         Ownable.assert_only_owner();
         // Recursively store the bytecode.
         Account_bytecode_len.write(bytecode_len);
-        internal.write_bytecode(bytecode_len=bytecode_len, bytecode=bytecode);
+        Internals.write_bytecode(bytecode_len=bytecode_len, bytecode=bytecode);
         return ();
     }
 
@@ -382,7 +383,7 @@ namespace AccountContract {
     }() -> (bytecode_len: felt, bytecode: felt*) {
         alloc_locals;
         let (bytecode_len) = Account_bytecode_len.read();
-        let (bytecode_) = internal.load_bytecode(bytecode_len);
+        let (bytecode_) = Internals.load_bytecode(bytecode_len);
         return (bytecode_len, bytecode_);
     }
 
@@ -437,7 +438,7 @@ namespace AccountContract {
     }
 }
 
-namespace internal {
+namespace Internals {
     // @notice asserts that the caller is the account itself
     func assert_only_self{syscall_ptr: felt*}() {
         let (this) = get_contract_address();

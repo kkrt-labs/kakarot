@@ -47,6 +47,9 @@ namespace IAccount {
     func get_evm_address() -> (evm_address: felt) {
     }
 
+    func version() -> (version: felt) {
+    }
+
     func bytecode_len() -> (len: felt) {
     }
 
