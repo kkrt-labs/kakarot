@@ -25,7 +25,7 @@ from starkware.starknet.common.syscalls import (
 )
 from starkware.cairo.common.memset import memset
 
-from kakarot.interfaces.interfaces import IERC20, IKakarot, IAccount
+from kakarot.interfaces.interfaces import IERC20, IKakarot
 from kakarot.errors import Errors
 from kakarot.constants import Constants
 from utils.eth_transaction import EthTransaction
@@ -114,8 +114,6 @@ namespace AccountContract {
         // Access control check. Only the EOA owner should be able to upgrade its contract.
         Internals.assert_only_self();
         assert_not_zero(new_class);
-        let (new_version) = IAccount.library_call_version(new_class);
-        Internals.assert_version_upgrade(new_version);
         replace_class(new_class);
         Account_implementation.write(new_class);
         return ();
@@ -448,22 +446,6 @@ namespace Internals {
         with_attr error_message("Only the account itself can call this function") {
             assert caller = this;
         }
-        return ();
-    }
-
-    // @notice asserts that the new version is greater than the current one
-    // @param new_version The new version of the class.
-    // @param old_version The previous version of the class.
-    func assert_version_upgrade{range_check_ptr}(new_version: felt) {
-        let (major_new, rem_new) = unsigned_div_rem(new_version, 1000000);
-        let (minor_new, patch_new) = unsigned_div_rem(rem_new, 1000);
-
-        let (major_old, rem_old) = unsigned_div_rem(AccountContract.VERSION, 1000000);
-        let (minor_old, patch_old) = unsigned_div_rem(rem_old, 1000);
-
-        assert_le(major_old, major_new);
-        assert_le(minor_old, minor_new);
-        assert_le(patch_old, patch_new);
         return ();
     }
 

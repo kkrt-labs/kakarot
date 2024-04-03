@@ -126,32 +126,15 @@ class TestContractAccount:
             assert output[:output_len] == list(bytecode)
 
     class TestUpgrade:
-        @SyscallHandler.patch(
-            "IAccount.library_call_version", lambda class_hash, data: [2000]
-        )
         @patch.object(SyscallHandler, "mock_replace_class", mock.MagicMock())
         @patch.object(SyscallHandler, "mock_storage", mock.MagicMock())
         def test_should_upgrade_account(self, cairo_run):
             cairo_run("test__upgrade", new_class=0xBEEF)
 
-            SyscallHandler.mock_library_call.assert_any_call(
-                class_hash=0xBEEF,
-                function_selector=get_selector_from_name("version"),
-                calldata=[],
-            )
             SyscallHandler.mock_replace_class.assert_called_once_with(class_hash=0xBEEF)
             SyscallHandler.mock_storage.assert_called_once_with(
                 address=get_storage_var_address("Account_implementation"), value=0xBEEF
             )
-
-        @SyscallHandler.patch(
-            "IAccount.library_call_version", lambda class_hash, data: [1]
-        )
-        @patch.object(SyscallHandler, "mock_replace_class", mock.MagicMock())
-        def test_should_fail_downgrade_account(self, cairo_run):
-            with cairo_error():
-                cairo_run("test__upgrade", new_class=0xBEEF)
-            SyscallHandler.mock_replace_class.assert_not_called()
 
         @patch.object(SyscallHandler, "caller_address", 0x9876)
         @patch.object(SyscallHandler, "contract_address", 0x1234)
