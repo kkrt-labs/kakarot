@@ -90,16 +90,18 @@ namespace AccountContract {
         let (is_initialized) = Account_is_initialized.read();
         assert is_initialized = 0;
         let (kakarot_address) = Account_kakarot_address.read();
-        let (evm_address) = Account_evm_address.read();
         Account_is_initialized.write(1);
         Ownable.initializer(kakarot_address);
-        Account_evm_address.write(evm_address);
         Account_implementation.write(implementation_class);
 
         // Give infinite ETH transfer allowance to Kakarot
         let (native_token_address) = IKakarot.get_native_token(kakarot_address);
         let infinite = Uint256(Constants.UINT128_MAX, Constants.UINT128_MAX);
         IERC20.approve(native_token_address, kakarot_address, infinite);
+
+        // Register the account in the Kakarot mapping
+        let (evm_address) = Account_evm_address.read();
+        IKakarot.register_account(kakarot_address, evm_address);
         return ();
     }
 

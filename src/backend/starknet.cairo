@@ -21,7 +21,6 @@ from starkware.starknet.common.syscalls import (
 from kakarot.account import Account
 from kakarot.precompiles.precompiles import Precompiles
 from kakarot.constants import Constants
-from kakarot.events import evm_contract_deployed
 from kakarot.interfaces.interfaces import IERC20, IAccount, IUninitializedAccount
 
 from kakarot.model import model
@@ -82,15 +81,13 @@ namespace Starknet {
             contract_address_salt=evm_address,
             constructor_calldata_size=2,
             constructor_calldata=constructor_calldata,
-            deploy_from_zero=0,
+            deploy_from_zero=1,
         );
 
         // Properly initialize the account once created
         let (account_class_hash) = Kakarot_account_contract_class_hash.read();
-        IUninitializedAccount.initialize(starknet_address, account_class_hash);
+        IUninitializedAccount.initialize(starknet_address);
 
-        evm_contract_deployed.emit(evm_address, starknet_address);
-        Kakarot_evm_to_starknet_address.write(evm_address, starknet_address);
         return (account_address=starknet_address);
     }
 

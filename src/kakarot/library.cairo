@@ -20,7 +20,9 @@ from kakarot.storages import (
     Kakarot_coinbase,
     Kakarot_prev_randao,
     Kakarot_block_gas_limit,
+    Kakarot_evm_to_starknet_address,
 )
+from kakarot.events import evm_contract_deployed
 from kakarot.interpreter import Interpreter
 from kakarot.instructions.system_operations import CreateHelper
 from kakarot.interfaces.interfaces import IAccount, IERC20
@@ -220,8 +222,42 @@ namespace Kakarot {
     }(evm_contract_address: felt) -> (starknet_contract_address: felt) {
         alloc_locals;
         let (starknet_contract_address) = Starknet.deploy(evm_contract_address);
-
         return (starknet_contract_address=starknet_contract_address);
+    }
+
+    // @notice Return the class hash of the account implementation
+    // @return account_contract_class_hash The class hash of the account implementation
+    func get_account_contract_class_hash{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }() -> (account_contract_class_hash: felt) {
+        let (account_contract_class_hash) = Kakarot_account_contract_class_hash.read();
+        return (account_contract_class_hash,);
+    }
+
+    // @notice Registers an account by writing its EVM address to the Starknet address mapping.
+    // @dev Called by the account contract upon initialization.
+    // @param evm_address The EVM address of the account.
+    func register_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        evm_address: felt
+    ) {
+        alloc_locals;
+        let (caller_address) = get_caller_address();
+        let starknet_address = Account.compute_starknet_address(evm_address);
+
+        with_attr error_message("Kakarot: register account address mismatch") {
+            assert starknet_address = caller_address;
+        }
+
+        let (existing_address) = Kakarot_evm_to_starknet_address.read(evm_address);
+        if (existing_address != 0) {
+            with_attr error_message("Kakarot: account already registered") {
+                assert starknet_address = caller_address;
+            }
+        }
+
+        evm_contract_deployed.emit(evm_address, starknet_address);
+        Kakarot_evm_to_starknet_address.write(evm_address, starknet_address);
+        return ();
     }
 
     // @notice Get the EVM address from the transaction
