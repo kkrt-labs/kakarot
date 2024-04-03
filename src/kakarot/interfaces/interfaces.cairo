@@ -145,6 +145,9 @@ namespace ICairo1Helpers {
     ) {
     }
 
+    func get_block_hash(block_number: felt) -> (hash: felt) {
+    }
+
     func keccak(
         words_len: felt, words: felt*, last_input_word: felt, last_input_num_bytes: felt
     ) -> (hash: Uint256) {

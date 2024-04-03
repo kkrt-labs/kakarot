@@ -3,7 +3,7 @@
 // StarkWare dependencies
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import assert_le, split_felt, assert_nn_le, unsigned_div_rem
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_le, is_nn
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.pow import pow
 from starkware.cairo.common.uint256 import Uint256, uint256_check
@@ -26,6 +26,16 @@ namespace Helpers {
             return 1;
         }
 
+        return 0;
+    }
+
+    // @notice Performs subtraction and returns 0 if the result is negative.
+    func saturated_sub{range_check_ptr}(a, b) -> felt {
+        let res = a - b;
+        let is_res_nn = is_nn(res);
+        if (is_res_nn != FALSE) {
+            return res;
+        }
         return 0;
     }
 

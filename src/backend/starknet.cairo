@@ -125,9 +125,6 @@ namespace Starknet {
         let (base_fee) = Kakarot_base_fee.read();
         let (block_gas_limit) = Kakarot_block_gas_limit.read();
         let (prev_randao) = Kakarot_prev_randao.read();
-        let (block_hashes) = alloc();
-        // TODO: fix how blockhashes are retrieved
-        memset(block_hashes, 0, 256 * 2);
 
         // No idea why this is required - but trying to pass prev_randao directly causes bugs.
         let prev_randao = Uint256(low=prev_randao.low, high=prev_randao.high);
@@ -141,7 +138,6 @@ namespace Starknet {
             block_number=block_number,
             block_gas_limit=block_gas_limit,
             block_timestamp=block_timestamp,
-            block_hashes=cast(block_hashes, Uint256*),
             coinbase=coinbase,
             base_fee=base_fee,
         );
