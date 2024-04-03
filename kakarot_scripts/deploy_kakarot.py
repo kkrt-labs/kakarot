@@ -78,7 +78,8 @@ async def main():
         logger.info(f"ℹ️  Found default EVM address {EVM_ADDRESS}")
         from kakarot_scripts.utils.kakarot import get_eoa
 
-        await get_eoa(amount=100)
+        amount = 0.02 if not NETWORK["devnet"] else 100
+        await get_eoa(amount=amount)
 
 
 # %% Run
