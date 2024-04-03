@@ -45,20 +45,16 @@ class TestPlainOpcodes:
             block_with_tx_hashes,
         ):
             latest_block = block_with_tx_hashes("latest")
-            blockhash = await plain_opcodes.opcodeBlockHash(
-                latest_block.block_number
-            )
+            blockhash = await plain_opcodes.opcodeBlockHash(latest_block.block_number)
 
-            assert (
-                int.from_bytes(blockhash, byteorder="big") == latest_block.block_hash
-            )
+            assert int.from_bytes(blockhash, byteorder="big") == latest_block.block_hash
 
         async def test_should_return_zero_with_invalid_block_number(
             self,
             plain_opcodes,
             block_with_tx_hashes,
         ):
-            latest_block = block_with_tx_hashes("latest")
+            latest_block = await block_with_tx_hashes("latest")
             blockhash_invalid_number = await plain_opcodes.opcodeBlockHash(
                 latest_block.block_number + 1
             )

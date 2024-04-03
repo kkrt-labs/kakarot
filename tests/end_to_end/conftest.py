@@ -269,6 +269,7 @@ def block_with_tx_hashes(starknet):
 
     async def _factory(block_number: Optional[int] = None):
         return await starknet.get_block_with_tx_hashes(block_number=block_number)
+
     return _factory
 
 

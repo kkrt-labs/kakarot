@@ -17,8 +17,6 @@ from kakarot.stack import Stack
 from kakarot.state import State
 from utils.utils import Helpers
 
-from tests.utils.debug import Debug
-
 // @title BlockInformation information opcodes.
 // @notice This file contains the functions to execute for block information opcodes.
 namespace BlockInformation {
