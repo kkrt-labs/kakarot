@@ -35,7 +35,7 @@ namespace IERC20 {
 
 @contract_interface
 namespace IUninitializedAccount {
-    func initialize(new_class: felt) {
+    func initialize() {
     }
 }
 
@@ -111,6 +111,12 @@ namespace IKakarot {
     }
 
     func compute_starknet_address(evm_address: felt) -> (contract_address: felt) {
+    }
+
+    func get_account_contract_class_hash() -> (account_contract_class_hash: felt) {
+    }
+
+    func register_account(evm_address: felt) {
     }
 
     func get_starknet_address(evm_address: felt) -> (starknet_address: felt) {

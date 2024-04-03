@@ -6,6 +6,12 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import get_caller_address, replace_class, library_call
 
+@contract_interface
+namespace IKakarot {
+    func get_account_contract_class_hash() -> (account_contract_class_hash: felt) {
+    }
+}
+
 // We are intentionally causing a storage_slot collision here,
 // by defining these variables in both `uninitialized_account` and `account_contract`.
 // We are defining them here instead of in the account library, so as to not depend
@@ -36,13 +42,12 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 @external
 func initialize{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
-}(implementation_class: felt) {
+}() {
     let (caller) = get_caller_address();
     let (kakarot_address) = Account_kakarot_address.read();
-    with_attr error_message("Only Kakarot") {
-        assert kakarot_address = caller;
-    }
+    let (implementation_class) = IKakarot.get_account_contract_class_hash(kakarot_address);
     replace_class(implementation_class);
+
     let (calldata) = alloc();
     assert [calldata] = implementation_class;
     library_call(

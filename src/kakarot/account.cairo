@@ -441,12 +441,13 @@ namespace Account {
         evm_address: felt
     ) -> felt {
         alloc_locals;
-        let (_deployer_address: felt) = get_contract_address();
+        let (kakarot_address: felt) = get_contract_address();
+        let deployer_address = 0;  // deploy_from_zero == TRUE
         let (
-            _uninitialized_account_class_hash: felt
+            uninitialized_account_class_hash: felt
         ) = Kakarot_uninitialized_account_class_hash.read();
         let (constructor_calldata: felt*) = alloc();
-        assert constructor_calldata[0] = _deployer_address;
+        assert constructor_calldata[0] = kakarot_address;
         assert constructor_calldata[1] = evm_address;
         let (hash_state_ptr) = hash_init();
         let (hash_state_ptr) = hash_update_single{hash_ptr=pedersen_ptr}(
@@ -454,7 +455,7 @@ namespace Account {
         );
         // hash deployer
         let (hash_state_ptr) = hash_update_single{hash_ptr=pedersen_ptr}(
-            hash_state_ptr=hash_state_ptr, item=_deployer_address
+            hash_state_ptr=hash_state_ptr, item=deployer_address
         );
         // hash salt
         let (hash_state_ptr) = hash_update_single{hash_ptr=pedersen_ptr}(
@@ -462,7 +463,7 @@ namespace Account {
         );
         // hash class hash
         let (hash_state_ptr) = hash_update_single{hash_ptr=pedersen_ptr}(
-            hash_state_ptr=hash_state_ptr, item=_uninitialized_account_class_hash
+            hash_state_ptr=hash_state_ptr, item=uninitialized_account_class_hash
         );
         // hash constructor arguments
         let (hash_state_ptr) = hash_update_with_hashchain{hash_ptr=pedersen_ptr}(
