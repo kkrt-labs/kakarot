@@ -8,7 +8,7 @@ from starkware.cairo.common.math import unsigned_div_rem, split_int, split_felt
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256, uint256_not, uint256_add, uint256_le
 from starkware.cairo.common.math_cmp import is_le
-from starkware.cairo.common.math import assert_not_zero, assert_le
+from starkware.cairo.common.math import assert_not_zero
 from starkware.starknet.common.syscalls import (
     StorageRead,
     StorageWrite,
