@@ -35,7 +35,7 @@ class TestPlainOpcodes:
             self, plain_opcodes, block_with_tx_hashes
         ):
             timestamp = await plain_opcodes.opcodeTimestamp()
-            assert timestamp == block_with_tx_hashes("pending")["timestamp"]
+            assert timestamp == (await block_with_tx_hashes("pending")).timestamp
 
     class TestBlockhash:
         @pytest.mark.xfail(reason="Need to fix blockhash on real Starknet network")
@@ -46,11 +46,11 @@ class TestPlainOpcodes:
         ):
             latest_block = block_with_tx_hashes("latest")
             blockhash = await plain_opcodes.opcodeBlockHash(
-                latest_block["block_number"]
+                latest_block.block_number
             )
 
             assert (
-                int.from_bytes(blockhash, byteorder="big") == latest_block["block_hash"]
+                int.from_bytes(blockhash, byteorder="big") == latest_block.block_hash
             )
 
         async def test_should_return_zero_with_invalid_block_number(
@@ -60,7 +60,7 @@ class TestPlainOpcodes:
         ):
             latest_block = block_with_tx_hashes("latest")
             blockhash_invalid_number = await plain_opcodes.opcodeBlockHash(
-                latest_block["block_number"] + 1
+                latest_block.block_number + 1
             )
 
             assert int.from_bytes(blockhash_invalid_number, byteorder="big") == 0
