@@ -1,10 +1,12 @@
 import json
 from types import MethodType
+from unittest.mock import PropertyMock, patch
 
 import pytest
 from eth_abi import encode
 from eth_utils import keccak
 from eth_utils.address import to_checksum_address
+from starkware.starknet.public.abi import get_storage_var_address
 from web3 import Web3
 from web3._utils.abi import map_abi_data
 from web3._utils.normalizers import BASE_RETURN_NORMALIZERS
@@ -12,11 +14,14 @@ from web3.exceptions import NoABIFunctionsFound
 
 from kakarot_scripts.ef_tests.fetch import EF_TESTS_PARSED_DIR
 from tests.utils.constants import TRANSACTION_GAS_LIMIT
+from tests.utils.errors import cairo_error
 from tests.utils.syscall_handler import SyscallHandler, parse_state
 
 CONTRACT_ADDRESS = 1234
 OWNER = to_checksum_address(f"0x{0xABDE1:040x}")
 OTHER = to_checksum_address(f"0x{0xE1A5:040x}")
+
+EVM_ADDRESS = 0x42069
 
 
 @pytest.fixture(scope="module")
@@ -66,8 +71,64 @@ def get_contract(cairo_run):
     return _factory
 
 
-@pytest.mark.NoCI
 class TestKakarot:
+
+    class TestRegisterAccount:
+        @SyscallHandler.patch("Kakarot_evm_to_starknet_address", EVM_ADDRESS, 0)
+        @patch(
+            "tests.utils.syscall_handler.SyscallHandler.caller_address",
+            new_callable=PropertyMock,
+        )
+        def test_register_account_should_store_evm_to_starknet_address_mapping(
+            self, mock_caller_address, cairo_run
+        ):
+            starknet_address = cairo_run(
+                "compute_starknet_address", evm_address=EVM_ADDRESS
+            )
+            mock_caller_address.return_value = starknet_address
+
+            cairo_run("test__register_account", evm_address=EVM_ADDRESS)
+
+            SyscallHandler.mock_storage.assert_called_with(
+                address=get_storage_var_address(
+                    "Kakarot_evm_to_starknet_address", EVM_ADDRESS
+                ),
+                value=starknet_address,
+            )
+
+        @SyscallHandler.patch("Kakarot_evm_to_starknet_address", 0x42069, 1)
+        @patch(
+            "tests.utils.syscall_handler.SyscallHandler.caller_address",
+            new_callable=PropertyMock,
+        )
+        def test_register_account_should_fail_existing_entry(
+            self, mock_caller_address, cairo_run
+        ):
+            starknet_address = cairo_run(
+                "compute_starknet_address", evm_address=EVM_ADDRESS
+            )
+            mock_caller_address.return_value = starknet_address
+
+            with cairo_error():
+                cairo_run("test__register_account", evm_address=EVM_ADDRESS)
+
+        @SyscallHandler.patch("Kakarot_evm_to_starknet_address", EVM_ADDRESS, 0)
+        @patch(
+            "tests.utils.syscall_handler.SyscallHandler.caller_address",
+            new_callable=PropertyMock,
+        )
+        def test_register_account_should_fail_caller_not_resolved_address(
+            self, mock_caller_address, cairo_run
+        ):
+            starknet_address = cairo_run(
+                "compute_starknet_address", evm_address=EVM_ADDRESS
+            )
+            mock_caller_address.return_value = starknet_address // 2
+
+            with cairo_error():
+                cairo_run("test__register_account", evm_address=EVM_ADDRESS)
+
+    @pytest.mark.NoCI
     class TestEthCall:
         @pytest.mark.SolmateERC20
         async def test_erc20_transfer(self, get_contract):
