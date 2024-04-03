@@ -1,6 +1,6 @@
 # Accounts
 
-While the EVM defines two types of accounts (EOAs and CAs), Starkent only has
+While the EVM defines two types of accounts (EOAs and CAs), Starknet only has
 one type of account. There is no distinction between accounts managed by a
 private key and a wallet (EOAs) and smart contracts, due to native Account
 Abstraction.
@@ -35,7 +35,7 @@ Account contracts store the following information:
 - `bytecode`: The EVM bytecode of the account. This is only used for CAs, as
   EOAs do not have bytecode.
 - `version`: A 9-digit integer representing the version of the account contract,
-  in the format `major.minor.patch` (3 digits each). class.
+  in the format `major.minor.patch` (3 digits each).
 - `implementation`: The class hash of the current account contract class.
 - `is_initialized`: A boolean indicating whether the account has been
   initialized, used to prevent reinitializing an already initialized account.
@@ -77,6 +77,9 @@ following inputs:
 - Eventual constructor arguments. We use the Ethereum address and the address of
   the Kakarot contract as the constructor argument.
 
+The deployer address is 0. This allows anyone to deploy a contract for any
+Ethereum address.
+
 This system ensures a deterministic calculation of the starknet contract address
 from an Ethereum address. However, this requires all inputs to be immutable, as
 changing any input will result in a different starknet contract address. This
@@ -87,6 +90,14 @@ most up-to-date class. This is abstracted away by the system, and users can
 deploy an account contract using the `deploy_externally_owned_account`
 entrypoint from Kakarot.
 
+When an account is deployed, we make a library call to the `initialize` selector
+of its new implementation. This implementation is read directly from the storage
+of the Kakarot contract, so that newly deployed accounts are always up-to-date.
+In this initialization, we give infinite allowance to the Kakarot contract for
+the native token, we register the account in the Kakarot mapping of evm
+addresses to starknet addresses, and we set the `is_initialized` flag to true to
+prevent accounts from being initialized twice.
+
 ## Account versioning
 
 Kakarot's account versioning system allows for upgrading the account contract
@@ -95,18 +106,27 @@ of accounts. The upgrade process works as follows:
 
 1. The account contract class exposes an `upgrade` entrypoint, which allows the
    owner of the account to upgrade the account contract class to a new version.
-2. Before upgrading an account's class, the system checks whether the new class
-   supports the account interface using
-   [SNIP-5](https://github.com/starknet-io/SNIPs/blob/main/SNIPS/snip-5.md),
-   Cairo's specific implementation of
-   [EIP-165](https://eips.ethereum.org/EIPS/eip-165), to avoid breaking the
-   account's functionality.
-3. Accounts have a `version` field that stores the version of the account
-   contract class. This field is used to check if the account contract class can
-   be upgraded. It is not possible to downgrade the account contract class.
-4. The `version` field should be a 9-digit integer, where the first 3 digits
+   Only the owner of the account can upgrade the account contract class.
+2. Accounts have a `version` field that stores the version of the account
+   contract class.
+3. The `version` field should be a 9-digit integer, where the first 3 digits
    represent the major version, the next 3 digits represent the minor version,
    and the last 3 digits represent the patch version.
-5. Once the account is upgraded, the `execute_after_upgrade` function is invoked
-   to verify basic invariants - i.e., that the new owner is the same as the old
-   owner and that the new version is greater than the old version.
+4. Upgrading an account will not change the content of the account storage. It
+   will only change the implementation logic.
+
+## (Not implemented) Upgrading accounts with AA
+
+The account contract class exposes an `upgrade` entrypoint, which allows the
+owner of the account to upgrade the account contract class to a new version.
+However, this entire process is abstracted away by the system, and users can
+interact with Kakarot using an EVM EOA. To upgrade an account, the user will
+need to perform the upgrade action itself, as the caller of the upgrade function
+**must** be the account itself.
+
+One proposal for seamless upgrades would be to check if an account's class hash
+matches the one defined in the Kakarot contract every time we execute a
+transaction. If not, we can call the `upgrade` entrypoint of the account
+contract to update its class, and then proceed with the transaction. The upgrade
+would only be effective at the end of the transaction, but this would upgrade
+the user's account to the latest version without requiring any user interaction.
