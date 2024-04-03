@@ -219,6 +219,9 @@ namespace EthTransaction {
         tx_data: felt*,
     ) {
         alloc_locals;
+
+        assert tx_data_len <= 340282366920938463463374607431768211456; // 2^128
+
         let tx = decode(tx_data_len, tx_data);
         assert tx.signer_nonce = account_nonce;
         assert tx.chain_id = chain_id;

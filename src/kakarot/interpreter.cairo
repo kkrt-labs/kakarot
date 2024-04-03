@@ -781,13 +781,6 @@ namespace Interpreter {
         // Compute intrinsic gas usage
         // See https://www.evm.codes/about#gascosts
 
-        // Splits the unsigned integer lift of a field element into the higher 128 bit and lower 128 bit.
-        // The unsigned integer lift is the unique integer in the range [0, PRIME) that represents the field element.
-        // For example, if value=17 * 2^128 + 8, then high=17 and low=8.
-        /// So, high = 0 if value < 2^128, and high >= 1 if value >= 2^128.
-        let (calldata_len_high, calldata_len_low) = split_felt(calldata_len);
-        assert calldata_len_high == 0, "Calldata length exceeds 2^128, which is not supported.";
-
         let count = count_not_zero(calldata_len, calldata);
         let zeroes = calldata_len - count;
         let calldata_gas = Internals.safe_mul(zeroes, 4) + Internals.safe_mul(count, 16);  // Use a safe multiplication function
