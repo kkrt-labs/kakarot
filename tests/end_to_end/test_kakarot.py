@@ -153,19 +153,79 @@ class TestKakarot:
     class TestDeployExternallyOwnedAccount:
         async def test_should_deploy_starknet_contract_at_corresponding_address(
             self,
+            starknet: FullNodeClient,
             fund_starknet_address,
             deploy_externally_owned_account,
             compute_starknet_address,
             get_contract,
         ):
-            evm_address = generate_random_evm_address()
+            evm_address = generate_random_evm_address(random.randint(0, 0x5EED))
             starknet_address = await compute_starknet_address(evm_address)
-            await fund_starknet_address(starknet_address, PRE_FUND_AMOUNT / 1e18)
 
             await deploy_externally_owned_account(evm_address)
             eoa = get_contract("account_contract", address=starknet_address)
             actual_evm_address = (await eoa.functions["get_evm_address"].call()).address
             assert actual_evm_address == int(evm_address, 16)
+
+    class TestRegisterAccount:
+        async def test_should_register_account(
+            self,
+            starknet: FullNodeClient,
+            fund_starknet_address,
+            register_account,
+            compute_starknet_address,
+            get_contract,
+        ):
+            evm_address = generate_random_evm_address(random.randint(0, 0x5EED))
+            starknet_address = await compute_starknet_address(evm_address)
+            await fund_starknet_address(starknet_address, PRE_FUND_AMOUNT / 1e18)
+
+            # TODO: change the sender's address to be the account itself
+            # kakarot = get_contract("kakarot", address=kakarot.address, provider=starknet_address)
+
+            # await deploy_externally_owned_account(evm_address)
+            # tx = await register_account(evm_address)
+            # receipt = await starknet.get_transaction_receipt(tx.hash)
+            # assert receipt.execution_status == "REVERTED"
+
+        async def test_should_fail_register_account_sender_not_account(
+            self,
+            starknet: FullNodeClient,
+            fund_starknet_address,
+            deploy_externally_owned_account,
+            register_account,
+            compute_starknet_address,
+            get_contract,
+        ):
+            evm_address = generate_random_evm_address(random.randint(0, 0x5EED))
+            await compute_starknet_address(evm_address)
+
+            # TODO: change the sender's address to be the account itself
+            # get_contract("kakarot", provider=deployer)
+
+            # await deploy_externally_owned_account(evm_address)
+            # tx = await register_account(evm_address)
+            # receipt = await starknet.get_transaction_receipt(tx.hash)
+            # assert receipt.execution_status.name == "REVERTED"
+            # assert "Kakarot: register account address mismatch" in receipt.revert_reason
+
+        async def test_should_fail_register_account_already_deployed(
+            self,
+            starknet: FullNodeClient,
+            fund_starknet_address,
+            deploy_externally_owned_account,
+            register_account,
+            compute_starknet_address,
+            get_contract,
+        ):
+            evm_address = generate_random_evm_address(random.randint(0, 0x5EED))
+            await compute_starknet_address(evm_address)
+
+            await deploy_externally_owned_account(evm_address)
+            tx = await register_account(evm_address)
+            receipt = await starknet.get_transaction_receipt(tx.hash)
+            assert receipt.execution_status.name == "REVERTED"
+            assert "Kakarot: account already registered" in receipt.revert_reason
 
     class TestEthCallNativeCoinTransfer:
         async def test_eth_call_should_succeed(

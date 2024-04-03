@@ -6,7 +6,7 @@ from starkware.cairo.common.memcpy import memcpy
 
 from kakarot.accounts.library import AccountContract
 
-func test__initialize__should_store_given_evm_address{
+func test__initialize{
     syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
 }() {
     alloc_locals;
