@@ -74,21 +74,19 @@ following inputs:
 
 - The hash of the starknet contract class.
 - A salt, for which we use the Ethereum address.
-- Eventual constructor arguments. We use the Ethereum address and the address of
-  the Kakarot contract as the constructor argument.
-
-The deployer address is 0. This allows anyone to deploy a contract for any
-Ethereum address.
+- Eventual constructor arguments. We use the address of the Kakarot contract and
+  the Ethereum address of the account as constructor arguments.
+- The deployer address, or zero. In our case, we always deploy from zero.
 
 This system ensures a deterministic calculation of the starknet contract address
 from an Ethereum address. However, this requires all inputs to be immutable, as
 changing any input will result in a different starknet contract address. This
-requires a two-step deployment process, where we first deploy a contract using a
+requires a deployment process, where we first deploy a contract using a
 restricted class that will always stay immutable (`uninitialized_account`), and
 then upgrade the class of the contract to the desired account class using the
-most up-to-date class. This is abstracted away by the system, and users can
-deploy an account contract using the `deploy_externally_owned_account`
-entrypoint from Kakarot.
+most up-to-date class. Anyone can deploy an account contract using the
+`deploy_externally_owned_account` entrypoint from Kakarot, or do the same
+manually using the `deploy` syscall.
 
 When an account is deployed, we make a library call to the `initialize` selector
 of its new implementation. This implementation is read directly from the storage
@@ -97,6 +95,29 @@ In this initialization, we give infinite allowance to the Kakarot contract for
 the native token, we register the account in the Kakarot mapping of evm
 addresses to starknet addresses, and we set the `is_initialized` flag to true to
 prevent accounts from being initialized twice.
+
+The deployment process is illustrated as follows:
+
+```mermaid
+sequenceDiagram
+    Anyone ->>+ UninitializedAccount: deploy_syscall
+    UninitializedAccount->>+Kakarot: get_account_contract_class_hash()
+    Kakarot-->>-UninitializedAccount: account_contract_class_hash
+    UninitializedAccount->>+AccountContractClass: library_call_initialize(kakarot_address,evm_address,account_contract_class_hash)
+    AccountContractClass ->> AccountContractClass: set_owner(kakarot_address)
+    AccountContractClass ->> AccountContractClass: set_evm_address
+    AccountContractClass ->> AccountContractClass: set_implementation(account_contract_class_hash)
+    AccountContractClass ->> AccountContractClass: set_initialized
+    AccountContractClass ->>+ Kakarot: get_native_token()
+    Kakarot -->>- AccountContractClass: native_token
+    AccountContractClass ->>+ Native Token: approve(infinite)
+    AccountContractClass ->>+ Kakarot: register_account(evm_address)
+    Kakarot ->> Kakarot: set_mapping(evm_address => starknet_address)
+    Kakarot -->>- AccountContractClass : _
+    AccountContractClass-->>-UninitializedAccount: _
+    UninitializedAccount ->> UninitializedAccount: replace_class(account_contract_class_hash)
+    UninitializedAccount -->>- Anyone: _
+```
 
 ## Account versioning
 
@@ -119,14 +140,36 @@ of accounts. The upgrade process works as follows:
 
 The account contract class exposes an `upgrade` entrypoint, which allows the
 owner of the account to upgrade the account contract class to a new version.
-However, this entire process is abstracted away by the system, and users can
-interact with Kakarot using an EVM EOA. To upgrade an account, the user will
-need to perform the upgrade action itself, as the caller of the upgrade function
-**must** be the account itself.
+However, this process is related to the _Starknet_ account, which is abstracted
+from the user by the system, while users can interact with Kakarot using an EVM
+EOA. To upgrade an account, the user will need to perform the upgrade action
+directly, as the caller of the upgrade function **must** be the account itself.
 
 One proposal for seamless upgrades would be to check if an account's class hash
 matches the one defined in the Kakarot contract every time we execute a
-transaction. If not, we can call the `upgrade` entrypoint of the account
-contract to update its class, and then proceed with the transaction. The upgrade
-would only be effective at the end of the transaction, but this would upgrade
-the user's account to the latest version without requiring any user interaction.
+transaction. If not, we would call the `upgrade` entrypoint of the account
+contract to update its class, and then proceed with the transaction by executing
+a `library_call` to the new class with the transaction to execute. The class
+upgrade would only be effective at the end of the transaction, but since we
+would execute the transaction through a library call, the transaction sent would
+be executed in the context of the latest account version.
+
+```mermaid
+sequenceDiagram
+    User ->>+ Kakarot-RPC: eth_sendRawTransaction
+    Kakarot-RPC->>+UserAccount: __execute__(params)
+    UserAccount ->>+ Kakarot: get_account_contract_class_hash()
+    Kakarot -->>- UserAccount: account_contract_class_hash
+    alt class_hash equal
+        UserAccount ->>+ Kakarot: eth_send_transaction()
+        Kakarot -->> UserAccount: (returndata, success, gas_used)
+    else class_hash not equal
+        UserAccount ->> AccountClass: library_call_execute(params)
+        AccountClass ->>+ Kakarot: eth_send_transaction()
+        Kakarot -->> AccountClass: (returndata, success, gas_used)
+        AccountClass -->> UserAccount: response
+        UserAccount ->> UserAccount: replace_class(account_contract_class_hash)
+    end
+    UserAccount -->> Kakarot-RPC: response
+    Kakarot-RPC -->> User: _
+```
