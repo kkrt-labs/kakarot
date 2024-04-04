@@ -1,6 +1,6 @@
 import pytest
 
-from kakarot_scripts.constants import NETWORK
+from kakarot_scripts.constants import COINBASE, NETWORK
 
 test_cases = [
     {
@@ -749,7 +749,7 @@ test_cases = [
             "value": 0,
             "code": "4100",
             "calldata": "",
-            "stack": f"{0xca40796afb5472abaed28907d5ed6fc74c04954a}",
+            "stack": f"{COINBASE}",
             "memory": "",
             "return_data": "",
             "success": 1,
