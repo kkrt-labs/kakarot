@@ -21,7 +21,7 @@ from starkware.starknet.common.syscalls import (
 from kakarot.account import Account
 from kakarot.precompiles.precompiles import Precompiles
 from kakarot.constants import Constants
-from kakarot.interfaces.interfaces import IERC20, IAccount, IUninitializedAccount
+from kakarot.interfaces.interfaces import IERC20, IAccount 
 
 from kakarot.model import model
 from kakarot.state import State
