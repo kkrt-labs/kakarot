@@ -8,7 +8,7 @@ from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import Uint256, uint256_check
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.cairo_secp.bigint import BigInt3, bigint_to_uint256, uint256_to_bigint
-from starkware.cairo.common.bool import TRUE
+from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.hash_state import hash_finalize, hash_init, hash_update
 
@@ -107,16 +107,16 @@ namespace Helpers {
         let is_bytes_len_16_bytes_or_less = is_le(bytes_len, 16);
 
         // 1 - 16 bytes
-        if (is_bytes_len_16_bytes_or_less == TRUE) {
-            let (low) = compute_half_uint256_from_bytes(bytes_len, bytes, 0);
+        if (is_bytes_len_16_bytes_or_less != FALSE) {
+            let low = bytes_to_felt(bytes_len, bytes);
             let res = Uint256(low=low, high=0);
 
             return res;
         }
 
         // 17 - 32 bytes
-        let (low) = compute_half_uint256_from_bytes(16, bytes + bytes_len - 16, 0);
-        let (high) = compute_half_uint256_from_bytes(bytes_len - 16, bytes, 0);
+        let low = bytes_to_felt(16, bytes + bytes_len - 16);
+        let high = bytes_to_felt(bytes_len - 16, bytes);
         let res = Uint256(low=low, high=high);
 
         return res;
@@ -152,19 +152,6 @@ namespace Helpers {
     func minimum_word_count{range_check_ptr}(length: felt) -> (res: felt) {
         let (quotient, remainder) = unsigned_div_rem(length + 31, 32);
         return (res=quotient);
-    }
-
-    func compute_half_uint256_from_bytes{range_check_ptr}(
-        bytes_len: felt, bytes: felt*, res: felt
-    ) -> (res: felt) {
-        if (bytes_len == 1) {
-            return (res=res + [bytes]);
-        }
-        let temp_pow = pow256_rev(16 - (bytes_len - 1));
-        let (res) = compute_half_uint256_from_bytes(
-            bytes_len - 1, bytes + 1, res + [bytes] * temp_pow
-        );
-        return (res=res);
     }
 
     // @notice This function is used to convert a sequence of 8 bytes to a felt.
