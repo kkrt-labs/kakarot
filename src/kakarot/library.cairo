@@ -85,7 +85,7 @@ namespace Kakarot {
         data: felt*,
         access_list_len: felt,
         access_list: felt*,
-    ) -> (model.EVM*, model.State*, felt) {
+    ) -> (model.EVM*, model.State*, felt, felt) {
         alloc_locals;
         let is_regular_tx = is_not_zero(to.is_some);
         let is_deploy_tx = 1 - is_regular_tx;
@@ -99,7 +99,7 @@ namespace Kakarot {
 
         let env = Starknet.get_env(origin, gas_price);
 
-        let (evm, stack, memory, state, gas_used) = Interpreter.execute(
+        let (evm, stack, memory, state, gas_used, required_gas) = Interpreter.execute(
             env,
             address,
             is_deploy_tx,
@@ -112,7 +112,7 @@ namespace Kakarot {
             access_list_len,
             access_list,
         );
-        return (evm, state, gas_used);
+        return (evm, state, gas_used, required_gas);
     }
 
     // @notice Set the native Starknet ERC20 token used by kakarot.

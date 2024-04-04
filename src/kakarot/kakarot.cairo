@@ -208,7 +208,7 @@ func eth_call{
     alloc_locals;
     let fp_and_pc = get_fp_and_pc();
     local __fp__: felt* = fp_and_pc.fp_val;
-    let (evm, state, gas_used) = Kakarot.eth_call(
+    let (evm, state, gas_used, _) = Kakarot.eth_call(
         nonce,
         origin,
         to,
@@ -222,6 +222,55 @@ func eth_call{
     );
     let is_reverted = is_not_zero(evm.reverted);
     return (evm.return_data_len, evm.return_data, 1 - is_reverted, gas_used);
+}
+
+// @notice The eth_estimateGas function as described in the spec,
+//         see https://ethereum.org/en/developers/docs/apis/json-rpc/#eth_call
+//         This is a view only function, meaning that it doesn't make any state change.
+// @param origin The address the transaction is sent from.
+// @param to The address the transaction is directed to.
+// @param gas_limit Integer of the gas provided for the transaction execution
+// @param gas_price Integer of the gas price used for each paid gas
+// @param value Integer of the value sent with this transaction
+// @param data_len The length of the data
+// @param data Hash of the method signature and encoded parameters. For details see Ethereum Contract ABI in the Solidity documentation
+// @return return_data_len The length of the return_data
+// @return return_data An array of returned felts
+// @return success An boolean, TRUE if the transaction succeeded, FALSE otherwise
+// @return required_gas The amount of gas required by the transaction to successfully execute. This is different
+// from the gas used by the transaction as it doesn't take into account any refunds.
+@view
+func eth_estimate_gas{
+    syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*
+}(
+    nonce: felt,
+    origin: felt,
+    to: model.Option,
+    gas_limit: felt,
+    gas_price: felt,
+    value: Uint256,
+    data_len: felt,
+    data: felt*,
+    access_list_len: felt,
+    access_list: felt*,
+) -> (return_data_len: felt, return_data: felt*, success: felt, required_gas: felt) {
+    alloc_locals;
+    let fp_and_pc = get_fp_and_pc();
+    local __fp__: felt* = fp_and_pc.fp_val;
+    let (evm, state, _, gas_required) = Kakarot.eth_call(
+        nonce,
+        origin,
+        to,
+        gas_limit,
+        gas_price,
+        &value,
+        data_len,
+        data,
+        access_list_len,
+        access_list,
+    );
+    let is_reverted = is_not_zero(evm.reverted);
+    return (evm.return_data_len, evm.return_data, 1 - is_reverted, gas_required);
 }
 
 // @notice The eth_send_transaction function as described in the spec,
@@ -260,7 +309,7 @@ func eth_send_transaction{
 
     let (tx_info) = get_tx_info();
 
-    let (evm, state, gas_used) = Kakarot.eth_call(
+    let (evm, state, gas_used, _) = Kakarot.eth_call(
         tx_info.nonce,
         origin,
         to,
