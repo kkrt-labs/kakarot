@@ -1,9 +1,6 @@
 import pytest
 
-from kakarot_scripts.constants import (
-    COINBASE,
-    NETWORK,
-)
+from kakarot_scripts.constants import COINBASE, NETWORK
 
 test_cases = [
     {
