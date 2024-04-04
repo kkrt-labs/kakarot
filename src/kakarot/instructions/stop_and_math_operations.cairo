@@ -34,7 +34,6 @@ from kakarot.state import State
 from utils.uint256 import uint256_fast_exp, uint256_signextend, uint256_sub, uint256_add
 from utils.utils import Helpers
 
-
 // @title Stop and Math operations opcodes.
 // @notice Math operations gathers Arithmetic and Comparison operations
 namespace StopAndMathOperations {

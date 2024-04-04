@@ -9,7 +9,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn
 from starkware.cairo.common.math import split_felt
 from starkware.cairo.lang.compiler.lib.registers import get_fp_and_pc
-from starkware.cairo.common.uint256 import Uint256, uint256_le, uint256_sub, uint256_add
+from starkware.cairo.common.uint256 import Uint256, uint256_le
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.starknet.common.syscalls import get_tx_info
 
@@ -36,6 +36,7 @@ from kakarot.state import State
 from kakarot.gas import Gas
 from utils.utils import Helpers
 from utils.array import count_not_zero
+from utils.uint256 import uint256_sub, uint256_add
 
 // @title EVM instructions processing.
 // @notice This file contains functions related to the processing of EVM instructions.

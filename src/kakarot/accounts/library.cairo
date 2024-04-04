@@ -6,7 +6,7 @@ from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from starkware.cairo.common.math import unsigned_div_rem, split_int, split_felt
 from starkware.cairo.common.memcpy import memcpy
-from starkware.cairo.common.uint256 import Uint256, uint256_not, uint256_add, uint256_le
+from starkware.cairo.common.uint256 import Uint256, uint256_not, uint256_le
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.math import assert_not_zero
 from starkware.starknet.common.syscalls import (
@@ -29,6 +29,7 @@ from kakarot.interfaces.interfaces import IERC20, IKakarot
 from kakarot.errors import Errors
 from kakarot.constants import Constants
 from utils.eth_transaction import EthTransaction
+from utils.uint256 import uint256_add
 
 // @dev: should always be zero for EOAs
 @storage_var

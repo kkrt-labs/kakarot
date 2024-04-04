@@ -131,7 +131,11 @@ try:
     payload = json.loads(response.text)
 
     chain_id = int(payload["result"], 16)
-except (requests.exceptions.ConnectionError, requests.exceptions.MissingSchema):
+except (
+    requests.exceptions.ConnectionError,
+    requests.exceptions.MissingSchema,
+    requests.exceptions.InvalidSchema,
+):
     chain_id = int.from_bytes(b"KKRT", "big")
 
 

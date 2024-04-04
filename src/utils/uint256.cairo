@@ -102,7 +102,6 @@ func uint256_sub{range_check_ptr}(a: Uint256, b: Uint256) -> (res: Uint256) {
     }
 }
 
-
 // @notice Internal exponentiation of two 256-bit integers.
 // @dev The result is modulo 2^256.
 // @param value - The base.
