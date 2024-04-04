@@ -92,6 +92,7 @@ namespace Helpers {
         return res;
     }
     // @notice This function is used to convert bytes array in big-endian to Uint256.
+    // @dev The function is limited to 32 bytes or less.
     // @param bytes_len: bytes array length.
     // @param bytes: pointer to the first byte of the bytes array.
     // @return res: Uint256 representation of the given input in bytes.
@@ -101,11 +102,6 @@ namespace Helpers {
         if (bytes_len == 0) {
             let res = Uint256(0, 0);
             return res;
-        }
-
-        let is_bytes_len_32_bytes_or_less = is_le(bytes_len, 32);
-        with_attr error_message("number must be shorter than 32 bytes") {
-            assert is_bytes_len_32_bytes_or_less = 1;
         }
 
         let is_bytes_len_16_bytes_or_less = is_le(bytes_len, 16);
