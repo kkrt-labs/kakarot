@@ -5,7 +5,7 @@
 from openzeppelin.access.ownable.library import Ownable
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from starkware.starknet.common.syscalls import get_caller_address, get_tx_info
+from starkware.starknet.common.syscalls import get_caller_address, get_tx_info, get_contract_address
 from starkware.cairo.common.math_cmp import is_not_zero
 from starkware.cairo.common.uint256 import Uint256
 
@@ -239,16 +239,20 @@ namespace Kakarot {
         evm_address: felt
     ) {
         alloc_locals;
-        let (caller_address) = get_caller_address();
-        let starknet_address = Account.compute_starknet_address(evm_address);
-
-        with_attr error_message("Kakarot: register account address mismatch") {
-            assert starknet_address = caller_address;
-        }
 
         let (existing_address) = Kakarot_evm_to_starknet_address.read(evm_address);
         with_attr error_message("Kakarot: account already registered") {
             assert existing_address = 0;
+        }
+
+        let (local caller_address: felt) = get_caller_address();
+        let starknet_address = Account.compute_starknet_address(evm_address);
+        local starknet_address = starknet_address;
+        let (local kakarot_address: felt) = get_contract_address();
+
+        with_attr error_message(
+                "Kakarot: register account address mismatch {starknet_address} != {caller_address} != {kakarot_address} ") {
+            assert starknet_address = caller_address;
         }
 
         evm_contract_deployed.emit(evm_address, starknet_address);
