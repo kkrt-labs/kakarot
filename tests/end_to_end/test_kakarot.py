@@ -200,14 +200,10 @@ class TestKakarot:
             evm_address = generate_random_evm_address(random.randint(0, 0x5EED))
             await compute_starknet_address(evm_address)
 
-            # TODO: change the sender's address to be the account itself
-            # get_contract("kakarot", provider=deployer)
-
-            # await deploy_externally_owned_account(evm_address)
-            # tx = await register_account(evm_address)
-            # receipt = await starknet.get_transaction_receipt(tx.hash)
-            # assert receipt.execution_status.name == "REVERTED"
-            # assert "Kakarot: register account address mismatch" in receipt.revert_reason
+            tx = await register_account(evm_address)
+            receipt = await starknet.get_transaction_receipt(tx.hash)
+            assert receipt.execution_status.name == "REVERTED"
+            assert "Kakarot: register account address mismatch" in receipt.revert_reason
 
         async def test_should_fail_register_account_already_deployed(
             self,
@@ -219,8 +215,6 @@ class TestKakarot:
             get_contract,
         ):
             evm_address = generate_random_evm_address(random.randint(0, 0x5EED))
-            await compute_starknet_address(evm_address)
-
             await deploy_externally_owned_account(evm_address)
             tx = await register_account(evm_address)
             receipt = await starknet.get_transaction_receipt(tx.hash)
