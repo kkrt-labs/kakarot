@@ -3,7 +3,7 @@
 %lang starknet
 
 from starkware.cairo.common.alloc import alloc
-from starkware.cairo.common.bool import FALSE
+from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.dict_access import DictAccess
 from starkware.cairo.common.uint256 import Uint256
@@ -81,13 +81,8 @@ namespace Starknet {
             contract_address_salt=evm_address,
             constructor_calldata_size=2,
             constructor_calldata=constructor_calldata,
-            deploy_from_zero=1,
+            deploy_from_zero=TRUE,
         );
-
-        // Properly initialize the account once created
-        let (account_class_hash) = Kakarot_account_contract_class_hash.read();
-        IUninitializedAccount.initialize(starknet_address);
-
         return (account_address=starknet_address);
     }
 

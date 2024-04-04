@@ -52,17 +52,9 @@ func Account_nonce() -> (nonce: felt) {
 func Account_implementation() -> (address: felt) {
 }
 
-// //////////////// DO NOT MODIFY //////////////////
-// We are intentionally causing a storage_slot collision here,
-// by defining these variables in both `uninitialized_account` and `account_contract`.
 @storage_var
 func Account_evm_address() -> (evm_address: felt) {
 }
-
-@storage_var
-func Account_kakarot_address() -> (kakarot_address: felt) {
-}
-// /////////////////////////////////////////////////
 
 @event
 func transaction_executed(response_len: felt, response: felt*, success: felt, gas_used: felt) {
@@ -85,13 +77,13 @@ namespace AccountContract {
         pedersen_ptr: HashBuiltin*,
         range_check_ptr,
         bitwise_ptr: BitwiseBuiltin*,
-    }(implementation_class: felt) {
+    }(kakarot_address, evm_address, implementation_class) {
         alloc_locals;
         let (is_initialized) = Account_is_initialized.read();
         assert is_initialized = 0;
-        let (kakarot_address) = Account_kakarot_address.read();
         Account_is_initialized.write(1);
         Ownable.initializer(kakarot_address);
+        Account_evm_address.write(evm_address);
         Account_implementation.write(implementation_class);
 
         // Give infinite ETH transfer allowance to Kakarot
@@ -100,7 +92,6 @@ namespace AccountContract {
         IERC20.approve(native_token_address, kakarot_address, infinite);
 
         // Register the account in the Kakarot mapping
-        let (evm_address) = Account_evm_address.read();
         IKakarot.register_account(kakarot_address, evm_address);
         return ();
     }
