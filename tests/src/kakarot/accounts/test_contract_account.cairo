@@ -12,11 +12,17 @@ func test__initialize{
     alloc_locals;
 
     // Given
+    local kakarot_address: felt;
+    local evm_address: felt;
     local implementation_class: felt;
-    %{ ids.implementation_class = program_input["implementation_class"] %}
+    %{
+        ids.kakarot_address = program_input["kakarot_address"]
+        ids.evm_address = program_input["evm_address"]
+        ids.implementation_class = program_input["implementation_class"]
+    %}
 
     // When
-    AccountContract.initialize(implementation_class);
+    AccountContract.initialize(kakarot_address, evm_address, implementation_class);
 
     return ();
 }
