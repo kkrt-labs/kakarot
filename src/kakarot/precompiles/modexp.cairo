@@ -39,9 +39,7 @@ namespace PrecompileModExpUint256 {
         let b_size: Uint256 = Helpers.bytes32_to_uint256(input);
         let e_size: Uint256 = Helpers.bytes32_to_uint256(input + MOD_EXP_BYTES_LEN);
         let m_size: Uint256 = Helpers.bytes32_to_uint256(input + MOD_EXP_BYTES_LEN * 2);
-        let b: Uint256 = Helpers.bytes_to_uint256(
-            b_size.low, input + MOD_EXP_BYTES_LEN * 3
-        );
+        let b: Uint256 = Helpers.bytes_to_uint256(b_size.low, input + MOD_EXP_BYTES_LEN * 3);
         let e: Uint256 = Helpers.bytes_to_uint256(
             e_size.low, input + MOD_EXP_BYTES_LEN * 3 + b_size.low
         );

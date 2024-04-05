@@ -1,5 +1,6 @@
-import pytest
 from math import ceil
+
+import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
