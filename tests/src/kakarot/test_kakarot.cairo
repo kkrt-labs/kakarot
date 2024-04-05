@@ -39,7 +39,7 @@ func eth_call{
         ids.access_list_len = 0
     %}
 
-    let (evm, state, gas_used) = Kakarot.eth_call(
+    let (evm, state, gas_used, _) = Kakarot.eth_call(
         nonce=0,
         origin=origin,
         to=to,

@@ -183,7 +183,7 @@ class TestKakarot:
             tx = await register_account(evm_address)
             receipt = await starknet.get_transaction_receipt(tx.hash)
             assert receipt.execution_status.name == "REVERTED"
-            assert "Kakarot: register account address mismatch" in receipt.revert_reason
+            assert "Kakarot: Caller should be" in receipt.revert_reason
 
         async def test_should_fail_when_account_is_already_registered(
             self,
