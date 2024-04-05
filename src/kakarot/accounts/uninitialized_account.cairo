@@ -12,12 +12,16 @@ namespace IKakarot {
     }
 }
 
-const INITIALIZE_SELECTOR = 0x79dc0da7c54b95f10aa182ad0a46400db63156920adb65eca2654c0945a463;  // sn_keccak('initialize')
+@contract_interface
+namespace IAccount {
+    func initialize(kakarot_address: felt, evm_address: felt, implementation_class: felt) {
+    }
+}
 
 // @title Uninitialized Contract Account. Used to get a deterministic address for an account, no
 // matter the actual implementation class used.
 
-// @notice Deploys and initializes the account with the Kakarot and EVM addresses it was deployed with.
+// @notice Deploy and initialize the account with the Kakarot and EVM addresses it was deployed with.
 // @param kakarot_address The address of the main Kakarot contract.
 // @param evm_address The address of the EVM contract.
 @constructor
@@ -26,16 +30,11 @@ func constructor{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 ) {
     let (implementation_class) = IKakarot.get_account_contract_class_hash(kakarot_address);
 
-    let (calldata) = alloc();
-    assert calldata[0] = kakarot_address;
-    assert calldata[1] = evm_address;
-    assert calldata[2] = implementation_class;
-
-    library_call(
-        class_hash=implementation_class,
-        function_selector=INITIALIZE_SELECTOR,
-        calldata_size=3,
-        calldata=calldata,
+    IAccount.library_call_initialize(
+        implementation_class,
+        kakarot_address=kakarot_address,
+        evm_address=evm_address,
+        implementation_class=implementation_class,
     );
 
     replace_class(implementation_class);

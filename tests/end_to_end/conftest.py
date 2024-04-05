@@ -179,9 +179,7 @@ def deploy_externally_owned_account(kakarot: Contract, max_fee: int):
         tx = await kakarot.functions["deploy_externally_owned_account"].invoke_v1(
             evm_address, max_fee=max_fee
         )
-        await wait_for_transaction(
-            tx.hash,
-        )
+        await wait_for_transaction(tx.hash)
         return tx
 
     return _factory
@@ -199,9 +197,7 @@ def register_account(kakarot: Contract, max_fee: int):
         tx = await kakarot.functions["register_account"].invoke_v1(
             evm_address, max_fee=max_fee
         )
-        await wait_for_transaction(
-            tx.hash,
-        )
+        await wait_for_transaction(tx.hash)
         return tx
 
     return _factory

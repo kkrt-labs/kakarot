@@ -185,8 +185,8 @@ func deploy_externally_owned_account{
     return Kakarot.deploy_externally_owned_account(evm_address);
 }
 
-// @notice Registers an account by writing its EVM address to the Starknet address mapping.
-// @dev Called by the account contract upon initialization.
+// @notice Register the calling Starknet address for the given EVM address
+// @dev    Only the corresponding computed Starknet address can make this call to ensure that registered accounts are actually deployed.
 // @param evm_address The EVM address of the account.
 @external
 func register_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(

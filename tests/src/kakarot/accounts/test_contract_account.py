@@ -23,7 +23,7 @@ class TestContractAccount:
         @SyscallHandler.patch("IKakarot.register_account", lambda addr, data: [])
         @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
         @SyscallHandler.patch("IERC20.approve", lambda addr, data: [1])
-        def test_should_store_given_addresses_and_initialize(self, cairo_run):
+        def test_should_set_storage_variables(self, cairo_run):
             cairo_run(
                 "test__initialize",
                 kakarot_address=0x1234,
@@ -40,33 +40,24 @@ class TestContractAccount:
             SyscallHandler.mock_storage.assert_any_call(
                 address=get_storage_var_address("Account_is_initialized"), value=1
             )
-
-        @SyscallHandler.patch("IKakarot.register_account", lambda addr, data: [])
-        @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
-        @SyscallHandler.patch("IERC20.approve", lambda addr, data: [1])
-        def test_should_store_implementation(self, cairo_run):
-            cairo_run(
-                "test__initialize",
-                kakarot_address=0x1234,
-                evm_address=0xABDE1,
-                implementation_class=0xC1A55,
-            )
             SyscallHandler.mock_storage.assert_any_call(
                 address=get_storage_var_address("Account_implementation"), value=0xC1A55
             )
 
-        @SyscallHandler.patch("IKakarot.register_account", lambda addr, data: [])
-        @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
-        @SyscallHandler.patch("IERC20.approve", lambda addr, data: [1])
-        def test_should_transfer_ownership_to_kakarot(self, cairo_run):
-            cairo_run(
-                "test__initialize",
-                kakarot_address=0x1234,
-                evm_address=0xABDE1,
-                implementation_class=0xC1A55,
-            )
             SyscallHandler.mock_event.assert_any_call(
                 keys=[get_selector_from_name("OwnershipTransferred")], data=[0, 0x1234]
+            )
+
+            SyscallHandler.mock_call.assert_any_call(
+                contract_address=0xDEAD,
+                function_selector=get_selector_from_name("approve"),
+                calldata=[0x1234, *int_to_uint256(2**256 - 1)],
+            )
+
+            SyscallHandler.mock_call.assert_any_call(
+                contract_address=0x1234,
+                function_selector=get_selector_from_name("register_account"),
+                calldata=[0xABDE1],
             )
 
         @SyscallHandler.patch("IKakarot.register_account", lambda addr, data: [])
@@ -79,22 +70,6 @@ class TestContractAccount:
                     evm_address=0xABDE1,
                     implementation_class=0xC1A55,
                 )
-
-        @SyscallHandler.patch("IKakarot.register_account", lambda addr, data: [])
-        @SyscallHandler.patch("IKakarot.get_native_token", lambda addr, data: [0xDEAD])
-        @SyscallHandler.patch("IERC20.approve", lambda addr, data: [1])
-        def test_should_give_infinite_allowance_to_kakarot(self, cairo_run):
-            cairo_run(
-                "test__initialize",
-                kakarot_address=0x1234,
-                evm_address=0xABDE1,
-                implementation_class=0xC1A55,
-            )
-            SyscallHandler.mock_call.assert_any_call(
-                contract_address=0xDEAD,
-                function_selector=get_selector_from_name("approve"),
-                calldata=[0x1234, *int_to_uint256(2**256 - 1)],
-            )
 
     class TestGetEvmAddress:
         @SyscallHandler.patch("Account_evm_address", 0xABDE1)

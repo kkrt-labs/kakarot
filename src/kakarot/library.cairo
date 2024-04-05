@@ -234,8 +234,8 @@ namespace Kakarot {
         return (account_contract_class_hash,);
     }
 
-    // @notice Registers an account by writing its EVM address to the Starknet address mapping.
-    // @dev Called by the account contract upon initialization.
+    // @notice Register the calling Starknet address for the given EVM address
+    // @dev    Only the corresponding computed Starknet address can make this call to ensure that registered accounts are actually deployed.
     // @param evm_address The EVM address of the account.
     func register_account{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         evm_address: felt
@@ -250,10 +250,9 @@ namespace Kakarot {
         let (local caller_address: felt) = get_caller_address();
         let starknet_address = Account.compute_starknet_address(evm_address);
         local starknet_address = starknet_address;
-        let (local kakarot_address: felt) = get_contract_address();
 
         with_attr error_message(
-                "Kakarot: register account address mismatch {starknet_address} != {caller_address} != {kakarot_address} ") {
+                "Kakarot: Caller should be {starknet_address}, got {caller_address}") {
             assert starknet_address = caller_address;
         }
 
