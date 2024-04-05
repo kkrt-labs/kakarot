@@ -63,7 +63,7 @@ func execute{
     let evm_address = 'target_evm_address';
     let starknet_address = Account.compute_starknet_address(evm_address);
     tempvar address = new model.Address(starknet_address, evm_address);
-    let (evm, stack, memory, state, gas_used) = Interpreter.execute(
+    let (evm, stack, memory, state, gas_used, _) = Interpreter.execute(
         env=env,
         address=address,
         is_deploy_tx=0,

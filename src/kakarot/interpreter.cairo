@@ -757,6 +757,8 @@ namespace Interpreter {
     // @return stack The stack post-execution
     // @return memory The memory post-execution
     // @return gas_used the gas used by the transaction
+    // @return required_gas The amount of gas required by the transaction to successfully execute. This is different
+    // from the gas used by the transaction as it doesn't take into account any refunds.
     func execute{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
@@ -774,7 +776,7 @@ namespace Interpreter {
         gas_limit: felt,
         access_list_len: felt,
         access_list: felt*,
-    ) -> (model.EVM*, model.Stack*, model.Memory*, model.State*, felt) {
+    ) -> (model.EVM*, model.Stack*, model.Memory*, model.State*, felt, felt) {
         alloc_locals;
         let fp_and_pc = get_fp_and_pc();
         local __fp__: felt* = fp_and_pc.fp_val;
@@ -860,7 +862,7 @@ namespace Interpreter {
             if (is_gas_limit_enough == FALSE) {
                 let evm = EVM.halt_validation_failed(evm);
                 State.finalize();
-                return (evm, stack, memory, state, 0);
+                return (evm, stack, memory, state, 0, 0);
             }
 
             // TODO: same as below
@@ -868,7 +870,7 @@ namespace Interpreter {
             if (is_value_le_balance == FALSE) {
                 let evm = EVM.halt_validation_failed(evm);
                 State.finalize();
-                return (evm, stack, memory, state, 0);
+                return (evm, stack, memory, state, 0, 0);
             }
             let (balance_post_value_transfer) = uint256_sub([sender.balance], [value]);
 
@@ -881,7 +883,7 @@ namespace Interpreter {
             if (can_pay_gasfee == FALSE) {
                 let evm = EVM.halt_validation_failed(evm);
                 State.finalize();
-                return (evm, stack, memory, state, 0);
+                return (evm, stack, memory, state, 0, 0);
             }
 
             tempvar is_initcode_invalid = is_deploy_tx * is_le(
@@ -890,7 +892,7 @@ namespace Interpreter {
             if (is_initcode_invalid != FALSE) {
                 let evm = EVM.halt_validation_failed(evm);
                 State.finalize();
-                return (evm, stack, memory, state, 0);
+                return (evm, stack, memory, state, 0, 0);
             }
 
             // Charge the gas fee to the user without setting up a transfer.
@@ -931,14 +933,14 @@ namespace Interpreter {
             let evm = run(evm);
         }
 
-        let gas_used = gas_limit - evm.gas_left;
-        let (max_refund, _) = unsigned_div_rem(gas_used, 5);
+        let required_gas = gas_limit - evm.gas_left;
+        let (max_refund, _) = unsigned_div_rem(required_gas, 5);
         let is_max_refund_le_gas_refund = is_le(max_refund, evm.gas_refund);
         tempvar gas_refund = is_max_refund_le_gas_refund * max_refund + (
             1 - is_max_refund_le_gas_refund
         ) * evm.gas_refund;
 
-        let total_gas_used = gas_used - gas_refund;
+        let total_gas_used = required_gas - gas_refund;
 
         with state {
             // Reset the state if the execution has failed.
@@ -981,7 +983,7 @@ namespace Interpreter {
             State.finalize();
         }
 
-        return (evm, stack, memory, state, total_gas_used);
+        return (evm, stack, memory, state, total_gas_used, required_gas);
     }
 
     // @notice A placeholder for opcodes that don't exist
